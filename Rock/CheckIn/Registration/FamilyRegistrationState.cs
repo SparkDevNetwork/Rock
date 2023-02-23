@@ -159,6 +159,9 @@ namespace Rock.CheckIn.Registration
                 familyPersonState.RecordStatusValueId = person.RecordStatusValueId;
                 familyPersonState.ConnectionStatusValueId = person.ConnectionStatusValueId;
 
+                familyPersonState.RaceValueId = person.RaceValueId;
+                familyPersonState.EthnicityValueId = person.EthnicityValueId;
+
                 return familyPersonState;
             }
 
@@ -408,6 +411,22 @@ namespace Rock.CheckIn.Registration
             public string AlternateID { get; set; }
 
             /// <summary>
+            /// Gets or sets the race value identifier.
+            /// </summary>
+            /// <value>
+            /// The suffix value identifier.
+            /// </value>
+            public int? RaceValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ethnicity value identifier.
+            /// </summary>
+            /// <value>
+            /// The suffix value identifier.
+            /// </value>
+            public int? EthnicityValueId { get; set; }
+
+            /// <summary>
             /// Gets or sets the editable attributes for this person (only save these to the database)
             /// </summary>
             /// <value>
@@ -490,6 +509,8 @@ namespace Rock.CheckIn.Registration
                     familyPersonState.RecordStatusValueId = matchingPerson.RecordStatusValueId;
                     familyPersonState.ConnectionStatusValueId = matchingPerson.ConnectionStatusValueId;
                     familyPersonState.ConvertedToMatchedPerson = true;
+                    familyPersonState.RaceValueId = matchingPerson.RaceValueId;
+                    familyPersonState.EthnicityValueId = matchingPerson.EthnicityValueId;
                     if ( primaryFamily == null && familyPersonState.IsAdult )
                     {
                         // if this is a new family, but we found a matching adult person, use that person's family as the family
@@ -552,6 +573,8 @@ namespace Rock.CheckIn.Registration
                 // if a matching person was found, the familyPersonState's RecordStatusValueId and ConnectinoStatusValueId was already updated to match the matched person
                 person.RecordStatusValueId = familyPersonState.RecordStatusValueId;
                 person.ConnectionStatusValueId = familyPersonState.ConnectionStatusValueId;
+                person.EthnicityValueId = familyPersonState.EthnicityValueId;
+                person.RaceValueId = familyPersonState.RaceValueId;
 
                 rockContext.SaveChanges();
 

@@ -34,6 +34,10 @@
 
                 <asp:Literal ID="lProgressHtml" runat="server" />
 
+                <%-- Participant Checklist --%>
+                <asp:Literal ID="lParticipantHtml" runat="server" />
+                <Rock:GroupMemberRequirementsContainer ID="gmrcRequirements" runat="server" Visible="false"></Rock:GroupMemberRequirementsContainer>
+
                 <br />
 
                 <ul id="tlTabList" runat="server" class="nav nav-pills margin-v-md">
@@ -54,11 +58,14 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlContributions" runat="server">
+                    <h3>
+                        <asp:Literal ID="lContributionsHeader" runat="server" />
+                    </h3>
                     <Rock:Grid ID="gContributions" runat="server" DisplayType="Light" OnRowDataBound="gContributions_RowDataBound">
                         <Columns>
+                            <Rock:DateTimeField DataField="TransactionDateTime" HeaderText="Date" HeaderStyle-HorizontalAlign="Left" DataFormatString="{0:d}" ItemStyle-HorizontalAlign="Left" />
                             <Rock:RockLiteralField ID="lPersonName" HeaderText="Name" />
                             <Rock:RockLiteralField ID="lAddress" HeaderText="Address" />
-                            <Rock:DateTimeField DataField="TransactionDateTime" HeaderText="Date" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
                             <Rock:RockLiteralField ID="lTransactionDetailAmount" HeaderText="Amount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                         </Columns>
                     </Rock:Grid>

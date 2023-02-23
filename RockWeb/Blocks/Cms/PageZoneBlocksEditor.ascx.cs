@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,6 +49,16 @@ namespace RockWeb.Blocks.Cms
     [Rock.SystemGuid.BlockTypeGuid( "1063D63E-8136-479A-BA96-57E93E0194B5" )]
     public partial class PageZoneBlocksEditor : RockBlock, ISecondaryBlock
     {
+        #region Parameter Keys
+
+        private static class PageParameterKey
+        {
+            public const string Page = "Page";
+            public const string ZoneName = "ZoneName";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -68,15 +78,23 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
+            int pageId;
+            string zoneName;
+
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "Page" ).AsInteger() );
+                // Get the settings from the query string.
+                pageId = PageParameter( PageParameterKey.Page ).AsInteger();
+                zoneName = PageParameter( PageParameterKey.ZoneName );
             }
             else
             {
-                // make sure repeaters rebuild the controls
-                ShowDetailForZone( ddlZones.SelectedValue );
+                // Get the settings from the current page state.
+                pageId = hfPageId.Value.AsInteger();
+                zoneName = ddlZones.SelectedValue;
             }
+
+            ShowDetail( pageId, zoneName );
 
             // handle sort events
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
@@ -186,15 +204,30 @@ namespace RockWeb.Blocks.Cms
         /// Shows the detail.
         /// </summary>
         /// <param name="pageId">The page identifier.</param>
-        public void ShowDetail( int pageId )
+        /// <param name="zoneName">Name of the zone.</param>
+        private void ShowDetail( int pageId, string zoneName )
         {
+            // Store the page reference and determine if it is valid.
             hfPageId.Value = pageId.ToString();
             var page = PageCache.Get( pageId );
 
             this.Visible = page != null;
+
+            // Try to set the zone for the selected page.
             LoadDropDowns();
 
-            ShowDetailForZone( ddlZones.SelectedValue );
+            if ( page != null )
+            {
+                var zoneNames = FindZoneNames( page );
+                var selectValue = zoneNames.FirstOrDefault( zn => zn != null && zn.Equals( zoneName, StringComparison.OrdinalIgnoreCase ) );
+                if ( !string.IsNullOrWhiteSpace( selectValue ) )
+                {
+                    ddlZones.SelectedValue = selectValue;
+                }
+            }
+            zoneName = ddlZones.SelectedValue;
+
+            ShowDetailForZone( zoneName );
         }
 
         /// <summary>

@@ -11,32 +11,27 @@
 
             <div class="panel-body">
 
-                <Rock:NotificationBox ID="nbBulkUpdateNotification" runat="server" Visible="false"></Rock:NotificationBox>
-
                 <asp:Panel ID="pnlEntry" runat="server">
 
+                    <Rock:RockControlWrapper ID="rcwBulkUpdateCampuses" runat="server" Visible="false" Label="Campus Filter" CssClass="well" Help="Only connection requests for this campus will be effected by the Update.">
+                        <Rock:RockRadioButtonList ID="rblBulkUpdateCampuses" runat="server" RepeatDirection="Horizontal">
+                        </Rock:RockRadioButtonList>
+                    </Rock:RockControlWrapper>
+
+                    <Rock:NotificationBox ID="nbBulkUpdateNotification" runat="server" Visible="false"></Rock:NotificationBox>
+
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-
-                            <Rock:RockControlWrapper ID="rcwBulkUpdateCampuses" runat="server" Visible="false" Label="Campus" Help="Help Text">
-                                <Rock:RockRadioButtonList ID="rblBulkUpdateCampuses" runat="server" RepeatDirection="Horizontal">
-                                </Rock:RockRadioButtonList>
-                            </Rock:RockControlWrapper>
-
-                        </div>
-                    </div>
 
                     <div class="row fade-inactive">
 
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlOpportunity" runat="server" Label="Opportunity" AutoPostBack="true" OnSelectedIndexChanged="ddlOpportunity_SelectedIndexChanged" EnhanceForLongLists="true" />
-                            <Rock:RockDropDownList ID="ddlState" runat="server" Label="State" />
+                            <Rock:RockDropDownList ID="ddlState" runat="server" Label="State" AutoPostBack="true" OnSelectedIndexChanged="ddlState_SelectedIndexChanged" />
                         </div>
 
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
+                            <Rock:DatePicker ID="dpFollowUpDate" runat="server" Label="Follow-up Date" AllowPastDateSelection="false" Visible="false" />
                         </div>
 
                     </div>
@@ -99,26 +94,25 @@
 
                 </asp:Panel>
 
-                <asp:Panel ID="pnlConfirm" runat="server" Visible="false" CssClass="js-panel-confirm">
-
-                    <asp:PlaceHolder ID="phConfirmation" runat="server" />
-
-                    <div class="actions">
-                        <asp:LinkButton ID="btnBack" runat="server" Text="Back" CssClass="btn btn-link" OnClick="btnBack_Click" />
-                        <asp:LinkButton ID="btnConfirm" runat="server" Text="Confirm" CssClass="btn btn-primary" OnClick="btnConfirm_Click" />
-                    </div>
-
-                </asp:Panel>
-
-                <asp:Panel ID="pnlStatusUpdate" runat="server" Visible="false">
-
-                    <Rock:NotificationBox ID="nbStatusUpdate" runat="server" NotificationBoxType="Success"></Rock:NotificationBox>
-
-                </asp:Panel>
-
             </div>
 
         </div>
+
+        <Rock:ModalDialog ID="mdConfirmUpdateRequests" runat="server" Title="Confirm Update" SaveButtonText="Confirm" CancelLinkVisible="true" OnSaveClick="btnConfirm_Click" SaveButtonCausesValidation="false">
+            <Content>
+                <asp:Panel ID="pnlConfirm" runat="server" CssClass="js-panel-confirm">
+
+                      <asp:PlaceHolder ID="phConfirmation" runat="server" />
+
+                  </asp:Panel>
+
+                  <asp:Panel ID="pnlStatusUpdate" runat="server" Visible="true">
+
+                      <Rock:NotificationBox ID="nbStatusUpdate" runat="server" NotificationBoxType="Success"></Rock:NotificationBox>
+
+                </asp:Panel>
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -28,6 +28,12 @@ export type CommunicationBag = {
     /** Gets or sets a JSON string containing any additional merge fields for the Communication. */
     additionalMergeFieldsJson?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets a comma separated list of BCC'ed email addresses. */
     bCCEmails?: string | null;
 
@@ -39,6 +45,12 @@ export type CommunicationBag = {
 
     /** Gets or sets the communication type value identifier. */
     communicationType: number;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets a comma-delimited list of enabled LavaCommands */
     enabledLavaCommands?: string | null;
@@ -61,6 +73,9 @@ export type CommunicationBag = {
      */
     futureSendDateTime?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the is bulk communication. */
     isBulkCommunication: boolean;
 
@@ -72,6 +87,12 @@ export type CommunicationBag = {
 
     /** Gets or sets the message meta data. */
     messageMetaData?: string | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the name of the Communication */
     name?: string | null;
@@ -121,8 +142,8 @@ export type CommunicationBag = {
     /** Gets or sets the sender Rock.Model.PersonAlias identifier. */
     senderPersonAliasId?: number | null;
 
-    /** Gets or sets the SMS from number. */
-    sMSFromDefinedValueId?: number | null;
+    /** Gets or sets the system phone number identifier used for SMS sending. */
+    smsFromSystemPhoneNumberId?: number | null;
 
     /** Gets or sets the message. */
     sMSMessage?: string | null;
@@ -138,25 +159,4 @@ export type CommunicationBag = {
 
     /** Gets or sets the URL from where this communication was created (grid) */
     urlReferrer?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

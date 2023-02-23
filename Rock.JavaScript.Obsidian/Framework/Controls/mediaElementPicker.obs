@@ -1,0 +1,305 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="formFieldProps" :modelValue="internalMediaElement" name="media-element-picker">
+        <BaseAsyncPicker v-if="!hideAccountPicker" v-model="internalMediaAccount" v-bind="standardProps" label="Account" :multiple="false" :items="mediaAccountItems" showBlankItem />
+        <BaseAsyncPicker v-if="internalMediaAccount && !hideFolderPicker" v-model="internalMediaFolder" v-bind="standardProps" label="Folder" :multiple="false" :items="mediaFolderItems" showBlankItem :lazyMode="ControlLazyMode.Eager">
+            <template #inputGroupAppend v-if="!hideRefreshButtons">
+                <span class="input-group-addon">
+                    <RockButton isSquare @click.prevent="fetchMediaFolders"><i class="fa fa-refresh"></i></RockButton>
+                </span>
+            </template>
+        </BaseAsyncPicker>
+        <BaseAsyncPicker v-if="internalMediaFolder && !hideMediaPicker" v-model="internalMediaElement" v-bind="standardProps" :label="mediaElementLabel" :items="mediaElementItems" showBlankItem :lazyMode="ControlLazyMode.Eager">
+            <template #inputGroupAppend v-if="!hideRefreshButtons">
+                <span class="input-group-addon">
+                    <RockButton isSquare @click.prevent="fetchMediaElements"><i class="fa fa-refresh"></i></RockButton>
+                </span>
+            </template>
+        </BaseAsyncPicker>
+    </RockFormField>
+</template>
+
+<script lang="ts" setup>
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { standardRockFormFieldProps, useStandardAsyncPickerProps, standardAsyncPickerProps, useStandardRockFormFieldProps, updateRefValue } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MediaElementPickerGetMediaFoldersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mediaElementPickerGetMediaFoldersOptionsBag";
+    import { MediaElementPickerGetMediaElementsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mediaElementPickerGetMediaElementsOptionsBag";
+    import { MediaElementPickerGetMediaTreeOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mediaElementPickerGetMediaTreeOptionsBag";
+    import { MediaElementPickerGetMediaTreeResultsBag } from "@Obsidian/ViewModels/Rest/Controls/mediaElementPickerGetMediaTreeResultsBag";
+    import { HttpBodyData } from "@Obsidian/Types/Utility/http";
+    import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import BaseAsyncPicker from "./baseAsyncPicker";
+    import RockButton from "./rockButton";
+    import RockFormField from "./rockFormField";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        /** v-model of the media account */
+        account: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** v-model of the folder */
+        folder: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** v-model of the media element */
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** Whether to hide the media account dropdown portion */
+        hideAccountPicker: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether to hide the media folder dropdown portion */
+        hideFolderPicker: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether to hide the media element dropdown portion */
+        hideMediaPicker: {
+            type: Boolean,
+            default: false
+        },
+
+        /** True to hide the refresh buttons next to the folder and element dropdowns */
+        hideRefreshButtons: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Label text for the media element dropdown */
+        mediaElementLabel: {
+            type: String,
+            default: "Media"
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:account", value: ListItemBag | null): void,
+        (e: "update:folder", value: ListItemBag | null): void,
+        (e: "update:modelValue", value: ListItemBag | null): void
+    }>();
+
+    // #region Values
+
+    const internalMediaAccount = ref<ListItemBag | null>(props.account);
+    const internalMediaFolder = ref<ListItemBag | null>(props.folder);
+    const internalMediaElement = ref<ListItemBag | null>(props.modelValue);
+
+    const mediaAccountItems = ref<(() => Promise<ListItemBag[]>) | ListItemBag[] | null>(null);
+    const mediaFolderItems = ref<(() => Promise<ListItemBag[]>) | ListItemBag[] | null>(null);
+    const mediaElementItems = ref<(() => Promise<ListItemBag[]>) | ListItemBag[] | null>(null);
+
+    const standardProps = useStandardAsyncPickerProps(props);
+    const formFieldProps = useStandardRockFormFieldProps(props);
+
+    // When true, watchers will not respond to changes to the internal models so we can set many pieces of data without the watchers busting anything
+    let pauseModelWatching = false;
+
+    const http = useHttp();
+
+    // #endregion
+
+    // #region Functions
+
+    /** Generic function to load items for sub-pickers. Used by specific load functions */
+    async function loadItems(apiAction: string, payload: HttpBodyData = null): Promise<ListItemBag[]> {
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/" + apiAction, undefined, payload);
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            return [];
+        }
+    }
+
+    /** Load media accounts from server and returns them */
+    async function loadMediaAccounts(): Promise<ListItemBag[]> {
+        return loadItems("MediaElementPickerGetMediaAccounts");
+    }
+
+    /** Load media folders for the selected account from server and returns them */
+    async function loadMediaFolders(): Promise<ListItemBag[]> {
+        const options: MediaElementPickerGetMediaFoldersOptionsBag = {
+            mediaAccountGuid: internalMediaAccount.value?.value ?? null
+        };
+
+        return loadItems("MediaElementPickerGetMediaFolders", options);
+    }
+
+    /** Load media elements for the selected folder from server and returns them */
+    async function loadMediaElements(): Promise<ListItemBag[]> {
+        const options: MediaElementPickerGetMediaElementsOptionsBag = {
+            mediaFolderGuid: internalMediaFolder.value?.value ?? null
+        };
+
+        return loadItems("MediaElementPickerGetMediaElements", options);
+    }
+
+    /**
+     * When we receive a selected account/folder/element from outside this component, we need to update all the sub-pickers
+     * to match the given data. This loads all that matching data from the server and applies it.
+     */
+    async function loadFullTree(payload: MediaElementPickerGetMediaTreeOptionsBag): Promise<void> {
+
+        const result = await http.post<MediaElementPickerGetMediaTreeResultsBag>("/api/v2/Controls/MediaElementPickerGetMediaTree", undefined, payload);
+
+        if (!result.isSuccess || !result.data) {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            return;
+        }
+
+        const data = result.data;
+
+        // Pause the watchers so they don't end up messing up the data we're setting right now
+        pauseModelWatching = true;
+
+        // Assign any values we received from the server
+        if (data.mediaAccounts) {
+            mediaAccountItems.value = data.mediaAccounts;
+        }
+
+        if (data.mediaFolders) {
+            mediaFolderItems.value = data.mediaFolders;
+        }
+
+        if (data.mediaElements) {
+            mediaElementItems.value = data.mediaElements;
+        }
+
+        if (data.mediaAccount) {
+            internalMediaAccount.value = data.mediaAccount;
+        }
+
+        if (data.mediaFolder) {
+            internalMediaFolder.value = data.mediaFolder;
+        }
+
+        if (data.mediaElement) {
+            internalMediaElement.value = data.mediaElement;
+        }
+
+        // Allow watch handlers to fire and read that pauseModelWatching is true before we unpause.
+        await nextTick();
+
+        pauseModelWatching = false;
+    }
+
+    /** Sets the list of account items to a load function so the picker knows to run it to load account items */
+    function fetchMediaAccounts(): void {
+        mediaAccountItems.value = () => loadMediaAccounts();
+    }
+    /** Sets the list of folder items to a load function so the picker knows to run it to load folder items */
+    function fetchMediaFolders(): void {
+        mediaFolderItems.value = () => loadMediaFolders();
+    }
+    /** Sets the list of media element items to a load function so the picker knows to run it to load media element items */
+    function fetchMediaElements(): void {
+        mediaElementItems.value = () => loadMediaElements();
+    }
+
+    // #endregion
+
+    // #region Computed
+
+    const hideAccountPicker = computed<boolean>(() => {
+        // Only hide the account picker when the prop says we should AND we have an account selected
+        return props.hideAccountPicker && internalMediaAccount.value != null;
+    });
+
+    const hideFolderPicker = computed<boolean>(() => {
+        // Only hide the account picker when the prop says we should AND we have an account selected
+        return props.hideFolderPicker && internalMediaFolder.value != null;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(internalMediaAccount, () => {
+        emit("update:account", internalMediaAccount.value);
+
+        // Don't proceed if we're pausing model watching
+        if (pauseModelWatching) return;
+
+        // Account changed, so reset media folder so an unavailable one won't be selected
+        internalMediaFolder.value = null;
+        if (internalMediaAccount.value != null) {
+            fetchMediaFolders();
+        }
+    });
+
+    watch(internalMediaFolder, () => {
+        emit("update:folder", internalMediaFolder.value);
+
+        // Don't proceed if we're pausing model watching
+        if (pauseModelWatching) return;
+
+        // Account changed, so reset media element so an unavailable one won't be selected
+        internalMediaElement.value = null;
+        if (internalMediaFolder.value != null) {
+            fetchMediaElements();
+        }
+    });
+
+    watch(internalMediaElement, () => {
+        emit("update:modelValue", internalMediaElement.value);
+    });
+
+
+    watch(() => props.account, () => {
+        if (updateRefValue(internalMediaAccount, props.account) && internalMediaAccount.value != null) {
+            // Prop value is different than current value... need updates from server
+            loadFullTree({ mediaAccountGuid: internalMediaAccount.value.value });
+        }
+    });
+
+    watch(() => props.folder, () => {
+        if (updateRefValue(internalMediaFolder, props.folder) && internalMediaFolder.value != null) {
+            // Prop value is different than current value... need updates from server
+            loadFullTree({ mediaFolderGuid: internalMediaFolder.value.value });
+        }
+    });
+
+    watch(() => props.modelValue, () => {
+        if (updateRefValue(internalMediaElement, props.modelValue) && internalMediaElement.value != null) {
+            // Prop value is different than current value... need updates from server
+            loadFullTree({ mediaElementGuid: internalMediaElement.value.value });
+        }
+    });
+
+    // #endregion
+
+
+    // Initialize
+
+    if (internalMediaElement.value?.value) {
+        loadFullTree({ mediaElementGuid: internalMediaElement.value.value });
+    }
+    else if (internalMediaFolder.value?.value) {
+        loadFullTree({ mediaFolderGuid: internalMediaFolder.value.value });
+    }
+    else if (internalMediaAccount.value?.value) {
+        loadFullTree({ mediaAccountGuid: internalMediaAccount.value.value });
+    }
+    else {
+        fetchMediaAccounts();
+    }
+
+</script>

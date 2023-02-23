@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ using Rock.ElectronicSignature;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Pdf;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
@@ -198,18 +199,46 @@ namespace Rock.Blocks.Event
         #region Block Actions
 
         /// <summary>
-        /// Checks the discount code.
+        /// Checks the discount code provided. If a null/blank string is used then checks for AutoApplied discounts.
         /// </summary>
         /// <param name="code">The code.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CheckDiscountCode( string code )
+        public BlockActionResult CheckDiscountCode( string code, int registrantCount )
         {
             using ( var rockContext = new RockContext() )
             {
                 var registrationInstanceId = GetRegistrationInstanceId( rockContext );
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
-                var discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                RegistrationTemplateDiscountWithUsage discount = null;
+
+                // If the code isn't provided then check for an auto apply discount.
+                if ( code.IsNullOrWhiteSpace() )
+                {
+                    var registrationTemplateDiscountCodes = registrationTemplateDiscountService
+                        .GetDiscountsForRegistrationInstance( registrationInstanceId )
+                        .Where( d => d.AutoApplyDiscount )
+                        .OrderBy( d => d.Order )
+                        .Select( d => d.Code )
+                        .ToList();
+
+                    foreach( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
+                    {
+                        discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, registrationTemplateDiscountCode );
+
+                        if ( discount == null || ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value ) )
+                        {
+                            continue;
+                        }
+
+                        // use the first discount that is valid
+                        break;
+                    }
+                }
+                else
+                {
+                    discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                }
 
                 if ( discount == null )
                 {
@@ -499,7 +528,7 @@ namespace Rock.Blocks.Event
                 // be used later to validate the document after signing.
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var unencryptedSecurityToken = new[] { RockDateTime.Now.ToString( "o" ), GetSha256Hash( fieldHashToken + html ) }.ToJson();
-                var encryptedSecurityToken = Security.Encryption.EncryptString( unencryptedSecurityToken );
+                var encryptedSecurityToken = Encryption.EncryptString( unencryptedSecurityToken );
 
                 return ActionOk( new RegistrationEntrySignatureDocument
                 {
@@ -546,7 +575,7 @@ namespace Rock.Blocks.Event
                 }
 
                 // Validate they did not modify any of the fields or the signed HTML.
-                var unencryptedSecurityToken = Security.Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
+                var unencryptedSecurityToken = Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var hash = GetSha256Hash( fieldHashToken + documentHtml );
 
@@ -567,7 +596,7 @@ namespace Rock.Blocks.Event
                     SignedByEmail = signature.SignedByEmail
                 };
 
-                return ActionOk( Security.Encryption.EncryptString( signedData.ToJson() ) );
+                return ActionOk( Encryption.EncryptString( signedData.ToJson() ) );
             }
         }
 
@@ -854,7 +883,7 @@ namespace Rock.Blocks.Event
             if ( campusId.HasValue )
             {
                 context.Registration.CampusId = campusId;
-                History.EvaluateChange( registrationChanges, "Campus", string.Empty, linkage.Campus.Name );
+                History.EvaluateChange( registrationChanges, "Campus", string.Empty, CampusCache.Get( (int) campusId ).Name );
             }
 
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
@@ -1819,6 +1848,26 @@ namespace Rock.Blocks.Event
 
                                 break;
                             }
+
+                        case RegistrationPersonFieldType.Race:
+                            {
+                                var newRaceValueGuid = fieldValue.ToStringSafe().AsGuidOrNull();
+                                var newRaceValueId = newRaceValueGuid.HasValue ? DefinedValueCache.Get( newRaceValueGuid.Value )?.Id : null;
+                                var oldRaceValueId = person.RaceValueId;
+                                person.RaceValueId = newRaceValueId;
+                                History.EvaluateChange( personChanges, "Race", DefinedValueCache.GetName( oldRaceValueId ), DefinedValueCache.GetName( person.RaceValueId ) );
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.Ethnicity:
+                            {
+                                var newEthnicityValueGuid = fieldValue.ToStringSafe().AsGuidOrNull();
+                                var newEthnicityValueId = newEthnicityValueGuid.HasValue ? DefinedValueCache.Get( newEthnicityValueGuid.Value )?.Id : null;
+                                var oldEthnicityValueId = person.ConnectionStatusValueId;
+                                person.EthnicityValueId = newEthnicityValueId;
+                                History.EvaluateChange( personChanges, "Ethnicity", DefinedValueCache.GetName( oldEthnicityValueId ), DefinedValueCache.GetName( person.EthnicityValueId ) );
+                                break;
+                            }
                     }
                 }
             }
@@ -2101,7 +2150,7 @@ namespace Rock.Blocks.Event
             registrant.LoadAttributes();
             if ( UpdateRegistrantAttributes( registrant, registrantInfo, registrantChanges, context.RegistrationSettings ) )
             {
-                rockContext.SaveChanges();
+                registrant.SaveAttributeValues( rockContext );
             }
 
             // Save the signed document if we have one. We only process a document
@@ -2110,7 +2159,7 @@ namespace Rock.Blocks.Event
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired && isNewRegistration )
             {
                 var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
-                var signedData = Security.Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
+                var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                 var signedBy = RequestContext.CurrentPerson ?? registrar;
 
                 var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.Person.FullName, context.RegistrationSettings.Name);
@@ -2220,8 +2269,25 @@ namespace Rock.Blocks.Event
             }
 
             // If the registration is existing, then add the args that describe it to the view model
-            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue;
             var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
+
+            /*
+	            9/7/2022 - SMC / DSH / NA
+                
+                isExistingRegistration is true if we have a RegistrationId in the page parameters, OR if we have a saved
+                RegistrationGuid in the RegistrationSession temporary table.  This is true because redirection payment gateways
+                (like Pushpay) may not return the RegistrationId parameter.
+
+                This will result loading the registration from the database, which previously caused a security error if the
+                currently logged in person (i.e., CurrentPerson) does not match the person who created the Registration (the
+                "registrar").  This error seems to have been related to the protection profiles and the creation of new person
+                records (for the registrar).  We no longer believe this is happening, so it should be okay to set the
+                RegistrationGuid argument.
+
+                Reason:  Resolving errors when processing additional payments from redirection gateways.
+            */
+
+            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue || session?.RegistrationGuid.HasValue == true;
             var isUnauthorized = isExistingRegistration && session == null;
             RegistrationEntryBlockSuccessViewModel successViewModel = null;
 
@@ -2234,18 +2300,9 @@ namespace Rock.Blocks.Event
                     FieldValues = session.FieldValues,
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
-                    RegistrationGuid = null,
+                    RegistrationGuid = session.RegistrationGuid, // See engineering note from 9/7/2022 above.
                     RegistrationSessionGuid = session.RegistrationSessionGuid
                 };
-
-                // Only populate the RegistrationGuid if this is an existing registration.
-                // Otherwise a security check on the current person will be performed
-                // which may throw an incorrect error since the current person may not
-                // match the person that was created as the registrar.
-                if ( isExistingRegistration )
-                {
-                    args.RegistrationGuid = session.RegistrationGuid;
-                }
 
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
@@ -2351,6 +2408,7 @@ namespace Rock.Blocks.Event
 
             // Get forms with fields
             var formViewModels = new List<RegistrationEntryBlockFormViewModel>();
+            var allAttributeFields = formModels.SelectMany( fm => fm.Fields.Where( f => !f.IsInternal && f.Attribute?.IsActive == true ) ).ToList();
 
             foreach ( var formModel in formModels )
             {
@@ -2376,13 +2434,51 @@ namespace Rock.Blocks.Event
 
                     field.VisibilityRules = fieldModel.FieldVisibilityRules
                         .RuleList
-                        .Where( vr => vr.ComparedToFormFieldGuid.HasValue )
-                        .Select( vr => new RegistrationEntryBlockVisibilityViewModel
+                        .Select( vr =>
                         {
-                            ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToFormFieldGuid.Value,
-                            ComparedToValue = vr.ComparedToValue,
-                            ComparisonType = ( int ) vr.ComparisonType
-                        } );
+                            if ( !vr.ComparedToFormFieldGuid.HasValue )
+                            {
+                                return null;
+                            }
+
+                            var comparedToField = allAttributeFields.SingleOrDefault( f => f.Guid == vr.ComparedToFormFieldGuid );
+                            if ( comparedToField == null )
+                            {
+                                return null;
+                            }
+
+                            var filterValues = new List<string>();
+                            var fieldAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
+                            var fieldType = fieldAttribute?.FieldType?.Field;
+
+                            if ( fieldType == null )
+                            {
+                                return null;
+                            }
+
+                            var comparisonTypeValue = vr.ComparisonType.ConvertToString( false );
+                            if ( comparisonTypeValue != null )
+                            {
+                                // only add the comparisonTypeValue if it is specified, just like
+                                // the logic at https://github.com/SparkDevNetwork/Rock/blob/22f64416b2461c8a988faf4b6e556bc3dcb209d3/Rock/Field/FieldType.cs#L558
+                                filterValues.Add( comparisonTypeValue );
+                            }
+
+                            filterValues.Add( vr.ComparedToValue );
+
+                            var comparisonValue = fieldType.GetPublicFilterValue( filterValues.ToJson(), fieldAttribute.ConfigurationValues );
+
+                            return new RegistrationEntryBlockVisibilityViewModel
+                            {
+                                ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToFormFieldGuid.Value,
+                                ComparisonValue = new PublicComparisonValueBag
+                                {
+                                    ComparisonType = ( int? ) comparisonValue.ComparisonType,
+                                    Value = comparisonValue.Value
+                                }
+                            };
+                        } )
+                        .Where( vr => vr != null );
 
                     fields.Add( field );
                 }
@@ -2563,6 +2659,7 @@ namespace Rock.Blocks.Event
                 SuccessViewModel = successViewModel,
                 TimeoutMinutes = timeoutMinutes,
                 AllowRegistrationUpdates = allowRegistrationUpdates,
+                IsExistingRegistration = isExistingRegistration,
                 StartAtBeginning = startAtBeginning,
                 GatewayGuid = financialGateway?.Guid,
                 Campuses = campusClientService.GetCampusesAsListItems(),
@@ -2591,6 +2688,24 @@ namespace Rock.Blocks.Event
                     {
                         Value = v.Guid.ToString(),
                         Text = v.GetAttributeValue( "Abbreviation" )
+                    } )
+                    .ToList(),
+                Races = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RACE )
+                    .DefinedValues
+                    .OrderBy( v => v.Order )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
+                    } )
+                    .ToList(),
+                Ethnicities = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_ETHNICITY )
+                    .DefinedValues
+                    .OrderBy( v => v.Order )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
                     } )
                     .ToList(),
 
@@ -3379,12 +3494,6 @@ namespace Rock.Blocks.Event
                 args.AmountToPayNow = 0;
             }
 
-            // Cannot pay more than is owed
-            if ( args.AmountToPayNow > amountDue )
-            {
-                args.AmountToPayNow = amountDue;
-            }
-
             var isNewRegistration = context.Registration == null;
 
             // Validate the charge amount is not too low according to the initial payment amount
@@ -3394,11 +3503,11 @@ namespace Rock.Blocks.Event
                     ? context.RegistrationSettings.PerRegistrantMinInitialPayment.Value * args.Registrants.Count
                     : amountDue;
 
-                if ( args.AmountToPayNow < minimumInitialPayment )
-                {
-                    args.AmountToPayNow = minimumInitialPayment;
-                }
+                args.AmountToPayNow = args.AmountToPayNow < minimumInitialPayment ? minimumInitialPayment : args.AmountToPayNow;
             }
+
+            // Cannot pay more than is owed. This check should be the last one performed regarding payment in this method.
+            args.AmountToPayNow = args.AmountToPayNow > amountDue ? amountDue : args.AmountToPayNow;
 
             return context;
         }
@@ -3440,7 +3549,7 @@ namespace Rock.Blocks.Event
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
 
-            return registrationService.GetRegistrationContext( registrationInstanceId, out errorMessage );
+            return registrationService.GetRegistrationContext( registrationInstanceId, PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull(), out errorMessage );
         }
 
         /// <summary>

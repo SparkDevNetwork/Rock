@@ -190,41 +190,30 @@
                                                 <Rock:DefinedValuePicker ID="dvpCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="dvpCurrencyType_SelectedIndexChanged" />
                                                 <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
                                                 <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
+                                                <div class="actions">
+                                                    <asp:LinkButton ID="lbSubmitPayment" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="lbSubmitPayment_Click" CausesValidation="true" ValidationGroup="Payment" />
+                                                </div>
                                             </asp:PlaceHolder>
 
-                                            <asp:PlaceHolder ID="phCCDetails" runat="server">
-                                                 <div class="js-creditcard-validation-notification alert alert-validation" style="display:none;">
-                            				        <span class="js-notification-text"></span>
+                                              <%-- IHostedGateway Control goes here. - Collect Payment Info --%>
+
+                                            <asp:Panel ID="pnlCCDetails" runat="server" Visible="false">
+                                                <div class="hosted-payment-control">
+                                                    <Rock:DynamicPlaceholder ID="phHostedPaymentControl" runat="server" />
                                                 </div>
 
-                                                <Rock:RockTextBox ID="txtCardFirstName" runat="server" CssClass="js-creditcard-firstname" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
-                                                <Rock:RockTextBox ID="txtCardLastName" runat="server" CssClass="js-creditcard-lastname" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
-                                                <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" CssClass="js-creditcard-fullname" Visible="false"></Rock:RockTextBox>
-                                                <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number"  CssClass="js-creditcard-number credit-card" MaxLength="19" />
-                                                <ul class="card-logos list-unstyled">
-                                                    <li class="card-visa"></li>
-                                                    <li class="card-mastercard"></li>
-                                                    <li class="card-amex"></li>
-                                                    <li class="card-discover"></li>
-                                                </ul>
-                                                <div class="row">
-                                                    <div class="col-sm-6">
-                                                        <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" CssClass="js-creditcard-expiration" />
-                                                    </div>
-                                                    <div class="col-sm-6">
-                                                        <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs js-creditcard-cvv" runat="server" MaxLength="4" />
-                                                    </div>
+                                                <Rock:NotificationBox ID="nbPaymentTokenError" runat="server" NotificationBoxType="Validation" Visible="false" />
+
+                                                <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="" ShowAddressLine2="false" Required="true" />
+
+                                                <div class="navigation actions">
+
+                                                    <%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
+                                                        Even though this is a LinkButton, btnGetPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
+                                                    --%>
+                                                    <Rock:BootstrapButton ID="btnGetPaymentInfoNext" runat="server" Text="Submit" CssClass="btn btn-primary js-submit-hostedpaymentinfo pull-right" DataLoadingText="Processing..." />
                                                 </div>
-
-                                                <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" CssClass="js-billingaddress-control"/>
-
-                                            </asp:PlaceHolder>
-
-                                            <div class="actions">
-                                                <asp:LinkButton ID="lbSubmitPayment" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="lbSubmitPayment_Click" CausesValidation="true" ValidationGroup="Payment" />
-                                                <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary js-step2-submit" Text="Submit" />
-                                                <asp:LinkButton ID="lbCancelPayment" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancelPayment_Click" CausesValidation="false" />
-                                            </div>
+                                            </asp:Panel>
 
                                         </asp:Panel>
 
@@ -243,7 +232,14 @@
                                             <div class="row">
                                                 <div class="col-md-12">
                                                     <Rock:NotificationBox ID="nbNoAssociatedPerson" runat="server" CssClass="margin-t-md" NotificationBoxType="Info" Text="In order to process a payment you will need to link this registration to an individual." Visible="false" />
-                                                    <asp:LinkButton ID="lbProcessPayment" runat="server" CssClass="btn btn-primary btn-xs margin-t-sm" Text="Process New Payment" OnClick="lbProcessPayment_Click" CausesValidation="false"></asp:LinkButton>
+
+                                                    <%-- Have the tooltip in a div around the button so that it'll show even if the button is disabled
+                                                        see https://stackoverflow.com/a/19938049
+                                                    --%>
+                                                    <span ID="lbProcessPaymentButtonTooltipWrapper" runat="server">
+                                                        <asp:LinkButton ID="lbProcessPayment" runat="server" CssClass="btn btn-primary btn-xs margin-t-sm" Text="Process New Payment" OnClick="lbProcessPayment_Click" CausesValidation="false" />
+                                                    </span>
+
                                                     <asp:LinkButton ID="lbAddPayment" runat="server" CssClass="btn btn-default btn-xs margin-t-sm margin-l-sm" Text="Add Manual Payment" OnClick="lbAddPayment_Click" CausesValidation="false"></asp:LinkButton>
                                                 </div>
                                             </div>
@@ -285,21 +281,13 @@
 
         </asp:Panel>
 
-        <iframe id="iframeStep2" class="js-step2-iframe" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>
-
-        <Rock:HiddenFieldWithClass ID="hfStep2AutoSubmit" CssClass="js-step2-autosubmit" runat="server" Value="false" />
-        <Rock:HiddenFieldWithClass ID="hfStep2Url" CssClass="js-step2-url" runat="server" />
-        <Rock:HiddenFieldWithClass ID="hfStep2ReturnQueryString" CssClass="js-step2-returnquerystring" runat="server" />
-        <span style="display:none">
-            <asp:LinkButton ID="lbStep2Return" runat="server" Text="Step 2 Return" OnClick="lbStep2Return_Click" CausesValidation="false"></asp:LinkButton>
-        </span>
-
         <Rock:ModalDialog ID="mdMoveRegistration" runat="server" Title="Move Registration" ValidationGroup="vgMoveRegistration" CancelLinkVisible="false">
             <Content>
                 <asp:ValidationSummary ID="vsMoveRegistration" runat="server" ValidationGroup="vgMoveRegistration" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockLiteral ID="lCurrentRegistrationInstance" runat="server" Label="Current Registration Instance" />
+                        <Rock:RockTextBox ID="tbComment" runat="server" Label="Comment" Help="Optional comment that will be added to the audit history." TextMode="MultiLine" Rows="2" />
                     </div>
                     <div class="col-md-6">
                         <div class="row">
@@ -324,6 +312,18 @@
                 </div>
             </Content>
         </Rock:ModalDialog>
+        <script type="text/javascript">
+            Sys.Application.add_load(function () {
+                $('.js-submit-hostedpaymentinfo').off().on('click', function (e) {
+                    // Prevent the btnGetPaymentInfoNext autopostback event from firing by doing stopImmediatePropagation and returning false
+                    e.stopImmediatePropagation();
+
+                    <%=HostPaymentInfoSubmitScript%>
+
+                    return false;
+                });
+            });
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>

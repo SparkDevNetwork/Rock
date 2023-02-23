@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Communication
             emailTemplate.LavaFields = kvlMergeFields.Value.AsDictionaryOrNull();
             emailTemplate.CssInliningEnabled = cbCssInliningEnabled.Checked;
 
-            emailTemplate.SMSFromDefinedValueId = dvpSMSFrom.SelectedValue.AsIntegerOrNull();
+            emailTemplate.SmsFromSystemPhoneNumberId = spnpSMSFrom.SelectedSystemPhoneNumberId;
             emailTemplate.SMSMessage = tbSMSTextMessage.Text;
 
             var pushCommunication = new CommunicationDetails();
@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.Communication
                 tbSubject.ReadOnly = readOnly;
 
                 mfpSMSMessage.Visible = !readOnly;
-                dvpSMSFrom.Enabled = !readOnly;
+                spnpSMSFrom.Enabled = !readOnly;
                 tbSMSTextMessage.ReadOnly = readOnly;
                 ceEmailTemplate.ReadOnly = readOnly;
 
@@ -364,7 +364,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( emailTemplate != null )
             {
-                dvpSMSFrom.SetValue( emailTemplate.SMSFromDefinedValueId );
+                spnpSMSFrom.SelectedSystemPhoneNumberId = emailTemplate.SmsFromSystemPhoneNumberId;
                 tbSMSTextMessage.Text = emailTemplate.SMSMessage;
             }
         }
@@ -394,8 +394,6 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void LoadDropDowns()
         {
-            dvpSMSFrom.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ).Id;
-            dvpSMSFrom.DisplayDescriptions = true;
         }
 
         #endregion

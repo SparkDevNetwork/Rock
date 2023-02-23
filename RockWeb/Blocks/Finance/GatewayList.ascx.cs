@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -171,15 +171,23 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        protected string GetComponentName( object entityTypeObject )
+        protected string GetComponentDisplayName( object entityTypeObject )
         {
             var entityType = entityTypeObject as EntityType;
             if ( entityType != null )
             {
-                string name = Rock.Financial.GatewayContainer.GetComponentName( entityType.Name );
-                if ( !string.IsNullOrWhiteSpace(name))
+                var gatewayEntityType = EntityTypeCache.Get( entityType.Guid );
+                var name = Rock.Reflection.GetDisplayName( gatewayEntityType.GetEntityType() );
+
+                // If it has a DisplayName, use it as is
+                if ( !string.IsNullOrWhiteSpace( name ) )
                 {
-                    return name.SplitCase();
+                    return name;
+                }
+                else
+                {
+                    // Otherwise use the previous logic with SplitCase on the ComponentName
+                    return Rock.Financial.GatewayContainer.GetComponentName( entityType.Name ).ToStringSafe().SplitCase();
                 }
             }
 

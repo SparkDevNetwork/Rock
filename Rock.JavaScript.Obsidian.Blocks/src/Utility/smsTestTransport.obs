@@ -1,0 +1,311 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block title="SMS Test Transport">
+        <template #preBody>
+            <ConnectionStatus :isReconnecting="isReconnecting"
+                              :isDisconnected="isDisconnected" />
+        </template>
+
+        <div class="d-flex flex-column outer-container">
+            <div ref="scrollContainer"
+                 class="flex-grow-1 messages-container">
+                <div v-for="msg in messages"
+                     :class="getMessageClass(msg)">
+                    <div class="message-bubble">
+                        <span class="message-numbers"
+                              @click="onMessageClick(msg)">
+                            From: {{ msg.fromNumber }}<br />
+                            To: {{ msg.toNumber }}<br />
+                        </span>
+                        <br />
+                        <div class="message-text">
+                            {{ msg.body }}
+                        </div>
+                        <Attachment v-for="attachment in msg.attachments"
+                                    :attachment="attachment" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <RockForm @submit="onSubmitMessage"
+                          :formResetKey="formResetKey">
+                    <div class="d-flex">
+                        <div class="mr-2">
+                            <TextBox v-model="fromNumber"
+                                     label="From (Outside Number)"
+                                     rules="required"
+                                     :disabled="isFormDisabled" />
+                        </div>
+                        <div class="mr-2 flex-grow-1 to-phone-number">
+                            <DropDownList v-model="toNumber"
+                                          label="To (Rock Number)"
+                                          :items="config.phoneNumbers"
+                                          rules="required"
+                                          :showBlankItem="false"
+                                          :disabled="isFormDisabled" />
+                        </div>
+                        <div class="mr-2 flex-grow-1 to-pipeline">
+                            <DropDownList v-model="toPipeline"
+                                          label="Pipeline"
+                                          :items="config.pipelines"
+                                          :disabled="isFormDisabled" />
+                        </div>
+                        <div class="flex-grow-1 mr-2">
+                            <TextBox v-model="body"
+                                     label="Body"
+                                     rules="required"
+                                     :disabled="isFormDisabled" />
+                        </div>
+                        <div style="margin-top: 26px;">
+                            <RockButton :btnType="BtnType.Primary"
+                                        type="submit"
+                                        :disabled="isFormDisabled">Submit</RockButton>
+                        </div>
+                    </div>
+                </RockForm>
+            </div>
+        </div>
+    </Block>
+</template>
+
+<style scoped>
+.outer-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.footer {
+    border-top: 1px solid #eee;
+    padding: 12px;
+}
+
+.to-phone-number {
+    min-width: 100px;
+    max-width: 300px;
+}
+
+.to-pipeline {
+    min-width: 100px;
+    max-width: 200px;
+}
+
+.messages-container {
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.message-container {
+    margin: 0px 0px 12px 0px;
+    display: flex;
+}
+
+.message-container.message-outgoing {
+    justify-content: end;
+}
+
+.message-bubble {
+    max-width: 75%;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: rgb(16, 153, 244);
+    color: white;
+}
+
+.message-incoming .message-bubble {
+    background: rgb(49, 176, 69);
+}
+
+.message-numbers {
+    cursor: pointer;
+}
+
+.message-text {
+    max-width: 480px;
+}
+</style>
+
+<script setup lang="ts">
+    import Attachment from "./SmsTestTransport/attachment.partial.obs";
+    import Block from "@Obsidian/Templates/block";
+    import ConnectionStatus from "@Obsidian/Controls/connectionStatus.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockForm from "@Obsidian/Controls/rockForm";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { computed, nextTick, ref } from "vue";
+    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+
+    type SmsAttachment = {
+        fileName: string;
+
+        url: string
+    };
+
+    type SmsMessage = {
+        fromNumber?: string;
+        toNumber?: string;
+        pipelineGuid?: Guid;
+        body?: string;
+        attachments?: SmsAttachment[]
+    };
+
+    type TrackedSmsMessage = SmsMessage & {
+        incoming: boolean;
+    };
+
+    type Configuration = {
+        phoneNumbers: ListItemBag[];
+
+        pipelines: ListItemBag[];
+    };
+
+    interface ITestCommunicationTransportTopic {
+        messageReceived(message: SmsMessage): Promise<void>;
+    }
+
+    const config = useConfigurationValues<Configuration>();
+
+    // #region Values
+
+    const realTimeTopic = ref<ITopic<ITestCommunicationTransportTopic> | null>(null);
+    const messages = ref<TrackedSmsMessage[]>([]);
+    const fromNumber = ref("");
+    const toNumber = ref(config.phoneNumbers.length > 0 ? config.phoneNumbers[0].value ?? "" : "");
+    const toPipeline = ref("");
+    const body = ref("");
+    const formResetKey = ref("");
+    const isReconnecting = ref(false);
+    const isDisconnected = ref(false);
+    const scrollContainer = ref<HTMLDivElement | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isFormDisabled = computed(() => {
+        return isReconnecting.value || isDisconnected.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Attempt to reconnect to the server and rejoin all channels that were
+     * previously joined.
+     */
+    async function startReconnect(): Promise<void> {
+        isReconnecting.value = true;
+        realTimeTopic.value = null;
+
+        await nextTick();
+
+        try {
+            await startRealTime();
+
+            isReconnecting.value = false;
+        }
+        catch (error) {
+            console.error(error instanceof Error ? error.message : error);
+            isDisconnected.value = true;
+        }
+    }
+
+    async function startRealTime(): Promise<void> {
+        const topic = await getTopic<ITestCommunicationTransportTopic>("Rock.RealTime.Topics.TestCommunicationTransportTopic");
+
+        topic.on("smsMessageSent", onSmsMessageSent);
+        topic.onReconnecting(() => isReconnecting.value = true);
+        topic.onReconnected(() => isReconnecting.value = false);
+        topic.onDisconnected(() => startReconnect());
+
+        realTimeTopic.value = topic;
+    }
+
+    function getMessageClass(message: TrackedSmsMessage): string[] {
+        if (message.incoming) {
+            return ["message-container", "message-incoming"];
+        }
+        else {
+            return ["message-container", "message-outgoing"];
+        }
+    }
+
+    async function onSubmitMessage(): Promise<void> {
+        messages.value.push({
+            fromNumber: fromNumber.value,
+            toNumber: toNumber.value,
+            body: body.value,
+            incoming: true
+        });
+
+        try {
+            await realTimeTopic.value?.server.messageReceived({
+                fromNumber: fromNumber.value,
+                toNumber: toNumber.value,
+                pipelineGuid: toPipeline.value || undefined,
+                body: body.value
+            });
+        }
+        catch (error) {
+            messages.value.pop();
+            throw error;
+        }
+
+        body.value = "";
+        formResetKey.value = newGuid();
+
+        setTimeout(() => {
+            if (scrollContainer.value) {
+                scrollContainer.value.scrollTo(0, scrollContainer.value.scrollHeight);
+            }
+        }, 10);
+    }
+
+    function onMessageClick(message: TrackedSmsMessage): void {
+        if (message.incoming) {
+            fromNumber.value = message.fromNumber ?? "";
+            toNumber.value = message.toNumber ?? "";
+        }
+        else {
+            fromNumber.value = message.toNumber ?? "";
+            toNumber.value = message.fromNumber ?? "";
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onSmsMessageSent(message: SmsMessage): void {
+        const performScroll = scrollContainer.value
+            && scrollContainer.value.scrollHeight - scrollContainer.value.offsetHeight - scrollContainer.value.scrollTop < 10;
+
+        messages.value.push({
+            ...message,
+            incoming: false
+        });
+
+        setTimeout(() => {
+            if (scrollContainer.value && performScroll) {
+                scrollContainer.value.scroll({
+                    top: scrollContainer.value.scrollHeight,
+                    behavior: "smooth"
+                });
+            }
+        }, 10);
+    }
+
+    // #endregion
+
+    startRealTime();
+</script>

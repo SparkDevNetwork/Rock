@@ -27,6 +27,7 @@ using Block = DotLiquid.Block;
 using Rock.Utility;
 using Rock.Web.UI;
 using Rock.Lava.Blocks;
+using Rock.Lava.DotLiquid;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -84,7 +85,8 @@ namespace Rock.Lava.RockLiquid.Blocks
                 page = HttpContext.Current.Handler as RockPage;
             }
 
-            var parms = ParseMarkup( _markup, context );
+            var settings = JavascriptBlock.GetAttributesFromMarkup( _markup, new RockLiquidRenderContext( context ) );
+            var parms = settings.Attributes;
 
             using ( TextWriter twJavascript = new StringWriter() )
             {
@@ -220,58 +222,6 @@ namespace Rock.Lava.RockLiquid.Blocks
             }
 
             return page.ResolveUrl( url );
-        }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
-        {
-            // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-            parms.Add( "cacheduration", "0" );
-            parms.Add( "references", string.Empty );
-            parms.Add( "disableanonymousfunction", "false" );
-            parms.Add( "url", string.Empty );
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
-            return parms;
         }
     }
 }

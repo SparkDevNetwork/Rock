@@ -154,18 +154,8 @@ namespace Rock.Model
                     // Note that if this UserLogin is deleted, we'll let the RockCleanup job re-calculate their AccountProtectionProfile.
                     if ( userLoginPerson != null && userLoginPerson.AccountProtectionProfile < Utility.Enums.AccountProtectionProfile.Medium )
                     {
-                        // use a new RockContext to elevate the AccountProtection level to Medium
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var accountProtectionProfilePerson = new PersonService( rockContext ).Get( personId.Value );
-
-                            // double check that account protection profile needs to be elevated to medium
-                            if ( accountProtectionProfilePerson != null && accountProtectionProfilePerson.AccountProtectionProfile < Utility.Enums.AccountProtectionProfile.Medium )
-                            {
-                                accountProtectionProfilePerson.AccountProtectionProfile = Utility.Enums.AccountProtectionProfile.Medium;
-                                rockContext.SaveChanges();
-                            }
-                        }
+                        userLoginPerson.AccountProtectionProfile = Utility.Enums.AccountProtectionProfile.Medium;
+                        RockContext.SaveChanges();
                     }
                 }
 

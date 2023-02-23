@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -95,6 +95,14 @@ namespace Rock.Blocks.Types.Mobile.Core
         Key = AttributeKey.MaxResults,
         Order = 7 )]
 
+    [BooleanField( "Auto Focus Keyboard",
+        Description = "Determines if the keyboard should auto-focus into the search field when the page is attached.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        Key = AttributeKey.AutoFocusKeyboard,
+        Order = 8 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_SEARCH_BLOCK_TYPE )]
@@ -133,6 +141,8 @@ namespace Rock.Blocks.Types.Mobile.Core
             public const string DetailNavigationAction = "DetailNavigationAction";
 
             public const string MaxResults = "MaxResults";
+
+            public const string AutoFocusKeyboard = "AutoFocusKeyboard";
         }
 
         /// <summary>
@@ -193,6 +203,12 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <value>The maximum results to be returned in each request.</value>
         protected int MaxResults => GetAttributeValue( AttributeKey.MaxResults ).AsIntegerOrNull() ?? 25;
 
+        /// <summary>
+        /// Gets a value indicating whether we should automatically focus the keyboard.
+        /// </summary>
+        /// <value><c>true</c> if [automatic focus keyboard]; otherwise, <c>false</c>.</value>
+        public bool AutoFocusKeyboard => GetAttributeValue( AttributeKey.AutoFocusKeyboard ).AsBoolean();
+
         #endregion
 
         #region IRockMobileBlockType Implementation
@@ -227,7 +243,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                 SearchLabelText,
                 SearchPlaceholderText,
                 ResultsSeparatorContent,
-                DetailNavigationAction
+                DetailNavigationAction,
+                AutoFocusKeyboard
             };
         }
 

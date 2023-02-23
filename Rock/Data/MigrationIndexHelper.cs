@@ -56,11 +56,27 @@ namespace Rock.Data
         /// <param name="includes">The includes.</param>
         public static string GenerateCreateIndexIfNotExistsSql( string tableName, string indexName, IEnumerable<string> keys, IEnumerable<string> includes )
         {
+            return GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes, false );
+        }
+
+        /// <summary>
+        /// Generates the create index if not exists SQL.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="keys">The indexed columns.</param>
+        /// <param name="includes">The non-indexed columns to include ( the INCLUDE clause ).</param>
+        /// <param name="isUnique">if set to <c>true</c> creates a UNIQUE NONCLUSTERED index.</param>
+        /// <returns></returns>
+        public static string GenerateCreateIndexIfNotExistsSql( string tableName, string indexName, IEnumerable<string> keys, IEnumerable<string> includes, bool isUnique )
+        {
+            var uniqueClause = isUnique ? "UNIQUE NONCLUSTERED" : "";
+
             return $@"
 
             IF NOT EXISTS( SELECT * FROM sys.indexes WHERE NAME = '{indexName}' AND object_id = OBJECT_ID( '{tableName}' ) )
             BEGIN
-                CREATE INDEX [{indexName}]
+                CREATE { uniqueClause } INDEX [{indexName}]
                 ON [{tableName}] ( {keys.JoinStrings( "," )} )
                 { ( includes.Any() ? $"INCLUDE ( {includes.JoinStrings( "," )} )" : "" ) };
             END";

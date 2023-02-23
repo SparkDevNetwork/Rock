@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -223,13 +223,13 @@ namespace RockWeb.Blocks.Groups
                     {                        
                         if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
                         {
-                            template = Template.Parse( GetAttributeValue( "InfoWindowContents" ).Trim() );
+                            template = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( "InfoWindowContents" ).Trim() );
 
                             LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "InfoWindowContents" ).Trim() );
                         }
                         else
                         {
-                            template = Template.Parse( string.Empty );
+                            template = LavaHelper.CreateDotLiquidTemplate( string.Empty );
                         }
                     }
                     else

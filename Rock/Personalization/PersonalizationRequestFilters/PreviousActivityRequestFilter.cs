@@ -18,6 +18,8 @@ using System;
 using System.Linq;
 using System.Web;
 
+using Rock.Net;
+
 namespace Rock.Personalization
 {
     /// <summary>
@@ -37,9 +39,26 @@ namespace Rock.Personalization
 
         #endregion Configuration
 
-#if REVIEW_NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <inheritdoc/>
-        public override bool IsMatch( Rock.Net.RockRequestContext requestContext )
+        public override bool IsMatch( HttpRequest httpRequest )
+        {
+            return IsMatch( httpRequest.Cookies.Get( RequestCookieKey.ROCK_FIRSTTIME_VISITOR )?.Value );
+        }
+#endif
+
+        /// <inheritdoc/>
+        internal override bool IsMatch( RockRequestContext request )
+        {
+            return IsMatch( request.GetCookieValue( RequestCookieKey.ROCK_FIRSTTIME_VISITOR ) );
+        }
+
+        /// <summary>
+        /// Determines whether the specified cookie meets the criteria of this filter.
+        /// </summary>
+        /// <param name="firstTimeVisitorCookie">The cookie value.</param>
+        /// <returns><c>true</c> if the specified cookie is a match; otherwise, <c>false</c>.</returns>
+        private bool IsMatch( string firstTimeVisitorCookie )
         {
             if ( PreviousActivityTypes.Length == 0 || PreviousActivityTypes.Length == 2 )
             {
@@ -47,13 +66,6 @@ namespace Rock.Personalization
                 // If both are selected, we can also return true because a previous activity can only be New or Returning.
                 return true;
             }
-
-            var firstTimeVisitorCookie = requestContext.GetHeader( "Cookie" )
-                .Select( c => c.Split( '=' ) )
-                .Where( c => c[0] == Rock.Personalization.RequestCookieKey.ROCK_FIRSTTIME_VISITOR )
-                .Select( c => c[1] )
-                .FirstOrDefault()
-                ?? string.Empty;
 
             // Only count them as a First Time visitor if we know for sure they are. Which means the cookie has to exist and
             // have a value of True.
@@ -68,37 +80,6 @@ namespace Rock.Personalization
                 return PreviousActivityTypes.Contains( PreviousActivityType.Return );
             }
         }
-#else
-        /// <summary>
-        /// Determines whether the specified HTTP request meets the criteria of this filter.
-        /// </summary>
-        /// <param name="httpRequest">The HTTP request.</param>
-        /// <returns><c>true</c> if the specified HTTP request is match; otherwise, <c>false</c>.</returns>
-        public override bool IsMatch( HttpRequest httpRequest )
-        {
-            if ( PreviousActivityTypes.Length == 0 || PreviousActivityTypes.Length == 2 )
-            {
-                // If nothing is selected, return true.
-                // If both are selected, we can also return true because a previous activity can only be New or Returning.
-                return true;
-            }
-
-            var firstTimeVisitorCookie = httpRequest.Cookies.Get( Rock.Personalization.RequestCookieKey.ROCK_FIRSTTIME_VISITOR );
-
-            // Only count them as a First Time visitor if we know for sure they are. Which means the cookie has to exist and
-            // have a value of True.
-            var isFirstTimeVisitor = firstTimeVisitorCookie != null && firstTimeVisitorCookie.Value.AsBoolean();
-
-            if ( isFirstTimeVisitor )
-            {
-                return PreviousActivityTypes.Contains( PreviousActivityType.New );
-            }
-            else
-            {
-                return PreviousActivityTypes.Contains( PreviousActivityType.Return );
-            }
-        }
-#endif
 
         /// <summary>
         /// Options on whether filter on New or Returning visitor

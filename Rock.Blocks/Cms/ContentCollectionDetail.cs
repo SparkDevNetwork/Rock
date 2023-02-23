@@ -140,8 +140,8 @@ namespace Rock.Blocks.Cms
 
             if ( entity != null )
             {
-                var isViewable = BlockCache.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+                box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
                 if ( loadAttributes )
                 {
@@ -416,7 +416,7 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${ContentCollection.FriendlyTypeName}." );
                 return false;
@@ -863,7 +863,8 @@ namespace Rock.Blocks.Cms
                     {
                         var item = new ContentChannelItem
                         {
-                            ContentChannelId = c.Id
+                            ContentChannelId = c.Id,
+                            ContentChannelTypeId = c.ContentChannelTypeId
                         };
 
                         item.LoadAttributes( rockContext );

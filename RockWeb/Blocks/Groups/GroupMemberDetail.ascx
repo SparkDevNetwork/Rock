@@ -76,11 +76,33 @@
                             <Rock:FileUploader ID="fuSignedDocument" runat="server" Label="Signed Document" />
                         </div>
                     </div>
-
-                    <asp:Panel ID="pnlScheduling" runat="server">
+                    <asp:Panel ID="pnlScheduling" runat="server" Visible="false">
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlGroupMemberScheduleTemplate" runat="server" Label="Schedule Template" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupMemberScheduleTemplate_SelectedIndexChanged" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="control-label">
+                                    <asp:Literal runat="server" ID="lGroupPreferenceAssignmentLabel" Text="Assignment" />
+                                </label>
+                                <p>
+                                    <asp:Literal runat="server" ID="lGroupPreferenceAssignmentHelp" Text="Please select a time and optional location that you would like to be scheduled for." />
+                                </p>
+
+                                <%-- NOTE: This gGroupPreferenceAssignments (and these other controls in the ItemTemplate) is in a repeater and is configured in rptGroupPreferences_ItemDataBound--%>
+                                <Rock:Grid ID="gGroupPreferenceAssignments" runat="server" DisplayType="Light" RowItemText="Group Preference Assignment" AllowPaging="false">
+                                    <Columns>
+                                        <Rock:RockBoundField DataField="FormattedScheduleName" HeaderText="Schedule" />
+                                        <Rock:RockBoundField DataField="LocationName" HeaderText="Location" />
+                                        <Rock:LinkButtonField ID="btnEditGroupPreferenceAssignment" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-pencil'></i>" OnClick="btnEditGroupPreferenceAssignment_Click" />
+                                        <Rock:DeleteField OnClick="btnDeleteGroupPreferenceAssignment_Click" />
+                                    </Columns>
+                                </Rock:Grid>
+                                <br />
                                 <Rock:DatePicker ID="dpScheduleStartDate" runat="server" Label="Schedule Start Date" />
                                 <Rock:NumberBox ID="nbScheduleReminderEmailOffsetDays" runat="server" NumberType="Integer" Label="Schedule Reminder Email Offset Days" Help="The number of days prior to the schedule to send a reminder email or leave blank to use the default." Placeholder="Use default" />
                             </div>
@@ -91,27 +113,16 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
-                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" NumberOfColumns="2" />
+                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" NumberOfColumns="2" />
                         </div>
                     </div>
 
                     <asp:Panel ID="pnlRequirements" runat="server">
-                        <div class="row">
-                            <div class="col-md-6">
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:RockControlWrapper ID="rcwRequirements" runat="server" Label="Requirements">
-                                    <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
-                                    <Rock:RockCheckBoxList ID="cblManualRequirements" RepeatDirection="Vertical" runat="server" Label="" />
-                                    <div class="labels">
-                                        <asp:Literal ID="lRequirementsLabels" runat="server" />
-                                    </div>
-                                </Rock:RockControlWrapper>
-                            </div>
-                        </div>
+                        <Rock:GroupMemberRequirementsContainer ID="gmrcRequirements" runat="server" Visible="true" />
+                        <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
                     </asp:Panel>
-
+                    <Rock:NotificationBox runat="server" ID="nbCommunicationSuccess" NotificationBoxType="Success" Dismissable="true" Text="Communication was sent." Visible="false" />
                     <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false" />
                     <Rock:ModalDialog ID="mdRestoreArchivedPrompt" runat="server" Visible="false" Title="Restore Group Member" CancelLinkVisible="false">
                         <Content>
@@ -133,10 +144,11 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" ToolTip="Alt+S" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnReCheckRequirements" runat="server" AccessKey="r" ToolTip="Alt+R" Text="Re-Check Requirements" CssClass="btn btn-default" OnClick="btnReCheckRequirements_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnRefreshRequirements" runat="server" AccessKey="r" ToolTip="Alt+R" Text="Refresh Requirements" CssClass="btn btn-default" OnClick="btnRefreshRequirements_Click" CausesValidation="false" />
                         <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a" ToolTip="Alt+A" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+C" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
                         <asp:LinkButton ID="btnShowMoveDialog" runat="server" CssClass="btn btn-default btn-square btn-sm pull-right" OnClick="btnShowMoveDialog_Click" ToolTip="Move to another group" CausesValidation="false"><i class="fa fa-external-link"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnShowCommunicationDialog" runat="server" CssClass="btn btn-default btn-square btn-sm pull-right" ToolTip="Quick Communication" OnClick="btnShowCommunicationDialog_Click"><i class="fa fa-envelope-o"></i></asp:LinkButton>
                     </div>
 
                 </div>
@@ -163,6 +175,41 @@
                 </div>
             </Content>
         </Rock:ModalDialog>
+        
+        <Rock:ModalDialog ID="mdQuickCommunication" runat="server" Title="Send Group Member Communication" ValidationGroup="vgSendGroupMemberCommunication" Visible="false" SaveButtonText="Send" SaveButtonCausesValidation="true" OnSaveClick="mdQuickCommunication_SaveClick" CancelLinkVisible ="true">
+            <Content>
+                <asp:ValidationSummary ID="vsSendGroupMemberCommunication" runat="server" ValidationGroup="vgSendGroupMemberCommunication" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:Toggle ID="tglCommunicationPreference" runat="server" OnText="SMS" OffText="Email" Checked="false" ButtonSizeCssClass="btn-xs" OnCssClass="btn-primary" OffCssClass="btn-default" OnCheckedChanged="tglCommunicationPreference_CheckedChanged" />
+                        <Rock:RockLiteral ID="lCommunicationTo" runat="server"></Rock:RockLiteral>
+                        <asp:Panel ID="pnlEmailControls" runat="server">
+                            <Rock:EmailBox ID="ebEmailCommunicationFrom" runat="server" Label="From" Required="true" ValidationGroup="vgEmailGroupMemberCommunication"></Rock:EmailBox>
+                            <Rock:RockTextBox ID="tbEmailCommunicationSubject" runat="server" Label="Subject" Required="true" ValidationGroup="vgEmailGroupMemberCommunication" />
+                        </asp:Panel>
+                        <asp:Panel ID="pnlSMSControls" runat="server">
+                            <asp:HiddenField ID="hfFromSMSNumber" runat="server" Visible="false" />
+                            <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="From" />
+                            <Rock:PersonPicker ID="ppSMSCommunicationFrom" runat="server" Label="From" Required="true" Visible="false" ValidationGroup="vgSMSGroupMemberCommunication" />
+                            <asp:HiddenField ID="hfToSMSNumber" runat="server" Visible="false" />
+                        </asp:Panel>
+                        <Rock:RockTextBox ID="tbCommunicationMessage" runat="server" Label="Message" Required="true" TextMode="MultiLine" Rows="4" ValidationGroup="vgSendGroupMemberCommunication"></Rock:RockTextBox>
 
+                        <Rock:NotificationBox ID="nbSendGroupMemberCommunication" runat="server" NotificationBoxType="Warning" Visible="false" />
+                    </div>
+                </div>
+            </Content>
+        </Rock:ModalDialog>
+        <%-- Preferences Add/Edit GroupScheduleAssignment modal --%>
+        <Rock:ModalDialog ID="mdGroupScheduleAssignment" runat="server" OnSaveClick="mdGroupScheduleAssignment_SaveClick"
+            Title="Add/Edit Assignment" ValidationGroup="GroupScheduleAssignment">
+            <Content>
+                <asp:HiddenField ID="hfGroupScheduleAssignmentGuid" runat="server" />
+                <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentSchedule" runat="server" Label="Schedule"
+                    AutoPostBack="true" OnSelectedIndexChanged="ddlGroupScheduleAssignmentSchedule_SelectedIndexChanged"
+                    Required="true" ValidationGroup="GroupScheduleAssignment" />
+                <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentLocation" runat="server" Label="Location" ValidationGroup="GroupScheduleAssignment" />
+            </Content>
+        </Rock:ModalDialog>
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -25,11 +25,23 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WorkflowType View Model */
 export type WorkflowTypeBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the CategoryId of the Rock.Model.Category that this WorkflowType belongs to.  */
     categoryId?: number | null;
 
     /** Gets or sets the completed workflow retention period in days. */
     completedWorkflowRetentionPeriod?: number | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /** Gets or sets a user defined description or summary about the WorkflowType. */
     description?: string | null;
@@ -48,6 +60,9 @@ export type WorkflowTypeBag = {
 
     /** Gets or sets the name of the icon CSS class. This property is only used for CSS based icons. */
     iconCssClass?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a flag indicating if this WorkflowType is active. */
     isActive?: boolean | null;
@@ -75,6 +90,12 @@ export type WorkflowTypeBag = {
 
     /** Gets or sets the number of days since the creation date after which a workflow would be automatically marked completed. */
     maxWorkflowAgeDays?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the friendly Name of the WorkflowType. This property is required. */
     name?: string | null;
@@ -105,25 +126,4 @@ export type WorkflowTypeBag = {
 
     /** Gets or sets the work term for the WorkflowType. This is the action that is being performed by this WorkflowType. This property is required. */
     workTerm?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

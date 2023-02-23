@@ -80,7 +80,7 @@ namespace Rock.Model
 
                     // Attempt to get the context that describes the registration
                     // and the number of available slots.
-                    var context = registrationService.GetRegistrationContext( registrationSession.RegistrationInstanceId, out var errorMessage );
+                    var context = registrationService.GetRegistrationContext( registrationSession.RegistrationInstanceId, registrationSession.RegistrationId, out var errorMessage );
 
                     if ( errorMessage.IsNotNullOrWhiteSpace() )
                     {
@@ -173,6 +173,19 @@ namespace Rock.Model
                     {
                         registrationSession = createSession();
 
+                        // If the session didn't exist then oldRegistrationCount
+                        // was not set. If there is an existing registration tied
+                        // to the new session, then get the count of registered
+                        // previously people from that.
+                        if ( registrationSession.RegistrationId.HasValue )
+                        {
+                            oldRegistrationCount = new RegistrationRegistrantService( rockContext )
+                                .Queryable()
+                                .Where( a => a.RegistrationId == registrationSession.RegistrationId.Value
+                                    && !a.Registration.IsTemporary )
+                                .Count();
+                        }
+
                         registrationSessionService.Add( registrationSession );
                     }
                     else
@@ -182,7 +195,7 @@ namespace Rock.Model
 
                     // Get the context information about the registration, specifically
                     // the timeout and spots available.
-                    var context = registrationService.GetRegistrationContext( registrationSession.RegistrationInstanceId, out internalErrorMessage );
+                    var context = registrationService.GetRegistrationContext( registrationSession.RegistrationInstanceId, registrationSession.RegistrationId, out internalErrorMessage );
 
                     if ( internalErrorMessage.IsNotNullOrWhiteSpace() )
                     {

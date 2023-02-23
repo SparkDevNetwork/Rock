@@ -46,6 +46,7 @@ using ImageResizer;
 #endif
 using Rock;
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -1060,33 +1061,17 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string SundayDate( object input )
         {
-            if ( input == null )
+            var startDto = GetDateTimeOffsetFromInputParameter( input, null );
+            if ( startDto == null )
             {
                 return null;
             }
 
-            DateTime date = DateTime.MinValue;
+            var rockStartDate = LavaDateTime.ConvertToRockDateTime( startDto.Value );
+            var nextSundayDate =  RockDateTime.GetSundayDate( rockStartDate );
+            var output = nextSundayDate.ToShortDateString();
 
-            if ( input.ToString() == "Now" )
-            {
-                date = RockDateTime.Now;
-            }
-            else
-            {
-                if ( !DateTime.TryParse( input.ToString(), out date ) )
-                {
-                    return null;
-                }
-            }
-
-            if ( date != DateTime.MinValue )
-            {
-                return date.SundayDate().ToShortDateString();
-            }
-            else
-            {
-                return null;
-            }
+            return output;
         }
 
         /// <summary>
@@ -1154,7 +1139,7 @@ namespace Rock.Lava
         /// <returns>A collection of DateTime values representing the next occurrence dates, expressed in UTC.</returns>
         private static List<DateTimeOffset> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false, DateTimeOffset? startDateTime = null )
         {
-            // Construct a calendar for the Rock timezone, and read the occurrence dates.
+            // Convert the start and end dates to the Rock timezone.
             if ( startDateTime == null )
             {
                 startDateTime = LavaDateTime.NowOffset;
@@ -1166,29 +1151,29 @@ namespace Rock.Lava
 
             var endDate = startDateTime.Value.AddYears( 1 );
 
+            // Load the calendar definition.
+            // The calendar has no specified timezone, so dates and times are interpreted for the current Rock timezone.
             var calendar = CalendarCollection.Load( new StringReader( iCalString ) ).First();
             var calendarEvent = calendar.Events[0];
 
-            var tzName = RockDateTime.OrgTimeZoneInfo.Id;
+            // Get the UTC offset of the start date, expressed in the Rock timezone.
+            // We apply this to the list of occurrence dates to ensure that the scheduled event time remains the same
+            // even if the sequence of dates crosses a Daylight Saving Time (DST) boundary.
             List<DateTimeOffset> dates;
 
-            // Get the UTC offset of the start date, and apply that offset to all of the dates in the sequence.
-            // This ensures that the scheduled event time remains the same if the sequence of dates crosses
-            // a Daylight Saving Time (DST) boundary.
-            // To avoid any confusion where the local timezone, Rock timezone and calendar timezone are not the same,
-            // express the start and end dates for the occurrence period in UTC.
             var tsOffset = startDateTime.Value.Offset;
-
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
-                dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
+                // The GetOccurrences() method returns a list of dates, to which we add the offset
+                // for the Rock timezone.
+                dates = calendar.GetOccurrences( startDateTime.Value.DateTime, endDate.DateTime )
                     .Take( returnCount )
                     .Select( d => new DateTimeOffset( d.Period.StartTime.Ticks, tsOffset ) )
                     .ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
-                dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
+                dates = calendar.GetOccurrences( startDateTime.Value.DateTime, endDate.DateTime )
                     .Take( returnCount )
                     .Select( d => new DateTimeOffset( d.Period.EndTime.Ticks, tsOffset ) )
                     .ToList();
@@ -2085,6 +2070,30 @@ namespace Rock.Lava
                         return rawValue;
                     }
 
+                    // Check qualifer for "TextValue" and if true return PersistedTextValue
+                    if (qualifier.Equals( "TextValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                    }
+
+                    // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
+                    if (qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                    }
+
+                    // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
+                    if (qualifier.Equals( "CondensedTextValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedCondensedTextValue;
+                    }
+
+                    // Check qualifer for "CondensedHtmlValue" and if true return PersistedTextValue
+                    if (qualifier.Equals( "CondensedHtmlValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedCondensedHtmlValue;
+                    }
+
                     // Check qualifier for 'Url' and if present and attribute's field type is a ILinkableFieldType, then return the formatted url value
                     var field = attribute.FieldType.Field;
                     if ( qualifier.Equals( "Url", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ILinkableFieldType )
@@ -2139,7 +2148,11 @@ namespace Rock.Lava
                     }
 
                     // Otherwise return the formatted value
+#if REVIEW_NET5_0_OR_GREATER
+                    throw new NotImplementedException();
+#else
                     return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );
+#endif
                 }
             }
 
@@ -4988,7 +5001,13 @@ namespace Rock.Lava
                 queryParameterValues = allParameters.Where( x => !routeParameterNames.Contains( x.Key ) )
                     .ToDictionary( k => k.Key, v => v.Value );
 
-                uriBuilder.Path = outputPageReference.BuildRouteURL( routeParameterValues ).TrimEnd( '/' );
+                var path = outputPageReference.BuildRouteURL( routeParameterValues ).TrimEnd( '/' );
+                if ( string.IsNullOrEmpty( path ) )
+                {
+                    path = $"/page/{outputPageId}";
+                }
+
+                uriBuilder.Path = path;
             }
             else
             {
@@ -5156,6 +5175,31 @@ namespace Rock.Lava
             var rockDateTime = LavaDateTime.ParseToOffset( input.ToString() );
 
             return rockDateTime;
+        }
+
+        /// <summary>
+        /// Converts the input value to a DateTimeOffset value in Coordinated Universal Time (UTC).
+        /// If the input value does not specify an offset, the current Rock time zone is assumed.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into DateTime form.</param>
+        /// <returns>A DateTimeOffset value with an offset of 0, or null if the conversion could not be performed.</returns>
+        public static DateTimeOffset? AsDateTimeUtc( object input )
+        {
+            DateTimeOffset? utc;
+            if ( input is DateTime dt )
+            {
+                utc = LavaDateTime.ConvertToDateTimeOffset( dt ).ToUniversalTime();
+            }
+            else if ( input is DateTimeOffset dto )
+            {
+                utc = dto.ToUniversalTime();
+            }
+            else
+            {
+                utc = LavaDateTime.ParseToUtc( input.ToStringSafe() );
+            }
+
+            return utc;
         }
 
         /// <summary>
@@ -5407,6 +5451,21 @@ namespace Rock.Lava
                 }
             }
 #endif
+        }
+
+        /// <summary>
+        /// Converts structured blocks designed with the <see cref="StructureContentEditor"/> control from JSON to HTML.
+        /// <para>
+        /// Note that this only works with JSON produced by the <see cref="StructureContentEditor"/> control as it
+        /// contains metadata used in converting the JSON content to HTML.
+        /// </para>
+        /// </summary>
+        /// <param name="content">JSON formatted string produced by the <see cref="StructureContentEditor"/> control.</param>
+        /// <returns></returns>
+        public static string RenderStructuredContentAsHtml( string content )
+        {
+            var helper = new StructuredContentHelper( content );
+            return helper.Render();
         }
 
         #endregion Misc Filters
@@ -6544,6 +6603,61 @@ namespace Rock.Lava
             }
 
             return color.ToRGBA();
+        }
+
+        /// <summary>Gets the hue from the provided color.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Hue( string input )
+        {
+            var color = new RockColor( input );
+            
+            return Convert.ToInt32( color.Hue );
+        }
+
+        /// <summary>Saturations the specified input.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Saturation( string input )
+        {
+            var color = new RockColor( input );
+
+            return Convert.ToInt32( color.Saturation * 100 );
+        }
+
+        /// <summary>Luminosities the specified input.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Luminosity( string input )
+        {
+            var color = new RockColor( input );
+
+            return Convert.ToInt32( color.Luminosity * 100 );
+        }
+
+        /// <summary>Calculates the contrast ratio.</summary>
+        /// <param name="inputColor1">The input color1.</param>
+        /// <param name="inputColor2">The input color2.</param>
+        /// <returns>System.Double.</returns>
+        public static double CalculateContrastRatio( string inputColor1, string inputColor2 )
+        {
+            if ( inputColor2.IsNullOrWhiteSpace() )
+            {
+                inputColor2 = "#ffffff";
+            }
+
+            var color1 = new RockColor( inputColor1 );
+            var color2 = new RockColor( inputColor2 );
+
+            return RockColor.CalculateContrastRatio( color1, color2 );
+        }
+
+        /// <summary>Ases the color.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>RockColor.</returns>
+        public static RockColor AsColor( string input )
+        {
+            return new RockColor( input );
         }
 
         #endregion Color Filters

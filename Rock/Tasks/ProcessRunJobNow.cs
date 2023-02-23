@@ -23,7 +23,7 @@ namespace Rock.Tasks
     /// There are 3 ways to run a job, using the following methods.
     /// 1) To queue a <see cref="ServiceJob"/> to run almost immediately using the <see cref="RockMessageBus"/>, use <see cref="ProcessRunJobNow"/>. Note: This could cause jobs to run in parallel.
     /// 2) To queue the job with a lower priority using the Transaction Queue, use <see cref="Rock.Transactions.RunJobNowTransaction" />. This will run queued tasks in order, one at a time.
-    /// 3) To run the job immediately (and wait for it to finish) use <see cref="Rock.Model.ServiceJobService.RunNow(ServiceJob, out string)"/>
+    /// 3) To run the job immediately (and wait for it to finish) use <see cref="Rock.Model.ServiceJobService.RunNow(ServiceJob)"/>
     /// </summary>
     public sealed class ProcessRunJobNow : BusStartedTask<ProcessRunJobNow.Message>
     {
@@ -43,7 +43,7 @@ namespace Rock.Tasks
                     return;
                 }
 
-                jobService.RunNow( job, out _ );
+                jobService.RunNow( job );
             }
         }
 

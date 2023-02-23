@@ -108,7 +108,7 @@ namespace Rock.Model
                 PushTitle = model.PushTitle,
                 ReplyToEmail = model.ReplyToEmail,
                 SenderPersonAliasId = model.SenderPersonAliasId,
-                SMSFromDefinedValueId = model.SMSFromDefinedValueId,
+                SmsFromSystemPhoneNumberId = model.SmsFromSystemPhoneNumberId,
                 SMSMessage = model.SMSMessage,
                 Subject = model.Subject,
                 CreatedDateTime = model.CreatedDateTime,
@@ -206,7 +206,10 @@ namespace Rock.Model
             target.PushTitle = source.PushTitle;
             target.ReplyToEmail = source.ReplyToEmail;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
+            #pragma warning disable 612, 618
             target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
+            #pragma warning restore 612, 618
+            target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             target.SMSMessage = source.SMSMessage;
             target.Subject = source.Subject;
             target.CreatedDateTime = source.CreatedDateTime;

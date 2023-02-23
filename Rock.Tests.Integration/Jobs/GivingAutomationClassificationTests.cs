@@ -23,6 +23,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Utility.Settings.Giving;
 using Rock.Web.Cache;
 
@@ -106,8 +107,7 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 9999999.9, 1000.0 )]
         public void GetAmountIqrCount_CalculatesCorrectly( double amount, double expected )
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext );
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var amountMedian = 30m;
             var amountIqr = 2.5m;
@@ -139,8 +139,7 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 9999999.9, 1000.0 )]
         public void GetAmountIqrCount_CalculatesCorrectlyWhenLowMedian( double amount, double expected )
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext );
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var amountMedian = 30m;
             var amountIqr = 0m;
@@ -167,8 +166,7 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 9999999.9, 1000.0 )]
         public void GetAmountIqrCount_CalculatesCorrectlyWhenLowIqrAndMedian( double amount, double expected )
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext );
+            var context = new GivingAutomation.GivingAutomationContext();
 
 
             var amountMedian = 0m;
@@ -352,8 +350,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_CreatesAlertForMissingGift()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
             };
 
@@ -428,8 +425,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsAlertTypeRecentlyAlerted()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
             };
 
@@ -516,8 +512,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsAlertTypeBecauseOfMedianAmount()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
             };
 
@@ -600,8 +595,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsAlertBecauseOfCampus()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
             };
 
@@ -680,8 +674,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsAlertBecauseOfDataview()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
             };
 
@@ -778,8 +771,7 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 99, new int[] { 2 } )]
         public void CreateAlertsForLateTransaction_CalculatesCorrectlyBasedOnFinancialAccount( int previousTransactionsAccountId, int[] expectedAlertTypeIds )
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
             };
 
@@ -892,8 +884,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsUnmetSensitivityAlertType()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
             };
 
@@ -1066,8 +1057,7 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 30.437, 57, 3 )]
         public void CreateAlertsForLateTransaction_ConsistentGivers( double frequencyMean, double lastGaveDaysAgo, int alertCount, double frequencyStdDev = 0.0 )
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
             };
 
@@ -1134,8 +1124,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_CreatesMultipleAlerts()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
             };
 
@@ -1234,8 +1223,7 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 110.0, 35.0, 1785.00, 47.86 )]
         public void CreateAlertsForTransaction_CreatesAlertForLargerThanUsualGift( double amountMedian, double amountIQR, double transactionAmount, double expectedAmountIqrMultiplier )
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -1346,8 +1334,7 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 99, 99, new int[] { 3 } )]
         public void CreateAlertsForTransaction_CalculatesCorrectlyBasedOnFinancialAccount( int newTransactionAccountId, int previousTransactionsAccountId, int[] expectedAlertTypeIds )
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     // Skip because MinimumGiftAmount
@@ -1495,8 +1482,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForTransaction_CreatesAlertWithNoSensitivity()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -1600,8 +1586,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForTransaction_CreatesAlertForSmallGift()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -1728,8 +1713,7 @@ namespace Rock.Tests.Integration.Jobs
         [DataRow( 7.0, 999.0, new int[] { 5, 7 } )] // really late
         public void CreateAlertsForTransaction_CreatesAlertForEarlyGift( double frequencyMean, double frequency, int[] expectedAlertTypeIds )
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -1854,8 +1838,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForTransaction_SkipsAlertTypeBecauseOfMinAmount()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -1939,8 +1922,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForTransaction_SkipsAlertTypeBecauseOfMaxAmount()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -2025,8 +2007,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForTransaction_SkipsAlertTypeBecauseOfMinMedianAmount()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -2110,8 +2091,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForTransaction_SkipsAlertTypeBecauseOfMaxMedianAmount()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -2198,8 +2178,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForTransaction_SkipsBecauseDataview()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -2287,8 +2266,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForTransaction_SkipsBecauseCampus()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -2365,8 +2343,7 @@ namespace Rock.Tests.Integration.Jobs
         [TestMethod]
         public void CreateAlertsForTransaction_SkipsRepeatPrevention()
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -2463,8 +2440,7 @@ namespace Rock.Tests.Integration.Jobs
             var minimumGiftAmount = 10000.00M;
             int transactionAccountId = 123;
 
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -2615,8 +2591,7 @@ namespace Rock.Tests.Integration.Jobs
 
         public void CreateAlertsForTransaction_LargerAmountThanUsual( double amountIqr, double amountMedian, double transactionAmount, int expectedAlertCount )
         {
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 AlertTypes = new List<FinancialTransactionAlertType> {
                     new FinancialTransactionAlertType {
@@ -2700,8 +2675,7 @@ namespace Rock.Tests.Integration.Jobs
             var mostRecentOldTransactionDate = new DateTime( 2019, 12, 29 );
             var minDate = new DateTime( 2020, 1, 1 );
 
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 PercentileLowerRange = new List<decimal>()
             };
@@ -2912,8 +2886,7 @@ namespace Rock.Tests.Integration.Jobs
             var mostRecentOldTransactionDate = new DateTime( 2019, 12, 28 );
             var minDate = new DateTime( 2020, 1, 1 );
 
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 PercentileLowerRange = new List<decimal>(),
                 Now = new DateTime( 2020, 12, 1 )
@@ -3414,8 +3387,7 @@ namespace Rock.Tests.Integration.Jobs
             var mostRecentOldTransactionDate = new DateTime( 2019, 12, 27 );
             var minDate = new DateTime( 2020, 1, 1 );
 
-            var jobExecutionContext = new TestJobContext();
-            var context = new GivingAutomation.GivingAutomationContext( jobExecutionContext )
+            var context = new GivingAutomation.GivingAutomationContext()
             {
                 PercentileLowerRange = new List<decimal>()
             };
@@ -3435,6 +3407,8 @@ namespace Rock.Tests.Integration.Jobs
             };
 
             people.ForEach( p => p.LoadAttributes() );
+
+
 
             var transactions = new List<Rock.Jobs.GivingAutomation.TransactionView>();
             transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
@@ -4444,6 +4418,140 @@ namespace Rock.Tests.Integration.Jobs
             AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE );
             var lastClassified = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE ).AsDateTime();
             Assert.AreEqual( context.Now, lastClassified );
+        }
+
+        [TestMethod]
+        public void UpdateGivingUnitClassifications_ClassifiesTransactionsWithinWindowAsConsistent()
+        {
+            const int frequencyDefinedValueMonthlyId = 3;
+            const int frequencyDefinedValueErraticId = 5;
+
+            SetGivingAutomationSetting( 20000, 10000, 1000, 0 );
+
+            var personId = 1111;
+            var givingId = $"P{personId}";
+
+            var currencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH );
+            var sourceTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE );
+
+            var mostRecentOldTransactionDate = new DateTime( 2019, 12, 27 );
+            var minDate = new DateTime( 2020, 1, 1 );
+
+            var context = new GivingAutomation.GivingAutomationContext()
+            {
+                PercentileLowerRange = new List<decimal>()
+            };
+
+            for ( var i = 0; i < 100; i++ )
+            {
+                context.PercentileLowerRange.Add( 200 * i );
+            }
+
+            var people = new List<Person>
+            {
+                new Person
+                {
+                    Id = personId,
+                    GivingGroupId = null
+                },
+            };
+
+            people.ForEach( p => p.LoadAttributes() );
+
+            var transactions = new List<Rock.Jobs.GivingAutomation.TransactionView>();
+            var templateTransaction = new Rock.Jobs.GivingAutomation.TransactionView
+            {
+                CurrencyTypeValueId = currencyTypeValue.Id,
+                IsScheduled = false,
+                SourceTypeValueId = sourceTypeValue.Id,
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 50.0000000000m } },
+                RefundDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = -10.0000000000m } }
+            };
+
+            // Create a set of giving transactions spanning a year:
+            // 1. Monthly on the 10th @ 20:00; and
+            // 2. Monthly on the 11th @ 08:00.
+            var currentDate = RockDateTime.Now;
+            var gift1StartDate = RockDateTime.New( currentDate.AddMonths( -12 ).Year, currentDate.AddMonths( -1 ).Month, 10 ).Value.AddHours( 20 );
+            var gift1Dates = GetDateTimeListWithMonthlyPattern( gift1StartDate, 12 );
+
+            var gift2StartDate = gift1StartDate.AddHours( 12 );
+            var gift2Dates = GetDateTimeListWithMonthlyPattern( gift2StartDate, 12 );
+
+            var giftDates = new List<DateTime>();
+            giftDates.AddRange( gift1Dates );
+            giftDates.AddRange( gift2Dates );
+            giftDates.Sort();
+
+            foreach ( var giftDate in giftDates )
+            {
+                transactions.Add( GetClonedTransactionViewForDate( templateTransaction, giftDate.ToISO8601DateString() ) );
+            }
+
+            // Update the giving classification with no transaction window specified,
+            // and verify that the giving classification is "Erratic".
+            context.TransactionWindowDurationHours = null;
+            Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId,
+                people,
+                transactions,
+                mostRecentOldTransactionDate: null,
+                context,
+                minDate );
+
+            Assert.AreEqual( 0, context.Errors.Count );
+
+            var frequencyLabel1 = GetAttributeValue( people.First(), SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
+            Assert.AreEqual( frequencyDefinedValueErraticId, frequencyLabel1 );
+
+            // Update the giving classification with a transaction window specified,
+            // and verify that the giving classification is "Monthly".
+            context.TransactionWindowDurationHours = 24;
+            Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId,
+                people,
+                transactions,
+                mostRecentOldTransactionDate: null,
+                context,
+                minDate );
+
+            Assert.AreEqual( 0, context.Errors.Count );
+
+            var frequencyLabel2 = GetAttributeValue( people.First(), SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
+            Assert.AreEqual( frequencyDefinedValueMonthlyId, frequencyLabel2 );
+        }
+
+        private List<DateTime> GetDateTimeListWithMonthlyPattern( DateTime startDateTime, int count )
+        {
+            var transactionDates = new List<DateTime>();
+            for ( int month = 0; month < count; month++ )
+            {
+                var addDate = startDateTime.AddMonths( month );
+                transactionDates.Add( addDate );
+            }
+            return transactionDates;
+        }
+
+        private TransactionView GetClonedTransactionViewForDate( TransactionView source, string dateTimeString )
+        {
+            var transaction = new TransactionView
+            {
+                TransactionDateTime = DateTime.Parse( dateTimeString ),
+                CurrencyTypeValueId = source.CurrencyTypeValueId,
+                IsScheduled = source.IsScheduled,
+                SourceTypeValueId = source.SourceTypeValueId,
+                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>(),
+                RefundDetails = new List<TransactionViewDetail>()
+            };
+
+            foreach ( var detail in source.TransactionViewDetailsBeforeRefunds )
+            {
+                transaction.TransactionViewDetailsBeforeRefunds.Add( new TransactionViewDetail { AccountId = detail.AccountId, Amount = detail.Amount } );
+            }
+            foreach ( var detail in source.RefundDetails )
+            {
+                transaction.RefundDetails.Add( new TransactionViewDetail { AccountId = detail.AccountId, Amount = detail.Amount } );
+            }
+
+            return transaction;
         }
 
         #endregion UpdateGivingUnitClassifications

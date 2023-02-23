@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,19 +17,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
-using System.Data.Entity;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -51,6 +49,7 @@ namespace RockWeb.Blocks.Communication
         IsRequired = false,
         Key = AttributeKey.CommunicationListCategories,
         Order = 1 )]
+
     [BooleanField(
         "Show Medium Preference",
         Description = "Show the user's current medium preference for each list and allow them to change it.",
@@ -58,7 +57,21 @@ namespace RockWeb.Blocks.Communication
         Key = AttributeKey.ShowMediumPreference,
         Order = 2 )]
 
+    [BooleanField( "Filter Groups By Campus Context",
+        Description = "When enabled, will filter the listed Communication Lists by the campus context of the page. Groups with no campus will always be shown.",
+        IsRequired = false,
+        Key = AttributeKey.FilterGroupsByCampusContext,
+        Order = 4 )]
+
+    [BooleanField( "Always Include Subscribed Lists",
+        Description = "When filtering is enabled this setting will include lists that the person is subscribed to even if they don't match the current campus context. (note this would still filter by the category though, so lists not in the configured category would not show even if subscribed to them)",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        Key = AttributeKey.AlwaysIncludeSubscribedLists,
+        Order = 5 )]
+
     #endregion Block Attributes
+
     [Rock.SystemGuid.BlockTypeGuid( "52E0AA5B-B08B-42E4-8180-DD7925BAA57F" )]
     public partial class CommunicationListSubscribe : RockBlock
     {
@@ -71,6 +84,8 @@ namespace RockWeb.Blocks.Communication
         {
             public const string CommunicationListCategories = "CommunicationListCategories";
             public const string ShowMediumPreference = "ShowMediumPreference";
+            public const string FilterGroupsByCampusContext = "FilterGroupsByCampusContext";
+            public const string AlwaysIncludeSubscribedLists = "AlwaysIncludeSubscribedLists";
         }
 
         #endregion Attribute Keys
@@ -346,6 +361,11 @@ namespace RockWeb.Blocks.Communication
                     Guid? categoryGuid = communicationList.GetAttributeValue( "Category" ).AsGuidOrNull();
                     if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) )
                     {
+                        var category = CategoryCache.Get( categoryGuid.Value );
+                        if ( !category.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                        {
+                            continue;
+                        }
                         viewableCommunicationLists.Add( communicationList );
                     }
                 }
@@ -375,11 +395,34 @@ namespace RockWeb.Blocks.Communication
                 .ToList()
                 .ToDictionary( k => k.Key, v => v.FirstOrDefault() );
 
+            var filterByCampus = GetAttributeValue( AttributeKey.FilterGroupsByCampusContext ).AsBoolean();
+
+            if ( filterByCampus )
+            {
+                var contextCampus = ContextEntity<Campus>();
+
+                if ( contextCampus != null )
+                {
+                    var alwaysIncludeSubscribed = GetAttributeValue( AttributeKey.AlwaysIncludeSubscribedLists ).AsBoolean();
+                    // We're going to do two steps of filtering here.
+                    viewableCommunicationLists = viewableCommunicationLists.Where( x =>
+                    // 1. Filter by campus.
+                    ( x.CampusId == null || x.CampusId == contextCampus.Id )
+                    // 2. OR: Include the communication lists we're already subscribed to.
+                    || ( alwaysIncludeSubscribed && ContainsActivePersonRecord( x.Members, personId ) ) ).ToList();
+                }
+            }
+
             rptCommunicationLists.DataSource = viewableCommunicationLists;
             rptCommunicationLists.DataBind();
 
             nbNoCommunicationLists.Visible = !viewableCommunicationLists.Any();
             pnlCommunicationPreferences.Visible = viewableCommunicationLists.Any();
+        }
+
+        private bool ContainsActivePersonRecord( ICollection<GroupMember> groupMembers, int personId )
+        {
+            return ( groupMembers?.Any( m => m.PersonId == personId && m.GroupMemberStatus == GroupMemberStatus.Active ) ) ?? false;
         }
 
         #endregion

@@ -16,12 +16,12 @@
 //
 
 import { computed, defineComponent, nextTick, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.obs";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
-import { EntityType } from "@Obsidian/SystemGuids";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Badges/badgesConfigurationBox";
-import { useConfigurationValues } from "@Obsidian/Utility/block";
-import { ControlLazyMode } from "@Obsidian/Types/Controls/controlLazyMode";
+import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { tooltip } from "@Obsidian/Utility/tooltip";
 import { popover } from "@Obsidian/Utility/popover";
 
@@ -85,7 +85,6 @@ export default defineComponent({
                 .map(b => b.javaScript ?? "").join("");
 
         if (script !== "") {
-            console.log("script", script);
             // Add the script on the next tick to ensure the HTML has been rendered.
             nextTick(() => {
                 const scriptNode = document.createElement("script");
@@ -100,9 +99,11 @@ export default defineComponent({
                 return;
             }
 
-            tooltip(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")));
+            tooltip(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")), { html: true, sanitize: false });
             popover(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"popover\"]")));
         });
+
+        onConfigurationValuesChanged(useReloadBlock());
 
         return {
             bottomLeftBadges,

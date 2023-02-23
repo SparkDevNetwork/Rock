@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "module": "CommonJS",
+    "target": "ES2016",
+    "lib": [ "ES2016", "DOM" ],
+    "sourceMap": true,
+    "strict": true,
+    "rootDir": "src",
+    "isolatedModules": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

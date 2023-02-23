@@ -89,22 +89,10 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
-        /// Sets the RockDateTime timezone to the current system local timezone.
+        /// Sets the RockDateTime timezone.
         /// </summary>
-        public static void SetRockDateTimeToLocalTimezone()
+        public static void SetRockTimeZone( TimeZoneInfo tz )
         {
-            RockDateTime.Initialize( TimeZoneInfo.Local );
-        }
-
-        /// <summary>
-        /// Sets the RockDateTime timezone to a value that is suitable for testing an operating environment
-        /// in which the organization timezone does not match the local system timezone.
-        /// This configuration simulates a Rock server hosted in a different timezone to the Rock organization.
-        /// </summary>
-        public static void SetRockDateTimeToAlternateTimezone()
-        {
-            var tz = GetTestTimeZoneAlternate();
-
             RockDateTime.Initialize( tz );
 
             // Re-initialize the lava engine options.
@@ -113,23 +101,96 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// Sets the RockDateTime timezone to the current system local timezone.
+        /// </summary>
+        public static void SetRockDateTimeToLocalTimezone()
+        {
+            SetRockTimeZone( TimeZoneInfo.Local );
+        }
+
+        /// <summary>
+        /// Sets the RockDateTime timezone to a region that is ahead of UTC time (UTC+HH:MM).
+        /// This configuration simulates a Rock server hosted in a different timezone to the Rock organization.
+        /// </summary>
+        public static void SetRockDateTimeToUtcPositiveTimezone()
+        {
+            var tz = GetTestTimeZoneForUtcPositive();
+            SetRockTimeZone( tz );
+        }
+
+        /// <summary>
+        /// Sets the RockDateTime timezone to a value that behind UTC time (UTC-HH:MM).
+        /// This configuration simulates a Rock server hosted in a different timezone to the Rock organization.
+        /// </summary>
+        public static void SetRockDateTimeToUtcNegativeTimezone()
+        {
+            var tz = GetTestTimeZoneForUtcNegative();
+            SetRockTimeZone( tz );
+        }
+
+        /// <summary>
+        /// Sets the RockDateTime timezone to a value that is suitable for testing an operating environment
+        /// in which the organization timezone supports daylight saving time.
+        /// </summary>
+        public static void SetRockDateTimeToDaylightSavingTimezone()
+        {
+            var tz = GetTestTimeZoneForDaylightSaving();
+            SetRockTimeZone( tz );
+        }
+
+        /// <summary>
         /// Gets a timezone that is different from the local timezone, suitable for testing an operating environment
         /// in which the organization timezone does not match the local system timezone.
         /// </summary>
-        public static TimeZoneInfo GetTestTimeZoneAlternate()
+        public static TimeZoneInfo GetTestTimeZoneForUtcPositive()
         {
             TimeZoneInfo tz;
 
-            // Set to India Standard Time, or an alternative if that is the local timezone in the current environment.
+            // Set to India Standard Time (UTC+05:30), or an alternative if that is the local timezone in the current environment.
             tz = TimeZoneInfo.FindSystemTimeZoneById( "India Standard Time" );
 
             Assert.That.IsNotNull( tz, "Timezone 'IST' is not available in this environment." );
 
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
-                tz = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
+                // Set to Tokyo Standard Time aka Japan Standard Time (UTC+09:00)
+                try
+                {
+                    tz = TimeZoneInfo.FindSystemTimeZoneById( "Tokyo Standard Time" );
+                }
+                catch ( TimeZoneNotFoundException )
+                {
+                    tz = TimeZoneInfo.FindSystemTimeZoneById( "Japan Standard Time" );
+                }
 
-                Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+                Assert.That.IsNotNull( tz, "Timezone 'Tokyo Standard Time' is not available in this environment." );
+            }
+
+            // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
+            // If a DST-affected timezone is used, some tests will fail when executed across DST boundary dates.
+            Assert.That.IsFalse( tz.SupportsDaylightSavingTime, "Test Timezone should not be configured for Daylight Saving Time (DST)." );
+
+            return tz;
+        }
+
+        /// <summary>
+        /// Gets a timezone that is different from the local timezone, suitable for testing an operating environment
+        /// in which the organization timezone does not match the local system timezone.
+        /// </summary>
+        public static TimeZoneInfo GetTestTimeZoneForUtcNegative()
+        {
+            TimeZoneInfo tz;
+
+            // Set to UCT-07:00, or an alternative if that is the local timezone in the current environment.
+            tz = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
+
+            Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+
+            if ( tz.Id == TimeZoneInfo.Local.Id )
+            {
+                // Set to UCT-07:00.
+                tz = TimeZoneInfo.FindSystemTimeZoneById( "Hawaiian Standard Time" );
+                Assert.That.IsNotNull( tz, "Timezone 'Hawaiian Standard Time' is not available in this environment." );
             }
 
             // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
@@ -143,7 +204,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// Sets the RockDateTime timezone to a value that is suitable for testing an operating environment
         /// in which the organization timezone supports daylight saving time.
         /// </summary>
-        public static void SetRockDateTimeToDaylightSavingTimezone()
+        public static TimeZoneInfo GetTestTimeZoneForDaylightSaving()
         {
             // Set to Central Standard Time (CST), a timezone that supports Daylight Saving Time (DST).
             var tz = TimeZoneInfo.FindSystemTimeZoneById( "Central Standard Time" );
@@ -152,11 +213,66 @@ namespace Rock.Tests.UnitTests.Lava
 
             Assert.That.IsTrue( tz.SupportsDaylightSavingTime, "Test Timezone should be configured for Daylight Saving Time (DST)." );
 
-            RockDateTime.Initialize( tz );
+            return tz;
+        }
 
-            // Re-initialize the lava engine options.
-            var options = GetCurrentEngineOptions();
-            _fluidEngine.Initialize( options );
+        /// <summary>
+        /// For each of the known test timezones, process the specified action.
+        /// </summary>
+        /// <param name="testMethod"></param>
+        /// <remarks>
+        /// Operations involving calendar events are sensitive to timezone conversions.
+        /// In Rock, we need to be concerned with the distinction between the local server/system time and Rock time,
+        /// and the effects of daylight saving time (DST) in some regions.
+        /// For this reason, calendar operations need to be tested for timezones with these characteristics:
+        /// * positive UTC offset
+        /// * negative UTC offset
+        /// * daylight saving time.
+        /// </remarks>
+        public static void ExecuteForTimeZones( Action<TimeZoneInfo> testMethod )
+        {
+            var timeZones = new List<TimeZoneInfo>
+            {
+                GetTestTimeZoneForUtcNegative(),
+                GetTestTimeZoneForUtcPositive(),
+                GetTestTimeZoneForDaylightSaving()
+            };
+
+            ExecuteForTimeZones( testMethod, timeZones );
+        }
+
+        /// <summary>
+        /// For each of the specified timezones, process the specified action.
+        /// </summary>
+        /// <param name="testMethod"></param>
+        /// <param name="timeZones"></param>
+        public static void ExecuteForTimeZones( Action<TimeZoneInfo> testMethod, List<TimeZoneInfo> timeZones )
+        {
+            // Get the current timezone.
+            var tzCurrent = RockDateTime.OrgTimeZoneInfo;
+
+            try
+            {
+                // Execute the test action for each of the test timezones.
+                foreach ( var timeZone in timeZones )
+                {
+                    SetRockTimeZone( timeZone );
+
+                    try
+                    {
+                        testMethod( timeZone );
+                    }
+                    catch ( Exception ex )
+                    {
+                        throw new Exception( $"Lava Render Failed. See inner exception for details. [TimeZone= {timeZone.DisplayName}]", ex );
+                    }
+                }
+            }
+            finally
+            {
+                // Restore the original timezone for subsequent tests.
+                SetRockTimeZone( tzCurrent );
+            }
         }
 
         /// <summary>
@@ -492,13 +608,13 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( DateTime? expectedOutput, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( DateTime? expectedOutput, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
             var engines = GetActiveTestEngines();
 
             foreach ( var engine in engines )
             {
-                AssertTemplateOutputDate( engine, expectedOutput, inputTemplate, maximumDelta );
+                AssertTemplateOutputDate( engine, expectedOutput, inputTemplate, maximumDelta, mergeValues );
             }
         }
 
@@ -508,13 +624,13 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( DateTimeOffset? expectedOutput, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( DateTimeOffset? expectedOutput, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
             var engines = GetActiveTestEngines();
 
             foreach ( var engine in engines )
             {
-                AssertTemplateOutputDate( engine, expectedOutput, inputTemplate, maximumDelta );
+                AssertTemplateOutputDate( engine, expectedOutput, inputTemplate, maximumDelta, mergeValues );
             }
         }
 
@@ -524,9 +640,9 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( string expectedRockDateTimeOutput, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( string expectedRockDateTimeOutput, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
-            AssertTemplateOutputDate( LavaDateTime.ParseToOffset( expectedRockDateTimeOutput ), inputTemplate, maximumDelta );
+            AssertTemplateOutputDate( LavaDateTime.ParseToOffset( expectedRockDateTimeOutput ), inputTemplate, maximumDelta, mergeValues );
         }
 
         /// <summary>
@@ -535,9 +651,9 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="expectedDateTime"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( ILavaEngine engine, DateTimeOffset? expectedDateTime, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( ILavaEngine engine, DateTimeOffset? expectedDateTime, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
-            var outputString = GetTemplateOutput( engine, inputTemplate );
+            var outputString = GetTemplateOutput( engine, inputTemplate, mergeValues );
 
             var outputDateUtc = LavaDateTime.ParseToOffset( outputString, null );
 
@@ -578,26 +694,11 @@ RockTimeZoneOffset = { RockDateTime.OrgTimeZoneInfo.BaseUtcOffset }
         /// <param name="expectedDateTime"></param>
         /// <param name="inputTemplate"></param>
         /// <param name="maximumDelta"></param>
-        public void AssertTemplateOutputDate( ILavaEngine engine, DateTime? expectedDateTime, string inputTemplate, TimeSpan? maximumDelta = null )
+        public void AssertTemplateOutputDate( ILavaEngine engine, DateTime? expectedDateTime, string inputTemplate, TimeSpan? maximumDelta = null, LavaDataDictionary mergeValues = null )
         {
-            AssertDateIsUtc( expectedDateTime );
+            var expectedOffset = LavaDateTime.ConvertToRockOffset( expectedDateTime ?? DateTime.MinValue );
 
-            var outputString = GetTemplateOutput( engine, inputTemplate );
-
-            var outputDateUtc = LavaDateTime.ParseToUtc( outputString, null );
-
-            WriteOutputToDebug( engine, outputString );
-
-            Assert.That.IsNotNull( outputDateUtc, $"Template Output does not represent a valid DateTime. [Output=\"{ outputString }\"]" );
-
-            if ( maximumDelta != null )
-            {
-                DateTimeAssert.AreEqual( expectedDateTime, outputDateUtc, maximumDelta.Value );
-            }
-            else
-            {
-                DateTimeAssert.AreEqual( expectedDateTime, outputDateUtc );
-            }
+            AssertTemplateOutputDate( engine, expectedOffset, inputTemplate, maximumDelta, mergeValues );
         }
 
         public void AssertDateIsUtc( DateTime? dateTime )

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [SecurityAction( SecurityActionKey.EditSMS, "The roles and/or users that can edit the SMS Enabled properties for the selected person." )]
     [SecurityAction( SecurityActionKey.EditConnectionStatus, "The roles and/or users that can edit the connection status for the selected person." )]
     [SecurityAction( SecurityActionKey.EditRecordStatus, "The roles and/or users that can edit the record status for the selected person." )]
+    [SecurityAction( SecurityActionKey.ViewProtectionProfile, "The roles and/or users that can view the protection profile alert for the selected person." )]
 
     #region Block Attributes
 
@@ -82,12 +83,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         DefaultBooleanValue = false,
         Order = 3 )]
 
+    [CustomDropdownListField (
+        "Race",
+        Key = AttributeKey.RaceOption,
+        Description = "Allow Race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Order = 4 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.EthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Order = 5 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "0A15F28C-4828-4B38-AF66-58AC5BDE48E0" )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
-
         #region Attribute Keys and Values
 
         private static class AttributeKey
@@ -96,6 +114,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string HideAnniversaryDate = "HideAnniversaryDate";
             public const string SearchKeyTypes = "SearchKeyTypes";
             public const string RequireCompleteBirthDate = "RequireCompleteBirthDate";
+            public const string RaceOption = "RaceOption";
+            public const string EthnicityOption = "EthnicityOption";
         }
 
         private static class ListSource
@@ -119,6 +139,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         AND AV.[Id] IS NULL
         ORDER BY V.[Order]
 ";
+            public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
         }
 
         #endregion Attribute Keys and Values
@@ -134,6 +155,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string EditSMS = "EditSMS";
             public const string EditConnectionStatus = "EditConnectionStatus";
             public const string EditRecordStatus = "EditRecordStatus";
+            public const string ViewProtectionProfile = "ViewProtectionProfile";
         }
 
         #endregion
@@ -256,6 +278,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 ShowDetails();
             }
+
+            ShowOrHideEthnicityAndRace();
         }
 
         /// <summary>
@@ -274,6 +298,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 bpBirthDay.RequireYear = false;
             }
+
+            ShowOrHideEthnicityAndRace();
         }
 
         #region View State related stuff
@@ -455,6 +481,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
                         person.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
 
+                        if ( rpRace.Visible )
+                        {
+                            person.RaceValueId = rpRace.SelectedValueAsId();
+                        }
+
+                        if ( epEthnicity.Visible )
+                        {
+                            person.EthnicityValueId = epEthnicity.SelectedValueAsId();
+                        }
+
                         var phoneNumberTypeIds = new List<int>();
 
                         bool smsSelected = false;
@@ -552,7 +588,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 return false;
                             }
                         }
-                        
+
                         person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
                         person.IsLockedAsChild = cbLockAsChild.Checked;
 
@@ -643,7 +679,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         DateTime? deceasedDate = null;
                         if ( newRecordStatusReasonId.HasValue && newRecordStatusReasonId.Value == reasonDeceasedId )
                         {
-                            deceasedDate = dpDeceasedDate.SelectedDate;
+                            // sanity check to ensure that the deceased date is not before the birthday
+                            if ( dpDeceasedDate.SelectedDate < bpBirthDay.SelectedDate )
+                            {
+                                nbDeceasedDateError.Visible = true;
+                                nbDeceasedDateError.Text = "Select a date older than the Birth Day.";
+                                return false;
+                            }
+                            else
+                            {
+                                deceasedDate = dpDeceasedDate.SelectedDate;
+                            }
                         }
                         person.DeceasedDate = deceasedDate;
 
@@ -753,7 +799,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         return true;
                     } );
 
-                    if (wrapTransactionResult)
+                    if ( wrapTransactionResult )
                     {
                         Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
                     }
@@ -806,6 +852,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ShowDetails()
         {
+            if ( IsUserAuthorized( SecurityActionKey.ViewProtectionProfile ) )
+            {
+                nbAccountProtectionProfile.Visible = Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low;
+                var messageSuffix = "Ensure you trust the source of the request to update their email address and/or mobile phone number as this could be used to grant access to their account.";
+                if ( Person.AccountProtectionProfile == Rock.Utility.Enums.AccountProtectionProfile.Medium )
+                {
+                    nbAccountProtectionProfile.Text = $"Use care when editing this record as the individual has a login. {messageSuffix}";
+                    nbAccountProtectionProfile.NotificationBoxType = NotificationBoxType.Warning;
+                }
+                else if ( Person.AccountProtectionProfile == Rock.Utility.Enums.AccountProtectionProfile.High )
+                {
+                    nbAccountProtectionProfile.Text = $"Use care when editing this record as the individual has financial account information stored in Rock or is a member of a sensitive security role. {messageSuffix}";
+                    nbAccountProtectionProfile.NotificationBoxType = NotificationBoxType.Danger;
+                }
+                else if ( Person.AccountProtectionProfile == Rock.Utility.Enums.AccountProtectionProfile.Extreme )
+                {
+                    nbAccountProtectionProfile.Text = $"Use care when editing this record as the individual is in a sensitive security role. {messageSuffix}";
+                    nbAccountProtectionProfile.NotificationBoxType = NotificationBoxType.Danger;
+                }
+            }
+
             lTitle.Text = string.Format( "Edit: {0}", Person.FullName ).FormatAsHtmlTitle();
 
             imgPhoto.BinaryFileId = Person.PhotoId;
@@ -872,6 +939,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             tbInactiveReasonNote.Text = Person.InactiveReasonNote;
             lReasonNoteReadOnly.Text = Person.InactiveReasonNote;
+
+            rpRace.SetValue( Person.RaceValueId );
+            epEthnicity.SetValue( Person.EthnicityValueId );
 
             ddlRecordStatus_SelectedIndexChanged( null, null );
             dvpReason_SelectedIndexChanged( null, null );
@@ -1175,6 +1245,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     args.IsValid = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Shows or hides the RacePicker and EthnicityPicker according to settings and business rules.
+        /// </summary>
+        protected void ShowOrHideEthnicityAndRace()
+        {
+            var raceOptionAttributeValue = GetAttributeValue( AttributeKey.RaceOption );
+            var ethnicityOptionAttributeValue = GetAttributeValue( AttributeKey.EthnicityOption );
+
+            rpRace.Visible = raceOptionAttributeValue != "Hide";
+            rpRace.Required = raceOptionAttributeValue == "Required";
+
+            epEthnicity.Visible = ethnicityOptionAttributeValue != "Hide";
+            epEthnicity.Required = ethnicityOptionAttributeValue == "Required";
         }
     }
 }

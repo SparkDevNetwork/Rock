@@ -132,7 +132,11 @@ namespace Rock.Web.Cache
             get
             {
                 var attribute = AttributeCache.Get( AttributeId );
+#if REVIEW_NET5_0_OR_GREATER
+                return attribute != null ? attribute.FieldType.Field.ValueAsFieldType( Value, attribute.QualifierValues ) : Value;
+#else
                 return attribute != null ? attribute.FieldType.Field.ValueAsFieldType( null, Value, attribute.QualifierValues ) : Value;
+#endif
             }
         }
 

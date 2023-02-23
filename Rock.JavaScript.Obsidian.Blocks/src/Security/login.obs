@@ -1,0 +1,405 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isCompleted">
+        <Alert alertType="warning" v-html="completedCaption"></Alert>
+    </div>
+    <div v-else class="login-block">
+        <fieldset>
+            <legend>Log In</legend>
+        </fieldset>
+
+        <template v-if="config.configurationErrors?.length">
+            <Alert
+                v-for="configError in config.configurationErrors"
+                alertType="warning"
+                v-text="configError" />
+        </template>
+
+        <div :class="isMobileForced ? 'row' : 'row d-sm-flex'">
+            <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible" :class="isMobileForced ? '' : 'col-sm-5'">
+                <ExternalLogin
+                    v-if="isAnyExternalAuthProviderVisible"
+                    :modelValue="config.externalAuthProviderButtons || []"
+                    :caption="config.remoteAuthorizationPromptMessage ?? ''"
+                    :disabled="isAuthenticating || isNavigating"
+                    @login="onExternalLogin($event)" />
+
+                <LoginMethodPicker
+                    v-if="areBothInternalAuthProvidersVisible"
+                    v-model="internalLoginMethod"
+                    :disabled="isAuthenticating || isNavigating"
+                    :isCredentialLoginSupported="config.isInternalDatabaseLoginSupported"
+                    :isPasswordlessLoginSupported="config.isPasswordlessLoginSupported" />
+
+            </div>
+
+            <Divider
+                v-if="areSecondaryAndPrimaryAuthVisible"
+                :class="isMobileForced ? 'd-flex' : 'd-flex d-sm-none col-sm-1'"
+                content="or" />
+
+            <Divider
+                v-if="!isMobileForced && areSecondaryAndPrimaryAuthVisible"
+                class="d-none d-sm-flex col-sm-1"
+                content="or"
+                :isVertical="true" />
+
+            <div :class="isMobileForced ? '' : areSecondaryAndPrimaryAuthVisible ? 'col-sm-6' : 'col-sm-12'">
+                <CredentialLogin
+                    v-if="config.isInternalDatabaseLoginSupported && loginMethodWrapper.isCredential"
+                    :config="config"
+                    :disabled="isAuthenticating || isNavigating"
+                    :isMobileForced="isMobileForced"
+                    @forgotAccount="onForgotAccount()"
+                    @login="onCredentialLogin($event)"
+                    @register="onRegister()" />
+
+                <PasswordlessLogin
+                    v-else-if="config.isPasswordlessLoginSupported && loginMethodWrapper.isPasswordless"
+                    v-model="passwordlessLoginOptions"
+                    :config="config"
+                    :disabled="isAuthenticating || isNavigating"
+                    :isMobileForced="isMobileForced"
+                    @start="onPasswordlessLoginStart($event)"
+                    @verify="onPasswordlessLoginVerify($event)" />
+
+                <div v-if="errorMessage" class="mt-3">
+                    <Alert alertType="warning" v-html="errorMessage"></Alert>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="config.contentText" class="mt-3 row col-sm-12" v-html="config.contentText"></div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref } from "vue";
+    import CredentialLogin from "./Login/credentialLogin.partial.obs";
+    import Divider from "./divider.obs";
+    import ExternalLogin from "./Login/externalLogin.partial.obs";
+    import LoginMethodPicker from "./Login/loginMethodPicker.partial.obs";
+    import PasswordlessLogin from "./Login/passwordlessLogin.partial.obs";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import { LoginMethod } from "@Obsidian/Enums/Blocks/Security/Login/loginMethod";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
+    import { CredentialLoginRequestBag } from "@Obsidian/ViewModels/Blocks/Security/Login/credentialLoginRequestBag";
+    import { CredentialLoginResponseBag } from "@Obsidian/ViewModels/Blocks/Security/Login/credentialLoginResponseBag";
+    import { ExternalAuthenticationButtonBag } from "@Obsidian/ViewModels/Blocks/Security/Login/externalAuthenticationButtonBag";
+    import { LoginInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/Login/loginInitializationBox";
+    import { PasswordlessLoginOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginOptionsBag";
+    import { PasswordlessLoginStartRequestBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginStartRequestBag";
+    import { PasswordlessLoginStartResponseBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginStartResponseBag";
+    import { PasswordlessLoginStep } from "@Obsidian/Enums/Blocks/Security/Login/passwordlessLoginStep";
+    import { PasswordlessLoginVerifyRequestBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginVerifyRequestBag";
+    import { PasswordlessLoginVerifyResponseBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginVerifyResponseBag";
+    import { RemoteLoginStartRequestBag } from "@Obsidian/ViewModels/Blocks/Security/Login/remoteLoginStartRequestBag";
+    import { RemoteLoginStartResponseBag } from "@Obsidian/ViewModels/Blocks/Security/Login/remoteLoginStartResponseBag";
+
+    const config = useConfigurationValues<LoginInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isMobileForced = !!document.getElementById("splash");
+
+    const isAuthenticating = ref(config.shouldRedirect);
+    const completedCaption = ref<string | null>(null);
+    const errorMessage = ref<string | null>(config.errorMessage || null);
+    const isNavigating = ref(false);
+
+    const passwordlessLoginOptions = ref<PasswordlessLoginOptionsBag>({
+        code: config.passwordlessAutoVerifyOptions?.code,
+        state: config.passwordlessAutoVerifyOptions?.state,
+        isAutomaticVerificationRequired: !!config.passwordlessAutoVerifyOptions,
+        isPersonSelectionRequired: false,
+        matchingPeople: null,
+        step: config.passwordlessAutoVerifyOptions ? PasswordlessLoginStep.Verify : PasswordlessLoginStep.Start
+    });
+
+    const isCompleted = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const areBothInternalAuthProvidersVisible = computed<boolean>(() =>
+        config.isInternalDatabaseLoginSupported && config.isPasswordlessLoginSupported
+    );
+
+    const isAnyExternalAuthProviderVisible = computed<boolean>(() =>
+        !!config.externalAuthProviderButtons?.length
+    );
+
+    const areSecondaryAndPrimaryAuthVisible = computed<boolean>(() => {
+        const isAnyInternalAuthProviderVisible = config.isInternalDatabaseLoginSupported || config.isPasswordlessLoginSupported;
+        return (isAnyExternalAuthProviderVisible.value && isAnyInternalAuthProviderVisible) || areBothInternalAuthProvidersVisible.value;
+    });
+
+    const loginMethod = ref(getInitialLoginMethod());
+    const internalLoginMethod = computed<LoginMethod>({
+        get() {
+            return passwordlessLoginOptions.value.isAutomaticVerificationRequired ? LoginMethod.Passwordless : loginMethod.value;
+        },
+        set(newValue) {
+            loginMethod.value = newValue;
+        }
+    });
+    const loginMethodWrapper = computed(() => ({
+        isCredential: internalLoginMethod.value === LoginMethod.InternalDatabase,
+        isPasswordless: internalLoginMethod.value === LoginMethod.Passwordless
+    }));
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the credential login form being submitted.
+     * Handles the redirect to the return URL if authentication is successful.
+     */
+    async function onCredentialLogin(bag: CredentialLoginRequestBag): Promise<void> {
+        isAuthenticating.value = true;
+
+        try {
+            const response = await invokeBlockAction<CredentialLoginResponseBag>("CredentialLogin", { bag });
+
+            if (!response?.isSuccess || !response.data) {
+                showError(response?.errorMessage || "Something went wrong. Please try again.");
+                return;
+            }
+
+            if (response.data.isAuthenticated) {
+                await navigate(response.data.redirectUrl || "/");
+                return;
+            }
+
+            if (response.data.isConfirmationRequired) {
+                showCompleted(response.data.errorMessage || response.errorMessage);
+                return;
+            }
+
+            showError(response.data.errorMessage || "Authentication failed. Please try again.");
+        }
+        finally {
+            // Reset isAuthenticating in the event there is an error so the user can resubmit.
+            isAuthenticating.value = false;
+        }
+    }
+
+    /**
+     * Handles the event when an external login button is clicked.
+     */
+    async function onExternalLogin(externalLogin: ExternalAuthenticationButtonBag): Promise<void> {
+        isAuthenticating.value = true;
+        const bag: RemoteLoginStartRequestBag = {
+            authenticationType: externalLogin.authenticationType
+        };
+
+        try {
+            const response = await invokeBlockAction<RemoteLoginStartResponseBag>("RemoteLoginStart", { bag });
+
+            if (response?.isSuccess && response?.data?.redirectUrl) {
+                await navigate(response.data.redirectUrl);
+                return;
+            }
+
+            showError(response?.errorMessage);
+            return;
+        }
+        finally {
+            isAuthenticating.value = false;
+        }
+    }
+
+    /**
+     * Event handler for the forgot account button being clicked.
+     */
+    async function onForgotAccount(): Promise<void> {
+        await navigate(config.helpPageUrl ?? "/");
+    }
+
+    /**
+     * Event handler for the Passwordless Login being started.
+     */
+    async function onPasswordlessLoginStart(bag: PasswordlessLoginStartRequestBag): Promise<void> {
+        isAuthenticating.value = true;
+
+        clearError();
+
+        try {
+            const response = await invokeBlockAction<PasswordlessLoginStartResponseBag>("PasswordlessLoginStart", { bag });
+
+            if (!response?.isSuccess || !response.data) {
+                showError(response?.errorMessage || "Something went wrong. Please try again.");
+                return;
+            }
+
+            if (response.data.isSuccessful) {
+                passwordlessLoginOptions.value = {
+                    ...passwordlessLoginOptions.value,
+                    state: response.data.state || "",
+                    step: PasswordlessLoginStep.Verify
+                };
+                return;
+            }
+
+            passwordlessLoginOptions.value = {
+                ...passwordlessLoginOptions.value,
+                step: PasswordlessLoginStep.Start
+            };
+            showError(response?.data?.errorMessage || response?.errorMessage || "An unknown error occurred. Please submit email or phone number again.");
+            return;
+        }
+        finally {
+            isAuthenticating.value = false;
+        }
+    }
+
+    /**
+     * Event handler for the Passwordless Login being verified.
+     * Handles the redirect to the return URL if authentication is successful.
+     */
+    async function onPasswordlessLoginVerify(bag: PasswordlessLoginVerifyRequestBag): Promise<void> {
+        isAuthenticating.value = true;
+        clearError();
+
+        try {
+            var response = await invokeBlockAction<PasswordlessLoginVerifyResponseBag>("PasswordlessLoginVerify", { bag });
+
+            if (!response || !response.isSuccess || !response.data) {
+                showError("Something went wrong. Please try again.");
+                return;
+            }
+
+            if (response.data.isAuthenticated) {
+                await navigate(config.redirectUrl || "/");
+                return;
+            }
+
+            if (response.data.isRegistrationRequired) {
+                if (!response.data.registrationUrl) {
+                    showError("Redirecting to default registration page");
+                }
+                await navigate(response.data.registrationUrl || "/NewAccount");
+                return;
+            }
+
+            if (response.data.isPersonSelectionRequired) {
+                passwordlessLoginOptions.value = {
+                    ...passwordlessLoginOptions.value,
+                    isPersonSelectionRequired: true,
+                    matchingPeople: response.data.matchingPeople || []
+                };
+                return;
+            }
+
+            showError(response.data.errorMessage ?? "Authentication failed. Please try again.");
+        }
+        finally {
+            // Reset isAuthenticating in the event there is an error so the user can resubmit.
+            isAuthenticating.value = false;
+        }
+    }
+
+    /**
+     * Event handler for the register button being clicked.
+     */
+    async function onRegister(): Promise<void> {
+        await navigate(config.newAccountPageUrl ?? "/");
+    }
+
+    // #endregion
+
+    //#region Functions
+
+    /**
+     * Clears the error message.
+     */
+    function clearError(): void {
+        errorMessage.value = null;
+    }
+
+    /**
+     * Gets the initial login method to display.
+     */
+    function getInitialLoginMethod(): LoginMethod {
+        const configuredDefaultLoginMethod = config.defaultLoginMethod;
+
+        switch(configuredDefaultLoginMethod) {
+            case LoginMethod.InternalDatabase: {
+                // If block setting default is internal database but only passwordless is supported,
+                // then initial login method should be passwordless.
+                if (!config.isInternalDatabaseLoginSupported && config.isPasswordlessLoginSupported) {
+                    return LoginMethod.Passwordless;
+                }
+                break;
+            }
+
+            case LoginMethod.Passwordless: {
+                // If block setting default is passwordless but only internal database is supported,
+                // then initial login method should be internal database.
+                if (!config.isPasswordlessLoginSupported && config.isInternalDatabaseLoginSupported) {
+                    return LoginMethod.InternalDatabase;
+                }
+                break;
+            }
+
+            default: {
+                break;
+            }
+        }
+
+        // Return the block setting value.
+        return configuredDefaultLoginMethod;
+    }
+
+    /**
+     * Handles the event when a component triggers navigation.
+     *
+     * @param url The URL to navigate to.
+     * @returns an unresolving promise so the page/form remains unusable until the redirect is complete.
+     */
+    async function navigate(url: string): Promise<void> {
+        isNavigating.value = true;
+        window.location.href = url;
+        return new Promise((_resolve, _reject) => {
+            // Return an unresolving promise so the page/form remains unusable until the redirect is complete.
+        });
+    }
+
+    /**
+     * Displays a completed message to the user.
+     * If caption is provided, then a generic error is displayed.
+     *
+     * @param error The optional error message.
+     */
+    function showCompleted(caption?: string | null | undefined): void {
+        completedCaption.value = caption || "An unknown error occurred";
+        isCompleted.value = true;
+    }
+
+    /**
+     * Displays an error message.
+     * If no error message is provided, then a generic error is displayed.
+     *
+     * @param error The optional error message.
+     */
+    function showError(error?: string | null | undefined): void {
+        errorMessage.value = error || "An unknown error occurred";
+    }
+
+    //#endregion
+
+    onMounted(() => {
+        // Redirect since already authenticated.
+        if (config.shouldRedirect && config.redirectUrl) {
+            navigate(config.redirectUrl);
+        }
+    });
+
+    removeCurrentUrlQueryParams("State", "Code", "IsPasswordless");
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

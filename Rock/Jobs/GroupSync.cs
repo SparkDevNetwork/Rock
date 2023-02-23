@@ -23,8 +23,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -58,10 +56,9 @@ namespace Rock.Jobs
     [DisplayName( "Group Sync" )]
     [Description( "Processes groups that are marked to be synced with a data view." )]
 
-    [DisallowConcurrentExecution]
     [BooleanField( "Require Password Reset On New Logins", "Determines if new logins will require the individual to reset their password on the first log in.", Key = "RequirePasswordReset" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each operation to complete. Leave blank to use the default for this job (180).", false, 3 * 60, "General", 1, "CommandTimeout" )]
-    public class GroupSync : IJob
+    public class GroupSync : RockJob
     {
         /// <summary>
         /// Empty constructor for job initialization
@@ -74,19 +71,12 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Job that will sync groups.
-        ///
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             // Get the job setting(s)
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            bool requirePasswordReset = dataMap.GetBoolean( "RequirePasswordReset" );
-            var commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 180;
+            bool requirePasswordReset = GetAttributeValue( "RequirePasswordReset" ).AsBoolean();
+            var commandTimeout = GetAttributeValue( "CommandTimeout" ).AsIntegerOrNull() ?? 180;
 
             // Counters for displaying results
             int groupsSynced = 0;
@@ -116,7 +106,7 @@ namespace Rock.Jobs
                 {
                     int syncId = syncInfo.SyncId;
                     bool hasSyncChanged = false;
-                    context.UpdateLastStatusMessage( $"Syncing group {syncInfo.GroupName}" );
+                    this.UpdateLastStatusMessage( $"Syncing group {syncInfo.GroupName}" );
 
                     // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
                     using ( var rockContextReadOnly = new RockContextReadOnly() )
@@ -147,6 +137,13 @@ namespace Rock.Jobs
                         // Get the person id's from the data view (source)
                         var dataViewGetQueryArgs = new DataViewGetQueryArgs
                         {
+                            /*
+
+                                11/28/2022 - CWR
+                                In order to prevent potential context conflicts with allowing a new Rock context being created here,
+                                this DbContext will stay set to the rockContextReadOnly that was passed in.
+
+                             */
                             DbContext = rockContextReadOnly,
                             DatabaseTimeoutSeconds = commandTimeout
                         };
@@ -190,7 +187,7 @@ namespace Rock.Jobs
                         var targetPersonIdsToDelete = existingGroupMemberPersonList.Where( t => !sourcePersonIds.Contains( t.PersonId ) && t.IsArchived != true ).ToList();
                         if ( targetPersonIdsToDelete.Any() )
                         {
-                            context.UpdateLastStatusMessage( $"Deleting {targetPersonIdsToDelete.Count()} group records in {syncInfo.GroupName} that are no longer in the sync data view" );
+                            this.UpdateLastStatusMessage( $"Deleting {targetPersonIdsToDelete.Count()} group records in {syncInfo.GroupName} that are no longer in the sync data view" );
                         }
 
                         int deletedCount = 0;
@@ -202,7 +199,7 @@ namespace Rock.Jobs
                             deletedCount++;
                             if ( deletedCount % 100 == 0 )
                             {
-                                context.UpdateLastStatusMessage( $"Deleted {deletedCount} of {targetPersonIdsToDelete.Count()} group member records for group {syncInfo.GroupName}" );
+                                this.UpdateLastStatusMessage( $"Deleted {deletedCount} of {targetPersonIdsToDelete.Count()} group member records for group {syncInfo.GroupName}" );
                             }
 
                             try
@@ -261,7 +258,7 @@ namespace Rock.Jobs
                         // if this person isn't already a member of the list as an Unarchived member, we can Restore the group member for that PersonId instead
                         var archivedTargetPersonIds = existingGroupMemberPersonList.Where( t => t.IsArchived == true ).Select( a => a.PersonId ).ToList();
 
-                        context.UpdateLastStatusMessage( $"Adding {targetPersonIdsToAdd.Count()} group member records for group {syncInfo.GroupName}" );
+                        this.UpdateLastStatusMessage( $"Adding {targetPersonIdsToAdd.Count()} group member records for group {syncInfo.GroupName}" );
                         int addedCount = 0;
                         int notAddedCount = 0;
                         foreach ( var personId in targetPersonIdsToAdd )
@@ -274,7 +271,7 @@ namespace Rock.Jobs
                                     notAddedMessage = $"{Environment.NewLine} There are {notAddedCount} members that could not be added due to group requirements.";
                                 }
 
-                                context.UpdateLastStatusMessage( $"Added {addedCount} of {targetPersonIdsToAdd.Count()} group member records for group {syncInfo.GroupName}. {notAddedMessage}" );
+                                this.UpdateLastStatusMessage( $"Added {addedCount} of {targetPersonIdsToAdd.Count()} group member records for group {syncInfo.GroupName}. {notAddedMessage}" );
                             }
 
                             try
@@ -443,7 +440,7 @@ namespace Rock.Jobs
                     throw new Exception( errorMessage );
                 }
 
-                context.Result = resultMessage;
+                this.Result = resultMessage;
             }
             catch ( System.Exception ex )
             {

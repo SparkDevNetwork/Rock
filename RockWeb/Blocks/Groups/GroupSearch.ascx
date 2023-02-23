@@ -18,6 +18,10 @@
                 DataField="MemberCount" 
                 SortExpression="MemberCount"
                 DataFormatString="{0:N0}" />
+            <Rock:RockBoundField 
+                HeaderText="Campus"
+                DataField="Campus" 
+                SortExpression="Campus" />
         </Columns>
     </Rock:Grid>
 </div>

@@ -199,11 +199,11 @@ namespace RockWeb
                 RunStartups();
 
                 bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
-                if ( runJobsInContext && RockApplicationStartupHelper.QuartzScheduler != null )
+                if ( runJobsInContext )
                 {
                     RockApplicationStartupHelper.LogStartupMessage( "Starting Job Scheduler" );
                     Debug.WriteLine( "Starting Job Scheduler" );
-                    RockApplicationStartupHelper.QuartzScheduler.Start();
+                    ServiceJobService.StartQuartzScheduler();
                     Debug.WriteLine( "Job Scheduler Started" );
                     RockApplicationStartupHelper.LogStartupMessage( "Job Scheduler Started" );
                 }
@@ -576,10 +576,7 @@ namespace RockWeb
                 bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
                 if ( runJobsInContext )
                 {
-                    if ( RockApplicationStartupHelper.QuartzScheduler != null )
-                    {
-                        RockApplicationStartupHelper.QuartzScheduler.Shutdown();
-                    }
+                    ServiceJobService.ShutdownQuartzScheduler();
                 }
 
                 // Process the transaction queue

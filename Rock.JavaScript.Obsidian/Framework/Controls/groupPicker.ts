@@ -16,10 +16,11 @@
 //
 
 import { defineComponent, PropType, ref, watch } from "vue";
+import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 import { GroupTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import TreeItemPicker from "./treeItemPicker";
+import TreeItemPicker from "./treeItemPicker.obs";
 import { Guid } from "@Obsidian/Types";
 import InlineCheckBox from "./inlineCheckBox";
 
@@ -40,12 +41,6 @@ export default defineComponent({
         multiple: {
             type: Boolean as PropType<boolean>,
             default: false
-        },
-
-        /** The security grant token that will be used to request additional access to the group list. */
-        securityGrantToken: {
-            type: String as PropType<string | null>,
-            default: null
         },
 
         /** GUID of the group you want to use as the root. */
@@ -79,11 +74,12 @@ export default defineComponent({
 
     setup(props, { emit }) {
         const internalValue = ref(props.modelValue ?? null);
+        const securityGrantToken = useSecurityGrantToken();
 
         /** Whether to include inactive groups in the results or not. */
         const includeInactiveGroups = ref(false);
 
-        const itemProvider = ref<GroupTreeItemProvider | null>(null);
+        const itemProvider = ref<GroupTreeItemProvider>();
 
         // Configure the item provider with our settings.
         function refreshItemProvider(): void {
@@ -93,7 +89,7 @@ export default defineComponent({
             provider.includeInactiveGroups = includeInactiveGroups.value;
             provider.limitToSchedulingEnabled = props.limitToSchedulingEnabled;
             provider.limitToRSVPEnabled = props.limitToRSVPEnabled;
-            provider.securityGrantToken = props.securityGrantToken;
+            provider.securityGrantToken = securityGrantToken.value;
 
             itemProvider.value = provider;
         }
@@ -107,6 +103,13 @@ export default defineComponent({
             props.limitToRSVPEnabled,
             props.limitToSchedulingEnabled
         ], refreshItemProvider);
+
+        // Keep security token up to date, but don't need refetch data
+        watch(securityGrantToken, () => {
+            if (itemProvider.value) {
+                itemProvider.value.securityGrantToken = securityGrantToken.value;
+            }
+        });
 
         watch(internalValue, () => {
             emit("update:modelValue", internalValue.value);

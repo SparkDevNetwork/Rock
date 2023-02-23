@@ -19,9 +19,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -40,7 +41,6 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SINGLE_SELECT )]
     public class SelectSingleFieldType : FieldType
     {
-
         #region Configuration
 
         private const string VALUES_KEY = "values";
@@ -48,6 +48,286 @@ namespace Rock.Field.Types
         private const string REPEAT_COLUMNS = "repeatColumns";
 
         private const string CUSTOM_VALUES_PUBLIC_KEY = "customValues";
+
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Gets the text value from the configured values.
+        /// </summary>
+        /// <param name="privateValue">The private (database) value.</param>
+        /// <param name="configuredValues">The key-value pairs that describe which values can be displayed.</param>
+        /// <returns>A plain string of text.</returns>
+        private string GetTextValueFromConfiguredValues( string privateValue, Dictionary<string, string> configuredValues )
+        {
+            var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+            return configuredValues
+                .Where( v => selectedValues.Contains( v.Key ) )
+                .Select( v => v.Value )
+                .ToList()
+                .AsDelimited( ", " );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) && privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                var configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
+
+                return GetTextValueFromConfiguredValues( privateValue, configuredValues );
+            }
+
+            return base.GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
+        /// </summary>
+        /// <returns></returns>
+        public override string GetEqualToCompareValue()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var configuredValues = Helper.GetConfiguredValues( configurationValues );
+            var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            return AddQuotes( configuredValues
+                .Where( v => selectedValues.Contains( v.Key ) )
+                .Select( v => v.Value )
+                .ToList()
+                .AsDelimited( "' OR '" ) );
+        }
+
+        /// <summary>
+        /// Gets the filter format script.
+        /// </summary>
+        /// <param name="configurationValues"></param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
+        /// a '$selectedContent' should be used to limit script to currently selected filter fields
+        /// </remarks>
+        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
+        {
+            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
+            var format = "return Rock.reporting.formatFilterForSelectSingleField('{0}', $selectedContent);";
+            return string.Format( format, titleJs );
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Used only by enums ( See the EntityHelper.GetEntityFields() method )
+        /// </remarks>
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
+        {
+            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            if ( !selectedValues.Any() )
+            {
+                // if none of the values are selected, don't filter the results
+                return Expression.Constant( true );
+            }
+
+            MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+
+            object constantValue;
+            if ( propertyType.IsEnum )
+            {
+                constantValue = Enum.Parse( propertyType, selectedValues[0] );
+            }
+            else
+            {
+                constantValue = selectedValues[0] as string;
+            }
+
+            ConstantExpression constantExpression = Expression.Constant( constantValue );
+            Expression comparison = Expression.Equal( propertyExpression, constantExpression );
+
+            foreach ( string selectedValue in selectedValues.Skip( 1 ) )
+            {
+                constantExpression = Expression.Constant( Enum.Parse( propertyType, selectedValue ) );
+                comparison = Expression.Or( comparison, Expression.Equal( propertyExpression, constantExpression ) );
+            }
+
+            return comparison;
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            List<string> selectedValues = null;
+            ComparisonType comparisonType = ComparisonType.Contains;
+
+            if ( filterValues.Count == 1 )
+            {
+                // if there is only one filter value, it is a Contains comparison for the selectedValues
+                // This is the normal thing that DataViews would do with a SelectSingleFieldType
+                selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            }
+            else if ( filterValues.Count >= 2 )
+            {
+                // if there are 2 (or more) filter values, the first is the comparison type and the 2nd is the selected value(s)
+                // Note: Rock Lava Entity commands could do this, DataViews don't currently support more than just 'Contains'
+                comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
+
+                if ( comparisonType == ComparisonType.EqualTo )
+                {
+                    // If EqualTo was specified, treat it as Contains
+                    comparisonType = ComparisonType.Contains;
+                }
+
+                if ( comparisonType == ComparisonType.NotEqualTo )
+                {
+                    // If NotEqualTo was specified, treat it as DoesNotContain
+                    comparisonType = ComparisonType.DoesNotContain;
+                }
+
+                selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            }
+
+            // if IsBlank (or IsNotBlank)
+            if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+            {
+                // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( string.Empty ) );
+            }
+
+            if ( selectedValues?.Any() == true )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                Expression expression = Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                if ( comparisonType == ComparisonType.DoesNotContain )
+                {
+                    expression = Expression.Not( expression );
+                }
+
+                return expression;
+            }
+
+
+            return new NoAttributeFilterExpression();
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            return !values.IsStrictLavaTemplate();
+        }
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldValues = oldPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+            var newValues = newPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            if ( oldValues != newValues )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            // No need to resolve lava fields since we don't support lava.
+            values = values.ToUpper();
+
+            // If the source is a SQL query then it is volatile since the results
+            // of the query might change at any time.
+            return values.Contains( "SELECT" ) && values.Contains( "FROM" );
+        }
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) || !privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                return new PersistedValues
+                {
+                    TextValue = privateValue,
+                    CondensedTextValue = privateValue,
+                    HtmlValue = privateValue,
+                    CondensedHtmlValue = privateValue
+                };
+            }
+
+            if ( !( cache?.GetValueOrNull( "configuredValues" ) is Dictionary<string, string> configuredValues ) )
+            {
+                configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
+
+                cache?.AddOrReplace( "configuredValues", configuredValues );
+            }
+
+            var textValue = GetTextValueFromConfiguredValues( privateValue, configuredValues ) ?? string.Empty;
+            var condensedTextValue = textValue.Truncate( 100 );
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                CondensedTextValue = condensedTextValue,
+                HtmlValue = textValue,
+                CondensedHtmlValue = condensedTextValue
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -212,27 +492,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( !string.IsNullOrWhiteSpace( privateValue ) && privateConfigurationValues.ContainsKey( VALUES_KEY ) )
-            {
-                var configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
-                var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                return configuredValues
-                    .Where( v => selectedValues.Contains( v.Key ) )
-                    .Select( v => v.Value )
-                    .ToList()
-                    .AsDelimited( ", " );
-            }
-
-            return base.GetTextValue( privateValue, privateConfigurationValues );
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -259,10 +518,6 @@ namespace Rock.Field.Types
         {
             return value;
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -345,10 +600,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
@@ -372,61 +623,12 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
-        {
-            if ( configurationValues != null && configurationValues.ContainsKey( VALUES_KEY ) )
-            {
-                var cbList = new RockCheckBoxList();
-                cbList.ID = string.Format( "{0}_cbList", id );
-                cbList.AddCssClass( "js-filter-control" );
-                cbList.RepeatDirection = RepeatDirection.Horizontal;
-
-                foreach ( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
-                {
-                    cbList.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
-                }
-
-                if ( cbList.Items.Count > 0 )
-                {
-                    return cbList;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return true;
-        }
-
-        /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         public override string GetFilterCompareValue( Control control, FilterMode filterMode )
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
-        /// </summary>
-        /// <returns></returns>
-        public override string GetEqualToCompareValue()
         {
             return null;
         }
@@ -486,186 +688,37 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Formats the filter value value.
+        /// Gets the filter value control.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            var configuredValues = Helper.GetConfiguredValues( configurationValues );
-            var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            return AddQuotes( configuredValues
-                .Where( v => selectedValues.Contains( v.Key ) )
-                .Select( v => v.Value )
-                .ToList()
-                .AsDelimited( "' OR '" ) );
-        }
-
-        /// <summary>
-        /// Gets the filter format script.
-        /// </summary>
-        /// <param name="configurationValues"></param>
-        /// <param name="title">The title.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
-        /// a '$selectedContent' should be used to limit script to currently selected filter fields
-        /// </remarks>
-        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
-        {
-            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            var format = "return Rock.reporting.formatFilterForSelectSingleField('{0}', $selectedContent);";
-            return string.Format( format, titleJs );
-        }
-
-        /// <summary>
-        /// Gets a filter expression for an entity property value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="propertyName">Name of the property.</param>
-        /// <param name="propertyType">Type of the property.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// Used only by enums ( See the EntityHelper.GetEntityFields() method )
-        /// </remarks>
-        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
-        {
-            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            if ( !selectedValues.Any() )
+            if ( configurationValues != null && configurationValues.ContainsKey( VALUES_KEY ) )
             {
-                // if none of the values are selected, don't filter the results
-                return Expression.Constant( true );
-            }
+                var cbList = new RockCheckBoxList();
+                cbList.ID = string.Format( "{0}_cbList", id );
+                cbList.AddCssClass( "js-filter-control" );
+                cbList.RepeatDirection = RepeatDirection.Horizontal;
 
-            MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
-
-            object constantValue;
-            if ( propertyType.IsEnum )
-            {
-                constantValue = Enum.Parse( propertyType, selectedValues[0] );
-            }
-            else
-            {
-                constantValue = selectedValues[0] as string;
-            }
-
-            ConstantExpression constantExpression = Expression.Constant( constantValue );
-            Expression comparison = Expression.Equal( propertyExpression, constantExpression );
-
-            foreach ( string selectedValue in selectedValues.Skip( 1 ) )
-            {
-                constantExpression = Expression.Constant( Enum.Parse( propertyType, selectedValue ) );
-                comparison = Expression.Or( comparison, Expression.Equal( propertyExpression, constantExpression ) );
-            }
-
-            return comparison;
-        }
-
-        /// <summary>
-        /// Gets a filter expression for an attribute value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns>
-        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
-        {
-            List<string> selectedValues = null;
-            ComparisonType comparisonType = ComparisonType.Contains;
-
-            if ( filterValues.Count == 1 )
-            {
-                // if there is only one filter value, it is a Contains comparison for the selectedValues
-                // This is the normal thing that DataViews would do with a SelectSingleFieldType
-                selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            }
-            else if ( filterValues.Count >= 2 )
-            {
-                // if there are 2 (or more) filter values, the first is the comparison type and the 2nd is the selected value(s)
-                // Note: Rock Lava Entity commands could do this, DataViews don't currently support more than just 'Contains'
-                comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
-
-                if ( comparisonType == ComparisonType.EqualTo )
+                foreach ( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
                 {
-                    // If EqualTo was specified, treat it as Contains
-                    comparisonType = ComparisonType.Contains;
+                    cbList.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
                 }
 
-                if ( comparisonType == ComparisonType.NotEqualTo )
+                if ( cbList.Items.Count > 0 )
                 {
-                    // If NotEqualTo was specified, treat it as DoesNotContain
-                    comparisonType = ComparisonType.DoesNotContain;
+                    return cbList;
                 }
-
-                selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             }
 
-            // if IsBlank (or IsNotBlank)
-            if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
-            {
-                // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
-                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( string.Empty ) );
-            }
-
-            if ( selectedValues?.Any() == true )
-            {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
-                Expression expression = Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
-                if ( comparisonType == ComparisonType.DoesNotContain )
-                {
-                    expression = Expression.Not( expression );
-                }
-
-                return expression;
-            }
-
-
-            return new NoAttributeFilterExpression();
+            return null;
         }
 
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldValues = oldPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
-            var newValues = newPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
-
-            var oldSqlQuery = oldValues.ToUpper().Contains( "SELECT" ) && oldValues.ToUpper().Contains( "FROM" );
-            var newSqlQuery = newValues.ToUpper().Contains( "SELECT" ) && newValues.ToUpper().Contains( "FROM" );
-
-            if ( oldValues != newValues )
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
-        {
-            var values = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
-            var options = new Lava.CommonMergeFieldsOptions
-            {
-                GetLegacyGlobalMergeFields = false
-            };
-
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
-            var listSource = values.ResolveMergeFields( mergeFields );
-
-            // If the source is a SQL query then it is volatile since the results
-            // of the query might change at any time.
-            return listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" );
-        }
-
+#endif
         #endregion
     }
 }

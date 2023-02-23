@@ -27,6 +27,7 @@
     <Compile Remove="obj\**" />
     <Compile Remove="PersonProfile\**" />
     <Compile Remove="Plugin\**" />
+    <Compile Remove="RealTime\AspNet\**" />
     <Compile Remove="Reporting\Dashboard\**" />
     <Compile Remove="Service References\**" />
     <Compile Remove="Services\**" />
@@ -45,6 +46,7 @@
     <EmbeddedResource Remove="obj\**" />
     <EmbeddedResource Remove="PersonProfile\**" />
     <EmbeddedResource Remove="Plugin\**" />
+    <EmbeddedResource Remove="RealTime\AspNet\**" />
     <EmbeddedResource Remove="Reporting\Dashboard\**" />
     <EmbeddedResource Remove="Service References\**" />
     <EmbeddedResource Remove="Services\**" />
@@ -63,6 +65,7 @@
     <None Remove="obj\**" />
     <None Remove="PersonProfile\**" />
     <None Remove="Plugin\**" />
+    <None Remove="RealTime\AspNet\**" />
     <None Remove="Reporting\Dashboard\**" />
     <None Remove="Service References\**" />
     <None Remove="Services\**" />
@@ -98,7 +101,6 @@
     <Compile Remove="Data\RockPluginDBInitializer.cs" />
     <Compile Remove="Data\RouteAttribute.cs" />
     <Compile Remove="Field\EntitySingleSelectionListFieldTypeBase.cs" />
-    <Compile Remove="Field\FieldType.cs" />
     <Compile Remove="Field\SelectFromListFieldType.cs" />
     <Compile Remove="Financial\IHostedGatewayComponent.cs" />
     <Compile Remove="Financial\IHostedGatewayPaymentControlCurrencyTypeEvent.cs" />
@@ -109,7 +111,6 @@
     <Compile Remove="Lava\Blocks\StylesheetBlock.cs" />
     <Compile Remove="MergeTemplates\WordDocumentMergeTemplateType.cs" />
     <Compile Remove="Reporting\PowerBiUtilities.cs" />
-    <Compile Remove="Reporting\ReportingHelper.cs" />
     <Compile Remove="Reporting\ReportOutputBuilder.cs" />
     <Compile Remove="Scripting.evaluator.cs" />
     <Compile Remove="Scripting.Extensions.cs" />
@@ -132,8 +133,6 @@
     <Compile Remove="Utility\ExtensionMethods\GridExtensions.cs" />
     <Compile Remove="Utility\ExtensionMethods\HttpContextExtensions.cs" />
     <Compile Remove="Utility\ExtensionMethods\PageRouteExtensions.cs" />
-    <Compile Remove="Utility\ExtensionMethods\QuartzExtensions.cs" />
-    <Compile Remove="Utility\ExtensionMethods\Request.cs" />
     <Compile Remove="Utility\FileUtilities.cs" />
     <Compile Remove="Utility\IRockOwinStartup.cs" />
     <Compile Remove="Utility\Ncoa.cs" />
@@ -141,7 +140,6 @@
     <Compile Remove="Utility\SparkDataApi\NcoaApi.cs" />
     <Compile Remove="Utility\SparkDataApi\SparkDataApi.cs" />
     <Compile Remove="Utility\TaskActivityMessageHub.cs" />
-    <Compile Remove="Utility\WebRequestHelper.cs" />
     <Compile Remove="Utility\ZebraPrint.cs" />
     <Compile Remove="Workflow\Action\Utility\RunJob.cs" />
     <Compile Remove="Workflow\Action\WorkflowAttributes\SetAttributeToCurrentPerson.cs" />
@@ -163,19 +161,32 @@
     <Compile Include="Badge\BadgeContainer.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
+    <Compile Include="Jobs\RockJob.cs" />
+    <Compile Include="Jobs\RockJobListener.cs" />
+    <Compile Include="Jobs\RockJobWarningException.cs" />
+    <Compile Include="Jobs\RockTriggerListener.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
     <Compile Include="Model\Reporting\Report\Report.WebForms.cs" />
+    <Compile Include="Transactions\AggregateAsyncTransaction.cs" />
+    <Compile Include="Transactions\AggregateTransaction.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
     <Compile Include="Transactions\ConnectionRequestActivityChangeTransaction.cs" />
+    <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
+    <Compile Include="Transactions\IAsyncTransaction.cs" />
+    <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\InteractionTransaction.cs" />
+    <Compile Include="Transactions\IQueuedTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowsTransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
+    <Compile Include="Transactions\SendAchievementCompletedRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\SendAttendanceRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
+    <Compile Include="Transactions\UpdateNotificationMessageBadgeCountTransaction.cs" />
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AchievementTypeCache.cs" />
@@ -203,11 +214,14 @@
     <Compile Include="Web\Cache\Entities\GroupTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractionChannelCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractionComponentCache.cs" />
+    <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
+    <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\LavaShortcodeCache.cs" />
     <Compile Include="Web\Cache\Entities\LayoutCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NoteTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\NotificationMessageTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PageCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\PersonalizationSegmentCache.cs" />
@@ -223,6 +237,7 @@
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StreakTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StreakTypeExclusionCache.cs" />
+    <Compile Include="Web\Cache\Entities\SystemPhoneNumberCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionFormAttributeCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionFormCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionFormSectionCache.cs" />
@@ -288,8 +303,9 @@
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="2.0.4" />
     <PackageReference Include="PreMailer.Net" Version="2.2.0" />
     <PackageReference Include="PuppeteerSharp" Version="6.2.0" />
+    <PackageReference Include="Quartz" Version="3.6.0" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
-    <PackageReference Include="RockRMS.Common.Mobile" Version="0.3.24" />
+    <PackageReference Include="RockRMS.Common.Mobile" Version="0.3.26" />
     <PackageReference Include="Serilog" Version="2.8.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
     <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="1.0.3" />

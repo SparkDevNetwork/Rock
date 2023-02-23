@@ -402,7 +402,7 @@ Font Bold: true
         #region Chart
 
         [TestMethod]
-        public void ChartShortcode_DefaultOptions_EmitsCorrectHtml()
+        public void ChartShortcode_BarChartWithDefaultOptions_EmitsCorrectHtml()
         {
             var input = @"
 {[ chart type:'bar' ]}
@@ -435,11 +435,12 @@ var options = {
         bodyFontColor: '#fff',
         titleFontColor: '#fff',
         callbacks: {
-            label: function(tooltipItem,data) { returnIntl.NumberFormat().format(tooltipItem.yLabel); }
+            label: function(tooltipItem,data) { returnIntl.NumberFormat().format(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]); }
         }
     },
     scales: {
         yAxes:[ {
+            display: true,
             ticks: {
                 callback: function(label,index,labels) { returnIntl.NumberFormat().format(label); },
             },
@@ -448,8 +449,7 @@ var options = {
 };
 var data = {
     labels: [``Small Groups``, ``Serving Groups``, ``General Groups``, ``Fundraising Groups``],
-    datasets: [      {
-          label: '',
+    datasets: [{
           fill: false, 
           backgroundColor: 'rgba(5,155,255,.6)',
           borderColor: '#059BFF',
@@ -485,6 +485,84 @@ var chart = new Chart(ctx, {
             var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        [TestMethod]
+        public void ChartShortcode_PieChartWithDefaultOptions_EmitsCorrectHtml()
+        {
+            var input = @"
+{[ chart type:'pie' ]}
+    [[ dataitem label:'Small Groups' value:'45' ]] [[ enddataitem ]]
+    [[ dataitem label:'Serving Groups' value:'38' ]] [[ enddataitem ]]
+    [[ dataitem label:'General Groups' value:'34' ]] [[ enddataitem ]]
+    [[ dataitem label:'Fundraising Groups' value:'12' ]] [[ enddataitem ]]
+{[ endchart ]}
+";
+
+            var expectedOutput = @"
+<script src='~/Scripts/moment.min.js' type='text/javascript'></script>
+<script src='~/Scripts/Chartjs/Chart.min.js' type='text/javascript'></script>
+              
+<div class=``chart-container`` style=``position: relative; height:400px; width:100%``>
+    <canvas id=``chart-id-<<guid>>``></canvas>
+</div>
+
+<script>
+
+var options = {
+  maintainAspectRatio: false,
+    legend: {
+        position: 'bottom',
+        display: false
+    },
+    tooltips: {
+        enabled: true,
+        backgroundColor: '#000',
+        bodyFontColor: '#fff',
+        titleFontColor: '#fff',
+        callbacks: {
+            label: function(tooltipItem,data) { return data.labels[tooltipItem.index] + ``:`` + Intl.NumberFormat().format( data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] ); }
+        }
+    }
+};
+var data = {
+    labels: [``Small Groups``, ``Serving Groups``, ``General Groups``, ``Fundraising Groups``],
+    datasets: [      {
+          fill: false, 
+          backgroundColor: 'rgba(5,155,255,.6)',
+          borderColor: '#059BFF',
+          borderWidth: 0,
+          pointRadius: 3,
+          pointBackgroundColor: '#059BFF',
+          pointBorderColor: '#059BFF',
+          pointBorderWidth: 0,
+          pointHoverBackgroundColor: 'rgba(5,155,255,.6)',
+          pointHoverBorderColor: 'rgba(5,155,255,.6)',
+          pointHoverRadius: '3',
+                              data: [45,38,34,12],
+      }
+      ],
+    borderWidth: 0
+};
+
+
+Chart.defaults.global.defaultFontColor = '#777';
+Chart.defaults.global.defaultFontFamily = ``sans-serif``;
+
+var ctx = document.getElementById('chart-id-<<guid>>').getContext('2d');
+var chart = new Chart(ctx, {
+    type: 'pie',
+    data: data,
+    options: options
+});    
+
+</script>";
+
+            expectedOutput = expectedOutput.Replace( "``", @"""" );
+
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );        
         }
 
         #endregion
@@ -847,6 +925,61 @@ $( document ).ready(function() {
 
         #endregion
 
+
+        #region KPI
+
+        [TestMethod]
+        public void KpiShortcode_DocumentationExample_EmitsCorrectHtml()
+        {
+            var input = @"
+{[kpis]}
+  [[ kpi icon:'fa-highlighter' value:'4' label:'Highlighters' color:'yellow-700']][[ endkpi ]]
+  [[ kpi icon:'fa-pen-fancy' value:'8' label:'Pens' color:'indigo-700']][[ endkpi ]]
+  [[ kpi icon:'fa-pencil-alt' value:'15' label:'Pencils' color:'green-600']][[ endkpi ]]
+{[endkpis]}
+";
+
+            var expectedOutput = @"
+<div class=``kpi - container``>
+    <div class=``kpi  kpi-card has-icon-bg text-yellow-700 border-yellow-500``>
+        <div class=``kpi-icon``>
+            <img class=``svg-placeholder`` src=``data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'&gt;&lt;/svg&gt;``>
+            <div class=``kpi-content``><i class=``fa fa-fw fa-highlighter``></i></div>
+        </div>
+        <div class=``kpi-stat ``>
+            <span class=``kpi-value text-color``>4</span>
+            <span class=``kpi-label``>Highlighters</span>
+        </div>
+    </div>
+    <div class=``kpi  kpi-card has-icon-bg text-indigo-700 border-indigo-500``>
+        <div class=``kpi-icon``>
+            <img class=``svg-placeholder`` src=``data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'&gt;&lt;/svg&gt;``>
+            <div class=``kpi-content``><i class=``fa fa-fw fa-pen-fancy``></i></div>
+        </div><div class=``kpi-stat ``>
+            <span class=``kpi-value text-color``>8</span>
+            <span class=``kpi-label``>Pens</span>
+        </div>
+    </div>
+    <div class=``kpi  kpi-card has-icon-bg text-green-600 border-green-400``>
+        <div class=``kpi-icon``>
+            <img class=``svg-placeholder`` src=``data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'&gt;&lt;/svg&gt;``>
+            <div class=``kpi-content``><i class=``fa fa-fw fa-pencil-alt``></i></div>
+        </div><div class=``kpi-stat ``>
+            <span class=``kpi-value text-color``>15</span>
+            <span class=``kpi-label``>Pencils</span>
+        </div>
+    </div>
+</div>
+";
+
+            expectedOutput = expectedOutput.Replace( "``", @"""" );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        #endregion
+
+
         #region Panel
 
         [TestMethod]
@@ -864,7 +997,7 @@ This is a super simple panel.
       <div class=``panel-heading``>
         <h3 class=``panel-title``>
             
-                <i class='fa fa-star'></i> 
+                <i class=``fa fa-star``></i> 
             
             Important Stuff</h3>
       </div>

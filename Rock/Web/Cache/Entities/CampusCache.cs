@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+#if REVIEW_WEBFORMS
+using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -273,6 +275,42 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
+        /// Checks if the campus geofence contains the specified point.
+        /// </summary>
+        /// <param name="latitude">The latitude of the point.</param>
+        /// <param name="longitude">The longitude of the point.</param>
+        /// <returns><c>true</c> if the campus has a geofence and it contains the point; otherwise <c>false</c>.</returns>
+        internal bool ContainsGeoPoint( double latitude, double longitude )
+        {
+#if REVIEW_NET5_0_OR_GREATER
+            var geoPoint = new NetTopologySuite.Geometries.Point( longitude, latitude );
+#else
+            var geoPoint = DbGeography.FromText( $"POINT({longitude} {latitude})" );
+#endif
+
+            return ContainsGeoPoint( geoPoint );
+        }
+
+        /// <summary>
+        /// Checks if the campus geofence contains the specified point.
+        /// </summary>
+        /// <param name="geoPoint">The point to be checked.</param>
+        /// <returns><c>true</c> if the campus has a geofence and it contains the point; otherwise <c>false</c>.</returns>
+#if REVIEW_NET5_0_OR_GREATER
+        internal bool ContainsGeoPoint( NetTopologySuite.Geometries.Point geoPoint )
+#else
+        internal bool ContainsGeoPoint( DbGeography geoPoint )
+#endif
+        {
+            if ( Location?.GeoFence == null )
+            {
+                return false;
+            }
+
+            return geoPoint.Intersects( Location.GeoFence );
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -467,6 +505,18 @@ namespace Rock.Web.Cache
             public double? Longitude { get; private set; }
 
             /// <summary>
+            /// Gets the geofence defined for the campuses location.
+            /// </summary>
+            /// <value>
+            /// The geofence defined for the campuses location.
+            /// </value>
+#if REVIEW_NET5_0_OR_GREATER
+            internal NetTopologySuite.Geometries.Polygon GeoFence { get; }
+#else
+            internal System.Data.Entity.Spatial.DbGeography GeoFence { get; }
+#endif
+
+            /// <summary>
             /// Gets or sets the URL for the image.
             /// </summary>
             /// <value>
@@ -481,7 +531,10 @@ namespace Rock.Web.Cache
             /// <param name="locationModel">The location model.</param>
             public CampusLocation( Location locationModel )
             {
-                if ( locationModel == null ) return;
+                if ( locationModel == null )
+                {
+                    return;
+                }
 
                 Street1 = locationModel.Street1;
                 Street2 = locationModel.Street2;
@@ -495,10 +548,18 @@ namespace Rock.Web.Cache
                     ImageUrl = locationModel.Image.Url;
                 }
 
-                if ( locationModel.GeoPoint == null ) return;
+                if ( locationModel.GeoPoint != null )
+                {
+#if REVIEW_NET5_0_OR_GREATER
+                    Latitude = locationModel.Latitude;
+                    Longitude = locationModel.Longitude;
+#else
+                    Latitude = locationModel.GeoPoint.Latitude;
+                    Longitude = locationModel.GeoPoint.Longitude;
+#endif
+                }
 
-                Latitude = locationModel.Latitude;
-                Longitude = locationModel.Longitude;
+                GeoFence = locationModel.GeoFence;
             }
         }
 

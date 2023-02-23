@@ -510,7 +510,12 @@ namespace Rock.UniversalSearch.IndexModels
         {
             get
             {
-                return GetDynamicMemberNames().ToList();
+                var keys = GetDynamicMemberNames().Distinct( StringComparer.OrdinalIgnoreCase ).ToList();
+
+                // Remove properties that should not be exposed to Lava.
+                keys.Remove( "Item" );
+
+                return keys;
             }
         }
 

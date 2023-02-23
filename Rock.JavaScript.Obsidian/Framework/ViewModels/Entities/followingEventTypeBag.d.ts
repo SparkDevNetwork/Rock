@@ -25,6 +25,18 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FollowingEventType View Model */
 export type FollowingEventTypeBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the user defined description of the FollowingEvent. */
     description?: string | null;
 
@@ -36,6 +48,9 @@ export type FollowingEventTypeBag = {
 
     /** Gets or sets the followed entity type identifier. */
     followedEntityTypeId?: number | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a value indicating whether [include non public requests]. */
     includeNonPublicRequests: boolean;
@@ -49,6 +64,12 @@ export type FollowingEventTypeBag = {
     /** Gets or sets the last check. */
     lastCheckDateTime?: string | null;
 
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
+
     /** Gets or sets the (internal) Name of the FollowingEvent. This property is required. */
     name?: string | null;
 
@@ -57,25 +78,4 @@ export type FollowingEventTypeBag = {
 
     /** Gets or sets a value indicating whether [send on weekends]. */
     sendOnWeekends: boolean;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

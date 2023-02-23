@@ -289,7 +289,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                             }
 
                             // Don't show groups that have scheduling requirements that the person hasn't met.
-                            if ( personDoesntMeetSchedulingRequirementGroupIds.Contains( personGroupLocation.GroupId ) )
+                            if ( personGroupLocation.Group.SchedulingMustMeetRequirements && personDoesntMeetSchedulingRequirementGroupIds.Contains( personGroupLocation.GroupId ) )
                             {
                                 continue;
                             }
@@ -437,7 +437,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionBadRequest( "Failed to remove attendance." );
                 }
 
-                attendanceService.ScheduledPersonRemove( attendance.Id );
+                attendanceService.ScheduledPersonClear( attendance.Id );
                 rockContext.SaveChanges();
 
                 return ActionOk();

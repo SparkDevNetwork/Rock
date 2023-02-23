@@ -18,9 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+#if REVIEW_WEBFORMS
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -59,7 +61,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.4" )]
         public virtual Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
         {
             // Create a new dictionary to protect against the passed dictionary
@@ -68,6 +70,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
+        [RockInternal( "1.13.4" )]
         public virtual Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
             // Create a new dictionary to protect against the passed dictionary
@@ -75,6 +78,7 @@ namespace Rock.Field
             return new Dictionary<string, string>( publicConfigurationValues );
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
@@ -102,8 +106,10 @@ namespace Rock.Field
         public virtual void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
         }
+#endif
 
         /// <inheritdoc/>
+        [RockInternal( "1.13.4" )]
         public virtual Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
             return new Dictionary<string, string>();
@@ -113,6 +119,7 @@ namespace Rock.Field
 
         #region Formatting
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
@@ -120,13 +127,14 @@ namespace Rock.Field
         {
             get { return HorizontalAlign.Left; }
         }
+#endif
 
         /// <remarks>
         ///     <inheritdoc/>
         ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
         /// </remarks>
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return privateValue;
@@ -137,7 +145,7 @@ namespace Rock.Field
         ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
         /// </remarks>
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetTextValue( privateValue, privateConfigurationValues )?.EncodeHtml();
@@ -148,7 +156,7 @@ namespace Rock.Field
         ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
         /// </remarks>
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetTextValue( privateValue, privateConfigurationValues )?.Truncate( 100 );
@@ -159,12 +167,13 @@ namespace Rock.Field
         ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
         /// </remarks>
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetHtmlValue( privateValue, privateConfigurationValues );
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -238,6 +247,35 @@ namespace Rock.Field
             // by default, get the field type's value
             return value;
         }
+#else
+        /// <inheritdoc/>
+        public string FormatValue( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return condensed
+                ? GetCondensedTextValue( value, configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value ) )
+                : GetTextValue( value, configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public string FormatValue( object parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public string FormatValueAsHtml( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return condensed
+                ? GetCondensedHtmlValue( value, configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value ) )
+                : GetHtmlValue( value, configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public string FormatValueAsHtml( object parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            throw new NotImplementedException();
+        }
+#endif
 
         /// <summary>
         /// Returns the value using the most appropriate datatype
@@ -251,6 +289,7 @@ namespace Rock.Field
             return value;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Returns the value that should be used for sorting, using the most appropriate datatype
         /// </summary>
@@ -263,6 +302,14 @@ namespace Rock.Field
             // by default, get the formatted condensed value that would be displayed to the user
             return FormatValue( parentControl, value, configurationValues, true );
         }
+#else
+        /// <inheritdoc/>
+        public virtual object SortValue( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // by default, get the formatted condensed value that would be displayed to the user
+            return FormatValue( parentControl, value, configurationValues, true );
+        }
+#endif
 
         /// <summary>
         /// Setting to determine whether the value from this control is sensitive.  This is used for determining
@@ -288,26 +335,27 @@ namespace Rock.Field
         public virtual bool HasDefaultControl => true;
 
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return privateValue;
         }
 
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetPublicValue( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             return publicValue;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -412,6 +460,7 @@ namespace Rock.Field
                 };
             }
         }
+#endif
 
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
@@ -449,6 +498,7 @@ namespace Rock.Field
         #region Filter Control
 
         /// <inheritdoc/>
+        [RockInternal( "1.13.2" )]
         public virtual ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             var values = privateValue.FromJsonOrNull<List<string>>();
@@ -478,6 +528,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
+        [RockInternal( "1.13.2" )]
         public virtual string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             var values = new List<string>();
@@ -492,7 +543,7 @@ namespace Rock.Field
             return values.ToJson();
         }
 
-
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -563,6 +614,7 @@ namespace Rock.Field
         {
             return FilterControl( configurationValues, id, required, FilterMode.AdvancedFilter );
         }
+#endif
 
         /// <summary>
         /// Determines whether this filter has a filter control
@@ -573,6 +625,7 @@ namespace Rock.Field
             return true;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the filter compare control with the specified FilterMode
         /// </summary>
@@ -598,6 +651,7 @@ namespace Rock.Field
             ddlCompare.AddCssClass( "js-filter-compare" );
             return ddlCompare;
         }
+#endif
 
         /// <summary>
         /// Returns the ComparisonType options that the field supports
@@ -610,6 +664,7 @@ namespace Rock.Field
             get { return ComparisonHelper.BinaryFilterComparisonTypes; }
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the filter value control with the specified FilterMode
         /// </summary>
@@ -724,6 +779,7 @@ namespace Rock.Field
 
             return string.Empty;
         }
+#endif
 
         /// <summary>
         /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
@@ -734,6 +790,7 @@ namespace Rock.Field
             return ComparisonType.EqualTo.ConvertToInt().ToString();
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the filter value value.
         /// </summary>
@@ -804,6 +861,7 @@ namespace Rock.Field
         {
             SetEditValue( control, configurationValues, value );
         }
+#endif
 
         /// <summary>
         /// Formats the filter values.
@@ -870,7 +928,11 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
+#if REVIEW_NET5_0_OR_GREATER
+            string formattedValue = value.Truncate( 100 );
+#else
             string formattedValue = FormatValue( null, value, configurationValues, true );
+#endif
             return AddQuotes( formattedValue );
         }
 
@@ -989,6 +1051,7 @@ namespace Rock.Field
             return new NoAttributeFilterExpression();
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the Attribute Query Expression to be used with an Entity Query
         /// </summary>
@@ -1021,6 +1084,7 @@ namespace Rock.Field
 
             return qry;
         }
+#endif
 
         /// <summary>
         /// Determines whether the filter is an 'Equal To' comparison and the filtered value is equal to the specified value.
@@ -1137,7 +1201,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
-        public virtual PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        public virtual PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
             return new PersistedValues
             {

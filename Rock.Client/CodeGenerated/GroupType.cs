@@ -343,11 +343,14 @@ namespace Rock.Client
         public int? ScheduleConfirmationEmailOffsetDays { get; set; } = 4;
 
         /// <summary />
+        public Rock.Client.Enums.Group.ScheduleConfirmationLogic ScheduleConfirmationLogic { get; set; }
+
+        /// <summary />
         public int? ScheduleConfirmationSystemCommunicationId { get; set; }
 
         /// <summary />
         // Made Obsolete in Rock "1.10"
-        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", false )]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", true )]
         public int? ScheduleConfirmationSystemEmailId { get; set; }
 
         /// <summary />
@@ -358,7 +361,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.10"
-        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", false )]
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", true )]
         public int? ScheduleReminderSystemEmailId { get; set; }
 
         /// <summary />
@@ -462,15 +465,10 @@ namespace Rock.Client
             this.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             this.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             this.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
+            this.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             this.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
-            #pragma warning disable 612, 618
-            this.ScheduleConfirmationSystemEmailId = source.ScheduleConfirmationSystemEmailId;
-            #pragma warning restore 612, 618
             this.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
             this.ScheduleReminderSystemCommunicationId = source.ScheduleReminderSystemCommunicationId;
-            #pragma warning disable 612, 618
-            this.ScheduleReminderSystemEmailId = source.ScheduleReminderSystemEmailId;
-            #pragma warning restore 612, 618
             this.SendAttendanceReminder = source.SendAttendanceReminder;
             this.ShowAdministrator = source.ShowAdministrator;
             this.ShowConnectionStatus = source.ShowConnectionStatus;

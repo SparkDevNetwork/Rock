@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
-using Quartz;
-using Rock.Attribute;
+using System.ComponentModel;using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -25,8 +23,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V13.6 to fix eRA Start Date data broken in v13.4
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v13.6 - Fix Incorrect eRA Start Dates." )]
     [Description( "This job fixes eRA Start Dates (broken in v13.4) for people who are currently eRA." )]
 
@@ -36,23 +32,18 @@ namespace Rock.Jobs
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of data, this could take several minutes or more.",
         IsRequired = false,
         DefaultIntegerValue = 3600 )]
-    public class PostV136FixIncorrectERAStartDate : IJob
+    public class PostV136FixIncorrectERAStartDate : RockJob
     {
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the configured timeout, or default to 60 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
             // If this somehow fails and throws an exeption, the DeleteJob() call below won't run and it will try again later.
             using ( var rockContext = new RockContext() )
@@ -62,7 +53,7 @@ namespace Rock.Jobs
             }
 
             // Delete the job when this run-once job completes.
-            ServiceJobService.DeleteJob( context.GetJobId() );
+            ServiceJobService.DeleteJob( this.GetJobId() );
         }
     }
 }

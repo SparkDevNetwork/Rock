@@ -26,6 +26,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Cms.ContentCollection.Search;
 using Rock.Data;
@@ -38,6 +39,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
     /// <summary>
     /// Base index document for the content collection search index.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class IndexDocumentBase : DynamicObject, ILavaDataDictionary, Lava.ILiquidizable
     {
         #region Fields

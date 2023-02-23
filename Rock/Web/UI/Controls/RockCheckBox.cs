@@ -419,17 +419,26 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                string selectedCss = string.IsNullOrWhiteSpace( SelectedIconCssClass ) ? "fa fa-check-square-o" : SelectedIconCssClass;
-                string unselectedCss = string.IsNullOrWhiteSpace( UnSelectedIconCssClass ) ? "fa fa-square-o" : UnSelectedIconCssClass;
-
-                var divCss = "rock-checkbox-icon text-muted";
-
-                if ( this.DisplayInline )
+                if ( !string.IsNullOrWhiteSpace( SelectedIconCssClass ) && !string.IsNullOrWhiteSpace( UnSelectedIconCssClass ) )
                 {
-                    divCss += " checkbox-inline";
-                }
 
-                writer.WriteLine( string.Format( "<div class='{0}'><i class=\"{1}\"></i> {2}</div>", divCss, this.Checked ? selectedCss : unselectedCss, this.Text ) );
+                    var divCss = "rock-checkbox-icon text-muted";
+
+                    if ( this.DisplayInline )
+                    {
+                        divCss += " checkbox-inline";
+                    }
+
+                    writer.WriteLine( string.Format( "<div class='{0}'><i class=\"{1}\"></i> {2}</div>", divCss, this.Checked ? SelectedIconCssClass : UnSelectedIconCssClass, this.Text ) );
+                }
+                else
+                {
+                    
+                    base.Style.Remove( HtmlTextWriterStyle.Display );
+                    base.InputAttributes.Add( "disabled", "disabled" );
+
+                    base.RenderControl( writer );
+                }
             }
         }
     }

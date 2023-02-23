@@ -15,13 +15,26 @@
 // </copyright>
 //
 
+using System;
+using Rock.Attribute;
+
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Represents a chart that provides a graphical representation of Rock data.
     /// </summary>
+    [RockInternal( "1.14" )]
     public interface IRockChart
     {
+        #region Events
+
+        /// <summary>
+        /// Occurs when the chart is clicked.
+        /// </summary>
+        event EventHandler<ChartClickArgs> ChartClick;
+
+        #endregion
+
         /// <summary>
         /// Gets or sets a flag indicating if the chart is visible.
         /// </summary>

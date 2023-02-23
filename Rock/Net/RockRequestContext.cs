@@ -16,12 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
-using System.Net.Http;
 using System.Web;
 
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -37,6 +36,20 @@ namespace Rock.Net
     /// </summary>
     public class RockRequestContext
     {
+        #region Fields
+
+        /// <summary>
+        /// The cache object for the site this request is related to.
+        /// </summary>
+        private SiteCache _siteCache;
+
+        /// <summary>
+        /// The cache object for the page this request is related to.
+        /// </summary>
+        private PageCache _pageCache;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -56,7 +69,13 @@ namespace Rock.Net
         public virtual Person CurrentPerson => CurrentUser?.Person;
 
         /// <summary>
-        /// Gets or sets the root URL path of this request, e.g. https://www.rocksolidchurchdemo.com/
+        /// Gets the current visitor <see cref="PersonAlias"/> identifier.
+        /// </summary>
+        /// <value>The current visitor identifier.</value>
+        internal virtual int? CurrentVisitorId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the root URL path of this request, e.g. <c>https://www.rocksolidchurchdemo.com</c>.
         /// </summary>
         /// <remarks>
         /// May be empty if the request came from a non-web source.
@@ -65,6 +84,15 @@ namespace Rock.Net
         /// The root URL path.
         /// </value>
         public virtual string RootUrlPath { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the request URI that initiated this request.
+        /// </summary>
+        /// <remarks>
+        /// May be null if the request came from a non-web source.
+        /// </remarks>
+        /// <value>The request URI that initiated this request.</value>
+        public virtual Uri RequestUri { get; protected set; }
 
         /// <summary>
         /// Gets the client information related to the client sending the request.
@@ -91,12 +119,40 @@ namespace Rock.Net
         internal protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
 
         /// <summary>
+        /// Gets the personalization segment identifiers. Will be empty if this
+        /// request is not associated with a site or the site does not have
+        /// personalization enabled.
+        /// </summary>
+        /// <value>The personalization segment identifiers.</value>
+        internal IEnumerable<int> PersonalizationSegmentIds { get; private set; }
+
+        /// <summary>
+        /// Gets the personalization request filter identifiers. Will be empty if this
+        /// request is not associated with a site or the site does not have
+        /// personalization enabled.
+        /// </summary>
+        /// <value>The personalization request filter identifiers.</value>
+        internal IEnumerable<int> PersonalizationRequestFilterIds { get; private set; }
+
+        /// <summary>
+        /// Gets the query string from the request.
+        /// </summary>
+        /// <value>The query string from the request.</value>
+        internal NameValueCollection QueryString { get; private set; }
+
+        /// <summary>
         /// Gets or sets the headers.
         /// </summary>
         /// <value>
         /// The headers.
         /// </value>
         private IDictionary<string, IEnumerable<string>> Headers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cookies that were found in the request.
+        /// </summary>
+        /// <value>The cookies that were found in the request.</value>
+        private IDictionary<string, string> Cookies { get; set; }
 
         #endregion
 
@@ -110,6 +166,8 @@ namespace Rock.Net
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             Headers = new Dictionary<string, IEnumerable<string>>( StringComparer.InvariantCultureIgnoreCase );
+            Cookies = new Dictionary<string, string>();
+            QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
             RootUrlPath = string.Empty;
         }
 
@@ -122,14 +180,13 @@ namespace Rock.Net
         {
             CurrentUser = UserLoginService.GetCurrentUser( true );
 
-            var uri = new Uri( request.UrlProxySafe().ToString() );
-            RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;
+            RequestUri = request.UrlProxySafe();
+            RootUrlPath = GetRootUrlPath( RequestUri );
 
             ClientInformation = new ClientInformation( request );
 
-            //
             // Setup the page parameters.
-            //
+            QueryString = new NameValueCollection( request.QueryString );
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
             foreach ( var key in request.QueryString.AllKeys.Where( k => !k.IsNullOrWhiteSpace() ) )
             {
@@ -140,68 +197,120 @@ namespace Rock.Net
                 PageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
             }
 
-            //
-            // Setup the headers
-            //
+            // Setup the headers.
             Headers = request.Headers.AllKeys
                 .Select( k => new KeyValuePair<string, IEnumerable<string>>( k, request.Headers.GetValues( k ) ) )
                 .ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
 
-            //
+            // Setup the cookies.
+            Cookies = new Dictionary<string, string>();
+            foreach ( var cookieName in request.Cookies.AllKeys )
+            {
+                var cookie = request.Cookies[cookieName];
+
+                Cookies.AddOrReplace( cookie.Name, cookie.Value );
+            }
+
             // Initialize any context entities found.
-            //
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             AddContextEntitiesFromHeaders();
+
+            CurrentVisitorId = LoadCurrentVisitorId();
         }
 #endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
-        /// <param name="request">The request from an API call that we will initialize from.</param>
-        internal RockRequestContext( HttpRequestMessage request )
+        /// <param name="request">The request that we will initialize from.</param>
+        internal RockRequestContext( IRequest request )
         {
             CurrentUser = new UserLoginService( new RockContext() ).Queryable().Where( u => u.UserName == "admin" ).FirstOrDefault();
             //CurrentUser = UserLoginService.GetCurrentUser( true );
 
-            var uri = request.RequestUri;
-            RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );
+            RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
+            RootUrlPath = GetRootUrlPath( RequestUri );
 
             ClientInformation = new ClientInformation( request );
 
-            //
-            // Setup the page parameters, only use query string for now. Route
-            // parameters don't make a lot of sense with an API call.
-            //
+            // Setup the page parameters.
+            QueryString = new NameValueCollection( request.QueryString );
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-#if REVIEW_NET5_0_OR_GREATER
-            var queryString = HttpUtility.ParseQueryString( request.RequestUri.Query );
-            foreach ( string k in queryString.Keys )
+            foreach ( var key in request.QueryString.AllKeys.Where( k => !k.IsNullOrWhiteSpace() ) )
             {
-                PageParameters.AddOrReplace( k, queryString[k] );
+                PageParameters.AddOrReplace( key, request.QueryString[key] );
             }
-#else
-            foreach ( var kvp in request.GetQueryNameValuePairs() )
+
+            // Setup the headers.
+            Headers = request.Headers.AllKeys
+                .Select( k => new KeyValuePair<string, IEnumerable<string>>( k, request.Headers.GetValues( k ) ) )
+                .ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
+
+            // Setup the cookies.
+            Cookies = new Dictionary<string, string>();
+            foreach ( var cookieName in request.Cookies.Keys )
             {
-                PageParameters.AddOrReplace( kvp.Key, kvp.Value );
+                Cookies.AddOrReplace( cookieName, request.Cookies[cookieName] );
             }
-#endif
 
-            //
-            // Setup the headers
-            //
-            Headers = request.Headers.ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
-
-            //
             // Initialize any context entities found.
-            //
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             AddContextEntitiesFromHeaders();
+
+            CurrentVisitorId = LoadCurrentVisitorId();
         }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Prepares the request for use with the specified page. This should
+        /// be called for requests that are related to a specific page, for
+        /// example block actions or loading of the main page HTML.
+        /// </summary>
+        /// <param name="page">The page being loaded.</param>
+        internal void PrepareRequestForPage( PageCache page )
+        {
+            _pageCache = page ?? throw new ArgumentNullException( nameof( page ) );
+            _siteCache = SiteCache.Get( page.SiteId );
+
+            if ( _siteCache?.EnablePersonalization == true )
+            {
+                PersonalizationSegmentIds = LoadPersonalizationSegments();
+                PersonalizationRequestFilterIds = LoadPersonalizationRequestFilters();
+            }
+
+            if ( _siteCache?.EnableVisitorTracking == false )
+            {
+                CurrentVisitorId = null;
+            }
+
+            AddContextEntitiesForPage( _pageCache );
+        }
+
+        /// <summary>
+        /// Gets the root URL path from the given URI. This is effectively just
+        /// the scheme and hostname without any path or query string.
+        /// </summary>
+        /// <param name="uri">The URL to extract the root from.</param>
+        /// <returns>A string that represents the root url path, such as <c>https://rock.rocksolidchurch.com</c>.</returns>
+        private static string GetRootUrlPath( Uri uri )
+        {
+            if ( uri == null )
+            {
+                return string.Empty;
+            }
+
+            var url = $"{uri.Scheme}://{uri.Host}";
+
+            if ( !uri.IsDefaultPort )
+            {
+                url += $":{uri.Port}";
+            }
+
+            return url;
+        }
 
         /// <summary>
         /// Adds the context entities from headers.
@@ -255,7 +364,7 @@ namespace Rock.Net
 
                     if ( entity != null && entity is IHasAttributes attributedEntity )
                     {
-                        //Helper.LoadAttributes( attributedEntity );
+                        Helper.LoadAttributes( attributedEntity );
                     }
 
                     return entity;
@@ -267,7 +376,7 @@ namespace Rock.Net
         /// Adds the context entities for page.
         /// </summary>
         /// <param name="pageCache">The page cache.</param>
-        internal virtual void AddContextEntitiesForPage( PageCache pageCache )
+        private void AddContextEntitiesForPage( PageCache pageCache )
         {
             foreach ( var pageContext in pageCache.PageContexts )
             {
@@ -449,49 +558,157 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Gets the personalization segment ids associated with the request.
+        /// Gets the value fot the specified cookie name.
         /// </summary>
-        /// <remarks>
-        /// <strong>Do not use</strong> this method without approval from DSD or PO.
-        /// This was build as a quick fix for the content collection view block but
-        /// really is a bad way to go about it since it won't work in .NET Core.
-        /// </remarks>
-        /// <returns>An enumeration of personalziation segment identifiers.</returns>
-        internal IEnumerable<int> GetPersonalizationSegmentIds()
+        /// <param name="cookieName">Name of the cookie.</param>
+        /// <returns>A <see cref="string"/> that represents the cookie value or <c>null</c> if cookie was not found.</returns>
+        internal virtual string GetCookieValue( string cookieName )
         {
-#if REVIEW_NET5_0_OR_GREATER
-            throw new NotImplementedException();
-#else
-            if ( HttpContext.Current?.Handler is Rock.Web.UI.RockPage rockPage )
+            if ( Cookies.TryGetValue( cookieName, out var value ) )
             {
-                return rockPage.PersonalizationSegmentIds ?? Array.Empty<int>();
+                return value;
             }
 
-            return Array.Empty<int>();
-#endif
+            return null;
         }
 
         /// <summary>
-        /// Gets the personalization request filter ids associated with the request.
+        /// Loads the matching personalization segment ids for
+        /// the <see cref="CurrentPerson"/> or <see cref="CurrentVisitorId"/>.
         /// </summary>
-        /// <remarks>
-        /// <strong>Do not use</strong> this method without approval from DSD or PO.
-        /// This was build as a quick fix for the content collection view block but
-        /// really is a bad way to go about it since it won't work in .NET Core.
-        /// </remarks>
-        /// <returns>An enumeration of personalziation request filter identifiers.</returns>
-        internal IEnumerable<int> GetPersonalizationRequestFilterIds()
+        private IEnumerable<int> LoadPersonalizationSegments()
         {
-#if REVIEW_NET5_0_OR_GREATER
-            throw new NotImplementedException();
-#else
-            if ( HttpContext.Current?.Handler is Rock.Web.UI.RockPage rockPage )
+            var cookieValueJson = GetCookieValue( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS );
+            var personalizationPersonAliasId = CurrentVisitorId ?? CurrentPerson?.PrimaryAliasId;
+
+            if ( !personalizationPersonAliasId.HasValue )
             {
-                return rockPage.PersonalizationRequestFilterIds ?? Array.Empty<int>();
+                // no visitor or person logged in
+                return Array.Empty<int>();
             }
 
-            return Array.Empty<int>();
-#endif
+            Personalization.SegmentFilterCookieData segmentFilterCookieData = null;
+            if ( cookieValueJson != null )
+            {
+                segmentFilterCookieData = cookieValueJson.FromJsonOrNull<Personalization.SegmentFilterCookieData>();
+                bool isCookieDataValid = false;
+                if ( segmentFilterCookieData != null )
+                {
+                    if ( segmentFilterCookieData.IsSamePersonAlias( personalizationPersonAliasId.Value ) && segmentFilterCookieData.SegmentIdKeys != null )
+                    {
+                        isCookieDataValid = true;
+                    }
+
+                    if ( segmentFilterCookieData.IsStale( RockDateTime.Now ) )
+                    {
+                        isCookieDataValid = false;
+                    }
+                }
+
+                if ( !isCookieDataValid )
+                {
+                    segmentFilterCookieData = null;
+                }
+            }
+
+            if ( segmentFilterCookieData == null )
+            {
+                segmentFilterCookieData = new Personalization.SegmentFilterCookieData();
+                segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
+                segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
+                var segmentIdKeys = new PersonalizationSegmentService( new RockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
+                segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
+            }
+
+            //AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToJson() ) );
+
+            return segmentFilterCookieData.GetSegmentIds();
+        }
+
+        /// <summary>
+        /// Loads the matching personalization request filter ids for
+        /// the current request.
+        /// </summary>
+        private IEnumerable<int> LoadPersonalizationRequestFilters()
+        {
+            var requestFilters = RequestFilterCache.All().Where( a => a.IsActive );
+            var requestFilterIds = new List<int>();
+
+            foreach ( var requestFilter in requestFilters )
+            {
+                if ( requestFilter.RequestMeetsCriteria( this, _siteCache ) )
+                {
+                    requestFilterIds.Add( requestFilter.Id );
+                }
+            }
+
+            return requestFilterIds;
+        }
+
+        /// <summary>
+        /// Loads the current visitor <see cref="PersonAlias"/> identifier.
+        /// </summary>
+        /// <remarks>
+        /// This method does not do all the same logic that happens in RockPage
+        /// for updating cookies, merging person records, etc. That needs to be
+        /// handled some other way. Right now it is handled by RockPage slightly
+        /// after this method is called.
+        /// </remarks>
+        private int? LoadCurrentVisitorId()
+        {
+            if ( CurrentPerson != null )
+            {
+                return CurrentPerson.PrimaryAliasId;
+            }
+
+            var visitorKeyCookie = GetCookieValue( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
+
+            // If we have a visitor key, try to get the person alias Id from the IdKey.
+            if ( visitorKeyCookie.IsNotNullOrWhiteSpace() )
+            {
+                return IdHasher.Instance.GetId( visitorKeyCookie );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves the rock URL.
+        /// </summary>
+        /// <remarks>
+        ///     <para>An input starting with "~~/" will return a theme URL like, "/Themes/{CurrentSiteTheme}/{input}".</para>
+        ///     <para>An input starting with "~/" will return the input without the leading "~".</para>
+        ///     <para>The input will be returned as supplied for all other cases.</para>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        /// <param name="input">The input with prefix <c>"~~/"</c> or <c>"~/"</c>.</param>
+        /// <returns>The resolved URL.</returns>
+        [RockInternal( "1.15" )]
+        public string ResolveRockUrl( string input )
+        {
+            if ( input.IsNullOrWhiteSpace() )
+            {
+                return input;
+            }
+
+            if ( input.StartsWith( "~~/" ) )
+            {
+                var themeRoot = $"/Themes/{_pageCache.SiteTheme}/";
+                return themeRoot + ( input.Length > 3 ? input.Substring( 3 ) : string.Empty );
+            }
+
+            if ( input.StartsWith( "~" ) && input.Length > 1 )
+            {
+                return input.Substring( 1 );
+            }
+
+            // The input format is unrecognized so return it.
+            return input;
         }
 
         #endregion

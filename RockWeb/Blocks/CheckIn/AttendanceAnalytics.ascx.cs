@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,7 +29,9 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
+using Rock.Chart;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
@@ -417,7 +419,7 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the GAttendeesAttendance control.
+        /// Handles the GridRebind event of the gAttendeesAttendance control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
@@ -427,7 +429,7 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gAttendance control.
+        /// Handles the GridRebind event of the gChartAttendance control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -618,7 +620,7 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         var groupTypeIds = groupTypeService
                             .GetCheckinAreaDescendantsOrdered( ddlAttendanceArea.SelectedGroupTypeId.Value )
-                            .Select(a => a.Id)
+                            .Select( a => a.Id )
                             .ToList();
 
                         return groupTypeService.GetByIds( groupTypeIds ).ToList();
@@ -664,9 +666,6 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( pnlShowByChart.Visible )
             {
-                lcAttendance.StartDate = dateRange.Start;
-                lcAttendance.EndDate = dateRange.End;
-
                 var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
                 double? chartDataWeekCount = null;
                 double? chartDataMonthCount = null;
@@ -724,7 +723,7 @@ namespace RockWeb.Blocks.CheckIn
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
                 if ( singleDateTime )
                 {
-                    var chartDataByCategory = bcAttendance.GetCategorySeriesFromChartData( chartData );
+                    var chartDataByCategory = ChartDataFactory.GetCategorySeriesFromChartData( chartData );
                     bcAttendance.SetChartDataItems( chartDataByCategory );
                 }
                 else
@@ -1256,7 +1255,7 @@ var headerText = dp.label;
                 dateRange.End = RockDateTime.Now;
             }
             var start = dateRange.Start;
-            
+
             var endTime = dateRange.End.Value;
             // We need to pass '11/09/2020 11:59:59.000', because SQL Server rounds '11/09/2020 11:59:59.999' up to '11/10/2020 12:00:00.000'.
             // Since this is used for Sunday Date the milliseconds don't matter
@@ -1349,7 +1348,7 @@ var headerText = dp.label;
             if ( !showNonAttenders )
             {
                 // Call the stored procedure to get all the person ids and their attendance dates for anyone
-                // whith attendance that matches the selected criteria.
+                // with attendance that matches the selected criteria.
                 qryTasks.Add( Task.Run( () =>
                 {
                     var ti = new TaskInfo { name = "Get Attendee Dates", start = RockDateTime.Now };
@@ -1613,6 +1612,18 @@ var headerText = dp.label;
 
             // Wait for all the queries to finish
             Task.WaitAll( qryTasks.ToArray() );
+
+            // Log the task time and parameters information.
+            string taskLogMessage = "";
+            foreach ( var info in taskInfos )
+            {
+                taskLogMessage += $"Task Name: {info.name}, Time To Run: {info.TimeToRun()}. ";
+            }
+            RockLogger.Log.Debug( RockLogDomains.Reporting, "Attendance Analytics Task Times: " + taskLogMessage );
+            RockLogger.Log.Debug( RockLogDomains.Reporting, "Attendance Analytics Parameters: " +
+                "groupTypeIdList: {@groupTypeIdList}, groupIdList: {@groupIdList}, start: {@start}, end: {@end}, " +
+                "campusIdList: {@campusIdList}, includeNullCampus: {@includeNullCampus}, scheduleIdList: {@scheduleIdList}",
+                groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList );
 
             if ( !showNonAttenders )
             {
@@ -2790,6 +2801,33 @@ var headerText = dp.label;
             public override string ToString()
             {
                 return string.Format( "{0}: {1:c}", name, duration );
+            }
+
+            public string TimeToRun()
+            {
+                double timeValue = duration.TotalMilliseconds;
+                var timeUnit = "ms";
+                if ( timeValue > 1000 )
+                {
+                    timeValue /= 1000;
+                    timeUnit = "s";
+                }
+
+                if ( timeValue > 60 && timeUnit == "s" )
+                {
+                    timeValue /= 60;
+                    timeUnit = "m";
+                }
+
+                var isValueAWholeNumber = Math.Abs( timeValue % 1 ) < 0.01;
+                if ( isValueAWholeNumber )
+                {
+                    return string.Format( "{0:0}{1}", timeValue, timeUnit );
+                }
+                else
+                {
+                    return string.Format( "{0:0.0}{1}", timeValue, timeUnit );
+                }
             }
         }
 

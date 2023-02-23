@@ -38,6 +38,12 @@ export default defineComponent({
             default: ""
         },
 
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
         repeatColumns: {
             type: Number as PropType<number>,
             default: 0
@@ -96,6 +102,10 @@ export default defineComponent({
             return items;
         });
 
+        function isItemDisabled(item: ListItemBag): boolean {
+            return item.category === "disabled" || props.disabled;
+        }
+
         const getItemUniqueId = (uniqueId: Guid, item: ListItemBag): string => {
             const key = (item.value ?? "").replace(" ", "-");
 
@@ -134,31 +144,34 @@ export default defineComponent({
             actualItems,
             containerClasses,
             getItemUniqueId,
-            internalValue
+            internalValue,
+            isItemDisabled
         };
     },
 
     template: `
 <RockFormField formGroupClasses="rock-radio-button-list" #default="{uniqueId}" name="radiobuttonlist" v-model="internalValue">
     <div class="control-wrapper">
+        <slot name="prepend" :isInputGroupSupported="false" />
         <div class="controls rockradiobuttonlist" :class="containerClasses">
             <span>
                 <template v-if="horizontal">
                     <label v-for="item in actualItems" class="radio-inline" :for="getItemUniqueId(uniqueId, item)" :key="item.value">
-                        <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
+                        <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" :disabled="isItemDisabled(item)" />
                         <span class="label-text">{{item.text}}</span>
                     </label>
                 </template>
                 <template v-else>
                     <div v-for="item in actualItems" class="radio" :key="item.value">
                         <label :for="getItemUniqueId(uniqueId, item)">
-                            <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
+                            <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" :disabled="isItemDisabled(item)" />
                             <span class="label-text">{{item.text}}</span>
                         </label>
                     </div>
                 </template>
             </span>
         </div>
+        <slot name="append" :isInputGroupSupported="false" />
     </div>
 </RockFormField>`
 });

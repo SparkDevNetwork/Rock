@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -9,7 +25,7 @@ using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.TestData
 {
-    public static class TestDataHelper
+    public static partial class TestDataHelper
     {
         #region Person Data
 
@@ -78,6 +94,29 @@ namespace Rock.Tests.Integration.TestData
             var range = ( maxDate - minDate ).Days;
 
             return minDate.AddDays( randomGenerator.Next( range ) );
+        }
+
+        /// <summary>
+        /// Returns an ordered list of random dates within a specified range.
+        /// </summary>
+        /// <param name="minDate"></param>
+        /// <param name="maxDate"></param>
+        /// <param name="dateCount"></param>
+        /// <returns></returns>
+        public static List<DateTime> GetRandomDateTimesInRange( DateTime minDate, DateTime maxDate, int dateCount )
+        {
+            var totalSeconds = Convert.ToInt32( ( maxDate - minDate ).TotalSeconds );
+
+            var dateList = new List<DateTime>();
+            while ( dateCount > 0 )
+            {
+                dateList.Add( minDate.AddSeconds( randomGenerator.Next( totalSeconds ) ) );
+                dateCount--;
+            }
+
+            dateList.Sort();
+
+            return dateList;
         }
 
         public static Dictionary<int, DateTime> GetAnalyticsSourceDateTestData()
@@ -182,5 +221,44 @@ namespace Rock.Tests.Integration.TestData
         }
 
         #endregion
+
+        #region Campus
+
+        public static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
+        public static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
+        public static string SecondaryCampusName = "Stepping Stone";
+
+        public static Campus GetOrAddCampusSteppingStone( RockContext rockContext )
+        {
+            // Add a new campus
+            var campusService = new CampusService( rockContext );
+
+            var campus2 = campusService.Get( SecondaryCampusGuidString.AsGuid() );
+
+            if ( campus2 == null )
+            {
+                campus2 = new Campus();
+
+                campusService.Add( campus2 );
+            }
+
+            campus2.Name = SecondaryCampusName;
+            campus2.Guid = SecondaryCampusGuidString.AsGuid();
+            campus2.IsActive = true;
+            campus2.CampusStatusValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN.AsGuid() );
+            campus2.CampusTypeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL.AsGuid() );
+
+            rockContext.SaveChanges();
+
+            return campus2;
+        }
+
+        #endregion
+
+        private static RockContext GetActiveRockContext( RockContext rockContext )
+        {
+            return rockContext ?? new RockContext();
+        }
+
     }
 }

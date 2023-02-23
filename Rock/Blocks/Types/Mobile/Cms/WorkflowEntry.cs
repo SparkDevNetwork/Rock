@@ -877,6 +877,18 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 }
             }
 
+            var workflowTypeCache = WorkflowTypeCache.Get( workflow.WorkflowTypeId );
+
+            if ( workflowTypeCache.IsPersisted == false && workflowTypeCache.IsFormBuilder && action != null )
+            {
+                /* 3/14/2022 MP
+                 If this is a FormBuilder workflow, the WorkflowType probably has _workflowType.IsPersisted == false.
+                 This is because we don't want to persist the workflow until they have submitted.
+                 So, in the case of FormBuilder, we'll persist when they submit regardless of the _workflowType.IsPersisted setting
+                */
+                workflowService.PersistImmediately( action );
+            }
+
             // If the LastProcessedDateTime is equal to RockDateTime.Now we need to pause for a bit so the workflow will actually process here.
             // The resolution of System.DateTime.UTCNow is between .5 and 15 ms which can cause the workflow processing to not properly pick up
             // where it left off.

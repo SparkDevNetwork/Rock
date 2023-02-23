@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -544,7 +545,7 @@ namespace Rock.CodeGeneration.Pages
             var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
             if ( missingDbSets.Any() )
             {
-                missingDbSetWarnings.AppendLine( missingDbSets.Select( a => $" - {a.Name}" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n" );
+                missingDbSetWarnings.AppendLine( missingDbSets.Select( a => $" - {a.Name}" ).ToList().AsDelimited( "\r\n" ) );
             }
 
             foreach ( var rockAssembly in rockAssemblyList )
@@ -645,7 +646,7 @@ namespace Rock.CodeGeneration.Pages
                            NOTE: This won't catch all of them, but hopefully most
                          */
 
-                        // types that OK based on how they are used
+                        // types that OK based on how they are used.
                         var ignoredThreadSafeTypeWarning = new Type[] {
                             typeof(Rock.UniversalSearch.IndexComponents.Lucene),
                             typeof(Rock.Cms.ContentCollection.IndexComponents.Elasticsearch),
@@ -657,6 +658,9 @@ namespace Rock.CodeGeneration.Pages
                             // fields that OK based on how we use them
                             "Rock.Extension.Component.Attributes",
                             "Rock.Extension.Component.AttributeValues",
+                            "Rock.Extension.Component._typeId",
+                            "Rock.Extension.Component._typeGuid",
+                            "Rock.Extension.Component._typeName",
                             "Rock.Web.HttpModules.ResponseHeaders.Headers",
                             "Rock.Field.FieldType.QualifierUpdated",
 
@@ -756,6 +760,7 @@ namespace Rock.CodeGeneration.Pages
             if ( missingDbSetWarnings.Length > 0 )
             {
                 hasWarnings = true;
+                warnings.AppendLine();
                 warnings.AppendLine( "RockContext missing DbSet<T>s" );
                 warnings.Append( missingDbSetWarnings );
             }
@@ -1942,6 +1947,10 @@ namespace Rock.ViewModels.Entities
                 {
                     return "Rock.Client.Enums." + type.Name;
                 }
+                else if ( type.Namespace?.StartsWith( "Rock.Enums." ) == true )
+                {
+                    return $"Rock.Client.Enums.{type.Namespace.Substring( 11 )}.{type.Name}";
+                }
                 else
                 {
                     return GetKeyName( "Int32" ) + " /* " + type.Name + "*/";
@@ -2039,9 +2048,14 @@ namespace Rock.ViewModels.Entities
             var rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
             var enumAssembly = typeof( Rock.Model.Gender ).Assembly;
 
-            var enums = rockAssembly.GetTypes().Where( a => a.IsEnum )
+            var enumGroups = rockAssembly.GetTypes().Where( a => a.IsEnum )
                 .Union( enumAssembly.GetTypes().Where( a => a.IsEnum ) )
-                .OrderBy( a => a.Name ).ToList();
+                .Where( e => e.Namespace == "Rock.Model"
+                    || e.Namespace?.StartsWith( "Rock.Enums.") == true
+                    || e.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
+                .OrderBy( a => a.Name )
+                .ToList()
+                .GroupBy( e => e.Assembly == rockAssembly ? "Rock.Model" : e.Namespace );
 
 
             StringBuilder sb = new StringBuilder();
@@ -2070,17 +2084,22 @@ namespace Rock.ViewModels.Entities
             sb.AppendLine( "using System;" );
             sb.AppendLine( "using System.Collections.Generic;" );
             sb.AppendLine( "" );
+            sb.AppendLine( "#pragma warning disable CS1591" );
+            sb.AppendLine( "" );
 
-            sb.AppendLine( "namespace Rock.Client.Enums" );
-            sb.AppendLine( "{" );
-            sb.AppendLine( "    #pragma warning disable CS1591" );
-
-            foreach ( var enumType in enums )
+            foreach ( var enums in enumGroups )
             {
-                bool rockModelGenerateClientEnum = enumType.Namespace == "Rock.Model";
-                bool rockClientIncludeAttributeEnum = enumType.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null;
+                var namespaceSuffix = string.Empty;
 
-                if ( rockModelGenerateClientEnum || rockClientIncludeAttributeEnum )
+                if ( enums.Key?.StartsWith( "Rock.Enums." ) == true )
+                {
+                    namespaceSuffix = enums.Key.Substring( 10 );
+                }
+
+                sb.AppendLine( $"namespace Rock.Client.Enums{namespaceSuffix}" );
+                sb.AppendLine( "{" );
+
+                foreach ( var enumType in enums )
                 {
                     sb.AppendLine( "    /// <summary>" );
                     sb.AppendLine( "    /// </summary>" );
@@ -2113,10 +2132,12 @@ namespace Rock.ViewModels.Entities
                     sb.AppendLine( "    }" );
                     sb.AppendLine( "" );
                 }
+
+                sb.AppendLine( "}" );
+                sb.AppendLine( "" );
             }
 
-            sb.AppendLine( "    #pragma warning restore CS1591" );
-            sb.AppendLine( "}" );
+            sb.AppendLine( "#pragma warning restore CS1591" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\Enums", "RockEnums.cs" ) );
             WriteFile( file, sb );
@@ -2568,6 +2589,7 @@ namespace Rock.ViewModels.Entities
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
 
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.ViewModels\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
         }

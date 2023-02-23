@@ -179,6 +179,24 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Adds or updates a <see cref="Rock.Model.Attribute" /> item for the field attribute.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the attribute was created or updated; <c>false</c> otherwise.</returns>
+        /// <remarks>
+        /// If a <paramref name="rockContext"/> value is included, this method will save any previous changes made to the context
+        /// </remarks>
+
+        internal static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
+        {
+            return UpdateAttribute( property, entityTypeId, entityQualifierColumn, entityQualifierValue, false, rockContext );
+        }
+
+        /// <summary>
         /// Adds or Updates a <see cref="Rock.Model.Attribute" /> item for the attribute.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -349,6 +367,89 @@ This can be due to multiple threads updating the same attribute at the same time
             rockContext.SaveChanges();
 
             return true;
+        }
+
+        /// <summary>
+        /// Ensures the attributes from the component are configured for this
+        /// entity. This handles the situation where the attributes are defined
+        /// on a component but need to be applied to an entity that is using
+        /// that component.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// Helper.EnsureComponentInstanceAttributes( financialGateway, fg =&gt; fg.EntityTypeId, rockContext );
+        /// </code>
+        /// </example>
+        /// <param name="entity">The entity the component attributes should be setup for.</param>
+        /// <param name="navigationExpression">The expression to use to find the component entity type identifier.</param>
+        /// <param name="rockContext">The rock context to use when updating the database.</param>
+        internal static void EnsureComponentInstanceAttributes<TEntity>( TEntity entity, Expression<Func<TEntity, int?>> navigationExpression, RockContext rockContext )
+            where TEntity : IEntity
+        {
+            if ( !( navigationExpression.Body is MemberExpression memberExpression ) || !( memberExpression.Member is PropertyInfo ) )
+            {
+                throw new ArgumentException( "Expression must evaluate to a valid property.", nameof( navigationExpression ) );
+            }
+
+            var componentEntityTypeId = navigationExpression.Compile().Invoke( entity );
+
+            if ( !componentEntityTypeId.HasValue )
+            {
+                return;
+            }
+
+            var componentEntityType = EntityTypeCache.Get( componentEntityTypeId.Value );
+
+            if ( componentEntityType == null )
+            {
+                return;
+            }
+
+            UpdateAttributes(
+                componentEntityType.GetEntityType(),
+                entity.TypeId,
+                memberExpression.Member.Name,
+                componentEntityType.Id.ToString(),
+                rockContext );
+        }
+
+        /// <summary>
+        /// Ensures the attributes from the component are configured for this
+        /// entity. This handles the situation where the attributes are defined
+        /// on a component but need to be applied to an entity that is using
+        /// that component.
+        /// </summary>
+        /// <param name="entity">The entity the component attributes should be setup for.</param>
+        /// <param name="navigationExpression">The expression to use to find the component entity type identifier.</param>
+        /// <param name="rockContext">The rock context to use when updating the database.</param>
+        internal static void EnsureComponentInstanceAttributes<TEntity>( TEntity entity, Expression<Func<TEntity, int>> navigationExpression, RockContext rockContext )
+            where TEntity : IEntity
+        {
+            if ( !( navigationExpression.Body is MemberExpression memberExpression ) || !( memberExpression.Member is PropertyInfo ) )
+            {
+                throw new ArgumentException( "Expression must evaluate to a valid property.", nameof( navigationExpression ) );
+            }
+
+            var componentEntityTypeId = navigationExpression.Compile().Invoke( entity );
+
+            if ( componentEntityTypeId == 0 )
+            {
+                return;
+            }
+
+            var componentEntityType = EntityTypeCache.Get( componentEntityTypeId );
+
+            if ( componentEntityType == null )
+            {
+                return;
+            }
+
+            UpdateAttributes(
+                componentEntityType.GetEntityType(),
+                entity.TypeId,
+                memberExpression.Member.Name,
+                componentEntityType.Id.ToString(),
+                rockContext );
         }
 
         #region Load Attributes and Values
@@ -1577,7 +1678,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 rockContext.ExecuteAfterCommit( () =>
                 {
                     var changedValueIds = attributeValuesThatWereChanged.Select( av => av.Id ).ToList();
-                    var attributeValueReferenceValues = new Dictionary<int, string>();
+                    var attributeValueReferenceValues = new List<AttributeValue>();
 
                     using ( var innerContext = new RockContext() )
                     {
@@ -1588,7 +1689,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                         foreach ( var changedAttributeValue in changedAttributeValues )
                         {
-                            var attributeCache = AttributeCache.Get( changedAttributeValue.Id );
+                            var attributeCache = AttributeCache.Get( changedAttributeValue.AttributeId );
 
                             if ( attributeCache != null )
                             {
@@ -1596,7 +1697,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                                 if ( attributeCache.IsReferencedEntityFieldType )
                                 {
-                                    attributeValueReferenceValues.Add( changedAttributeValue.Id, changedAttributeValue.Value );
+                                    attributeValueReferenceValues.Add( changedAttributeValue );
                                 }
                             }
                         }
@@ -1753,9 +1854,185 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             }
         }
 
+        /// <summary>
+        /// Updates the computed columns (ValueAs...) of all attribute values
+        /// belonging to the specified attribute identifier that match the
+        /// given value.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        /// </remarks>
+        /// <param name="attributeId">The attribute identifier of the values to be updated.</param>
+        /// <param name="value">The current value of those attribute values.</param>
+        /// <param name="rockContext">The database context to use when performing the update.</param>
+        /// <returns>The number of rows that were updated.</returns>
+        internal static int BulkUpdateAttributeValueComputedColumns( int attributeId, string value, RockContext rockContext )
+        {
+            var attributeValue = new AttributeValue
+            {
+                AttributeId = attributeId,
+                Value = value
+            };
+
+            attributeValue.UpdateValueAsProperties( rockContext );
+
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", (object) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
+            var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
+            var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
+            var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
+            var valueParameter = new SqlParameter( "@Value", ( object ) value ?? DBNull.Value );
+
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE [AttributeValue]
+SET [ValueAsBoolean] = @ValueAsBoolean,
+    [ValueAsDateTime] = @ValueAsDateTime,
+    [ValueAsNumeric] = @ValueAsNumeric,
+    [ValueAsPersonId] = @ValueAsPersonId
+WHERE [AttributeId] = @AttributeId
+  AND [ValueChecksum] = CHECKSUM(@Value)
+  AND [Value] = @Value",
+                valueAsBooleanParameter,
+                valueAsDateTimeParameter,
+                valueAsNumericParameter,
+                valueAsPersonIdParameter,
+                attributeIdParameter,
+                valueParameter );
+        }
+
+        /// <summary>
+        /// Updates the computed columns (ValueAs...) of all attribute values
+        /// that match the specified <paramref name="valueIds"/>.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        /// </remarks>
+        /// <param name="attributeId">The attribute identifier of the values to be updated.</param>
+        /// <param name="valueIds">The identifiers of the attribute values to be updated.</param>
+        /// <param name="value">The current value of those attribute values.</param>
+        /// <param name="rockContext">The database context to use when performing the update.</param>
+        /// <returns>The number of rows that were updated.</returns>
+        internal static int BulkUpdateAttributeValueComputedColumns( int attributeId, IEnumerable<int> valueIds, string value, RockContext rockContext )
+        {
+            var attributeValue = new AttributeValue
+            {
+                AttributeId = attributeId,
+                Value = value
+            };
+
+            attributeValue.UpdateValueAsProperties( rockContext );
+
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", ( object ) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
+            var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
+            var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
+
+            // Initialize the ValueId SQL parameter.
+            var attributeIdsTable = new DataTable();
+            attributeIdsTable.Columns.Add( "Id", typeof( int ) );
+
+            foreach ( var valueId in valueIds )
+            {
+                attributeIdsTable.Rows.Add( valueId );
+            }
+
+            var valueIdParameter = new SqlParameter( "@ValueId", SqlDbType.Structured )
+            {
+                TypeName = "dbo.EntityIdList",
+                Value = attributeIdsTable
+            };
+
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE AV
+SET [AV].[ValueAsBoolean] = @ValueAsBoolean,
+    [AV].[ValueAsDateTime] = @ValueAsDateTime,
+    [AV].[ValueAsNumeric] = @ValueAsNumeric,
+    [AV].[ValueAsPersonId] = @ValueAsPersonId
+FROM [AttributeValue] AS [AV]
+INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
+                valueAsBooleanParameter,
+                valueAsDateTimeParameter,
+                valueAsNumericParameter,
+                valueAsPersonIdParameter,
+                valueIdParameter );
+        }
+
         #endregion
 
         #region Persisted Values
+
+        /// <summary>
+        /// Gets the persisted values from the field type. If an error occurs then
+        /// the placeholder value will be used instead. If even that fails then the
+        /// standard not supported message will be used.
+        /// </summary>
+        /// <remarks>
+        /// <strong>Note:</strong> This does not check if the field supports
+        /// persisted values, only if an error occurs while getting them.
+        /// </remarks>
+        /// <param name="field">The field type to use when formatting the values.</param>
+        /// <param name="rawValue">The raw value to be formatted.</param>
+        /// <param name="configuration">The configuration of the field type.</param>
+        /// <param name="cache">A cache dictionary that can be used by the field type to store and retrieve data that would otherwise need a database hit.</param>
+        /// <returns>An instance of <see cref="Field.PersistedValues"/> that specifies all the values to be persisted.</returns>
+        internal static Field.PersistedValues GetPersistedValuesOrPlaceholder( Field.IFieldType field, string rawValue, Dictionary<string, string> configuration, IDictionary<string, object> cache )
+        {
+            try
+            {
+                return field.GetPersistedValues( rawValue, configuration, cache );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( "Unable to retrieve persisted values from field.", ex ) );
+
+                return GetPersistedValuePlaceholderOrDefault( field, configuration );
+            }
+        }
+
+        /// <summary>
+        /// Gets the persisted value placeholder from the field type. If an error
+        /// occurs then the standard not supported message will be used.
+        /// </summary>
+        /// <remarks>
+        /// <strong>Note:</strong> This does not check if the field supports
+        /// persisted values, only if an error occurs while getting the placeholder.
+        /// </remarks>
+        /// <param name="field">The field type to use when formatting the values.</param>
+        /// <param name="configuration">The configuration of the field type.</param>
+        /// <returns>An instance of <see cref="Field.PersistedValues"/> that specifies all the placeholder values to be used.</returns>
+        internal static Field.PersistedValues GetPersistedValuePlaceholderOrDefault( Field.IFieldType field, Dictionary<string, string> configuration )
+        {
+            try
+            {
+                var placeholder = field.GetPersistedValuePlaceholder( configuration ) ?? Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported;
+
+                return new Field.PersistedValues
+                {
+                    TextValue = placeholder,
+                    CondensedTextValue = placeholder,
+                    HtmlValue = placeholder,
+                    CondensedHtmlValue = placeholder
+                };
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( "Unable to retrieve placeholder values from field.", ex ) );
+
+                return new Field.PersistedValues
+                {
+                    TextValue = Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported,
+                    CondensedTextValue = Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported,
+                    HtmlValue = Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported,
+                    CondensedHtmlValue = Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported
+                };
+            }
+        }
 
         /// <summary>
         /// Updates the attribute default persisted values to match the <see cref="Rock.Model.Attribute.DefaultValue"/>.
@@ -1768,7 +2045,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
             if ( field != null && field.IsPersistedValueSupported( configuration ) )
             {
-                var persistedValues = field.GetPersistedValues( attribute.DefaultValue, configuration );
+                var persistedValues = GetPersistedValuesOrPlaceholder( field, attribute.DefaultValue, configuration, null );
 
                 attribute.DefaultPersistedTextValue = persistedValues.TextValue;
                 attribute.DefaultPersistedHtmlValue = persistedValues.HtmlValue;
@@ -1835,25 +2112,19 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                         .Distinct()
                         .ToList();
 
+                    var cache = new Dictionary<string, object>();
+
                     foreach ( var value in distinctValues )
                     {
                         if ( field.IsPersistedValueSupported( configurationValues ) )
                         {
-                            var persistedValues = field.GetPersistedValues( value, configurationValues );
+                            var persistedValues = GetPersistedValuesOrPlaceholder( field, value, configurationValues, cache );
 
                             count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                         }
                         else
                         {
-                            var placeholderValue = field.GetPersistedValuePlaceholder( configurationValues );
-
-                            var persistedValues = new Field.PersistedValues
-                            {
-                                TextValue = placeholderValue,
-                                CondensedTextValue = placeholderValue,
-                                HtmlValue = placeholderValue,
-                                CondensedHtmlValue = placeholderValue
-                            };
+                            var persistedValues = GetPersistedValuePlaceholderOrDefault( field, configurationValues );
 
                             count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                         }
@@ -1892,15 +2163,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
             var valueParameter = new SqlParameter( "@Value", ( object ) value ?? DBNull.Value );
 
-            // Because AttributeValue has a trigger on it, the extra where clause is
-            // to prevent updates if no value actually changed is rather important.
-            // Without it we might be doing a non-change update which still triggers
-            // the database trigger.
-            // The custom COLLATE makes those value comparison case sensitive. This
-            // solves issues where the persisted value changed in case only, such as
-            // "Yes" to "YES" for a boolean field type.
-#if REVIEW_NET5_0_OR_GREATER
-            int updatedCount = rockContext.Database.ExecuteSqlRaw( @"
+            return rockContext.Database.ExecuteSqlCommand( @"
 UPDATE [AttributeValue]
 SET [PersistedTextValue] = @TextValue,
     [PersistedHtmlValue] = @HtmlValue,
@@ -1910,38 +2173,13 @@ SET [PersistedTextValue] = @TextValue,
 WHERE [AttributeId] = @AttributeId
   AND [ValueChecksum] = CHECKSUM(@Value)
   AND [Value] = @Value
-  AND ([IsPersistedValueDirty] = 1
-       OR [PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
-       OR [PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
-       OR [PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
-       OR [PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
-#else
-            int updatedCount = rockContext.Database.ExecuteSqlCommand( @"
-UPDATE [AttributeValue]
-SET [PersistedTextValue] = @TextValue,
-    [PersistedHtmlValue] = @HtmlValue,
-    [PersistedCondensedTextValue] = @CondensedTextValue,
-    [PersistedCondensedHtmlValue] = @CondensedHtmlValue,
-    [IsPersistedValueDirty] = 0
-WHERE [AttributeId] = @AttributeId
-  AND [ValueChecksum] = CHECKSUM(@Value)
-  AND [Value] = @Value
-  AND ([IsPersistedValueDirty] = 1
-       OR [PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
-       OR [PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
-       OR [PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
-       OR [PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
-#endif
+  AND [IsPersistedValueDirty] = 1",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
                 condensedHtmlValueParameter,
                 attributeIdParameter,
                 valueParameter );
-
-            // Bit of a hack, but because of the trigger on AttributeValue it doubles
-            // the number of rows updated.
-            return updatedCount / 2;
         }
 
         /// <summary>
@@ -1981,15 +2219,7 @@ WHERE [AttributeId] = @AttributeId
                 Value = attributeIdsTable
             };
 
-            // Because AttributeValue has a trigger on it, the extra where clause is
-            // to prevent updates if no value actually changed is rather important.
-            // Without it we might be doing a non-change update which still triggers
-            // the database trigger.
-            // The custom COLLATE makes those value comparison case sensitive. This
-            // solves issues where the persisted value changed in case only, such as
-            // "Yes" to "YES" for a boolean field type.
-#if REVIEW_NET5_0_OR_GREATER
-            var updatedCount = rockContext.Database.ExecuteSqlRaw( @"
+            return rockContext.Database.ExecuteSqlCommand( @"
 UPDATE AV
 SET [AV].[PersistedTextValue] = @TextValue,
     [AV].[PersistedHtmlValue] = @HtmlValue,
@@ -1999,38 +2229,13 @@ SET [AV].[PersistedTextValue] = @TextValue,
 FROM [AttributeValue] AS [AV]
 INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]
 WHERE [AV].[AttributeId] = @AttributeId
-  AND ([AV].[IsPersistedValueDirty] = 1
-       OR [AV].[PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
-       OR [AV].[PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
-       OR [AV].[PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
-       OR [AV].[PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
-#else
-            var updatedCount = rockContext.Database.ExecuteSqlCommand( @"
-UPDATE AV
-SET [AV].[PersistedTextValue] = @TextValue,
-    [AV].[PersistedHtmlValue] = @HtmlValue,
-    [AV].[PersistedCondensedTextValue] = @CondensedTextValue,
-    [AV].[PersistedCondensedHtmlValue] = @CondensedHtmlValue,
-    [AV].[IsPersistedValueDirty] = 0
-FROM [AttributeValue] AS [AV]
-INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]
-WHERE [AV].[AttributeId] = @AttributeId
-  AND ([AV].[IsPersistedValueDirty] = 1
-       OR [AV].[PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
-       OR [AV].[PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
-       OR [AV].[PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
-       OR [AV].[PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
-#endif
+  AND [AV].[IsPersistedValueDirty] = 1",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
                 condensedHtmlValueParameter,
                 attributeIdParameter,
                 valueIdParameter );
-
-            // Bit of a hack, but because of the trigger on AttributeValue it doubles
-            // the number of rows updated.
-            return updatedCount / 2;
         }
 
         /// <summary>
@@ -2046,7 +2251,7 @@ WHERE [AV].[AttributeId] = @AttributeId
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public static void UpdateAttributeValueEntityReferences( AttributeValue attributeValue, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeValueReferencedEntity>();
@@ -2092,7 +2297,7 @@ WHERE [AV].[AttributeId] = @AttributeId
         /// <summary>
         /// Updates all entity references for the given attribute values.
         /// </summary>
-        /// <param name="attributeValues">The dictionary of attribute value identifiers and their new value.</param>
+        /// <param name="attributeValues">The list of attribute values.</param>
         /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <remarks>
         ///     <para>
@@ -2100,13 +2305,13 @@ WHERE [AV].[AttributeId] = @AttributeId
         ///         call is required.
         ///     </para>
         /// </remarks>
-        private static void BulkUpdateAttributeValueEntityReferences( Dictionary<int, string> attributeValues, RockContext rockContext )
+        private static void BulkUpdateAttributeValueEntityReferences( List<AttributeValue> attributeValues, RockContext rockContext )
         {
             var referenceDictionary = new Dictionary<int, List<Field.ReferencedEntity>>();
 
             foreach ( var attributeValue in attributeValues )
             {
-                var attributeCache = AttributeCache.Get( attributeValue.Key );
+                var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
 
                 if ( !attributeCache.IsReferencedEntityFieldType )
                 {
@@ -2116,7 +2321,7 @@ WHERE [AV].[AttributeId] = @AttributeId
                 var field = ( Rock.Field.IEntityReferenceFieldType ) attributeCache.FieldType.Field;
                 var referencedEntities = field.GetReferencedEntities( attributeValue.Value, attributeCache.ConfigurationValues ) ?? new List<Field.ReferencedEntity>();
 
-                referenceDictionary.Add( attributeValue.Key, referencedEntities );
+                referenceDictionary.Add( attributeValue.Id, referencedEntities );
             }
 
             BulkUpdateAttributeValueEntityReferences( referenceDictionary, rockContext );
@@ -2170,20 +2375,6 @@ WHERE [AV].[AttributeId] = @AttributeId
             // This first deletes any references that are no longer valid for
             // the attribute value. It then creates any new references
             // that are missing from the database.
-#if REVIEW_NET5_0_OR_GREATER
-            rockContext.Database.ExecuteSqlRaw( @"
-DELETE [AVRE]
-FROM [AttributeValueReferencedEntity] AS [AVRE]
-LEFT OUTER JOIN @Data AS [D] ON [D].[EntityId] = [AVRE].[AttributeValueId] AND [D].[ReferencedEntityTypeId] = [AVRE].[EntityTypeId] AND [D].[ReferencedEntityId] = [AVRE].[EntityId]
-WHERE [AVRE].[AttributeValueId] IN (SELECT [EntityId] FROM @Data)
-  AND [D].[EntityId] IS NULL
-
-INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId], [EntityId])
-	SELECT [D].[EntityId], [D].[ReferencedEntityTypeId], [D].[ReferencedEntityId]
-	FROM @Data AS [D]
-	LEFT OUTER JOIN [AttributeValueReferencedEntity] AS [AVRE] ON [AVRE].[AttributeValueId] = [D].[EntityId] AND [AVRE].[EntityTypeId] = [D].[ReferencedEntityTypeId] AND [AVRE].[EntityId] = [D].[ReferencedEntityId]
-	WHERE [AVRE].[AttributeValueId] IS NULL",
-#else
             rockContext.Database.ExecuteSqlCommand( @"
 DELETE [AVRE]
 FROM [AttributeValueReferencedEntity] AS [AVRE]
@@ -2196,7 +2387,6 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 	FROM @Data AS [D]
 	LEFT OUTER JOIN [AttributeValueReferencedEntity] AS [AVRE] ON [AVRE].[AttributeValueId] = [D].[EntityId] AND [AVRE].[EntityTypeId] = [D].[ReferencedEntityTypeId] AND [AVRE].[EntityId] = [D].[ReferencedEntityId]
 	WHERE [AVRE].[AttributeValueId] IS NULL",
-#endif
                 dataParameter );
         }
 
@@ -2213,7 +2403,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public static void UpdateAttributeEntityReferences( Rock.Model.Attribute attribute, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeReferencedEntity>();
@@ -2275,14 +2465,14 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public static void UpdateAttributeValuePersistedValues( Rock.Model.AttributeValue attributeValue, AttributeCache attribute )
         {
             var field = attribute?.FieldType?.Field;
 
             if ( attribute.IsPersistedValueSupported && field != null )
             {
-                var persistedValues = field.GetPersistedValues( attributeValue.Value, attribute.ConfigurationValues );
+                var persistedValues = GetPersistedValuesOrPlaceholder( field, attributeValue.Value, attribute.ConfigurationValues, null );
 
                 attributeValue.PersistedTextValue = persistedValues.TextValue;
                 attributeValue.PersistedHtmlValue = persistedValues.HtmlValue;
@@ -2335,7 +2525,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 
                 if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
                 {
-                    persistedValues = field.GetPersistedValues( attribute.DefaultValue, attributeCache.ConfigurationValues );
+                    persistedValues = GetPersistedValuesOrPlaceholder( field, attribute.DefaultValue, attributeCache.ConfigurationValues, null );
                 }
                 else
                 {
@@ -2398,18 +2588,19 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
             {
                 var attributeId = attributeGroup.Key;
                 var valueGroups = attributeGroup.GroupBy( ag => ag.Value );
+                var attributeCache = AttributeCache.Get( attributeId );
+                var field = attributeCache.FieldType.Field;
+                var cache = new Dictionary<string, object>();
 
                 foreach ( var valueGroup in valueGroups )
                 {
                     var value = valueGroup.Key;
-                    var attributeCache = AttributeCache.Get( attributeId );
-                    var field = attributeCache.FieldType.Field;
                     var attributeValueIds = valueGroup.Select( vg => vg.AttributeValueId );
                     Field.PersistedValues persistedValues;
 
                     if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
                     {
-                        persistedValues = field.GetPersistedValues( value, attributeCache.ConfigurationValues );
+                        persistedValues = GetPersistedValuesOrPlaceholder( field, value, attributeCache.ConfigurationValues, cache );
                     }
                     else
                     {

@@ -282,7 +282,7 @@ namespace Rock.Extension
         /// <param name="updateAttributes">if set to <c>true</c> [update attributes].</param>
         public Component( bool updateAttributes )
         {
-            if (updateAttributes )
+            if ( updateAttributes )
             {
                 UpdateAttributes();
             }
@@ -300,6 +300,10 @@ namespace Rock.Extension
             get { return EntityTypeCache.Get( this.GetType() ); }
         }
 
+        private int? _typeId = null;
+        private Guid? _typeGuid = null;
+        private string _typeName = null;
+
         /// <summary>
         /// Gets the Entity Type ID for this entity.
         /// </summary>
@@ -310,11 +314,18 @@ namespace Rock.Extension
         {
             get
             {
-                // Read should never return null since it will create entity type if it doesn't exist
-                return EntityType.Id;
+                if ( _typeId == null )
+                {
+                    // Once this instance is created, there is no need to set the _typeId more than once.
+                    // Also, read should never return null since it will create entity type if it doesn't exist.
+                    _typeId = EntityType.Id;
+                }
+
+                return _typeId.Value;
             }
         }
 
+       
         /// <summary>
         /// Gets the Entity type GUID for this entity
         /// </summary>
@@ -325,10 +336,17 @@ namespace Rock.Extension
         {
             get
             {
-                // Read should never return null since it will create entity type if it doesn't exist
-                return EntityType.Guid;
+                if ( _typeGuid == null )
+                {
+                    // Once this instance is created, there is no need to set the _typeGuid more than once.
+                    // Also, read should never return null since it will create entity type if it doesn't exist.
+                    _typeGuid = EntityType.Guid;
+                }
+
+                return _typeGuid.Value;
             }
         }
+
 
         /// <summary>
         /// The auth entity. Classes that implement the <see cref="Rock.Security.ISecured" /> interface should return
@@ -337,7 +355,17 @@ namespace Rock.Extension
         /// </summary>
         public string TypeName
         {
-            get { return this.GetType().FullName; }
+            get
+            {
+                if ( _typeName.IsNullOrWhiteSpace() )
+                {
+                    // Once this instance is created, there is no need to set the _typeName more than once.
+                    // Also, read should never return null since it will create entity type if it doesn't exist.
+                    _typeName = this.GetType().FullName;
+                }
+
+                return _typeName;
+            }
         }
 
         /// <summary>

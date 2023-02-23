@@ -4,30 +4,31 @@
     function clearActiveDialog() {
         $('#<%=hfActiveDialog.ClientID %>').val('');
     }
-    $(document).ready(function () {
-        contentSlug.init({
-            contentChannelItem: '#<%=hfId.ClientID %>',
-            contentSlug: '#<%=hfSlug.ClientID %>',
-            SaveSlug: {
-                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/SaveContentSlug" ) %>',
-                restParams: '/' + ($('#<%=hfId.ClientID%>').val() || 0) + "/{slug}/{contentChannelItemSlugId?}",
-            },
-            UniqueSlug: {
-                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/GetUniqueContentSlug" ) %>',
-                restParams: "/" + ($('#<%=hfId.ClientID%>').val() || 0) + "/{slug}"
-            },
-            RemoveSlug: {
-                restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs" ) %>',
-                restParams: '/{id}'
-            },
-            txtTitle: '#<%=tbTitle.ClientID %>'
-        });
-    });
-
 </script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <script type="text/javascript">
+            Sys.Application.add_load(function () {
+                contentSlug.init({
+                    contentChannelItem: '#<%=hfId.ClientID %>',
+                    contentSlug: '#<%=hfSlug.ClientID %>',
+                    SaveSlug: {
+                        restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/SaveContentSlug" ) %>',
+                        restParams: '/' + ($('#<%=hfId.ClientID%>').val() || 0) + "/{slug}/{contentChannelItemSlugId?}",
+                    },
+                    UniqueSlug: {
+                        restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs/GetUniqueContentChannelSlug" ) %>',
+                        restParams: "/" + ($('#<%=hfChannelId.ClientID%>').val() || 0) + "/{slug}"
+                    },
+                    RemoveSlug: {
+                        restUrl: '<%=ResolveUrl( "~/api/ContentChannelItemSlugs" ) %>',
+                        restParams: '/{id}'
+                    },
+                    txtTitle: '#<%=tbTitle.ClientID %>'
+                });
+            });
+        </script>
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
 
@@ -152,7 +153,7 @@
                     </div>
                 <% } %>
                     <asp:Panel ID="pnlPersonalization" runat="server" CssClass="col-md-3 sidebar">
-                        <h4>Personalization Profile</h4>
+                        <h4>Personalization Options</h4>
                         <Rock:RockListBox ID="lbSegments" runat="server" Label="Segments" DataTextField="Name" DataValueField="Id" />
                         <Rock:RockListBox ID="lbRequestFilters" runat="server" Label="Request Filters" DataTextField="Name" DataValueField="Id" />
                     </asp:Panel>

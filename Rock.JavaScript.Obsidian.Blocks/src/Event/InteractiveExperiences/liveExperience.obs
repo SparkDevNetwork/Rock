@@ -1,0 +1,288 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="styled-scroll">
+        <div class="live-experience-body" :style="experienceStyles">
+            <Alert v-if="isExperienceInactive" alertType="warning">
+                This experience has ended.
+            </Alert>
+            <div v-if="isWelcomeContentVisible" class="welcome">
+                <div class="welcome-header">
+                    <img v-if="welcomeHeaderImageUrl" :src="welcomeHeaderImageUrl" class="header-image" />
+                    <h1 v-if="config.style?.welcome?.title" class="welcome-title">{{ config.style.welcome.title }}</h1>
+                </div>
+                <div class="welcome-message">{{ config.style?.welcome?.message }}</div>
+            </div>
+            <div v-if="isNoActionContentVisible" class="no-action">
+                <div class="no-action-header">
+                    <img v-if="noActionHeaderImageUrl" :src="noActionHeaderImageUrl" class="header-image" />
+                    <h1 v-if="config.style?.noAction?.title" class="no-action-title">{{ config.style.noAction.title }}</h1>
+                </div>
+                <div class="no-action-message">{{ config.style?.noAction?.message }}</div>
+            </div>
+            <component v-if="activeActionComponent"
+                       :is="activeActionComponent"
+                       :eventId="eventId"
+                       :actionId="activeActionId"
+                       :renderConfiguration="activeActionRenderConfiguration"
+                       :realTimeTopic="realTimeTopic" />
+        </div>
+    </div>
+</template>
+
+<!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
+<style>
+body {
+    touch-action: none;
+}
+
+.live-experience-body {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 18px;
+    color: var(--experience-action-color, inherit);
+    background-color: var(--experience-action-bg, inherit);
+    background-image: var(--experience-action-bg-image, initial);
+    background-size: cover;
+    overflow: auto;
+}
+
+.live-experience-body .btn-primary,
+.live-experience-body .btn-primary:hover,
+.live-experience-body .btn-primary:focus {
+    color: var(--experience-action-primary-btn-color);
+    background-color: var(--experience-action-primary-btn-bg);
+    border-color: var(--experience-action-primary-btn-bg);
+    box-shadow: none;
+}
+
+.live-experience-body .btn-secondary,
+.live-experience-body .btn-secondary:hover,
+.live-experience-body .btn-secondary:focus {
+    color: var(--experience-action-secondary-btn-color);
+    background-color: var(--experience-action-secondary-btn-bg);
+    border-color: var(--experience-action-secondary-btn-bg);
+}
+
+.live-experience-body .header-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import ActionShortAnswer from "./LiveExperience/actionShortAnswer.partial.obs";
+    import ActionPoll from "./LiveExperience/actionPoll.partial.obs";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import { Component as VueComponent, computed, ref } from "vue";
+    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
+    import { IParticipantTopic } from "./types";
+    import { LiveExperienceInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/LiveExperience/liveExperienceInitializationBox";
+    import { ActionRenderConfigurationBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/actionRenderConfigurationBag";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { Guid } from "@Obsidian/Types";
+
+    const config = useConfigurationValues<LiveExperienceInitializationBox>();
+
+    const actionTypeLookup: Record<Guid, VueComponent> = {
+        "5ffe1f8f-5f0b-4b34-9c3f-1706d9093210": ActionShortAnswer,
+        "9256a5b7-480d-4ffa-86d1-03b8aefc254e": ActionPoll
+    };
+
+    // #region Values
+
+    const eventId = ref<string | null>(null);
+    const isReady = ref(false);
+    const realTimeTopic = ref<ITopic<IParticipantTopic> | null>(null);
+    const activeActionId = ref<string | null>(null);
+    const activeActionComponent = ref<VueComponent | null>(null);
+    const activeActionRenderConfiguration = ref<ActionRenderConfigurationBag | null>(null);
+    const isExperienceInactive = ref(config.isExperienceInactive);
+    const isWelcomeState = ref(!isExperienceInactive.value);
+    const experienceStyles = getExperienceStyles();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isWelcomeContentVisible = computed((): boolean => {
+        return isReady.value && !isExperienceInactive.value && !!realTimeTopic.value && isWelcomeState.value;
+    });
+
+    const isNoActionContentVisible = computed((): boolean => {
+        return isReady.value && !isExperienceInactive.value && !isWelcomeContentVisible.value && !activeActionComponent.value;
+    });
+
+    const welcomeHeaderImageUrl = computed((): string | null => {
+        return config.style?.welcome?.headerImage ?? null;
+    });
+
+    const noActionHeaderImageUrl = computed((): string | null => {
+        return config.style?.noAction?.headerImage ?? null;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    async function startRealTime(isReconnecting: boolean): Promise<void> {
+        const experienceToken = config.experienceToken;
+
+        if (!experienceToken) {
+            throw new Error("Missing experience token from server.");
+        }
+
+        const topic = await getTopic<IParticipantTopic>("Rock.RealTime.Topics.InteractiveExperienceParticipantTopic");
+
+        topic.onDisconnected(async () => {
+            await startRealTime(true);
+        });
+
+        const response = await topic.server.joinExperience(experienceToken);
+        eventId.value = response.occurrenceIdKey ?? null;
+
+        topic.on("showAction", onShowAction);
+        topic.on("clearActions", onClearActions);
+
+        realTimeTopic.value = topic;
+        isReady.value = true;
+
+        if (response.currentActionIdKey && response.currentActionConfiguration) {
+            setupActionComponent(response.currentActionIdKey, response.currentActionConfiguration);
+        }
+
+        if (!isReconnecting) {
+            setTimeout(onPingTimer, config.keepAliveInterval * 1_000);
+        }
+    }
+
+    function setupActionComponent(actionId: string, renderConfiguration: ActionRenderConfigurationBag): void {
+        if (!isReady.value || isExperienceInactive.value || !renderConfiguration.actionTypeGuid || !actionTypeLookup[renderConfiguration.actionTypeGuid]) {
+            activeActionComponent.value = null;
+            activeActionId.value = null;
+            activeActionRenderConfiguration.value = null;
+            isWelcomeState.value = false;
+            return;
+        }
+
+        activeActionComponent.value = actionTypeLookup[renderConfiguration.actionTypeGuid];
+        activeActionId.value = actionId;
+        activeActionRenderConfiguration.value = renderConfiguration;
+        isWelcomeState.value = false;
+    }
+
+    function getExperienceStyles(): Record<string, string> {
+        const styles: Record<string, string> = {};
+
+        if (config.style?.welcome?.headerImage) {
+            styles["--welcome-header-image"] = `url('${config.style.welcome.headerImage}')`;
+        }
+
+        if (config.style?.noAction?.headerImage) {
+            styles["--no-action-header-image"] = `url('${config.style.noAction.headerImage}')`;
+        }
+
+        if (config.style?.action?.backgroundColor) {
+            styles["--experience-action-bg"] = config.style.action.backgroundColor;
+        }
+
+        if (config.style?.action?.backgroundImage) {
+            styles["--experience-action-bg-image"] = `url('${config.style.action.backgroundImage}')`;
+        }
+
+        if (config.style?.action?.primaryButtonColor) {
+            styles["--experience-action-primary-btn-bg"] = config.style.action.primaryButtonColor;
+        }
+        else {
+            styles["--experience-action-primary-btn-bg"] = "var(--brand-primary)";
+        }
+
+        if (config.style?.action?.primaryButtonTextColor) {
+            styles["--experience-action-primary-btn-color"] = config.style.action.primaryButtonTextColor;
+        }
+        else {
+            styles["--experience-action-primary-btn-color"] = "#fff";
+        }
+
+        if (config.style?.action?.secondaryButtonColor) {
+            styles["--experience-action-secondary-btn-bg"] = config.style.action.secondaryButtonColor;
+        }
+        else {
+            styles["--experience-action-secondary-btn-bg"] = "var(--brand-info)";
+        }
+
+        if (config.style?.action?.secondaryButtonTextColor) {
+            styles["--experience-action-secondary-btn-color"] = config.style.action.secondaryButtonTextColor;
+        }
+        else {
+            styles["--experience-action-secondary-btn-color"] = "#fff";
+        }
+
+        if (config.style?.action?.textColor) {
+            styles["--experience-action-color"] = config.style.action.textColor;
+        }
+        else {
+            styles["--experience-action-color"] = "var(--text-color)";
+        }
+
+        return styles;
+    }
+
+    function setupCustomStyles(): void {
+        if (config.style?.action?.customCss) {
+            const styleNode = document.createElement("style");
+            styleNode.textContent = config.style.action.customCss;
+            document.head.appendChild(styleNode);
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onShowAction(id: string, actionId: string, renderConfiguration: ActionRenderConfigurationBag): void {
+        if (eventId.value === id) {
+            setupActionComponent(actionId, renderConfiguration);
+        }
+    }
+
+    function onClearActions(id: string): void {
+        if (eventId.value === id) {
+            activeActionComponent.value = null;
+            activeActionId.value = null;
+            activeActionRenderConfiguration.value = null;
+        }
+    }
+
+    async function onPingTimer(): Promise<void> {
+        try {
+            if (realTimeTopic.value && eventId.value) {
+                await realTimeTopic.value.server.pingExperience(eventId.value);
+            }
+        }
+        catch (error) {
+            console.error(error instanceof Error ? error.message : error);
+        }
+        finally {
+            setTimeout(onPingTimer, config.keepAliveInterval * 1000);
+        }
+    }
+
+    // #endregion
+
+    // Add viewport meta tag if it doesn't exist.
+    if (document.querySelector("meta[name='viewport']") === null) {
+        const metaNode = document.createElement("meta");
+        metaNode.name = "viewport";
+        metaNode.content = "width=device-width, initial-scale=1";
+        document.head.appendChild(metaNode);
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    setupCustomStyles();
+    startRealTime(false);
+</script>

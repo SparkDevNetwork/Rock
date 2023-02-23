@@ -76,12 +76,13 @@ namespace Rock.ViewModels.Entities
         public int RelatedMediumEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the related SMS from defined value identifier.
+        /// Gets or sets the related SMS system phone number identifier this
+        /// response was received on.
         /// </summary>
         /// <value>
-        /// The related SMS from defined value identifier.
+        /// The related SMS system phone number identifier this response was recieved on.
         /// </value>
-        public int? RelatedSmsFromDefinedValueId { get; set; }
+        public int? RelatedSmsFromSystemPhoneNumberId { get; set; }
 
         /// <summary>
         /// Gets or sets the related transport entity type identifier.

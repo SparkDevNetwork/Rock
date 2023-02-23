@@ -51,7 +51,7 @@ namespace Rock.SystemGuid
         /// Gets the RSVP Response page route guid.
         /// </summary>
         public const string RSVP = "6BE4EE11-694A-4D3E-B3A7-F6B2946012B9";
-        
+
         /// <summary>
         /// The phone number lookup
         /// </summary>
@@ -86,5 +86,15 @@ namespace Rock.SystemGuid
         /// The Step Program Flow route 'steps/program/{ProgramId}/flow'
         /// </summary>
         public const string STEP_FLOW = "4F75872B-EBE0-43FA-A8F3-ED716B45A1A6";
+
+        /// <summary>
+        /// The external site Workflow Entry route 'WorkflowEntry/{WorkflowTypeGuid}/{WorkflowGuid}'.
+        /// </summary>
+        public const string EXTERNAL_WORKFLOW_ENTRY_WITH_WORKFLOW = "D8031879-92FD-4782-9AEB-715D6D290434";
+
+        /// <summary>
+        /// The external site Workflow Entry route 'WorkflowEntry/{WorkflowTypeGuid}'.
+        /// </summary>
+        public const string EXTERNAL_WORKFLOW_ENTRY = "ABDBED7B-93F5-4341-8B38-5E96F3009A1E";
     }
 }

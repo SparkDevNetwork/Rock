@@ -28,14 +28,14 @@ import { Guid } from "@Obsidian/Types";
  * the Following control.
  */
 export type FollowingGetFollowingOptionsBag = {
-    /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
-
     /**
      * Gets or sets the entity key used with Rock.ViewModels.Rest.Controls.FollowingGetFollowingOptionsBag.EntityTypeGuid
      * to locate the entity.
      */
     entityKey?: string | null;
+
+    /** Gets or sets the entity type unique identifier. */
+    entityTypeGuid?: Guid | null;
 
     /**
      * Gets or sets the purpose key to use when checking if the entity is

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -905,8 +905,11 @@ $('#{0}').tooltip();
 
                 // limit to schedules that haven't had a schedule preference set yet
                 sortedScheduleList = sortedScheduleList.Where( a =>
-                    !configuredScheduleIds.Contains( a.Id )
-                    || ( selectedScheduleId.HasValue && a.Id == selectedScheduleId.Value ) ).ToList();
+                    a.IsActive
+                    && a.IsPublic.HasValue
+                    && a.IsPublic.Value
+                    && ( !configuredScheduleIds.Contains( a.Id )
+                    || ( selectedScheduleId.HasValue && a.Id == selectedScheduleId.Value ) ) ).ToList();
 
                 ddlGroupScheduleAssignmentSchedule.Items.Clear();
                 ddlGroupScheduleAssignmentSchedule.Items.Add( new ListItem() );
@@ -1778,8 +1781,13 @@ $('#{0}').tooltip();
 
                     if ( attendanceId.HasValue )
                     {
-                        // if there is an attendanceId, this is an attendance that they just signed up for, but they might have either unselected it, or changed the location, so remove it
-                        attendanceService.ScheduledPersonRemove( attendanceId.Value );
+                        // if there is an attendanceId, this is an attendance that they just signed up for,
+                        // but they might have either unselected it, or changed the location, so remove it
+                        var attendance = attendanceService.Get( attendanceId.Value );
+                        if ( attendance != null )
+                        {
+                            attendanceService.Delete( attendance );
+                        }
                     }
 
                     if ( cbSignupSchedule.Checked )

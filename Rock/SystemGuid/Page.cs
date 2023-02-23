@@ -1430,6 +1430,12 @@ namespace Rock.SystemGuid
         public const string MY_ACCOUNT_SECURITY = "290C53DC-0960-484C-B314-8301882A454C";
 
         /// <summary>
+        /// Gets the My Dashboard page guid
+        /// ParentPage: Internal Homepage
+        /// </summary>
+        public const string MY_DASHBOARD = "AE1818D8-581C-4599-97B9-509EA450376A";
+
+        /// <summary>
         /// Gets the My Settings page guid
         /// ParentPage: Internal Homepage
         /// </summary>
@@ -1657,6 +1663,24 @@ namespace Rock.SystemGuid
         public const string PURCHASES = "6A163569-2826-4EF2-8208-879DDBDC0896";
 
         /// <summary>
+        /// Reminder Edit page.
+        /// ParentPage: Reminder List.
+        /// </summary>
+        public const string REMINDER_EDIT = "2640FF34-DCC9-4604-9C5B-9E2DA590D5A7";
+
+        /// <summary>
+        /// Reminder List page.
+        /// ParentPage: People > Manage.
+        /// </summary>
+        public const string REMINDER_LIST = "E1736347-1D4F-42A6-8EC4-7595286054A6";
+
+        /// <summary>
+        /// Reminder List page.
+        /// ParentPage: General Settings.
+        /// </summary>
+        public const string REMINDER_TYPES = "3A2BA8F8-B119-4D3E-BE76-FEC81F7AC1BB";
+
+        /// <summary>
         /// Gets the Report Detail page guid
         /// ParentPage: Reports
         /// </summary>
@@ -1853,15 +1877,7 @@ namespace Rock.SystemGuid
         /// ParentPage: CMS Configuration
         /// </summary>
         public const string SITES = "7596D389-4EAB-4535-8BEE-229737F46F44";
-
-        /// <summary>
-        /// Gets the SMS Phone Numbers page guid
-        /// ParentPage: Communications
-        /// </summary>
-        [Obsolete( "Use SMS_PHONE_NUMBERS instead", true )]
-        [RockObsolete( "1.9" )]
-        public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
-
+        
         /// <summary>
         /// The SMS phone numbers
         /// ParentPage: Communications
@@ -1956,7 +1972,7 @@ namespace Rock.SystemGuid
         /// Gets the System Email Details page guid
         /// ParentPage: System Emails
         /// </summary>
-        [Obsolete( "Use SYSTEM_COMMUNICATION_DETAIL instead." )]
+        [Obsolete( "Use SYSTEM_COMMUNICATION_DETAIL instead.", true )]
         [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAIL_DETAILS = "588C72A8-7DEC-405F-BA4A-FE64F87CB817";
 
@@ -1964,7 +1980,7 @@ namespace Rock.SystemGuid
         /// Gets the System Emails page guid
         /// ParentPage: Communications
         /// </summary>
-        [Obsolete( "Use SYSTEM_COMMUNICATION_LIST instead." )]
+        [Obsolete( "Use SYSTEM_COMMUNICATION_LIST instead.", true )]
         [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAILS = "89B7A631-EA6F-4DA3-9380-04EE67B63E9E";
 
@@ -2092,6 +2108,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Workflows
         /// </summary>
         public const string WORKFLOW_ENTRY = "0550D2AA-A705-4400-81FF-AB124FDF83D7";
+
+        /// <summary>
+        /// Gets the external site's Workflow Entry page guid
+        /// ParentPage: Workflows
+        /// </summary>
+        public const string EXTERNAL_WORKFLOW_ENTRY = "C58861DF-2D82-4E7A-AA5B-04165D2D34C2";
 
         /// <summary>
         /// Gets the Workflow Trigger page guid

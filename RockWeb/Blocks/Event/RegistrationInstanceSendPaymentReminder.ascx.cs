@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the GRegistrations control.
+        /// Handles the GridRebind event of the gRegistrations control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>

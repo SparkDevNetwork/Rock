@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -123,7 +123,9 @@ namespace RockWeb.Blocks.Core
             }
 
             schedule.Name = tbScheduleName.Text;
+            schedule.AbbreviatedName = tbScheduleAbbreviatedName.Text;
             schedule.IsActive = cbIsActive.Checked;
+            schedule.IsPublic = cbShowPublicly.Checked;
             schedule.AutoInactivateWhenComplete = cbAutoComplete.Checked;
             schedule.Description = tbScheduleDescription.Text;
             schedule.iCalendarContent = sbSchedule.iCalendarContent;
@@ -418,7 +420,9 @@ namespace RockWeb.Blocks.Core
             SetEditMode( true );
 
             tbScheduleName.Text = schedule.Name;
+            tbScheduleAbbreviatedName.Text = schedule.AbbreviatedName;
             cbIsActive.Checked = schedule.IsActive;
+            cbShowPublicly.Checked = schedule.IsPublic ?? false;
             cbAutoComplete.Checked = schedule.AutoInactivateWhenComplete;
             tbScheduleDescription.Text = schedule.Description;
 

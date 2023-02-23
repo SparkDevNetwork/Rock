@@ -278,6 +278,18 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlState control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlState_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var isFutureFollowUp = !ddlState.SelectedValue.IsNullOrWhiteSpace() && ddlState.SelectedValueAsEnum<ConnectionState>() == ConnectionState.FutureFollowUp;
+            dpFollowUpDate.Visible = isFutureFollowUp;
+            dpFollowUpDate.Required = isFutureFollowUp;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnBulkRequestUpdateCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -325,9 +337,9 @@ namespace RockWeb.Blocks.Connection
 
                 phConfirmation.Controls.Add( new LiteralControl( sb.ToString() ) );
 
-                pnlEntry.Visible = false;
-                pnlConfirm.Visible = true;
                 nbBulkUpdateNotification.Visible = false;
+                nbStatusUpdate.Visible = false;
+                mdConfirmUpdateRequests.Show();
             }
             else
             {
@@ -351,23 +363,20 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
-        /// Handles the Click event of the btnBack control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnBack_Click( object sender, EventArgs e )
-        {
-            pnlEntry.Visible = true;
-            pnlConfirm.Visible = false;
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnConfirm control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnConfirm_Click( object sender, EventArgs e )
         {
+            if ( mdConfirmUpdateRequests.SaveButtonText == "Ok" )
+            {
+                mdConfirmUpdateRequests.SaveButtonText = "Confirm";
+                mdConfirmUpdateRequests.CancelLinkVisible = true;
+                mdConfirmUpdateRequests.Hide();
+                return;
+            }
+
             var rockContext = new RockContext();
 
             var selectedCampusId = rblBulkUpdateCampuses.SelectedValue.AsIntegerOrNull();
@@ -398,6 +407,10 @@ namespace RockWeb.Blocks.Connection
                 if ( !string.IsNullOrWhiteSpace( ddlState.SelectedValue ) )
                 {
                     connectionRequest.ConnectionState = ddlState.SelectedValue.ConvertToEnum<ConnectionState>();
+                    if ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
+                    {
+                        connectionRequest.FollowupDate = dpFollowUpDate.SelectedDate;
+                    }
                 }
 
                 if ( !rbBulkUpdateCurrentConnector.Checked )
@@ -449,7 +462,6 @@ namespace RockWeb.Blocks.Connection
                     bulkUpdateActivity.ConnectionRequestId = connectionRequest.Id;
                     bulkUpdateActivity.ConnectionActivityTypeId = bulkUpdateActivityId;
                     bulkUpdateActivity.ConnectionOpportunityId = connectionOpportunity.Id;
-                    bulkUpdateActivity.Note = tbActivityNote.Text;
 
                     connectionRequestActivityService.Add(bulkUpdateActivity);
                 }
@@ -464,7 +476,7 @@ namespace RockWeb.Blocks.Connection
                 var workflowDetails = connectionRequests.ConvertAll( p => new LaunchWorkflowDetails( p ) );
                 var launchWorkflowsTxn = new LaunchWorkflowsTransaction( intValue, workflowDetails );
                 launchWorkflowsTxn.InitiatorPersonAliasId = CurrentPersonAliasId;
-                RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+                launchWorkflowsTxn.Enqueue();
             }
 
             ddlState.ClearSelection();
@@ -477,8 +489,11 @@ namespace RockWeb.Blocks.Connection
             SelectedFields = new List<string>();
             SetControlSelection();
 
-            pnlEntry.Visible = true;
-            pnlConfirm.Visible = false;
+            nbStatusUpdate.Visible = true;
+            nbStatusUpdate.Text = string.Format( "{0} {1} successfully updated.", connectionRequests.Count.ToString( "N0" ), connectionRequests.Count > 1 ? "people were" : "person was" );
+            mdConfirmUpdateRequests.SaveButtonText = "Ok";
+            mdConfirmUpdateRequests.CancelLinkVisible = false;
+            btnBulkRequestUpdateCancel.Text = "Back";
         }
 
         /// <summary>
@@ -567,7 +582,6 @@ namespace RockWeb.Blocks.Connection
         {
             if ( connectionCampusCountViewModels.Count > 0 )
             {
-                rcwBulkUpdateCampuses.Visible = true;
                 rblBulkUpdateCampuses.Items.Clear();
 
                 for ( int i = 0; i < connectionCampusCountViewModels.Count; i++ )
@@ -576,6 +590,11 @@ namespace RockWeb.Blocks.Connection
                     var listItem = new ListItem( $"{campusCountItem.Campus} ({campusCountItem.Count})", campusCountItem.CampusId.ToString() ) { Selected = i == 0 };
                     rblBulkUpdateCampuses.Items.Add( listItem );
                 }
+            }
+
+            if ( connectionCampusCountViewModels.Count > 1 )
+            {
+                rcwBulkUpdateCampuses.Visible = true;
             }
         }
 
@@ -804,6 +823,11 @@ namespace RockWeb.Blocks.Connection
             if ( currentOpportunityId != selectedOpportunity )
             {
                 EvaluateChange( changes, "Opportunity", ddlOpportunity.SelectedItem.Text );
+            }
+
+            if ( dpFollowUpDate.Visible )
+            {
+                changes.Add( $"Set Follow-up Date to <span class='field-name'>{dpFollowUpDate.SelectedDate}</span>" );
             }
 
             return changes;

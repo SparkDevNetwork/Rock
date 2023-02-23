@@ -63,13 +63,31 @@ namespace RockWeb.Blocks.Crm
         DefaultBooleanValue = true,
         Order = 2 )]
 
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 3 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 4 )]
+
     [AttributeField(
         "Campus Schedule Attribute",
         Key = AttributeKey.CampusScheduleAttribute,
         Description = "Allows you select a campus attribute that contains schedules for determining which dates and times for which pre-registration is available. This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. The Lava merge field for this in workflows is 'ScheduleId'.",
         EntityTypeGuid = Rock.SystemGuid.EntityType.CAMPUS,
         IsRequired = false,
-        Order = 2 )]
+        Order = 5 )]
 
     [CustomDropdownListField(
         "Planned Visit Date",
@@ -78,7 +96,7 @@ namespace RockWeb.Blocks.Crm
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Optional",
-        Order = 4 )]
+        Order = 6 )]
 
     [IntegerField(
         "Scheduled Days Ahead",
@@ -86,8 +104,7 @@ namespace RockWeb.Blocks.Crm
         Description = "When using campus specific scheduling this setting determines how many days ahead a person can select. The default is 28 days.",
         IsRequired = false,
         DefaultIntegerValue = 28,
-        Order = 5
-        )]
+        Order = 7 )]
 
     [AttributeField(
         "Family Attributes",
@@ -98,21 +115,21 @@ namespace RockWeb.Blocks.Crm
         EntityTypeQualifierValue = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
         IsRequired = false,
         AllowMultiple = true,
-        Order = 6 )]
+        Order = 8 )]
 
     [BooleanField(
         "Allow Updates",
         Key = AttributeKey.AllowUpdates,
         Description = "If the person visiting this block is logged in, should the block be used to update their family? If not, a new family will always be created unless 'Auto Match' is enabled and the information entered matches an existing person.",
         DefaultBooleanValue = false,
-        Order = 7 )]
+        Order = 9 )]
 
     [BooleanField(
         "Auto Match",
         Key = AttributeKey.AutoMatch,
         Description = "Should this block attempt to match people to to current records in the database.",
         DefaultBooleanValue = true,
-        Order = 8 )]
+        Order = 10 )]
 
     [DefinedValueField(
         "Connection Status",
@@ -122,7 +139,7 @@ namespace RockWeb.Blocks.Crm
         IsRequired = false,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
-        Order = 9 )]
+        Order = 11 )]
 
     [DefinedValueField(
         "Record Status",
@@ -132,7 +149,7 @@ namespace RockWeb.Blocks.Crm
         IsRequired = false,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE,
-        Order = 10 )]
+        Order = 12 )]
 
     [WorkflowTypeField(
         "Workflow Types",
@@ -140,7 +157,7 @@ namespace RockWeb.Blocks.Crm
         Description = BlockAttributeDescription.WorkflowTypes,
         AllowMultiple = true,
         IsRequired = false,
-        Order = 11 )]
+        Order = 13 )]
 
     [WorkflowTypeField(
         "Parent Workflow",
@@ -148,7 +165,7 @@ namespace RockWeb.Blocks.Crm
         Description = BlockAttributeDescription.ParentWorkflow,
         AllowMultiple = false,
         IsRequired = false,
-        Order = 12 )]
+        Order = 14 )]
 
     [WorkflowTypeField(
         "Child Workflow",
@@ -156,7 +173,7 @@ namespace RockWeb.Blocks.Crm
         Description = BlockAttributeDescription.ChildWorkflow,
         AllowMultiple = false,
         IsRequired = false,
-        Order = 13 )]
+        Order = 15 )]
 
     [CodeEditorField(
         "Redirect URL",
@@ -166,7 +183,7 @@ namespace RockWeb.Blocks.Crm
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
-        Order = 14 )]
+        Order = 16 )]
 
     [CustomDropdownListField(
         "Number of Columns",
@@ -175,7 +192,7 @@ namespace RockWeb.Blocks.Crm
         ListSource = ListSource.COLUMNS,
         IsRequired = false,
         DefaultValue = "4",
-        Order = 15 )]
+        Order = 17 )]
 
     [TextField(
         "Planned Visit Information Panel Title",
@@ -183,8 +200,7 @@ namespace RockWeb.Blocks.Crm
         Description = "The title for the Planned Visit Information panel",
         DefaultValue = "Visit Information",
         IsRequired = false,
-        Order = 16
-        )]
+        Order = 18 )]
 
     #region Adult Category
 
@@ -315,6 +331,27 @@ namespace RockWeb.Blocks.Crm
         DefaultValue = "Create an account to personalize your experience and access additional capabilities on our site.",
         Category = CategoryKey.AdultFields,
         Order = 12 )]
+
+    [CustomDropdownListField(
+        "Race",
+        Key = AttributeKey.RaceOption,
+        Description = "Allow Race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = CategoryKey.AdultFields,
+        Order = 13 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.EthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = CategoryKey.AdultFields,
+        Order = 14 )]
+
     #endregion
 
     #region Child Category
@@ -407,6 +444,26 @@ namespace RockWeb.Blocks.Crm
         DefaultValue = "Hide",
         Category = CategoryKey.ChildFields,
         Order = 8 )]
+
+    [CustomDropdownListField(
+        "Race",
+        Key = AttributeKey.ChildRaceOption,
+        Description = "Allow Race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = CategoryKey.ChildFields,
+        Order = 9 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.ChildEthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = CategoryKey.ChildFields,
+        Order = 10 )]
     #endregion
 
     #region Child Relationship Category
@@ -452,6 +509,8 @@ namespace RockWeb.Blocks.Crm
         {
             public const string ShowCampus = "ShowCampus";
             public const string DefaultCampus = "DefaultCampus";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string PlannedVisitDate = "PlannedVisitDate";
             public const string CampusScheduleAttribute = "CampusScheduleAttribute";
             public const string ScheduledDaysAhead = "ScheduledDaysAhead";
@@ -480,6 +539,8 @@ namespace RockWeb.Blocks.Crm
             public const string FirstAdultCreateAccount = "FirstAdultCreateAccount";
             public const string CreateAccountTitle = "CreateAccountTitle";
             public const string CreateAccountDescription = "CreateAccountDescription";
+            public const string RaceOption = "RaceOption";
+            public const string EthnicityOption = "EthnicityOption";
 
             public const string ChildSuffix = "ChildSuffix";
             public const string ChildGender = "ChildGender";
@@ -490,6 +551,8 @@ namespace RockWeb.Blocks.Crm
             public const string ChildAttributeCategories = "ChildAttributeCategories";
             public const string ChildDisplayCommunicationPreference = "ChildDisplayCommunicationPreference";
             public const string ChildProfilePhoto = "ChildProfilePhoto";
+            public const string ChildRaceOption = "ChildRaceOption";
+            public const string ChildEthnicityOption = "ChildEthnicityOption";
 
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
@@ -750,6 +813,8 @@ usernameTextbox.blur(function () {{
             pnlMobilePhone1.CssClass = GetColumnStyle( 3 );
             pnlEmail1.CssClass = GetColumnStyle( 6 );
             pnlCommunicationPreference1.CssClass = GetColumnStyle( 6 );
+            pnlRace1.CssClass = GetColumnStyle( 3 );
+            pnlEthnicity1.CssClass = GetColumnStyle( 3 );
 
             pnlSuffix2.CssClass = GetColumnStyle( 3 ) + " js-Adult2Required";
             pnlGender2.CssClass = GetColumnStyle( 3 ) + " js-Adult2Required";
@@ -758,6 +823,8 @@ usernameTextbox.blur(function () {{
             pnlMobilePhone2.CssClass = GetColumnStyle( 3 ) + " js-Adult2Required";
             pnlEmail2.CssClass = GetColumnStyle( 6 ) + " js-Adult2Required";
             pnlCommunicationPreference2.CssClass = GetColumnStyle( 6 ) + " js-Adult2Required";
+            pnlRace2.CssClass = GetColumnStyle( 3 );
+            pnlEthnicity2.CssClass = GetColumnStyle( 3 );
         }
 
         /// <summary>
@@ -844,6 +911,19 @@ usernameTextbox.blur(function () {{
                 $('#{15}').closest('.form-group').removeClass('required');
             }}
 
+            required = $('#{16}').val() == 'True';
+            if (required) {{
+                $('#{17}').find('.form-group:first').addClass('required');
+            }} else {{
+                $('#{17}').find('.form-group:first').removeClass('required');
+            }}
+
+            required = $('#{18}').val() == 'True';
+            if (required) {{
+                $('#{19}').find('.form-group:first').addClass('required');
+            }} else {{
+                $('#{19}').find('.form-group:first').removeClass('required');
+            }}
 
         }} else {{
             $('#{3}').closest('.form-group').removeClass('required');
@@ -853,32 +933,40 @@ usernameTextbox.blur(function () {{
             $('#{11}').closest('.form-group').removeClass('required');
             $('#{13}').closest('.form-group').removeClass('required');
             $('#{15}').closest('.form-group').removeClass('required');
+            $('#{17}').find('.form-group:first').removeClass('required');
+            $('#{19}').find('.form-group:first').removeClass('required');
         }}
     }}
 ",
-                tbFirstName2.ClientID,
-                tbLastName2.ClientID,
+                tbFirstName2.ClientID, // 0
+                tbLastName2.ClientID, // 1
 
-                hfSuffixRequired.ClientID,
-                dvpSuffix2.ClientID,
+                hfSuffixRequired.ClientID, // 2
+                dvpSuffix2.ClientID, // 3
 
-                hfGenderRequired.ClientID,
-                ddlGender2.ClientID,
+                hfGenderRequired.ClientID, // 4
+                ddlGender2.ClientID, // 5
 
-                hfBirthDateRequired.ClientID,
-                bpBirthDate2.ClientID,
+                hfBirthDateRequired.ClientID, // 6
+                bpBirthDate2.ClientID, // 7
 
-                hfMaritalStatusRequired.ClientID,
-                dvpMaritalStatus2.ClientID,
+                hfMaritalStatusRequired.ClientID, // 8
+                dvpMaritalStatus2.ClientID, // 9
 
-                hfMobilePhoneRequired.ClientID,
-                pnMobilePhone2.ClientID,
+                hfMobilePhoneRequired.ClientID, // 10
+                pnMobilePhone2.ClientID, // 11
 
-                hfEmailRequired.ClientID,
-                tbEmail2.ClientID,
+                hfEmailRequired.ClientID, // 12
+                tbEmail2.ClientID, // 13
 
-                hfProfileRequired.ClientID,
-                imgProfile2.ClientID
+                hfProfileRequired.ClientID, // 14
+                imgProfile2.ClientID, // 15
+
+                hfRaceIsRequired.ClientID, // 16
+                rpRace2.ClientID, // 17
+
+                hfEthnicityIsRequired.ClientID, // 18
+                epEthnicity2.ClientID // 19
             );
 
             ScriptManager.RegisterStartupScript( tbFirstName2, tbFirstName2.GetType(), "adult2-validation", script, true );
@@ -980,8 +1068,8 @@ usernameTextbox.blur(function () {{
 
                 // Save the adults
                 var adults = new List<Person>();
-                SaveAdult( ref primaryFamily, adults, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, bpBirthDate1, dvpMaritalStatus1, tbEmail1, rblCommunicationPreference1, pnMobilePhone1, phAttributes1, imgProfile1 );
-                SaveAdult( ref primaryFamily, adults, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, bpBirthDate2, dvpMaritalStatus2, tbEmail2, rblCommunicationPreference2, pnMobilePhone2, phAttributes2, imgProfile2 );
+                SaveAdult( ref primaryFamily, adults, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, bpBirthDate1, dvpMaritalStatus1, tbEmail1, rblCommunicationPreference1, pnMobilePhone1, phAttributes1, imgProfile1, rpRace1, epEthnicity1 );
+                SaveAdult( ref primaryFamily, adults, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, bpBirthDate2, dvpMaritalStatus2, tbEmail2, rblCommunicationPreference2, pnMobilePhone2, phAttributes2, imgProfile2, rpRace2, epEthnicity2 );
 
                 bool isNewFamily = false;
 
@@ -1121,6 +1209,8 @@ usernameTextbox.blur(function () {{
 
                 // Loop through each of the children
                 var newFamilyIds = new Dictionary<string, int>();
+                var showChildRace = GetAttributeValue( AttributeKey.ChildRaceOption ) != "Hide";
+                var showChildEthnicity = GetAttributeValue( AttributeKey.ChildEthnicityOption ) != "Hide";
                 foreach ( var child in Children )
                 {
                     // Save the child's person information
@@ -1187,6 +1277,16 @@ usernameTextbox.blur(function () {{
                     if ( child.ProfilePhotoId.HasValue )
                     {
                         person.PhotoId = child.ProfilePhotoId;
+                    }
+
+                    if ( showChildRace )
+                    {
+                        person.RaceValueId = child.RaceValueId;
+                    }
+
+                    if ( showChildEthnicity )
+                    {
+                        person.EthnicityValueId = child.EthnicityValueId;
                     }
 
                     _rockContext.SaveChanges();
@@ -1438,18 +1538,59 @@ usernameTextbox.blur(function () {{
             // Campus
             if ( GetAttributeValue( AttributeKey.ShowCampus ).AsBoolean() )
             {
+                var defaultCampusGuid = GetAttributeValue( AttributeKey.DefaultCampus ).AsGuid();
+
                 var campuses = CampusCache.All( false );
-                cpCampus.Campuses = campuses;
+                var defaultCampus = CampusCache.Get( defaultCampusGuid );
+                var selectedCampusTypeIds = GetAttributeValue( AttributeKey.CampusTypes )
+                    .SplitDelimitedValues( true )
+                    .AsGuidList()
+                    .Select( a => DefinedValueCache.Get( a ) )
+                    .Where( a => a != null )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                cpCampus.Campuses = CampusCache.All( false );
+                cpCampus.CampusTypesFilter = selectedCampusTypeIds;
+
+                if ( selectedCampusTypeIds.Count > 0 )
+                {
+                    campuses = campuses.Where( c => c.CampusTypeValueId != null && selectedCampusTypeIds.Contains( c.CampusTypeValueId.Value ) ).ToList();
+                }
+
+                var selectedCampusStatusIds = GetAttributeValue( AttributeKey.CampusStatuses )
+                    .SplitDelimitedValues( true )
+                    .AsGuidList()
+                    .Select( a => DefinedValueCache.Get( a ) )
+                    .Where( a => a != null )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                cpCampus.CampusStatusFilter = selectedCampusStatusIds;
+
+                if ( selectedCampusStatusIds.Count > 0 )
+                {
+                    campuses = campuses.Where( c => c.CampusStatusValueId != null && selectedCampusStatusIds.Contains( c.CampusStatusValueId.Value ) ).ToList();
+                }
 
                 if ( campuses.Count >= 1 )
                 {
-                    cpCampus.SelectedCampusId = campuses.First().Id;
                     cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
-                    pnlCampus.Visible = cpCampus.Visible;
+                    if ( campuses.Count == 1 )
+                    {
+                        cpCampus.SelectedCampusId = defaultCampus?.Id ?? campuses[0].Id;
+                        pnlCampus.Visible = cpCampus.Visible = false;
+                    }
+                    else
+                    {
+                        cpCampus.SelectedCampusId = defaultCampus?.Id;
+                        pnlCampus.Visible = cpCampus.Visible = true;
+                    }
                 }
                 else
                 {
-                    pnlCampus.Visible = false;
+                    cpCampus.SelectedCampusId = null;
+                    pnlCampus.Visible = cpCampus.Visible = false;
                 }
             }
             else
@@ -1524,6 +1665,16 @@ usernameTextbox.blur(function () {{
             rlCreateAccountTitle.Text = GetAttributeValue( AttributeKey.CreateAccountTitle );
             rlCreateAccountDescription.Text = GetAttributeValue( AttributeKey.CreateAccountDescription );
             hfCreateFirstAdultAccountIsRequired.Value = isRequired.ToStringSafe();
+
+            // Adult Race 
+            isRequired = SetControl( AttributeKey.RaceOption, rpRace1, rpRace2 );
+            rpRace1.Required = isRequired;
+            hfRaceIsRequired.Value = isRequired.ToStringSafe();
+
+            // Adult Ethnicity 
+            isRequired = SetControl( AttributeKey.EthnicityOption, epEthnicity1, epEthnicity2 );
+            epEthnicity1.Required = isRequired;
+            hfEthnicityIsRequired.Value = isRequired.ToStringSafe();
 
             // Check for Current Family
             SetCurrentFamilyValues();
@@ -1777,8 +1928,14 @@ usernameTextbox.blur(function () {{
             // Set First Adult's Values
             hfAdultGuid1.Value = adult1 != null ? adult1.Id.ToString() : string.Empty;
 
+            lFirstName1.Visible = adult1 != null;
+            lFirstName1.Text = adult1 != null ? adult1.NickName : String.Empty;
+
             tbFirstName1.Visible = adult1 == null;
             tbFirstName1.Text = adult1 != null ? adult1.NickName : String.Empty;
+
+            lLastName1.Visible = adult1 != null;
+            lLastName1.Text = adult1 != null ? adult1.LastName : String.Empty;
 
             tbLastName1.Visible = adult1 == null;
             tbLastName1.Text = adult1 != null ? adult1.LastName : String.Empty;
@@ -1794,8 +1951,14 @@ usernameTextbox.blur(function () {{
             // Set Second Adult's Values
             hfAdultGuid2.Value = adult2 != null ? adult2.Guid.ToString() : string.Empty;
 
+            lFirstName2.Visible = adult2 != null;
+            lFirstName2.Text = adult2 != null ? adult2.NickName : String.Empty;
+
             tbFirstName2.Visible = adult2 == null;
             tbFirstName2.Text = adult2 != null ? adult2.NickName : String.Empty;
+
+            lLastName2.Visible = adult2 != null;
+            lLastName2.Text = adult2 != null ? adult2.LastName : String.Empty;
 
             tbLastName2.Visible = adult2 == null;
             tbLastName2.Text = adult2 != null ? adult2.LastName : String.Empty;
@@ -2082,6 +2245,10 @@ usernameTextbox.blur(function () {{
             var columns = GetAttributeValue( AttributeKey.Columns ).AsInteger();
             var showProfilePhoto = GetAttributeValue( AttributeKey.ChildProfilePhoto ) != "Hide";
             var requireProfilePhoto = GetAttributeValue( AttributeKey.ChildProfilePhoto ) == "Required";
+            var showRace = GetAttributeValue( AttributeKey.ChildRaceOption ) != "Hide";
+            var requireRace = GetAttributeValue( AttributeKey.ChildRaceOption ) == "Required";
+            var showEthnicity = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
+            var requireEthnicity = GetAttributeValue( AttributeKey.EthnicityOption ) == "Required";
 
             var attributeList = GetCategoryAttributeList( AttributeKey.ChildAttributeCategories );
 
@@ -2117,6 +2284,10 @@ usernameTextbox.blur(function () {{
                     childRow.Columns = columns;
                     childRow.ShowProfilePhoto = showProfilePhoto;
                     childRow.RequireProfilePhoto = requireProfilePhoto;
+                    childRow.ShowRace = showRace;
+                    childRow.RequireRace = requireRace;
+                    childRow.ShowEthnicity = showEthnicity;
+                    childRow.RequireEthnicity = requireEthnicity;
 
                     childRow.ValidationGroup = BlockValidationGroup;
 
@@ -2134,6 +2305,8 @@ usernameTextbox.blur(function () {{
                         childRow.EmailAddress = child.EmailAddress;
                         childRow.CommunicationPreference = child.CommunicationPreference;
                         childRow.ProfilePhotoId = child.ProfilePhotoId;
+                        childRow.RaceValueId = child.RaceValueId;
+                        childRow.EthnicityValueId = child.EthnicityValueId;
 
                         childRow.SetAttributeValues( child );
                     }
@@ -2153,7 +2326,9 @@ usernameTextbox.blur(function () {{
             RockRadioButtonList rblCommunicationPreference,
             PhoneNumberBox pnMobilePhone,
             DynamicPlaceholder phAttributes,
-            ImageEditor imgProfile )
+            ImageEditor imgProfile,
+            RacePicker rpRace,
+            EthnicityPicker epEthnicity )
         {
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
@@ -2170,6 +2345,8 @@ usernameTextbox.blur(function () {{
             var showCommunicationPreference = GetAttributeValue( AttributeKey.AdultDisplayCommunicationPreference ) != "Hide";
             bool autoMatch = GetAttributeValue( AttributeKey.AutoMatch ).AsBoolean();
             var showProfilePhoto = GetAttributeValue( AttributeKey.AdultProfilePhoto ) != "Hide";
+            var showRace = GetAttributeValue( AttributeKey.RaceOption ) != "Hide";
+            var showEthnicity = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
 
             var personService = new PersonService( _rockContext );
 
@@ -2281,6 +2458,16 @@ usernameTextbox.blur(function () {{
                     }
                 }
 
+                if ( showRace )
+                {
+                    adult.RaceValueId = rpRace.SelectedValueAsId();
+                }
+
+                if ( showEthnicity )
+                {
+                    adult.EthnicityValueId = epEthnicity.SelectedValueAsId();
+                }
+
                 // Save the person
                 _rockContext.SaveChanges();
 
@@ -2298,7 +2485,6 @@ usernameTextbox.blur(function () {{
 
                 adults.Add( adult );
             }
-
         }
 
         /// <summary>
@@ -2357,6 +2543,9 @@ usernameTextbox.blur(function () {{
 
                 child.RelationshipType = childRow.RelationshipType;
                 child.ProfilePhotoId = childRow.ProfilePhotoId;
+
+                child.RaceValueId = childRow.RaceValueId;
+                child.EthnicityValueId = childRow.EthnicityValueId;
 
                 var attributeKeys = GetCategoryAttributeList( AttributeKey.ChildAttributeCategories ).Select( a => a.Key ).ToList();
                 child.AttributeValues = person.AttributeValues

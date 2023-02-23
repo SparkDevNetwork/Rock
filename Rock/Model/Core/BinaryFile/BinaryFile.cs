@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "BinaryFile" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "9BB1A349-5998-47C1-97D5-D6CC00275662")]
+    [Rock.SystemGuid.EntityTypeGuid( "9BB1A349-5998-47C1-97D5-D6CC00275662" )]
     public partial class BinaryFile : Model<BinaryFile>
     {
         #region Entity Properties
@@ -198,6 +198,27 @@ namespace Rock.Model
         /// </remarks>
         [DataMember]
         public DateTime? ContentLastModified { get; set; }
+
+        /// <summary>
+        /// Gets or sets additional information for the file.
+        /// </summary>
+        /// <value>The additional information.</value>
+        [DataMember]
+        public string AdditionalInformation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Parent EntityType ID to determine security access.
+        /// </summary>
+        /// <value>The parent entity type identifier.</value>
+        [DataMember]
+        public int? ParentEntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent Entity ID to determine security access.
+        /// </summary>
+        /// <value>The parent entity identifier.</value>
+        [DataMember]
+        public int? ParentEntityId { get; set; }
 
         #endregion
 

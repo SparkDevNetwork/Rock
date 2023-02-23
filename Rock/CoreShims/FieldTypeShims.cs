@@ -468,6 +468,12 @@ namespace Rock.Field.Types
     public partial class RegistryEntryFieldType : Rock.Field.FieldType
     {
     }
+    public partial class ReminderTypeFieldType : Rock.Field.FieldType
+    {
+    }
+    public partial class ReminderTypesFieldType : Rock.Field.FieldType
+    {
+    }
     public partial class RemoteAuthsFieldType : Rock.Field.FieldType
     {
     }
@@ -481,6 +487,9 @@ namespace Rock.Field.Types
     {
     }
     public partial class SchedulesFieldType : Rock.Field.FieldType
+    {
+    }
+    public partial class SecondaryAuthsFieldType : Rock.Field.FieldType
     {
     }
     public partial class SecurityRoleFieldType : Rock.Field.FieldType
@@ -540,6 +549,9 @@ namespace Rock.Field.Types
     {
     }
     public partial class SystemEmailFieldType : Rock.Field.FieldType
+    {
+    }
+    public partial class SystemPhoneNumberFieldType : Rock.Field.FieldType
     {
     }
     public partial class TextFieldType : Rock.Field.FieldType

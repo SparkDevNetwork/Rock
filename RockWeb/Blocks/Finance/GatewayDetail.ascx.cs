@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -350,8 +350,28 @@ namespace RockWeb.Blocks.Finance
                         Rock.Attribute.Helper.UpdateAttributes( GatewayComponentEntityType.GetEntityType(), GatewayEntityType.Id, "EntityTypeId", GatewayComponentEntityType.Id.ToString(), rockContext );
                         gateway.LoadAttributes( rockContext );
                     }
+
+                    try
+                    {
+                        Type selectedComponentType = Rock.Reflection.FindType( typeof( GatewayComponent ), GatewayComponentEntityType.Name );
+                        if ( tbName.Text.IsNullOrWhiteSpace() )
+                        {
+                            tbName.Text = Rock.Reflection.GetDisplayName( selectedComponentType );
+                        }
+
+                        if ( tbDescription.Text.IsNullOrWhiteSpace() )
+                        {
+                            tbDescription.Text = Rock.Reflection.GetDescription( selectedComponentType );
+                        }
+                    }
+                    catch
+                    {
+                        // ignore if there is a problem getting the name or description from the selected type
+                    }
                 }
             }
+
+
 
             phAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( gateway, phAttributes, SetValues, BlockValidationGroup, new List<string> { "Active", "Order" } );

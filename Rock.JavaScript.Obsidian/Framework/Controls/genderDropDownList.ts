@@ -18,12 +18,7 @@ import { computed, defineComponent } from "vue";
 import { normalizeRules, rulesPropType } from "@Obsidian/ValidationRules";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import DropDownList from "./dropDownList";
-
-export const enum Gender {
-    Unknown = 0,
-    Male = 1,
-    Female = 2
-}
+import { Gender } from "@Obsidian/Enums/Crm/gender";
 
 export default defineComponent({
     name: "GenderDropDownList",
@@ -38,6 +33,7 @@ export default defineComponent({
 
     setup(props) {
         const options: ListItemBag[] = [
+            { text: " ", value: Gender.Unknown.toString() },
             { text: "Male", value: Gender.Male.toString() },
             { text: "Female", value: Gender.Female.toString() }
         ];
@@ -54,13 +50,12 @@ export default defineComponent({
         });
 
         return {
-            blankValue: `${Gender.Unknown}`,
             computedRules,
             options
         };
     },
 
     template: `
-<DropDownList label="Gender" :items="options" :showBlankItem="true" :blankValue="blankValue" :rules="computedRules" />
+<DropDownList label="Gender" :items="options" :showBlankItem="false" :rules="computedRules" />
 `
 });

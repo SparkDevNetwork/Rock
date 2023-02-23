@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1529,7 +1529,7 @@ namespace RockWeb.Blocks.Groups
 
                     if ( LavaService.RockLiquidIsEnabled )
                     {
-                        template = Template.Parse( GetAttributeValue( AttributeKey.MapInfo ) );
+                        template = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( AttributeKey.MapInfo ) );
 
                         LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.MapInfo ) );
                     }

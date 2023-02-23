@@ -24,6 +24,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Cms.ContentCollection.IndexDocuments;
 using Rock.Cms.ContentCollection.Search;
 using Rock.Data;
@@ -35,6 +36,7 @@ namespace Rock.Cms.ContentCollection.Indexers
     /// <summary>
     /// Content Collection Indexer for <see cref="EventItem"/> entities.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class EventItemIndexer : IContentCollectionIndexer
     {
         /// <inheritdoc/>

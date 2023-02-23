@@ -20,11 +20,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
 import { deepEqual } from "@Obsidian/Utility/util";
 import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
 
 /** The type definition for a select option, since the ones from the library are wrong. */
-type SelectOption = {
+export type SelectOption = {
     value?: string;
 
     label: string;
@@ -71,6 +70,11 @@ export default defineComponent({
 
         /** No longer used. */
         formControlClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        inputClasses: {
             type: String as PropType<string>,
             default: ""
         },
@@ -267,7 +271,7 @@ export default defineComponent({
         /**
          * Determines if a single option should be included during a search
          * operation.
-         * 
+         *
          * @param input The search string typed by the individual.
          * @param option The option to be filtered.
          *
@@ -365,33 +369,40 @@ export default defineComponent({
     name="dropdownlist">
     <template #default="{uniqueId, field}">
         <div ref="controlWrapper" class="control-wrapper">
-            <AntSelect
-                v-model:value="internalValue"
-                v-bind="field"
-                class="form-control"
-                :allowClear="isClearable"
-                :loading="computedLoading"
-                :disabled="isDisabled"
-                :options="computedOptions"
-                :showSearch="enhanceForLongLists"
-                :filterOption="filterItem"
-                :mode="mode"
-                :getPopupContainer="getPopupContainer"
-                @dropdownVisibleChange="onDropdownVisibleChange">
-                <template #clearIcon>
-                    <i class="fa fa-times"></i>
-                </template>
+            <slot name="prepend" :isInputGroupSupported="true" />
+            <div :class="{'input-group': $slots.inputGroupPrepend || $slots.inputGroupAppend}">
+                <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                <AntSelect
+                    v-model:value="internalValue"
+                    v-bind="field"
+                    class="form-control"
+                    :class="inputClasses"
+                    :allowClear="isClearable"
+                    :loading="computedLoading"
+                    :disabled="isDisabled"
+                    :options="computedOptions"
+                    :showSearch="enhanceForLongLists"
+                    :filterOption="filterItem"
+                    :mode="mode"
+                    :getPopupContainer="getPopupContainer"
+                    @dropdownVisibleChange="onDropdownVisibleChange">
+                    <template #clearIcon>
+                        <i class="fa fa-times"></i>
+                    </template>
 
-                <template #suffixIcon>
-                    <i v-if="!computedLoading" class="fa fa-caret-down"></i>
-                    <i v-else class="fa fa-spinner fa-spin"></i>
-                </template>
+                    <template #suffixIcon>
+                        <i v-if="!computedLoading" class="fa fa-caret-down"></i>
+                        <i v-else class="fa fa-spinner fa-spin"></i>
+                    </template>
 
-                <template #dropdownRender="{ menuNode: menu }">
-                    <div v-if="computedLoading" class="text-center"><i class="fa fa-spinner fa-spin"></i> Data is loading...</div>
-                    <v-nodes v-else :vnodes="menu" />
-                </template>
-            </AntSelect>
+                    <template #dropdownRender="{ menuNode: menu }">
+                        <div v-if="computedLoading" class="text-center"><i class="fa fa-spinner fa-spin"></i> Data is loading...</div>
+                        <v-nodes v-else :vnodes="menu" />
+                    </template>
+                </AntSelect>
+                <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+            </div>
+            <slot name="append" :isInputGroupSupported="true" />
         </div>
     </template>
 </RockFormField>

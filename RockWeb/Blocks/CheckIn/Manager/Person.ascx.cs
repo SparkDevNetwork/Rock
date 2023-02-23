@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -57,10 +57,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
         IsRequired = false,
         Order = 1 )]
 
-    [DefinedValueField(
+    [SystemPhoneNumberField(
         "Send SMS From",
         Key = AttributeKey.SMSFrom,
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
         Description = "The phone number SMS messages should be sent from",
         IsRequired = false,
         AllowMultiple = false,
@@ -436,14 +435,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSend_Click( object sender, EventArgs e )
         {
-            var definedValueGuid = GetAttributeValue( AttributeKey.SMSFrom ).AsGuidOrNull();
+            var systemPhoneNumberGuid = GetAttributeValue( AttributeKey.SMSFrom ).AsGuidOrNull();
             var message = tbSmsMessage.Value.Trim();
 
-            if ( message.IsNullOrWhiteSpace() || !definedValueGuid.HasValue )
+            if ( message.IsNullOrWhiteSpace() || !systemPhoneNumberGuid.HasValue )
             {
                 ResetSms();
                 DisplayResult( NotificationBoxType.Danger, "Error sending message. Please try again or contact an administrator if the error continues." );
-                if ( !definedValueGuid.HasValue )
+                if ( !systemPhoneNumberGuid.HasValue )
                 {
                     LogException( new Exception( string.Format( "While trying to send an SMS from the Check-in Manager, the following error occurred: There is a misconfiguration with the {0} setting.", AttributeKey.SMSFrom ) ) );
                 }
@@ -451,7 +450,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            var smsFromNumber = DefinedValueCache.Get( definedValueGuid.Value );
+            var smsFromNumber = SystemPhoneNumberCache.Get( systemPhoneNumberGuid.Value );
             if ( smsFromNumber == null )
             {
                 ResetSms();
@@ -475,6 +474,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 person.PrimaryAliasId,
                 message,
                 smsFromNumber,
+                null,
                 null,
                 rockContext );
 

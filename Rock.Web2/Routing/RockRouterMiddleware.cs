@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -261,11 +264,7 @@ namespace Rock.Web2.Routing
             int pageId = routeData.Values["PageId"].ToString().AsInteger();
             var pageCache = PageCache.Get( pageId );
 
-            var requestMessage = new HttpRequestMessage( new HttpMethod( context.Request.Method ), context.Request.GetEncodedUrl() );
-            foreach ( var header in context.Request.Headers )
-            {
-                requestMessage.Headers.Add( header.Key, header.Value.ToArray() );
-            }
+            var requestMessage = new HttpRequestWrapper( context.Request );
 
             var rockRequestContext = new RockRequestContext( requestMessage ); //context.RequestServices.GetRequiredService<RockRequestContext>();
 
@@ -381,6 +380,45 @@ namespace Rock.Web2.Routing
                 }
 
                 return false;
+            }
+        }
+
+        private class HttpRequestWrapper : IRequest
+        {
+            public IPAddress RemoteAddress => IPAddress.Parse( "127.0.0.1" );
+
+            public Uri RequestUri { get; }
+
+            public NameValueCollection QueryString { get; } = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
+
+            public NameValueCollection Headers { get; } = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
+
+            public IDictionary<string, string> Cookies { get; } = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+
+            public HttpRequestWrapper( HttpRequest request )
+            {
+                foreach ( var qs in request.Query )
+                {
+                    foreach ( var v in qs.Value )
+                    {
+                        QueryString.Add( qs.Key, v );
+                    }
+                }
+
+                foreach ( var h in request.Headers )
+                {
+                    foreach ( var v in h.Value )
+                    {
+                        Headers.Add( h.Key, v );
+                    }
+                }
+
+                foreach ( var c in request.Cookies )
+                {
+                    Cookies.AddOrIgnore( c.Key, c.Value );
+                }
+
+                RequestUri = new Uri( request.GetDisplayUrl() );
             }
         }
 

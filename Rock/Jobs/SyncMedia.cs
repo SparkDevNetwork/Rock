@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Media;
@@ -45,8 +43,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 0 )]
 
-    [DisallowConcurrentExecution]
-    public class SyncMedia : IJob
+    public class SyncMedia : RockJob
     {
         /// <summary>
         /// Attribute Keys for the <see cref="SyncMedia"/> job.
@@ -63,15 +60,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var limitFullSync = dataMap.GetString( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
+                        var limitFullSync = GetAttributeValue( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
 
             // Start a task that will let us run the Async methods in order.
             var task = Task.Run( () => ProcessAllAccounts( limitFullSync ) );
@@ -79,7 +71,7 @@ namespace Rock.Jobs
             // Wait for our main task to complete.
             var result = task.GetAwaiter().GetResult();
 
-            context.Result = result.Message;
+            this.Result = result.Message;
 
             if ( result.Errors.Any() )
             {
@@ -126,11 +118,23 @@ namespace Rock.Jobs
                     tasks.Add( task );
                 }
 
+
                 // Wait for all operational tasks to complete and then
                 // aggregate the results.
                 var results = await Task.WhenAll( tasks );
-
                 var message = string.Join( Environment.NewLine, results.Select( a => a.Message ) );
+
+                // Sync the media folders and content channels 
+                var contentChannelCount = mediaAccounts
+                                .SelectMany( ma => ma.MediaFolders )
+                                .Select( mf => Task.Run( () => MediaFolderService.AddMissingSyncedContentChannelItem( mf.Id ) ).Result )
+                                .Sum();
+
+                if ( contentChannelCount > 0 )
+                {
+                    var syncedContentChannelCountMessage = $"Synced {contentChannelCount} {"content channel type".PluralizeIf( contentChannelCount > 1 )}.";
+                    message += $"\n{syncedContentChannelCountMessage}";
+                }
 
                 return new OperationResult( message, results.SelectMany( a => a.Errors ) );
             }

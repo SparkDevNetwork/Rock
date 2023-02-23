@@ -12,5 +12,13 @@ namespace Rock.Model
         {
             return null;
         }
+
+        /// <summary>
+        /// Updates the last log in, writes to the person's history log, and saves changes to the database
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        public static void UpdateLastLogin( string userName )
+        {
+        }
     }
 }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,9 +22,11 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
@@ -32,8 +34,14 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "Dynamic Chart" )]
     [Category( "Reporting" )]
     [Description( "Block to display a chart using SQL as the chart datasource" )]
-
-    [CodeEditorField( "SQL", @"The SQL for the datasource. Output columns must be as follows:
+    [IntegerField( "Chart Height",
+        IsRequired = false,
+        DefaultIntegerValue = 200 )]
+    [TextField( "Query Params",
+        Description = "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have its value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id.",
+        IsRequired = false )]
+    [CodeEditorField( "SQL",
+        Description = @"The SQL for the datasource. Output columns must be as follows:
 <ul>
     <li>Bar or Line Chart
         <ul>
@@ -78,19 +86,107 @@ Example:
         ORDER BY d.[Date];
     </pre>
 </code>",
-              CodeEditorMode.Sql )]
-    [TextField( "Query Params", "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have its value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id.", false, "" )]
-    [IntegerField( "Chart Height", "", false, 200 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3 )]
-
-    [BooleanField( "Show Legend", "", true, order: 7 )]
-    [CustomDropdownListField( "Legend Position", "Select the position of the Legend (corner)", "ne,nw,se,sw", false, "ne", order: 8 )]
-    [CustomDropdownListField( "Chart Type", "", "Line,Bar,Pie", false, "Line", order: 9 )]
-    [DecimalField( "Pie Inner Radius", "If this is a pie chart, specific the inner radius to have a donut hole. For example, specify: 0.75 to have the inner radius as 75% of the outer radius.", false, 0, order: 10 )]
-    [BooleanField( "Pie Show Labels", "If this is a pie chart, specify if labels show be shown", true, "", order: 11 )]
+        EditorMode = CodeEditorMode.Sql )]
+    [TextField( "Title",
+        Description = "The title of the widget",
+        IsRequired = false,
+        Order = 0 )]
+    [TextField( "Subtitle",
+        Description = "The subtitle of the widget",
+        IsRequired = false,
+        Order = 1 )]
+    [CustomDropdownListField( "Column Width",
+        Description = "The width of the widget.",
+        ListSource = ",1,2,3,4,5,6,7,8,9,10,11,12",
+        IsRequired = false,
+        DefaultValue = "4",
+        Order = 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES,
+        Name = "Chart Style",
+        Order = 3 )]
+    [BooleanField( "Show Legend",
+        Key = "ShowLegend",
+        DefaultBooleanValue = true,
+        Order = 7 )]
+    [CustomDropdownListField( "Legend Position",
+        Description = "Select the position of the Legend (corner)",
+        ListSource = "ne,nw,se,sw",
+        IsRequired = false,
+        DefaultValue = "ne",
+        Order = 8 )]
+    [CustomDropdownListField( "Chart Type",
+        ListSource = "Line,Bar,Pie",
+        IsRequired = false,
+        DefaultValue = "Line",
+        Order = 9 )]
+    [DecimalField( "Pie Inner Radius",
+        Description = "If this is a pie chart, specific the inner radius to have a donut hole. For example, specify: 0.75 to have the inner radius as 75% of the outer radius.",
+        IsRequired = false,
+        DefaultDecimalValue = 0,
+        Order = 10 )]
+    [BooleanField( "Pie Show Labels",
+        Key = "PieShowLabels",
+        Description = "If this is a pie chart, specify if labels show be shown",
+        DefaultBooleanValue = true,
+        Order = 11 )]
     [Rock.SystemGuid.BlockTypeGuid( "7BCCBFB0-26A5-4376-B1F3-DC6ADD7C3723" )]
-    public partial class DynamicChart : Rock.Reporting.Dashboard.DashboardWidget
+    public partial class DynamicChart : RockBlock
     {
+        #region Fields
+
+        private string _chartType = null;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the Title attribute value
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public string Title
+        {
+            get
+            {
+                return GetAttributeValue( "Title" );
+            }
+        }
+
+        /// <summary>
+        /// Gets the Subtitle attribute value
+        /// </summary>
+        /// <value>
+        /// The subtitle.
+        /// </value>
+        public string Subtitle
+        {
+            get
+            {
+                return GetAttributeValue( "Subtitle" );
+            }
+        }
+
+        /// <summary>
+        /// Gets the Column Width attribute value
+        /// This will be a value from 1-12 (or null) that represents the col-md- width of this control.
+        /// </summary>
+        /// <value>
+        /// The width of the column.
+        /// </value>
+        public int? ColumnWidth
+        {
+            get
+            {
+                return GetAttributeValue( "ColumnWidth" ).AsIntegerOrNull();
+            }
+        }
+
+        #endregion
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -105,241 +201,460 @@ Example:
 
             var pageReference = new Rock.Web.PageReference( this.PageCache.Id );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
-            pageReference.QueryString.Add( this.CurrentPageReference.QueryString ); // Add paramters from the url querystring parameters
-            pageReference.QueryString.Add( this.CurrentPageReference.Parameters.ToNameValueCollection() ); // Add paramters from the routes parameters
-            pageReference.QueryString.Add( "GetChartData", "true" );
-            pageReference.QueryString.Add( "GetChartDataBlockId", this.BlockId.ToString() );
-            pageReference.QueryString.Add( "TimeStamp", RockDateTime.Now.ToJavascriptMilliseconds().ToString() );
-            lcLineChart.DataSourceUrl = pageReference.BuildUrl();
-            lcLineChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
-            lcLineChart.Options.legend = lcLineChart.Options.legend ?? new Legend();
-            lcLineChart.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
-            lcLineChart.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
-            // Set chart style after setting options so they are not overwritten.
-            lcLineChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
 
-            bcBarChart.DataSourceUrl = pageReference.BuildUrl();
-            bcBarChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
-            bcBarChart.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
-            bcBarChart.Options.series.bars.barWidth = 0.6;
-            bcBarChart.Options.series.bars.align = "center";
-            bcBarChart.Options.legend = lcLineChart.Options.legend ?? new Legend();
-            bcBarChart.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
-            bcBarChart.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
-            // Set chart style after setting options so they are not overwritten.
-            bcBarChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
-
-            pcPieChart.DataSourceUrl = pageReference.BuildUrl();
-            pcPieChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
-            pcPieChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
-
-            pcPieChart.PieOptions.label = new PieLabel { show = this.GetAttributeValue( "PieShowLabels" ).AsBooleanOrNull() ?? true };
-            pcPieChart.PieOptions.label.formatter = @"
-function labelFormatter(label, series) {
-	return ""<div style='font-size:8pt; text-align:center; padding:2px; '>"" + label + ""<br/>"" + Math.round(series.percent) + ""%</div>"";
-}
-".Trim();
-            pcPieChart.Legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
-
-            pcPieChart.PieOptions.innerRadius = this.GetAttributeValue( "PieInnerRadius" ).AsDoubleOrNull();
+            // Add parameters from the URL route and query string.
+            pageReference.QueryString.Add( this.CurrentPageReference.QueryString );
+            pageReference.QueryString.Add( this.CurrentPageReference.Parameters.ToNameValueCollection() );
 
             lcLineChart.Visible = false;
             bcBarChart.Visible = false;
             pcPieChart.Visible = false;
-            var chartType = this.GetAttributeValue( "ChartType" );
-            if ( chartType == "Pie" )
+
+            SetBlockConfigurationError( null );
+
+            // Check for valid block configuration.
+            var sql = this.GetAttributeValue( "SQL" );
+
+            if ( string.IsNullOrWhiteSpace( sql ) )
             {
-                pcPieChart.Visible = true;
+                SetBlockConfigurationError( "[Dynamic Chart]: SQL needs to be configured in block settings." );
+                return;
             }
-            else if ( chartType == "Bar" )
+
+            ChartStyle chartStyle;
+            var definedValue = DefinedValueCache.Get( this.GetAttributeValue( "ChartStyle" ).AsGuid() );
+            if ( definedValue != null )
             {
-                bcBarChart.Visible = true;
+                chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
             }
             else
             {
-                lcLineChart.Visible = true;
+                chartStyle = new ChartStyle();
             }
+
+            var chartHeight = GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
+            var showLegend = GetAttributeValue( "ShowLegend" ).AsBooleanOrNull() ?? true;
+            var legendPosition = GetAttributeValue( "LegendPosition" );
+
+            // Override the style settings with the block settings.
+            if ( chartStyle.Legend == null )
+            {
+                chartStyle.Legend = new LegendStyle();
+            }
+            chartStyle.Legend.Show = showLegend;
+            chartStyle.Legend.Position = legendPosition;
+
+            lcLineChart.ChartHeight = chartHeight;
+            lcLineChart.ShowLegend = showLegend;
+            lcLineChart.LegendPosition = legendPosition;
+            // Set chart style after setting options so they are not overwritten.
+            lcLineChart.SetChartStyle( chartStyle );
+
+            bcBarChart.ChartHeight = chartHeight;
+            bcBarChart.BarWidth = 0.6;
+            bcBarChart.ShowLegend = showLegend;
+            bcBarChart.LegendPosition = legendPosition;
+            bcBarChart.SetChartStyle( chartStyle );
+
+            pcPieChart.ChartHeight = chartHeight;
+            pcPieChart.ShowLegend = showLegend;
+            pcPieChart.ShowSegmentLabels = GetAttributeValue( "ShowLegend" ).AsBooleanOrNull() ?? false;
+            pcPieChart.InnerRadius = this.GetAttributeValue( "PieInnerRadius" ).AsDoubleOrNull();
+            pcPieChart.SetChartStyle( chartStyle );
+
+            _chartType = this.GetAttributeValue( "ChartType" ).Trim().ToLower();
 
             pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
             pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
             lDashboardTitle.Text = this.Title;
             lDashboardSubtitle.Text = this.Subtitle;
+        }
+
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            lcLineChart.Visible = false;
+            bcBarChart.Visible = false;
+            pcPieChart.Visible = false;
+
+            // If the block has a configuration error, do not attempt to load the data.
+            if ( nbConfigurationWarning.Visible )
+            {
+                return;
+            }
 
             var sql = this.GetAttributeValue( "SQL" );
-
-            if ( string.IsNullOrWhiteSpace( sql ) )
+            DataTable dataTable = null;
+            try
             {
-                nbConfigurationWarning.Visible = true;
-                nbConfigurationWarning.Text = "SQL needs to be configured in block settings";
+                dataTable = GetSqlResultDataTable( sql );
+            }
+            catch
+            {
+                SetBlockConfigurationError( "[Dynamic Chart]: The data could not be retrieved." );
+            }
+
+            if ( dataTable == null )
+            {
+                return;
+            }
+
+            var rows = dataTable.Rows.OfType<DataRow>();
+            var sampleRow = rows.FirstOrDefault();
+            if ( sampleRow == null )
+            {
+                return;
+            }
+
+            /* Get the required fields from the dataset. */
+
+            // A Series represents a set of related data points that are displayed on the chart.
+            // A line or bar chart can display multiple series at the same time.
+            var seriesFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "SeriesName", "SeriesID" } );
+            var categoryFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "Category", "MetricTitle" } );
+            var yValueFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "Value", "YValue", "YValueTotal" } );
+            var xValueFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "XValue", "XValueTotal" } );
+            var dateTimeFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "DateTimeValue", "DateTime", "XValue" } );
+
+            if ( _chartType == "pie" )
+            {
+                // The Pie Chart data set requires the following columns:
+                // MetricTitle (string), YValueTotal (numeric).
+                // It can only be used to plot category data, not a time series.
+                if ( categoryFieldName == null )
+                {
+                    SetBlockConfigurationError( "[Dynamic Chart]: Pie Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                }
+                if ( yValueFieldName == null )
+                {
+                    SetBlockConfigurationError( "[Dynamic Chart]: Pie Chart dataset must contain a value field: [YValue] or [YValueTotal]" );
+                }
+            }
+            else if ( _chartType == "bar" )
+            {
+                // The Bar Chart data set requires the following columns:
+                // SeriesName (string), YValue (numeric).
+                // It can only be used to plot category data, not a time series.
+                if ( categoryFieldName == null )
+                {
+                    SetBlockConfigurationError( "[Dynamic Chart]: Bar Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                }
+                if ( yValueFieldName == null )
+                {
+                    SetBlockConfigurationError( "[Dynamic Chart]: Bar Chart dataset must contain a value field: [Value], [YValue] or [DateTime]" );
+                }
             }
             else
             {
+                // The Line Chart can represent a time series or an x vs Y graph.
+                // The data set requires the following columns:
+                // SeriesName (string,optional), XValue (numeric) or DateTime (datetime), YValue (numeric).
+                // If DateTime exists, the chart will be plotted as a time series.
+                // If XValue exists, the chart will be plotted as an X vs Y graph.
+                if ( xValueFieldName == null && dateTimeFieldName == null )
+                {
+                    SetBlockConfigurationError( "[Dynamic Chart]: Line Chart dataset must contain an X-value or datetime field: [XValue] or [DateTime]" );
+                }
+                if ( yValueFieldName == null )
+                {
+                    SetBlockConfigurationError( "[Dynamic Chart]: Line Chart dataset must contain a Y-value field: [Value] or [YValue]" );
+                }
+            }
+
+            // If the block has a configuration error, do not attempt to load the data.
+            if ( nbConfigurationWarning.Visible )
+            {
+                return;
+            }
+
+            ChartJsChart chartControl;
+            bool createTimeSeries;
+            if ( _chartType == "pie" )
+            {
+                chartControl = pcPieChart;
+                createTimeSeries = false;
+            }
+            else if ( _chartType == "bar" )
+            {
+                chartControl = bcBarChart;
+                createTimeSeries = false;
+            }
+            else
+            {
+                chartControl = lcLineChart;
+                createTimeSeries = ( dateTimeFieldName != null );
+            }
+
+            // Create the chart data.
+            if ( createTimeSeries )
+            {
+                // If a datetime field exists, create a time series.
+                var data1 = GetChartDataForTimeSeries( dataTable, seriesFieldName, dateTimeFieldName, yValueFieldName );
+                chartControl.SetChartDataItems( data1 );
+            }
+            else
+            {
+                var categoryData = GetChartDataForCategorySeries( dataTable, seriesFieldName, categoryFieldName, yValueFieldName );
+                chartControl.SetChartDataItems( categoryData );
+            }
+
+            chartControl.Visible = true;
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( System.Web.UI.HtmlTextWriter writer )
+        {
+            // Create the containing panels and embed the chart content.
+            var cssList = GetDivWidthCssClasses();
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, cssList.AsDelimited( " " ) );
+            writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel" );
+            writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-body" );
+            writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+
+            base.RenderControl( writer );
+
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Gets the div width CSS classes.
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetDivWidthCssClasses()
+        {
+            int? mediumColumnWidth = this.GetAttributeValue( "ColumnWidth" ).AsIntegerOrNull();
+
+            // add additional css to the block wrapper (if mediumColumnWidth is specified)
+            List<string> widgetCssList = new List<string>();
+            if ( mediumColumnWidth.HasValue )
+            {
+                // Table to use to derive col-xs and col-sm from the selected medium width
+                /*
+                XS	SM	MD
+                4	2	1
+                6	4	2
+                6	4	3
+                    6	4
+            	        5
+            	        6
+            	        7
+            	        8
+            	        9
+            	        10
+            	        11
+            	        12 */
+
+                int? xsmallColumnWidth;
+                int? smallColumnWidth;
+
+                // logic to set reasonable col-xs- and col-sm- classes from the selected mediumColumnWidth (col-md-X)
+                switch ( mediumColumnWidth.Value )
+                {
+                    case 1:
+                        xsmallColumnWidth = 4;
+                        smallColumnWidth = 2;
+                        break;
+                    case 2:
+                    case 3:
+                        xsmallColumnWidth = 6;
+                        smallColumnWidth = 4;
+                        break;
+                    case 4:
+                        xsmallColumnWidth = null;
+                        smallColumnWidth = 6;
+                        break;
+                    default:
+                        xsmallColumnWidth = null;
+                        smallColumnWidth = null;
+                        break;
+                }
+
+                widgetCssList.Add( string.Format( "col-md-{0}", mediumColumnWidth ) );
+                if ( xsmallColumnWidth.HasValue )
+                {
+                    widgetCssList.Add( string.Format( "col-xs-{0}", xsmallColumnWidth ) );
+                }
+
+                if ( smallColumnWidth.HasValue )
+                {
+                    widgetCssList.Add( string.Format( "col-sm-{0}", smallColumnWidth ) );
+                }
+            }
+
+            return widgetCssList;
+        }
+
+        private void SetBlockConfigurationError( string text )
+        {
+            if ( text == null )
+            {
+                nbConfigurationWarning.Text = "";
                 nbConfigurationWarning.Visible = false;
             }
-
-            if ( PageParameter( "GetChartData" ).AsBoolean() && ( PageParameter( "GetChartDataBlockId" ).AsInteger() == this.BlockId ) )
+            else
             {
-                GetChartData();
+                nbConfigurationWarning.Text = text;
+                nbConfigurationWarning.Visible = true;
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public class DynamicChartData : Rock.Chart.IChartData
+        private DataTable GetSqlResultDataTable( string sql )
         {
-            /// <summary>
-            /// Gets the date time stamp.
-            /// </summary>
-            /// <value>
-            /// The date time stamp.
-            /// </value>
-            public long DateTimeStamp { get; set; }
+            if ( string.IsNullOrWhiteSpace( sql ) )
+            {
+                return null;
+            }
 
-            /// <summary>
-            /// Gets the y value (for Line and Bar Charts)
-            /// </summary>
-            /// <value>
-            /// The y value.
-            /// </value>
-            public decimal? YValue { get; set; }
+            var mergeFields = GetDynamicDataMergeFields();
+            sql = sql.ResolveMergeFields( mergeFields );
 
-            /// <summary>
-            /// Gets the y value as a formatted string (for Line and Bar Charts)
-            /// </summary>
-            /// <value>
-            /// The formatted y value.
-            /// </value>
-            public string YValueFormatted { get; set; }
+            var parameters = GetParameters();
+            var dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, parameters );
+            var dataTable = dataSet.Tables[0];
 
-            /// <summary>
-            /// Gets or sets the metric title (for pie charts)
-            /// </summary>
-            /// <value>
-            /// The metric title.
-            /// </value>
-            public string MetricTitle { get; set; }
-
-            /// <summary>
-            /// Gets the y value (for pie charts)
-            /// </summary>
-            /// <value>
-            /// The y value.
-            /// </value>
-            public decimal? YValueTotal { get; set; }
-
-            /// <summary>
-            /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
-            /// </summary>
-            /// <value>
-            /// The name of the series.
-            /// </value>
-            public string SeriesName { get; set; }
-
-            /// <summary>
-            /// Gets the metric value partitions as a comma-delimited list of EntityTypeId|EntityId
-            /// </summary>
-            /// <value>
-            /// The metric value entityTypeId,EntityId partitions
-            /// </value>
-            public string MetricValuePartitionEntityIds { get; set; }
+            return dataTable;
         }
 
         /// <summary>
-        /// Gets the chart data (ajax call from Chart)
+        /// Gets the data set for a chart that represents a series of values by category.
         /// </summary>
-        private void GetChartData()
+        /// <returns></returns>
+        private List<ChartJsCategorySeriesDataset> GetChartDataForCategorySeries( DataTable dataTable, string seriesFieldName, string categoryFieldName, string valueFieldName )
         {
-            try
+            var rows = dataTable.Rows.OfType<DataRow>();
+
+            var hasSeries = !string.IsNullOrEmpty( seriesFieldName );
+            var datasetsMap = new Dictionary<string, ChartJsCategorySeriesDataset>( StringComparer.OrdinalIgnoreCase );
+            ChartJsCategorySeriesDataset seriesDataset = null;
+
+            if ( !hasSeries )
             {
-                var sql = this.GetAttributeValue( "SQL" );
+                // Add the default series.
+                seriesDataset = new ChartJsCategorySeriesDataset();
+                seriesDataset.Name = "Series 1";
+                seriesDataset.DataPoints = new List<IChartJsCategorySeriesDataPoint>();
+                datasetsMap.Add( string.Empty, seriesDataset );
+            }
 
-                if ( string.IsNullOrWhiteSpace( sql ) )
+            foreach ( var row in rows )
+            {
+                if ( hasSeries )
                 {
-                    //
-                }
-                else
-                {
-                    var mergeFields = GetDynamicDataMergeFields();
-                    sql = sql.ResolveMergeFields( mergeFields );
-
-                    var parameters = GetParameters();
-                    DataSet dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, parameters );
-                    List<DynamicChartData> chartDataList = new List<DynamicChartData>();
-                    foreach ( var row in dataSet.Tables[0].Rows.OfType<DataRow>() )
+                    var seriesName = Convert.ToString( row[seriesFieldName] ).Trim();
+                    if ( datasetsMap.ContainsKey( seriesName ) )
                     {
-                        var chartData = new DynamicChartData();
-
-                        if ( row.Table.Columns.Contains( "SeriesName" ) )
-                        {
-                            chartData.SeriesName = Convert.ToString( row["SeriesName"] );
-                        }
-                        else if ( row.Table.Columns.Contains( "SeriesID" ) )
-                        {
-                            // backwards compatibility
-                            chartData.SeriesName = Convert.ToString( row["SeriesID"] );
-                        }
-
-                        if ( row.Table.Columns.Contains( "YValue" ) )
-                        {
-                            chartData.YValue = Convert.ToDecimal( row["YValue"] );
-                        }
-
-                        if ( row.Table.Columns.Contains( "MetricTitle" ) )
-                        {
-                            chartData.MetricTitle = Convert.ToString( row["MetricTitle"] );
-                        }
-                        else
-                        {
-                            chartData.MetricTitle = chartData.SeriesName;
-                        }
-
-                        if ( row.Table.Columns.Contains( "YValueTotal" ) )
-                        {
-                            chartData.YValueTotal = Convert.ToDecimal( row["YValueTotal"] );
-                        }
-                        else
-                        {
-                            chartData.YValueTotal = chartData.YValue;
-                        }
-
-                        if ( row.Table.Columns.Contains( "YValueFormatted" ) )
-                        {
-                            chartData.YValueFormatted = Convert.ToString( row["YValueFormatted"] );
-                        }
-                        else
-                        {
-                            chartData.YValueFormatted = chartData.YValue.HasValue ? chartData.YValue.Value.ToString( "G29" ) : string.Empty;
-                        }
-
-                        if ( row.Table.Columns.Contains( "DateTime" ) )
-                        {
-                            chartData.DateTimeStamp = ( row["DateTime"] as DateTime? ).Value.ToJavascriptMilliseconds();
-                        }
-                        else if ( row.Table.Columns.Contains( "XValue" ) )
-                        {
-                            chartData.DateTimeStamp = (row["XValue"] as int?).Value;
-                        }
-
-                        chartDataList.Add( chartData );
+                        seriesDataset = datasetsMap[seriesName];
                     }
+                    else
+                    {
+                        seriesDataset = new ChartJsCategorySeriesDataset();
+                        seriesDataset.Name = seriesName;
+                        seriesDataset.DataPoints = new List<IChartJsCategorySeriesDataPoint>();
+                        datasetsMap.Add( seriesName, seriesDataset );
+                    }
+                }
 
-                    chartDataList = chartDataList.OrderBy( a => a.SeriesName ).ThenBy( a => a.DateTimeStamp ).ToList();
+                var dataPoint = new ChartJsCategorySeriesDataPoint();
+                dataPoint.Category = Convert.ToString( row[categoryFieldName] );
+                dataPoint.Value = Convert.ToDecimal( row[valueFieldName] );
 
-                    Response.Clear();
-                    Response.Write( chartDataList.ToJson() );
-                    Response.End();
+                seriesDataset.DataPoints.Add( dataPoint );
+            }
+
+            var datasets = datasetsMap.Values.ToList();
+
+            return datasets;
+        }
+
+        private string GetFirstMatchedFieldName( DataRow sampleRow, List<string> fieldNames )
+        {
+            foreach ( var fieldName in fieldNames )
+            {
+                if ( sampleRow.Table.Columns.Contains( fieldName ) )
+                {
+                    return fieldName;
                 }
             }
-            catch (System.Threading.ThreadAbortException)
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the data set for a chart that represents a series of value over time data points.
+        /// </summary>
+        /// <returns></returns>
+        private List<ChartJsTimeSeriesDataset> GetChartDataForTimeSeries( DataTable dataTable, string seriesFieldName, string datetimeFieldName, string valueFieldName )
+        {
+            // SeriesName (string), DateTime (datetime), YValue (numeric).
+            var datasets = new List<ChartJsTimeSeriesDataset>();
+            var rows = dataTable.Rows.OfType<DataRow>();
+            var chartDataPoints = new List<ChartJsTimeSeriesDataPoint>();
+            var hasSeries = !string.IsNullOrEmpty( seriesFieldName );
+            var datasetsMap = new Dictionary<string, ChartJsTimeSeriesDataset>( StringComparer.OrdinalIgnoreCase );
+            ChartJsTimeSeriesDataset seriesDataset = null;
+
+            if ( !hasSeries )
             {
-                // ignore the ThreadAbort exception from Response.End();
+                // Add the default series.
+                seriesDataset = new ChartJsTimeSeriesDataset();
+                seriesDataset.Name = "Series 1";
+                seriesDataset.DataPoints = new List<IChartJsTimeSeriesDataPoint>();
+                datasetsMap.Add( string.Empty, seriesDataset );
             }
-            catch ( Exception ex )
+
+            foreach ( var row in rows )
             {
-                LogException( ex );
-                throw;
+                if ( hasSeries )
+                {
+                    var seriesName = Convert.ToString( row[seriesFieldName] ).Trim();
+                    if ( datasetsMap.ContainsKey( seriesName ) )
+                    {
+                        seriesDataset = datasetsMap[seriesName];
+                    }
+                    else
+                    {
+                        seriesDataset = new ChartJsTimeSeriesDataset();
+                        seriesDataset.Name = seriesName;
+                        seriesDataset.DataPoints = new List<IChartJsTimeSeriesDataPoint>();
+                        datasetsMap.Add( seriesName, seriesDataset );
+                    }
+                }
+
+                var dataPoint = new ChartJsTimeSeriesDataPoint();
+                if ( datetimeFieldName == "DateTime" )
+                {
+                    dataPoint.DateTimeStamp = ( row["DateTime"] as DateTime? ).Value.ToJavascriptMilliseconds();
+                }
+                else if ( datetimeFieldName == "XValue" )
+                {
+                    dataPoint.DateTimeStamp = ( row["XValue"] as int? ).Value;
+                }
+                dataPoint.Value = Convert.ToDecimal( row[valueFieldName] );
+
+                seriesDataset.DataPoints.Add( dataPoint );
             }
+
+            // Sort the datasets
+            datasets = datasetsMap.Values.ToList();
+            foreach ( var dataset in datasets )
+            {
+                dataset.DataPoints = dataset.DataPoints
+                    .OrderBy( a => a.DateTime )
+                    .ToList();
+            }
+
+            return datasets;
         }
 
         /// <summary>

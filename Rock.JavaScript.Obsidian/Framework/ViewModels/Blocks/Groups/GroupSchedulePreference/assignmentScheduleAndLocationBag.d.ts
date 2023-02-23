@@ -29,9 +29,9 @@ export type AssignmentScheduleAndLocationBag = {
     /** Gets or sets a guid representing the group member assignment ID. */
     groupMemberAssignmentGuid?: Guid | null;
 
-    /** Gets or sets a list of schedule keys and values. */
-    scheduleListItem?: ListItemBag | null;
-
     /** Gets or sets a list of location keys and values. */
     locationListItem?: ListItemBag | null;
+
+    /** Gets or sets a list of schedule keys and values. */
+    scheduleListItem?: ListItemBag | null;
 };

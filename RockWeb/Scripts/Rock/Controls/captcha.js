@@ -14,30 +14,37 @@
                 }
 
                 $('#' + options.id).data('key', options.key);
+                this.options = options;
 
                 // Ensure that js for recaptcha is added to page.
                 // If the Captcha control was added in a partial postback, we'll have to add it manually here
                 if (!$('#captchaScriptId').length) {
                     // by default, jquery adds a cache-busting parameter on dynamically added script tags. set the ajaxSetup cache:true to prevent this
                     $.ajaxSetup({ cache: true });
-                    var apiSource = "https://www.google.com/recaptcha/api.js?render=explicit&onload=Rock_controls_captcha_onloadInitialize";
-                    $('head').prepend("<script id='captchaScriptId' src='" + apiSource + "' />");
+                    const apiSource = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback";
+                    $('head').prepend("<script src='" + apiSource + "' async defer></script>");
                 }
 
-                // For some reason the reCaptcha library cannot call the onloadInitialize function
-                // directly, I suspect because it is in a class. Put a chain function in the global
-                // namespace to help us out.
-                if (!window.Rock_controls_captcha_onloadInitialize) {
-                    window.Rock_controls_captcha_onloadInitialize = function () {
-                        Rock.controls.captcha.onloadInitialize();
-                    };
-                }
+                // Partial postbacks sometimes cause the page to reload, and in the instance where the widget has already been rendered, the turnstile api will not re-render the widget
+                // so if the turnstile code has already been injected, then use it to re-render the page
+                if (typeof (turnstile) !== 'undefined') {
+                    const widgetId = turnstile.render(`#${options.id}`, {
+                        sitekey: options.key,
+                        callback: function onloadTurnstileCallback(token) {
 
-                if (Rock.controls.captcha._onloadInitialized !== true) {
-                    Sys.Application.add_load(function () {
-                        Rock.controls.captcha.onloadInitialize();
+                            let retryCount = 3;
+                            const hfToken = document.querySelector('.js-captchaToken');
+                            // The callback is sometimes triggered before the element is loaded on the page, hence the retry after a second to try and give it time to load.
+                            if (!hfToken) {
+                                if (retryCount > 0) {
+                                    retryCount--;
+                                    setTimeout(() => onloadTurnstileCallback(token), 1000);
+                                }
+                            } else {
+                                hfToken.value = token;
+                            }
+                        },
                     });
-                    Rock.controls.captcha._onloadInitialized = true;
                 }
             },
             onloadInitialize: function () {
@@ -67,21 +74,29 @@
                 }
             },
             clientValidate: function (validator, args) {
-                var $captcha = $(validator).closest('.form-group').find('.js-captcha');
-                var required = $captcha.data('required') == true;
-                var captchaId = $captcha.data('captcha-id');
+                if (typeof (turnstile) !== 'undefined') {
+                    var $captcha = $(validator).closest('.form-group').find('.js-captcha');
+                    var required = $captcha.data('required') == true;
 
-                var isValid = !required || grecaptcha.getResponse(captchaId) !== '';
+                    const widget = document.getElementById(this.options.id);
+                    const widgetId = turnstile.render(widget);
+                    const widgetResponse = turnstile.getResponse(widgetId);
 
-                if (isValid) {
-                    $captcha.closest('.form-group').removeClass('has-error');
-                    args.IsValid = true;
+                    var isValid = !required || widgetResponse !== null;
+
+                    if (isValid) {
+                        $captcha.closest('.form-group').removeClass('has-error');
+                        args.IsValid = true;
+                    }
+                    else {
+                        $captcha.closest('.form-group').addClass('has-error');
+                        args.IsValid = false;
+                        validator.errormessage = $captcha.data('required-error-message');
+                    }
                 }
-                else {
-                    $captcha.closest('.form-group').addClass('has-error');
-                    args.IsValid = false;
-                    validator.errormessage = $captcha.data('required-error-message');
-                }
+            },
+            options: {
+
             }
         };
 

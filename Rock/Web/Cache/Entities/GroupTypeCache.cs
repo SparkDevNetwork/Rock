@@ -25,6 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Group;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -320,6 +321,16 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsCapacityRequired { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [groups require campus].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [groups require campus]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool GroupsRequireCampus { get; private set; }
+
         /// <summary>
         /// Gets the group type purpose value.
         /// </summary>
@@ -504,7 +515,7 @@ namespace Rock.Web.Cache
         /// The scheduled communication template identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead." )]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? ScheduleConfirmationSystemEmailId { get; private set; }
 
@@ -524,7 +535,7 @@ namespace Rock.Web.Cache
         /// The schedule reminder communication template identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead." )]
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? ScheduleReminderSystemEmailId { get; private set; }
 
@@ -609,6 +620,15 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool AllowAnyChildGroupType { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the schedule confirmation logic.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation logic.
+        /// </value>
+        [DataMember]
+        public ScheduleConfirmationLogic ScheduleConfirmationLogic { get; set; }
 
         /// <summary>
         /// Gets or sets the roles.
@@ -967,11 +987,9 @@ namespace Rock.Web.Cache
             ScheduleReminderEmailOffsetDays = groupType.ScheduleReminderEmailOffsetDays;
             RequiresReasonIfDeclineSchedule = groupType.RequiresReasonIfDeclineSchedule;
             AllowAnyChildGroupType = groupType.AllowAnyChildGroupType;
+            ScheduleConfirmationLogic = groupType.ScheduleConfirmationLogic;
             IsCapacityRequired = groupType.IsCapacityRequired;
-#pragma warning disable CS0618 // Type or member is obsolete
-            ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
-            ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
-#pragma warning restore CS0618 // Type or member is obsolete
+            GroupsRequireCampus = groupType.GroupsRequireCampus;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,14 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Text",
         Order = 5 )]
 
+    [TextField( "No Check-in Options Message",
+        Key = AttributeKey.NoCheckinOptionsMessage,
+        Description = "Message to display when there are not any schedule times after a person is selected. Use {0} for person's name",
+        IsRequired = false,
+        DefaultValue = "Sorry, there are currently not any available times that {0} can check into.",
+        Category = "Text",
+        Order = 6 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "D2348D51-B13A-4069-97AD-369D9615A711" )]
     public partial class TimeSelect : CheckInBlock
     {
@@ -49,6 +57,7 @@ namespace RockWeb.Blocks.CheckIn
         private new static class AttributeKey
         {
             public const string Caption = "Caption";
+            public const string NoCheckinOptionsMessage = "NoCheckinOptionsMessage";
         }
 
         protected override void OnLoad( EventArgs e )
@@ -74,16 +83,22 @@ namespace RockWeb.Blocks.CheckIn
                         CheckInFamily family = CurrentCheckInState.CheckIn.CurrentFamily;
                         if ( family != null )
                         {
-                            foreach( var schedule in family.GetPeople( true ).SelectMany( p => p.PossibleSchedules ).ToList() )
+                            var schedules = family.GetPeople( true ).SelectMany( p => p.PossibleSchedules ).ToList();
+                            if ( !schedules.Any() )
+                            {
+                                CheckInPerson person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).SelectMany( f => f.People.Where( p => p.Selected ) ).FirstOrDefault();
+                                string msg = $"<p>{string.Format( GetAttributeValue( AttributeKey.NoCheckinOptionsMessage ), person.Person.FullName )}</p>" ;
+                                ProcessSelection( maWarning, () => schedules.Count > 0, msg, true );
+                            }
+
+                            foreach( var schedule in schedules )
                             {
                                 personSchedules.Add( schedule );
                                 if ( !distinctSchedules.Any( s => s.Schedule.Id == schedule.Schedule.Id ) )
                                 {
                                     distinctSchedules.Add( schedule );
                                 }
-
                             }
-
                         }
                         else
                         {

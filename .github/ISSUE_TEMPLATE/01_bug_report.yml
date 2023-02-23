@@ -1,0 +1,78 @@
+name: Bug Report
+description: File a bug report
+labels: [bug, triage, unverified]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > Before opening your first issue we highly recommend reading [this blog post](https://www.snoyman.com/blog/2017/10/effective-ways-help-from-maintainers)
+  - type: markdown
+    attributes:
+      value: |
+        # Basic Information
+  - type: checkboxes
+    id: todo
+    attributes:
+      label: Please go through all the tasks below
+      description: |
+        - Perform a search on the [Github Issues](https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock) to see if your bug or enhancement is already reported.
+        - Try to reproduce the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
+      options:
+        - label: Check this box only after you have successfully completed both the above tasks
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Please provide a brief description of the problem. Please do not forget to attach the relevant screenshots from your side.
+      description: Please write a clear and concise description and include full window non-partial screenshots. Please feel free to provide more than one screenshots if needed.
+      placeholder: Tell us what you see!
+      value: "Tell us what you see!"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: Please provide a brief description of the expected behavior of the system.
+      placeholder: Expected Behavior
+      value: "Expected Behavior"
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: Please provide a brief description of the actual behavior or the bug that you see along with the screenshots.
+      placeholder: Actual Behavior
+      value: "Actual Behavior"
+    validations:
+      required: true
+  - type: textarea
+    id: step-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide the detailed steps to reproduce the issue. Do include all relevant screenshots wherever needed.
+      value: |
+        - Go to '...'
+        - Click on '....'
+        - Scroll down to '....'
+        - See error
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Rock Version
+      description: Which version of Rock is this happening on?
+      placeholder: 
+    validations:
+      required: true
+  - type: input
+    id: client-culture-settings
+    attributes:
+      label: Client Culture Setting
+      description: This is found in your Rock System Information ⓘ toolbar popup. ![As seen in the ](https://rockrms.blob.core.windows.net/public-images/githubdocs/01_bug_report.system_information_popup.png)
+      placeholder: 
+    validations:
+      required: true

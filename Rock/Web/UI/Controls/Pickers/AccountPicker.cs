@@ -329,6 +329,16 @@ function doPostBack() {{
         }
 
         /// <summary>
+        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            SetExtraRestParams();
+            base.OnLoad( e );
+        }
+
+        /// <summary>
         /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
@@ -441,8 +451,15 @@ function doPostBack() {{
         /// <param name="accounts"></param>
         public void SetValues( IEnumerable<FinancialAccount> accounts )
         {
-            var financialAccountsCache = FinancialAccountCache.GetByIds( accounts?.Select( a => a.Id ) );
-            SetValuesFromCache( financialAccountsCache );
+            if ( accounts != null )
+            {
+                var financialAccountsCache = FinancialAccountCache.GetByIds( accounts?.Select( a => a.Id ) );
+                SetValuesFromCache( financialAccountsCache );
+            }
+            else
+            {
+                SetValuesFromCache( null );
+            }
         }
 
         /// <summary>
@@ -567,7 +584,7 @@ function doPostBack() {{
             }
 
             var extraParams = new System.Text.StringBuilder();
-            extraParams.Append( '/' ).Append( activeOnly ).Append( '/' ).Append( this.DisplayPublicName ).Append( "?countsType=" ).Append( DisplayChildItemCountLabel ? AccountTreeViewItem.GetCountsType.ChildGroups : AccountTreeViewItem.GetCountsType.None );
+            extraParams.Append( "?activeOnly=" ).Append( activeOnly ).Append( "&displayPublicName=" ).Append( this.DisplayPublicName ).Append( "&countsType=" ).Append( DisplayChildItemCountLabel ? AccountTreeViewItem.GetCountsType.ChildGroups : AccountTreeViewItem.GetCountsType.None );
             ItemRestUrlExtraParams = extraParams.ToString();
         }
         #endregion Methods

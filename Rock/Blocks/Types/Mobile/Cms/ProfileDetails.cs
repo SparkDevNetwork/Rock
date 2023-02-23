@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -23,6 +24,7 @@ using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Cms
@@ -160,7 +162,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_PROFILE_DETAILS_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "66B2B513-1C71-4E6B-B4BE-C4EF90E1899C")]
+    [Rock.SystemGuid.BlockTypeGuid( "66B2B513-1C71-4E6B-B4BE-C4EF90E1899C" )]
     public class ProfileDetails : RockMobileBlockType
     {
         /// <summary>
@@ -279,23 +281,39 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #endregion
 
-        #region Action Methods
+        #region Block Actions
 
         /// <summary>
-        /// Updates the user's profile.
+        /// Gets a <see cref="MobilePerson" /> from a specified personGuid.
         /// </summary>
-        /// <param name="profile">The new profile data.</param>
-        /// <returns>A full reference to the person.</returns>
+        /// <param name="personGuid">The guid of the person to return profile details of.</param>
+        /// <returns>A <see cref="MobilePerson"/> </returns>
         [BlockAction]
-        public object UpdateProfile( MobilePerson profile )
+        public BlockActionResult GetMobilePersonProfileDetails( Guid personGuid )
         {
-            var user = UserLoginService.GetCurrentUser( false );
-
-            if ( user == null )
+            using ( var rockContext = new RockContext() )
             {
-                return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
-            }
+                var person = new PersonService( rockContext ).Get( personGuid );
+                var site = MobileHelper.GetCurrentApplicationSite( true, rockContext );
 
+                if ( person == null || site == null )
+                {
+                    return ActionNotFound();
+                }
+
+
+                return ActionOk( MobileHelper.GetMobilePerson( person, site ) );
+            }
+        }
+
+        /// <summary>
+        /// Updates a user profile based off the MobilePerson passed in.
+        /// </summary>
+        /// <param name="profile">The profile to use to update the user.</param>
+        /// <param name="user">The user to update.</param>
+        /// <returns></returns>
+        private MobilePerson UpdateUserProfile( MobilePerson profile, UserLogin user )
+        {
             var personId = user.PersonId.Value;
             var rockContext = new Data.RockContext();
 
@@ -404,6 +422,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
                             }
                         }
 
+                        // If there is already a country associated, use that, if not, get the default organizational country.
+                        var country = profile.HomeAddress.Country.IsNotNullOrWhiteSpace() ? profile.HomeAddress.Country : GetDefaultCountry();
+
                         // TODO: ???
                         // familyAddress.IsMailingLocation = cbIsMailingAddress.Checked;
                         // familyAddress.IsMappedLocation = cbIsPhysicalAddress.Checked;
@@ -413,7 +434,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                             profile.HomeAddress.City,
                             profile.HomeAddress.State,
                             profile.HomeAddress.PostalCode,
-                            profile.HomeAddress.Country,
+                            country,
                             person.PrimaryFamily,
                             true );
 
@@ -448,8 +469,98 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
                 mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
 
-                return ActionOk( mobilePerson );
+                return mobilePerson;
             }
+        }
+
+        /// <summary>
+        /// Updates the user's profile.
+        /// </summary>
+        /// <param name="profile">The new profile data.</param>
+        /// <returns>A full reference to the person.</returns>
+        [BlockAction]
+        public object UpdateProfile( MobilePerson profile )
+        {
+            var user = UserLoginService.GetCurrentUser( false );
+
+            if ( user == null )
+            {
+                return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
+            }
+
+            return ActionOk( UpdateUserProfile( profile, user ) );
+        }
+
+        /// <summary>
+        /// Updates another user's profile based off the personGuid, if authorized.
+        /// </summary>
+        /// <param name="profile">The new profile data.</param>
+        /// <param name="personGuid">.</param>
+        /// <returns>A full reference to the person.</returns>
+        [BlockAction]
+        public object UpdatePersonProfile( MobilePerson profile, Guid personGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var user = new UserLoginService( rockContext )
+                    .Queryable()
+                    .FirstOrDefault( x => x.Person != null && x.Person.Guid == personGuid );
+
+                if ( user == null )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
+                }
+
+                var personToEdit = new PersonService( rockContext ).Get( personGuid );
+                if ( personToEdit == null )
+                {
+                    return ActionNotFound();
+                }
+
+                if ( RequestContext.CurrentPerson?.Guid != personGuid && !IsAuthorizedToEditPerson( personToEdit ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
+                }
+
+                return ActionOk( UpdateUserProfile( profile, user ) );
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Determines whether the current person is authorized to edit another person.
+        /// </summary>
+        /// <param name="personToEdit">The person to edit.</param>
+        /// <returns><c>true</c> if is authorized to edit; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedToEditPerson( Person personToEdit )
+        {
+            if ( RequestContext.CurrentPerson != null )
+            {
+                var currentPerson = RequestContext.CurrentPerson;
+
+                // The security on this block is to check whether or not the person
+                // attempting to make the edit has permission to edit the block itself.
+                if ( BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the default country from the OrganizationCountry global attribute, or returns 'US' if none are
+        /// specified.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private string GetDefaultCountry()
+        {
+            var organizationCountryAttribute = GlobalAttributesCache.Get().OrganizationCountry;
+            return organizationCountryAttribute.IsNotNullOrWhiteSpace() ? organizationCountryAttribute : "US";
         }
 
         #endregion

@@ -28,11 +28,26 @@ export type BlockBag = {
     /** Gets or sets the additional settings. */
     additionalSettings?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the Id of the Rock.Model.BlockType that this Block is implementing. This property is required. */
     blockTypeId: number;
 
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
     /** Gets or sets an optional CSS class to include when the block's parent container is rendered */
     cssClass?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a flag indicating if this Block was created by and is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
@@ -43,6 +58,12 @@ export type BlockBag = {
      * Blocks that have a specific LayoutId will be shown on all pages on a site that have the specified LayoutId
      */
     layoutId?: number | null;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets a user defined name of the block implementation. This property is required. */
     name?: string | null;
@@ -79,25 +100,4 @@ export type BlockBag = {
 
     /** Gets or sets the name of the layout zone/section that this Block is being implemented on. This property is required. */
     zone?: string | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

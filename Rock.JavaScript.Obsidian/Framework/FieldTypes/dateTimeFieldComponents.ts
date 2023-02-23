@@ -22,7 +22,7 @@ import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
 import TextBox from "@Obsidian/Controls/textBox";
 import CheckBox from "@Obsidian/Controls/checkBox";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { updateRefValue } from "@Obsidian/Utility/component";
 
@@ -238,7 +238,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

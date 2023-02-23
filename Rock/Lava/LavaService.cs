@@ -16,9 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+#if REVIEW_WEBFORMS
+using DotLiquid;
+using Rock.Lava.DotLiquid;
+#endif
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -509,7 +514,36 @@ namespace Rock.Lava
         {
             if ( _engine == null )
             {
-                return null;
+                if ( _rockLiquidIsEnabled )
+                {
+                    // If a Lava engine is not initialized, fall back to legacy DotLiquid.
+                    // This allows developers to use a single method for basic template rendering that is backward-compatible with the RockLiquid implementation.
+                    var result = new LavaRenderResult();
+
+#if REVIEW_WEBFORMS
+                    var context = parameters.Context as RockLiquidRenderContext;
+                    if ( context != null )
+                    {
+                        var innerTemplate = Template.Parse( inputTemplate );
+                        using ( TextWriter writer = new StringWriter() )
+                        {
+                            List<Exception> errors;
+                            innerTemplate.Render( writer, new RenderParameters { Context = context.DotLiquidContext }, out errors );
+
+                            result.Text = writer.ToString();
+
+                            if ( errors.Any() )
+                            {
+                                result.Error = new AggregateException( errors );
+                            }
+                        }
+                    }
+#endif
+
+                    return result;
+                }
+
+                return new LavaRenderResult { Error = new Exception( "Lava engine is not initialized." ) };
             }
 
             // If this template is being rendered as part of a web page handler, ensure that the cache key includes a reference

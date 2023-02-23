@@ -29,29 +29,23 @@ import { SearchResultBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollecti
  * Content Collection View block.
  */
 export type ContentCollectionInitializationBox = {
-    /**
-     * Gets or sets a value indicating whether the full text search panel
-     * should be visible.
-     */
-    showFullTextSearch: boolean;
-
-    /**
-     * Gets or sets a value indicating whether the filters panel
-     * should be visible.
-     */
-    showFiltersPanel: boolean;
-
-    /** Gets or sets a value indicating whether the sort option should be shown. */
-    showSort: boolean;
-
     /** Gets or sets the enabled sort orders options. */
     enabledSortOrders?: string[] | null;
 
-    /** Gets or sets the trending term to use when sorting. */
-    trendingTerm?: string | null;
+    /**
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
+     */
+    errorMessage?: string | null;
 
     /** Gets or sets the filters that should be displayed in the filters panel. */
     filters?: SearchFilterBag[] | null;
+
+    /** Gets or sets the initial results to be displayed when the block loads. */
+    initialResults?: SearchResultBag | null;
+
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
 
     /** Gets or sets the content to be displayed before the first search. */
     preSearchContent?: string | null;
@@ -62,18 +56,24 @@ export type ContentCollectionInitializationBox = {
      */
     searchOnLoad: boolean;
 
-    /** Gets or sets the initial results to be displayed when the block loads. */
-    initialResults?: SearchResultBag | null;
-
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
-
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
-
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
+
+    /**
+     * Gets or sets a value indicating whether the filters panel
+     * should be visible.
+     */
+    showFiltersPanel: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the full text search panel
+     * should be visible.
+     */
+    showFullTextSearch: boolean;
+
+    /** Gets or sets a value indicating whether the sort option should be shown. */
+    showSort: boolean;
+
+    /** Gets or sets the trending term to use when sorting. */
+    trendingTerm?: string | null;
 };

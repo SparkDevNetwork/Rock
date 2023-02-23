@@ -144,7 +144,7 @@ export default defineComponent({
             }
 
             let total = 0;
-            this.lineItems.forEach(li => total += li.minPayment);
+            this.lineItems.forEach(li => total += (Math.min(li.minPayment,li.discountedCost)));
             return total;
         },
 
@@ -175,7 +175,6 @@ export default defineComponent({
             if (balance > 0) {
                 return balance;
             }
-
             return 0;
         },
 
@@ -198,12 +197,19 @@ export default defineComponent({
 
         /** The vee-validate rules for the amount to pay today */
         amountToPayTodayRules(): ValidationRule[] {
-            const rules: ValidationRule[] = ["required"];
+            const rules: ValidationRule[] = [];
             let min = this.amountDueToday;
             const max = this.maxAmountCanBePaid;
-
+            
             if (min > max) {
                 min = max;
+            }
+
+            if (min > 0) {
+                rules.push("required");
+            }
+            else {
+                rules.push("notblank");
             }
 
             rules.push(`gte:${min}`);

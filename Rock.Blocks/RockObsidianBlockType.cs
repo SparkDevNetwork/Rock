@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Security;
 using Rock.ViewModels.Cms;
 using Rock.Web.Cache;
 
@@ -153,8 +154,8 @@ Obsidian.onReady(() => {{
 
             if ( this is IHasCustomActions customActionsBlock )
             {
-                var canEdit = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
-                var canAdministrate = BlockCache.IsAuthorized( Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+                var canEdit = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                var canAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
                 configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
             }
@@ -254,7 +255,7 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <returns>An action result that contains the block configuration data.</returns>
         [BlockAction]
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public BlockActionResult RefreshObsidianBlockInitialization()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";

@@ -21,7 +21,7 @@ namespace Rock.SystemGuid
     /// <summary>
     /// System Email Templates
     /// </summary>
-    [Obsolete( "Use SystemCommunication instead." )]
+    [Obsolete( "Use SystemCommunication instead.", true )]
     [RockObsolete( "1.10" )]
     public static class SystemEmail
     {

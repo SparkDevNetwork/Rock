@@ -398,7 +398,11 @@ namespace Rock.Web.Cache
         /// <value>
         /// The default type of the value as.
         /// </value>
+#if REVIEW_NET5_0_OR_GREATER
+        public object DefaultValueAsType => FieldType.Field.ValueAsFieldType( DefaultValue, QualifierValues );
+#else
         public object DefaultValueAsType => FieldType.Field.ValueAsFieldType( null, DefaultValue, QualifierValues );
+#endif
 
         /// <summary>
         /// The default value formatted based on the field type and qualifiers

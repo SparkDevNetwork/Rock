@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -862,8 +862,8 @@ namespace RockWeb.Blocks.Communication
                             CommunicationTemplateName = ciGroup.Communication.CommunicationTemplateId == null ? null : ciGroup.Communication.CommunicationTemplate.Name,
                             SenderName = ciGroup.Communication.FromName,
                             InternalSenderEmail = ciGroup.Communication.FromEmail,
-                            InternalSenderSmsName = ciGroup.Communication.SMSFromDefinedValue.Description,
-                            InternalSenderSmsNumber = ciGroup.Communication.SMSFromDefinedValue.Value,
+                            InternalSenderSmsName = ciGroup.Communication.SmsFromSystemPhoneNumber.Name,
+                            InternalSenderSmsNumber = ciGroup.Communication.SmsFromSystemPhoneNumber.Number,
                             InternalPushImageFileId = ciGroup.Communication.PushImageBinaryFileId,
                             InternalPushData = ciGroup.Communication.PushData,
                             InternalAttachments = ciGroup.Communication.Attachments.Select( x => new CommunicationAttachmentInfo { BinaryFileId = x.BinaryFileId, CommunicationType = x.CommunicationType } ).ToList(),

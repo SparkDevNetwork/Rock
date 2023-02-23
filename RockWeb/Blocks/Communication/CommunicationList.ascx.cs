@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -161,12 +161,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             rFilter.SaveUserPreference( "Created Date Range", drpCreatedDates.DelimitedValues );
-
-            if ( nreRecipientCount.LowerValue.HasValue || nreRecipientCount.UpperValue.HasValue )
-            {
-                rFilter.SaveUserPreference( "Recipient Count", nreRecipientCount.DelimitedValues );
-            }
-
+            rFilter.SaveUserPreference( "Recipient Count", nreRecipientCount.DelimitedValues );
             rFilter.SaveUserPreference( "Sent Date Range", drpSentDates.DelimitedValues );
             rFilter.SaveUserPreference( "Content", tbContent.Text );
 

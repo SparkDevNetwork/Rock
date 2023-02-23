@@ -43,6 +43,10 @@
                 var self = this,
                     search = function (term) {
 
+                        // clear the selected item from the input as it might have HTML which would show while the search page loads
+                        var searchControl = document.getElementById(self.controlId);
+                        searchControl.value = '';
+
                         // search for data elements in the search term
                         var $dataEl = $("<p>" + term + "</p>").find("data").first();
 
@@ -62,8 +66,19 @@
                                 });
                             });
 
+                            // remove any search accessories. These are html elements with the class .search-accessory
+                            var resultElement = document.createElement('div');
+                            resultElement.innerHTML = term;
+                            //var resultElement = $("<div/>").html(term);
+                            var accessories = resultElement.getElementsByClassName('search-accessory');
+
+                            // remove all accessory elements
+                            while (accessories[0]) { 
+                                accessories[0].parentNode.removeChild(accessories[0]);
+                            }
+
                             // remove any html from the search term before putting it in the url
-                            var targetTerm = $("<div/>").html(term).text().trim();
+                            var targetTerm = resultElement.textContent.trim();
 
                             var keyVal = self.$el.parents('.smartsearch').find('input:hidden').val(),
                                 $li = self.$el.parents('.smartsearch').find('li[data-key="' + keyVal + '"]'),

@@ -69,6 +69,7 @@
 
   .panel.panel-block > .panel-heading {
     display: inherit;
+    line-height: 1.1;
   }
 
   .panel.panel-block > .panel-body {
@@ -129,7 +130,7 @@
   position: relative;
   top: auto !important;
   display: flex !important;
-  flex: 0 1 auto !important;
+  flex: 1 1 auto !important;
   flex-direction: column !important;
   width: 100%;
   max-height: none !important;
@@ -640,7 +641,7 @@
   height: @grid-height;
   max-height: @grid-height;
 
-  .hide-transit {
+  .hide-dragging {
     display: none;
   }
 }
@@ -715,6 +716,14 @@
 
 .board-column-title {
   font-weight: @font-weight-semibold;
+  white-space: nowrap;
+}
+
+.board-column-schedule-name {
+  margin-left: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .occurrence-column {

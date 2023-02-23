@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,11 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-using System;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Web.UI;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -27,6 +22,10 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Web.UI;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -186,19 +185,25 @@ namespace RockWeb.Blocks.Reporting
                 return;
             }
 
-            var rockContextReadOnly = new RockContextReadOnly();
-            var dataViewReadOnly = new DataViewService( rockContextReadOnly ).Get( dataViewId.Value );
-            if ( dataViewReadOnly == null )
+            // In order to determine the desired context, we need to do a lookup of the dataview itself.
+            DataView dataViewForContext = new DataViewService( new RockContext() ).Get( dataViewId.Value );
+            if ( dataViewForContext == null )
             {
                 return;
             }
 
-            if ( !dataViewReadOnly.EntityTypeId.HasValue )
+            var dataView = new DataViewService( dataViewForContext.GetDbContext() as RockContext ).Get( dataViewId.Value );
+            if ( dataView == null )
             {
                 return;
             }
 
-            var dataViewEntityType = EntityTypeCache.Get( dataViewReadOnly.EntityTypeId.Value );
+            if ( !dataView.EntityTypeId.HasValue )
+            {
+                return;
+            }
+
+            var dataViewEntityType = EntityTypeCache.Get( dataView.EntityTypeId.Value );
 
             if ( dataViewEntityType == null || dataViewEntityType.AssemblyName == null )
             {
@@ -238,13 +243,13 @@ namespace RockWeb.Blocks.Reporting
                 return;
             }
 
-            if ( !dataViewReadOnly.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }
 
-            gDataViewResults.EntityTypeId = dataViewReadOnly.EntityTypeId;
-            bool isPersonDataSet = dataViewReadOnly.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Person>();
+            gDataViewResults.EntityTypeId = dataView.EntityTypeId;
+            bool isPersonDataSet = dataView.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Person>();
 
             if ( isPersonDataSet )
             {
@@ -256,7 +261,7 @@ namespace RockWeb.Blocks.Reporting
                 gDataViewResults.PersonIdField = null;
             }
 
-            var entityTypeCache = EntityTypeCache.Get( dataViewReadOnly.EntityTypeId.Value );
+            var entityTypeCache = EntityTypeCache.Get( dataView.EntityTypeId.Value );
             if ( entityTypeCache != null )
             {
                 gDataViewResults.RowItemText = entityTypeCache.FriendlyName;
@@ -272,7 +277,6 @@ namespace RockWeb.Blocks.Reporting
                 var dataViewGetQueryArgs = new DataViewGetQueryArgs
                 {
                     SortProperty = gDataViewResults.SortProperty,
-                    DbContext = rockContextReadOnly,
                     DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180,
                     DataViewFilterOverrides = new DataViewFilterOverrides
                     {
@@ -280,7 +284,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                 };
 
-                var qry = dataViewReadOnly.GetQuery( dataViewGetQueryArgs );
+                var qry = dataView.GetQuery( dataViewGetQueryArgs );
 
                 gDataViewResults.SetLinqDataSource( qry.AsNoTracking() );
                 gDataViewResults.DataBind();
@@ -302,7 +306,7 @@ namespace RockWeb.Blocks.Reporting
                     if ( ex is RockDataViewFilterExpressionException )
                     {
                         RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
-                        errorBox.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( dataViewReadOnly );
+                        errorBox.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( dataView );
                     }
                     else
                     {
@@ -321,7 +325,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( gDataViewResults.DataSource != null )
             {
-                gDataViewResults.ExportFilename = dataViewReadOnly.Name;
+                gDataViewResults.ExportFilename = dataView.Name;
             }
         }
 

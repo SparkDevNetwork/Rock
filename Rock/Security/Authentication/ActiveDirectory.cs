@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.DirectoryServices.AccountManagement;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Security.Authentication.CredentialAuthentication;
 
 namespace Rock.Security.Authentication
 {
@@ -28,13 +29,13 @@ namespace Rock.Security.Authentication
     /// Authenticates a username using Active Directory
     /// </summary>
     [Description( "Active Directory Authentication Provider" )]
-    [Export(typeof(AuthenticationComponent))]
-    [ExportMetadata("ComponentName", "Active Directory")]
+    [Export( typeof( AuthenticationComponent ) )]
+    [ExportMetadata( "ComponentName", "Active Directory" )]
     [TextField( "Server", "The Active Directory server name", true, "", "Server", 0 )]
     [TextField( "Domain", "The network domain that users belongs to", true, "", "Server", 1 )]
-    [BooleanField( "Allow Change Password", "Set to true to allow user to change their Active Directory user password from the Rock system", false, "Server")]
-    [Rock.SystemGuid.EntityTypeGuid( "8057ABAB-6AAC-4872-A11F-AC0D52AB40F6")]
-    public class ActiveDirectory : AuthenticationComponent
+    [BooleanField( "Allow Change Password", "Set to true to allow user to change their Active Directory user password from the Rock system", false, "Server" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8057ABAB-6AAC-4872-A11F-AC0D52AB40F6" )]
+    public class ActiveDirectory : AuthenticationComponent, ICredentialAuthentication
     {
         /// <summary>
         /// Gets the type of the service.
@@ -67,17 +68,13 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         public override bool Authenticate( UserLogin user, string password )
         {
-            string username = user.UserName;
-            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
+            var options = new CredentialAuthenticationOptions
             {
-                username = string.Format( @"{0}\{1}", GetAttributeValue( "Domain" ), user.UserName );
-            }
+                User = user,
+                Password = password,
+            };
 
-            var context = new PrincipalContext( ContextType.Domain, GetAttributeValue( "Server" ) );
-            using ( context )
-            {
-                return context.ValidateCredentials( user.UserName, password );
-            }
+            return Authenticate( options );
         }
 
         /// <summary>
@@ -88,7 +85,7 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         public override string EncodePassword( UserLogin user, string password )
         {
-            return null;
+            return EncryptPassword( password );
         }
 
         /// <summary>
@@ -145,9 +142,9 @@ namespace Rock.Security.Authentication
         /// </value>
         public override bool SupportsChangePassword
         {
-            get 
-            { 
-                return GetAttributeValue("AllowChangePassword").AsBoolean(); 
+            get
+            {
+                return GetAttributeValue( "AllowChangePassword" ).AsBoolean();
             }
         }
 
@@ -179,7 +176,7 @@ namespace Rock.Security.Authentication
                         userPrincipal.ChangePassword( oldPassword, newPassword );
                         return true;
                     }
-                    catch (PasswordException pex)
+                    catch ( PasswordException pex )
                     {
                         warningMessage = pex.Message;
                         return false;
@@ -214,5 +211,82 @@ namespace Rock.Security.Authentication
                 }
             }
         }
+
+        #region ICredentialAuthentication Implementation
+
+        /// <inheritdoc/>
+        public bool Authenticate( CredentialAuthenticationOptions options )
+        {
+            var serverName = GetAttributeValue( "Server" );
+            using ( var context = new PrincipalContext( ContextType.Domain, serverName ) )
+            {
+                /* 09/29/2022 MDP 
+
+                   IMPORTANT!: ValidateCredentials can return a 'false-positive' if the Guest Account is enabled in the domain!
+                   See https://stackoverflow.com/questions/290548/validate-a-username-and-password-against-active-directory#comment8867466_499716
+                   which says 'if the domain-level Guest account is enabled, ValidateCredentials returns true if you give it a non-existant user'
+
+                   Also, when testing locally, it also returns true if the user exists but password is incorrect.
+
+                   In other words, when Guest Account is Enabled, ValidateCredentials always returns true no matter what!
+               */
+
+                // First see if ValidateCredentials returns false. If so, we know for sure that the password is invalid.
+                // However, if ValidateCredentials returns true, we need to make sure it isn't a false-positive, so we'll use
+                // FindByIdentity to make sure the username and password is actually valid.
+                var validateCredentials = context.ValidateCredentials( options.User.UserName, options.Password );
+                if ( !validateCredentials )
+                {
+                    // Invalid username/password so return false.
+                    return false;
+                }
+
+                UserPrincipal userPrincipal;
+
+                try
+                {
+                    /* 09/29/2022 MDP
+
+                     We have to pass the username and password to the new PrincipalContext, otherwise UserPrincipal.FindByIdentity won't work.
+                     In the case of an incorrect username/password, new PrincipalContext will still created (without an exception), but then 
+                     UserPrincipal.FindByIdentity will throw an 'invaid username/password' exception (see notes below).
+
+                     */
+
+                    using ( var findByIdentityContext = new PrincipalContext( ContextType.Domain, serverName, options.User.UserName, options.Password ) )
+                    {
+                        userPrincipal = UserPrincipal.FindByIdentity( findByIdentityContext, options.User.UserName);
+                    }
+
+                }
+                catch ( Exception )
+                {
+                    /* 10/3/2022 MDP
+
+                    In the case of possible False-Positive on ValidateCredentials:
+                         UserName/Password is valid: FindByIdentity finds the user/   
+                         Username/Password is invalid: FindByIdentity will throw 'Incorrect Username/Password exception'/
+                         UserName doesn't exist: FindByIdentity will throw 'Account Directory not available'/
+                         UserName/Password is valid, but account is disabled: FindByIdentity will throw 'Account Directory not available'.
+
+                    Also note that the Exception type is just a generic OLE exception with different messages on the problem, so we can't really check for specific exception.
+                    
+                     */
+
+                    userPrincipal = null;
+                }
+
+                // If the userPrincipal is not null then FindByIdentity discovered the user exists and the password is valid, so return true. Otherwise return false.
+                return userPrincipal != null;
+            }
+        }
+
+        /// <inheritdoc/>
+        public string EncryptPassword( string password )
+        {
+            return null;
+        }
+
+        #endregion
     }
 }

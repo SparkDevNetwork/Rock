@@ -38,7 +38,11 @@ namespace DotLiquid
 			List<Hash> environments = new List<Hash>();
 			if (LocalVariables != null)
 				environments.Add(LocalVariables);
-			if (template.IsThreadSafe)
+
+            registers = Registers;
+            filters = Filters;
+
+            if (template.IsThreadSafe)
             {
                 /*
                  * 2020-03-11 - JPH
@@ -46,7 +50,7 @@ namespace DotLiquid
                  * store any "user-defined, internally-available variables". This Hash is a Dictionary<string, object>
                  * under the hood. We leverage this object to store the collection of "EnabledCommands" for a given
                  * Template. Within the context of a Thread-safe, cached Template, we generally don't want to share
-                 * any of these Register entries bewteen Threads, as a given Thread will have unique entries, but the
+                 * any of these Register entries between Threads, as a given Thread will have unique entries, but the
                  * EnabledCommands entry is an exception to this rule; each time we re-use a cached Template, the
                  * Context needs to be aware of which Rock Commands are enabled for that Template.
                  *
@@ -58,9 +62,16 @@ namespace DotLiquid
                 Hash rockRegisters = new Hash();
 
                 var enabledCommandsKey = "EnabledCommands";
+
+                // If the template has a set of default EnabledCommands, apply them.
                 if ( template.Registers != null && template.Registers.ContainsKey( enabledCommandsKey ) )
                 {
                     rockRegisters[enabledCommandsKey] = template.Registers[enabledCommandsKey];
+                }
+                // If the current context specifies a set of EnabledCommands, give them precedence.
+                if ( registers != null && registers.ContainsKey( enabledCommandsKey ) )
+                {
+                    rockRegisters[enabledCommandsKey] = registers[enabledCommandsKey];
                 }
 
                 context = new Context(environments, new Hash(), rockRegisters, RethrowErrors);
@@ -71,8 +82,7 @@ namespace DotLiquid
                 context = new Context(environments, template.InstanceAssigns, template.Registers, RethrowErrors);
             }
             context.ValueTypeTransformers = ValueTypeTransformers;
-			registers = Registers;
-			filters = Filters;
+
 		}
 
 		public static RenderParameters FromContext(Context context)

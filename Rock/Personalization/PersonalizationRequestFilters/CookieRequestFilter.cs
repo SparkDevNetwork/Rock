@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web;
 
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Personalization
 {
@@ -57,36 +58,8 @@ namespace Rock.Personalization
 
         #endregion Configuration
 
-#if REVIEW_NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <inheritdoc/>
-        public override bool IsMatch( Rock.Net.RockRequestContext requestContext )
-        {
-            var cookieHeaders = requestContext.GetHeader( "Cookie" );
-            string cookieValue;
-
-            if ( cookieHeaders.Any() )
-            {
-                cookieValue = cookieHeaders.Select( c => c.Split( "=" ) )
-                    .Where( c => c[0] == Key )
-                    .Select( c => c[1] )
-                    .FirstOrDefault()
-                    ?? string.Empty;
-            }
-            else
-            {
-                cookieValue = string.Empty;
-            }
-
-            var comparisonValue = ComparisonValue ?? string.Empty;
-
-            return cookieValue.CompareTo( comparisonValue, ComparisonType );
-        }
-#else
-        /// <summary>
-        /// Determines whether the specified HTTP request meets the criteria of this filter.
-        /// </summary>
-        /// <param name="httpRequest">The HTTP request.</param>
-        /// <returns><c>true</c> if the specified HTTP request is match; otherwise, <c>false</c>.</returns>
         public override bool IsMatch( HttpRequest httpRequest )
         {
             // Note that httpRequest.Cookies.Get will create the cookie if it doesn't exist, so make sure to check if it exists first.
@@ -106,5 +79,14 @@ namespace Rock.Personalization
             return cookieValue.CompareTo( comparisonValue, ComparisonType );
         }
 #endif
+
+        /// <inheritdoc/>
+        internal override bool IsMatch( RockRequestContext request )
+        {
+            var cookieValue = request.GetCookieValue( this.Key ) ?? string.Empty;
+            var comparisonValue = ComparisonValue ?? string.Empty;
+
+            return cookieValue.CompareTo( comparisonValue, ComparisonType );
+        }
     }
 }

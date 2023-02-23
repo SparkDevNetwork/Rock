@@ -145,6 +145,8 @@ namespace Rock.Slingshot
             using ( StreamReader uploadedCSVFileStream = File.OpenText( SlingshotFileName ) )
             using ( CsvReader csvReader = new CsvReader( uploadedCSVFileStream ) )
             {
+                csvReader.Configuration.SkipEmptyRecords = true;
+
                 personCSVWriter.WriteHeader<SlingshotCore.Model.Person>();
                 personAddressCSVWriter.WriteHeader<SlingshotCore.Model.PersonAddress>();
                 personPhoneCSVWriter.WriteHeader<SlingshotCore.Model.PersonPhone>();
@@ -177,7 +179,7 @@ namespace Rock.Slingshot
                         {
                             csvEntryLookup.Values
                                 .ToList()
-                                .ForEach( field => uploadedPersonCsvErrorsWriter.WriteField( field ) );
+                                .ForEach( field => uploadedPersonCsvErrorsWriter.WriteField( field ?? "" ) );
                             uploadedPersonCsvErrorsWriter.WriteField( false );
                             uploadedPersonCsvErrorsWriter.WriteField( errorMessage );
                             uploadedPersonCsvErrorsWriter.NextRecord();
@@ -214,6 +216,10 @@ namespace Rock.Slingshot
 
                         foreach ( SlingshotCore.Model.PersonPhone personPhone in personPhones )
                         {
+                            if ( personPhone.PhoneNumber.IsNullOrWhiteSpace() )
+                            {
+                                continue;
+                            }
                             if ( !dataValidator.ValidatePhoneNumber( personPhone, out string errorMessage ) )
                             {
                                 errorMessages.Add( errorMessage );
@@ -264,7 +270,8 @@ namespace Rock.Slingshot
                     {
                         personAttributeValueCSVWriter.WriteRecord( personAttributeValue );
                     } );
-                    if ( personNote != null )
+
+                    if ( personNote != null && personNote.Text.IsNotNullOrWhiteSpace() )
                     {
                         personNotesCSVWriter.WriteRecord( personNote );
                     }
@@ -295,25 +302,43 @@ namespace Rock.Slingshot
                     .Get( SystemGuid.NoteType.PERSON_CSV_IMPORT_ERROR_NOTE )
                     .Id;
 
-                foreach ( PersonImportErrorMessageStruct personImportErrorMessage in personImportErrorMessageStructs )
+                // Group the error messages by person so we only create one "error" alert note per person.
+                var errorsGroupedByPerson = personImportErrorMessageStructs.GroupBy( em => em.Id );
+                foreach ( var personImportErrorMessageGroup in errorsGroupedByPerson )
                 {
-                    Person person = personService.FromForeignSystem( ForeignSystemKey, personImportErrorMessage.Id );
-                    if ( person == null )
+                    var errorsText = new StringBuilder();
+                    Person person = null;
+
+                    // Now collect all the messages into one string:
+                    foreach ( PersonImportErrorMessageStruct personImportErrorMessage in personImportErrorMessageGroup )
                     {
-                        continue;
+                        // Fetch this only once per person grouping...
+                        if ( person == null )
+                        {
+                            person = personService.FromForeignSystem( ForeignSystemKey, personImportErrorMessage.Id );
+                        }
+
+                        errorsText.Append( personImportErrorMessage.Message + System.Environment.NewLine );
                     }
 
-                    Note note = new Note
+                    // If we didn't find a person, then skip to the next group.
+                    if ( person == null )
+                    {
+                        break;
+                    }
+
+                    var note = new Note
                     {
                         NoteTypeId = personCSVImportErrorNoteTypeId,
                         IsAlert = true,
                         IsSystem = true,
-                        Text = personImportErrorMessage.Message,
-                        EntityId = person.Id
+                        EntityId = person.Id,
+                        Text = errorsText.ToString()
                     };
+
                     noteService.Add( note );
+                    rockContext.SaveChanges();
                 }
-                rockContext.SaveChanges();
             }
         }
 

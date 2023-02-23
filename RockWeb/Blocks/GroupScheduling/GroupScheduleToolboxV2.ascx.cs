@@ -190,6 +190,14 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultBooleanValue = false,
         Order = 16 )]
 
+    [CustomDropdownListField(
+        "Schedule List Format",
+        Key = AttributeKey.ScheduleListFormat,
+        ListSource = "1^Schedule Time,2^Schedule Name,3^Schedule Time and Name",
+        IsRequired = false,
+        DefaultValue = "1",
+        Order = 17 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "18A6DCE3-376C-4A62-B1DD-5E5177C11595" )]
@@ -218,6 +226,7 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string UpdateSchedulePreferencesHeader = "UpdateSchedulePreferencesHeader";
             public const string SignupforAdditionalTimesHeader = "SignupforAdditionalTimesHeader";
             public const string RequireLocationForAdditionalSignups = "RequireLocationForAdditionalSignups";
+            public const string ScheduleListFormat = "ScheduleListFormat";
         }
 
         /// <summary>
@@ -396,7 +405,7 @@ $('#{0}').tooltip();
                 var days = ( groupScheduleRowInfo.OccurrenceEndDate - groupScheduleRowInfo.OccurrenceStartDate ).Days;
                 if ( days > 1 )
                 {
-                    scheduleDate = $"<span class='schedule-date'>{scheduleDate}</span> <span class='small'>({days} days)</span>";
+                    scheduleDate = $"<span class='schedule-date'>{scheduleDate} - {groupScheduleRowInfo.OccurrenceEndDate.ToShortDateString()}</span>";
                 }
                 else
                 {
@@ -747,7 +756,7 @@ $('#{0}').tooltip();
 
             var lScheduleName = e.Row.FindControl( "lScheduleName" ) as Literal;
             var lLocationName = e.Row.FindControl( "lLocationName" ) as Literal;
-            lScheduleName.Text = groupMemberAssignment.Schedule.Name;
+            lScheduleName.Text = GetFormattedScheduleForListing( groupMemberAssignment.Schedule.Name, groupMemberAssignment.Schedule.StartTimeOfDay );
             if ( groupMemberAssignment.LocationId.HasValue )
             {
                 lLocationName.Text = groupMemberAssignment.Location.ToString( true );
@@ -1104,7 +1113,7 @@ $('#{0}').tooltip();
                     occurenceDetail += " - ";
                 }
 
-                occurenceDetail += groupScheduleRowInfo.Location.ToString();
+                occurenceDetail += groupScheduleRowInfo.Location.ToString( true );
             }
 
             occurenceDetail += "</span><span class='schedule-occurrence-schedule'>" + GetOccurrenceScheduleName( groupScheduleRowInfo ) + "</span>";
@@ -1379,14 +1388,20 @@ $('#{0}').tooltip();
 
                 // limit to schedules that haven't had a schedule preference set yet
                 sortedScheduleList = sortedScheduleList.Where( a =>
-                    !configuredScheduleIds.Contains( a.Id )
-                    || ( selectedScheduleId.HasValue && a.Id == selectedScheduleId.Value ) ).ToList();
+                    a.IsActive
+                    && a.IsPublic.HasValue
+                    && a.IsPublic.Value
+                    && ( !configuredScheduleIds.Contains( a.Id )
+                    || ( selectedScheduleId.HasValue
+                        && a.Id == selectedScheduleId.Value ) ) )
+                 .ToList();
 
                 ddlGroupScheduleAssignmentSchedule.Items.Clear();
                 ddlGroupScheduleAssignmentSchedule.Items.Add( new ListItem() );
                 foreach ( var schedule in sortedScheduleList )
                 {
-                    var scheduleListItem = new ListItem( schedule.Name, schedule.Id.ToString() );
+                    var scheduleName = GetFormattedScheduleForListing( schedule.Name, schedule.StartTimeOfDay );
+                    var scheduleListItem = new ListItem( scheduleName, schedule.Id.ToString() );
                     if ( selectedScheduleId.HasValue && selectedScheduleId.Value == schedule.Id )
                     {
                         scheduleListItem.Selected = true;
@@ -1400,6 +1415,31 @@ $('#{0}').tooltip();
 
                 mdGroupScheduleAssignment.Show();
             }
+        }
+
+        /// <summary>
+        /// Gets the formatted schedule name used for listing.
+        /// </summary>
+        /// <param name="scheduleName">The schedule name.</param>
+        /// <param name="startTimeOfDay">The start time of day.</param>
+        private string GetFormattedScheduleForListing( string scheduleName, TimeSpan startTimeOfDay )
+        {
+            var formattedScheduleName = string.Empty;
+            var scheduleListFormat = GetAttributeValue( AttributeKey.ScheduleListFormat ).AsInteger();
+            if ( scheduleListFormat == 1 )
+            {
+                formattedScheduleName = startTimeOfDay.ToTimeString();
+            }
+            else if ( scheduleListFormat == 2 )
+            {
+                formattedScheduleName = scheduleName;
+            }
+            else
+            {
+                formattedScheduleName = $"{startTimeOfDay.ToTimeString()} {scheduleName}";
+            }
+
+            return formattedScheduleName;
         }
 
         /// <summary>
@@ -1493,8 +1533,8 @@ $('#{0}').tooltip();
             var availableSchedules = availableGroupLocationSchedules
                 .GroupBy( s => new { s.GroupId, ScheduleId = s.ScheduleId, s.ScheduledDateTime.Date } )
                 .Select( s => s.First() )
-                .OrderBy( a => a.GroupOrder )
-                .ThenBy( a => a.GroupName )
+                .OrderBy( a => a.GroupName )
+                .ThenBy( a => a.GroupId )
                 .ThenBy( a => a.ScheduledDateTime )
                 .ThenBy( a => a.LocationOrder )
                 .ThenBy( a => a.LocationName )
@@ -1511,6 +1551,12 @@ $('#{0}').tooltip();
 
             foreach ( var availableSchedule in availableSchedules )
             {
+                if ( availableSchedule.MaxScheduledAcrossAllLocations )
+                {
+                    // This schedule is filled, so we don't need signup controls for it.
+                    continue;
+                }
+
                 if ( availableSchedule.GroupId != currentGroupId )
                 {
                     if ( currentGroupId != -1 )
@@ -1602,21 +1648,16 @@ $('#{0}').tooltip();
             var cbSignupSchedule = new RockCheckBox();
             cbSignupSchedule.ID = "cbSignupSchedule";
             cbSignupSchedule.DisplayInline = true;
-            cbSignupSchedule.Text = groupScheduleSignup.ScheduledDateTime.ToShortTimeString();
+            cbSignupSchedule.Text = GetFormattedScheduleForListing( groupScheduleSignup.ScheduleName, groupScheduleSignup.ScheduledDateTime.TimeOfDay );
             cbSignupSchedule.ToolTip = groupScheduleSignup.ScheduleName;
             cbSignupSchedule.AddCssClass( "js-person-schedule-signup-checkbox" );
             cbSignupSchedule.Checked = false;
             cbSignupSchedule.AutoPostBack = true;
             cbSignupSchedule.CheckedChanged += cbSignupSchedule_CheckedChanged;
-            cbSignupSchedule.Enabled = !groupScheduleSignup.MaxScheduledAcrossAllLocations;
 
             if ( groupScheduleSignup.PeopleNeeded > 0 )
             {
                 cbSignupSchedule.Text += $" <span class='schedule-signup-people-needed text-muted small'>({groupScheduleSignup.PeopleNeeded} {"person".PluralizeIf( groupScheduleSignup.PeopleNeeded != 1 )} needed)</span>";
-            }
-            else if ( groupScheduleSignup.MaxScheduledAcrossAllLocations )
-            {
-                cbSignupSchedule.Text += " <span class='text-muted small'>(filled)</span>";
             }
 
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
@@ -1650,7 +1691,7 @@ $('#{0}').tooltip();
             ddlSignupLocations.AddCssClass( "my-1" );
 
             var requireLocation = GetAttributeValue( AttributeKey.RequireLocationForAdditionalSignups ).AsBoolean();
-            if ( !requireLocation )
+            if ( !requireLocation && locations.Count > 1 )
             {
                 ddlSignupLocations.Items.Insert( 0, new ListItem( NO_LOCATION_PREFERENCE, string.Empty ) );
             }
@@ -1662,6 +1703,11 @@ $('#{0}').tooltip();
 
             ddlSignupLocations.AutoPostBack = true;
             ddlSignupLocations.SelectedIndexChanged += ddlSignupLocations_SelectedIndexChanged;
+
+            if ( locations.Count == 1 )
+            {
+                ddlSignupLocations.Visible = false;
+            }
 
             var pnlLocationCol = new Panel();
             pnlLocationCol.Attributes.Add( "class", "col-xs-12 col-sm-7 col-md-8 col-lg-6 mb-3 mb-md-0" );
@@ -1731,9 +1777,11 @@ $('#{0}').tooltip();
             ddlSignupLocations.Visible = cbSignupSchedule.Checked;
 
             var requireLocation = GetAttributeValue( AttributeKey.RequireLocationForAdditionalSignups ).AsBoolean();
-            if ( requireLocation && ddlSignupLocations.Items.Count < 2 )
+            if ( ( requireLocation && ddlSignupLocations.Items.Count < 2 )
+                || ( !requireLocation && ddlSignupLocations.Items.Count < 3 ) )
             {
                 ddlSignupLocations.Enabled = false;
+                ddlSignupLocations.Visible = false;
             }
             else
             {
@@ -1752,8 +1800,13 @@ $('#{0}').tooltip();
 
                 if ( attendanceId.HasValue )
                 {
-                    // if there is an attendanceId, this is an attendance that they just signed up for, but they might have either unselected it, or changed the location, so remove it
-                    attendanceService.ScheduledPersonRemove( attendanceId.Value );
+                    // If there is an attendanceId, this is an attendance that they just signed up for,
+                    // but they might have either unselected it, or changed the location, so remove it.
+                    var attendance = attendanceService.Get( attendanceId.Value );
+                    if ( attendance != null )
+                    {
+                        attendanceService.Delete( attendance );
+                    }
                 }
 
                 if ( cbSignupSchedule.Checked )
@@ -1818,7 +1871,7 @@ $('#{0}').tooltip();
 
                 foreach ( var personGroupLocation in personGroupLocationList )
                 {
-                    foreach ( var schedule in personGroupLocation.Schedules )
+                    foreach ( var schedule in personGroupLocation.Schedules.Where( a => ( a.IsPublic ?? true ) && a.IsActive ) )
                     {
                         // Calculate capacities for this location (from the GroupLocationScheduleConfigs).
                         int maximumCapacitySetting = 0;

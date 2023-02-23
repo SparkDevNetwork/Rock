@@ -163,9 +163,9 @@ namespace Rock.Tv
         {
             var username = person.Users.FirstOrDefault( a => ( a.IsConfirmed ?? true ) && !( a.IsLockedOut ?? false ) )?.UserName;
 
-            // If no userlogin, make a new one. This really should nto be possible as they should have just logged in, but just
+            // If no userlogin, make a new one. This really should not be possible as they should have just logged in, but just
             // in case.
-            if ( username.IsNotNullOrWhiteSpace() )
+            if ( username.IsNullOrWhiteSpace() )
             {
 #if REVIEW_NET5_0_OR_GREATER
                 throw new System.NotImplementedException();

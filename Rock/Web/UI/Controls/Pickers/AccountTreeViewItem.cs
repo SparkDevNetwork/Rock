@@ -129,7 +129,12 @@ namespace Rock.Web.UI.Controls
         /// The children.
         /// </value>
         public List<AccountTreeViewItem> Children { get; set; }
-                
+
+        /// <summary>
+        /// Get or sets the total number of financial accounts
+        /// </summary>
+        public int TotalCount { get; set; }
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>

@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -37,30 +38,6 @@ namespace Rock.Field.Types
     public class DateTimeFieldType : DateFieldType
     {
         #region Configuration
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
-        {
-            // DateFieldType takes care of creating the ConfigurationControls, and
-            return base.ConfigurationControls();
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            var values = base.ConfigurationValues( controls );
-            values["format"].Name = "Date Time Format";
-            values["format"].Description = "The format string to use for date (default is system short date and time).";
-            values["displayCurrentOption"].Description = "Include option to specify value as the current time.";
-            return values;
-        }
 
         #endregion
 
@@ -161,19 +138,6 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Formats date display
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return FormatValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ), condensed );
-        }
-
         #endregion
 
         #region Edit Control
@@ -188,6 +152,93 @@ namespace Rock.Field.Types
             }
 
             return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the filter format script.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
+        /// a '$selectedContent' should be used to limit script to currently selected filter fields
+        /// </remarks>
+        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
+        {
+            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
+            var format = "return Rock.reporting.formatFilterForDateTimeField('{0}', $selectedContent);";
+            return string.Format( format, titleJs );
+        }
+
+        /// <summary>
+        /// Checks to see if value is for 'current' date and if so, adjusts the date value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string ParseRelativeValue( string value )
+        {
+            if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+            {
+                DateTime currentTime = RockDateTime.Now;
+
+                var valueParts = value.Split( ':' );
+
+                if ( valueParts.Length > 1 )
+                {
+                    currentTime = currentTime.AddMinutes( valueParts[1].AsInteger() );
+                }
+
+                return currentTime.ToString( "o" );
+            }
+
+            return value;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
+        {
+            // DateFieldType takes care of creating the ConfigurationControls, and
+            return base.ConfigurationControls();
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            var values = base.ConfigurationValues( controls );
+            values["format"].Name = "Date Time Format";
+            values["format"].Description = "The format string to use for date (default is system short date and time).";
+            values["displayCurrentOption"].Description = "Include option to specify value as the current time.";
+            return values;
+        }
+
+        /// <summary>
+        /// Formats date display
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return FormatValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ), condensed );
         }
 
         /// <summary>
@@ -266,10 +317,6 @@ namespace Rock.Field.Types
                 }
             }
         }
-
-        #endregion
-
-        #region Filter Control
 
         /// <summary>
         /// Gets the filter value control.
@@ -356,47 +403,7 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Gets the filter format script.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="title">The title.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
-        /// a '$selectedContent' should be used to limit script to currently selected filter fields
-        /// </remarks>
-        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
-        {
-            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            var format = "return Rock.reporting.formatFilterForDateTimeField('{0}', $selectedContent);";
-            return string.Format( format, titleJs );
-        }
-
-        /// <summary>
-        /// Checks to see if value is for 'current' date and if so, adjusts the date value.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override string ParseRelativeValue( string value )
-        {
-            if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
-            {
-                DateTime currentTime = RockDateTime.Now;
-
-                var valueParts = value.Split( ':' );
-
-                if ( valueParts.Length > 1 )
-                {
-                    currentTime = currentTime.AddMinutes( valueParts[1].AsInteger() );
-                }
-
-                return currentTime.ToString( "o" );
-            }
-
-            return value;
-        }
-
+#endif
         #endregion
     }
 }

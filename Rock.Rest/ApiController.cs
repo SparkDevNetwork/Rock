@@ -41,6 +41,19 @@ using Rock.Tasks;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
+/*
+██   ██ ███████ ██    ██ ██ 
+██   ██ ██       ██  ██  ██ 
+███████ █████     ████   ██ 
+██   ██ ██         ██       
+██   ██ ███████    ██    ██ 
+---------------------------------------
+If you're here to add a new REST action to this file, you'll
+also need to configure it in Rock.Rest/App_Start/WebApiConfig.cs.
+
+You're welcome!
+ */
+
 namespace Rock.Rest
 {
     /// <summary>
@@ -578,12 +591,7 @@ namespace Rock.Rest
 
             ValidateDataView( dataView );
 
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
-            {
-                DbContext = rockContext
-            };
-
-            var qryGroupsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<T>;
+            var qryGroupsInDataView = dataView.GetQuery() as IQueryable<T>;
             qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
 
             return qryGroupsInDataView.Any();
@@ -653,7 +661,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                transaction.Enqueue();
             }
         }
 
@@ -697,7 +705,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                transaction.Enqueue();
             }
         }
 

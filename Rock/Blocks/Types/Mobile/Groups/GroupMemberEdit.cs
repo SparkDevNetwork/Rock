@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -536,7 +536,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 {
                     // NOTE: Delete will AutoArchive, but since we know that we
                     // need to archive, we can call .Archive directly
+#if REVIEW_NET5_0_OR_GREATER
+                    throw new NotImplementedException();
+#else
                     groupMemberService.Archive( member, RequestContext.CurrentPerson?.PrimaryAliasId, true );
+#endif
                 }
                 else
                 {

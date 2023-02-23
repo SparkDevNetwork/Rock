@@ -38,9 +38,11 @@ const packageMaps: Record<string, string> = {
     "@Obsidian/Controls/*": "/Obsidian/Controls/*",
     "@Obsidian/Core/*": "/Obsidian/Core/*",
     "@Obsidian/Directives/*": "/Obsidian/Directives/*",
+    "@Obsidian/Enums/*": "/Obsidian/Enums/*.js",
     "@Obsidian/Libs/*": "/Obsidian/Libs/*",
     "@Obsidian/FieldTypes/*": "/Obsidian/FieldTypes/*",
     "@Obsidian/PageState": "/Obsidian/PageState.js",
+    "@Obsidian/SystemGuids/*": "/Obsidian/SystemGuids/*",
     "@Obsidian/Templates/*": "/Obsidian/Templates/*",
     "@Obsidian/Utility/*": "/Obsidian/Utility.js",
     "@Obsidian/Utility": "/Obsidian/Utility.js",
@@ -88,7 +90,7 @@ class Obsidian {
 
     /**
      * Registers a callback to be called when the Obsidian framework is ready.
-     * 
+     *
      * @param callback The callback.
      */
     public onReady(callback: ReadyCallbackFn): void {
@@ -192,24 +194,29 @@ class Obsidian {
 
         // Instruct SystemJS to accept the package alias if it is a package.
         System.constructor.prototype.resolve = function (id: string, parentUrl?: string): string {
-            const maps = parsedPackageMaps.filter((pkg) => id.startsWith(pkg.package));
+            const map = parsedPackageMaps.find(pkg => id.startsWith(pkg.package));
 
-            if (maps.length === 0) {
+            if (!map) {
                 return originalResolve(id, parentUrl);
             }
 
-            if (maps[0].wildcard) {
-                if (maps[0].alias.indexOf("*") !== -1) {
-                    const packageSuffix = id.substr(maps[0].package.length);
-                    return originalResolve(maps[0].alias.replace("*", packageSuffix));
+            if (map.wildcard) {
+                if (map.alias.indexOf("*.js") !== -1) {
+                    const packageSuffix = id.substring(map.package.length).split("/")[0];
+                    const newAlias = `${map.alias.replace("*", packageSuffix)}${id.substring(map.package.length + packageSuffix.length)}`;
+                    return originalResolve(newAlias);
+                }
+                else if (map.alias.indexOf("*") !== -1) {
+                    const packageSuffix = id.substring(map.package.length);
+                    return originalResolve(map.alias.replace("*", packageSuffix));
                 }
                 else {
-                    const packageSuffix = id.substr(maps[0].package.length);
-                    return originalResolve(`${maps[0].alias}/${packageSuffix}`);
+                    const packageSuffix = id.substring(map.package.length);
+                    return originalResolve(`${map.alias}/${packageSuffix}`);
                 }
             }
             else {
-                return originalResolve(maps[0].alias);
+                return originalResolve(map.alias);
             }
         };
 
@@ -218,11 +225,11 @@ class Obsidian {
         const originalInstantiate = System.constructor.prototype.instantiate;
         System.constructor.prototype.instantiate = async function (url: string, parentUrl?: string): Promise<unknown> {
             if (url.indexOf(".js/") !== -1) {
-                let newUrl = url.substr(0, url.indexOf(".js/") + 3);
+                let newUrl = url.substring(0, url.indexOf(".js/") + 3);
                 const path = url.substring(url.indexOf(".js/") + 4, url.indexOf("?") !== -1 ? url.indexOf("?") : undefined);
 
                 if (url.indexOf("?") !== -1) {
-                    newUrl = newUrl + url.substr(url.indexOf("?"));
+                    newUrl = newUrl + url.substring(url.indexOf("?"));
                 }
 
                 let module = await System.import(newUrl, parentUrl);
@@ -235,10 +242,11 @@ class Obsidian {
                             for (let i = 0; i < segments.length; i++) {
                                 let segment = segments[i];
 
-                                segment = segment[0].toUpperCase() + segment.substr(1);
                                 if (segment.endsWith(".js")) {
-                                    segment = segment.substr(0, segment.length - 3);
+                                    segment = segment.substring(0, segment.length - 3);
                                 }
+
+                                //segment = segment[0].toUpperCase() + segment.substring(1);
 
                                 module = module[segment];
                             }

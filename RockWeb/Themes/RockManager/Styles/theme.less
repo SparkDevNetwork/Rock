@@ -1329,11 +1329,27 @@ td.grid-actions {
     font-size: 24px;
     font-weight: 700;
   }
+
+  @media screen and (max-width: @screen-sm-max) {
+    .dropdown-menu {
+      position: absolute !important;
+      max-width: ~"calc(100vw - 40px)";
+    }
+  }
 }
 
 .picker-noclear {
   .picker-select-none {
     display: none !important;
+  }
+}
+
+@media (min-width: 430px) and (max-width: 840px) {
+  .picker-schedule {
+    .dropdown-menu {
+      right: 0;
+      left: auto;
+    }
   }
 }
 

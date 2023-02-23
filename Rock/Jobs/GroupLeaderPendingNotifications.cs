@@ -21,8 +21,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -42,8 +40,7 @@ namespace Rock.Jobs
     [SystemCommunicationField( "Notification Email", "", true, "", "", 2 )]
     [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the pending members by. To select the role you'll need to select a group type.", false, null, null, 3 )]
     [IntegerField( "Pending Age", "The number of days since the record was last updated. This keeps the job from notifying all the pending registrations on first run.", false, 1, order: 4 )]
-    [DisallowConcurrentExecution]
-    public class GroupLeaderPendingNotifications : IJob
+    public class GroupLeaderPendingNotifications : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -56,17 +53,9 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Job that will sync groups.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             try
             {
                 int notificationsSent = 0;
@@ -76,12 +65,12 @@ namespace Rock.Jobs
                 // get groups set to sync
                 RockContext rockContext = new RockContext();
 
-                Guid? groupTypeGuid = dataMap.GetString( "GroupType" ).AsGuidOrNull();
-                Guid? systemEmailGuid = dataMap.GetString( "NotificationEmail" ).AsGuidOrNull();
-                Guid? groupRoleFilterGuid = dataMap.GetString( "GroupRoleFilter" ).AsGuidOrNull();
-                int? pendingAge = dataMap.GetString( "PendingAge" ).AsIntegerOrNull();
+                Guid? groupTypeGuid = GetAttributeValue( "GroupType" ).AsGuidOrNull();
+                Guid? systemEmailGuid = GetAttributeValue( "NotificationEmail" ).AsGuidOrNull();
+                Guid? groupRoleFilterGuid = GetAttributeValue( "GroupRoleFilter" ).AsGuidOrNull();
+                int? pendingAge = GetAttributeValue( "PendingAge" ).AsIntegerOrNull();
 
-                bool includePreviouslyNotificed = dataMap.GetString( "IncludePreviouslyNotified" ).AsBoolean();
+                bool includePreviouslyNotificed = GetAttributeValue( "IncludePreviouslyNotified" ).AsBoolean();
 
                 // get system email
                 var emailService = new SystemCommunicationService( rockContext );
@@ -89,7 +78,7 @@ namespace Rock.Jobs
                 SystemCommunication systemEmail = null;
                 if ( !systemEmailGuid.HasValue || systemEmailGuid == Guid.Empty )
                 {
-                    context.Result = "Job failed. Unable to find System Email";
+                    this.Result = "Job failed. Unable to find System Email";
                     throw new Exception( "No system email found." );
                 }
 
@@ -98,7 +87,7 @@ namespace Rock.Jobs
                 // get group members
                 if ( !groupTypeGuid.HasValue || groupTypeGuid == Guid.Empty )
                 {
-                    context.Result = "Job failed. Unable to find group type";
+                    this.Result = "Job failed. Unable to find group type";
                     throw new Exception( "No group type found" );
                 }
 
@@ -203,7 +192,7 @@ namespace Rock.Jobs
                     rockContext.SaveChanges();
                 }
 
-                context.Result = string.Format( "Sent {0} emails to leaders for {1} pending individuals. {2} errors encountered.", notificationsSent, pendingMembersCount, errorsEncountered );
+                this.Result = string.Format( "Sent {0} emails to leaders for {1} pending individuals. {2} errors encountered.", notificationsSent, pendingMembersCount, errorsEncountered );
                 if ( errorList.Any() )
                 {
                     StringBuilder sb = new StringBuilder();
@@ -211,7 +200,7 @@ namespace Rock.Jobs
                     sb.Append( "Errors in GroupLeaderPendingNotificationJob: " );
                     errorList.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errors = sb.ToString();
-                    context.Result += errors;
+                    this.Result += errors;
                     throw new Exception( errors );
                 }
             }

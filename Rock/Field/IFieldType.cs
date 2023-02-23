@@ -22,10 +22,6 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Reporting;
 
-#if REVIEW_NET5_0_OR_GREATER
-using Control = System.Object;
-#endif
-
 namespace Rock.Field
 {
     /// <summary>
@@ -58,7 +54,7 @@ namespace Rock.Field
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.13.4" )]
         Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string internalValue );
 
         /// <summary>
@@ -79,7 +75,7 @@ namespace Rock.Field
         /// </remarks>
         /// <param name="privateConfigurationValues">The private configuration values that are currently selected.</param>
         /// <returns>A <see cref="Dictionary{TKey, TValue}"/> of custom key and value pairs.</returns>
-        [RockInternal]
+        [RockInternal( "1.13.4" )]
         Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
@@ -101,9 +97,10 @@ namespace Rock.Field
         /// </remarks>
         /// <param name="publicConfigurationValues">The public configuration values.</param>
         /// <returns>A <see cref="Dictionary{TKey, TValue}"/> of options that are safe to store to the database.</returns>
-        [RockInternal]
+        [RockInternal( "1.13.4" )]
         Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues );
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
@@ -123,6 +120,7 @@ namespace Rock.Field
         /// <param name="controls">The controls.</param>
         /// <param name="configurationValues">The configuration values.</param>
         void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues );
+#endif
 
         #endregion
 
@@ -149,7 +147,7 @@ namespace Rock.Field
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
@@ -167,7 +165,7 @@ namespace Rock.Field
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
@@ -185,7 +183,7 @@ namespace Rock.Field
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
@@ -203,7 +201,7 @@ namespace Rock.Field
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
@@ -221,9 +219,10 @@ namespace Rock.Field
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Formats the value based on the type and qualifiers
         /// </summary>
@@ -276,6 +275,51 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         object ValueAsFieldType( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues );
+#else
+        /// <summary>
+        /// Formats the value based on the type and qualifiers
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        string FormatValue( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
+
+        /// <summary>
+        /// Formats the value.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        string FormatValue( object parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        string FormatValueAsHtml( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false );
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        string FormatValueAsHtml( object parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false );
+#endif
 
         /// <summary>
         /// Returns the value using the most appropriate datatype
@@ -285,6 +329,7 @@ namespace Rock.Field
         /// <returns></returns>
         object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues );
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Returns the value that should be used for sorting, using the most appropriate datatype
         /// </summary>
@@ -293,6 +338,16 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues );
+#else
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        object SortValue( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues );
+#endif
 
         /// <summary>
         /// Setting to determine whether the value from this control is sensitive.  This is used for determining
@@ -330,7 +385,7 @@ namespace Rock.Field
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
@@ -348,9 +403,10 @@ namespace Rock.Field
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues );
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates an HTML control.
         /// </summary>
@@ -390,6 +446,7 @@ namespace Rock.Field
         /// <param name="editControl">The edit control.</param>
         /// <param name="action">The action.</param>
         void AddChangeHandler( Control editControl, Action action );
+#endif
 
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
@@ -421,7 +478,7 @@ namespace Rock.Field
         /// <param name="privateValue">The private (database) value.</param>
         /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
         /// <returns>A <see cref="ComparisonValue"/> that has been parsed and sanitized.</returns>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues );
 
         /// <summary>
@@ -439,9 +496,10 @@ namespace Rock.Field
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues );
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type using the specified FilterMode
         /// </summary>
@@ -451,6 +509,7 @@ namespace Rock.Field
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode );
+#endif
 
         /// <summary>
         /// Returns the ComparisonType options that the field supports
@@ -466,6 +525,7 @@ namespace Rock.Field
         /// <returns></returns>
         bool HasFilterControl();
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the filter values.
         /// </summary>
@@ -490,6 +550,7 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues );
+#endif
 
         /// <summary>
         /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
@@ -497,6 +558,7 @@ namespace Rock.Field
         /// <returns></returns>
         string GetEqualToCompareValue();
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the filter value.
         /// </summary>
@@ -504,6 +566,7 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>
         void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues );
+#endif
 
         /// <summary>
         /// Formats the filter values.
@@ -541,6 +604,7 @@ namespace Rock.Field
         /// <returns></returns>
         Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression );
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Applies the attribute query filter based on the values configured in the filterControl
         /// </summary>
@@ -552,6 +616,7 @@ namespace Rock.Field
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         System.Linq.IQueryable<T> ApplyAttributeQueryFilter<T>( System.Linq.IQueryable<T> qry, Control filterControl, Rock.Web.Cache.AttributeCache attribute, Rock.Data.IService serviceInstance, Rock.Reporting.FilterMode filterMode ) where T : Rock.Data.Entity<T>, new();
+#endif
 
         /// <summary>
         /// Determines whether the filter is an 'Equal To' comparison and the filtered value is equal to the specified value.
@@ -651,8 +716,9 @@ namespace Rock.Field
         /// </summary>
         /// <param name="privateValue">The raw value.</param>
         /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <param name="cache">An extremely short term cache that can be used to store and retrieve data instead of hitting the database. This value may be null if no cache should be used.</param>
         /// <returns>An instance of <see cref="PersistedValues"/> that contains all the values to be persisted.</returns>
-        PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues );
+        PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache );
 
         #endregion
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -81,6 +82,11 @@ namespace Rock
                     yield return newObject;
                 }
             }
+        }
+
+        public static int ExecuteSqlCommand( this DatabaseFacade database, string sql, params object[] parameters )
+        {
+            return database.ExecuteSqlRaw( sql, parameters );
         }
     }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

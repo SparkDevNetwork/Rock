@@ -36,7 +36,7 @@ namespace Rock.Model
                 if ( State == EntityContextState.Added )
                 {
                     var transaction = new Rock.Transactions.ConnectionRequestActivityChangeTransaction( this.Entity );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    transaction.Enqueue();
                 }
 
                 base.PreSave();

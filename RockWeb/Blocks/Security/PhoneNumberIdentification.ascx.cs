@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -125,10 +125,9 @@ namespace RockWeb.Blocks.Security
         Order = 9,
         Key = AttributeKey.IpThrottleLimit )]
 
-    [DefinedValueField(
+    [SystemPhoneNumberField(
         "SMS Number",
         Key = AttributeKey.SmsNumber,
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
         Description = "The phone number SMS messages should be sent from",
         Order = 10 )]
 
@@ -227,7 +226,7 @@ namespace RockWeb.Blocks.Security
 
                     var smsMessage = new RockSMSMessage
                     {
-                        FromNumber = DefinedValueCache.Get( fromNumber ),
+                        FromSystemPhoneNumber = SystemPhoneNumberCache.Get( fromNumber ),
                         Message = messageTemplate,
                     };
                     var mergeObjects = LavaHelper.GetCommonMergeFields( this.RockPage );
@@ -342,7 +341,36 @@ namespace RockWeb.Blocks.Security
 
         private void RegisterVerificationCodeScript()
         {
-            var script = @"
+            var androidScript = @"
+                $(function () {
+                    const inputElements = [...document.querySelectorAll('input.js-verification-code')];
+                    inputElements.forEach((ele, index) => {
+                        ele.addEventListener('keydown', (e) => {
+                            // if the keycode is backspace & the current field is empty
+                            // focus the input before the current. Then the event happens
+                            // which will clear the 'before' input box.
+                            if (e.keyCode === 8 && e.target.value === '') inputElements[Math.max(0, index - 1)].focus()
+                        });
+                        ele.addEventListener('input', (e) => {
+                            // take the first character of the input
+                            const [first, ...rest] = e.target.value
+                            e.target.value = first ?? '' // first will be undefined when backspace was entered, so set the input to ""
+                            const lastInputBox = index === inputElements.length - 1
+                            const didInsertContent = first !== undefined
+                            if (didInsertContent && !lastInputBox) {
+                                // continue to input the rest of the string
+                                inputElements[index + 1].focus()
+                                inputElements[index + 1].value = rest.join('') // set the rest of the values as the value for the next input and trigger the input event so the cycle is repeated
+                                inputElements[index + 1].dispatchEvent(new Event('input'))
+                            }
+                            if(lastInputBox){
+                                $('.js-verify-button').focus();
+                            }
+                        });
+                    });
+                });";
+
+            var nonAndroidScript = @"
                 $(function () {
                     $('.js-code-1').focus();
 
@@ -418,6 +446,8 @@ namespace RockWeb.Blocks.Security
                     });
                 }
             ";
+
+            var script = Request.UserAgent.IndexOf( "android", StringComparison.OrdinalIgnoreCase ) >= 0 ? androidScript : nonAndroidScript;
             ScriptManager.RegisterStartupScript( pnlVerificationCodeEntry, pnlVerificationCodeEntry.GetType(), "verificationCode", script, true );
         }
 
@@ -463,7 +493,10 @@ namespace RockWeb.Blocks.Security
         {
             var authenticationLevel = GetAttributeValue( AttributeKey.AuthenticationLevel ).AsInteger();
             var person = new PersonService( new RockContext() ).Get( personId );
-            var user = person.Users.FirstOrDefault();
+            var user = person.Users
+                .Where( u => u.IsConfirmed ?? true )
+                .Where( u => !( u.IsLockedOut ?? false ) )
+                .FirstOrDefault();
             var qryParams = string.Empty;
 
             switch ( authenticationLevel )

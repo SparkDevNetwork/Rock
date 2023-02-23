@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Groups
     [CustomDropdownListField( "Initial Count Setting", "Select the counts that should be initially shown in the treeview.", "0^None,1^Child Groups,2^Group Members", false, "0", "", 7 )]
     [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active groups in the treeview", "0^All,1^Active", false, "1", "", 8 )]
     [LinkedPage( "Detail Page", order: 9 )]
+    [BooleanField( "Disable Auto-Select First Group", description: "Whether to disable the default behavior of auto-selecting the first group (ordered by name) in the tree view.", order: 10, key: AttributeKey.DisableAutoSelectFirstGroup )]
+
     [Rock.SystemGuid.BlockTypeGuid( "2D26A2C4-62DC-4680-8219-A52EB2BC0F65" )]
     public partial class GroupTreeView : RockBlock
     {
@@ -56,6 +58,7 @@ namespace RockWeb.Blocks.Groups
         public static class AttributeKey
         {
             public const string TreeviewTitle = "TreeviewTitle";
+            public const string DisableAutoSelectFirstGroup = "DisableAutoSelectFirstGroup";
         }
 
         #endregion
@@ -179,7 +182,11 @@ namespace RockWeb.Blocks.Groups
 
             lPanelTitle.Text = GetAttributeValue( AttributeKey.TreeviewTitle );
 
-            if ( string.IsNullOrWhiteSpace( _groupId ) )
+            var shouldDisableAutoSelectFirstGroup = GetAttributeValue( AttributeKey.DisableAutoSelectFirstGroup )
+                .AsBooleanOrNull()
+                .GetValueOrDefault();
+
+            if ( !shouldDisableAutoSelectFirstGroup && string.IsNullOrWhiteSpace( _groupId ) )
             {
                 // If no group was selected, try to find the first group and redirect
                 // back to current page with that group selected

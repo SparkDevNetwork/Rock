@@ -99,6 +99,10 @@
 
     </form>
 
+    <script>
+        Sys.Application.add_load(HandleBackForwardCache);
+    </script>
+
 </body>
 
 </html>

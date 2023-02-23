@@ -23,14 +23,15 @@ using System.Collections.Concurrent;
 
 #if REVIEW_WEBFORMS
 using System.Web.Compilation;
+#endif
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
-#endif
 
 using Rock.Data;
 using Rock.Jobs;
 using CronExpressionDescriptor;
+using Rock.Attribute;
 
 namespace Rock.Model
 {
@@ -57,22 +58,55 @@ namespace Rock.Model
             return Queryable();
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
-        /// Schedules the Job to run immediately using the Quartz Scheduler
-        /// and waits for the job to finish.
-        /// Returns <c>false</c> with an <c>out</c> <paramref name="errorMessage"/> if the job is already running as a RunNow job or if an exception occurs.
-        /// NOTE: This will take at least 10 seconds to ensure the Quartz scheduler successfully started the job, plus any additional time that might
-        /// still be needed to complete the job.
+        /// Schedules the Job to run immediately and waits for the job to finish.
+        /// Returns <c>false</c> with an <c>out</c> if the job is already running as a RunNow job or if an exception occurs.
         /// </summary>
         /// <param name="job">The job.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
+        [Obsolete]
+        [RockObsolete( "1.15" )]
         public bool RunNow( ServiceJob job, out string errorMessage )
+        {
+            if ( RunNow( job ) )
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
+            else
+            {
+                errorMessage = "Unable to run job.";
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Runs the now.
+        /// </summary>
+        /// <param name="job">The job.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        internal bool RunNow( ServiceJob job )
+        {
+            var task = Task.Run( async () => await RunNowAsync( job ) );
+            task.Wait();
+            return task.Result;
+        }
+
+        /// <summary>
+        /// Schedules the Job to run immediately using the Quartz Scheduler
+        /// and waits for the job to finish.
+        /// Returns <c>false</c> with an <c>out</c> if the job is already running as a RunNow job or if an exception occurs.
+        /// NOTE: This will take at least 10 seconds to ensure the Quartz scheduler successfully started the job, plus any additional time that might
+        /// still be needed to complete the job.
+        /// </summary>
+        /// <param name="job">The job.</param>
+        /// <returns></returns>
+        internal static async Task<bool> RunNowAsync( ServiceJob job )
         {
             // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
             var rockContext = new RockContext();
-            errorMessage = string.Empty;
+
             try
             {
                 // create a scheduler specific for the job
@@ -83,34 +117,50 @@ namespace Rock.Model
                 var runNowSchedulerName = ( "RunNow:" + job.Guid.ToString( "N" ) ).Truncate( 40 );
                 scheduleConfig.Add( StdSchedulerFactory.PropertySchedulerInstanceName, runNowSchedulerName );
                 var schedulerFactory = new StdSchedulerFactory( scheduleConfig );
+#if REVIEW_NET5_0_OR_GREATER
+                var sched = await new StdSchedulerFactory( scheduleConfig ).GetScheduler();
+#else
                 var sched = new StdSchedulerFactory( scheduleConfig ).GetScheduler();
+#endif
 
                 if ( sched.IsStarted )
                 {
                     // the job is currently running as a RunNow job
-                    errorMessage = "Job already running as a RunNow job";
                     return false;
                 }
 
                 // Check if another scheduler is running this job
                 try
                 {
-                    var otherSchedulers = new StdSchedulerFactory()
-                        .AllSchedulers
+#if REVIEW_NET5_0_OR_GREATER
+                    var allSchedulers = await new StdSchedulerFactory().GetAllSchedulers();
+#else
+                    var allSchedulers = new StdSchedulerFactory().AllSchedulers;
+#endif
+                    var otherSchedulers = allSchedulers
                         .Where( s => s.SchedulerName != runNowSchedulerName );
 
                     foreach ( var scheduler in otherSchedulers )
                     {
-                        var isAlreadyRunning = scheduler.GetCurrentlyExecutingJobs()
+#if REVIEW_NET5_0_OR_GREATER
+                        var currentlyExecutingJobs = await scheduler.GetCurrentlyExecutingJobs();
+#else
+                        var currentlyExecutingJobs = scheduler.GetCurrentlyExecutingJobs();
+#endif
+                        var isAlreadyRunning = currentlyExecutingJobs
                             .Where( j =>
                                 j.JobDetail.Description == jobId.ToString() &&
+#if REVIEW_NET5_0_OR_GREATER
+                                j.JobDetail.ConcurrentExecutionDisallowed )
+#else
                                 j.JobDetail.ConcurrentExectionDisallowed )
+#endif
                             .Any();
 
                         if ( isAlreadyRunning )
                         {
                             // A job with that Id is already running and ConcurrentExectionDisallowed is true
-                            errorMessage = $" Scheduler '{scheduler.SchedulerName}' is already executing job Id '{jobId}' (name: {job.Name})";
+                            var errorMessage = $" Scheduler '{scheduler.SchedulerName}' is already executing job Id '{jobId}' (name: {job.Name})";
                             System.Diagnostics.Debug.WriteLine( $"{RockDateTime.Now.ToString()} {errorMessage}" );
                             return false;
                         }
@@ -154,13 +204,13 @@ namespace Rock.Model
                 // stop the scheduler when done with job
                 sched.Shutdown( true );
 
-                return true;
+                return await Task.FromResult( true );
             }
             catch ( Exception ex )
             {
                 // create a friendly error message
                 ExceptionLogService.LogException( ex, null );
-                errorMessage = string.Format( "Error doing a 'Run Now' on job: {0}. \n\n{2}", job.Name, job.Assembly, ex.Message );
+                var errorMessage = string.Format( "Error doing a 'Run Now' on job: {0}. \n\n{2}", job.Name, job.Assembly, ex.Message );
                 job.LastStatusMessage = errorMessage;
                 job.LastStatus = "Error Loading Job";
                 rockContext.SaveChanges();
@@ -178,7 +228,7 @@ namespace Rock.Model
                 jobHistoryService.Add( jobHistory );
                 rockContext.SaveChanges();
 
-                return false;
+                return await Task.FromResult( false );
             }
 
         }
@@ -214,8 +264,9 @@ namespace Rock.Model
 
             UpdateAttributesIfNeeded( type );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             JobDataMap map = new JobDataMap();
-            map.LoadFromJobAttributeValues( job );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // create the quartz job object
             IJobDetail jobDetail = JobBuilder.Create( type )
@@ -294,7 +345,6 @@ namespace Rock.Model
                 return "Invalid Cron Expression";
             }
         }
-#endif
 
         /// <summary>
         /// Deletes the job.
@@ -313,6 +363,136 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                     return;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Starts the quartz scheduler.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.15" )]
+        public static void StartQuartzScheduler()
+        {
+            QuartzScheduler?.Start();
+        }
+
+        /// <summary>
+        /// Shutdowns the quartz scheduler.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.15" )]
+        public static void ShutdownQuartzScheduler()
+        {
+            QuartzScheduler?.Shutdown();
+        }
+
+        /// <summary>
+        /// Gets the quartz scheduler.
+        /// </summary>
+        /// <value>The quartz scheduler.</value>
+        internal static IScheduler QuartzScheduler { get; private set; } = null;
+
+#if REVIEW_NET5_0_OR_GREATER
+        internal static async Task InitializeJobScheduler()
+#else
+        internal static void InitializeJobScheduler()
+#endif
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // create scheduler
+                ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
+#if REVIEW_NET5_0_OR_GREATER
+                QuartzScheduler = await schedulerFactory.GetScheduler();
+#else
+                QuartzScheduler = schedulerFactory.GetScheduler();
+#endif
+
+                // get list of active jobs
+                ServiceJobService jobService = new ServiceJobService( rockContext );
+                var activeJobList = jobService.GetActiveJobs().OrderBy( a => a.Name ).ToList();
+                foreach ( ServiceJob job in activeJobList )
+                {
+                    const string ErrorLoadingStatus = "Error Loading Job";
+
+                    try
+                    {
+                        IJobDetail jobDetail = jobService.BuildQuartzJob( job );
+                        if ( jobDetail == null )
+                        {
+                            continue;
+                        }
+
+                        ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
+
+                        // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
+                        if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
+                        {
+                            QuartzScheduler.ScheduleJob( jobDetail, jobTrigger );
+                        }
+
+                        //// if the last status was an error, but we now loaded successful, clear the error
+                        // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted
+                        if ( job.LastStatus == ErrorLoadingStatus || job.LastStatus == "Running" )
+                        {
+                            job.LastStatusMessage = string.Empty;
+                            job.LastStatus = string.Empty;
+                            rockContext.SaveChanges();
+                        }
+                    }
+                    catch ( Exception exception )
+                    {
+                        // create a friendly error message
+                        string message = $"Error loading the job: {job.Name}.\n\n{exception.Message}";
+
+                        // log the error
+                        var startupException = new Exception( message, exception );
+
+                        ExceptionLogService.LogException( startupException, null );
+
+                        job.LastStatusMessage = message;
+                        job.LastStatus = ErrorLoadingStatus;
+                        job.LastStatus = ErrorLoadingStatus;
+                        rockContext.SaveChanges();
+
+                        var jobHistoryService = new ServiceJobHistoryService( rockContext );
+                        var jobHistory = new ServiceJobHistory()
+                        {
+                            ServiceJobId = job.Id,
+                            StartDateTime = RockDateTime.Now,
+                            StopDateTime = RockDateTime.Now,
+                            Status = job.LastStatus,
+                            StatusMessage = job.LastStatusMessage
+                        };
+
+                        jobHistoryService.Add( jobHistory );
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                // set up the listener to report back from jobs as they complete
+                QuartzScheduler.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+
+                // set up a trigger listener that can prevent a job from running if another scheduler is
+                // already running it (i.e., someone running it manually).
+                QuartzScheduler.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<JobKey>.AllTriggers() );
+
+                // start the scheduler
+                // Note, wait to start until Rock is fully started.
             }
         }
     }

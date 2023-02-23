@@ -16,12 +16,12 @@
 //
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { dateComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
-import { getRangeTypeText, getTimeUnitText, parseSlidingDateRangeString, RangeType, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+import { calculateSlidingDateRange, getRangeTypeText, getTimeUnitText, parseSlidingDateRangeString, RangeType, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
@@ -135,7 +135,7 @@ export class DateFieldType extends FieldTypeBase {
             if (range.rangeType === RangeType.Current) {
                 return `${rangeTypeText} ${timeUnitText}`;
             }
-            else if ([RangeType.Last, RangeType.Previous, RangeType.Next, RangeType.Upcoming].includes(range.rangeType)) {
+            else if (([RangeType.Last, RangeType.Previous, RangeType.Next, RangeType.Upcoming] as number[]).includes(range.rangeType)) {
                 return `${rangeTypeText} ${timeUnitValue} ${timeUnitText}`;
             }
             else {
@@ -164,10 +164,69 @@ export class DateFieldType extends FieldTypeBase {
         }
     }
 
+    public override doesValueMatchFilter(value: string, filterValue: ComparisonValue, configurationValues: Record<string, string>): boolean {
+        if (!filterValue.comparisonType) {
+            return false;
+        }
+
+        const filterValueValues = filterValue.value.split("\t");
+
+        // Try to parse the value as a date. If it can't be parsed then check
+        // it against the Is Blank and Is Not Blank comparison types.
+        const valueDate = RockDateTime.parseISO(value ?? "");
+
+        if (filterValue.comparisonType === ComparisonType.IsBlank) {
+            return valueDate === null;
+        }
+        else if (filterValue.comparisonType === ComparisonType.IsNotBlank) {
+            return valueDate !== null;
+        }
+        else if (valueDate === null) {
+            return false;
+        }
+
+        if (filterValue.comparisonType === ComparisonType.Between && filterValueValues.length > 1) {
+            const slidingRange = parseSlidingDateRangeString(filterValueValues[1]);
+
+            if (!slidingRange) {
+                return false;
+            }
+
+            const dateRange = calculateSlidingDateRange(slidingRange);
+
+            // check if the date range was not valid or the value is before the
+            // start date and time.
+            if (!dateRange.start || valueDate.toMilliseconds() < dateRange.start.toMilliseconds()) {
+                return false;
+            }
+
+            if (dateRange.end && valueDate.toMilliseconds() >= dateRange.end.toMilliseconds()) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // Try to parse the filter date. If it can't be parsed then no match.
+        const filterDate = this.getRelativeOrAbsoluteDate(filterValueValues[0]);
+
+        if (filterDate === null) {
+            return false;
+        }
+
+        // Convert the two dates into a format that we can do numeric comparison on.
+        const newFilterValue: ComparisonValue = {
+            comparisonType: filterValue.comparisonType,
+            value: filterDate.toASPString("yyyyMMdd")
+        };
+
+        return super.doesValueMatchFilter(valueDate.toASPString("yyyyMMdd"), newFilterValue, configurationValues);
+    }
+
     /**
      * Determines if the value is a "current date" value, which would then
      * specify the number of days +/- to adjust.
-     * 
+     *
      * @param value The value to be checked.
      *
      * @returns true if the value represents a "current date" value; otherwise false.
@@ -178,7 +237,7 @@ export class DateFieldType extends FieldTypeBase {
 
     /**
      * Get the text that describes the "current date" value specified.
-     * 
+     *
      * @param value The value that contains the "current date" value.
      *
      * @returns A human friendly description of the "current date" value.
@@ -202,5 +261,27 @@ export class DateFieldType extends FieldTypeBase {
         else {
             return "Current Date";
         }
+    }
+
+    /**
+     * Gets the relatative date if available otherwise the absolute date.
+     *
+     * @param value The string value to be parsed as relative or absolute.
+     *
+     * @returns A new RockDateTime instance that represents the value or null if it couldn't be determined.
+     */
+    private getRelativeOrAbsoluteDate(value: string): RockDateTime | null {
+        if (!this.isCurrentDateValue(value)) {
+            return RockDateTime.parseISO(value);
+        }
+
+        const today = RockDateTime.now().date;
+        const valueParts = value.split(":");
+
+        if (valueParts.length > 1) {
+            return today.addDays(toNumber(valueParts[1]));
+        }
+
+        return today;
     }
 }

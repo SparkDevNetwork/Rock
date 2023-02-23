@@ -809,24 +809,7 @@ namespace RockWeb.Blocks.Event
                         }
                         else
                         {
-                            var matchingRegistrationInstance = FindMatchingRegistrationInstance();
-
-                            if ( matchingRegistrationInstance == null )
-                            {
-                                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
-                            }
-                            else if ( matchingRegistrationInstance.EndDateTime < RockDateTime.Now)
-                            {
-                                ShowWarning( "Sorry", string.Format( "{0} closed on {1}.", matchingRegistrationInstance.Name, matchingRegistrationInstance.EndDateTime.ToShortDateString() ) );
-                            }
-                            else if ( matchingRegistrationInstance.StartDateTime > RockDateTime.Today)
-                            {
-                                ShowWarning( "Sorry", string.Format( "{0} for {1} does not open until {2}.", RegistrationTerm, matchingRegistrationInstance.Name, matchingRegistrationInstance.StartDateTime.ToShortDateString() ) );
-                            }
-                            else
-                            {
-                                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
-                            }
+                            FindMatchingRegistrationInstance();
                         }
                     }
                 }
@@ -838,13 +821,18 @@ namespace RockWeb.Blocks.Event
 
                 // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
                 divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
+
+                if ( RegistrationTemplate == null )
+                {
+                   FindMatchingRegistrationInstance();
+                }
             }
         }
 
         /// <summary>
         /// Finds the matching registration instance if the registrationInstanceId parameter was provided.
         /// </summary>
-        private RegistrationInstance FindMatchingRegistrationInstance()
+        private void FindMatchingRegistrationInstance()
         {
             /*
                 03/16/2022 - KA
@@ -860,7 +848,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !registrationInstanceId.HasValue )
             {
-                return null;
+                return;
             }
 
             var registrationInstance = new RegistrationInstanceService( new RockContext() )
@@ -872,7 +860,37 @@ namespace RockWeb.Blocks.Event
                     r.RegistrationTemplate.IsActive )
                 .FirstOrDefault();
 
-            return registrationInstance;
+            if ( registrationInstance == null )
+            {
+                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+            }
+            else if ( registrationInstance.EndDateTime < RockDateTime.Now )
+            {
+                ShowWarning( "Sorry", string.Format( "{0} closed on {1}.", registrationInstance.Name, registrationInstance.EndDateTime.ToShortDateString() ) );
+            }
+            else if ( registrationInstance.StartDateTime > RockDateTime.Today )
+            {
+                ShowWarning( "Sorry", string.Format( "{0} for {1} does not open until {2}.", RegistrationTerm, registrationInstance.Name, registrationInstance.StartDateTime.ToShortDateString() ) );
+            }
+            else
+            {
+                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+            }
+        }
+
+        /// <summary>
+        /// Updates the RegistrationInstanceState property with info from the DB. This is to ensure that any change to the RegistrationInstnaceState made while the user was registering
+        /// is considered. e.g. If the registration was at capacity, made inactive, or the period ended then the user can be prevented from saving it.
+        /// </summary>
+        private void UpdateRegistrationInstanceStateInfo()
+        {
+            if ( RegistrationInstanceState == null || RegistrationInstanceState.Id == 0 )
+            {
+                return;
+            }
+
+            RegistrationInstanceState = new RegistrationInstanceService( new RockContext() ).Get( RegistrationInstanceState.Id );
+
         }
 
         /// <summary>
@@ -2408,25 +2426,12 @@ namespace RockWeb.Blocks.Event
                 return null;
             }
 
-            if ( RegistrationInstanceState != null )
-            {
-                if ( RegistrationInstanceState.EndDateTime < RockDateTime.Now )
-                {
-                    ShowWarning( "Sorry", string.Format( "{0} closed on {1}.", RegistrationInstanceState.Name, RegistrationInstanceState.EndDateTime.ToString() ) );
-                    return null;
-                }
-
-                if ( !RegistrationInstanceState.IsActive )
-                {
-                    ShowWarning( "Sorry", string.Format( "{0} is no longer active.", RegistrationInstanceState.Name ) );
-                    return null;
-                }
-            }
-
             Registration registration = null;
 
             if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
             {
+                UpdateRegistrationInstanceStateInfo();
+
                 var rockContext = new RockContext();
 
                 var registrationService = new RegistrationService( rockContext );
@@ -2443,6 +2448,21 @@ namespace RockWeb.Blocks.Event
                             .Where( r => r.PersonAlias != null )
                             .Select( r => r.PersonAlias.PersonId )
                             .ToList();
+                    }
+                }
+
+                if ( isNewRegistration )
+                {
+                    if ( RegistrationInstanceState.EndDateTime < RockDateTime.Now )
+                    {
+                        ShowWarning( "Sorry", $"{RegistrationInstanceState.Name} closed on {RegistrationInstanceState.EndDateTime}." );
+                        return null;
+                    }
+
+                    if ( !RegistrationInstanceState.IsActive )
+                    {
+                        ShowWarning( "Sorry", $"{RegistrationInstanceState.Name} is no longer active." );
+                        return null;
                     }
                 }
 
@@ -2764,6 +2784,12 @@ namespace RockWeb.Blocks.Event
                 if ( CurrentPerson != null && CurrentPerson.NickName == null )
                 {
                     CurrentPerson.NickName = CurrentPerson.FirstName;
+                }
+
+                // For a person with no email address, this resolves null reference issues downstream.
+                if ( CurrentPerson != null && CurrentPerson.Email == null )
+                {
+                    CurrentPerson.Email = string.Empty;
                 }
 
                 // If the 'your name' value equals the currently logged in person, use their person alias id
@@ -3120,6 +3146,18 @@ namespace RockWeb.Blocks.Event
                                     var newConnectionStatusId = fieldValue.ToString().AsIntegerOrNull() ?? dvcConnectionStatus.Id;
                                     History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
                                     person.ConnectionStatusValueId = newConnectionStatusId;
+                                    break;
+
+                                case RegistrationPersonFieldType.Race:
+                                    var raceValueId = fieldValue.ToString().AsIntegerOrNull();
+                                    History.EvaluateChange( personChanges, "Race", DefinedValueCache.GetName( person.RaceValueId ), DefinedValueCache.GetName( raceValueId ) );
+                                    person.RaceValueId = raceValueId;
+                                    break;
+
+                                case RegistrationPersonFieldType.Ethnicity:
+                                    var ethnicityValueId = fieldValue.ToString().AsIntegerOrNull();
+                                    History.EvaluateChange( personChanges, "Ethnicity", DefinedValueCache.GetName( person.EthnicityValueId ), DefinedValueCache.GetName( ethnicityValueId ) );
+                                    person.EthnicityValueId = ethnicityValueId;
                                     break;
                             }
                         }
@@ -6074,26 +6112,27 @@ namespace RockWeb.Blocks.Event
             if ( CurrentPerson != null )
             {
                 // Get the saved accounts for the currently logged in user
-                var savedAccounts = new FinancialPersonSavedAccountService( new RockContext() )
-                    .GetByPersonId( CurrentPerson.Id );
+                var savedAccounts = new FinancialPersonSavedAccountService( new RockContext() ).GetByPersonId( CurrentPerson.Id );
 
                 // Verify component is valid and that it supports using saved accounts for one-time, credit card transactions
                 var ccCurrencyType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
-                if ( component != null &&
-                    component.SupportsSavedAccount( false ) &&
-                    component.SupportsSavedAccount( ccCurrencyType ) )
+                if ( component != null && component.SupportsSavedAccount( false ) && component.SupportsSavedAccount( ccCurrencyType ) )
                 {
+                    var minCardExpirationDate = RockDateTime.Today.AddDays( -1 );
+
                     rblSavedCC.DataSource = savedAccounts
-                        .Where( a =>
-                            a.FinancialGatewayId == RegistrationTemplate.FinancialGateway.Id &&
-                            a.FinancialPaymentDetail != null &&
-                            a.FinancialPaymentDetail.CurrencyTypeValueId == ccCurrencyType.Id )
+                        .Where( a => a.FinancialGatewayId == RegistrationTemplate.FinancialGateway.Id
+                            && a.FinancialPaymentDetail != null
+                            && a.FinancialPaymentDetail.CurrencyTypeValueId == ccCurrencyType.Id
+                            && a.FinancialPaymentDetail.CardExpirationDate > minCardExpirationDate )
                         .OrderBy( a => a.Name )
                         .Select( a => new
                         {
-                            Id = a.Id,
+                            a.Id,
                             Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
-                        } ).ToList();
+                        } )
+                        .ToList();
+
                     rblSavedCC.DataBind();
                     if ( rblSavedCC.Items.Count > 0 )
                     {

@@ -36,6 +36,8 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Lava.Blocks;
+using Rock.Attribute;
+using Rock.Lava.DotLiquid;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -145,7 +147,8 @@ namespace Rock.Lava.RockLiquid.Blocks
                     Expression queryExpression = null; // the base expression we'll use to build our query from
 
                     // Parse markup
-                    var parms = ParseMarkup( _markup, context );
+                    var settings = RockEntityBlock.GetAttributesFromMarkup( _markup, new RockLiquidRenderContext( context ), _entityName );
+                    var parms = settings.Attributes;
 
                     if ( parms.Any( p => p.Key == "id" ) )
                     {
@@ -153,7 +156,7 @@ namespace Rock.Lava.RockLiquid.Blocks
 
                         List<string> selectionParms = new List<string>();
                         selectionParms.Add( PropertyComparisonConversion( "==" ).ToString() );
-                        selectionParms.Add( parms["id"].ToString() );
+                        selectionParms.Add( parms["id"].AsInteger().ToString() ); // Ensure this is an integer: https://github.com/SparkDevNetwork/Rock/issues/5230
                         selectionParms.Add( propertyName );
 
                         var entityProperty = entityType.GetProperty( propertyName );
@@ -223,7 +226,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                         }
                     }
 
-                    // Make the query from the expression.                    
+                    // Make the query from the expression.
                     /* [2020-10-08] DL
                      * "Get" is intentionally used here rather than "GetNoTracking" to allow lazy-loading of navigation properties from the Lava context.
                      * (Refer https://github.com/SparkDevNetwork/Rock/issues/4293)
@@ -431,6 +434,26 @@ namespace Rock.Lava.RockLiquid.Blocks
 
                             var resultList = queryResult.ToList();
 
+                            // Pre-load attributes
+                            var disableattributeprefetch = parms.GetValueOrDefault( "disableattributeprefetch", "false" ).AsBoolean();
+                            var attributeKeys = parms.GetValueOrDefault( "prefetchattributes", string.Empty )
+                                                    .Split( new string[] { "," }, StringSplitOptions.RemoveEmptyEntries )
+                                                    .ToList();
+
+                            // Determine if we should prefetch attributes. By default we will unless they specifically say not to.
+                            if (!disableattributeprefetch)
+                            {
+                                // If a filtered list of attributes keys are not provided load all attributes otherwise just load the ones for the keys provided.
+                                if (attributeKeys.Count() == 0)
+                                {
+                                    resultList.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadAttributes();
+                                }
+                                else
+                                {
+                                    resultList.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadFilteredAttributes( (RockContext) dbContext, a => attributeKeys.Contains( a.Key ) );
+                                }
+                            }
+
                             // if there is only one item to return set an alternative non-array based variable
                             if ( resultList.Count == 1 )
                             {
@@ -593,107 +616,6 @@ namespace Rock.Lava.RockLiquid.Blocks
         }
 
         /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
-        {
-            // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-            parms.Add( "iterator", string.Format( "{0}Items", _entityName ) );
-            parms.Add( "securityenabled", "true" );
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            if ( markupItems.Count == 0 )
-            {
-                throw new Exception( "No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes)." );
-            }
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
-
-            // override any dynamic parameters
-            List<string> dynamicFilters = new List<string>(); // will be used to process dynamic filters
-            if ( parms.ContainsKey( "dynamicparameters" ) )
-            {
-                var dynamicParms = parms["dynamicparameters"];
-                var dynamicParmList = dynamicParms.Split( ',' )
-                                        .Select( x => x.Trim() )
-                                        .Where( x => !string.IsNullOrWhiteSpace( x ) )
-                                        .ToList();
-
-                foreach ( var dynamicParm in dynamicParmList )
-                {
-                    if ( HttpContext.Current.Request[dynamicParm] != null )
-                    {
-                        var dynamicParmValue = HttpContext.Current.Request[dynamicParm].ToString();
-
-                        switch ( dynamicParm )
-                        {
-                            case "id":
-                            case "limit":
-                            case "offset":
-                            case "dataview":
-                            case "expression":
-                            case "sort":
-                            case "iterator":
-                            case "checksecurity":
-                            case "includedeceased":
-                            case "securityenabled":
-                                {
-                                    parms.AddOrReplace( dynamicParm, dynamicParmValue );
-                                    break;
-                                }
-                            default:
-                                {
-                                    dynamicFilters.Add( dynamicParm );
-                                    break;
-                                }
-                        }
-                    }
-                }
-
-                parms.AddOrReplace( "dynamicparameters", string.Join( ",", dynamicFilters ) );
-            }
-
-
-            return parms;
-        }
-
-        /// <summary>
         /// Gets the data view expression.
         /// </summary>
         /// <param name="dataViewId">The data view identifier.</param>
@@ -770,6 +692,14 @@ namespace Rock.Lava.RockLiquid.Blocks
                     var property = expressionParts[0];
                     var operatorType = expressionParts[1];
                     var value = expressionParts[2].Replace( "\"", "" );
+
+                    // Check if the property is Id, if so ensure that it's an integer to prevent
+                    // returning everything in the database.
+                    // https://github.com/SparkDevNetwork/Rock/issues/5236
+                    if (property == "Id")
+                    {
+                        value = value.AsInteger().ToString();
+                    }
 
                     List<string> selectionParms = new List<string>();
                     selectionParms.Add( PropertyComparisonConversion( operatorType ).ToString() );

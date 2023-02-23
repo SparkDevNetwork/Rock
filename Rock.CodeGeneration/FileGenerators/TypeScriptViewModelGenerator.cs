@@ -8,6 +8,7 @@ using Rock.CodeGeneration.Utility;
 
 using Rock;
 using Rock.CodeGeneration.XmlDoc;
+using System.ComponentModel;
 
 namespace Rock.CodeGeneration.FileGenerators
 {
@@ -61,7 +62,7 @@ namespace Rock.CodeGeneration.FileGenerators
             // Loop through each sorted property and emit the declaration.
             for ( int i = 0; i < sortedProperties.Count; i++ )
             {
-                var property = properties[i];
+                var property = sortedProperties[i];
                 var isNullable = !IsNonNullType( property.PropertyType );
 
                 if ( i > 0 )
@@ -101,27 +102,61 @@ namespace Rock.CodeGeneration.FileGenerators
         public string GenerateViewModelForEnum( Type type )
         {
             var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.PlainText;
+            var typeName = GetClassNameForType( type );
+            var isFlagType = type.GetCustomAttribute<FlagsAttribute>() != null;
 
-            return GenerateEnumViewModel( GetClassNameForType( type ), typeComment, type.GetFields( BindingFlags.Static | BindingFlags.Public ).ToList() );
+            var sb = new StringBuilder();
+
+            sb.Append( GenerateViewModelForEnum( type, false ) );
+            sb.AppendLine();
+            sb.Append( GenerateViewModelForEnum( type, true ) );
+            sb.AppendLine();
+
+            AppendCommentBlock( sb, typeComment, 0 );
+
+            if ( !isFlagType )
+            {
+                sb.AppendLine( $"export type {typeName} = typeof {typeName}[keyof typeof {typeName}];" );
+            }
+            else
+            {
+                sb.AppendLine( $"export type {typeName} = number;" );
+            }
+
+            return GenerateTypeScriptFile( new List<TypeScriptImport>(), sb.ToString() );
         }
 
         /// <summary>
-        /// Generates the enum view model file for the given fields.
+        /// Generates the view model file for the values of an enum.
         /// </summary>
-        /// <param name="typeName">Name of the enumeration type to create.</param>
-        /// <param name="typeComment">The comment that preceeds the type definition.</param>
-        /// <param name="fields">The fields to be included.</param>
+        /// <param name="type">The enumeration type.</param>
         /// <returns>A string that contains the contents of the file.</returns>
-        public string GenerateEnumViewModel( string typeName, string typeComment, IList<FieldInfo> fields )
+        private string GenerateViewModelForEnum( Type type, bool isDescription )
         {
-            var imports = new List<TypeScriptImport>();
+            var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.PlainText;
+            var typeName = GetClassNameForType( type );
+            var fields = type.GetFields( BindingFlags.Static | BindingFlags.Public ).ToList();
 
             var sb = new StringBuilder();
 
             AppendCommentBlock( sb, typeComment, 0 );
-            sb.AppendLine( $"export const enum {typeName} {{" );
 
-            var sortedFields = fields.OrderBy( f => f.GetRawConstantValue() ).ToList();
+            if ( type.GetCustomAttribute<ObsoleteAttribute>() is ObsoleteAttribute obsoleteTypeAttribute )
+            {
+                sb.AppendLine( $"/** @deprecated {obsoleteTypeAttribute.Message ?? string.Empty} */" );
+            }
+
+            if ( !isDescription )
+            {
+                sb.AppendLine( $"export const {typeName} = {{" );
+            }
+            else
+            {
+                sb.AppendLine( $"export const {typeName}Description: Record<number, string> = {{" );
+            }
+
+            //var sortedFields = fields.OrderBy( f => f.GetRawConstantValue() ).ToList();
+            var sortedFields = fields.ToList();
 
             // Loop through each sorted field and emit the declaration.
             for ( int i = 0; i < sortedFields.Count; i++ )
@@ -133,9 +168,42 @@ namespace Rock.CodeGeneration.FileGenerators
                     sb.AppendLine();
                 }
 
-                AppendCommentBlock( sb, field, 4 );
+                var fieldName = field.Name;
 
-                sb.Append( $"    {field.Name} = {field.GetRawConstantValue()}" );
+                if ( !isDescription )
+                {
+                    AppendCommentBlock( sb, field, 4 );
+                }
+                else
+                {
+                    fieldName = field.GetRawConstantValue().ToString();
+
+                    if ( fieldName[0] == '-' )
+                    {
+                        fieldName = $"[{fieldName}]";
+                    }
+                }
+
+                if ( field.GetCustomAttribute<ObsoleteAttribute>() is ObsoleteAttribute obsoleteFieldAttribute )
+                {
+                    sb.AppendLine( $"    /** @deprecated {obsoleteFieldAttribute.Message ?? string.Empty} */" );
+                }
+
+                if ( !isDescription )
+                {
+                    sb.Append( $"    {fieldName}: {field.GetRawConstantValue()}" );
+                }
+                else
+                {
+                    if ( field.GetCustomAttribute<DescriptionAttribute>() is DescriptionAttribute fieldDescriptionAttribute )
+                    {
+                        sb.Append( $"    {fieldName}: \"{fieldDescriptionAttribute.Description}\"");
+                    }
+                    else
+                    {
+                        sb.Append( $"    {fieldName}: \"{field.Name.SplitCase()}\"" );
+                    }
+                }
 
                 if ( i + 1 < sortedFields.Count )
                 {
@@ -147,12 +215,16 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
             }
 
-            sb.AppendLine( "}" );
+            if ( isDescription )
+            {
+                sb.AppendLine( "};" );
+            }
+            else
+            {
+                sb.AppendLine( "} as const;" );
+            }
 
-            // Remove recursive references to self.
-            imports = imports.Where( i => i.DefaultImport != typeName && i.NamedImport != typeName ).ToList();
-
-            return GenerateTypeScriptFile( imports, sb.ToString() );
+            return sb.ToString();
         }
 
         /// <summary>
@@ -164,6 +236,7 @@ namespace Rock.CodeGeneration.FileGenerators
         {
             // Get all the values to be included.
             var values = type.GetFields( BindingFlags.Static | BindingFlags.Public )
+                .OrderBy( f => f.Name )
                 .Select( f => new
                 {
                     Field = f,
@@ -176,7 +249,7 @@ namespace Rock.CodeGeneration.FileGenerators
             var sb = new StringBuilder();
 
             AppendCommentBlock( sb, typeComment, 0 );
-            sb.AppendLine( $"export const enum {type.Name} {{" );
+            sb.AppendLine( $"export const {type.Name} = {{" );
 
             // Loop through each value and emit the declaration.
             foreach ( var value in values )
@@ -207,37 +280,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
                 AppendCommentBlock( sb, value.Field, 4 );
 
-                sb.AppendLine( $"    {name} = \"{value.Value}\"," );
-            }
-
-            sb.AppendLine( "}" );
-
-            return GenerateTypeScriptFile( new List<TypeScriptImport>(), sb.ToString() );
-        }
-
-        /// <summary>
-        /// Generates the SystemGuid index file for the given types.
-        /// </summary>
-        /// <param name="types">The types that will be referenced by the index file.</param>
-        /// <returns>A string that contains the contenst of the file.</returns>
-        public string GenerateSystemGuidIndexForTypes( IEnumerable<Type> types )
-        {
-            var sb = new StringBuilder();
-
-            // Loop through each type and emit the import.
-            foreach ( var type in types.OrderBy( t => t.Name ) )
-            {
-                var camelName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
-                sb.AppendLine( $"import {{ {type.Name} }} from \"./{camelName}\";" );
-            }
-
-            sb.AppendLine();
-            sb.AppendLine( "export {" );
-
-            // Loop through each type and emit the export.
-            foreach ( var type in types.OrderBy( t => t.Name ) )
-            {
-                sb.AppendLine( $"    {type.Name}," );
+                sb.AppendLine( $"    {name}: \"{value.Value}\"," );
             }
 
             sb.AppendLine( "};" );

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -216,6 +216,7 @@ $(document).ready(function() {
         {
             var service = new DataViewService( new RockContext() );
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
+            BindReadOnlyContextControls( service.ReadOnlyContextEnabled, item.DisableUseOfReadOnlyContext );
             ShowEditDetails( item );
         }
 
@@ -289,6 +290,7 @@ $(document).ready(function() {
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
             dataView.IncludeDeceased = cbIncludeDeceased.Checked;
+            dataView.DisableUseOfReadOnlyContext = cbDisableUseOfReadOnlyContext.Checked;
             dataView.PersistedScheduleIntervalMinutes = swPersistDataView.Checked ? ipPersistedScheduleInterval.IntervalInMinutes : null;
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
@@ -625,6 +627,7 @@ $(document).ready(function() {
             btnSecurity.Title = dataView.Name;
             btnSecurity.EntityId = dataView.Id;
 
+            BindReadOnlyContextControls( dataViewService.ReadOnlyContextEnabled, dataView.DisableUseOfReadOnlyContext );
             if ( readOnly )
             {
                 btnEdit.Visible = false;
@@ -1037,7 +1040,7 @@ $(document).ready(function() {
 
             dataView.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
             dataView.IncludeDeceased = cbIncludeDeceased.Checked;
-
+            dataView.DisableUseOfReadOnlyContext = cbDisableUseOfReadOnlyContext.Checked;
             // just show the first 15 rows in the preview grid
             int? fetchRowCount = 15;
 
@@ -1059,11 +1062,9 @@ $(document).ready(function() {
             try
             {
                 gPreview.CreatePreviewColumns( dataviewEntityTypeType );
-                var dbContext = dataView.GetDbContext();
                 var dataViewGetQueryArgs = new DataViewGetQueryArgs
                 {
                     SortProperty = gPreview.SortProperty,
-                    DbContext = dbContext,
                     DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180,
                     DataViewFilterOverrides = new DataViewFilterOverrides
                     {
@@ -1286,6 +1287,7 @@ $(document).ready(function() {
                 {
                     var filterControl = new FilterField();
                     filterControl.ValidationGroup = this.BlockValidationGroup;
+                    filterControl.IsFilterTypeEnhancedForLongLists = true;
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
@@ -1395,6 +1397,19 @@ $(document).ready(function() {
             {
                 cbIncludeDeceased.Checked = false;
             }
+        }
+
+        private void BindReadOnlyContextControls( bool readOnlyContextEnabled, bool disableUseOfReadOnlyContext )
+        {
+            if ( !readOnlyContextEnabled )
+            {
+                return;
+            }
+
+            cbDisableUseOfReadOnlyContext.Visible = true;
+            cbDisableUseOfReadOnlyContext.Checked = disableUseOfReadOnlyContext;
+
+            hlblReadOnlyContext.Visible = disableUseOfReadOnlyContext;
         }
 
         #endregion

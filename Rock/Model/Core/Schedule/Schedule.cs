@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -160,6 +160,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if this Schedule is public.
+        /// </summary>
+        /// <value>
+        ///  A <see cref="System.Boolean"/> that is <c>true</c> if this Schedule is public, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? IsPublic { get; set; } = true;
 
         #endregion
 

@@ -1,0 +1,71 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <img v-if="isImage"
+         :src="attachment.url"
+         :alt="attachment.fileName"
+         class="img-responsive attachment-image" />
+    <div v-else
+        class="attachment-document">
+        <i class="fa fa-file"></i>
+        <a :href="attachment.url">{{ attachment.fileName }}</a>
+    </div>
+</template>
+
+<style scoped>
+.attachment-image {
+    border-radius: 6px;
+    max-height: 320px;
+}
+
+.attachment-document {
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: white;
+    color: var(--text-color);
+    padding: 4px 12px;
+
+}
+
+.attachment-document .fa {
+    margin-right: 12px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+
+    interface IAttachment {
+        fileName: string;
+
+        url: string;
+    }
+
+    const props = defineProps({
+        /** The URL of the attachment to be displayed. */
+        attachment: {
+            type: Object as PropType<IAttachment>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isImage = computed((): boolean => {
+        return props.attachment.url.includes("GetImage.ashx");
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

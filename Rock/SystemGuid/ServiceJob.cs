@@ -99,9 +99,44 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS = "53A6804F-5895-4E19-907D-916B5CF175AB";
 
         /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to update current sessions that might have 1900-01-01 set as the DurationLastCalculatedDateTime
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_UPDATE_CURRENT_SESSIONS_1900 = "12925E67-1E4F-47E5-BB5E-DD411909F90E";
+
+        /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to add some missing indexes
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_ADD_MISSING_INDEXES = "B1970CD1-1DDD-46FC-B259-6D151D53374D";
+
+        /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to update the ValueAs___ columns after migration.
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_UPDATE_VALUEAS_ATTRIBUTE_VALUE_COLUMNS = "f7786b0a-e80a-4f19-b0c4-d4f85f4affa2";
+
+        /// <summary>
+        /// The Job to run Post v14.1 Data Migrations for Update AttributeValues of type SlidingDateRangeFieldType to RoundTrip format.
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_UPDATE_SLIDING_DATE_RANGE_VALUE = "59D32B1D-5D9A-4B1E-836A-43BBE89BA004";
+
+        /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to update current sessions that might have 1900-01-01 set as the DurationLastCalculatedDateTime
+        /// </summary>
+        public const string DATA_MIGRATIONS_141_RECREATE_METRIC_ANALYTICS_VIEWS = "8AF951F3-742B-433C-B7C0-BDF71B9A78FC";
+
+        /// <summary>
+        /// The Job to run Post v14.1 Data Migrations to replace all existing instances of the TransactionEntryBlock with a new instance of the UtilityPaymentEntry block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_150_REPLACE_TRANSACTION_ENTRY_BLOCKS_WITH_UTILITY_PAYMENT_ENTRY_BLOCK = "8A013CC5-CB51-48F3-8AF8-767BDECACAFE";
+
+        /// <summary>
         /// The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId.
         /// </summary>
         public const string DATA_MIGRATIONS_140_CREATE_FK_INDEXES = "D96BD1F7-6A4A-4DC0-B10D-40031F709573";
+
+        /// <summary>
+        /// The Job to run Post v15.1 Data Migrations for System Phone Numbers.
+        /// </summary>
+        public const string DATA_MIGRATIONS_150_SYSTEM_PHONE_NUMBERS = "6DFE731E-F28B-40B3-8383-84212A301214";
 
         /// <summary>
         /// The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields.
@@ -170,5 +205,10 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.UpdatePersonalizationData" /> job.
         /// </summary>
         public const string UPDATE_PERSONALIZATION_DATA = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B";
+
+        /// <summary>
+        /// The <see cref="Rock.Jobs.ProcessReminders"/> job.
+        /// </summary>
+        public const string PROCESS_REMINDERS = "3F697C80-4C33-4552-9038-D3470445EA40";
     }
 }

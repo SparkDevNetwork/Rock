@@ -17,8 +17,10 @@
 import { computed, defineComponent, onMounted, PropType, ref } from "vue";
 import LoadingIndicator from "./loadingIndicator";
 import { newGuid } from "@Obsidian/Utility/guid";
-import { GatewayEmitStrings, onSubmitPayment } from "./gatewayControl";
+import { onSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+import { GatewayEmitStrings } from "@Obsidian/Enums/Controls/gatewayEmitStrings";
 import { CollectJSOptions, InputField, ResponseCallback, TimeoutCallback, TokenResponse, ValidationCallback } from "./nmiGatewayControlTypes";
+import { FormError } from "@Obsidian/Utility/form";
 
 const enum NMIPaymentType {
     Card = 0,
@@ -140,7 +142,7 @@ const standardStyling = `
 
 /**
  * Ensures the CollectJS script is loaded into the browser.
- * 
+ *
  * @param tokenizationKey The tokenization key that will be used to initialize the script.
  */
 async function loadCollectJSAsync(tokenizationKey: string): Promise<boolean> {
@@ -168,7 +170,7 @@ async function loadCollectJSAsync(tokenizationKey: string): Promise<boolean> {
 
 /**
  * Ensures the CollectJS script is loaded into the browser.
- * 
+ *
  * @param tokenizationKey The tokenization key that will be used to initialize the script.
  */
 async function loadStandardStyleTagAsync(): Promise<void> {
@@ -187,7 +189,7 @@ async function loadStandardStyleTagAsync(): Promise<void> {
 /**
  * Get the standard CollectJS options. This is primarily all the custom CSS
  * and control references.
- * 
+ *
  * @param controlId The identifier of the parent control that contains all the input fields.
  * @param inputStyleHook The element that will be used for standard styling information.
  * @param inputInvalidStyleHook The element that will be used for invalid styling information.
@@ -302,7 +304,7 @@ function getCollectJSOptions(controlId: string, inputStyleHook: HTMLElement | nu
 
 /**
  * Translates the NMI field name into a user friendly one.
- * 
+ *
  * @param field The field name as provided by NMI.
  *
  * @returns A user friendly name for the field.
@@ -452,9 +454,8 @@ export default defineComponent({
          *
          * @returns An object that describes if all the inputs are valid.
          */
-        const validateInputs = function (): { isValid: boolean, errors: Record<string, string> } {
-            let hasValidationError = false;
-            const errors: Record<string, string> = {};
+        const validateInputs = function (): FormError[] {
+            const errors: FormError[] = [];
 
             for (const validationFieldKey in validationFieldStatus) {
                 const validationField = validationFieldStatus[validationFieldKey];
@@ -464,18 +465,16 @@ export default defineComponent({
                 const fieldVisible = (inputField?.offsetWidth ?? 0) !== 0 || (inputField?.offsetHeight ?? 0) !== 0;
 
                 if (fieldVisible && !validationField.status) {
-                    hasValidationError = true;
-
                     const validationFieldTitle = getFieldFriendlyName(validationFieldKey);
 
-                    errors[validationFieldTitle] = validationField.message || "unknown validation error";
+                    errors.push({
+                        name: validationFieldTitle,
+                        text: validationField.message || "unknown validation error"
+                    });
                 }
             }
 
-            return {
-                isValid: !hasValidationError,
-                errors
-            };
+            return errors;
         };
 
         /**
@@ -493,10 +492,10 @@ export default defineComponent({
 
             // Since we don't know exactly what happened, lets see if it might
             // be invalid inputs by checking them all manually.
-            const validationResult = validateInputs();
+            const validationErrors = validateInputs();
 
-            if (!validationResult.isValid) {
-                emit(GatewayEmitStrings.Validation, validationResult.errors);
+            if (validationErrors.length > 0) {
+                emit(GatewayEmitStrings.Validation, validationErrors);
             }
             else {
                 // Inputs seem to be valid, so show a message to let them
@@ -512,7 +511,7 @@ export default defineComponent({
         /**
          * Callback function that handles field validation results from the
          * CollectJS back-end.
-         * 
+         *
          * @param field The name of the field being validated.
          * @param validated true if the field is valid; otherwise false.
          * @param message A message that describes the reason for the validation failure.
@@ -532,10 +531,10 @@ export default defineComponent({
                 message: message
             };
 
-            const validationResult = validateInputs();
+            const validationErrors = validateInputs();
 
             if (hasAttemptedSubmit && !(CollectJS?.inSubmission ?? false) && !hasReceivedToken) {
-                emit(GatewayEmitStrings.Validation, validationResult.errors);
+                emit(GatewayEmitStrings.Validation, validationErrors);
             }
         };
 
@@ -549,21 +548,21 @@ export default defineComponent({
 
             // The delay allows field validation when losing field focus.
             setTimeout(() => {
-                const validationResult = validateInputs();
+                const validationErrors = validateInputs();
 
                 hasAttemptedSubmit = true;
-                if (validationResult.isValid) {
+                if (validationErrors.length === 0) {
                     CollectJS?.startPaymentRequest();
                 }
                 else {
-                    emit(GatewayEmitStrings.Validation, validationResult.errors);
+                    emit(GatewayEmitStrings.Validation, validationErrors);
                 }
             }, 0);
         });
 
         /**
          * Callback method when we receive a validated token from NMI.
-         * 
+         *
          * @param tokenResponse The response data that contains the token.
          */
         const handleTokenResponse: ResponseCallback = (tokenResponse: TokenResponse): void => {

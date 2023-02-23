@@ -35,6 +35,7 @@ using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
 
@@ -57,11 +58,7 @@ namespace Rock.Data
     /// </summary>
     public abstract class DbContext : EFDbContext
     {
-        /// <summary>
-        /// The shared save hook provider that is used by default by all
-        /// instances of DbContext.
-        /// </summary>
-        internal static readonly Internal.EntitySaveHookProvider SharedSaveHookProvider = new Internal.EntitySaveHookProvider();
+        #region Properties
 
         /// <summary>
         /// Gets or sets the entity save hook provider.
@@ -70,6 +67,66 @@ namespace Rock.Data
         /// The entity save hook provider.
         /// </value>
         internal Internal.EntitySaveHookProvider EntitySaveHookProvider { get; set; } = SharedSaveHookProvider;
+
+        /// <summary>
+        /// Gets any error messages that occurred during a SaveChanges
+        /// </summary>
+        /// <value>
+        /// The save error messages.
+        /// </value>
+        public virtual List<string> SaveErrorMessages { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the source of change. If the source of change is set then changes made to entities with this context will have History records marked with this Source of Change.
+        /// </summary>
+        /// <value>
+        /// The source of change.
+        /// </value>
+        public string SourceOfChange { get; set; }
+
+        /// <summary>
+        /// If <see cref="WrapTransaction(Action)"/> is in progress, this will return a task that will return completed
+        /// after the transaction is committed. Otherwise, it will return a completed task immediately.
+        /// </summary>
+        /// <value>
+        /// The wrapped transaction completed.
+        /// </value>
+        public Task<bool> WrappedTransactionCompletedTask
+        {
+            get
+            {
+                if ( _transactionInProgress )
+                {
+                    return _wrappedTransactionCompleted?.Task ?? Task.FromResult( true );
+                }
+                else
+                {
+                    return Task.FromResult( true );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Rock RealTime messages
+        /// should be sent in response to calls to one of the SaveChanges
+        /// methods.
+        /// </summary>
+        /// <remarks>
+        /// This <em>only</em> affects real-time messages. Other forms of
+        /// notifications will still take place.
+        /// </remarks>
+        /// <value><c>true</c> if RealTime messages should be sent by this context; otherwise, <c>false</c>.</value>
+        public bool IsRealTimeEnabled { get; set; } = true;
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The shared save hook provider that is used by default by all
+        /// instances of DbContext.
+        /// </summary>
+        internal static readonly Internal.EntitySaveHookProvider SharedSaveHookProvider = new Internal.EntitySaveHookProvider();
 
         /// <summary>
         /// Is there a transaction in progress?
@@ -82,6 +139,8 @@ namespace Rock.Data
         /// to the database.
         /// </summary>
         private List<Action> _commitedActions = new List<Action>();
+
+        #endregion
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
@@ -135,43 +194,6 @@ namespace Rock.Data
         }
 #endif
 
-        /// <summary>
-        /// Gets any error messages that occurred during a SaveChanges
-        /// </summary>
-        /// <value>
-        /// The save error messages.
-        /// </value>
-        public virtual List<string> SaveErrorMessages { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the source of change. If the source of change is set then changes made to entities with this context will have History records marked with this Source of Change.
-        /// </summary>
-        /// <value>
-        /// The source of change.
-        /// </value>
-        public string SourceOfChange { get; set; }
-
-        /// <summary>
-        /// If <see cref="WrapTransaction(Action)"/> is in progress, this will return a task that will return completed
-        /// after the transaction is committed. Otherwise, it will return a completed task immediately.
-        /// </summary>
-        /// <value>
-        /// The wrapped transaction completed.
-        /// </value>
-        public Task<bool> WrappedTransactionCompletedTask
-        {
-            get
-            {
-                if ( _transactionInProgress )
-                {
-                    return _wrappedTransactionCompleted?.Task ?? Task.FromResult( true );
-                }
-                else
-                {
-                    return Task.FromResult( true );
-                }
-            }
-        }
 
         /// <summary>
         /// Wraps the action in a BeginTransaction and CommitTransaction.
@@ -335,7 +357,7 @@ namespace Rock.Data
             // SaveChanges() method and return
             if ( args.DisablePrePostProcessing )
             {
-                saveChangesResult.RecordsUpdated = base.SaveChanges();
+                saveChangesResult.RecordsUpdated = SaveChangesInternal();
                 return saveChangesResult;
             }
 
@@ -400,24 +422,7 @@ namespace Rock.Data
                 try
                 {
                     // Save the context changes
-                    saveChangesResult.RecordsUpdated = base.SaveChanges();
-                }
-                catch ( System.Data.Entity.Validation.DbEntityValidationException ex )
-                {
-                    var validationErrors = new List<string>();
-                    foreach ( var error in ex.EntityValidationErrors )
-                    {
-                        foreach ( var prop in error.ValidationErrors )
-                        {
-                            validationErrors.Add( string.Format( "{0} ({1}): {2}", error.Entry.Entity.GetType().Name, prop.PropertyName, prop.ErrorMessage ) );
-                        }
-                    }
-
-                    // Let all the hooks that were called know that the save
-                    // was aborted.
-                    CallSaveFailedHooks( updatedItems );
-
-                    throw new SystemException( "Entity Validation Error: " + validationErrors.AsDelimited( ";" ), ex );
+                    saveChangesResult.RecordsUpdated = SaveChangesInternal();
                 }
                 catch
                 {
@@ -448,6 +453,54 @@ namespace Rock.Data
             }
 
             return saveChangesResult;
+        }
+
+        /// <summary>
+        /// Save changes to the context, and capture additional details for any Entity Framework validation errors.
+        /// </summary>
+        /// <returns></returns>
+        private int SaveChangesInternal()
+        {
+#if REVIEW_NET5_0_OR_GREATER
+            // No built in validation in EF Core.
+            return base.SaveChanges();
+#else
+            try
+            {
+                // Save the context changes
+                return base.SaveChanges();
+            }
+            catch ( System.Data.Entity.Validation.DbEntityValidationException ex )
+            {
+                // This exception stores specific validation messages in a custom property.
+                // These messages are often useful for debugging purposes, so we will repackage the exception
+                // to include the additional information in the standard error message.
+                var validationErrors = new List<string>();
+                foreach ( var error in ex.EntityValidationErrors )
+                {
+                    var entry = error.Entry;
+                    var entityType = entry.Entity.GetType();
+                    if ( entityType.IsDynamicProxyType() )
+                    {
+                        entityType = entityType.BaseType;
+                    }
+
+                    var entityDescription = $"{entityType.Name}/{entry.State}";
+
+                    if ( error.Entry.Entity is IEntity entity )
+                    {
+                        entityDescription += $"/Id={entity.Id}";
+                    }
+
+                    foreach ( var prop in error.ValidationErrors )
+                    {
+                        validationErrors.Add( $"[{entityDescription}/Property={prop.PropertyName}] {prop.ErrorMessage}" );
+                    }
+                }
+
+                throw new SystemException( $"Entity Validation Error: { validationErrors.AsDelimited( "; " ) }" );
+            }
+#endif
         }
 
         /// <summary>
@@ -779,8 +832,8 @@ namespace Rock.Data
                 tcsPostSave.SetResult( true );
             }
 
-            var processIndexMsgs = new List<BusStartedTaskMessage>();
-            var deleteIndexMsgs = new List<BusStartedTaskMessage>();
+            List<ITransaction> indexTransactions = new List<ITransaction>();
+            var deleteContentCollectionIndexingMsgs = new List<BusStartedTaskMessage>();
             foreach ( var item in updatedItems )
             {
                 // check if this entity should be passed on for indexing
@@ -788,23 +841,24 @@ namespace Rock.Data
                 {
                     if ( item.State == EntityContextState.Detached || item.State == EntityContextState.Deleted )
                     {
-                        var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                        DeleteIndexEntityTransaction deleteIndexEntityTransaction = new DeleteIndexEntityTransaction
                         {
                             EntityTypeId = item.Entity.TypeId,
                             EntityId = item.Entity.Id
                         };
 
-                        deleteIndexMsgs.Add( deleteEntityTypeIndexMsg );
+                        indexTransactions.Add( deleteIndexEntityTransaction );
                     }
                     else
                     {
-                        var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
-                        {
-                            EntityTypeId = item.Entity.TypeId,
-                            EntityId = item.Entity.Id
-                        };
+                        var indexEntityTransaction = new IndexEntityTransaction(
+                            new EntityIndexInfo
+                            {
+                                EntityTypeId = item.Entity.TypeId,
+                                EntityId = item.Entity.Id
+                            } );
 
-                        processIndexMsgs.Add( processEntityTypeIndexMsg );
+                        indexTransactions.Add( indexEntityTransaction );
                     }
                 }
 
@@ -824,7 +878,7 @@ namespace Rock.Data
                             EntityId = item.Entity.Id
                         };
 
-                        deleteIndexMsgs.Add( msg );
+                        deleteContentCollectionIndexingMsgs.Add( msg );
                     }
                 }
 
@@ -858,15 +912,15 @@ namespace Rock.Data
             }
 
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
-            if ( processIndexMsgs.Any() || deleteIndexMsgs.Any() )
+            if ( indexTransactions.Any() )
             {
                 System.Threading.Tasks.Task.Run( () =>
                 {
-                    var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
+                    var indexingEnabled = IndexContainer.GetActiveComponent() != null;
                     if ( indexingEnabled )
                     {
-                        processIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
-                        deleteIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
+                        indexTransactions.ForEach( t => t.Enqueue() );
+                        deleteContentCollectionIndexingMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
                 } );
             }

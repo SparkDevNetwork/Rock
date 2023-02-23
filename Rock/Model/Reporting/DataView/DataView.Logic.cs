@@ -125,21 +125,18 @@ namespace Rock.Model
         /// <returns></returns>
         public EFDbContext GetDbContext()
         {
-            if ( EntityTypeId.HasValue )
+#if REVIEW_NET5_0_OR_GREATER
+            return new RockContext();
+#else
+            if ( this.DisableUseOfReadOnlyContext )
             {
-                var cachedEntityType = EntityTypeCache.Get( EntityTypeId.Value );
-                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
-                {
-                    Type entityType = cachedEntityType.GetEntityType();
-
-                    if ( entityType != null )
-                    {
-                        return Reflection.GetDbContextForEntityType( entityType );
-                    }
-                }
+                return new RockContext();
             }
-
-            return null;
+            else
+            {
+                return new RockContextReadOnly();
+            }
+#endif
         }
 
         /// <summary>
@@ -324,7 +321,13 @@ namespace Rock.Model
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         public void PersistResult( int? databaseTimeoutSeconds = null )
         {
-            using ( var dbContext = this.GetDbContext() )
+            /* 
+                12/15/2022 - CWR
+
+                This PersistResult database context needs to be writable (not read-only), so that the persisted values for the dataview will delete / insert.
+                
+            */
+            using ( var rockContext = new RockContext() )
             {
                 var persistStopwatch = Stopwatch.StartNew();
                 var dataViewFilterOverrides = new DataViewFilterOverrides();
@@ -335,18 +338,12 @@ namespace Rock.Model
                 dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
                 var dataViewGetQueryArgs = new DataViewGetQueryArgs
                 {
-                    DbContext = dbContext,
+                    DbContext = rockContext,
                     DataViewFilterOverrides = dataViewFilterOverrides,
                     DatabaseTimeoutSeconds = databaseTimeoutSeconds,
                 };
 
                 var qry = this.GetQuery( dataViewGetQueryArgs );
-
-                RockContext rockContext = dbContext as RockContext;
-                if ( rockContext == null )
-                {
-                    rockContext = new RockContext();
-                }
 
 #if REVIEW_NET5_0_OR_GREATER
                 rockContext.Database.SetCommandTimeout( databaseTimeoutSeconds );
@@ -356,12 +353,6 @@ namespace Rock.Model
                 var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
 
                 var updatedEntityIdsQry = qry.Select( a => a.Id );
-
-                if ( !( rockContext is RockContext ) )
-                {
-                    // if this DataView doesn't use a RockContext get the EntityIds into memory as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
-                    updatedEntityIdsQry = updatedEntityIdsQry.ToList().AsQueryable();
-                }
 
                 var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
                 var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();

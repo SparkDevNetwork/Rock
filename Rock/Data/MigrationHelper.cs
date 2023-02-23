@@ -966,7 +966,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Values the tuple.
+        /// Updates the page layout.
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
         /// <param name="layoutGuid">The layout unique identifier.</param>
@@ -3482,6 +3482,15 @@ END" );
                 )", workflowActionGuid ) );
         }
 
+        /// <summary>
+        /// Deletes the attribute qualifier
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public void DeleteAttributeQualifier( string guid )
+        {
+            Migration.Sql( $@"DELETE [AttributeQualifier] WHERE [Guid] = '{guid}'" );
+        }
+
         #endregion
 
         #region Block Attribute Value Methods
@@ -4754,6 +4763,58 @@ END
         #region Security/Auth
 
         /// <summary>
+        /// Inserts the security settings (Auth records) for the destination entity that exist on the source entity.
+        /// Does not insert duplicates or delete any settings from source or destination. Run N safe.
+        /// Auth records inserted will have a new generated GUID.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="sourceEntityGuid">The source entity unique identifier.</param>
+        /// <param name="destEntityGuid">The dest entity unique identifier.</param>
+        public void CopySecurityForEntity( string entityTypeGuid, string sourceEntityGuid, string destEntityGuid )
+        {
+            string sql = $@"
+                DECLARE @EntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{entityTypeGuid}')
+                DECLARE @SourceBlockId INT = (SELECT [Id] FROM [Block] WHERE [Guid] = '{sourceEntityGuid}')
+                DECLARE @DestBlockId INT = (SELECT [Id] FROM [Block] WHERE [Guid] = '{destEntityGuid}')
+
+                INSERT INTO [Auth] ([EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny], [SpecialRole], [GroupId], [Guid], [PersonAliasId])
+                SELECT 
+	                  a1.[EntityTypeId]
+	                , @DestBlockId
+	                , a1.[Order]
+	                , a1.[Action]
+	                , a1.[AllowOrDeny]
+	                , a1.[SpecialRole]
+	                , a1.[GroupId]
+	                , NEWID()
+                    , a1.[PersonAliasId]
+                FROM [Auth] a1
+                WHERE a1.[EntityTypeId] = @EntityTypeId
+	                AND a1.[EntityId] = @SourceBlockId
+	                AND NOT EXISTS (
+		                SELECT
+			                  a2.[EntityTypeId]
+			                , a2.[EntityId]
+			                , a2.[Order]
+			                , a2.[Action]
+			                , a2.[AllowOrDeny]
+			                , a2.[SpecialRole]
+			                , a2.[GroupId]
+                            , a2.[PersonAliasId]
+		                FROM [Auth] a2
+		                WHERE a2.[EntityTypeId] = a1.[EntityTypeId]
+			                AND a2.[EntityId] = @DestBlockId
+			                AND a2.[Order] = a1.[Order]
+			                AND a2.[Action] = a1.[Action]
+			                AND a2.[AllowOrDeny] = a1.[AllowOrDeny]
+			                AND a2.[SpecialRole] = a1.[SpecialRole]
+			                AND a2.[GroupId] = a1.[GroupId]
+                            AND a2.[PersonAliasId] = a1.[PersonAliasId])";
+
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
         /// Adds the security role group.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -5636,6 +5697,32 @@ END
         }
 
         /// <summary>
+        /// Adds a GroupTypeAssociation if it doesn't already exist.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="childGroupTypeGuid">The child group type unique identifier.</param>
+        public void AddGroupTypeAssociation( string groupTypeGuid, string childGroupTypeGuid )
+        {
+            Migration.Sql( $@"
+                DECLARE @GroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '{groupTypeGuid}' )
+                DECLARE @ChildGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '{childGroupTypeGuid}' )
+
+                IF NOT EXISTS (
+                    SELECT [GroupTypeId]
+                    FROM [GroupTypeAssociation]
+                    WHERE [GroupTypeId] = @GroupTypeId
+                    AND [childGroupTypeId] = @ChildGroupTypeId )
+                BEGIN
+                    INSERT INTO [GroupTypeAssociation] (
+                        [GroupTypeId]
+                        , [ChildGroupTypeId] )
+                    VALUES (
+                        @GroupTypeId
+                        , @ChildGroupTypeId )
+                END" );
+        }
+
+        /// <summary>
         /// Deletes the GroupType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -5645,7 +5732,7 @@ END
 
                 -- Delete the group type and any dangling bits
                 DECLARE @GroupTypeId int = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{0}')
-                UPDATE [GroupType] SET [InheritedGroupTypeId] = NULL, [DefaultGroupRoleId] = NULL WHERE [InheritedGroupTypeId] = @GroupTypeId
+                UPDATE [GroupType] SET [InheritedGroupTypeId] = NULL, [DefaultGroupRoleId] = NULL WHERE [InheritedGroupTypeId] = @GroupTypeId OR [Id] = @GroupTypeId
                 DELETE [GroupTypeAssociation] WHERE [ChildGroupTypeId] = @GroupTypeId OR [GroupTypeId] = @GroupTypeId
                 DELETE [GroupTypeRole] WHERE [GroupTypeId] = @GroupTypeId
                 DELETE [GroupType] WHERE [Guid] = '{0}'
@@ -7068,16 +7155,17 @@ END
         /// <param name="header">The header.</param>
         /// <param name="footer">The footer.</param>
         /// <param name="actions">The actions.</param>
-        /// <param name="systemEmailGuid">The system email unique identifier.</param>
+        /// <param name="systemCommunicationGuid">The system communication unique identifier.</param>
         /// <param name="includeActionsInNotification">if set to <c>true</c> [include actions in notification].</param>
         /// <param name="actionAttributeGuid">The action attribute unique identifier.</param>
         /// <param name="guid">The unique identifier.</param>
-        public void UpdateWorkflowActionForm( string header, string footer, string actions, string systemEmailGuid,
+        public void UpdateWorkflowActionForm( string header, string footer, string actions, string systemCommunicationGuid,
             bool includeActionsInNotification, string actionAttributeGuid, string guid )
         {
             Migration.Sql( string.Format( @"
 
                 DECLARE @SystemEmailId int = (SELECT [Id] FROM [SystemEmail] WHERE [Guid] = '{3}')
+                DECLARE @SystemCommunicationId int = (SELECT [Id] FROM [SystemCommunication] WHERE [Guid] = '{3}')
 
                 IF EXISTS ( SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] =  '{6}' )
                 BEGIN
@@ -7086,6 +7174,7 @@ END
                         [Footer] = '{1}',
                         [Actions] = '{2}',
                         [NotificationSystemEmailId] = @SystemEmailId,
+                        [NotificationSystemCommunicationId] = @SystemCommunicationId,
                         [IncludeActionsInNotification] = {4},
                         [ActionAttributeGuid] = {5}
                     WHERE [Guid] = '{6}'
@@ -7093,14 +7182,14 @@ END
                 ELSE
                 BEGIN
                     INSERT INTO [WorkflowActionForm] (
-                        [Header], [Footer], [Actions], [NotificationSystemEmailId], [IncludeActionsInNotification], [ActionAttributeGuid], [Guid] )
-                    VALUES( '{0}', '{1}', '{2}', @SystemEmailId, {4}, {5}, '{6}' )
+                        [Header], [Footer], [Actions], [NotificationSystemEmailId], [NotificationSystemCommunicationId], [IncludeActionsInNotification], [ActionAttributeGuid], [Guid] )
+                    VALUES( '{0}', '{1}', '{2}', @SystemEmailId, @SystemCommunicationId, {4}, {5}, '{6}' )
                 END
 ",
                     header.Replace( "'", "''" ),
                     footer.Replace( "'", "''" ),
                     actions,
-                    ( string.IsNullOrWhiteSpace( systemEmailGuid ) ? Guid.Empty.ToString() : systemEmailGuid ),
+                    ( string.IsNullOrWhiteSpace( systemCommunicationGuid ) ? Guid.Empty.ToString() : systemCommunicationGuid ),
                     ( includeActionsInNotification ? "1" : "0" ),
                     ( string.IsNullOrWhiteSpace( actionAttributeGuid ) ? "NULL" : "'" + actionAttributeGuid + "'" ),
                     guid )
@@ -8057,6 +8146,20 @@ END
         public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes )
         {
             var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes );
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Creates the index if it doesn't exist.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="keys">The indexed columns.</param>
+        /// <param name="includes">The non-indexed columns to include ( the INCLUDE clause ).</param>
+        /// <param name="isUnique">if set to <c>true</c> [is unique].</param>
+        public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes, bool isUnique )
+        {
+            var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes, isUnique );
             Migration.Sql( sql );
         }
 

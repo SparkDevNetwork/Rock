@@ -572,7 +572,7 @@ namespace Rock.Transactions
             // (The rockPage and request variables will only be defined if this.GetValuesFromHttpRequest was true.)
 
 #if REVIEW_WEBFORMS
-            this.InteractionData = this.InteractionData ?? request?.Url.ToString();
+            this.InteractionData = this.InteractionData ?? request?.UrlProxySafe().ToString();
             this.UserAgent = this.UserAgent ?? request?.UserAgent;
 
             try

@@ -29,16 +29,10 @@ import { Guid } from "@Obsidian/Types";
  */
 export type CategoryPickerChildTreeItemsOptionsBag = {
     /**
-     * Gets or sets the parent unique identifier whose children are to
-     * be retrieved. If null then the root items are being requested.
+     * Gets or sets the default icon CSS class to use for items that do not
+     * specify their own IconCssClass value.
      */
-    parentGuid?: Guid | null;
-
-    /**
-     * Gets or sets a value indicating whether items should be loaded
-     * or only categories.
-     */
-    getCategorizedItems: boolean;
+    defaultIconCssClass?: string | null;
 
     /**
      * Gets or sets the entity type unique identifier to limit the
@@ -62,11 +56,10 @@ export type CategoryPickerChildTreeItemsOptionsBag = {
     entityTypeQualifierValue?: string | null;
 
     /**
-     * Gets or sets a value indicating whether entity items without a name
-     * should be included in the results. Only applies if
-     * Rock.ViewModels.Rest.Controls.CategoryPickerChildTreeItemsOptionsBag.GetCategorizedItems is true.
+     * Gets or sets a value indicating whether items should be loaded
+     * or only categories.
      */
-    includeUnnamedEntityItems: boolean;
+    getCategorizedItems: boolean;
 
     /**
      * Gets or sets a value indicating whether categories that have no
@@ -75,17 +68,18 @@ export type CategoryPickerChildTreeItemsOptionsBag = {
     includeCategoriesWithoutChildren: boolean;
 
     /**
-     * Gets or sets the default icon CSS class to use for items that do not
-     * specify their own IconCssClass value.
-     */
-    defaultIconCssClass?: string | null;
-
-    /**
      * Gets or sets a value indicating whether inactive items should be
      * included in the results. If the entity type does not support the
      * IsActive property then this value will be ignored.
      */
     includeInactiveItems: boolean;
+
+    /**
+     * Gets or sets a value indicating whether entity items without a name
+     * should be included in the results. Only applies if
+     * Rock.ViewModels.Rest.Controls.CategoryPickerChildTreeItemsOptionsBag.GetCategorizedItems is true.
+     */
+    includeUnnamedEntityItems: boolean;
 
     /**
      * Gets or sets the name of the item property to use for comparison
@@ -110,6 +104,12 @@ export type CategoryPickerChildTreeItemsOptionsBag = {
      * being null to indicate they must be loaded on demand.
      */
     lazyLoad: boolean;
+
+    /**
+     * Gets or sets the parent unique identifier whose children are to
+     * be retrieved. If null then the root items are being requested.
+     */
+    parentGuid?: Guid | null;
 
     /**
      * Gets or sets the security grant token to use when performing

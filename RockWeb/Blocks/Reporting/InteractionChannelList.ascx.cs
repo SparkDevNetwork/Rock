@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( LavaService.RockLiquidIsEnabled )
                 {
-                    defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
+                    defaultTemplate = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( "DefaultTemplate" ) );
 
                     LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "DefaultTemplate" ) );
                 }

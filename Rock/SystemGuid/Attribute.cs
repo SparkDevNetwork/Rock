@@ -460,7 +460,7 @@ namespace Rock.SystemGuid
         /// The groupmember (of a communication list) preferred communication medium
         /// </summary>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This value is no longer used. The Communication Preference on the Group Member should be used." )]
+        [Obsolete( "This value is no longer used. The Communication Preference on the Group Member should be used.", true )]
         public const string GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM = "D7941908-1F65-CC9B-416C-CCFABE4221B9";
 
         #endregion
@@ -561,6 +561,16 @@ namespace Rock.SystemGuid
         /// The defined value attribute for storing a fundraising opportunity type's donation button text.
         /// </summary>
         public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
+
+        /// <summary>
+        /// The group attribute for the type of participation in a Fundraising Opportunity group.
+        /// </summary>
+        public const string PARTICIPATION_TYPE = "EFA9F0D0-54CE-4B88-BC91-8BD110DEE0FC";
+
+        /// <summary>
+        /// The attribute for Transaction Header in the Fundraising Transaction Entry block.
+        /// </summary>
+        public const string FUNDRAISING_TRANSACTION_HEADER = "65FB0B9A-670E-4AB9-9666-77959B4B702E";
 
         #endregion
 
@@ -697,6 +707,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string WORKFLOW_ENTRY_BLOCK_DISABLE_PASSING_WORKFLOWTYPEID = "BA7D9988-E6C9-467E-8F08-E0282FE6F7CB";
 
+        /// <summary>
+        /// The Workflow Entry Block Attribute that disables passing the WorkflowID.
+        /// </summary>
+        public const string WORKFLOW_ENTRY_BLOCK_DISABLE_PASSING_WORKFLOWID = "890676BC-18D3-445F-A6FA-CC2F515F1930";
+
         #endregion Workflow Entry Block Attributes
 
         /// <summary>
@@ -708,6 +723,11 @@ namespace Rock.SystemGuid
         /// The defined value log system settings
         /// </summary>
         public const string DEFINED_VALUE_LOG_SYSTEM_SETTINGS = "B9D4A315-8672-4214-B5D3-01A06C3CAD9F";
+
+        /// <summary>
+        /// The system security settings.
+        /// </summary>
+        public const string SYSTEM_SECURITY_SETTINGS = "450EF9DC-66F6-43A3-BE22-9CB8B1C42477";
 
         /// <summary>
         /// The phone number lookup title
@@ -1012,5 +1032,14 @@ namespace Rock.SystemGuid
         /// The category treeview search results
         /// </summary>
         public const string CATEGORY_TREEVIEW_SEARCH_RESULTS = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E";
+
+        #region Sign-Up Group (GroupType) Attributes
+
+        /// <summary>
+        /// The Sign-up Group - Group Type's project type attribute
+        /// </summary>
+        public const string GROUPTYPE_SIGNUP_GROUP_PROJECT_TYPE = "46FFBB10-6E4B-4B3A-A560-61B36C6B0E09";
+
+        #endregion
     }
 }

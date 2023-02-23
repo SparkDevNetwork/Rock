@@ -16,9 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using System.Web.Http.Routing;
 
 using Swashbuckle.Application;
@@ -67,6 +70,8 @@ namespace Rock.Rest.Swagger
                 xmlDocs = new List<string>();
             }
 
+            config.EnableCors( new EnableCorsAttribute( "*", "*", "*" ) );
+
             config
                 .EnableSwagger( swaggerRoute, c =>
                      {
@@ -74,7 +79,7 @@ namespace Rock.Rest.Swagger
                          // However, there may be situations (e.g. proxy and load-balanced environments) where this does not
                          // resolve correctly. You can workaround this by providing your own code to determine the root URL.
                          //
-                         //c.RootUrl(req =>
+                         c.RootUrl(req => DefaultRootUrlResolver( req ) );
 
                          // If schemes are not explicitly provided in a Swagger 2.0 document, then the scheme used to access
                          // the docs is taken as the default. If your API supports multiple schemes and you want to be explicit
@@ -326,6 +331,35 @@ namespace Rock.Rest.Swagger
                     defaults: null,
                     constraints: new { uriResolution = new HttpRouteDirectionConstraint( HttpRouteDirection.UriResolution ) },
                     handler: new RedirectHandler( SwaggerDocsConfig.DefaultRootUrlResolver, "api/docs/index" ) );
+        }
+
+        private static string DefaultRootUrlResolver( HttpRequestMessage request )
+        {
+            string referer = GetHeaderValue( request, "Referer" );
+            if ( referer.IsNullOrWhiteSpace() )
+            {
+                string text = GetHeaderValue( request, "X-Forwarded-Proto" ) ?? request.RequestUri.Scheme;
+                string text2 = GetHeaderValue( request, "X-Forwarded-Host" ) ?? request.RequestUri.Host;
+                string text3 = GetHeaderValue( request, "X-Forwarded-Port" ) ?? request.RequestUri.Port.ToString( CultureInfo.InvariantCulture );
+                HttpConfiguration configuration = request.GetConfiguration();
+                string text4 = configuration.VirtualPathRoot.TrimEnd( '/' );
+                return $"{text}://{text2}:{text3}{text4}";
+            }
+            else
+            {
+                var baseUrl = new Uri( referer ).GetLeftPart( System.UriPartial.Authority );
+                return baseUrl;
+            }
+        }
+
+        private static string GetHeaderValue( HttpRequestMessage request, string headerName )
+        {
+            if ( !request.Headers.TryGetValues( headerName, out var values ) ) 
+            {
+                return null;
+            }
+
+            return values.FirstOrDefault();
         }
     }
 }

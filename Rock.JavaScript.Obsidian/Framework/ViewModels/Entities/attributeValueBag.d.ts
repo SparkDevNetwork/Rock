@@ -26,8 +26,23 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** AttributeValue View Model */
 export type AttributeValueBag = {
+    /** Gets or sets the attribute. */
+    attribute?: AttributeBag | null;
+
     /** Gets or sets the AttributeId of the Rock.Model.Attribute that this AttributeValue provides a value for. */
     attributeId: number;
+
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
 
     /**
      * Gets or sets the Id of the entity instance that uses this AttributeValue. An Rock.Model.Attribute is a configuration setting, so each 
@@ -36,6 +51,9 @@ export type AttributeValueBag = {
      * constant across all instances of an EntityType.
      */
     entityId?: number | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /**
      * Gets or sets a value indicating whether the persisted values are
@@ -46,6 +64,12 @@ export type AttributeValueBag = {
 
     /** Gets or sets a flag indicating if this AttributeValue is part of the Rock core system/framework. */
     isSystem: boolean;
+
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
+
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the persisted condensed HTML value. */
     persistedCondensedHtmlValue?: string | null;
@@ -62,30 +86,6 @@ export type AttributeValueBag = {
     /** Gets or sets the raw value */
     value?: string | null;
 
-    /** Gets the Value as a decimal (Computed on Save). */
+    /** Gets the Value as a decimal. This value is only updated on save. */
     valueAsNumeric?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the attribute. */
-    attribute?: AttributeBag | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

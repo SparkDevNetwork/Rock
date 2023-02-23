@@ -19,7 +19,7 @@ import { Component, computed, defineComponent, PropType, ref, watch } from "vue"
 import { binaryComparisonTypes, containsComparisonTypes, isCompareVisibleForComparisonFilter, isSingleComparisonType, stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import FieldFilterContainer from "@Obsidian/Controls/fieldFilterContainer";
@@ -160,7 +160,7 @@ export type StandardFilterComponentOptions = {
  * Gets a standard filter component that uses a constant string in place of the
  * comparison type picker. This component will always emit a ComparisonValue
  * with a null type.
- * 
+ *
  * @param compareLabel The string to display in place of a comparison picker.
  * @param valueComponent The component that will handle editing the value.
  *
@@ -185,7 +185,7 @@ export function getStandardFilterComponent(comparisonTypes: ComparisonType | nul
 /**
  * Gets a standard filter component that can be used by field types to generate
  * their filter component without having to write one from scratch.
- * 
+ *
  * @param comparisonLabelOrTypes The comparison label or the comparison types that will be shown.
  * @param valueComponent The component that will handle value entry from the individual.
  *

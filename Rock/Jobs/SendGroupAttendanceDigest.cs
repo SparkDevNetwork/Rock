@@ -23,8 +23,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -36,7 +34,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Send Group Attendance Digest
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Send Group Attendance Digest" )]
     [Description( "This job will send a single digest email to all active Leaders of the Sectional/Regional (middle) group layer for all active child groups of that middle layer group. The digest will contain an attendance summary for all these child groups, and the digest is based on the configured System Communication template. That template should contain the following merge objects: AttendanceSummary, GroupAttendance." )]
 
@@ -67,8 +64,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
-    public class SendGroupAttendanceDigest : IJob
+    public class SendGroupAttendanceDigest : RockJob
     {
         #region Attribute Keys
 
@@ -101,16 +97,13 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             try
             {
                 InitializeResultsCounters();
-                ProcessJob( context );
+                ProcessJob();
             }
             catch ( Exception ex )
             {
@@ -141,7 +134,7 @@ namespace Rock.Jobs
                 jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {error}" );
             }
 
-            context.Result = jobSummaryBuilder.ToString();
+            this.Result = jobSummaryBuilder.ToString();
 
             if ( _errors.Any() )
             {
@@ -153,20 +146,18 @@ namespace Rock.Jobs
         /// <summary>
         /// Processes the job.
         /// </summary>
-        /// <param name="context">The context.</param>
-        private void ProcessJob( IJobExecutionContext context )
+        private void ProcessJob()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
+            
             // Make sure we have valid entity Guids.
-            var parentGroupGuid = dataMap.Get( AttributeKey.ParentGroup ).ToString().AsGuidOrNull();
+            var parentGroupGuid = this.GetAttributeValue( AttributeKey.ParentGroup ).AsGuidOrNull();
             if ( parentGroupGuid == null )
             {
                 _errors.Add( "The selected parent group is not valid." );
                 return;
             }
 
-            var systemCommunicationGuid = dataMap.Get( AttributeKey.SystemCommunication ).ToString().AsGuidOrNull();
+            var systemCommunicationGuid = this.GetAttributeValue( AttributeKey.SystemCommunication ).ToString().AsGuidOrNull();
             if ( systemCommunicationGuid == null )
             {
                 _errors.Add( "The selected system communication is not valid." );
@@ -174,7 +165,7 @@ namespace Rock.Jobs
             }
 
             // Make sure we have a valid date range.
-            int.TryParse( dataMap.Get( AttributeKey.DateRange ).ToString(), out int dateRangeInt );
+            int.TryParse( this.GetAttributeValue( AttributeKey.DateRange ).ToString(), out int dateRangeInt );
             if ( dateRangeInt <= 0 || dateRangeInt > 2 )
             {
                 dateRangeInt = 1;
@@ -415,7 +406,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Gets the group attendances for the children groups of the specified regional group.
+        /// Gets the group attendances for the active children groups of the specified regional group.
         /// </summary>
         /// <param name="regionalGroup">The regional group.</param>
         /// <param name="startDate">The start date.</param>
@@ -424,11 +415,11 @@ namespace Rock.Jobs
         private IList<GroupAttendance> GetChildrenGroupAttendances( Group regionalGroup, DateTime startDate, DateTime endDate )
         {
             // Get the groups under this regional group.
-            var groups = _groupService.Queryable( "Schedule" )
-                .AsNoTracking()
-                .Where( g => g.ParentGroupId == regionalGroup.Id ) // Is a child of the parent regional group;
-                .Where( g => g.GroupType.TakesAttendance )         // Allows taking attendance;
-                .Where( g => g.ScheduleId.HasValue )               // Has a schedule defined.
+            var groups = _groupService.Queryable( "Schedule" ).AsNoTracking()
+                .Where( g => g.ParentGroupId == regionalGroup.Id
+                    && g.IsActive
+                    && g.GroupType.TakesAttendance 
+                    && g.ScheduleId.HasValue )
                 .ToList();
 
             if ( !groups.Any() )

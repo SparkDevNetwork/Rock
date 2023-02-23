@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -764,7 +764,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private void SetChartOptions()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new ChartOptions();
+#pragma warning restore CS0618 // Type or member is obsolete
             options.series = new SeriesOptions( false, true, false );
             options.xaxis = new AxisOptions { mode = AxisMode.time };
             options.grid = new GridOptions { hoverable = true, clickable = false };
@@ -778,7 +780,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private void RegisterStartupScript()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new ChartOptions();
+#pragma warning restore CS0618 // Type or member is obsolete
             options.series = new SeriesOptions( false, true, false );
             options.yaxis = new AxisOptions { min = 0, minTickSize = 1 };
             options.xaxis = new AxisOptions { mode = AxisMode.time };

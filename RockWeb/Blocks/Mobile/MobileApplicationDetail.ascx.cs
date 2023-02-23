@@ -17,10 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
 
@@ -28,11 +25,10 @@ using Humanizer;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
-using Rock.Mobile;
+using Rock.DownhillCss.Utility;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -445,7 +441,10 @@ namespace RockWeb.Blocks.Mobile
                 site = new Site
                 {
                     IsActive = true,
-                    AdditionalSettings = new AdditionalSiteSettings().ToJson()
+                    AdditionalSettings = new AdditionalSiteSettings()
+                    {
+                        IsPackageCompressionEnabled = true
+                    }.ToJson()
                 };
             }
 
@@ -471,6 +470,7 @@ namespace RockWeb.Blocks.Mobile
                 tbCertificateFingerprint.Text = additionalSettings.CertificateFingerprint;
                 tbDeepLinkPathPrefix.Text = $"/{additionalSettings.DeepLinkPathPrefix}/";
                 tbDeepLinkPathPrefix.Enabled = false;
+                vlDeepLinkingDomain.Value = additionalSettings.DeepLinkDomains;
             }
 
             pnlDeepLinkSettings.Visible = isDeepLinkingEnabled;
@@ -488,9 +488,8 @@ namespace RockWeb.Blocks.Mobile
 
             cbEnableNotificationsAutomatically.Checked = additionalSettings.EnableNotificationsAutomatically;
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
-            ceToastXaml.Text = additionalSettings.ToastXaml;
             cbEnableDeepLinking.Checked = additionalSettings.IsDeepLinkingEnabled;
-
+            cbCompressUpdatePackages.Checked = additionalSettings.IsPackageCompressionEnabled;
 
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
             ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
@@ -504,7 +503,11 @@ namespace RockWeb.Blocks.Mobile
 
             ppEditLoginPage.SetValue( site.LoginPageId );
             ppEditProfilePage.SetValue( additionalSettings.ProfilePageId );
+            ppEditInteractiveExperiencePage.SetValue( additionalSettings.InteractiveExperiencePageId );
             ppCommunicationViewPage.SetValue( additionalSettings.CommunicationViewPageId );
+            ppEditSmsConversationPage.SetValue( additionalSettings.SmsConversationPageId );
+
+            ppEditInteractiveExperiencePage.SiteType = SiteType.Mobile;
 
             //
             // Set the API Key.
@@ -540,6 +543,13 @@ namespace RockWeb.Blocks.Mobile
                     return;
                 }
 
+                
+               
+                cbNavbarTransclucent.Checked = additionalSettings.IOSEnableBarTransparency;
+                ddlNavbarBlurStyle.Visible = cbNavbarTransclucent.Checked;
+                ddlNavbarBlurStyle.BindToEnum<IOSBlurStyle>();
+                ddlNavbarBlurStyle.SetValue((int) additionalSettings.IOSBarBlurStyle);
+                
                 cpEditBarBackgroundColor.Value = additionalSettings.BarBackgroundColor;
                 cpEditMenuButtonColor.Value = additionalSettings.MenuButtonColor;
                 cpEditActivityIndicatorColor.Value = additionalSettings.ActivityIndicatorColor;
@@ -566,6 +576,11 @@ namespace RockWeb.Blocks.Mobile
 
                 imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
             }
+        }
+
+        public void CbNavbarTransclucent_CheckedChanged( object sender, EventArgs e )
+        {
+            ddlNavbarBlurStyle.Visible = ( sender as CheckBox ).Checked;
         }
 
         /// <summary>
@@ -636,6 +651,8 @@ namespace RockWeb.Blocks.Mobile
         /// </summary>
         /// <param name="color">The color.</param>
         /// <returns></returns>
+        [Obsolete( "Xamarin supports all of the color formatting that our color picker provides, so we don't need to include this." )]
+        [RockObsolete("1.14.1")]
         private string ParseColor( string color )
         {
             //
@@ -720,6 +737,14 @@ namespace RockWeb.Blocks.Mobile
         {
             var site = new SiteService( new RockContext() ).Get( siteId );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
+            if( additionalSettings.DeepLinkDomains != null && additionalSettings.DeepLinkDomains.Contains("|") )
+            {
+                var domainsText = additionalSettings.DeepLinkDomains.ReplaceLastOccurrence( "|", "" );
+                domainsText = domainsText.Replace( "|", ", " );
+                lblDeepLinkDomains.Text = domainsText;
+            }
+
             var routes = additionalSettings.DeepLinkRoutes
                 .Select( r => new
                 {
@@ -732,29 +757,6 @@ namespace RockWeb.Blocks.Mobile
 
             gDeepLinks.DataSource = routes;
             gDeepLinks.DataBind();
-        }
-
-        /// <summary>
-        /// Gets the file path.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns></returns>
-        private string GetFilePath( BinaryFile file )
-        {
-            string url = file.Url;
-
-            //
-            // FileSystem provider currently returns a bad URL.
-            //
-            if ( file.BinaryFileType.StorageEntityType.Name == "Rock.Storage.Provider.FileSystem" )
-            {
-                url = System.Web.VirtualPathUtility.ToAbsolute( string.Format( "~/GetFile.ashx?Id={0}", file.Id ) );
-                var uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
-
-                url = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + url;
-            }
-
-            return url;
         }
 
         /// <summary>
@@ -917,7 +919,7 @@ namespace RockWeb.Blocks.Mobile
                     .Where( s => s.AdditionalSettings != null && s.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>().DeepLinkPathPrefix == deepLinkPrefix )
                     .Any();
 
-                if ( conflictingRoute || conflictingDeepLinkPathPrefix )
+                if ( conflictingRoute || conflictingDeepLinkPathPrefix && tbDeepLinkPathPrefix.Enabled )
                 {
                     nbDeepLinks.Text = $"Your 'Deep Link Path Prefix ('{tbDeepLinkPathPrefix.Text}') is currently conflicting with another route or path prefix. Please check 'Settings > CMS Configuration > Routes' or pick a unique deep link path prefix.";
                     nbDeepLinks.Visible = true;
@@ -929,6 +931,7 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.PackageName = tbPackageName.Text;
                 additionalSettings.CertificateFingerprint = tbCertificateFingerprint.Text;
                 additionalSettings.DeepLinkPathPrefix = deepLinkPrefix;
+                additionalSettings.DeepLinkDomains = vlDeepLinkingDomain.Value;
             }
 
             // Ensure that the Downhill CSS platform is mobile
@@ -946,12 +949,14 @@ namespace RockWeb.Blocks.Mobile
 
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
+            additionalSettings.InteractiveExperiencePageId = ppEditInteractiveExperiencePage.PageId;
             additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
+            additionalSettings.SmsConversationPageId = ppEditSmsConversationPage.PageId;
             additionalSettings.EnableNotificationsAutomatically = cbEnableNotificationsAutomatically.Checked;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
             additionalSettings.IsDeepLinkingEnabled = cbEnableDeepLinking.Checked;
-            additionalSettings.ToastXaml = ceToastXaml.Text;
             additionalSettings.PushTokenUpdateValue = tbEditPushTokenUpdateValue.Text;
+            additionalSettings.IsPackageCompressionEnabled = cbCompressUpdatePackages.Checked;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.CampusFilterDataViewId = dvpCampusFilter.SelectedValueAsId();
@@ -1057,23 +1062,26 @@ namespace RockWeb.Blocks.Mobile
 
                 site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
 
-                additionalSettings.BarBackgroundColor = ParseColor( cpEditBarBackgroundColor.Value );
-                additionalSettings.MenuButtonColor = ParseColor( cpEditMenuButtonColor.Value );
-                additionalSettings.ActivityIndicatorColor = ParseColor( cpEditActivityIndicatorColor.Value );
-                additionalSettings.DownhillSettings.TextColor = ParseColor( cpTextColor.Value );
-                additionalSettings.DownhillSettings.HeadingColor = ParseColor( cpHeadingColor.Value );
-                additionalSettings.DownhillSettings.BackgroundColor = ParseColor( cpBackgroundColor.Value );
+                additionalSettings.BarBackgroundColor = cpEditBarBackgroundColor.Value;
+                additionalSettings.IOSEnableBarTransparency = cbNavbarTransclucent.Checked;
+                additionalSettings.IOSBarBlurStyle = ddlNavbarBlurStyle.SelectedValueAsEnumOrNull<IOSBlurStyle>() ?? IOSBlurStyle.None;
 
-                additionalSettings.DownhillSettings.ApplicationColors.Primary = ParseColor( cpPrimary.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Secondary = ParseColor( cpSecondary.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Success = ParseColor( cpSuccess.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Info = ParseColor( cpInfo.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Danger = ParseColor( cpDanger.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Warning = ParseColor( cpWarning.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Light = ParseColor( cpLight.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Dark = ParseColor( cpDark.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Brand = ParseColor( cpBrand.Value );
-                additionalSettings.DownhillSettings.ApplicationColors.Info = ParseColor( cpInfo.Value );
+                additionalSettings.MenuButtonColor = cpEditMenuButtonColor.Value;
+                additionalSettings.ActivityIndicatorColor = cpEditActivityIndicatorColor.Value;
+                additionalSettings.DownhillSettings.TextColor = cpTextColor.Value;
+                additionalSettings.DownhillSettings.HeadingColor = cpHeadingColor.Value;
+                additionalSettings.DownhillSettings.BackgroundColor = cpBackgroundColor.Value;
+
+                additionalSettings.DownhillSettings.ApplicationColors.Primary = cpPrimary.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Secondary = cpSecondary.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Success = cpSuccess.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Info = cpInfo.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Danger = cpDanger.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Warning = cpWarning.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Light = cpLight.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Dark = cpDark.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Brand = cpBrand.Value;
+                additionalSettings.DownhillSettings.ApplicationColors.Info = cpInfo.Value;
 
                 additionalSettings.DownhillSettings.RadiusBase = nbRadiusBase.Text.AsDecimal();
 
@@ -1167,121 +1175,12 @@ namespace RockWeb.Blocks.Mobile
         protected void lbDeploy_Click( object sender, EventArgs e )
         {
             var applicationId = PageParameter( "SiteId" ).AsInteger();
-            var deploymentDateTime = RockDateTime.Now;
-            var versionId = ( int ) ( deploymentDateTime.ToJavascriptMilliseconds() / 1000 );
-
-            //
-            // Generate the packages and then encode to JSON.
-            //
-            var phonePackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Phone, versionId );
-            var tabletPackage = MobileHelper.BuildMobilePackage( applicationId, DeviceType.Tablet, versionId );
-            var phoneJson = phonePackage.ToJson();
-            var tabletJson = tabletPackage.ToJson();
 
             using ( var rockContext = new RockContext() )
             {
-                var binaryFileService = new BinaryFileService( rockContext );
-                var site = new SiteService( rockContext ).Get( applicationId );
-                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.MOBILE_APP_BUNDLE.AsGuid() );
+                var siteService = new SiteService( rockContext );
 
-                // Enable this once the shell updates have been installed.
-                var enableCompression = false;
-                var mimeType = enableCompression ? "application/gzip" : "application/json";
-                var filenameExtension = enableCompression ? "json.gz" : "json";
-
-                //
-                // Prepare the phone configuration file.
-                //
-                Stream phoneJsonStream;
-                if ( enableCompression )
-                {
-                    phoneJsonStream = new MemoryStream();
-                    using ( var gzipStream = new GZipStream( phoneJsonStream, CompressionMode.Compress, true ) )
-                    {
-                        var bytes = Encoding.UTF8.GetBytes( phoneJson );
-                        gzipStream.Write( bytes, 0, bytes.Length );
-                    }
-                    phoneJsonStream.Position = 0;
-                }
-                else
-                {
-                    phoneJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) );
-                }
-
-                var phoneFile = new BinaryFile
-                {
-                    IsTemporary = false,
-                    BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = mimeType,
-                    FileSize = phoneJson.Length,
-                    FileName = "phone." + filenameExtension,
-                    ContentStream = phoneJsonStream
-                };
-                binaryFileService.Add( phoneFile );
-
-                //
-                // Prepare the tablet configuration file.
-                //
-                Stream tabletJsonStream;
-                if ( enableCompression )
-                {
-                    tabletJsonStream = new MemoryStream();
-                    using ( var gzipStream = new GZipStream( tabletJsonStream, CompressionMode.Compress, true ) )
-                    {
-                        var bytes = Encoding.UTF8.GetBytes( tabletJson );
-                        gzipStream.Write( bytes, 0, bytes.Length );
-                    }
-                    tabletJsonStream.Position = 0;
-                }
-                else
-                {
-                    tabletJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) );
-                }
-
-                var tabletFile = new BinaryFile
-                {
-                    IsTemporary = false,
-                    BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = mimeType,
-                    FileSize = tabletJson.Length,
-                    FileName = "tablet." + filenameExtension,
-                    ContentStream = tabletJsonStream
-                };
-                binaryFileService.Add( tabletFile );
-
-                rockContext.SaveChanges();
-
-                //
-                // Remove old configuration files.
-                //
-                if ( site.ConfigurationMobilePhoneBinaryFile != null )
-                {
-                    site.ConfigurationMobilePhoneBinaryFile.IsTemporary = true;
-                }
-
-                if ( site.ConfigurationMobileTabletBinaryFile != null )
-                {
-                    site.ConfigurationMobileTabletBinaryFile.IsTemporary = true;
-                }
-
-                //
-                // Set new configuration file references.
-                //
-                site.ConfigurationMobilePhoneBinaryFileId = phoneFile.Id;
-                site.ConfigurationMobileTabletBinaryFileId = tabletFile.Id;
-
-                //
-                // Update the last deployment date.
-                //
-                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
-                additionalSettings.LastDeploymentDate = deploymentDateTime;
-                additionalSettings.LastDeploymentVersionId = versionId;
-                additionalSettings.PhoneUpdatePackageUrl = GetFilePath( phoneFile );
-                additionalSettings.TabletUpdatePackageUrl = GetFilePath( tabletFile );
-                site.AdditionalSettings = additionalSettings.ToJson();
-                site.LatestVersionDateTime = RockDateTime.Now;
-
-                rockContext.SaveChanges();
+                siteService.BuildMobileApplication( applicationId );
 
                 ShowDetail( applicationId );
             }

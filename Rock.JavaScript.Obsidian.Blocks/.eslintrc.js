@@ -1,6 +1,6 @@
 module.exports = {
     root: true,
-    parser: "@typescript-eslint/parser",
+    parser: "vue-eslint-parser",
     plugins: [
         "@typescript-eslint",
     ],
@@ -13,6 +13,7 @@ module.exports = {
         amd: true
     },
     parserOptions: {
+        parser: "@typescript-eslint/parser",
         ecmaVersion: 6,
         sourceType: "module"
     },
@@ -103,5 +104,14 @@ module.exports = {
 
         // Make unwanted white-space inside parenthesis an error.
         "space-in-parens": ["error", "never"]
-    }
+    },
+    overrides: [
+        {
+            "files": ["src/**/*.ts", "src/**/*.vue", "src/**/*.obs"],
+            "rules": {
+                // Disable undefined use warnings, TypeScript will tell us.
+                "no-undef": 0
+            }
+        }
+    ]
 };

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -166,6 +166,7 @@ namespace RockWeb.Blocks.Security
                     if ( user.EntityType != null )
                     {
                         var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+
                         if ( component != null && !component.RequiresRemoteAuthentication )
                         {
                             if ( component.SupportsChangePassword )
@@ -173,8 +174,18 @@ namespace RockWeb.Blocks.Security
                                 supportsChangePassword.Add( user.UserName );
                             }
 
-                            users.Add( user );
-                            hasAccountWithPasswordResetAbility = true;
+                            if ( component.TypeGuid == Rock.SystemGuid.EntityType.AUTHENTICATION_PASSWORDLESS.AsGuid() )
+                            {
+                                // Clone the user so we can safely override the passwordless username without risk of DB changes.
+                                var clone = user.Clone( true );
+                                clone.UserName = "(email or mobile number)";
+                                users.Add( clone );
+                            }
+                            else
+                            {
+                                users.Add( user );
+                                hasAccountWithPasswordResetAbility = true;
+                            }
                         }
 
                         accountTypes.Add( user.EntityType.FriendlyName );

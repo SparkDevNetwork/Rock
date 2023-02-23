@@ -16,6 +16,8 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Text;
 using System.Web.UI;
 
 using Rock;
@@ -61,6 +63,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private static class PageParameterKey
         {
             public const string PersonId = "PersonId";
+        }
+
+        private static class SharedItemKey
+        {
+            public const string GroupType = "GroupType";
+            public const string ShowOnlyPrimaryGroupMembers = "ShowOnlyPrimaryGroupMembers";
         }
 
         #endregion Attribute Keys
@@ -167,7 +175,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string acctProtectionLevel = $@"
                     <div class=""protection-profile"">
                         <span class=""profile-label"">Protection Profile: {Person.AccountProtectionProfile.ConvertToString( true )}</span>
-                        <i class=""fa fa-lock""></i>
+                        <i class=""fa fa-fw fa-lock"" onmouseover=""$(this).parent().addClass('is-hovered')"" onmouseout=""$(this).parent().removeClass('is-hovered')""></i>
                     </div>";
 
                 litAccountProtectionLevel.Text = acctProtectionLevel;
@@ -179,7 +187,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-profile"">";
         }
 
-        private void ShowPersonName()
+        private string GetPersonName()
         {
             // Check if this record represents a Business.
             bool isBusiness = false;
@@ -192,8 +200,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( isBusiness )
             {
-                lName.Text = $@"<h1 class=""person-name is-business"">{Person.LastName}</h1>";
-                return;
+                return $@"<h1 class=""person-name is-business"">{Person.LastName}</h1>";
             }
 
             // Prefix with Title if they have a Title with IsFormal=True
@@ -209,7 +216,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             string nameText =  $"{titleText}{Person.NickName} {Person.LastName}";
 
-            lName.Text = $@"<h1 class=""person-name"">{nameText}</h1>";
+            return $@"<h1 class=""person-name"">{nameText}</h1>";
         }
 
         private void ShowBadgeList()
@@ -229,6 +236,79 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                     }
                 }
+            }
+        }
+
+        private void ShowPersonName()
+        {
+            var groupTypeId = GroupTypeCache.GetId( RockPage.GetSharedItem( SharedItemKey.GroupType )?.ToString()?.AsGuid() ?? Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var showOnlyPrimaryGroupMembers = RockPage.GetSharedItem( SharedItemKey.ShowOnlyPrimaryGroupMembers )?.ToString()?.AsBoolean() ?? false;
+
+            var groupMemberService = new GroupMemberService( new RockContext() );
+            var orderedGroupMemberList = groupMemberService.GetSortedGroupMemberListForPerson( this.Person.Id, groupTypeId.Value, showOnlyPrimaryGroupMembers ).ToList();
+
+            var personNameHtml = GetPersonName();
+            if ( !orderedGroupMemberList.Any() )
+            {
+                lName.Text = personNameHtml;
+                return;
+            }
+
+            var sb = new StringBuilder(
+                $@"<div class=""dropdown dropdown-family"">
+<a href=""#"" class=""profile-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""true"">
+{personNameHtml}
+<i class=""fa fa-chevron-down ml-2""></i>
+</a>
+<ul class=""dropdown-menu"">" );
+
+            foreach ( var groupMember in orderedGroupMemberList )
+            {
+                sb.Append( CreateGroupMemberListItem( groupMember ) );
+            }
+
+            sb.AppendLine( "</ul>" );
+            sb.AppendLine( "</div>" );
+
+            lName.Text = sb.ToString();
+        }
+
+        private string CreateGroupMemberListItem( GroupMember groupMember )
+        {
+            var personLink = FormatPersonLink( groupMember.Person.Id.ToString() );
+            var groupMemberListItem = $@"
+                <li>
+                    <a href=""{personLink}"">
+                        <img src=""{Person.GetPersonPhotoUrl( groupMember.PersonId )}"" alt="""" class=""avatar"">
+                        <span class=""name"">
+                            {groupMember.Person.FullName}
+                        </span>
+                    </a>
+                </li>";
+
+            return groupMemberListItem;
+        }
+
+        protected string FormatPersonLink( string personId )
+        {
+            var currentPersonId = Person.Id.ToString();
+
+            if ( PageCache.PageContexts.ContainsKey( Person.TypeName ) )
+            {
+                currentPersonId = PageParameter( PageCache.PageContexts[Person.TypeName] );
+            }
+
+            // Look for a subpage route (anything after the "/Person/{id}" part of the URL)
+            var subpageRoute = Request.UrlProxySafe().AbsolutePath.ReplaceCaseInsensitive( ResolveRockUrl( $"~/Person/{currentPersonId}" ), "" );
+
+            // If the path is different, then append it onto the link
+            if ( subpageRoute != Request.UrlProxySafe().AbsolutePath )
+            {
+                return ResolveRockUrl( string.Format( "~/Person/{0}{1}", personId, subpageRoute ) );
+            }
+            else
+            {
+                return ResolveRockUrl( string.Format( "~/Person/{0}", personId ) );
             }
         }
 

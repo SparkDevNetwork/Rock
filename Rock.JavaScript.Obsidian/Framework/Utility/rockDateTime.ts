@@ -1,18 +1,11 @@
 import { DateTime, FixedOffsetZone, Zone } from "luxon";
 import { formatAspDate } from "./aspDateFormat";
+import { DayOfWeek } from "@Obsidian/Enums/Controls/dayOfWeek";
 
 /**
  * The days of the week that are used by RockDateTime.
  */
-export const enum DayOfWeek {
-    Sunday = 0,
-    Monday = 1,
-    Tuesday = 2,
-    Wednesday = 3,
-    Thursday = 4,
-    Friday = 5,
-    Saturday = 6
-}
+export { DayOfWeek } from "@Obsidian/Enums/Controls/dayOfWeek";
 
 /**
  * The various date and time formats supported by the formatting methods.
@@ -112,7 +105,7 @@ export class RockDateTime {
 
     /**
      * Creates a new instance of RockDateTime.
-     * 
+     *
      * @param dateTime The Luxon DateTime object that is used to track the internal state.
      */
     private constructor(dateTime: DateTime) {
@@ -121,7 +114,7 @@ export class RockDateTime {
 
     /**
      * Creates a new instance of RockDateTime from the given date and time parts.
-     * 
+     *
      * @param year The year of the new date.
      * @param month The month of the new date (1-12).
      * @param day The day of month of the new date.
@@ -168,7 +161,7 @@ export class RockDateTime {
      * Creates a new instance of RockDateTime that represents the time specified
      * as the Javascript milliseconds value. The time zone is set to the browser
      * time zone.
-     * 
+     *
      * @param milliseconds The time in milliseconds since the epoch.
      *
      * @returns A new RockDateTime instance or null if the specified date was not valid.
@@ -185,7 +178,7 @@ export class RockDateTime {
 
     /**
      * Construct a new RockDateTime instance from a Javascript Date object.
-     * 
+     *
      * @param date The Javascript date object that contains the date information.
      *
      * @returns A RockDateTime instance or null if the date was not valid.
@@ -203,7 +196,7 @@ export class RockDateTime {
     /**
      * Constructs a new RockDateTime instance by parsing the given string from
      * ISO 8601 format.
-     * 
+     *
      * @param dateString The string that contains the ISO 8601 formatted text.
      *
      * @returns A new RockDateTime instance or null if the date was not valid.
@@ -221,7 +214,7 @@ export class RockDateTime {
     /**
      * Constructs a new RockDateTime instance by parsing the given string from
      * RFC 1123 format. This is common in HTTP headers.
-     * 
+     *
      * @param dateString The string that contains the RFC 1123 formatted text.
      *
      * @returns A new RockDateTime instance or null if the date was not valid.
@@ -533,7 +526,7 @@ export class RockDateTime {
     /**
      * Creates a new instance of RockDateTime that represents the same point
      * in time as represented by the specified time zone offset.
-     * 
+     *
      * @param zone The time zone offset as a number or string such as "UTC+4".
      *
      * @returns A new RockDateTime instance that represents the specified time zone.
@@ -557,7 +550,7 @@ export class RockDateTime {
 
     /**
      * Formats this instance according to C# formatting rules.
-     * 
+     *
      * @param format The string that specifies the format to use.
      *
      * @returns A string representing this instance in the given format.
@@ -578,7 +571,7 @@ export class RockDateTime {
     /**
      * Formats this instance using standard locale formatting rules to display
      * a date and time in the browsers specified locale.
-     * 
+     *
      * @param format The format to use when generating the string.
      *
      * @returns A string that represents the date and time in then specified format.
@@ -668,13 +661,35 @@ export class RockDateTime {
      * will return true if the two instances represent the same point in time,
      * even if they have been associated with different time zones. In other
      * words "2021-09-08 12:00:00 Z" == "2021-09-08 14:00:00 UTC+2".
-     * 
+     *
      * @param otherDateTime The other RockDateTime to be compared against.
      *
      * @returns True if the two instances represent the same point in time.
      */
     public isEqualTo(otherDateTime: RockDateTime): boolean {
         return this.dateTime.toMillis() === otherDateTime.dateTime.toMillis();
+    }
+
+    /**
+     * Checks if this instance is later than another RockDateTime instance.
+     *
+     * @param otherDateTime The other RockDateTime to be compared against.
+     *
+     * @returns True if this instance represents a point in time that occurred after another point in time, regardless of time zone.
+     */
+    public isLaterThan(otherDateTime: RockDateTime): boolean {
+        return this.dateTime.toMillis() > otherDateTime.dateTime.toMillis();
+    }
+
+    /**
+     * Checks if this instance is earlier than another RockDateTime instance.
+     *
+     * @param otherDateTime The other RockDateTime to be compared against.
+     *
+     * @returns True if this instance represents a point in time that occurred before another point in time, regardless of time zone.
+     */
+    public isEarlierThan(otherDateTime: RockDateTime): boolean {
+        return this.dateTime.toMillis() < otherDateTime.dateTime.toMillis();
     }
 
     // #endregion

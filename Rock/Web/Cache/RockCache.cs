@@ -72,12 +72,15 @@ namespace Rock.Web.Cache
                 return;
             }
 
+            IRockCacheManager[] cacheManagerArray;
             lock ( Obj )
             {
-                foreach ( var cacheManager in _allManagers.ToArray() )
-                {
-                    cacheManager?.Clear();
-                }
+                cacheManagerArray = _allManagers.ToArray();
+            }
+
+            foreach ( var cacheManager in cacheManagerArray )
+            {
+                cacheManager?.Clear();
             }
 
             // Clear object cache keys
@@ -522,7 +525,7 @@ namespace Rock.Web.Cache
 
             if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return ClearCachedItemsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
+                return ClearCachedItemsForType( Type.GetType( cacheTypeName ) );
             }
 
             return ClearCachedItemsForSystemType( cacheTypeName );
@@ -625,7 +628,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatisticsForType( Type cacheType )
         {
-            var cacheStats = new CacheItemStatistics( string.Empty );
+            var cacheStats = new CacheItemStatistics( string.Empty, string.Empty );
             if ( _allManagers == null )
             {
                 return cacheStats;
@@ -652,7 +655,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatForSystemType( string cacheTypeName )
         {
-            var cacheStats = new CacheItemStatistics( string.Empty );
+            var cacheStats = new CacheItemStatistics( string.Empty, string.Empty );
             if ( _allManagers == null )
             {
                 return cacheStats;
@@ -683,7 +686,7 @@ namespace Rock.Web.Cache
         {
             if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return GetStatisticsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
+                return GetStatisticsForType( Type.GetType( cacheTypeName ) );
             }
 
             return GetStatForSystemType( cacheTypeName );

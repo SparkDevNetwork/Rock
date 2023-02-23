@@ -196,6 +196,9 @@ namespace Rock.Web.Cache
         /// <returns><c>true</c> if change notification is supported; otherwise, <c>false</c>.</returns>
         internal bool IsWebFormChangeNotificationSupported( Dictionary<string, string> privateConfigurationValues )
         {
+#if REVIEW_NET5_0_OR_GREATER
+            return false;
+#else
             if ( Field == null )
             {
                 return false;
@@ -212,6 +215,7 @@ namespace Rock.Web.Cache
             {
                 return false;
             }
+#endif
         }
 
         /// <summary>

@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// Stored as Attendance.Guid
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "45F2BE0A-43C2-40D6-9888-68A2E72ACD06")]
+    [Rock.SystemGuid.FieldTypeGuid( "45F2BE0A-43C2-40D6-9888-68A2E72ACD06" )]
     public class AttendanceFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
@@ -56,117 +57,13 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion
 
         #region Edit Control
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            RockTextBox tbAttendanceGuid = new RockTextBox { ID = id };
-            return tbAttendanceGuid;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field (as guid)
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            RockTextBox tbAttendanceGuidOrId = control as RockTextBox;
-            if ( tbAttendanceGuidOrId != null )
-            {
-                var attendanceGuid = tbAttendanceGuidOrId.Text.AsGuidOrNull();
-                if ( attendanceGuid.HasValue )
-                {
-                    return attendanceGuid.ToString();
-                }
-
-                var attendanceId = tbAttendanceGuidOrId.Text.AsIntegerOrNull();
-                if ( attendanceId.HasValue )
-                {
-                    // if an Id was specified instead of a Guid, get the Guid instead
-                    using ( var rockContext = new RockContext() )
-                    {
-                        attendanceGuid = new AttendanceService( rockContext ).GetGuid( attendanceId.Value );
-                    }
-
-                    return attendanceGuid.ToString();
-                }
-
-                return tbAttendanceGuidOrId.Text ?? string.Empty;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value (as guid)
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var tbAttendanceGuid = control as RockTextBox;
-
-            if ( tbAttendanceGuid != null )
-            {
-                tbAttendanceGuid.Text = value;
-            }
-        }
-
         #endregion
 
         #region Entity Methods
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            return new AttendanceService( new RockContext() ).GetId( guid );
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
-        {
-            var itemGuid = new AttendanceService( new RockContext() ).GetGuid( id ?? 0 );
-            SetEditValue( control, configurationValues, itemGuid.ToString() );
-        }
 
         /// <summary>
         /// Gets the entity.
@@ -252,7 +149,7 @@ namespace Rock.Field.Types
         #region Persistence
 
         /// <inheritdoc/>
-        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
             var guid = GetAttendanceGuid( privateValue );
 
@@ -375,6 +272,116 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            RockTextBox tbAttendanceGuid = new RockTextBox { ID = id };
+            return tbAttendanceGuid;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field (as guid)
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            RockTextBox tbAttendanceGuidOrId = control as RockTextBox;
+            if ( tbAttendanceGuidOrId != null )
+            {
+                var attendanceGuid = tbAttendanceGuidOrId.Text.AsGuidOrNull();
+                if ( attendanceGuid.HasValue )
+                {
+                    return attendanceGuid.ToString();
+                }
+
+                var attendanceId = tbAttendanceGuidOrId.Text.AsIntegerOrNull();
+                if ( attendanceId.HasValue )
+                {
+                    // if an Id was specified instead of a Guid, get the Guid instead
+                    using ( var rockContext = new RockContext() )
+                    {
+                        attendanceGuid = new AttendanceService( rockContext ).GetGuid( attendanceId.Value );
+                    }
+
+                    return attendanceGuid.ToString();
+                }
+
+                return tbAttendanceGuidOrId.Text ?? string.Empty;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value (as guid)
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var tbAttendanceGuid = control as RockTextBox;
+
+            if ( tbAttendanceGuid != null )
+            {
+                tbAttendanceGuid.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            return new AttendanceService( new RockContext() ).GetId( guid );
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var itemGuid = new AttendanceService( new RockContext() ).GetGuid( id ?? 0 );
+            SetEditValue( control, configurationValues, itemGuid.ToString() );
+        }
+
+#endif
         #endregion
     }
 }

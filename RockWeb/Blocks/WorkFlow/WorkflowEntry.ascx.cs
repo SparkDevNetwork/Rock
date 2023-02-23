@@ -106,6 +106,13 @@ namespace RockWeb.Blocks.WorkFlow
         DefaultBooleanValue = true,
         Order = 7 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Description = "If enabled, prevents the use of captcha verification on the form.",
+        Key = AttributeKey.DisableCaptchaSupport,
+        DefaultBooleanValue = false,
+        Order = 8
+        )]
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.WORKFLOW_ENTRY )]
@@ -126,6 +133,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string DisablePassingWorkflowTypeId = "DisablePassingWorkflowTypeId";
             public const string LogInteractionOnView = "LogInteractionOnView";
             public const string LogInteractionOnCompletion = "LogInteractionOnCompletion";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         #endregion Attribute Keys
@@ -363,8 +371,21 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
+            {
+                ShowMessage( NotificationBoxType.Validation, string.Empty, "There was an issue processing your request. Please try again. If the issue persists please contact us." );
+                return;
+            }
+
             /* 
-                05/18/2022 MDP
+                01/20/2023 ETD
+                Update to Mike's comment on 5/18/2022
+                The cancel button is being used as a psuedo "save form" button that multiple churches are depending on.
+                This functionality needs to remain until a new button is created to perform a "Save Form" function. With this in mind the changes
+                in commit 70a484a9 have been undone.
+
+                05/18/2022 MDP (this comment is no longer valid as of 01/20/2023)
 
                 Update on the 04/27/2022 note. After discussing with Product team,
                 the intended behavior is that *none* of the form values should save
@@ -380,19 +401,23 @@ namespace RockWeb.Blocks.WorkFlow
             */
             var formUserActions = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
             var formUserAction = formUserActions.FirstOrDefault( x => x.ActionName == eventArgument );
+            var hasActivateActivity = formUserAction != null && formUserAction.ActivateActivityTypeGuid != string.Empty;
+
+            if ( formUserAction != null && !formUserAction.CausesValidation && !hasActivateActivity )
+            {
+                // Out if the action does not cause validation and does not have an Activate Activity.
+                return;
+            }
 
             if ( formUserAction != null && formUserAction.CausesValidation )
             {
-                // Only save the User Form values to the database if the form is getting validated. In other words,
-                // if the intent is to cancel, don't keep any of the form person values or any other form values.
                 using ( var personEntryRockContext = new RockContext() )
                 {
                     GetWorkflowFormPersonEntryValues( personEntryRockContext );
                 }
-
-                SetWorkflowFormAttributeValues();
             }
 
+            SetWorkflowFormAttributeValues();
             CompleteFormAction( eventArgument );
         }
 
@@ -418,6 +443,9 @@ namespace RockWeb.Blocks.WorkFlow
 
             // Get the block setting to disable passing WorkflowTypeID set.
             bool allowPassingWorkflowTypeId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
+
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            cpCaptcha.Visible = !disableCaptchaSupport;
 
             if ( workflowType == null )
             {
@@ -686,7 +714,10 @@ namespace RockWeb.Blocks.WorkFlow
                             if ( action.ActionTypeCache.WorkflowForm != null && action.IsCriteriaValid )
                             {
                                 _activity = activity;
-                                _activity.LoadAttributes();
+                                if ( _activity.Id != 0 || _activity.AttributeValues == null )
+                                {
+                                    _activity.LoadAttributes();
+                                }
 
                                 _action = action;
                                 _actionType = _action.ActionTypeCache;
@@ -697,7 +728,10 @@ namespace RockWeb.Blocks.WorkFlow
                             if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.ElectronicSignature && action.IsCriteriaValid )
                             {
                                 _activity = activity;
-                                _activity.LoadAttributes();
+                                if ( _activity.Id != 0 || _activity.AttributeValues == null )
+                                {
+                                    _activity.LoadAttributes();
+                                }
 
                                 _action = action;
                                 _actionType = _action.ActionTypeCache;
@@ -1009,6 +1043,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + formAttribute.Id.ToString(),
                     FormFieldId = formAttribute.AttributeId,
+                    FormType = FieldVisibilityWrapper.FormTypes.Workflow,
                     FieldVisibilityRules = formAttribute.FieldVisibilityRules
                 };
 
@@ -1444,6 +1479,12 @@ namespace RockWeb.Blocks.WorkFlow
 
             // we have a another MaritalStatus picker that will apply to both Person and Person's Spouse
             personBasicEditor.ShowMaritalStatus = false;
+
+            personBasicEditor.ShowRace = formPersonEntrySettings.RaceEntry != WorkflowActionFormPersonEntryOption.Hidden;
+            personBasicEditor.RequireRace = formPersonEntrySettings.RaceEntry == WorkflowActionFormPersonEntryOption.Required;
+
+            personBasicEditor.ShowEthnicity = formPersonEntrySettings.EthnicityEntry != WorkflowActionFormPersonEntryOption.Hidden;
+            personBasicEditor.RequireEthnicity = formPersonEntrySettings.EthnicityEntry == WorkflowActionFormPersonEntryOption.Required;
         }
 
         /// <summary>
@@ -1532,6 +1573,8 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 personEntryPerson.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
                 personEntryPerson.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
+                personEntryPerson.RaceValueId = formPersonEntrySettings.RaceValueId;
+                personEntryPerson.EthnicityValueId = formPersonEntrySettings.EthnicityValueId;
                 PersonService.SaveNewPerson( personEntryPerson, personEntryRockContext, cpPersonEntryCampus.SelectedCampusId );
             }
 
@@ -1566,6 +1609,8 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     personEntryPersonSpouse.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
                     personEntryPersonSpouse.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
+                    personEntryPersonSpouse.RaceValueId = formPersonEntrySettings.RaceValueId;
+                    personEntryPersonSpouse.EthnicityValueId = formPersonEntrySettings.EthnicityValueId;
 
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 
@@ -2036,11 +2081,6 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             var responseText = responseTextTemplate.ResolveMergeFields( mergeFields );
-
-            /* 05/18/2022
-             * As of Version 14.0, Form Builder doesn't have a Cancel button. But if it does eventually
-             * get one, we'll need to review this logic to make sure it doesn't the right thing
-            */
             var workflowCampusSetFrom = workflowType?.FormBuilderSettings?.CampusSetFrom;
             switch ( workflowCampusSetFrom )
             {
@@ -2245,10 +2285,6 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( notificationEmailSettings != null )
                 {
-                    /* 05/18/2022
-                    * As of Version 14.0, Form Builder doesn't have a Cancel button. But if it does eventually
-                    * get one, we'll need to review this logic to make sure it doesn't the right thing
-                    */
                     SendFormBuilderNotificationEmail( notificationEmailSettings );
                 }
 

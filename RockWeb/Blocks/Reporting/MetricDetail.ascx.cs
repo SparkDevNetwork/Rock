@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -382,15 +380,6 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.IsCumulative = cbIsCumulative.Checked;
             metric.EnableAnalytics = cbEnableAnalytics.Checked;
 
-            avcEditAttributeValues.GetEditValues( metric );
-
-            // only save if everything saves:
-            rockContext.WrapTransaction( () =>
-            {
-                rockContext.SaveChanges();
-                metric.SaveAttributeValues();
-            } );
-
             int sourceTypeDataView = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid() ).Id;
             int sourceTypeSQL = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
             int sourceTypeLava = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid() ).Id;
@@ -511,6 +500,16 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     // save to make sure we have a metricId
                     rockContext.SaveChanges();
                 }
+
+                // safely, add the attribute values.
+                avcEditAttributeValues.GetEditValues( metric );
+
+                // only save if everything saves:
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    metric.SaveAttributeValues();
+                } );
 
                 // update MetricCategories for Metric
                 metric.MetricCategories = metric.MetricCategories ?? new List<MetricCategory>();
@@ -1265,8 +1264,8 @@ The Lava can include Lava merge fields:";
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "DataViewId", metric.DataViewId.ToString() );
-                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {metric.DataView.Name.Truncate(30, true)}</a>";
-                hlDataView.ToolTip = (metric.DataView.Name.Length > 30) ? metric.DataView.Name : null;
+                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {metric.DataView.Name.Truncate( 30, true )}</a>";
+                hlDataView.ToolTip = ( metric.DataView.Name.Length > 30 ) ? metric.DataView.Name : null;
             }
             else
             {
@@ -1291,7 +1290,7 @@ The Lava can include Lava merge fields:";
             {
                 formatString = "currency";
             }
-            else if( metric.UnitType == Rock.Model.UnitType.Percentage )
+            else if ( metric.UnitType == Rock.Model.UnitType.Percentage )
             {
                 formatString = "percentage";
             }
@@ -1317,6 +1316,18 @@ The Lava can include Lava merge fields:";
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepProgramActivityChartScript", script, true );
         }
 
+        private ChartStyle getChartStyle()
+        {
+            var chartStyleDefinedValueGuid = this.GetAttributeValue( AttributeKey.ChartStyle ).AsGuidOrNull();
+            var definedValue = DefinedValueCache.Get( chartStyleDefinedValueGuid.Value );
+            if ( definedValue == null )
+            {
+                return new ChartStyle();
+            }
+            var chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
+            return chartStyle;
+        }
+
         /// <summary>
         /// Gets a configured factory that creates the data required for the chart.
         /// </summary>
@@ -1337,49 +1348,70 @@ The Lava can include Lava merge fields:";
             List<MetricValue> metricValues = GetMetricValues( metric, startDate, endDate );
 
             // Initialize a new Chart Factory.
-            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
-
-            factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Auto;
+            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>
+            {
+                TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Auto
+            };
             var dataPoints = metricValues
-               .Where( a => a.YValue.HasValue )
-               .GroupBy( x => new
-               {
-                   DateKey = x.MetricValueDateKey.Value,
-                   MetricValuePartitionEntityIds = x.MetricValuePartitionEntityIds
-               } )
-               .Select( x => new
-               {
-                   x.Key,
-                   Value = x.Select( a => a.YValue.Value )
-               } )
-               .ToList()
+                .Where( a => a.YValue.HasValue )
+                .GroupBy( x => new
+                {
+                    DateKey = x.MetricValueDateKey.Value,
+                    x.MetricValueType,
+                    x.MetricValuePartitionEntityIds
+                } )
+                .Select( x => new
+                {
+                    x.Key,
+                    Value = x.Select( a => a.YValue.Value )
+                } )
                .Select( x => new ChartDatasetInfo
                {
                    MetricValuePartitionEntityIds = x.Key.MetricValuePartitionEntityIds,
+                   MetricValueType = x.Key.MetricValueType,
                    DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
                    Value = x.Value.Sum()
-               } );
+               } )
+               .ToList();
 
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
+
+            var chartStyle = getChartStyle();
 
             var dataSeriesDatasets = dataPoints
                 .Select( x => x.MetricValuePartitionEntityIds )
                 .Distinct();
 
             var combineValues = GetAttributeValue( AttributeKey.CombineChartSeries ).AsBooleanOrNull() ?? false;
+            var datapointsByMetricTypeValue = dataPoints
+                                .GroupBy( d => d.MetricValueType );
+
             if ( combineValues )
             {
-                var dataset = new ChartJsTimeSeriesDataset();
+                foreach ( var datapoint in datapointsByMetricTypeValue )
+                {
+                    var name = $"{metric.YAxisLabel ?? "value"}";
+                    var borderColor = chartStyle.SeriesColors[0];
 
-                dataset.Name = metric.YAxisLabel ?? "value";
+                    if ( datapoint.Key == MetricValueType.Goal )
+                    {
+                        name += $" {datapoint.Key}";
+                        borderColor = chartStyle.GoalSeriesColor;
+                    }
 
-                dataset.DataPoints = dataPoints
-                    .GroupBy( a => a.DateTime )
-                    .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.Key, Value = x.Select( a => a.Value ).Sum() } )
-                    .Cast<IChartJsTimeSeriesDataPoint>()
-                    .ToList();
+                    var dataset = new ChartJsTimeSeriesDataset
+                    {
+                        Name = name,
+                        BorderColor = borderColor,
+                        DataPoints = datapoint
+                            .GroupBy( a => a.DateTime )
+                            .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.Key, Value = x.Select( a => a.Value ).Sum() } )
+                            .Cast<IChartJsTimeSeriesDataPoint>()
+                            .ToList()
+                    };
+                    factory.Datasets.Add( dataset );
+                }
 
-                factory.Datasets.Add( dataset );
             }
             else
             {
@@ -1392,16 +1424,29 @@ The Lava can include Lava merge fields:";
 
                 foreach ( var dataseriesName in seriesNameKeyValue.Keys )
                 {
-                    var dataset = new ChartJsTimeSeriesDataset();
-                    var datasetName = seriesNameKeyValue[dataseriesName] ?? metric.YAxisLabel ?? "value";
-                    dataset.Name = datasetName;
-                    dataset.DataPoints = dataPoints
-                                            .Where( x => x.MetricValuePartitionEntityIds == dataseriesName )
-                                            .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
-                                            .Cast<IChartJsTimeSeriesDataPoint>()
-                                            .ToList();
+                    foreach ( var datapoint in datapointsByMetricTypeValue )
+                    {
+                        var name = $"{metric.YAxisLabel ?? "value"}";
+                        var fillColor = chartStyle.SeriesColors[0];
 
-                    factory.Datasets.Add( dataset );
+                        if ( datapoint.Key == MetricValueType.Goal )
+                        {
+                            name += $"{datapoint.Key}";
+                            fillColor = chartStyle.GoalSeriesColor;
+                        }
+
+                        var dataset = new ChartJsTimeSeriesDataset
+                        {
+                            Name = name,
+                            BorderColor = fillColor,
+                            DataPoints = datapoint
+                                .Where( x => x.MetricValuePartitionEntityIds == dataseriesName )
+                                .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
+                                .Cast<IChartJsTimeSeriesDataPoint>()
+                                .ToList()
+                        };
+                        factory.Datasets.Add( dataset );
+                    }
                 }
             }
 
@@ -1894,6 +1939,8 @@ The Lava can include Lava merge fields:";
             public DateTime DateTime { get; set; }
 
             public decimal Value { get; set; }
+
+            public MetricValueType MetricValueType { get; internal set; }
         }
 
         /// <summary>

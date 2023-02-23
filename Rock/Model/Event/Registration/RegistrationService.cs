@@ -59,13 +59,27 @@ namespace Rock.Model
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <param name="errorMessage">The error result.</param>
         /// <returns></returns>
+        [RockObsolete("1.14.1")]
+        [Obsolete( "Use GetRegistrationContext( int registrationInstanceId, int? registrationId, out string errorMessage )" )]
         public RegistrationContext GetRegistrationContext( int registrationInstanceId, out string errorMessage )
+        {
+            return GetRegistrationContext( registrationInstanceId, null, out errorMessage );
+        }
+
+        /// <summary>
+        /// Gets the generic context about the registration.
+        /// </summary>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="registrationId">The registration identifier.</param>
+        /// <param name="errorMessage">The error result.</param>
+        /// <returns></returns>
+        public RegistrationContext GetRegistrationContext( int registrationInstanceId, int? registrationId, out string errorMessage )
         {
             var rockContext = Context as RockContext;
             errorMessage = string.Empty;
 
             // Load the instance and template
-            var registrationInstance = GetActiveRegistrationInstance( registrationInstanceId, out errorMessage );
+            var registrationInstance = GetActiveRegistrationInstance( registrationInstanceId, registrationId, out errorMessage );
             var registrationTemplate = registrationInstance?.RegistrationTemplate;
 
             if ( registrationInstance == null || registrationTemplate == null )
@@ -106,7 +120,14 @@ namespace Rock.Model
         public RegistrationContext GetRegistrationContext( int registrationInstanceId, Guid? registrationGuid, Person currentPerson, string discountCode, out string errorMessage )
         {
             var rockContext = Context as RockContext;
-            var context = GetRegistrationContext( registrationInstanceId, out errorMessage );
+            Registration registration = null;
+            if ( registrationGuid.HasValue )
+            {
+                var registrationService = new RegistrationService( rockContext );
+                registration = registrationService.Get( registrationGuid.Value );
+            }
+
+            var context = GetRegistrationContext( registrationInstanceId, registration?.Id, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -128,7 +149,7 @@ namespace Rock.Model
             }
 
             // Validate the registration
-            if ( registrationGuid.HasValue )
+            if ( registration != null )
             {
                 var registrationService = new RegistrationService( rockContext );
 
@@ -165,9 +186,10 @@ namespace Rock.Model
         /// Gets the active registration instance.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="registrationId">The registration identifier.</param>
         /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        private RegistrationInstance GetActiveRegistrationInstance( int registrationInstanceId, out string errorMessage )
+        /// <returns>RegistrationInstance.</returns>
+        private RegistrationInstance GetActiveRegistrationInstance( int registrationInstanceId, int? registrationId, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -191,16 +213,24 @@ namespace Rock.Model
             // Make sure the registration is open
             var isBeforeRegistrationOpens = registrationInstance.StartDateTime.HasValue && registrationInstance.StartDateTime > now;
             var isAfterRegistrationCloses = registrationInstance.EndDateTime.HasValue && registrationInstance.EndDateTime < now;
-
-            if ( isAfterRegistrationCloses )
+            bool isExistingRegistration = false;
+            if ( registrationId.HasValue )
             {
-                errorMessage = $"{registrationInstance.Name} closed on {registrationInstance.EndDateTime.ToShortDateString()}.";
-                return null;
+                isExistingRegistration = new RegistrationService( Context as RockContext ).Get( registrationId.Value ) != null;
             }
-            else if ( isBeforeRegistrationOpens )
+
+            if ( !isExistingRegistration )
             {
-                errorMessage = $"{registrationTemplate.RegistrationTerm} for {registrationInstance.Name} does not open until {registrationInstance.StartDateTime.ToShortDateString()}.";
-                return null;
+                if ( isAfterRegistrationCloses )
+                {
+                    errorMessage = $"{registrationInstance.Name} closed on {registrationInstance.EndDateTime.ToShortDateString()}.";
+                    return null;
+                }
+                else if ( isBeforeRegistrationOpens )
+                {
+                    errorMessage = $"{registrationTemplate.RegistrationTerm} for {registrationInstance.Name} does not open until {registrationInstance.StartDateTime.ToShortDateString()}.";
+                    return null;
+                }
             }
 
             return registrationInstance;

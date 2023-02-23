@@ -16,12 +16,12 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { GatewayControlModel } from "@Obsidian/Controls/gatewayControl";
+import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 
 export const enum RegistrationPersonFieldType {
     FirstName = 0,
@@ -38,7 +38,9 @@ export const enum RegistrationPersonFieldType {
     Grade = 11,
     ConnectionStatus = 12,
     MiddleName = 13,
-    AnniversaryDate = 14
+    AnniversaryDate = 14,
+    Race = 15,
+    Ethnicity = 16
 }
 
 export const enum RegistrationFieldSource {
@@ -86,7 +88,7 @@ export type RegistrationEntryBlockViewModel = {
     forceEmailUpdate: boolean;
     registrarOption: RegistrarOption;
     cost: number;
-    gatewayControl: GatewayControlModel;
+    gatewayControl: GatewayControlBag;
     isRedirectGateway: boolean;
     spotsRemaining: number | null;
     waitListEnabled: boolean;
@@ -100,6 +102,7 @@ export type RegistrationEntryBlockViewModel = {
     loginRequiredToRegister: boolean;
     successViewModel: RegistrationEntryBlockSuccessViewModel | null;
     allowRegistrationUpdates: boolean;
+    isExistingRegistration: boolean;
     startAtBeginning: boolean;
     gatewayGuid: Guid | null;
     campuses: ListItemBag[];
@@ -109,6 +112,8 @@ export type RegistrationEntryBlockViewModel = {
     enableSaveAccount: boolean;
     savedAccounts: SavedFinancialAccountListItemBag[] | null;
     registrationInstanceNotFoundMessage: string | null;
+    races: ListItemBag[];
+    ethnicities: ListItemBag[];
 
     isInlineSignatureRequired: boolean;
     isSignatureDrawn: boolean;
@@ -159,8 +164,7 @@ export type RegistrationEntryBlockFormFieldViewModel = {
 
 export type RegistrationEntryBlockFormFieldRuleViewModel = {
     comparedToRegistrationTemplateFormFieldGuid: Guid;
-    comparisonType: ComparisonType;
-    comparedToValue: string;
+    comparisonValue: ComparisonValue;
 };
 
 export type RegistrantInfo = {
@@ -234,6 +238,7 @@ export type RegistrationEntryState = {
     viewModel: RegistrationEntryBlockViewModel;
     currentStep: string;
     firstStep: string;
+    navBack: boolean;
     currentRegistrantIndex: number;
     currentRegistrantFormIndex: number;
     registrants: RegistrantInfo[];

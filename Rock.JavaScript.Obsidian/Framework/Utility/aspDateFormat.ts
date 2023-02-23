@@ -4,7 +4,7 @@ import { RockDateTime } from "./rockDateTime";
 
 /**
  * Returns a blank string if the string value is 0.
- * 
+ *
  * @param value The value to check and return.
  * @returns The value passed in or an empty string if it equates to zero.
  */
@@ -14,7 +14,7 @@ function blankIfZero(value: string): string {
 
 /**
  * Gets the 12 hour value of the given 24-hour number.
- * 
+ *
  * @param hour The hour in a 24-hour format.
  * @returns The hour in a 12-hour format.
  */
@@ -118,7 +118,7 @@ const dateFormatterKeys = new List<string>(Object.keys(dateFormatters))
     .toArray();
 
 const standardDateFormats: Record<string, DateFormatterCommand> = {
-    "d": date => formatAspDate(date, "M/dd/yyyy"),
+    "d": date => formatAspDate(date, "M/d/yyyy"),
     "D": date => formatAspDate(date, "dddd, MMMM dd, yyyy"),
     "t": date => formatAspDate(date, "h:mm tt"),
     "T": date => formatAspDate(date, "h:mm:ss tt"),
@@ -143,7 +143,7 @@ const standardDateFormats: Record<string, DateFormatterCommand> = {
 
 /**
  * Formats the Date object using custom format specifiers.
- * 
+ *
  * @param date The date object to be formatted.
  * @param format The custom format string.
  * @returns A string that represents the date in the specified format.
@@ -197,7 +197,7 @@ function formatAspCustomDate(date: RockDateTime, format: string): string {
 
 /**
  * Formats the Date object using a standard format string.
- * 
+ *
  * @param date The date object to be formatted.
  * @param format The standard format specifier.
  * @returns A string that represents the date in the specified format.
@@ -213,7 +213,7 @@ function formatAspStandardDate(date: RockDateTime, format: string): string {
 /**
  * Formats the given Date object using nearly the same rules as the ASP C#
  * format methods.
- * 
+ *
  * @param date The date object to be formatted.
  * @param format The format string to use.
  */

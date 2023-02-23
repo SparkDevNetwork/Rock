@@ -43,7 +43,7 @@ const state: State = reactive({
     loginUrlWithReturnUrl: ""
 });
 
-class Store {
+export class Store {
     public state: Readonly<State>;
 
     constructor() {

@@ -40,6 +40,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
+    [SecurityAction( SecurityActionKey.ViewProtectionProfile, "The roles and/or users that can view the protection profile alert for the selected person." )]
+
     #region Block Attributes
 
     [BadgesField(
@@ -222,6 +224,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         }
 
         #endregion Attribute Keys
+
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string ViewProtectionProfile = "ViewProtectionProfile";
+        }
+
+        #endregion
 
         #region Fields
 
@@ -497,12 +511,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         private void ShowProtectionLevel()
         {
-            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low )
+            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low && IsUserAuthorized( SecurityActionKey.ViewProtectionProfile ) )
             {
                 string acctProtectionLevel = $@"
                     <div class=""protection-profile"">
                         <span class=""profile-label"">Protection Profile: {Person.AccountProtectionProfile.ConvertToString( true )}</span>
-                        <i class=""fa fa-lock""></i>
+                        <i class=""fa fa-fw fa-lock"" onmouseover=""$(this).parent().addClass('is-hovered')"" onmouseout=""$(this).parent().removeClass('is-hovered')""></i>
                     </div>";
 
                 litAccountProtectionLevel.Text = acctProtectionLevel;
@@ -805,6 +819,26 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 $@"<dt title=""Gender"">{Person.Gender}</dt>
                 <dd class=""d-none"">Gender</dd>";
 
+            var raceAndEthnicity = new List<string>();
+
+            if ( Person.RaceValue != null )
+            {
+                raceAndEthnicity.Add( Person.RaceValue.Value );
+            }
+
+            if ( Person.EthnicityValue != null )
+            {
+                raceAndEthnicity.Add( Person.EthnicityValue.Value );
+            }
+
+            if ( raceAndEthnicity.Count > 0 )
+            {
+                var title = $"{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )}/{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )}";
+                lRaceAndEthnicity.Text =
+                    $@"<dt title=""{title}"">{raceAndEthnicity.AsDelimited("/")}</dt>
+                    <dd class=""d-none"">{title}</dd>";
+            }
+
             if ( Person.BirthDate.HasValue )
             {
                 if ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year )
@@ -826,7 +860,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            if ( Person.AnniversaryDate.HasValue && GetAttributeValue( AttributeKey.DisplayAnniversaryDate ).AsBoolean() )
+            if ( !Person.IsDeceased && Person.AnniversaryDate.HasValue && GetAttributeValue( AttributeKey.DisplayAnniversaryDate ).AsBoolean() )
             {
                 lMaritalStatus.Text = $"<dt>{Person.MaritalStatusValueId.DefinedValue()} {Person.AnniversaryDate.Value.Humanize().Replace( "ago", "" )}</dt><dd>{Person.AnniversaryDate.Value.ToShortDateString()}</dd>";
             }
@@ -840,11 +874,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( GetAttributeValue( AttributeKey.DisplayGraduation ).AsBoolean() )
             {
+                if ( !string.IsNullOrWhiteSpace( Person.GradeFormatted ) )
+                {
+                    lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
+                }
+
                 if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                 {
-                    lGraduation.Text =
-                        $@"<dt>{(Person.HasGraduated.Value ? "Graduated" : "Graduates")} {Person.GraduationYear.Value}</dt>
-                        <dd class=""d-none"">Graduation</dd>";
+                    lGraduation.Text = Person.HasGraduated.Value ? $@"<dt>Graduated {Person.GraduationYear.Value}</dt>" : $@"<dd>Graduates {Person.GraduationYear.Value}</dd>";
+                    lGraduation.Text += @"<dd class=""d-none"">Graduation</dd>";
                 }
             }
         }
@@ -865,10 +903,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
 
             // if phoneNumbers exist then bind
-            if ( phoneNumbers.Any() ) {
+            if ( phoneNumbers.Any() )
+            {
                 rptPhones.DataSource = phoneNumbers;
                 rptPhones.DataBind();
-            } else {
+            }
+            else
+            {
                 rptPhones.Visible = false;
             }
         }

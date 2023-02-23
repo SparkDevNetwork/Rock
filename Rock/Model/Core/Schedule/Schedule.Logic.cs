@@ -29,6 +29,7 @@ using Ical.Net.DataTypes;
 using Rock.Lava;
 using Rock.Web.Cache;
 using Ical.Net.CalendarComponents;
+using System.ComponentModel.DataAnnotations;
 
 namespace Rock.Model
 {
@@ -301,6 +302,35 @@ namespace Rock.Model
             get { return ToFriendlyScheduleText(); }
         }
 
+        /// <summary>
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
+        /// </summary>
+        /// <value>
+        /// The name of the abbreviated.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string AbbreviatedName
+        {
+            get
+            {
+                if ( _abbreviatedName.IsNullOrWhiteSpace() )
+                {
+                    return Name.Truncate( 50, false );
+                }
+
+                return _abbreviatedName;
+            }
+
+            set
+            {
+                _abbreviatedName = value;
+            }
+        }
+
+        private string _abbreviatedName;
+
         #endregion
 
         #region ICacheable
@@ -353,6 +383,8 @@ namespace Rock.Model
             var calEvent = GetICalEvent();
             if ( calEvent == null )
             {
+                EffectiveEndDate = null;
+                EffectiveStartDate = null;
                 return false;
             }
 
@@ -459,19 +491,6 @@ namespace Rock.Model
         }
 
 #if REVIEW_WEBFORMS
-        /// <summary>
-        /// Gets the Schedule's iCalender Event.
-        /// </summary>
-        /// <value>
-        /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
-        /// </value>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetICalEvent() instead ", true )]
-        public virtual DDay.iCal.Event GetCalenderEvent()
-        {
-            return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
-        }
-
         /// <summary>
         /// Gets the Schedule's iCalender Event.
         /// </summary>

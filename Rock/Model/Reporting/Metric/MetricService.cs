@@ -24,7 +24,6 @@ using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
 #endif
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -85,15 +84,16 @@ WHERE o.type = 'V'
                 var metricEntityPartitions = metric.MetricPartitions.Where( a => a.EntityTypeId.HasValue ).OrderBy( a => a.Order ).ThenBy( a => a.Label ).Select( a => new
                 {
                     a.Label,
-                    a.EntityTypeId
+                    PartitionEntityTypeId = a.EntityTypeId.Value,
+                    PartitionId = a.Id
                 } );
 
-                var viewPartitionSELECTClauses = metricEntityPartitions.Select( a => $"      ,pvt.[{a.EntityTypeId}] as [{a.Label.RemoveSpecialCharacters().RemoveSpaces()}Id]" ).ToList().AsDelimited( "\n" );
+                var viewPartitionSELECTClauses = metricEntityPartitions.Select( a => $"      ,pvt.[{a.PartitionId}] as [{a.Label.RemoveSpecialCharacters().RemoveSpaces()}Id]" ).ToList().AsDelimited( "\n" );
                 List<string> partitionEntityLookupSELECTs = new List<string>();
                 List<string> partitionEntityLookupJOINs = new List<string>();
                 foreach ( var metricPartition in metricEntityPartitions )
                 {
-                    var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.EntityTypeId.Value );
+                    var metricPartitionEntityType = EntityTypeCache.Get( metricPartition.PartitionEntityTypeId );
                     if ( metricPartitionEntityType != null )
                     {
                         var tableAttribute = metricPartitionEntityType.GetEntityType().GetCustomAttribute<TableAttribute>();
@@ -101,19 +101,19 @@ WHERE o.type = 'V'
                         {
                             if ( metricPartitionEntityType.Id == EntityTypeCache.GetId<DefinedValue>() )
                             {
-                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.EntityTypeId}.Value [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
+                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.PartitionId}.Value [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
                             }
                             else if ( metricPartitionEntityType.GetEntityType().GetProperty( "Name" ) != null )
                             {
-                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.EntityTypeId}.Name [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
+                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.PartitionId}.Name [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
                             }
 
-                            partitionEntityLookupJOINs.Add( $"LEFT JOIN [{tableAttribute.Name}] j{metricPartition.EntityTypeId} ON p.{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Id = j{metricPartition.EntityTypeId}.Id" );
+                            partitionEntityLookupJOINs.Add( $"LEFT JOIN [{tableAttribute.Name}] j{metricPartition.PartitionId} ON p.{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Id = j{metricPartition.PartitionId}.Id" );
                         }
                     }
                 }
 
-                var viewPIVOTInClauses = metricEntityPartitions.Select( a => $"  [{a.EntityTypeId}]" ).ToList().AsDelimited( ",\n" );
+                var viewPIVOTInClauses = metricEntityPartitions.Select( a => $"  [{a.PartitionId}]" ).ToList().AsDelimited( ",\n" );
                 if ( string.IsNullOrEmpty( viewPIVOTInClauses ) )
                 {
                     // This metric only has the default partition, and with no EntityTypeId, so put in a dummy Pivot Clause 
@@ -143,20 +143,22 @@ FROM (
     SELECT pvt.Id
       ,cast(pvt.MetricValueDateTime AS DATE) AS [MetricValueDateTime]
       ,pvt.YValue
+      ,pvt.IsGoal
 {viewPartitionSELECTClauses}
     FROM (
         SELECT 
 	      mv.Id
           ,mv.YValue
           ,mv.MetricValueDateTime
+          ,case when MetricValueType = 1 then 1 else 0 end as IsGoal
           ,mvp.EntityId
-          ,mp.EntityTypeId
+          ,mp.Id [PartitionId]
         FROM MetricValue mv
         JOIN MetricValuePartition mvp ON mvp.MetricValueId = mv.Id
         JOIN MetricPartition mp ON mvp.MetricPartitionId = mp.Id
         WHERE mv.MetricId = {metric.Id}
         ) src
-    pivot(min(EntityId) FOR EntityTypeId IN ({viewPIVOTInClauses})) pvt
+    pivot(min(EntityId) FOR PartitionId IN ({viewPIVOTInClauses})) pvt
 ) p
 {viewJoinsFROM}
 ";
@@ -190,6 +192,7 @@ FROM (
                 catch ( Exception ex )
                 {
                     // silently log the exception
+                    Debug.WriteLine( ex.Message );
 #if REVIEW_NET5_0_OR_GREATER
                     ExceptionLogService.LogException( new Exception( "Error creating Analytics view for " + metric.Title, ex ) );
 #else
@@ -257,6 +260,7 @@ FROM (
 #endif
                             var metricPartitions = new MetricPartitionService( rockContextForMetricValues ).Queryable().Where( a => a.MetricId == metric.Id ).ToList();
                             var metricValueService = new MetricValueService( rockContextForMetricValues );
+                            var metricValuePartitionService = new MetricValuePartitionService( rockContextForMetricValues );
                             List<ResultValue> resultValues = new List<ResultValue>();
                             bool getMetricValueDateTimeFromResultSet = false;
                             if ( metric.SourceValueType.Guid == metricSourceValueTypeDataviewGuid )
@@ -277,7 +281,7 @@ FROM (
                                     }
 
                                     Stopwatch stopwatch = Stopwatch.StartNew();
-                                    var qry = metric.DataView.GetQuery( new DataViewGetQueryArgs() );
+                                    var qry = metric.DataView.GetQuery();
 
                                     if ( parseCampusPartition )
                                     {
@@ -520,59 +524,34 @@ FROM (
                                     }
                                 }
 
-                                // If a single metricValueDateTime was specified, delete any existing metric values for this DateTime and add the current results.
-                                var dbTransaction = rockContextForMetricValues.Database.BeginTransaction();
+                                var measureMetricValueType = MetricValueType.Measure;
                                 if ( getMetricValueDateTimeFromResultSet )
                                 {
-                                    var metricValueDateTimes = metricValuesToAdd.Select( a => a.MetricValueDateTime ).Distinct().ToList();
-                                    foreach ( var metricValueDateTime in metricValueDateTimes )
-                                    {
-                                        bool alreadyHasMetricValues = metricValueService.Queryable()
-                                            .Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == metricValueDateTime ).Any();
-                                        if ( alreadyHasMetricValues )
-                                        {
-                                            // Use direct SQL to remove any existing metric values.
-#if REVIEW_NET5_0_OR_GREATER
-                                            rockContextForMetricValues.Database.ExecuteSqlRaw(
-#else
-                                            rockContextForMetricValues.Database.ExecuteSqlCommand(
-#endif
-                                                @"
-                                                    DELETE
-                                                    FROM MetricValuePartition
-                                                    WHERE MetricValueId IN (
-                                                        SELECT Id
-                                                        FROM MetricValue
-                                                        WHERE MetricId = @metricId
-                                                        AND MetricValueDateTime = @metricValueDateTime
-                                                    )
-                                                ",
-                                                new SqlParameter( "@metricId", metric.Id ),
-                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
+                                    var sourceSQLData = metricValuesToAdd.SelectMany( mv => mv.MetricValuePartitions,
+                                        ( metricValue, partition ) => new { metricValue.MetricValueDateTime, partition.MetricPartitionId, partition.EntityId }
+                                    ).Distinct()
+                                    .ToHashSet();
 
-#if REVIEW_NET5_0_OR_GREATER
-                                            rockContextForMetricValues.Database.ExecuteSqlRaw(
-#else
-                                            rockContextForMetricValues.Database.ExecuteSqlCommand(
-#endif
-                                                @"
-                                                    DELETE
-                                                    FROM MetricValue
-                                                    WHERE MetricId = @metricId
-                                                    AND MetricValueDateTime = @metricValueDateTime
-                                                ",
-                                                new SqlParameter( "@metricId", metric.Id ),
-                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
-                                        }
-                                    }
+                                    var metricsToBeDeleted = metricValueService.Queryable()
+                                        .Where( m => m.MetricId == metricId && m.MetricValueType == measureMetricValueType )
+                                        .Join( metricValuePartitionService.Queryable(),
+                                            m => m.Id, mvp => mvp.MetricValueId, ( m, mvp ) => new { metricValue = m, metricValuePartition = mvp } )
+                                        .ToList() // converting to list to get the result in the memory to preform the subsequent operations
+                                        .Join( sourceSQLData,
+                                            outerKeySelector: m => new { m.metricValue.MetricValueDateTime, m.metricValuePartition.MetricPartitionId, m.metricValuePartition.EntityId },
+                                            innerKeySelector: s => new { s.MetricValueDateTime, s.MetricPartitionId, s.EntityId },
+                                            ( m, s ) => m
+                                        ).Distinct()
+                                        .ToArray(); // the result needs to be collected in the memory as it is being used in the following two queries
+
+                                    rockContextForMetricValues.MetricValuePartitions.RemoveRange( metricsToBeDeleted.Select( m => m.metricValuePartition ) );
+                                    rockContextForMetricValues.MetricValues.RemoveRange( metricsToBeDeleted.Select( m => m.metricValue ) );
                                 }
 
                                 metricValueService.AddRange( metricValuesToAdd );
 
                                 // Disable SaveChanges PrePostProcessing since there could be hundreds or thousands of metric values getting inserted or updated.
                                 rockContextForMetricValues.SaveChanges( true );
-
-                                dbTransaction.Commit();
                             }
 
                             rockContextForMetricEntity.SaveChanges();
@@ -607,5 +586,243 @@ FROM (
 
             public int? EntityId { get; set; }
         }
+
+        #region Metric Reporting
+
+        /// <summary>
+        /// Gets the summary.
+        /// </summary>
+        /// <param name="metricIds">The metric identifier list.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="metricValueType">Type of the metric value.</param>
+        /// <param name="partitionValues">
+        /// A collection of identifiers that specify the metric partition values to be included.
+        /// If not specified, values from all parititions will be included.
+        /// </param>
+        /// <returns></returns>
+        public IQueryable<MetricValue> GetMetricValuesQuery( List<int> metricIds, MetricValueType? metricValueType = null, DateTime? startDate = null, DateTime? endDate = null, List<EntityIdentifierByTypeAndId> partitionValues = null )
+        {
+            var valuesService = new MetricValueService( ( RockContext ) this.Context );
+            var qry = valuesService.Queryable()
+                .AsNoTracking()
+                .Include( a => a.MetricValuePartitions.Select( b => b.MetricPartition ) )
+                .Where( a => metricIds.Contains( a.MetricId ) );
+
+            if ( metricValueType.HasValue )
+            {
+                qry = qry.Where( a => a.MetricValueType == metricValueType );
+            }
+
+            if ( startDate.HasValue )
+            {
+                qry = qry.Where( a => a.MetricValueDateTime >= startDate.Value );
+            }
+
+            if ( endDate.HasValue )
+            {
+                qry = qry.Where( a => a.MetricValueDateTime < endDate.Value );
+            }
+
+            // If partition filters are specified, ensure that the MetricValue has matches the entity instance and is for the same Entity Type as the partition.
+            if ( partitionValues != null )
+            {
+                partitionValues = partitionValues.Where( pv => pv.EntityTypeId != 0 && pv.EntityId != 0 ).ToList();
+                foreach ( var partitionValue in partitionValues )
+                {
+                    qry = qry.Where( a => a.MetricValuePartitions.Any( p => p.EntityId == partitionValue.EntityId && p.MetricPartition.EntityTypeId == partitionValue.EntityTypeId ) );
+                }
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets the summary.
+        /// </summary>
+        /// <param name="metricIds">The metric identifier list.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="metricValueType">Type of the metric value.</param>
+        /// <param name="partitionValues">
+        /// A collection of identifiers that specify the metric partition values to be included.
+        /// If not specified, values from all parititions will be included.
+        /// </param>
+        /// <returns></returns>
+        public List<MetricValueSummary> GetMetricValueSummaries( List<int> metricIds, MetricValueType? metricValueType = null, DateTime? startDate = null, DateTime? endDate = null, List<EntityIdentifierByTypeAndId> partitionValues = null )
+        {
+            var qry = GetMetricValuesQuery( metricIds,
+                metricValueType,
+                startDate,
+                endDate,
+                partitionValues );
+
+            string seriesName = null;
+            if ( partitionValues != null && partitionValues.Any() )
+            {
+                var partitionNames = GetSeriesPartitionNames( partitionValues );
+                if ( partitionNames.Any() )
+                {
+                    seriesName = partitionNames.AsDelimited( "," );
+                }
+
+            }
+
+            var groupBySum = qry
+                .GroupBy( a => a.Metric )
+                .Select( g => new
+                {
+                    MetricId = g.Key.Id,
+                    MetricTitle = g.Key.Title,
+                    YValueTotal = g.Sum( s => s.YValue ),
+                    SeriesName = seriesName,
+                    MetricValueType = metricValueType ?? MetricValueType.Measure
+                } )
+                .ToList();
+
+            var summaries = groupBySum.Select( s => new MetricValueSummary
+            {
+                MetricId = s.MetricId,
+                MetricTitle = s.MetricTitle,
+                SeriesName = seriesName,
+                ValueTotal = s.YValueTotal,
+                MetricType = s.MetricValueType,
+                StartDateTimeStamp = startDate.HasValue ? startDate.Value.ToJavascriptMilliseconds() : 0,
+                EndDateTimeStamp = endDate.HasValue ? endDate.Value.ToJavascriptMilliseconds() : 0
+            } )
+                .ToList();
+
+            return summaries;
+        }
+
+        /// <summary>
+        /// Gets a list of metric partition names.
+        /// </summary>
+        /// <param name="partitionValues">The metric value partitions list.</param>
+        /// <returns></returns>
+        private List<string> GetSeriesPartitionNames( List<EntityIdentifierByTypeAndId> partitionValues = null )
+        {
+            var rockContext = new RockContext();
+
+            List<string> seriesPartitionValues = new List<string>();
+
+            foreach ( var partitionValue in partitionValues )
+            {
+                if ( partitionValue.EntityTypeId == 0 || partitionValue.EntityId == 0 )
+                {
+                    continue;
+                }
+
+                var entityTypeCache = EntityTypeCache.Get( partitionValue.EntityTypeId );
+                if ( entityTypeCache != null )
+                {
+                    if ( entityTypeCache.Id == EntityTypeCache.GetId<Campus>() )
+                    {
+                        var campus = CampusCache.Get( partitionValue.EntityId );
+                        if ( campus != null )
+                        {
+                            seriesPartitionValues.Add( campus.Name );
+                        }
+                    }
+                    else if ( entityTypeCache.Id == EntityTypeCache.GetId<DefinedValue>() )
+                    {
+                        var definedValue = DefinedValueCache.Get( partitionValue.EntityId );
+                        if ( definedValue != null )
+                        {
+                            seriesPartitionValues.Add( definedValue.ToString() );
+                        }
+                    }
+                    else
+                    {
+                        Type[] modelType = { entityTypeCache.GetEntityType() };
+                        Type genericServiceType = typeof( Rock.Data.Service<> );
+                        Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                        var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
+                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                        var result = getMethod.Invoke( serviceInstance, new object[] { partitionValue.EntityId } );
+                        if ( result != null )
+                        {
+                            seriesPartitionValues.Add( result.ToString() );
+                        }
+                    }
+                }
+            }
+
+            return seriesPartitionValues;
+        }
+
+        /// <summary>
+        /// Summary information about the value of a metric in a specified time period.
+        /// </summary>
+        public class MetricValueSummary
+        {
+            /// <summary>
+            /// Gets or sets the metric identifier.
+            /// </summary>
+            /// <value>
+            /// The metric identifier.
+            /// </value>
+            public int MetricId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the specific series or partitions represented by this value.
+            /// </summary>
+            public string SeriesName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of value recorded by this metric, either a measure or a goal.
+            /// </summary>
+            public MetricValueType MetricType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the metric title.
+            /// </summary>
+            /// <value>
+            /// The metric title.
+            /// </value>
+            public string MetricTitle { get; set; }
+
+            /// <summary>
+            /// Gets or sets the y value total.
+            /// </summary>
+            /// <value>
+            /// The y value total.
+            /// </value>
+            public decimal? ValueTotal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start date time stamp.
+            /// </summary>
+            /// <value>
+            /// The start date time stamp.
+            /// </value>
+            public long StartDateTimeStamp { get; set; }
+
+            /// <summary>
+            /// Gets or sets the end date time stamp.
+            /// </summary>
+            /// <value>
+            /// The end date time stamp.
+            /// </value>
+            public long EndDateTimeStamp { get; set; }
+        }
+
+        /// <summary>
+        /// Identifies an entity value that identifies a metric parition.
+        /// </summary>
+        public class EntityIdentifierByTypeAndId
+        {
+            /// <summary>
+            /// The Entity Type identifier.
+            /// </summary>
+            public int EntityTypeId;
+
+            /// <summary>
+            /// The Entity instance identifier.
+            /// </summary>
+            public int EntityId;
+        }
     }
+
+    #endregion
 }

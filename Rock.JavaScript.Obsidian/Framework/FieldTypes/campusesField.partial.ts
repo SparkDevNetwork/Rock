@@ -18,6 +18,8 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
 export const enum ConfigurationValueKey {
     Values = "values",
@@ -73,5 +75,38 @@ export class CampusesFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override doesValueMatchFilter(value: string, filterValue: ComparisonValue, _configurationValues: Record<string, string>): boolean {
+        const selectedValues = (filterValue.value ?? "").split(",").filter(v => v !== "").map(v => v.toLowerCase());
+        let comparisonType = filterValue.comparisonType;
+
+        if (comparisonType === ComparisonType.EqualTo) {
+            // Treat EqualTo as if it were Contains.
+            comparisonType = ComparisonType.Contains;
+        }
+        else if (comparisonType === ComparisonType.NotEqualTo) {
+            // Treat NotEqualTo as if it were DoesNotContain.
+            comparisonType = ComparisonType.DoesNotContain;
+        }
+
+        if (comparisonType === ComparisonType.IsBlank) {
+            return value === "";
+        }
+        else if (comparisonType === ComparisonType.IsNotBlank) {
+            return value !== "";
+        }
+
+        if (selectedValues.length > 0) {
+            let matched = selectedValues.includes(value.toLowerCase());
+
+            if (comparisonType === ComparisonType.DoesNotContain) {
+                matched = !matched;
+            }
+
+            return matched;
+        }
+
+        return false;
     }
 }

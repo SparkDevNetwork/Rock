@@ -15,9 +15,8 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { defineComponent, provide, reactive, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.obs";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
 import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
 import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
@@ -112,6 +111,7 @@ export default defineComponent({
             viewModel: viewModel,
             firstStep: currentStep,
             currentStep: currentStep,
+            navBack: false,
             currentRegistrantFormIndex: 0,
             currentRegistrantIndex: 0,
             registrants: viewModel.session?.registrants || [getDefaultRegistrantInfo(null, viewModel, null)],
@@ -399,6 +399,14 @@ export default defineComponent({
             return this.viewModel.spotsRemaining < 1 && !this.viewModel.waitListEnabled;
         },
 
+        preventNewRegistration(): boolean {
+            if (!this.viewModel) {
+                return this.isFull;
+            }
+
+            return this.isFull && !this.viewModel.isExistingRegistration;
+        },
+
         registrationTerm(): string {
             return (this.viewModel?.registrationTerm || "registration").toLowerCase();
         },
@@ -422,6 +430,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.PerRegistrantForms;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -429,6 +438,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Intro;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -436,6 +446,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -443,6 +454,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.Intro;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -450,6 +462,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPostAttributes ? Step.RegistrationEndForm : Step.Review;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -457,6 +470,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -464,6 +478,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -480,7 +495,7 @@ export default defineComponent({
                     this.registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
                     this.registrationEntryState.currentStep = Step.PerRegistrantForms;
                 }
-
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -492,6 +507,7 @@ export default defineComponent({
                 else {
                     this.registrationEntryState.currentStep = Step.Success;
                 }
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -499,12 +515,14 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
         async onPaymentNext(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 this.registrationEntryState.currentStep = Step.Success;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         }
@@ -562,7 +580,7 @@ export default defineComponent({
         <strong>Incorrect Configuration</strong>
         <p>This registration has costs/fees associated with it but the configured payment gateway is not supported.</p>
     </Alert>
-    <Alert v-else-if="isFull" class="text-left" alertType="warning">
+    <Alert v-else-if="preventNewRegistration" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
             There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}.

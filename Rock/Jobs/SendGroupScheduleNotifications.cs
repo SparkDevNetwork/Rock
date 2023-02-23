@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -30,18 +28,31 @@ namespace Rock.Jobs
     /// <summary>
     /// Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
     [DisplayName( "Send Group Schedule Confirmations and Reminders" )]
     [Description( "Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet. Only Email and SMS are supported. PUSH is not supported." )]
 
     [GroupField(
-        "Group",
+        "Group Filter",
         Key = AttributeKey.RootGroup,
         Description = "Only people in or under this group will receive the schedule notifications.",
         IsRequired = false,
         Order = 0 )]
-    public class SendGroupScheduleNotifications : IJob
+    [DataViewField(
+        "Groups Data View Filter",
+        Description = "Only groups returned from this data view will be considered (child groups are not included).",
+        EntityType = typeof( Rock.Model.Group ),
+        Key = AttributeKey.GroupDataView,
+        IsRequired = false,
+        Order = 1 )]
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeoutSeconds,
+        Description = "Maximum amount of time (in seconds) to wait for the SQL operation to complete. Leave blank to use the default for this job (180).",
+        IsRequired = false,
+        DefaultIntegerValue = 180,
+        Category = "General",
+        Order = 2 )]
+    public class SendGroupScheduleNotifications : RockJob
     {
         #region Attribute Keys
 
@@ -54,6 +65,16 @@ namespace Rock.Jobs
             /// The root group
             /// </summary>
             public const string RootGroup = "RootGroup";
+
+            /// <summary>
+            /// The group data view
+            /// </summary>
+            public const string GroupDataView = "GroupDataView";
+
+            /// <summary>
+            /// The command timeout in seconds
+            /// </summary>
+            public const string CommandTimeoutSeconds = "CommandTimeoutSeconds";
         }
 
         #endregion Attribute Keys
@@ -69,18 +90,18 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            var rootGroupGuid = context.JobDetail.JobDataMap.GetString( AttributeKey.RootGroup ).AsGuidOrNull();
+            var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
+            var groupDataViewGuid = GetAttributeValue( AttributeKey.GroupDataView ).AsGuidOrNull();
+            var commandTimeoutSeconds = GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 180;
 
-            var confirmationSends = SendGroupScheduleConfirmationCommunications( rootGroupGuid );
-            var reminderSends = SendGroupScheduleReminderCommunications( rootGroupGuid );
+            var confirmationSends = SendGroupScheduleConfirmationCommunications( rootGroupGuid, groupDataViewGuid, commandTimeoutSeconds );
+            var reminderSends = SendGroupScheduleReminderCommunications( rootGroupGuid, groupDataViewGuid, commandTimeoutSeconds );
 
             var exceptionMessage = string.Empty;
+
             if ( confirmationSends.Errors.Any() )
             {
                 exceptionMessage = "One or more errors occurred when sending confirmations: " + Environment.NewLine + confirmationSends.Errors.AsDelimited( Environment.NewLine );
@@ -101,7 +122,7 @@ namespace Rock.Jobs
                 throw new Exception( exceptionMessage );
             }
 
-            context.Result = $@"{confirmationSends.MessagesSent} confirmation messages were sent.
+            this.Result = $@"{confirmationSends.MessagesSent} confirmation messages were sent.
                                 {reminderSends.MessagesSent} reminder messages were sent.";
         }
 
@@ -109,18 +130,21 @@ namespace Rock.Jobs
         /// Sends the group schedule confirmations.
         /// </summary>
         /// <param name="rootGroupGuid">The root group unique identifier.</param>
-        private SendMessageResult SendGroupScheduleConfirmationCommunications( System.Guid? rootGroupGuid )
+        /// <param name="groupDataViewGuid">The guid for the group data view.</param>
+        /// <param name="commandTimeoutSeconds">The command timeout seconds.</param>
+        private SendMessageResult SendGroupScheduleConfirmationCommunications( System.Guid? rootGroupGuid, System.Guid? groupDataViewGuid, int commandTimeoutSeconds )
         {
             List<Person> personsScheduled = new List<Person>();
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeoutSeconds;
                 List<int> groupIds = new List<int>();
                 var groupService = new GroupService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
 
                 // Get all who have not already been notified( attendance.ScheduleConfirmationSent = false ) and who have been requested to attend.
                 var sendConfirmationAttendancesQuery = new AttendanceService( rockContext )
-                    .GetPendingScheduledConfirmations()
+                    .GetPendingAndAutoAcceptScheduledConfirmations()
                     .Where( a => a.ScheduleConfirmationSent != true );
 
                 // if the root group is configured on the Job then limit to the group and its child groups
@@ -130,6 +154,15 @@ namespace Rock.Jobs
                     groupIds.Add( parentGroup.Id );
                     var groupChildrenIds = groupService.GetAllDescendentGroupIds( parentGroup.Id, false );
                     groupIds.AddRange( groupChildrenIds );
+                    sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery.Where( a => groupIds.Contains( a.Occurrence.GroupId.Value ) );
+                }
+
+                // if the group data view guid is configured on the Job then limit to selected groups in the data view not considering child groups
+                if ( groupDataViewGuid.HasValue )
+                {
+                    var groupDataView = new DataViewService( rockContext ).Get( groupDataViewGuid.Value );
+                    var groupsQuery = groupDataView.GetQuery( new DataViewGetQueryArgs { DatabaseTimeoutSeconds = commandTimeoutSeconds } ) as IQueryable<Group>;
+                    groupIds.AddRange( groupsQuery.Select( a => a.Id ).ToList() );
                     sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery.Where( a => groupIds.Contains( a.Occurrence.GroupId.Value ) );
                 }
 
@@ -151,7 +184,9 @@ namespace Rock.Jobs
         /// Sends the group schedule reminders.
         /// </summary>
         /// <param name="rootGroupGuid">The root group unique identifier.</param>
-        private SendMessageResult SendGroupScheduleReminderCommunications( System.Guid? rootGroupGuid )
+        /// <param name="groupDataViewGuid">The guid for the group data view.</param>
+        /// <param name="commandTimeoutSeconds">The command timeout seconds.</param>
+        private SendMessageResult SendGroupScheduleReminderCommunications( System.Guid? rootGroupGuid, System.Guid? groupDataViewGuid, int commandTimeoutSeconds )
         {
             List<Person> personsScheduled = new List<Person>();
             using ( var rockContext = new RockContext() )
@@ -175,6 +210,15 @@ namespace Rock.Jobs
                     groupIds.Add( parentGroup.Id );
                     var groupChildrenIds = groupService.GetAllDescendentGroupIds( parentGroup.Id, false );
                     groupIds.AddRange( groupChildrenIds );
+                    sendReminderAttendancesQuery = sendReminderAttendancesQuery.Where( a => groupIds.Contains( a.Occurrence.GroupId.Value ) );
+                }
+
+                // if the group data view guid is configured on the Job then limit to selected groups in the data view not considering child groups
+                if ( groupDataViewGuid.HasValue )
+                {
+                    var groupDataView = new DataViewService( rockContext ).Get( groupDataViewGuid.Value );
+                    var groupsQuery = groupDataView.GetQuery( new DataViewGetQueryArgs { DatabaseTimeoutSeconds = commandTimeoutSeconds } ) as IQueryable<Group>;
+                    groupIds.AddRange( groupsQuery.Select( a => a.Id ).ToList() );
                     sendReminderAttendancesQuery = sendReminderAttendancesQuery.Where( a => groupIds.Contains( a.Occurrence.GroupId.Value ) );
                 }
 

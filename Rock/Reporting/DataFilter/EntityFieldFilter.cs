@@ -56,6 +56,11 @@ namespace Rock.Reporting.DataFilter
 
             bool entityFieldPickerIsHidden = filterMode == FilterMode.SimpleFilter;
 
+            if (ddlEntityField is RockDropDownList rockDropDownList)
+            {
+                rockDropDownList.EnhanceForLongLists = true;
+            }
+
             if ( entityFieldPickerIsHidden )
             {
                 ddlEntityField.Style[HtmlTextWriterStyle.Display] = "none";

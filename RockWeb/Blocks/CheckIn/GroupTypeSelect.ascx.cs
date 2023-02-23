@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -234,6 +234,7 @@ namespace RockWeb.Blocks.CheckIn
                                 else
                                 {
                                     availGroupTypes.ForEach( t => t.Selected = true );
+                                    availGroupTypes.ForEach( t => t.SelectedForSchedule.Add( schedule.Schedule.Id ) );
                                     ProcessSelection( person, schedule );
                                 }
                             }

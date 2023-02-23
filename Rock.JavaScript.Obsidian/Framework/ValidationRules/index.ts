@@ -109,6 +109,15 @@ defineRule("required", (value: unknown, params?: unknown[]): ValidationResult =>
     return true;
 });
 
+// This is like "required" but slightly less strict (doesn't fail on 0 or empty array)
+defineRule("notblank", (value: unknown) => {
+    if (value === undefined || value === null || value === "") {
+        return "cannot be blank";
+    }
+
+    return true;
+});
+
 defineRule("email", value => {
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
@@ -345,4 +354,29 @@ defineRule("startswith", (value: unknown, params?: unknown[]) => {
     }
 
     return `must start with "${compare}"`;
+});
+
+defineRule("equalsfield", (value: unknown, params?: unknown[]) => {
+    // Validator params are comma "," delimited.
+    // The first param is the name of the field to display in the error message.
+    // The remaining params need to be joined together into a single string for comparison.
+    const error = params && params.length >= 1 ? params[0] : undefined;
+    const compare = params ? params.slice(1).join(",") : "";
+
+    if (isNumeric(value) && isNumeric(compare)) {
+        if (convertToNumber(value) === convertToNumber(compare)) {
+            return true;
+        }
+    }
+    else if (typeof value === "boolean") {
+        if (value === asBooleanOrNull(compare)) {
+            return true;
+        }
+    }
+    else if (value === compare) {
+        return true;
+    }
+
+    // Do not expose the value in case we are matching sensitive confirmation fields.
+    return typeof error === "string" ? error : "must match value";
 });

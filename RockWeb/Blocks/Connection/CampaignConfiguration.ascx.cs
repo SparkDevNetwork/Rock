@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -178,6 +178,11 @@ namespace RockWeb.Blocks.Connection
             {
                 campaignConnection.OptOutGroupGuid = new GroupService( new RockContext() ).GetGuid( gpOptOutGroup.GroupId.Value );
             }
+            else
+            {
+                campaignConnection.OptOutGroupGuid = null;
+            }
+
             campaignConnection.DailyLimitAssigned = nbDailyLimit.Text.AsIntegerOrNull();
             campaignConnection.DaysBetweenConnection = nbNumberOfDays.Text.AsInteger();
             campaignConnection.PreferPreviousConnector = cbPreferPreviousConnector.Checked;

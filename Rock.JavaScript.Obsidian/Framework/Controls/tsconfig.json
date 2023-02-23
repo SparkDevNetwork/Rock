@@ -2,10 +2,17 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "jsx": "preserve",
     "module": "ESNext"
   },
-  "include": [ "./*.ts" ],
+  "include": [
+    "./*.ts",
+    "./*.obs"
+  ],
   "references": [
-    { "path": "../Core" }
+    { "path": "../Core" },
+    { "path": "../Enums" },
+    { "path": "../Libs" },
+    { "path": "../SystemGuids" }
   ]
 }

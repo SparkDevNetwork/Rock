@@ -2,9 +2,6 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
-        <Rock:NotificationBox ID="nbConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
-
         <asp:Panel ID="pnlDashboardTitle" runat="server" CssClass="dashboard-title">
             <asp:Literal runat="server" ID="lDashboardTitle" />
         </asp:Panel>
@@ -12,9 +9,11 @@
             <asp:Literal runat="server" ID="lDashboardSubtitle" />
         </asp:Panel>
 
-        <Rock:LineChart ID="lcLineChart" runat="server" />
-        <Rock:PieChart ID="pcPieChart" runat="server" />
-        <Rock:BarChart ID="bcBarChart" runat="server" />
+        <Rock:NotificationBox ID="nbConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
+
+        <Rock:RockLineChart ID="lcLineChart" runat="server" />
+        <Rock:RockPieChart ID="pcPieChart" runat="server" />
+        <Rock:RockBarChart ID="bcBarChart" runat="server" />
 
     </ContentTemplate>
 </asp:UpdatePanel>

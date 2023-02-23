@@ -2862,7 +2862,13 @@ namespace Rock.Slingshot
 
             // Person Attributes
             var personAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();
-            this.PersonAttributeKeyLookup = personAttributes.ToDictionary( k => k.Key, v => v, StringComparer.OrdinalIgnoreCase );
+
+            this.PersonAttributeKeyLookup = this.PersonAttributeKeyLookup == null ? new Dictionary<string, AttributeCache>() : this.PersonAttributeKeyLookup;
+
+            foreach ( var personAttribute in personAttributes )
+            {
+                this.PersonAttributeKeyLookup.AddOrIgnore( personAttribute.Key, personAttribute );
+            }
 
             // Family Attributes
             string groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id.ToString();

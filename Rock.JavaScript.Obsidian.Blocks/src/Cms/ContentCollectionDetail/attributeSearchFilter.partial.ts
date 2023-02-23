@@ -20,7 +20,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
 import { AttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/attributeFilterBag";
 import { areEqual } from "@Obsidian/Utility/guid";
-import { FieldType } from "@Obsidian/SystemGuids";
+import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import SearchFilter from "./searchFilter.partial";
 
 export default defineComponent({
@@ -41,7 +41,7 @@ export default defineComponent({
     emits: {
         edit: (_value: AttributeFilterBag) => true
     },
-    
+
     setup(props, { emit }) {
         // #region Computed Values
 

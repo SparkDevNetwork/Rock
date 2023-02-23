@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -43,8 +41,7 @@ namespace Rock.Jobs
         Description = "Maximum amount of time, in seconds, to wait for each step to complete.",
         IsRequired = false,
         DefaultIntegerValue = 180 )]
-    [DisallowConcurrentExecution]
-    public class DataAutomation : IJob
+    public class DataAutomation : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Data Automation";
         private HttpContext _httpContext = null;
@@ -76,25 +73,21 @@ namespace Rock.Jobs
 
         #endregion Constructor
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void Execute( IJobExecutionContext context )
+
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             _httpContext = HttpContext.Current;
-            var dataMap = context.JobDetail.JobDataMap;
-            commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 180;
-            string reactivateResult = ReactivatePeople( context );
-            string inactivateResult = InactivatePeople( context );
-            string updateFamilyCampusResult = UpdateFamilyCampus( context );
-            string moveAdultChildrenResult = MoveAdultChildren( context );
-            string genderAutofill = GenderAutoFill( context );
-            string updatePersonConnectionStatus = UpdatePersonConnectionStatus( context );
-            string updateFamilyStatus = UpdateFamilyStatus( context );
+            commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 180;
+            string reactivateResult = ReactivatePeople();
+            string inactivateResult = InactivatePeople();
+            string updateFamilyCampusResult = UpdateFamilyCampus();
+            string moveAdultChildrenResult = MoveAdultChildren();
+            string genderAutofill = GenderAutoFill();
+            string updatePersonConnectionStatus = UpdatePersonConnectionStatus();
+            string updateFamilyStatus = UpdateFamilyStatus();
 
-            context.UpdateLastStatusMessage( $@"Reactivate People: {reactivateResult}
+            this.UpdateLastStatusMessage( $@"Reactivate People: {reactivateResult}
 Inactivate People: {inactivateResult}
 Update Family Campus: {updateFamilyCampusResult}
 Move Adult Children: {moveAdultChildrenResult}
@@ -109,11 +102,10 @@ Update Family Status: {updateFamilyStatus}
         /// Children autofill is based on confidence level alone.
         /// Adults will not autofill a gender that is already taken by another adult in the same family.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string GenderAutoFill( IJobExecutionContext context )
+        private string GenderAutoFill()
         {
-            context.UpdateLastStatusMessage( $"Processing Gender Autofill" );
+            this.UpdateLastStatusMessage( $"Processing Gender Autofill" );
 
             decimal? autofillConfidence = Web.SystemSettings.GetValue( SystemSetting.GENDER_AUTO_FILL_CONFIDENCE ).AsDecimalOrNull();
             if ( autofillConfidence == null || autofillConfidence == 0 )
@@ -199,7 +191,6 @@ Update Family Status: {updateFamilyStatus}
         /// <summary>
         /// Reactivates the people.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="Exception">
         /// Could not determine the 'Family' group type.
@@ -208,11 +199,11 @@ Update Family Status: {updateFamilyStatus}
         /// or
         /// Could not determine the 'Inactive' record status value.
         /// </exception>
-        private string ReactivatePeople( IJobExecutionContext context )
+        private string ReactivatePeople()
         {
             try
             {
-                context.UpdateLastStatusMessage( $"Processing person reactivate." );
+                this.UpdateLastStatusMessage( $"Processing person reactivate." );
 
                 var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_REACTIVATE_PEOPLE ).FromJsonOrNull<Utility.Settings.DataAutomation.ReactivatePeople>();
                 if ( settings == null || !settings.IsEnabled )
@@ -337,7 +328,7 @@ Update Family Status: {updateFamilyStatus}
                         // Update the status on every 100th record
                         if ( recordsProcessed % 100 == 0 )
                         {
-                            context.UpdateLastStatusMessage( $"Processing person reactivate: Activated {recordsUpdated:N0} of {totalRecords:N0} person records." );
+                            this.UpdateLastStatusMessage( $"Processing person reactivate: Activated {recordsUpdated:N0} of {totalRecords:N0} person records." );
                         }
 
                         recordsProcessed++;
@@ -402,8 +393,6 @@ Update Family Status: {updateFamilyStatus}
         /// <summary>
         /// Inactivates the people.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
         /// <exception cref="Exception">
         /// Could not determine the 'Family' group type.
         /// or
@@ -413,11 +402,11 @@ Update Family Status: {updateFamilyStatus}
         /// or
         /// Could not determine the 'No Activity' record status reason value.
         /// </exception>
-        private string InactivatePeople( IJobExecutionContext context )
+        private string InactivatePeople()
         {
             try
             {
-                context.UpdateLastStatusMessage( $"Processing person inactivate." );
+                this.UpdateLastStatusMessage( $"Processing person inactivate." );
 
                 var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_INACTIVATE_PEOPLE ).FromJsonOrNull<Utility.Settings.DataAutomation.InactivatePeople>();
                 if ( settings == null || !settings.IsEnabled )
@@ -527,7 +516,7 @@ Update Family Status: {updateFamilyStatus}
                     // Update the status on every 100th record
                     if ( recordsProcessed % 100 == 0 )
                     {
-                        context.UpdateLastStatusMessage( $"Processing person inactivate: Inactivated {recordsUpdated:N0} of {totalRecords:N0} person records." );
+                        this.UpdateLastStatusMessage( $"Processing person inactivate: Inactivated {recordsUpdated:N0} of {totalRecords:N0} person records." );
                     }
 
                     recordsProcessed++;
@@ -545,7 +534,7 @@ Update Family Status: {updateFamilyStatus}
                                 person.RecordStatusReasonValueId = inactiveReason.Id;
                                 person.InactiveReasonNote = $"Inactivated by the Data Automation Job on {dateStamp}";
                                 rockContext.SaveChanges();
-
+                                
                                 recordsUpdated++;
                             }
                         }
@@ -575,14 +564,13 @@ Update Family Status: {updateFamilyStatus}
         /// <summary>
         /// Updates the family campus.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="Exception">Could not determine the 'Family' group type.</exception>
-        private string UpdateFamilyCampus( IJobExecutionContext context )
+        private string UpdateFamilyCampus()
         {
             try
             {
-                context.UpdateLastStatusMessage( $"Processing campus updates." );
+                this.UpdateLastStatusMessage( $"Processing campus updates." );
 
                 var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_CAMPUS_UPDATE ).FromJsonOrNull<Utility.Settings.DataAutomation.UpdateFamilyCampus>();
                 if ( settings == null || !settings.IsEnabled )
@@ -663,7 +651,7 @@ Update Family Status: {updateFamilyStatus}
                                 .Select( a => a.Id )
                                 .ToList();
 
-                            personCampusAttendance = personCampusAttendance.Where( a => !excludeSchedules.Contains( a.ScheduleId.Value ) ).ToList();
+                            personCampusAttendance = personCampusAttendance.Where( a => !a.ScheduleId.HasValue || !excludeSchedules.Contains( a.ScheduleId.Value ) ).ToList();
                         }
                     }
 
@@ -704,7 +692,7 @@ Update Family Status: {updateFamilyStatus}
                         // Update the status on every 100th record
                         if ( recordsProcessed % 100 == 0 )
                         {
-                            context.UpdateLastStatusMessage( $"Processing campus updates: {recordsProcessed:N0} of {totalRecords:N0} families processed; campus has been updated for {recordsUpdated:N0} of them." );
+                            this.UpdateLastStatusMessage( $"Processing campus updates: {recordsProcessed:N0} of {totalRecords:N0} families processed; campus has been updated for {recordsUpdated:N0} of them." );
                         }
 
                         recordsProcessed++;
@@ -895,18 +883,12 @@ Update Family Status: {updateFamilyStatus}
         /// <summary>
         /// Moves the adult children.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        /// <exception cref="Exception">
-        /// Could not determine the 'Family' group type.
-        /// or
-        /// Could not determine the 'Adult' and 'Child' roles.
-        /// </exception>
-        private string MoveAdultChildren( IJobExecutionContext context )
+        /// <returns>System.String.</returns>
+        private string MoveAdultChildren()
         {
             try
             {
-                context.UpdateLastStatusMessage( $"Processing Adult Children." );
+                this.UpdateLastStatusMessage( $"Processing Adult Children." );
 
                 var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_ADULT_CHILDREN ).FromJsonOrNull<Utility.Settings.DataAutomation.MoveAdultChildren>();
                 if ( settings == null || !settings.IsEnabled )
@@ -984,7 +966,7 @@ Update Family Status: {updateFamilyStatus}
                         // Update the status on every 100th record
                         if ( recordsProcessed % 100 == 0 )
                         {
-                            context.UpdateLastStatusMessage( $"Processing Adult Children: {recordsProcessed:N0} of {totalRecords:N0} children processed; {recordsUpdated:N0} have been moved to their own family." );
+                            this.UpdateLastStatusMessage( $"Processing Adult Children: {recordsProcessed:N0} of {totalRecords:N0} children processed; {recordsUpdated:N0} have been moved to their own family." );
                         }
 
                         recordsProcessed++;
@@ -1244,9 +1226,7 @@ Update Family Status: {updateFamilyStatus}
         /// <summary>
         /// Updates the person connection status.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private string UpdatePersonConnectionStatus( IJobExecutionContext context )
+        private string UpdatePersonConnectionStatus()
         {
             var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_UPDATE_PERSON_CONNECTION_STATUS ).FromJsonOrNull<Utility.Settings.DataAutomation.UpdatePersonConnectionStatus>();
             if ( settings == null || !settings.IsEnabled )
@@ -1258,13 +1238,13 @@ Update Family Status: {updateFamilyStatus}
             int totalToUpdate = 0;
             int recordsWithError = 0;
 
-            context.UpdateLastStatusMessage( $"Processing Connection Status Update" );
+            this.UpdateLastStatusMessage( $"Processing Connection Status Update" );
 
             foreach ( var connectionStatusDataviewMapping in settings.ConnectionStatusValueIdDataviewIdMapping.Where( a => a.Value.HasValue ) )
             {
                 int connectionStatusValueId = connectionStatusDataviewMapping.Key;
                 var cacheConnectionStatusValue = DefinedValueCache.Get( connectionStatusValueId );
-                context.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}" );
+                this.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}" );
                 int dataViewId = connectionStatusDataviewMapping.Value.Value;
                 using ( var dataViewRockContext = new RockContext() )
                 {
@@ -1304,7 +1284,7 @@ Update Family Status: {updateFamilyStatus}
 
                                 if ( recordsUpdated % 100 == 0 )
                                 {
-                                    context.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}: {recordsUpdated:N0} of {totalToUpdate:N0}" );
+                                    this.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}: {recordsUpdated:N0} of {totalToUpdate:N0}" );
                                 }
                             }
                         }
@@ -1335,9 +1315,7 @@ Update Family Status: {updateFamilyStatus}
         /// <summary>
         /// Updates the family status.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private string UpdateFamilyStatus( IJobExecutionContext context )
+        private string UpdateFamilyStatus()
         {
             var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_UPDATE_FAMILY_STATUS ).FromJsonOrNull<Utility.Settings.DataAutomation.UpdateFamilyStatus>();
             if ( settings == null || !settings.IsEnabled )
@@ -1348,7 +1326,7 @@ Update Family Status: {updateFamilyStatus}
             int recordsUpdated = 0;
             int totalToUpdate = 0;
 
-            context.UpdateLastStatusMessage( $"Processing Family Status Update" );
+            this.UpdateLastStatusMessage( $"Processing Family Status Update" );
 
             foreach ( var groupStatusDataviewMapping in settings.GroupStatusValueIdDataviewIdMapping.Where( a => a.Value.HasValue ) )
             {
@@ -1390,7 +1368,7 @@ Update Family Status: {updateFamilyStatus}
 
                             if ( recordsUpdated % 100 == 0 )
                             {
-                                context.UpdateLastStatusMessage( $"Processing Family Status Update: {recordsUpdated:N0} of {totalToUpdate:N0}" );
+                                this.UpdateLastStatusMessage( $"Processing Family Status Update: {recordsUpdated:N0} of {totalToUpdate:N0}" );
                             }
                         }
                     }

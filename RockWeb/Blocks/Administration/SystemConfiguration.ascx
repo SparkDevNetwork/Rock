@@ -23,10 +23,37 @@
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIncludeBusinessInPersonPicker" runat="server" Label="Always Show Businesses in Person Picker" ValidationGroup="GeneralSetting" Help="When enabled, businesses will always be included in the search results of the person picker." />
                             <Rock:RockCheckBox ID="cbEnableKeepAlive" runat="server" Label="Enable Keep Alive" ValidationGroup="GeneralSetting" Help="Enable this setting to have Rock poll itself to keep it alive during times of inactivity. This setting is not needed if your AppPool's Idle Time-out is set to 0 (Highly Recommended). See the Rock Solid Internal Hosting guide for recommended AppPool settings." />
+                            <Rock:NumberBox ID="nbPersonalizationCookieCacheLengthMinutes" runat="server" NumberType="Integer" Label="Personalization Segment Cookie Affinity Duration" CssClass="input-width-lg" AppendText="minutes" Help="Number of minutes old the ROCK_SEGMENT_FILTERS cookie can be before it is considered stale and will be re-fetched from the database. The default is 5 minutes if not set." />
                         </div>
                     </div>
                     <div class="actions">
                         <Rock:BootstrapButton ID="btnGeneralSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnGeneralSave_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="GeneralSetting"></Rock:BootstrapButton>
+                    </div>
+                </Rock:PanelWidget>
+
+                <Rock:PanelWidget ID="pwUiSettings" runat="server" Title="UI Settings" Expanded="false">
+                    <Rock:NotificationBox ID="nbUiSettings" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="rtbPersonRaceLabel" runat="server" Label="Race Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Race field is used."></Rock:RockTextBox>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="rtbPersonEthnicityLabel" runat="server" Label="Ethnicity Label" ValidationGroup="UISettings" Help="The value to use in the label wherever the Ethnicity field is used."></Rock:RockTextBox>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="rtbCaptchaSiteKey" runat="server" Label="Captcha Site Key" ValidationGroup="UISettings" Help="The Captcha site key."></Rock:RockTextBox>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="rtbCaptchaSecretKey" runat="server" Label="Captcha Secret Key" ValidationGroup="UISettings" Help="The Captcha secret key."></Rock:RockTextBox>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <Rock:BootstrapButton ID="btnUiSettingSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnUiSettingSave_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="UISettings"></Rock:BootstrapButton>
                     </div>
                 </Rock:PanelWidget>
 

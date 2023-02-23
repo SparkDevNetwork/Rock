@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Web;
 
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Personalization
 {
@@ -61,42 +62,30 @@ namespace Rock.Personalization
 
         #endregion Configuration
 
-#if REVIEW_NET5_0_OR_GREATER
+#if REVIEW_WEBFORMS
         /// <inheritdoc/>
-        public override bool IsMatch( Rock.Net.RockRequestContext requestContext )
+        public override bool IsMatch( HttpRequest httpRequest )
         {
-            var ua = requestContext.ClientInformation.Browser;
-            var detectedFamily = ua.Device.Family;
-
-            var filteredBrowserFamily = this.BrowserFamily.ConvertToString();
-
-            if ( !detectedFamily.Equals( filteredBrowserFamily, StringComparison.OrdinalIgnoreCase ) )
-            {
-                // If the detected family doesn't match the BrowserFamily for this filter,
-                // return false since both the BrowserFamily AND MajorVersion condition must be met.
-                return false;
-            }
-
-            var majorVersion = ua.OS.Major;
-            if ( majorVersion.IsNullOrWhiteSpace() )
-            {
-                return false;
-            }
-
-            return majorVersion.CompareTo( MajorVersion.ToString(), VersionComparisonType );
+            return IsMatch( uaParser.ParseUserAgent( httpRequest.UserAgent ) );
         }
-#else
+#endif
+
+        /// <inheritdoc/>
+        internal override bool IsMatch( RockRequestContext request )
+        {
+            return IsMatch( request.ClientInformation.Browser.UA );
+        }
+
         /// <summary>
         /// Determines whether the specified HTTP request meets the criteria of this filter.
         /// </summary>
-        /// <param name="httpRequest">The HTTP request.</param>
-        /// <returns><c>true</c> if the specified HTTP request is match; otherwise, <c>false</c>.</returns>
-        public override bool IsMatch( HttpRequest httpRequest )
+        /// <param name="ua">The user agent object.</param>
+        /// <returns><c>true</c> if the specified user agent is a match; otherwise, <c>false</c>.</returns>
+        private bool IsMatch( UAParser.UserAgent ua )
         {
-            var ua = uaParser.ParseUserAgent( httpRequest.UserAgent );
             var detectedFamily = ua.Family;
 
-            var filteredBrowserFamily = this.BrowserFamily.ConvertToString(); 
+            var filteredBrowserFamily = this.BrowserFamily.ConvertToString();
 
             if ( !detectedFamily.Equals( filteredBrowserFamily, StringComparison.OrdinalIgnoreCase ) )
             {
@@ -113,7 +102,6 @@ namespace Rock.Personalization
 
             return majorVersion.CompareTo( MajorVersion.ToString(), VersionComparisonType );
         }
-#endif
 
         /// <summary>
         /// The supported browser family options that the Configuration UI for this filter should show,

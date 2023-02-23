@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gPledges control.
+        /// Handles the GridRebind event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Groups
         private void BindFilter()
         {
             // limit GroupType picker to group types that have groups that are archived
-            gtpGroupTypeFilter.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().Where(a => a.Groups.Any(x => x.IsArchived)).OrderBy( a => a.Name).AsNoTracking().ToList();
+            gtpGroupTypeFilter.GroupTypes = new GroupTypeService( new RockContext() ).AsNoFilter().Where(a => a.Groups.Any(x => x.IsArchived)).OrderBy( a => a.Name).AsNoTracking().ToList();
 
             gtpGroupTypeFilter.SetValue( gfList.GetUserPreference( "Group Type" ).AsIntegerOrNull() );
             tbNameFilter.Text = gfList.GetUserPreference( "Group Name" );

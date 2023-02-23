@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -30,7 +28,6 @@ namespace Rock.Jobs
 {
     /// <summary>
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Group Attendance Reporting" )]
     [Description( @"Helps with the reporting of attendance within a defined set of groups at the person level.
 The data view provides a list of groups to consider (the data view must return groups). A set of attribute values
@@ -67,12 +64,11 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
         Key = AttributeKey.CommandTimeoutSeconds,
         Description = "Maximum amount of time (in seconds) to wait for the SQL operations to complete. Leave blank to use the default for this job (180).",
         IsRequired = false,
-        DefaultIntegerValue = 60 * 3,
+        DefaultIntegerValue = 180,
         Category = "General",
         Order = 7 )]
 
-    [DisallowConcurrentExecution]
-    public class GroupAttendanceReporting : IJob
+    public class GroupAttendanceReporting : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -105,33 +101,29 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
             //
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var groupDataViewGuid = dataMap.GetString( AttributeKey.GroupDataView ).AsGuidOrNull();
-            var reportingLabel = dataMap.GetString( AttributeKey.ReportingLabel );
-            var trackedValues = dataMap.GetString( AttributeKey.TrackedValues ).SplitDelimitedValues();
-            var commandTimeoutSeconds = dataMap.GetString( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+            var groupDataViewGuid = GetAttributeValue( AttributeKey.GroupDataView ).AsGuidOrNull();
+            var reportingLabel = GetAttributeValue( AttributeKey.ReportingLabel );
+            var trackedValues = GetAttributeValue( AttributeKey.TrackedValues ).SplitDelimitedValues();
+            var commandTimeoutSeconds = GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 180;
 
             if ( !groupDataViewGuid.HasValue )
             {
-                context.UpdateLastStatusMessage( "No Group Data View defined." );
+                this.UpdateLastStatusMessage( "No Group Data View defined." );
                 return;
             }
 
             if ( reportingLabel.IsNullOrWhiteSpace() )
             {
-                context.UpdateLastStatusMessage( "No Reporting Label defined." );
+                this.UpdateLastStatusMessage( "No Reporting Label defined." );
                 return;
             }
 
             if ( trackedValues.Length == 0 )
             {
-                context.UpdateLastStatusMessage( "No Tracked Values defined." );
+                this.UpdateLastStatusMessage( "No Tracked Values defined." );
                 return;
             }
 
@@ -140,11 +132,11 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
             var groupDataView = new DataViewService( rockContext ).Get( groupDataViewGuid.Value );
             if ( groupDataView == null )
             {
-                context.UpdateLastStatusMessage( "No Group Data View defined." );
+                this.UpdateLastStatusMessage( "No Group Data View defined." );
                 return;
             }
 
-            var groupsQuery = groupDataView.GetQuery( new DataViewGetQueryArgs { DbContext = rockContext, DatabaseTimeoutSeconds = commandTimeoutSeconds } ) as IQueryable<Group>;
+            var groupsQuery = groupDataView.GetQuery( new DataViewGetQueryArgs { DatabaseTimeoutSeconds = commandTimeoutSeconds } ) as IQueryable<Group>;
             var groupIds = groupsQuery.Select( a => a.Id ).ToList();
 
             // limit attendances to groups returned from the DataView
@@ -160,19 +152,19 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
 
             if ( trackedValues.Contains( TrackedValueKey.FirstAttendedDate ) )
             {
-                context.UpdateLastStatusMessage( $"Calculating First Attended Date" );
+                this.UpdateLastStatusMessage( $"Calculating First Attended Date" );
                 UpdatePersonsFirstAttendedDate( attributeValuesByPersonId, reportingLabel, attendanceQuery );
             }
 
             if ( trackedValues.Contains( TrackedValueKey.LastAttendedDate ) )
             {
-                context.UpdateLastStatusMessage( $"Calculating Last Attended Date" );
+                this.UpdateLastStatusMessage( $"Calculating Last Attended Date" );
                 UpdatePersonsLastAttendedDate( attributeValuesByPersonId, reportingLabel, attendanceQuery );
             }
 
             if ( trackedValues.Contains( TrackedValueKey.TimesAttendedInLast12Months ) )
             {
-                context.UpdateLastStatusMessage( $"Calculating Times Attended In Last 12 Months" );
+                this.UpdateLastStatusMessage( $"Calculating Times Attended In Last 12 Months" );
                 var timesAttendedLast12MonthsAttributeKey = $"_core_GroupAttendanceReporting_{reportingLabel.RemoveSpecialCharacters()}-{TrackedValueKey.TimesAttendedInLast12Months}";
                 EnsureTrackedAttributeExists( timesAttendedLast12MonthsAttributeKey, $"{reportingLabel} - Times Attended in Last 12 Months", Rock.SystemGuid.FieldType.INTEGER.AsGuid() );
 
@@ -182,7 +174,7 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
 
             if ( trackedValues.Contains( TrackedValueKey.TimesAttendedInLast16Weeks ) )
             {
-                context.UpdateLastStatusMessage( $"Calculating Times Attended In Last 16 Weeks" );
+                this.UpdateLastStatusMessage( $"Calculating Times Attended In Last 16 Weeks" );
                 var timesAttendedInLast16WeeksAttributeKey = $"_core_GroupAttendanceReporting_{reportingLabel.RemoveSpecialCharacters()}-{TrackedValueKey.TimesAttendedInLast16Weeks}";
                 EnsureTrackedAttributeExists( timesAttendedInLast16WeeksAttributeKey, $"{reportingLabel} - Times Attended in Last 16 Weeks", Rock.SystemGuid.FieldType.INTEGER.AsGuid() );
 
@@ -231,12 +223,12 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
                     if ( progress % 1000 == 0 )
                     {
                         var percentProgress = Math.Round( 100 * progress / ( double ) total );
-                        context.UpdateLastStatusMessage( $"Updating Person Attributes: {percentProgress}%" );
+                        this.UpdateLastStatusMessage( $"Updating Person Attributes: {percentProgress}%" );
                     }
                 }
             }
 
-            context.UpdateLastStatusMessage( $"Updated attendance values for { updatedPersonCount } people." );
+            this.UpdateLastStatusMessage( $"Updated attendance values for { updatedPersonCount } people." );
         }
 
         /// <summary>

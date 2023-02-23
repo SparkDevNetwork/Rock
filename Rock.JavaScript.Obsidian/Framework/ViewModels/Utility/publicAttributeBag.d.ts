@@ -29,30 +29,30 @@ import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicA
  * view and edit a value, but not enough to edit the attribute itself.
  */
 export type PublicAttributeBag = {
-    /** Gets or sets the field type unique identifier. */
-    fieldTypeGuid?: Guid | null;
-
     /** Gets or sets the attribute unique identifier. */
     attributeGuid?: Guid | null;
-
-    /** Gets or sets the name of the attribute. */
-    name?: string | null;
-
-    /** Gets or sets the key that identifies the attribute on the entity. */
-    key?: string | null;
-
-    /** Gets or sets the description. */
-    description?: string | null;
-
-    /** Gets or sets a value indicating whether this attribute value is required. */
-    isRequired: boolean;
-
-    /** Gets or sets the order. */
-    order: number;
 
     /** Gets or sets the categories. */
     categories?: PublicAttributeCategoryBag[] | null;
 
     /** Gets or sets the configuration values. */
     configurationValues?: Record<string, string> | null;
+
+    /** Gets or sets the description. */
+    description?: string | null;
+
+    /** Gets or sets the field type unique identifier. */
+    fieldTypeGuid?: Guid | null;
+
+    /** Gets or sets a value indicating whether this attribute value is required. */
+    isRequired: boolean;
+
+    /** Gets or sets the key that identifies the attribute on the entity. */
+    key?: string | null;
+
+    /** Gets or sets the name of the attribute. */
+    name?: string | null;
+
+    /** Gets or sets the order. */
+    order: number;
 };

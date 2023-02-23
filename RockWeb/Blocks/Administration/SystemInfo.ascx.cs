@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -410,7 +410,11 @@ namespace RockWeb.Blocks.Administration
 
                 databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", _catalog, databaseConfig.ServerName ) );
                 databaseResults.Append( string.Format( "<br />Database Version: {0}", databaseConfig.Version ) );
-                databaseResults.Append( string.Format( "<br />Database Friendly Version: {0}", databaseConfig.VersionFriendlyName ) );
+                if ( databaseConfig.Platform != RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql )
+                {
+                    databaseResults.Append( string.Format( "<br />Database Friendly Version: {0}", databaseConfig.VersionFriendlyName ) );
+                }
+                databaseResults.AppendFormat( "<br />Database Compatibility Version: {0}", databaseConfig.CompatibilityVersion );
                 databaseResults.AppendFormat( "<br />Database Size: {0} MB", databaseConfig.DatabaseSize );
                 databaseResults.AppendFormat( "<br />Log File Size: {0} MB", databaseConfig.LogSize );
                 databaseResults.AppendFormat( "<br />Recovery Model: {0}", databaseConfig.RecoverMode );
@@ -560,7 +564,7 @@ namespace RockWeb.Blocks.Administration
 
             lLavaEngine.Text = RockInstanceConfig.LavaEngineName;
 
-            var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
+            var transactionQueueStats = RockQueue.GetStandardQueuedTransactions().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
             lTransactionQueue.Text = transactionQueueStats.Select( a => string.Format( "{0}: {1}", a.Name, a.Count ) ).ToList().AsDelimited( "<br/>" );
 
             var cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS ).AsBoolean();

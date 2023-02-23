@@ -9,7 +9,6 @@
             <asp:Literal runat="server" ID="lDashboardSubtitle" />
         </asp:Panel>
         <Rock:NotificationBox ID="nbMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one metric in the block settings." />
-        <Rock:PieChart ID="pcChart" runat="server" />
-
+        <Rock:RockPieChart ID="metricChart" runat="server" />
     </ContentTemplate>
 </asp:UpdatePanel>

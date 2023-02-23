@@ -94,6 +94,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<InteractiveExperienceSchedule>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, InteractiveExperienceSchedule.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, Metric.FriendlyTypeName );
@@ -126,6 +132,7 @@ namespace Rock.Model
             var viewModel = new ScheduleBag
             {
                 IdKey = model.IdKey,
+                AbbreviatedName = model.AbbreviatedName,
                 AutoInactivateWhenComplete = model.AutoInactivateWhenComplete,
                 CategoryId = model.CategoryId,
                 CheckInEndOffsetMinutes = model.CheckInEndOffsetMinutes,
@@ -135,6 +142,7 @@ namespace Rock.Model
                 EffectiveStartDate = model.EffectiveStartDate,
                 iCalendarContent = model.iCalendarContent,
                 IsActive = model.IsActive,
+                IsPublic = model.IsPublic,
                 Name = model.Name,
                 Order = model.Order,
                 WeeklyDayOfWeek = ( int? ) model.WeeklyDayOfWeek,
@@ -207,6 +215,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Schedule target, Schedule source )
         {
             target.Id = source.Id;
+            target.AbbreviatedName = source.AbbreviatedName;
             target.AutoInactivateWhenComplete = source.AutoInactivateWhenComplete;
             target.CategoryId = source.CategoryId;
             target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
@@ -218,6 +227,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.iCalendarContent = source.iCalendarContent;
             target.IsActive = source.IsActive;
+            target.IsPublic = source.IsPublic;
             target.Name = source.Name;
             target.Order = source.Order;
             target.WeeklyDayOfWeek = source.WeeklyDayOfWeek;

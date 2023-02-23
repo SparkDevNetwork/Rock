@@ -365,5 +365,48 @@ namespace Rock.Tests.Shared
         }
         #endregion
 
+        #region Pattern Matches
+
+        /// <summary>
+        /// Asserts that the two strings can be considered equivalent if a pattern containing one or more wildcards is matched.
+        /// </summary>
+        /// <param name="expected">The expected string, containing one or more wildcards.</param>
+        /// <param name="actual">The actual string.</param>
+        public static void MatchesWildcard( this Assert assert, string expected, string actual, bool ignoreCase = false, bool ignoreWhiteSpace = false, string wildcard = "*" )
+        {
+            var expectedOutput = expected;
+
+            // If ignoring whitespace, strip it from the comparison string.
+            if ( ignoreWhiteSpace )
+            {
+                expectedOutput = Regex.Replace( expectedOutput, @"\s*", string.Empty );
+            }
+
+            // Replace wildcards with a non-Regex symbol.
+            expectedOutput = expectedOutput.Replace( wildcard, "<<<wildCard>>>" );
+
+            expectedOutput = Regex.Escape( expectedOutput );
+
+            // Require a match of 1 or more characters for a wildcard.
+            expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.+)" );
+
+            // Add anchors for the start and end of the string, to ensure that the entire string is matched.
+            // If the caller wants to match a substring, they can place a wildcard at the start and end of the string.
+            expectedOutput = "^" + expectedOutput + "$";
+
+            // Allow the wildcard regex to match newlines.
+            var options = RegexOptions.Singleline;
+
+            if ( ignoreCase )
+            {
+                options = options | RegexOptions.IgnoreCase;
+            }
+
+            var regex = new Regex( expectedOutput, options );
+
+            StringAssert.Matches( actual, regex );
+        }
+
+        #endregion
     }
 }

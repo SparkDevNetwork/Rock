@@ -30,7 +30,7 @@ import { AttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentColle
 import SearchFilter from "./searchFilter.partial";
 import AttributeSearchFilter from "./attributeSearchFilter.partial";
 import { areEqual } from "@Obsidian/Utility/guid";
-import { FieldType } from "@Obsidian/SystemGuids";
+import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { FilterSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/filterSettingsBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -178,7 +178,7 @@ export default defineComponent({
         /**
          * Event handler for when the person clicks the edit button on one of
          * the attribute search filters.
-         * 
+         *
          * @param filter The attribute filter that should be edited.
          */
         const onEditAttributeFilter = (filter: AttributeFilterBag): void => {
@@ -191,7 +191,7 @@ export default defineComponent({
             editFilterName.value = filter.attributeName ?? "";
             editFilterEnabled.value = filter.isEnabled;
             editFilterLabel.value = filter.filterLabel ?? filter.attributeName ?? "";
-            
+
             // Special logic for Boolean field types since they are hard coded
             // to a Boolean control and don't show a filter type.
             if (areEqual(filter.fieldTypeGuid, FieldType.Boolean)) {
@@ -267,7 +267,7 @@ export default defineComponent({
             else if (!editFilterKey.value) {
                 // Update just the year search filter settings.
                 bag.yearSearchEnabled = editFilterEnabled.value;
-                bag.yearSearchFilterControl = toNumberOrNull(editFilterControl.value) ?? ContentCollectionFilterControl.Pills;
+                bag.yearSearchFilterControl = toNumberOrNull(editFilterControl.value) as ContentCollectionFilterControl ?? ContentCollectionFilterControl.Pills;
                 bag.yearSearchFilterIsMultipleSelection = editFilterType.value === "1";
                 bag.yearSearchLabel = editFilterLabel.value;
                 validProperties = ["yearSearchEnabled", "yearSearchFilterControl", "yearSearchFilterIsMultipleSelection", "yearSearchLabel"];
@@ -300,7 +300,7 @@ export default defineComponent({
                     filter.isMultipleSelection = false;
                 }
                 else {
-                    filter.filterControl = toNumberOrNull(editFilterControl.value) ?? ContentCollectionFilterControl.Pills;
+                    filter.filterControl = toNumberOrNull(editFilterControl.value) as ContentCollectionFilterControl ?? ContentCollectionFilterControl.Pills;
                     filter.isMultipleSelection = editFilterType.value === "1";
                 }
 
@@ -369,7 +369,7 @@ export default defineComponent({
         description="Uses the content channel item's start date to determine the year of the content."
         :values="yearSearchValues"
         @edit="onEditYearFilter" />
-    
+
     <SectionHeader title="Attribute Filters"
         description="The settings below allow you to provide filters for attributes that you have configured to add to your content collection."
         class="margin-t-lg" />

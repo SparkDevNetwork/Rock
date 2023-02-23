@@ -18,8 +18,8 @@ import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncCo
 import { deepEqual } from "./util";
 import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
-import { ControlLazyMode, ControlLazyModeType } from "@Obsidian/Types/Controls/controlLazyMode";
-import { PickerDisplayStyle, PickerDisplayStyleType } from "@Obsidian/Types/Controls/pickerDisplayStyle";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
+import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
 
@@ -40,10 +40,43 @@ type EmitFn<E extends `update:${string}`> = E extends Array<infer EE> ? (event: 
 export function useVModelPassthrough<T extends Prop, K extends PropKey<T>, E extends `update:${K}`>(props: T, modelName: K, emit: EmitFn<E>, options?: WatchOptions): Ref<T[K]> {
     const internalValue = ref(props[modelName]) as Ref<T[K]>;
 
-    watch(() => props[modelName], val => internalValue.value = val, options);
+    watch(() => props[modelName], val => updateRefValue(internalValue, val), options);
     watch(internalValue, val => emit(`update:${modelName}`, val), options);
 
     return internalValue;
+}
+
+/**
+ * Utility function for when you are using a component that takes a v-model
+ * and uses that model as a v-model in that component's template. It creates
+ * a new ref that keeps itself up-to-date with the given model and fires an
+ * 'update:MODELNAME' event when it gets changed. It also gives a means of watching
+ * the model prop for any changes (verifies that the prop change is different than
+ * the current value first)
+ *
+ * Ensure the related `props` and `emits` are specified to ensure there are
+ * no type issues.
+ */
+export function useVModelPassthroughWithPropUpdateCheck<T extends Prop, K extends PropKey<T>, E extends `update:${K}`>(props: T, modelName: K, emit: EmitFn<E>, options?: WatchOptions): [Ref<T[K]>, (fn: () => unknown) => void] {
+    const internalValue = ref(props[modelName]) as Ref<T[K]>;
+    const listeners: (() => void)[] = [];
+
+    watch(() => props[modelName], val => {
+        if (updateRefValue(internalValue, val)) {
+            onPropUpdate();
+        }
+    }, options);
+    watch(internalValue, val => emit(`update:${modelName}`, val), options);
+
+    function onPropUpdate(): void {
+        listeners.forEach(fn => fn());
+    }
+
+    function addPropUpdateListener(fn: () => unknown): void {
+        listeners.push(fn);
+    }
+
+    return [internalValue, addPropUpdateListener];
 }
 
 /**
@@ -109,6 +142,11 @@ type StandardRockFormFieldProps = {
     validationTitle: {
         type: PropType<string>,
         default: ""
+    },
+
+    isRequiredIndicatorHidden: {
+        type: PropType<boolean>,
+        default: false
     }
 };
 
@@ -137,6 +175,11 @@ export const standardRockFormFieldProps: StandardRockFormFieldProps = {
     validationTitle: {
         type: String as PropType<string>,
         default: ""
+    },
+
+    isRequiredIndicatorHidden: {
+        type: Boolean as PropType<boolean>,
+        default: false
     }
 };
 
@@ -170,7 +213,8 @@ export function useStandardRockFormFieldProps(props: ExtractPropTypes<StandardRo
         help: props.help,
         rules: props.rules,
         formGroupClasses: props.formGroupClasses,
-        validationTitle: props.validationTitle
+        validationTitle: props.validationTitle,
+        isRequiredIndicatorHidden: props.isRequiredIndicatorHidden
     });
 
     watch([() => props.formGroupClasses, () => props.help, () => props.label, () => props.rules, () => props.validationTitle], () => {
@@ -193,8 +237,8 @@ type StandardAsyncPickerProps = StandardRockFormFieldProps & {
 
     /** The method the picker should use to load data. */
     lazyMode: {
-        type: PropType<ControlLazyModeType>,
-        default: ControlLazyMode.OnDemand
+        type: PropType<ControlLazyMode>,
+        default: "onDemand"
     },
 
     /** True if the picker should allow multiple items to be selected. */
@@ -211,8 +255,8 @@ type StandardAsyncPickerProps = StandardRockFormFieldProps & {
 
     /** The visual style to use when displaying the picker. */
     displayStyle: {
-        type: PropType<PickerDisplayStyleType>,
-        default: PickerDisplayStyle.Auto
+        type: PropType<PickerDisplayStyle>,
+        default: "auto"
     },
 
     /** The number of columns to use when displaying the items in a list. */
@@ -232,7 +276,7 @@ export const standardAsyncPickerProps: StandardAsyncPickerProps = {
     },
 
     lazyMode: {
-        type: String as PropType<ControlLazyModeType>,
+        type: String as PropType<ControlLazyMode>,
         default: ControlLazyMode.OnDemand
     },
 
@@ -247,7 +291,7 @@ export const standardAsyncPickerProps: StandardAsyncPickerProps = {
     },
 
     displayStyle: {
-        type: String as PropType<PickerDisplayStyleType>,
+        type: String as PropType<PickerDisplayStyle>,
         default: PickerDisplayStyle.Auto
     },
 
@@ -320,10 +364,10 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
 /**
  * Creates a Ref that contains extended data to better identify this ref
  * when you have multiple refs to work with.
- * 
+ *
  * @param value The initial value of the Ref.
  * @param extendedData The additional context data to put on the Ref.
- * 
+ *
  * @returns An ExtendedRef object that can be used like a regular Ref object.
  */
 export function extendedRef<T>(value: T, context: ExtendedRefContext): ExtendedRef<T> {
@@ -336,7 +380,7 @@ export function extendedRef<T>(value: T, context: ExtendedRefContext): ExtendedR
 
 /**
  * Creates an extended Ref with the specified property name in the context.
- * 
+ *
  * @param value The initial value of the Ref.
  * @param propertyName The property name to use for the context.
  *

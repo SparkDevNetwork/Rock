@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -98,6 +99,11 @@ namespace Rock.Model
         /// Gets or sets the person phones.
         /// </summary>
         public List<PhoneViewModel> PersonPhones { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        public Campus Campus { get; set; }
 
         /// <summary>
         /// Gets or sets the campus identifier.
@@ -264,6 +270,12 @@ namespace Rock.Model
         ///   <c>true</c> if [current person can edit]; otherwise, <c>false</c>.
         /// </value>
         public bool CanCurrentUserEdit { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attributes of this instance
+        /// </summary>
+        public string RequestAttributes { get; set; }
+
         #endregion Properties
 
         #region Computed
@@ -592,7 +604,7 @@ namespace Rock.Model
         /// <summary>
         /// Phone View Model
         /// </summary>
-        public sealed class PhoneViewModel
+        public sealed class PhoneViewModel : RockDynamic
         {
             /// <summary>
             /// Gets or sets the type of the phone.
@@ -608,6 +620,14 @@ namespace Rock.Model
             /// Gets or sets a value indicating whether this instance is messaging enabled.
             /// </summary>
             public bool IsMessagingEnabled { get; set; }
+
+            /// <summary>
+            /// Returns a string that represents the current object.
+            /// </summary>
+            public override string ToString()
+            {
+                return string.Format( "{0}: {1}", PhoneType, FormattedPhoneNumber );
+            }
         }
     }
 }

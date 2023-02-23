@@ -16,10 +16,11 @@
 //
 import { Component, } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 
 export const enum ConfigurationValueKey {
     MaxRating = "max"
@@ -80,5 +81,28 @@ export class RatingFieldType extends FieldTypeBase {
 
     public override getSupportedComparisonTypes(): ComparisonType {
         return numericComparisonTypes;
+    }
+
+    public override doesValueMatchFilter(value: string, filterValue: ComparisonValue, configurationValues: Record<string, string>): boolean {
+        let ratingValue: RatingValue | null;
+
+        try {
+            ratingValue = JSON.parse(value) as RatingValue;
+        }
+        catch {
+            ratingValue = null;
+        }
+
+        const rating = ratingValue?.value ?? 0;
+
+        if (filterValue.comparisonType === ComparisonType.IsBlank) {
+            return rating === 0;
+        }
+        else if (filterValue.comparisonType === ComparisonType.IsNotBlank) {
+            return rating !== 0;
+        }
+        else {
+            return super.doesValueMatchFilter(rating.toString(), filterValue, configurationValues);
+        }
     }
 }

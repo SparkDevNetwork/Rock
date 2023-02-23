@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Quartz;
 
@@ -34,30 +36,50 @@ namespace Rock.Jobs
         /// </summary>
         public string Name => "RockTriggerListener";
 
+#if REVIEW_NET5_0_OR_GREATER
+        /// <inheritdoc/>
+        public async Task<bool> VetoJobExecution( ITrigger trigger, IJobExecutionContext context, CancellationToken cancellationToken )
+#else
         /// <summary>
-        /// Called by the <see cref="IScheduler"/> when a  <see cref="ITrigger"/> has fired, and it's
-        /// associated <see cref="IJobDetail"/> is about to be executed. It is called after the
+        /// Called by the <see cref="IScheduler" /> when a  <see cref="ITrigger" /> has fired, and it's
+        /// associated <see cref="IJobDetail" /> is about to be executed. It is called after the
         /// TriggerFired(ITrigger, IJobExecutionContext) method of this interface.
         /// If the execution is vetoed (via returning true), the job's execute method will not be called.
         /// </summary>
         /// <param name="trigger">The trigger.</param>
         /// <param name="context">The context.</param>
-        /// <returns></returns>
+        /// <returns>Returns true if job execution should be vetoed, false otherwise.</returns>
         public bool VetoJobExecution( ITrigger trigger, IJobExecutionContext context )
+#endif
         {
             // get job type id
             int jobId = context.JobDetail.Description.AsInteger();
 
+#if REVIEW_NET5_0_OR_GREATER
+            var allSchedulers = await new Quartz.Impl.StdSchedulerFactory().GetAllSchedulers( cancellationToken );
+#else
+            var allSchedulers = new Quartz.Impl.StdSchedulerFactory().AllSchedulers;
+#endif
+
             // Check if other schedulers are running this job...
             // TODO NOTE: Someday we would want to see if this also can work across
             // multiple 'hosts' in a Rock cluster else we should handle this explicitly.
-            var otherSchedulers = new Quartz.Impl.StdSchedulerFactory().AllSchedulers
+            var otherSchedulers = allSchedulers
                 .Where( s => s.SchedulerName != context.Scheduler.SchedulerName );
 
             foreach ( var scheduler in otherSchedulers )
             {
-                if ( scheduler.GetCurrentlyExecutingJobs().Where( j => j.JobDetail.Description == context.JobDetail.Description &&
+#if REVIEW_NET5_0_OR_GREATER
+                var currentlyExecutingJobs = await scheduler.GetCurrentlyExecutingJobs( cancellationToken );
+#else
+                var currentlyExecutingJobs = scheduler.GetCurrentlyExecutingJobs();
+#endif
+                if ( currentlyExecutingJobs.Where( j => j.JobDetail.Description == context.JobDetail.Description &&
+#if REVIEW_NET5_0_OR_GREATER
+                    j.JobDetail.ConcurrentExecutionDisallowed ).Any() )
+#else
                     j.JobDetail.ConcurrentExectionDisallowed ).Any() )
+#endif
                 {
                     System.Diagnostics.Debug.WriteLine( RockDateTime.Now.ToString() + $" VETOED! Scheduler '{scheduler.SchedulerName}' is already executing job Id '{context.JobDetail.Description}' (key: {context.JobDetail.Key})" );
                     return true;
@@ -67,6 +89,7 @@ namespace Rock.Jobs
             return false;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Called by the <see cref="IScheduler"/> when a <see cref="ITrigger"/> has fired, it's associated <see cref="IJobDetail"/>
         /// has been executed, and it's Triggered(<see cref="ICalendar"/>) method has been called.
@@ -78,26 +101,64 @@ namespace Rock.Jobs
         {
             // do nothing
         }
+#endif
 
+#if REVIEW_NET5_0_OR_GREATER
+        /// <inheritdoc/>
+        public Task TriggerFired( ITrigger trigger, IJobExecutionContext context, CancellationToken cancellationToken )
+        {
+            return Task.CompletedTask;
+        }
+#else
         /// <summary>
-        /// Called by the <see cref="IScheduler"/> when a <see cref="ITrigger"/> has fired, and it's
-        /// associated <see cref="IJobDetail"/> is about to be executed.
+        /// Called by the <see cref="IScheduler" /> when a <see cref="ITrigger" /> has fired, and it's
+        /// associated <see cref="IJobDetail" /> is about to be executed.
         /// </summary>
         /// <param name="trigger">The trigger.</param>
         /// <param name="context">The context.</param>
+        /// <returns>Task.</returns>
         public void TriggerFired( ITrigger trigger, IJobExecutionContext context )
         {
             // do nothing
+            return;
         }
+#endif
 
+#if REVIEW_NET5_0_OR_GREATER
+        /// <inheritdoc/>
+        public Task TriggerMisfired( ITrigger trigger, CancellationToken cancellationToken )
+        {
+            return Task.CompletedTask;
+        }
+#else
         /// <summary>
-        /// Called by the <see cref="IScheduler"/> when a <see cref="ITrigger"/>
+        /// Called by the <see cref="IScheduler" /> when a <see cref="ITrigger" />
         /// has misfired.
         /// </summary>
         /// <param name="trigger">The trigger.</param>
+        /// <returns>Task.</returns>
         public void TriggerMisfired( ITrigger trigger )
         {
             // do nothing
+            return;
+        }
+#endif
+
+        /// <summary>
+        /// Called by the <see cref="T:Quartz.IScheduler" /> when a <see cref="T:Quartz.ITrigger" />
+        /// has fired, it's associated <see cref="T:Quartz.IJobDetail" />
+        /// has been executed, and it's <see cref="M:Quartz.Spi.IOperableTrigger.Triggered(Quartz.ICalendar)" /> method has been
+        /// called.
+        /// </summary>
+        /// <param name="trigger">The <see cref="T:Quartz.ITrigger" /> that was fired.</param>
+        /// <param name="context">The <see cref="T:Quartz.IJobExecutionContext" /> that was passed to the
+        /// <see cref="T:Quartz.IJob" />'s<see cref="M:Quartz.IJob.Execute(Quartz.IJobExecutionContext)" /> method.</param>
+        /// <param name="triggerInstructionCode">The result of the call on the <see cref="T:Quartz.ITrigger" />'s<see cref="M:Quartz.Spi.IOperableTrigger.Triggered(Quartz.ICalendar)" />  method.</param>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
+        /// <returns>Task.</returns>
+        public Task TriggerComplete( ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode, CancellationToken cancellationToken = default )
+        {
+            return Task.CompletedTask;
         }
     }
 }

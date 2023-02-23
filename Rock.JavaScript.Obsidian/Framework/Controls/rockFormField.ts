@@ -82,7 +82,7 @@ export default defineComponent({
         });
 
         // Watch for changes to the modelValue and update our internalValue.
-        watch(() => props.modelValue, () => {
+        watch(() => [props.modelValue, props.rules], () => {
             internalValue.value = props.modelValue;
 
             const errors = validateValue(internalValue.value, props.rules);
@@ -116,7 +116,7 @@ export default defineComponent({
 
     template: `
 <slot name="pre" />
-<div v-if="label || help" class="form-group" :class="[classAttr, formGroupClasses, isRequired ? 'required' : '', errorClasses]">
+<div v-if="label || help" class="form-group" :class="[classAttr, formGroupClasses, isRequired && !isRequiredIndicatorHidden ? 'required' : '', errorClasses]">
     <RockLabel :for="uniqueId" :help="help">
         {{label}}
     </RockLabel>

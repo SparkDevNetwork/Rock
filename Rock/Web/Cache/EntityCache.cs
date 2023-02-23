@@ -120,7 +120,7 @@ namespace Rock.Web.Cache
                 var result = QueryDb( id, rockContext );
                 if ( result != null )
                 {
-                    IdFromGuidCache.UpdateCacheItem( result.Guid.ToString(), new IdFromGuidCache( id ) );
+                    IdFromGuidCache.UpdateCacheId<T>( result.Guid, id );
                 }
 
                 return result;
@@ -136,6 +136,35 @@ namespace Rock.Web.Cache
         {
             var guid = guidString.AsGuidOrNull();
             return guid.HasValue ? Get( guid.Value ) : default( T );
+        }
+
+        /// <summary>
+        /// Gets a cached item using a generic key.
+        /// </summary>
+        /// <remarks>
+        /// The key is a string representation of either an integer identifier,
+        /// a unique identifier, or a hashed identifier.
+        /// </remarks>
+        /// <param name="key">The key to be parsed and used to load the cached entity.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <returns>The cached <typeparamref name="T"/> or <c>null</c> if not found in cache or the database.</returns>
+        internal static T Get( string key, bool allowIntegerIdentifier )
+        {
+            int? id = allowIntegerIdentifier ? key.AsIntegerOrNull() : null;
+
+            if ( !id.HasValue )
+            {
+                var guid = key.AsGuidOrNull();
+
+                if ( guid.HasValue )
+                {
+                    return Get( guid.Value );
+                }
+
+                id = Rock.Utility.IdHasher.Instance.GetId( key );
+            }
+
+            return id.HasValue ? Get( id.Value ) : default;
         }
 
         /// <summary>
@@ -193,7 +222,7 @@ namespace Rock.Web.Cache
         public static T Get( Guid guid, RockContext rockContext )
         {
             // see if the Id is stored in CacheIdFromGuid
-            int? idFromGuid = IdFromGuidCache.GetId( guid );
+            int? idFromGuid = IdFromGuidCache.GetId<T>( guid );
             T cachedEntity;
             if ( idFromGuid.HasValue )
             {
@@ -205,7 +234,7 @@ namespace Rock.Web.Cache
             cachedEntity = QueryDb( guid, rockContext );
             if ( cachedEntity != null )
             {
-                IdFromGuidCache.UpdateCacheItem( guid.ToString(), new IdFromGuidCache( cachedEntity.Id ) );
+                IdFromGuidCache.UpdateCacheId<T>( guid, cachedEntity.Id );
                 UpdateCacheItem( cachedEntity.Id.ToString(), cachedEntity );
             }
 
@@ -225,7 +254,7 @@ namespace Rock.Web.Cache
             var value = new T();
             value.SetFromEntity( entity );
 
-            IdFromGuidCache.UpdateCacheItem( entity.Guid.ToString(), new IdFromGuidCache( entity.Id ) );
+            IdFromGuidCache.UpdateCacheId<T>( entity.Guid, entity.Id );
             UpdateCacheItem( entity.Id.ToString(), value );
 
             return value;
@@ -252,13 +281,13 @@ namespace Rock.Web.Cache
         /// <returns><c>true</c> if the item was found in cache, <c>false</c> otherwise.</returns>
         public static bool TryGet( Guid guid, out T item )
         {
-            if ( !IdFromGuidCache.TryGet( guid.ToString(), out var id ) )
+            if ( !IdFromGuidCache.TryGetId<T>( guid.ToString(), out var id ) )
             {
                 item = default;
                 return false;
             }
 
-            return ItemCache<T>.TryGet( id.Id.ToString(), out item );
+            return ItemCache<T>.TryGet( id.ToString(), out item );
         }
 
         /// <summary>

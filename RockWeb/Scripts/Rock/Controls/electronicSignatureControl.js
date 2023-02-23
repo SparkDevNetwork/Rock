@@ -16,7 +16,7 @@
 
                 var self = this;
 
-                self.ImageMimeType = options.imageMimeType ?? "image/png";
+                self.ImageMimeType = options.imageMimeType || "image/png";
 
                 var $control = $('#' + options.controlId);
 

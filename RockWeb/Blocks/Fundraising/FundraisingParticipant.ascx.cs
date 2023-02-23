@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -37,25 +37,138 @@ namespace RockWeb.Blocks.Fundraising
     [Category( "Fundraising" )]
     [Description( "Public facing block that shows a fundraising opportunity participant" )]
 
-    [CodeEditorField( "Profile Lava Template", "Lava template for what to display at the top of the main panel. Usually used to display information about the participant such as photo, name, etc.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingParticipantProfile.lava' %}", order: 1 )]
+    [CodeEditorField(
+        "Profile Lava Template",
+        Key = AttributeKey.ProfileLavaTemplate,
+        Description = "Lava template for what to display at the top of the main panel. Usually used to display information about the participant such as photo, name, etc.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/FundraisingParticipantProfile.lava' %}",
+        Order = 1 )]
 
-    [CodeEditorField( "Progress Lava Template", "Lava template for how the progress bar should be displayed ", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingParticipantProgress.lava' %}", order: 2)]
+    [CodeEditorField(
+        "Progress Lava Template",
+        Key = AttributeKey.ProgressLavaTemplate,
+        Description = "Lava template for how the progress bar should be displayed ",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/FundraisingParticipantProgress.lava' %}",
+        Order = 2 )]
 
-    [CodeEditorField( "Updates Lava Template", "Lava template for the Updates (Content Channel Items)", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}", order: 3 )]
+    [CodeEditorField(
+        "Updates Lava Template",
+        Key = AttributeKey.UpdatesLavaTemplate,
+        Description = "Lava template for the Updates (Content Channel Items)",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}",
+        Order = 3 )]
 
-    [NoteTypeField( "Note Type", "Note Type to use for participant comments", false, "Rock.Model.GroupMember", defaultValue: "FFFC3644-60CD-4D14-A714-E8DCC202A0E1", order: 5 )]
-    [LinkedPage( "Donation Page", "The page where a person can donate to the fundraising opportunity", required: false, order: 6 )]
-    [LinkedPage( "Main Page", "The main page for the fundraising opportunity", required: false, order: 7 )]
-    [BooleanField( "Show Clipboard Icon", "Show a clipboard icon which will copy the page url to the users clipboard", true, order:8)]
-    [TextField( "Image CSS Class", "CSS class to apply to the image.", false, "img-thumbnail", key: "ImageCssClass", order: 9 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "PersonAttributes", "The Person Attributes that the participant can edit", false, true, order: 7 )]
-    [BooleanField( "Show Amount", "Determines if the Amount column should be displayed in the Contributions List.", false, order: 8 )]
+    [CodeEditorField(
+        "Requirements Header Lava Template",
+        Key = AttributeKey.RequirementsHeaderLavaTemplate,
+        Description = "Lava template for requirements header.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/FundraisingParticipantRequirementsHeader.lava' %}",
+        Order = 4 )]
+
+    [NoteTypeField(
+        "Note Type",
+        Key = AttributeKey.NoteType,
+        Description = "Note Type to use for participant comments",
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.GroupMember",
+        DefaultValue = Rock.SystemGuid.NoteType.GROUPMEMBER_NOTE,
+        Order = 5 )]
+
+    [LinkedPage(
+        "Donation Page",
+        Key = AttributeKey.DonationPage,
+        Description = "The page where a person can donate to the fundraising opportunity",
+        IsRequired = false,
+        Order = 6 )]
+
+    [LinkedPage(
+        "Main Page",
+        Key = AttributeKey.MainPage,
+        Description = "The main page for the fundraising opportunity",
+        IsRequired = false,
+        Order = 7 )]
+
+    [BooleanField(
+        "Show Clipboard Icon",
+        Key = AttributeKey.ShowClipboardIcon,
+        Description = "Show a clipboard icon which will copy the page url to the users clipboard",
+        IsRequired = true,
+        Order = 8 )]
+
+    [TextField(
+        "Image CSS Class",
+        Description = "CSS class to apply to the image.",
+        IsRequired = false,
+        DefaultValue = "img-thumbnail",
+        Key = AttributeKey.ImageCssClass,
+        Order = 9 )]
+
+    [TextField(
+        "Contributions Header",
+        Description = "The title for the Contributions header.",
+        IsRequired = false,
+        DefaultValue = "Contributions",
+        Key = AttributeKey.ContributionsHeader,
+        Order = 10 )]
+
+    [AttributeField(
+        "PersonAttributes",
+        Key = AttributeKey.PersonAttributes,
+        EntityTypeGuid = Rock.SystemGuid.EntityType.PERSON,
+        Description = "The Person Attributes that the participant can edit",
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 11 )]
+
+    [BooleanField(
+        "Show Amount",
+        Key = AttributeKey.ShowAmount,
+        Description = "Determines if the Amount column should be displayed in the Contributions List.",
+        DefaultBooleanValue = false,
+        Order = 12 )]
+
+    [LinkedPage(
+        "Workflow Entry Page",
+        Description = "Page used to launch a new workflow of the selected type.",
+        Key = AttributeKey.WorkflowEntryPage,
+        DefaultValue = Rock.SystemGuid.Page.EXTERNAL_WORKFLOW_ENTRY,
+        Order = 13 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "1FEA697F-DD12-4FE0-BC58-EE896123E7F1" )]
     public partial class FundraisingParticipant : RockBlock
     {
+        private static class AttributeKey
+        {
+            public const string ProfileLavaTemplate = "ProfileLavaTemplate";
+            public const string ProgressLavaTemplate = "ProgressLavaTemplate";
+            public const string UpdatesLavaTemplate = "UpdatesLavaTemplate";
+            public const string RequirementsHeaderLavaTemplate = "RequirementsHeaderLavaTemplate";
+            public const string NoteType = "NoteType";
+            public const string DonationPage = "DonationPage";
+            public const string MainPage = "MainPage";
+            public const string ShowClipboardIcon = "ShowClipboardIcon";
+            public const string ImageCssClass = "ImageCssClass";
+            public const string ContributionsHeader = "ContributionsHeader";
+            public const string PersonAttributes = "PersonAttributes";
+            public const string ShowAmount = "ShowAmount";
+            public const string WorkflowEntryPage = "WorkflowEntryPage";
+        }
         #region Base Control Methods
 
         /// <summary>
@@ -66,7 +179,7 @@ namespace RockWeb.Blocks.Fundraising
         {
             base.OnInit( e );
 
-            if ( this.GetAttributeValue( "ShowClipboardIcon" ).AsBoolean() )
+            if ( this.GetAttributeValue( AttributeKey.ShowClipboardIcon ).AsBoolean() )
             {
                 // Setup for being able to copy text to clipboard
                 RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
@@ -112,13 +225,22 @@ namespace RockWeb.Blocks.Fundraising
                     pnlView.Visible = false;
                 }
 
-                imgOpportunityPhoto.CssClass = GetAttributeValue( "ImageCssClass" );
+                imgOpportunityPhoto.CssClass = GetAttributeValue( AttributeKey.ImageCssClass );
             }
             else
             {
-                var groupMember = new GroupMemberService( new RockContext() ).Get( hfGroupMemberId.Value.AsInteger() );
+                var rockContext = new RockContext();
+                var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
                 if ( groupMember != null )
                 {
+                    // Set the requirements values only if there are requirements for this group / group type.
+                    if ( groupMember.Group.GroupRequirements.Any() || groupMember.Group.GroupType.GroupRequirements.Any() )
+                    {
+                        gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+                        gmrcRequirements.Visible = true;
+                        SetRequirementStatuses( rockContext );
+                    }
                     CreateDynamicControls( groupMember );
                 }
             }
@@ -147,7 +269,7 @@ namespace RockWeb.Blocks.Fundraising
         {
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "GroupId", hfGroupId.Value );
-            NavigateToLinkedPage( "MainPage", queryParams );
+            NavigateToLinkedPage( AttributeKey.MainPage, queryParams );
         }
 
         /// <summary>
@@ -217,7 +339,8 @@ namespace RockWeb.Blocks.Fundraising
         {
             groupMember.LoadAttributes();
             groupMember.Group.LoadAttributes();
-            // GroupMember Attributes (all of them)
+
+            // GroupMember Attributes (all of them).
             phGroupMemberAttributes.Controls.Clear();
 
             // Exclude any attributes for which the current person has NO EDIT access.
@@ -244,7 +367,7 @@ namespace RockWeb.Blocks.Fundraising
             // Person Attributes (the ones they picked in the Block Settings)
             phPersonAttributes.Controls.Clear();
 
-            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
+            var personAttributes = this.GetAttributeValue( AttributeKey.PersonAttributes ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
             if ( personAttributes.Any() )
             {
                 var person = groupMember.Person;
@@ -301,7 +424,7 @@ namespace RockWeb.Blocks.Fundraising
             Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
 
             // Save selected Person Attributes (The ones picked in Block Settings)
-            var personAttributes = this.GetAttributeValue( "PersonAttributes" ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
+            var personAttributes = this.GetAttributeValue( AttributeKey.PersonAttributes ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
             if ( personAttributes.Any() )
             {
                 person.LoadAttributes( rockContext );
@@ -394,6 +517,7 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             var groupMember = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == groupId && a.Id == groupMemberId ).FirstOrDefault();
+
             if ( groupMember == null )
             {
                 pnlView.Visible = false;
@@ -401,6 +525,7 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             group.LoadAttributes( rockContext );
+            var participationMode = group.GetAttributeValue( "ParticipationType" ).ConvertToEnumOrNull<ParticipationType>() ?? ParticipationType.Individual;
 
             // set page title to the trip name
             RockPage.Title = group.GetAttributeValue( "OpportunityTitle" );
@@ -425,26 +550,49 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             // Top Main
-            string profileLavaTemplate = this.GetAttributeValue( "ProfileLavaTemplate" );
-            if ( groupMember.PersonId == this.CurrentPersonId )
+            string profileLavaTemplate = this.GetAttributeValue( AttributeKey.ProfileLavaTemplate );
+
+            // Create a list of group member Ids that are all the family members in the current group.
+            var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
+
+            // This variable sets up whether the current person is logged in, is in the same family as the block's group member, and whether this group's participation type is "Family".
+            bool isCurrentPersonAFamilyMemberOfGroupMemberAndGroupParticipationTypeIsFamily =
+                participationMode == ParticipationType.Family && this.CurrentPersonId.HasValue && familyMembers.Contains( this.CurrentPersonId.Value );
+
+            if ( groupMember.PersonId == this.CurrentPersonId || isCurrentPersonAFamilyMemberOfGroupMemberAndGroupParticipationTypeIsFamily )
             {
                 // show a warning about missing Photo or Intro if the current person is viewing their own profile
+                string progressTitle = participationMode == ParticipationType.Individual ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name;
+                mergeFields.Add( "ProgressTitle", progressTitle );
                 var warningItems = new List<string>();
                 if ( !groupMember.Person.PhotoId.HasValue )
                 {
                     warningItems.Add( "photo" );
                 }
-                if ( groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ).IsNullOrWhiteSpace())
+
+                if ( groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ).IsNullOrWhiteSpace() )
                 {
                     warningItems.Add( "personal opportunity introduction" );
                 }
 
                 nbProfileWarning.Text = "<strong>Tip!</strong> Edit your profile to add a " + warningItems.AsDelimited( ", ", " and " ) + ".";
                 nbProfileWarning.Visible = warningItems.Any();
+
+                // Set the requirements values only if there are requirements for this group / group type.
+                if ( group.GroupRequirements.Any() || group.GroupType.GroupRequirements.Any() )
+                {
+                    gmrcRequirements.WorkflowEntryLinkedPageValue = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+                    gmrcRequirements.Visible = true;
+                    SetRequirementStatuses( rockContext );
+
+                    var participantLavaTemplate = this.GetAttributeValue( AttributeKey.RequirementsHeaderLavaTemplate );
+                    lParticipantHtml.Text = participantLavaTemplate.ResolveMergeFields( mergeFields );
+                }
             }
             else
             {
                 nbProfileWarning.Visible = false;
+                gmrcRequirements.Visible = false;
             }
 
             btnEditProfile.Visible = groupMember.PersonId == this.CurrentPersonId;
@@ -453,26 +601,50 @@ namespace RockWeb.Blocks.Fundraising
 
             bool disablePublicContributionRequests = groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean();
 
-            // only show Contribution stuff if the current person is the participant and contribution requests haven't been disabled
-            bool showContributions = !disablePublicContributionRequests && ( groupMember.PersonId == this.CurrentPersonId );
+            // only show Contribution stuff if the participant is the current person or an allowed family member, and contribution requests haven't been disabled
+            bool showContributions = !disablePublicContributionRequests && ( groupMember.PersonId == this.CurrentPersonId || isCurrentPersonAFamilyMemberOfGroupMemberAndGroupParticipationTypeIsFamily );
             btnContributionsTab.Visible = showContributions;
 
             // Progress
+            // Create the total and the goal variables before setting them.
+            decimal contributionTotal;
+            decimal? fundraisingGoal;
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
-            var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
-                        .Where( d => d.EntityTypeId == entityTypeIdGroupMember
-                                && d.EntityId == groupMemberId )
-                        .Sum( a => (decimal?)a.Amount ) ?? 0.00M;
-
-            var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
-            if ( !individualFundraisingGoal.HasValue )
+            // If this is a Family participation type, collect the number of family members that are on the team.
+            if ( participationMode == ParticipationType.Family )
             {
-                individualFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                var groupMembers = group.Members.ToList();
+
+                // Create a list of group member Ids that are all the family members in the current group.
+                var familyMemberGroupMemberIdsInCurrentGroup = groupMembers.Where( m => familyMembers.Contains( m.PersonId ) ).Select( m => m.Id ).ToList();
+
+                contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                        .Where( d => d.EntityTypeId == entityTypeIdGroupMember
+                                && d.EntityId.HasValue
+                                && familyMemberGroupMemberIdsInCurrentGroup.Contains( d.EntityId.Value ) )
+                        .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+
+                // Multiply the number of family members by the individual fundraising goals from the group (not any goals from the group members).
+                var groupFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                fundraisingGoal = groupFundraisingGoal.HasValue ? familyMemberGroupMemberIdsInCurrentGroup.Count * groupFundraisingGoal.Value : 0.00M;
+            }
+            else
+            {
+                contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                            .Where( d => d.EntityTypeId == entityTypeIdGroupMember
+                                    && d.EntityId == groupMemberId )
+                            .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+
+                fundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                if ( !fundraisingGoal.HasValue )
+                {
+                    fundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                }
             }
 
-            var amountLeft = individualFundraisingGoal - contributionTotal;
-            var percentMet = individualFundraisingGoal > 0 ? contributionTotal * 100 / individualFundraisingGoal : 100;
+            var amountLeft = fundraisingGoal - contributionTotal;
+            var percentMet = fundraisingGoal > 0 ? contributionTotal * 100 / fundraisingGoal : 100;
 
             mergeFields.Add( "AmountLeft", amountLeft );
             mergeFields.Add( "PercentMet", percentMet );
@@ -480,7 +652,8 @@ namespace RockWeb.Blocks.Fundraising
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "GroupId", hfGroupId.Value );
             queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
-            mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", queryParams ));
+            queryParams.Add( "ParticipationMode", participationMode.ToString( "D" ) );
+            mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( AttributeKey.DonationPage, queryParams ) );
 
             var opportunityType = DefinedValueCache.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
@@ -496,7 +669,7 @@ namespace RockWeb.Blocks.Fundraising
 
             mergeFields.Add( "MakeDonationButtonText", makeDonationButtonText );
 
-            var progressLavaTemplate = this.GetAttributeValue( "ProgressLavaTemplate" );
+            var progressLavaTemplate = this.GetAttributeValue( AttributeKey.ProgressLavaTemplate );
             lProgressHtml.Text = progressLavaTemplate.ResolveMergeFields( mergeFields );
 
             // set text on the return button
@@ -516,7 +689,7 @@ namespace RockWeb.Blocks.Fundraising
                     // only show the UpdatesTab if there is another Tab option
                     btnUpdatesTab.Visible = btnContributionsTab.Visible;
 
-                    string updatesLavaTemplate = this.GetAttributeValue( "UpdatesLavaTemplate" );
+                    string updatesLavaTemplate = this.GetAttributeValue( AttributeKey.UpdatesLavaTemplate );
                     var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).AsNoTracking().ToList();
 
                     mergeFields.Add( "ContentChannelItems", contentChannelItems );
@@ -529,20 +702,21 @@ namespace RockWeb.Blocks.Fundraising
             {
                 SetActiveTab( "Updates" );
             }
-            else if (showContributions)
+            else if ( showContributions )
             {
                 SetActiveTab( "Contributions" );
             }
             else
             {
-                SetActiveTab( "" );
+                SetActiveTab( string.Empty );
             }
 
             // Tab: Contributions
             BindContributionsGrid();
+            lContributionsHeader.Text = this.GetAttributeValue( AttributeKey.ContributionsHeader );
 
             // Tab:Comments
-            var noteType = NoteTypeCache.Get( this.GetAttributeValue( "NoteType" ).AsGuid() );
+            var noteType = NoteTypeCache.Get( this.GetAttributeValue( AttributeKey.NoteType ).AsGuid() );
             if ( noteType != null )
             {
                 notesCommentsTimeline.NoteOptions.SetNoteTypes( new List<NoteTypeCache> { noteType } );
@@ -579,12 +753,28 @@ namespace RockWeb.Blocks.Fundraising
         }
 
         /// <summary>
+        /// Sets the Requirement Statuses.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        private void SetRequirementStatuses( RockContext rockContext )
+        {
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMember = groupMemberService.Get( hfGroupMemberId.ValueAsInt() );
+
+            gmrcRequirements.RequirementStatuses = groupMember.Group.PersonMeetsGroupRequirements( rockContext, groupMember.PersonId, groupMember.GroupRoleId );
+            gmrcRequirements.SelectedGroupRoleId = groupMember.GroupRoleId;
+            var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
+                groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
+            gmrcRequirements.CreateRequirementStatusControls( groupMember.Id, currentPersonIsLeaderOfCurrentGroup, false );
+        }
+
+        /// <summary>
         /// Binds the contributions grid.
         /// </summary>
         protected void BindContributionsGrid()
         {
             // Hide the whole Amount column if the block setting is set to hide
-            var showAmount = GetAttributeValue( "ShowAmount" ).AsBoolean();
+            var showAmount = GetAttributeValue( AttributeKey.ShowAmount ).AsBoolean();
             var amountCol = gContributions.ColumnsOfType<RockLiteralField>()
                 .FirstOrDefault( c => c.ID == "lTransactionDetailAmount" );
             if ( amountCol != null )
@@ -619,24 +809,26 @@ namespace RockWeb.Blocks.Fundraising
                 financialTransaction.AuthorizedPersonAlias != null &&
                 financialTransaction.AuthorizedPersonAlias.Person != null )
             {
-	            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
-	            if ( lAddress != null )
-	            {
-	                var location = financialTransaction.AuthorizedPersonAlias.Person.GetMailingLocation();
+                Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
+                if ( lAddress != null )
+                {
+                    var location = financialTransaction.AuthorizedPersonAlias.Person.GetMailingLocation();
                     string streetAddress = location != null ? location.GetFullStreetAddress() : string.Empty;
                     lAddress.Text = financialTransaction.ShowAsAnonymous ? string.Empty : streetAddress;
                 }
 
-	            Literal lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
-	            if ( lPersonName != null )
-	            {
-	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
-	            }
+                Literal lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
+                if ( lPersonName != null )
+                {
+                    lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
+                }
 
                 // The transaction may have been split with details for one contribution going to the person
                 // and the other details going elsewhere.  We only want to show details that match this group member.
                 Literal lTransactionDetailAmount = e.Row.FindControl( "lTransactionDetailAmount" ) as Literal;
-                if ( lTransactionDetailAmount != null && lTransactionDetailAmount.Visible )
+                var showAmount = GetAttributeValue( AttributeKey.ShowAmount ).AsBoolean();
+
+                if ( lTransactionDetailAmount != null && showAmount )
                 {
                     var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
                     int groupMemberId = hfGroupMemberId.Value.AsInteger();
@@ -657,12 +849,12 @@ namespace RockWeb.Blocks.Fundraising
             hfActiveTab.Value = tabName;
             pnlUpdatesComments.Visible = tabName == "Updates";
             pnlContributions.Visible = tabName == "Contributions";
-            if (tabName == "Updates")
+            if ( tabName == "Updates" )
             {
                 liUpdatesTab.AddCssClass( "active" );
                 liContributionsTab.RemoveCssClass( "active" );
             }
-            else if (tabName == "Contributions")
+            else if ( tabName == "Contributions" )
             {
                 liUpdatesTab.RemoveCssClass( "active" );
                 liContributionsTab.AddCssClass( "active" );

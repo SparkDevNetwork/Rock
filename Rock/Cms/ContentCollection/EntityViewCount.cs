@@ -17,11 +17,14 @@
 
 using System;
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection
 {
     /// <summary>
     /// The trending view count for a single entity item.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class EntityViewCount
     {
         /// <summary>

@@ -26,6 +26,7 @@ using DotLiquid;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
 using Rock.Lava.Blocks;
+using Rock.Lava.DotLiquid;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -76,7 +77,8 @@ namespace Rock.Lava.RockLiquid.Blocks
                 return;
             }
 
-            var parms = ParseMarkup( _markup, context );
+            var settings = SearchBlock.GetAttributesFromMarkup( _markup, new RockLiquidRenderContext( context ) );
+            var parms = settings.Attributes;
 
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
 
@@ -172,62 +174,6 @@ namespace Rock.Lava.RockLiquid.Blocks
 
             base.Render( context, result );
         }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
-        {
-            // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-            parms.Add( "iterator", "results" );
-            parms.Add( "searchtype", "wildcard" );
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            if ( markupItems.Count == 0 )
-            {
-                throw new Exception( "No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes)." );
-            }
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
-            return parms;
-        }
-
 
         /// <summary>
         ///

@@ -971,13 +971,19 @@ namespace Rock.Rest.Controllers
                 personSearchResult.ImageHtmlTag = Person.GetPersonPhotoImageTag( person, 50, 50 );
             }
 
+            var connectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ) : null;
+            var campus = person.PrimaryCampusId.HasValue ? CampusCache.Get( person.PrimaryCampusId.Value ) : null;
+
             personSearchResult.ImageUrl = Person.GetPersonPhotoUrl( person, 200, 200 );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
             personSearchResult.AgeClassification = person.AgeClassification;
             personSearchResult.FormattedAge = person.FormatAge();
-            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ).Value : string.Empty;
+            personSearchResult.ConnectionStatus = connectionStatus?.Value ?? string.Empty;
+            personSearchResult.ConnectionStatusColor = connectionStatus?.GetAttributeValue( "Color" );
             personSearchResult.Gender = person.Gender.ConvertToString();
             personSearchResult.Email = person.Email;
+            personSearchResult.CampusName = campus?.Name;
+            personSearchResult.CampusShortCode = campus?.ShortCode;
 
             var phoneNumbers = new PhoneNumberService( rockContext ).Queryable().Where( a => a.PersonId == person.Id ).Select( a => new
             {
@@ -1482,6 +1488,12 @@ namespace Rock.Rest.Controllers
         public string ConnectionStatus { get; set; }
 
         /// <summary>
+        /// Gets or sets the color of the connection status.
+        /// </summary>
+        /// <value>The color of the connection status.</value>
+        public string ConnectionStatusColor { get; set; }
+
+        /// <summary>
         /// Gets or sets the record status.
         /// </summary>
         /// <value>The member status.</value>
@@ -1510,6 +1522,18 @@ namespace Rock.Rest.Controllers
         /// The nickname of the spouse.
         /// </value>
         public string SpouseNickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the campus.
+        /// </summary>
+        /// <value>The name of the campus.</value>
+        public string CampusName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus short code.
+        /// </summary>
+        /// <value>The campus short code.</value>
+        public string CampusShortCode { get; set; }
 
         /// <summary>
         /// Gets or sets the address.

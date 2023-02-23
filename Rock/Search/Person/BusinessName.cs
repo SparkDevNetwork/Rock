@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -79,9 +79,10 @@ namespace Rock.Search.Person
         {
             var searchQry = GetSearchResults( searchterm );
 
+            // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
             return searchQry
                 .OrderBy( q => q.LastName )
-                .Select( b => b.LastName )
+            .Select( b => b.PrimaryCampus == null ? b.LastName : b.LastName + "                                                          <span class='search-accessory label label-default pull-right'>" + (b.PrimaryCampus.ShortCode != "" ? b.PrimaryCampus.ShortCode : b.PrimaryCampus.Name) + "</span>" )
                 .Distinct();
         }
     }

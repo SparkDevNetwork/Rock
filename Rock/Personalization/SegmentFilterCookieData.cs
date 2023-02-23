@@ -57,7 +57,7 @@ namespace Rock.Personalization
         /// <returns><c>true</c> if the data is stale; otherwise, <c>false</c>.</returns>
         public bool IsStale( DateTime currentDateTime )
         {
-            var activeSegments = PersonalizationSegmentCache.GetActiveSegments( true );
+            var activeSegments = PersonalizationSegmentCache.GetActiveSegments();
             if ( !activeSegments.Any() )
             {
                 return false;
@@ -69,7 +69,8 @@ namespace Rock.Personalization
                 return true;
             }
 
-            TimeSpan maxCacheLifetime = TimeSpan.FromHours( 12 );
+            var personalizationCookieDuration = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES ).AsIntegerOrNull() ?? 5;
+            TimeSpan maxCacheLifetime =  TimeSpan.FromMinutes( personalizationCookieDuration );
             if ( currentDateTime - LastUpdateDateTime > maxCacheLifetime )
             {
                 return true;

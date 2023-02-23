@@ -92,6 +92,28 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( "Job Posting For Groundskeeper", "{{ 'Job posting for groundskeeper' | TitleCase }}" );
         }
 
+        #region Filter Tests: TruncateWords
+
+        [TestMethod]
+        public void TruncateWords_WithLongerText_AddsEllipis()
+        {
+            TestHelper.AssertTemplateOutput( "one two three...", "{{ 'one two three four five' | TruncateWords:3 }}" );
+        }
+
+        [TestMethod]
+        public void TruncateWords_WithShorterText_DoesNotTruncate()
+        {
+            TestHelper.AssertTemplateOutput( "one two three four five", "{{ 'one two three four five' | TruncateWords:6 }}" );
+        }
+
+        [TestMethod]
+        public void TruncateWords_WithEmptyString_HasNoEffect()
+        {
+            TestHelper.AssertTemplateOutput( "", "{{ '' | TruncateWords:1 }}" );
+        }
+
+        #endregion
+
         /// <summary>
         /// A lower-case string should be formatted with the first letter of each word capitalized and all whitespace removed.
         /// </summary>
@@ -431,17 +453,45 @@ namespace Rock.Tests.UnitTests.Lava
         /// The default Liquid language behavior for this filter is to remove empty entries.
         /// </remarks>
         [DataTestMethod]
-        [DataRow( ",1,,3,4,5,6,7,,9,", "','", "1+3+4+5+6+7+9+" )]
-        [DataRow( ",1,,3,4,5,6,7,,9,", "',',true", "1+3+4+5+6+7+9+" )]
-        [DataRow( ",1,,3,4,5,6,7,,9,", "',','true'", "1+3+4+5+6+7+9+" )]
-        [DataRow( ",1,,3,4,5,6,7,,9,", "',',false", "+1++3+4+5+6+7++9++" )]
-        [DataRow( ",1,,3,4,5,6,7,,9,", "',','false'", "+1++3+4+5+6+7++9++" )]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "','", "1+3+4+5+6+7+9" )]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "',',true", "1+3+4+5+6+7+9" )]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "',','true'", "1+3+4+5+6+7+9" )]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "',',false", "+1++3+4+5+6+7++9+" )]
+        [DataRow( ",1,,3,4,5,6,7,,9,", "',','false'", "+1++3+4+5+6+7++9+" )]
         public void Split_WithRemoveEmptyEntriesOption_RetainsOrRemovesEmptyEntries( string inputString, string filterArgsString, string expectedOutput )
         {
             var template = @"
 {% assign items = '<inputString>' | Split:<args> %}
 {% for item in items %}
-{{ item }}+
+    {{ item }}
+    {% if forloop.last == false %}+{% endif %}
+{% endfor %}
+";
+
+            template = template.Replace( "<inputString>", inputString );
+            template = template.Replace( "<args>", filterArgsString );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Split filter should only return the specified number of substrings if the "count" parameter is specified.
+        /// The remainder text is included in the last element of the array.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "1,2,3,4,5,6,7,8,9", "',',false,0", "" )]
+        [DataRow( "1,2,3,4,5,6,7,8,9", "',',false,1", "1,2,3,4,5,6,7,8,9" )]
+        [DataRow( "1,2,3,4,5,6,7,8,9", "',',false,2", "1+2,3,4,5,6,7,8,9" )]
+        [DataRow( "1,2,3,4,5,6,7,8,9", "',',false,3", "1+2+3,4,5,6,7,8,9" )]
+        [DataRow( "1,2,3,4,5,6,7,8,9", "',',false,10", "1+2+3+4+5+6+7+8+9" )]
+        [DataRow( "1,2,3,4,5,6,7,8,9", "','", "1+2+3+4+5+6+7+8+9" )]
+        public void Split_WithCountOption_ReturnsSpecifiedNumberOfSubstrings( string inputString, string filterArgsString, string expectedOutput )
+        {
+            var template = @"
+{% assign items = '<inputString>' | Split:<args> %}
+{% for item in items %}
+    {{ item }}
+    {% if forloop.last == false %}+{% endif %}
 {% endfor %}
 ";
 

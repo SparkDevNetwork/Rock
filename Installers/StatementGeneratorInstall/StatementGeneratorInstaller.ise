@@ -3778,6 +3778,7 @@
 		<row><td>ID_STRING4</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>589950350</td></row>
 		<row><td>ID_STRING5</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator - ToExe</td><td>0</td><td/><td>589900942</td></row>
 		<row><td>ID_STRING6</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>589927886</td></row>
+		<row><td>ID_STRING7</td><td>1033</td><td>NewFeature1</td><td>0</td><td/><td>-592819060</td></row>
 		<row><td>IIDS_UITEXT_FeatureUninstalled</td><td>1033</td><td>This feature will remain uninstalled.</td><td>0</td><td/><td>623370734</td></row>
 	</table>
 
@@ -4038,7 +4039,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISCompilerOption_WarningsAsErrors</td><td>1</td></row>
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
 		<row><td>ISUpdateNotifications</td><td>0</td></row>
-		<row><td>ISVisitedViews</td><td>viewRelease,viewAssistant,viewUI,viewProject,viewSetupDesign,viewISToday,viewShortcuts,viewSetupTypes,viewUpgradePaths</td></row>
+		<row><td>ISVisitedViews</td><td>viewRelease,viewAssistant,viewUI,viewProject,viewSetupDesign,viewISToday,viewShortcuts,viewSetupTypes,viewUpgradePaths,viewAppFiles</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
 		<row><td>MsiLogFile</td><td/></row>
@@ -4347,6 +4348,8 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">ISComments</col>
 		<row><td>ALLUSERS</td><td>1</td><td/></row>
 		<row><td>ARPINSTALLLOCATION</td><td/><td/></row>
+		<row><td>ARPNOMODIFY</td><td>1</td><td/></row>
+		<row><td>ARPNOREPAIR</td><td>1</td><td/></row>
 		<row><td>ARPPRODUCTICON</td><td>ARPPRODUCTICON.exe</td><td/></row>
 		<row><td>ARPSIZE</td><td/><td/></row>
 		<row><td>ARPURLINFOABOUT</td><td>##ID_STRING1##</td><td/></row>
@@ -4416,9 +4419,9 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGMSG_IIS_ROLLBACKVROOTS</td><td>##IDS_PROGMSG_IIS_ROLLBACKVROOTS##</td><td/></row>
 		<row><td>PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS</td><td>##IDS_PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS##</td><td/></row>
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]StatementGenerator.Primary output</td><td/></row>
-		<row><td>ProductCode</td><td>{D40E4125-237C-4379-AF5F-F2883D5E48A2}</td><td/></row>
+		<row><td>ProductCode</td><td>{DDA1A14A-5BF5-43B9-BA7D-4AFFA009DD1C}</td><td/></row>
 		<row><td>ProductName</td><td>Rock RMS Statement Generator</td><td/></row>
-		<row><td>ProductVersion</td><td>1.13.5.0</td><td/></row>
+		<row><td>ProductVersion</td><td>1.14.1.0</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
@@ -4431,7 +4434,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>SERIALNUMBER</td><td/><td/></row>
 		<row><td>SERIALNUMVALSUCCESSRETVAL</td><td>1</td><td/></row>
 		<row><td>SHOWLAUNCHPROGRAM</td><td>-1</td><td/></row>
-		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;ISACTIONPROP1</td><td/></row>
+		<row><td>SecureCustomProperties</td><td>USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;ISACTIONPROP1;INSTALLDIR</td><td/></row>
 		<row><td>SelectedSetupType</td><td>##IDS__DisplayName_Typical##</td><td/></row>
 		<row><td>SetupType</td><td>Typical</td><td/></row>
 		<row><td>UpgradeCode</td><td>{A80C9E34-B396-4D4D-87A4-3354F87F3898}</td><td/></row>
@@ -4705,8 +4708,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">Remove</col>
 		<col def="s72">ActionProperty</col>
 		<col def="S72">ISDisplayName</col>
-		<row><td>{00000000-0000-0000-0000-000000000000}</td><td>***ALL_VERSIONS***</td><td></td><td></td><td>2</td><td/><td>ISFOUNDNEWERPRODUCTVERSION</td><td>ISPreventDowngrade</td></row>
-		<row><td>{A80C9E34-B396-4D4D-87A4-3354F87F3898}</td><td></td><td>1.13.5.0</td><td></td><td>0</td><td/><td>ISACTIONPROP1</td><td>UpgradeFromAny</td></row>
+		<row><td>{A80C9E34-B396-4D4D-87A4-3354F87F3898}</td><td></td><td>1.14.1.0</td><td></td><td>512</td><td/><td>ISACTIONPROP1</td><td>UpgradeFromAny</td></row>
 	</table>
 
 	<table name="Verb">

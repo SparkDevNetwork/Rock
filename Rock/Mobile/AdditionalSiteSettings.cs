@@ -76,17 +76,6 @@ namespace Rock.Mobile
 
 </ListView>";
 
-        private const string _defaultToastXaml = @"<StackLayout>
-    <Frame HasShadow=""False"">
-        <StackLayout>
-            {% if ToastTitle != '' %}
-            <Label StyleClass=""title"" Text=""{Binding ToastTitle}"" />
-            {% endif %}
-            <Label Text=""{Binding ToastMessage}"" />
-        </StackLayout>
-    </Frame>
-</StackLayout>";
-
         #endregion
 
         /// <summary>
@@ -182,6 +171,18 @@ namespace Rock.Mobile
         public string BarBackgroundColor { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to enable bar transparency.
+        /// </summary>
+        /// <value><c>true</c> if enable bar transparency; otherwise, <c>false</c>.</value>
+        public bool IOSEnableBarTransparency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IOS blur style.
+        /// </summary>
+        /// <value>The IOS blur style.</value>
+        public IOSBlurStyle IOSBarBlurStyle { get; set; }
+
+        /// <summary>
         /// Gets or sets the color of the menu button.
         /// </summary>
         /// <value>
@@ -204,14 +205,6 @@ namespace Rock.Mobile
         /// The xaml to use for the flyout shell menu.
         /// </value>
         public string FlyoutXaml { get; set; } = _defaultFlyoutXaml;
-
-        /// <summary>
-        /// Gets or sets the toast xaml.
-        /// </summary>
-        /// <value>
-        /// The toast xaml.
-        /// </value>
-        public string ToastXaml { get; set; } = _defaultToastXaml;
 
         /// <summary>
         /// Gets or sets the locked phone orientation.
@@ -268,6 +261,22 @@ namespace Rock.Mobile
         /// The communication view page identifier.
         /// </value>
         public int? CommunicationViewPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the page that will display interactive
+        /// experience occurrences to the individual.
+        /// </summary>
+        /// <value>
+        /// The interactive experience page identifier.
+        /// </value>
+        public int? InteractiveExperiencePageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the page that will display a SMS
+        /// conversation between Rock and an individual.
+        /// </summary>
+        /// <value>The SMS conversation page identifier.</value>
+        public int? SmsConversationPageId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to enable notifications automatically.
@@ -340,5 +349,19 @@ namespace Rock.Mobile
         /// The deep link routes.
         /// </value>
         public List<DeepLinkRoute> DeepLinkRoutes { get; set; } = new List<DeepLinkRoute>();
+
+        /// <summary>
+        /// Gets or sets the deep link domains.
+        /// </summary>
+        /// <value>The deep link domains.</value>
+        public string DeepLinkDomains { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this application site will
+        /// compress the update packages with GZip. This provides a 95% size
+        /// reduction but is not supported on shell v1.
+        /// </summary>
+        /// <value><c>true</c> if this application site will compress update packages, <c>false</c>.</value>
+        public bool IsPackageCompressionEnabled { get; set; }
     }
 }

@@ -1,0 +1,175 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <legend>New Account</legend>
+        <TextBox
+            v-if="!isEmailRequiredForUsername"
+            v-model="internalUsername"
+            :disabled="disabled"
+            :label="usernameFieldLabel"
+            :rules="usernameValidators"
+            @change="onUsernameChanged"></TextBox>
+
+        <EmailBox
+            v-else
+            v-model="internalUsername"
+            :disabled="disabled"
+            label="Email"
+            rules="required"></EmailBox>
+
+        <Alert v-if="usernameValidationCaption" :alertType="!isUsernameAvailable || isUsernameError ? 'warning' : 'success'">{{ usernameValidationCaption }}</Alert>
+
+        <TextBox
+            v-model="internalPassword"
+            :disabled="disabled"
+            label="Password"
+            rules="required"
+            type="password"></TextBox>
+        <TextBox
+            v-model="internalConfirmPassword"
+            :disabled="disabled"
+            label="Confirm Password"
+            :rules="confirmPasswordRules"
+            type="password"></TextBox>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
+    import { AccountEntryAccountInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryAccountInfoBag";
+    import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AccountEntryAccountInfoBag | null | undefined>,
+            required: true
+        },
+        config: {
+            type: Object as PropType<AccountEntryInitializationBox>,
+            required: true
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        isUsernameAvailable: {
+            type: Object as PropType<boolean | null>,
+            required: false,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "checkUsernameAvailability", value: string): void,
+        (e: "update:isUsernameAvailable", value: boolean | null): void,
+        (e: "update:modelValue", value: AccountEntryAccountInfoBag): void
+    }>();
+
+    const usernameValidators: ValidationRule[] = [
+        "required",
+        (value: unknown, _params: unknown[] | undefined): ValidationResult => {
+            if (typeof value !== "string" || !value?.trim()) {
+                return `${usernameFieldLabel.value} is required.`;
+            }
+
+            if (validateUsernameRegex.value && !validateUsernameRegex.value.test(value)) {
+                return `${usernameFieldLabel.value} is invalid. ${props.config.usernameRegexDescription}`;
+            }
+
+            return true;
+        }
+    ];
+
+    //#region Values
+
+    const usernameValidationError = ref<string | null>(null);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const isUsernameError = computed(() => !!usernameValidationError.value);
+
+    const isEmailRequiredForUsername = computed(() => props.config.isEmailRequiredForUsername);
+
+    const usernameFieldLabel = computed(() => props.config.usernameFieldLabel || "Username");
+
+    const validateUsernameRegex = computed((() => props.config.usernameRegex ? new RegExp(props.config.usernameRegex) : null));
+
+    const internalUsername = computed<string>({
+        get() {
+            return props.modelValue?.username ?? "";
+        },
+        set(newValue: string) {
+            emit("update:modelValue", { ...props.modelValue, username: newValue });
+        }
+    });
+
+    const internalPassword = computed<string>({
+        get() {
+            return props.modelValue?.password ?? "";
+        },
+        set(newValue: string) {
+            emit("update:modelValue", { ...props.modelValue, password: newValue });
+        }
+    });
+
+    const internalConfirmPassword = computed<string>({
+        get() {
+            return props.modelValue?.confirmPassword ?? "";
+        },
+        set(newValue: string) {
+            emit("update:modelValue", { ...props.modelValue, confirmPassword: newValue });
+        }
+    });
+
+    const confirmPasswordRules = computed<string>(() => {
+        return `required|equalsfield:must match Password,${internalPassword.value}`;
+    });
+
+    const usernameValidationCaption = computed<string>(() => {
+        if (usernameValidationError.value) {
+            return usernameValidationError.value;
+        }
+        else if (props.isUsernameAvailable) {
+            return `The ${usernameFieldLabel.value.toLowerCase()} you selected is available.`;
+        }
+        else if (props.isUsernameAvailable === false) {
+            return `The ${usernameFieldLabel.value.toLowerCase()} you selected is already in use.`;
+        }
+        else {
+            return "";
+        }
+    });
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the username being changed.
+     */
+    function onUsernameChanged(): void {
+        if (!internalUsername.value?.trim()) {
+            usernameValidationError.value = `${usernameFieldLabel.value} is required.`;
+            emit("update:isUsernameAvailable", null);
+        }
+        else if (validateUsernameRegex.value && !validateUsernameRegex.value.test(internalUsername.value)) {
+            usernameValidationError.value = `${usernameFieldLabel.value} is invalid. ${props.config.usernameRegexDescription}`;
+            emit("update:isUsernameAvailable", null);
+        }
+        else {
+            usernameValidationError.value = null;
+            if (!props.config.isUsernameAvailabilityCheckDisabled) {
+                emit("checkUsernameAvailability", internalUsername.value);
+            }
+        }
+    }
+
+    //#endregion
+</script>

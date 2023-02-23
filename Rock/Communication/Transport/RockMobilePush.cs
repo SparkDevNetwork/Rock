@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -322,25 +322,40 @@ namespace Rock.Communication.Transport
             string sound = ResolveText( emailMessage.Sound, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, mergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
             string message = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, mergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
 
-            var notification = new Message
+            var data = GetPushNotificationData( emailMessage.OpenAction, emailMessage.Data, null );
+            var notification = new FCM.Net.Notification();
+
+            if ( title.IsNotNullOrWhiteSpace() || message.IsNotNullOrWhiteSpace() )
+            {
+                notification.ClickAction = "Rock.Mobile.Main";
+                notification.Title = title;
+                notification.Body = message;
+                notification.Sound = sound;
+            }
+            else
+            {
+                data.AddOrReplace( "silent", "true" );
+            }
+
+            if ( emailMessage.Data.ApplicationBadgeCount.HasValue )
+            {
+                notification.Badge = emailMessage.Data.ApplicationBadgeCount.ToString();
+            }
+
+            var msg = new Message
             {
                 RegistrationIds = to,
-                Notification = new FCM.Net.Notification
-                {
-                    Title = title,
-                    Body = message,
-                    Sound = sound,
-                },
-                Data = GetPushNotificationData( emailMessage.OpenAction, emailMessage.Data, null )
+                Notification = notification,
+                Data = data
             };
 
             AsyncHelpers.RunSync( async () =>
             {
-                var response = await sender.SendAsync( notification );
+                var response = await sender.SendAsync( msg );
 
                 if ( response.MessageResponse.Failure > 0 )
                 {
-                    DeactivateNotRegisteredDevices( notification.RegistrationIds, response.MessageResponse );
+                    DeactivateNotRegisteredDevices( msg.RegistrationIds, response.MessageResponse );
                 }
             } );
         }
@@ -376,6 +391,14 @@ namespace Rock.Communication.Transport
                 notificationData.Add( PushKeys.CommunicationId, recipient.CommunicationId.ToString() );
                 notificationData.Add( PushKeys.RecipientId, recipient.Id.ToString() );
             };
+
+            if ( pushData.CustomData != null )
+            {
+                foreach ( var kvp in pushData.CustomData )
+                {
+                    notificationData.AddOrIgnore( kvp.Key, kvp.Value );
+                }
+            }
 
             if ( !openAction.HasValue || pushData == null )
             {

@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -35,7 +33,6 @@ namespace Rock.Jobs
     [DisplayName( "DataView to Workflow" )]
     [Category( "Workflows" )]
     [Description( "Starts a workflow for each entity in the specified Data View." )]
-    [DisallowConcurrentExecution]
 
     #region Job Attributes
 
@@ -44,7 +41,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    public class DataViewToWorkflow : IJob
+    public class DataViewToWorkflow : RockJob
     {
         #region Attribute Keys
 
@@ -66,17 +63,12 @@ namespace Rock.Jobs
 
         #endregion
 
-        /// <summary>
-        /// Perform the job using the parameters supplied in the execution context.
-        /// </summary>
-        /// <param name="context"></param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             // Get the configuration settings for this job instance.
-            var dataMap = context.JobDetail.JobDataMap;
-
-            var workflowTypeGuid = dataMap.GetString( AttributeKey.Workflow ).AsGuidOrNull();
-            var dataViewGuid = dataMap.GetString( AttributeKey.DataView ).AsGuidOrNull();
+            var workflowTypeGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
+            var dataViewGuid = GetAttributeValue( AttributeKey.DataView ).AsGuidOrNull();
 
             if ( dataViewGuid == null )
             {
@@ -94,12 +86,7 @@ namespace Rock.Jobs
 
             // Get the set of entity key values returned by the Data View.
             Stopwatch stopwatch = Stopwatch.StartNew();
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
-            {
-                DbContext = rockContext
-            };
-
-            var qry = dataView.GetQuery( dataViewGetQueryArgs );
+            var qry = dataView.GetQuery();
 
             var modelType = dataView.EntityType.GetType();
 
@@ -128,13 +115,13 @@ namespace Rock.Jobs
             {
                 var transaction = new LaunchEntityWorkflowTransaction( workflowTypeGuid.Value, string.Empty, entityTypeId, entityId );
 
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                transaction.Enqueue();
 
 
                 workflowsLaunched++;
             }
 
-            context.Result = string.Format( "{0} workflows launched", workflowsLaunched );
+            this.Result = string.Format( "{0} workflows launched", workflowsLaunched );
         }
 
         /// <summary>

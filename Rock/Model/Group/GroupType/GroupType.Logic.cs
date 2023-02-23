@@ -27,6 +27,7 @@ using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -288,13 +289,8 @@ namespace Rock.Model
 
             foreach ( var groupId in groupIds )
             {
-                var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
-                {
-                    EntityTypeId = groupEntityTypeId,
-                    EntityId = groupId
-                };
-
-                processEntityTypeIndexMsg.Send();
+                var indexEntityTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = groupEntityTypeId, EntityId = groupId } );
+                indexEntityTransaction.Enqueue();
             }
         }
 
