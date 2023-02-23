@@ -184,6 +184,7 @@
     <Folder Include="Framework\ViewModels\Controls\" />
     <Folder Include="Framework\ViewModels\Core\" />
     <Folder Include="Framework\ViewModels\Crm\" />
+    <Folder Include="Framework\ViewModels\Engagement\" />
     <Folder Include="Framework\ViewModels\Entities\" />
     <Folder Include="Framework\ViewModels\Event\" />
     <Folder Include="Framework\ViewModels\Event\InteractiveExperiences\" />
@@ -361,6 +362,7 @@
     <TypeScriptCompile Include="Framework\Enums\Engagement\streakOccurrenceFrequency.ts" />
     <TypeScriptCompile Include="Framework\Enums\Engagement\streakStructureType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\attendanceGraphBy.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\attendanceStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperienceApprovalStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperienceCampusBehavior.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperiencePushNotificationType.ts" />
@@ -682,6 +684,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\notificationMessageActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Crm\renderedBadgeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Engagement\achievementCompletedMessageBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementTypePrerequisiteBag.d.ts" />
@@ -920,6 +923,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\workflowFormBuilderTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\workflowTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\entity.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\attendanceUpdatedMessageBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\actionRenderConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceActionStyleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceAnswerBag.d.ts" />

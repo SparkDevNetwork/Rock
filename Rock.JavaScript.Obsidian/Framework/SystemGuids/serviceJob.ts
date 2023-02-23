@@ -65,6 +65,8 @@ export const ServiceJob = {
     DataMigrations141UpdateSlidingDateRangeValue: "59D32B1D-5D9A-4B1E-836A-43BBE89BA004",
     /** The Job to run Post v14.1 Data Migrations to update the ValueAs___ columns after migration. */
     DataMigrations141UpdateValueasAttributeValueColumns: "f7786b0a-e80a-4f19-b0c4-d4f85f4affa2",
+    /** The Job to run Post v14.1 Data Migrations to replace all existing instances of the TransactionEntryBlock with a new instance of the UtilityPaymentEntry block. */
+    DataMigrations150ReplaceTransactionEntryBlocksWithUtilityPaymentEntryBlock: "8A013CC5-CB51-48F3-8AF8-767BDECACAFE",
     /** The Job to run Post v15.1 Data Migrations for System Phone Numbers. */
     DataMigrations150SystemPhoneNumbers: "6DFE731E-F28B-40B3-8383-84212A301214",
     /** The Job to get NCOA */
