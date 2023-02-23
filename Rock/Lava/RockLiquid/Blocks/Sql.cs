@@ -24,7 +24,6 @@ using DotLiquid;
 
 using Rock.Data;
 using Rock.Lava.Blocks;
-using Rock.Lava.DotLiquid;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -81,8 +80,7 @@ namespace Rock.Lava.RockLiquid.Blocks
             {
                 base.Render( context, sql );
 
-                var settings = SqlBlock.GetAttributesFromMarkup( _markup, new RockLiquidRenderContext( context ) );
-                var parms = settings.Attributes;
+                var parms = ParseMarkup( _markup, context );
 
                 var sqlTimeout = ( int? ) null;
                 if ( parms.ContainsKey( "timeout" ) )
@@ -121,5 +119,62 @@ namespace Rock.Lava.RockLiquid.Blocks
                 }
             }
         }
+
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
+        {
+            // first run lava across the inputted markup
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            var parms = new Dictionary<string, string>();
+            parms.Add( "return", "results" );
+            parms.Add( "statement", "select" );
+
+            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    var value = itemParts[1];
+
+                    if ( value.IsLavaTemplate() )
+                    {
+                        value = value.ResolveMergeFields( internalMergeFields );
+                    }
+
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), value.Substring( 1, value.Length - 2 ).Trim() );
+                }
+            }
+            return parms;
+        }
+
     }
 }

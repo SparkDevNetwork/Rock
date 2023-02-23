@@ -68,8 +68,7 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            var settings = GetAttributesFromMarkup( _markup, context );
-            var parms = settings.Attributes;
+            var parms = ParseMarkup( _markup, context );
 
             if ( !string.IsNullOrWhiteSpace( parms["url"] ) )
             {
@@ -180,20 +179,44 @@ namespace Rock.Lava.Blocks
             base.OnRender( context, result );
         }
 
-        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
         {
-            var attributes = LavaElementAttributes.NewFromMarkup( markup, context );
-            attributes.AddOrIgnore( "method", "GET" );
-            attributes.AddOrIgnore( "return", "results" );
-            attributes.AddOrIgnore( "basicauth", "" );
-            attributes.AddOrIgnore( "parameters", "" );
-            attributes.AddOrIgnore( "headers", "" );
-            attributes.AddOrIgnore( "responsecontenttype", "json" );
-            attributes.AddOrIgnore( "body", "" );
-            attributes.AddOrIgnore( "requesttype", "text/plain" );
-            attributes.AddOrIgnore( "timeout", "12000" );
+            // first run lava across the inputted markup
+            var internalMergeFields = context.GetMergeFields();
 
-            return attributes;
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+
+            var parms = new Dictionary<string, string>();
+            parms.Add( "method", "GET" );
+            parms.Add( "return", "results" );
+            parms.Add( "basicauth", "" );
+            parms.Add( "parameters", "" );
+            parms.Add( "headers", "" );
+            parms.Add( "responsecontenttype", "json" );
+            parms.Add( "body", "" );
+            parms.Add( "requesttype", "text/plain" );
+            parms.Add( "timeout", "12000" );
+
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                }
+            }
+            return parms;
         }
 
         #region ILavaSecured

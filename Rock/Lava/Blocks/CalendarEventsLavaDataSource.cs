@@ -106,7 +106,7 @@ namespace Rock.Lava.Blocks
             }
 
             // Get the Event Calendar.
-            var calendar = ResolveCalendarSettingOrThrow( rockContext, settings.GetString( ParameterCalendarId ) );
+            var calendar = ResolveCalendarSettingOrThrow( rockContext, settings.GetStringValue( ParameterCalendarId ) );
 
             // Get the Date Range.
             var startDate = settings.GetDateTimeValue( ParameterStartDate, RockDateTime.Today ).Value;
@@ -120,7 +120,7 @@ namespace Rock.Lava.Blocks
 
             if ( settings.HasValue( ParameterMaxOccurrences ) )
             {
-                maxOccurrences = settings.GetInteger( ParameterMaxOccurrences );
+                maxOccurrences = settings.GetIntegerValue( ParameterMaxOccurrences, null ) ?? 0;
 
                 if ( maxOccurrences == 0 )
                 {
@@ -129,10 +129,10 @@ namespace Rock.Lava.Blocks
             }
 
             // Get the Audiences.
-            var audienceIdList = ResolveAudienceSettingOrThrow( settings.GetString( ParameterAudienceIds ) );
+            var audienceIdList = ResolveAudienceSettingOrThrow( settings.GetStringValue( ParameterAudienceIds, string.Empty ) );
 
             // Get the Campuses.
-            var campusIdList = ResolveCampusSettingOrThrow( settings.GetString( ParameterCampusIds ) );
+            var campusIdList = ResolveCampusSettingOrThrow( settings.GetStringValue( ParameterCampusIds, string.Empty ) );
 
             // Get the result set.
             var qryOccurrences = GetBaseEventOccurrenceQuery( rockContext );
@@ -181,7 +181,7 @@ namespace Rock.Lava.Blocks
             }
 
             // Get the Event.
-            var eventItem = ResolveEventSettingOrThrow( rockContext, settings.GetString( ParameterEventId ) );
+            var eventItem = ResolveEventSettingOrThrow( rockContext, settings.GetStringValue( ParameterEventId ) );
 
             // Get the Date Range.
             var startDate = settings.GetDateTimeValue( ParameterStartDate, RockDateTime.Today ).Value;
@@ -195,7 +195,7 @@ namespace Rock.Lava.Blocks
 
             if ( settings.HasValue( ParameterMaxOccurrences ) )
             {
-                maxOccurrences = settings.GetInteger( ParameterMaxOccurrences );
+                maxOccurrences = settings.GetIntegerValue( ParameterMaxOccurrences, null ) ?? 0;
 
                 if ( maxOccurrences == 0 )
                 {
@@ -204,10 +204,10 @@ namespace Rock.Lava.Blocks
             }
 
             // Get the Audiences.
-            var audienceIdList = ResolveAudienceSettingOrThrow( settings.GetString( ParameterAudienceIds, string.Empty ) );
+            var audienceIdList = ResolveAudienceSettingOrThrow( settings.GetStringValue( ParameterAudienceIds, string.Empty ) );
 
             // Get the Campuses.
-            var campusIdList = ResolveCampusSettingOrThrow( settings.GetString( ParameterCampusIds, string.Empty ) );
+            var campusIdList = ResolveCampusSettingOrThrow( settings.GetStringValue( ParameterCampusIds, string.Empty ) );
 
             // Get the result set.
             var qryOccurrences = GetBaseEventOccurrenceQuery( rockContext );
