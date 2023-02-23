@@ -1070,6 +1070,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
             List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = null;
+            caapPromptForAccountAmounts.AccountHeaderTemplate = this.GetAttributeValue( AttributeKey.AccountHeaderTemplate );
 
             AvailableAccounts = new List<AccountItem>();
 
@@ -3818,7 +3819,7 @@ mission. We are so grateful for your commitment.</p>
 
             public bool IsRootItem { get; set; }
 
-            public List<AccountItem> Children { get; set; }
+            public List<AccountItem> Children { get; set; } = new List<AccountItem>();
 
             internal void UpdateChildItems( AccountItem accountItem, List<AccountItem> availableAccounts )
             {
