@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -36,18 +37,69 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Allows a website visitor to create pledge for the configured accounts, start and end date. This block also creates a new person record if a matching person could not be found." )]
 
-    [BooleanField( "Enable Smart Names", "Check the first name for 'and' and '&' and split it to just use the first name provided.", true, Order = 1 )]
-    [AccountField( "Account", "The account that new pledges will be allocated toward", true, Rock.SystemGuid.FinancialAccount.GENERAL_FUND, "", Order = 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "New Connection Status", "Person connection status to assign to a new user.", true, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT, Order = 3 )]
-    [DateRangeField( "Pledge Date Range", "Date range of the pledge.", false, Order = 4 )]
+    [BooleanField( "Enable Smart Names",
+        Key = AttributeKey.EnableSmartNames,
+        Description = "Check the first name for 'and' and '&' and split it to just use the first name provided.",
+        DefaultBooleanValue = true,
+        Order = 1 )]
 
-    [BooleanField( "Show Pledge Frequency", "Show the pledge frequency option to the user.", DefaultValue = "false", Order = 5 )]
-    [BooleanField( "Require Pledge Frequency", "Require that a user select a specific pledge frequency (when pledge frequency is shown)", DefaultValue = "false", Order = 6 )]
+    [AccountField( "Account",
+        Key = AttributeKey.Account,
+        Description = "The account that new pledges will be allocated toward.",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.FinancialAccount.GENERAL_FUND,
+        Category = "",
+        Order = 2 )]
 
-    [TextField( "Save Button Text", "The Text to shown on the Save button", true, "Save", Order = 7 )]
-    [TextField( "Note Message", "Message to show at the bottom of the create pledge block.", false, "Note: This commitment is a statement of intent and may be changed as your circumstances change.", Order = 8 )]
+    [DefinedValueField( "New Connection Status",
+        Key = AttributeKey.NewConnectionStatus,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        Description = "Person connection status to assign to a new user.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT,
+        Order = 3 )]
 
-    [CodeEditorField( "Receipt Text", "The text (or HTML) to display as the pledge receipt. <span class='tip tip-lava'></span> <span class='tip tip-html'>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, Order = 9, DefaultValue =
+    [DateRangeField( "Pledge Date Range",
+        Key = AttributeKey.PledgeDateRange,
+        Description = "Date range of the pledge.",
+        IsRequired = false,
+        Order = 4 )]
+
+    [BooleanField( "Show Pledge Frequency",
+        Key = AttributeKey.ShowPledgeFrequency,
+        Description = "Show the pledge frequency option to the user.",
+        DefaultValue = "false",
+        Order = 5 )]
+
+    [BooleanField( "Require Pledge Frequency",
+        Key = AttributeKey.RequirePledgeFrequency,
+        Description = "Require that a user select a specific pledge frequency (when pledge frequency is shown).",
+        DefaultValue = "false",
+        Order = 6 )]
+
+    [TextField( "Save Button Text",
+        Key = AttributeKey.SaveButtonText,
+        Description = "The Text to shown on the Save button",
+        IsRequired = true,
+        DefaultValue = "Save",
+        Order = 7 )]
+
+    [TextField( "Note Message",
+        Key = AttributeKey.NoteMessage,
+        Description = "Message to show at the bottom of the create pledge block.",
+        IsRequired = false,
+        DefaultValue = "Note: This commitment is a statement of intent and may be changed as your circumstances change.",
+        Order = 8 )]
+
+    [CodeEditorField( "Receipt Text",
+        Key = AttributeKey.ReceiptText,
+        Description = "The text (or HTML) to display as the pledge receipt. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        Order = 9,
+        DefaultValue =
         @"
 <h1>Thank You!</h1>
 <p>
@@ -58,11 +110,50 @@ namespace RockWeb.Blocks.Finance
 </p>
 " )]
 
-    [SystemCommunicationField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, "", Order = 10 )]
-    [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a selection of groups that current user belongs to that can then be associated with the pledge", false, "", "", 12 )]
+    [SystemCommunicationField( "Confirmation Email Template",
+        Key = AttributeKey.ConfirmationEmailTemplate,
+        Description = "Email template to use after submitting a new pledge. Leave blank to not send an email.",
+        IsRequired = false,
+        DefaultSystemCommunicationGuid = "",
+        Order = 10 )]
+
+    [GroupTypeField( "Select Group Type",
+        Key = AttributeKey.SelectGroupType,
+        Description = "Optional Group Type that if selected will display a selection of groups that current user belongs to that can then be associated with the pledge.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 11 )]
+
+    [TextField("Pledge Term",
+        Key = AttributeKey.PledgeTerm,
+        Description = "The Text to display as the pledge term on the pledge amount input label.",
+        IsRequired = false,
+        DefaultValue = "Pledge",
+        Order = 12 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "20B5568E-A010-4E15-9127-E63CF218D6E5" )]
     public partial class PledgeEntry : RockBlock
     {
+        #region Block keys
+
+        private static class AttributeKey
+        {
+            public const string EnableSmartNames = "EnableSmartNames";
+            public const string Account = "Account";
+            public const string NewConnectionStatus = "NewConnectionStatus";
+            public const string PledgeDateRange = "PledgeDateRange";
+            public const string ShowPledgeFrequency = "ShowPledgeFrequency";
+            public const string RequirePledgeFrequency = "RequirePledgeFrequency";
+            public const string SaveButtonText = "SaveButtonText";
+            public const string NoteMessage = "NoteMessage";
+            public const string ReceiptText = "ReceiptText";
+            public const string ConfirmationEmailTemplate = "ConfirmationEmailTemplate";
+            public const string SelectGroupType = "SelectGroupType";
+            public const string PledgeTerm = "PledgeTerm";
+        }
+
+        #endregion
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -121,7 +212,7 @@ namespace RockWeb.Blocks.Finance
             financialPledge.PersonAliasId = person.PrimaryAliasId;
             financialPledge.GroupId = ddlGroup.SelectedValueAsInt();
 
-            var financialAccount = financialAccountService.Get( GetAttributeValue( "Account" ).AsGuid() );
+            var financialAccount = financialAccountService.Get( GetAttributeValue( AttributeKey.Account ).AsGuid() );
             if ( financialAccount != null )
             {
                 financialPledge.AccountId = financialAccount.Id;
@@ -215,6 +306,8 @@ namespace RockWeb.Blocks.Finance
         {
             lReceipt.Visible = false;
             pnlAddPledge.Visible = true;
+            var pledgeTerm = GetAttributeValue( AttributeKey.PledgeTerm );
+            tbTotalAmount.Label = $"Total {pledgeTerm} Amount";
 
             if ( CurrentPerson != null )
             {
