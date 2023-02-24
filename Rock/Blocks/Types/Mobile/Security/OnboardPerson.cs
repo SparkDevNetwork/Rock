@@ -104,13 +104,6 @@ namespace Rock.Blocks.Types.Mobile.Security
         Key = AttributeKeys.ValidationCodeAttempts,
         Order = 7 )]
 
-    [EnumsField( "Disable Matching for the Following Protection Profiles",
-        Description = "This disables matching on people with one of the selected protection profiles. A person with a selected protection profile will be required to log in by username and password.",
-        EnumSourceType = typeof( AccountProtectionProfile ),
-        DefaultValue = "2,3",
-        Key = AttributeKeys.DisableMatchingProtectionProfiles,
-        Order = 8 )]
-
     #region Campus Block Attributes
 
     [DefinedValueField( "Display Campus Types",
@@ -451,7 +444,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <summary>
         /// The block setting attribute keys for the <see cref="OnboardPerson"/> block.
         /// </summary>
-        public static class AttributeKeys
+        private static class AttributeKeys
         {
             /// <summary>
             /// The allow skip of on-boarding key.
@@ -492,11 +485,6 @@ namespace Rock.Blocks.Types.Mobile.Security
             /// The validation code attempts key.
             /// </summary>
             public const string ValidationCodeAttempts = "ValidationCodeAttempts";
-
-            /// <summary>
-            /// The disable matching protection profiles key.
-            /// </summary>
-            public const string DisableMatchingProtectionProfiles = "DisableMatchingProtectionProfiles";
 
             /// <summary>
             /// The display campus types key.
@@ -742,7 +730,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// Gets the protection profiles that will be used to prevent matching.
         /// </summary>
         /// <value>The protection profiles that will be used to prevent matching.</value>
-        public List<AccountProtectionProfile> DisableMatchingProtectionProfiles => GetAttributeValue( AttributeKeys.DisableMatchingProtectionProfiles ).SplitDelimitedValues().AsEnumList<AccountProtectionProfile>();
+        public List<AccountProtectionProfile> DisableMatchingProtectionProfiles => new SecuritySettingsService().SecuritySettings.DisablePasswordlessSignInForAccountProtectionProfiles;
 
         /// <summary>
         /// Gets the display campus type guids.

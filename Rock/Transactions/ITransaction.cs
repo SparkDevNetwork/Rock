@@ -26,6 +26,4 @@ namespace Rock.Transactions
         /// </summary>
         void Execute();
     }
-
-    
 }

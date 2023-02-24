@@ -238,7 +238,10 @@ function() {
             return result;
         }
 
-        private const string _CtlDataView = "ddlDataView";
+        /// <summary>
+        /// The control data view
+        /// </summary>
+        protected const string _CtlDataView = "ddlDataView";
 
         /// <summary>
         /// Creates the child controls.

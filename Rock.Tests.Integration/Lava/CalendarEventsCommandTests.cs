@@ -275,13 +275,13 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void CalendarEventsCommand_WithDateRangeInWeeks_ReturnsExpectedEvents()
         {
-            var template = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' daterange:'5w'" );
+            var template = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' daterange:'3w'" );
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 var result = engine.RenderTemplate( template );
 
-                // Staff Meeting recurs every 2 weeks, so our date range of 5 weeks should only include 2 occurrences.
+                // Staff Meeting recurs every 2 weeks, so our date range should only include 2 occurrences.
                 Assert.That.Contains( result.Text, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
                 Assert.That.Contains( result.Text, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
 

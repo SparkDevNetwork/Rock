@@ -219,7 +219,7 @@ namespace Rock.Blocks.Security
         AttributeName.DefaultLoginMethod,
         Key = AttributeKey.DefaultLoginMethod,
         Description = "The login method that will be shown when the block is loaded.",
-        DefaultValue = "1", // LoginMethod.Passwordless
+        DefaultValue = "0", // LoginMethod.InternalDatabase
         ListSource = "1^Passwordless,0^Internal Database",
         IsRequired = true,
         Order = 18

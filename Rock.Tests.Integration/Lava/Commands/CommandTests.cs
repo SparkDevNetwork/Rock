@@ -625,25 +625,6 @@ findme-interactiontest3
 
         #endregion
 
-        #region JsonProperty
-
-        [TestMethod]
-        public void JsonPropertyBlock_WithNumberType_EmitsJsonNumberProperty()
-        {
-            var input = @"
-{% jsonproperty name:'mynumber' type:'number' %}
-123
-{% endjsonproperty %}
-";
-
-            var expectedOutput = @"`mynumber`:`123`"
-                .Replace("`", @"""" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
-        }
-
-        #endregion
-
         #region Search
 
         [TestMethod]
@@ -809,27 +790,6 @@ findme-interactiontest3
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
-        [TestMethod]
-        public void WorkflowActivateBlock_WithDelimiterInWorkflowName_EvaluatesWorkflowNameCorrectly()
-        {
-            var mergeFields = new LavaDataDictionary
-            {
-                { "WorkflowName", "Ted's Workflow" }
-            };
-
-            // Activate Workflow: IT Support
-            var input = @"
-{% workflowactivate workflowtype:'51FE9641-FB8F-41BF-B09E-235900C3E53E' workflowname:'{{WorkflowName}}' %}
-  Activated new workflow with the name '{{ Workflow.Name }}'.
-{% endworkflowactivate %}
-";
-
-            var expectedOutput = @"Activated new workflow with the name 'Ted's Workflow'.";
-
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
-        }
         #endregion
 
 

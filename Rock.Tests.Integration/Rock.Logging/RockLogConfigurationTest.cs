@@ -89,6 +89,7 @@ namespace Rock.Tests.Integration.Logging
                 RockLogDomains.Streaks,
                 RockLogDomains.Steps,
                 RockLogDomains.Reporting,
+                RockLogDomains.RealTime,
                 RockLogDomains.Prayer,
                 RockLogDomains.Other,
                 RockLogDomains.Jobs,

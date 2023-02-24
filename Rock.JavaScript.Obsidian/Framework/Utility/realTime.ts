@@ -69,6 +69,13 @@ export interface ITopic<TServer extends ServerFunctions<TServer> = GenericServer
     on(messageName: string, handler: ((...args: any[]) => void)): void;
 
     /**
+     * Registers a handler to be called when any message is received.
+     *
+     * @param handler The handler to be called when a message is received.
+     */
+    onMessage(handler: ((messageName: string, args: unknown[]) => void)): void;
+
+    /**
      * Registers a callback to be called when the connection has been
      * temporarily lost. An automatic reconnection is in progress. The topic
      * is now in a state where it can not send any messages.

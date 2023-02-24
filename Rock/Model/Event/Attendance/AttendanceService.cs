@@ -22,12 +22,16 @@ using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 using Rock.BulkImport;
 using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
+using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.Utility;
+using Rock.ViewModels.Event;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -2282,7 +2286,11 @@ namespace Rock.Model
                     scheduledAttendance.RequestedToAttend = true;
                 }
 
-                // if they previously declined, set RSVP back to Unknown if they are added as pending again
+                /* For all the attendance where RSVP is previously declined and now added as Pending again need to follow below rules for RSVP
+                     - if ScheduleConfirmationLogic is auto accept and Occurrence GroupId has value then set RSVP to Yes
+                     - else Set RSVP to Unknown
+                */
+
                 if ( scheduledAttendance.RSVP == RSVP.No )
                 {
                     scheduledAttendance.RSVP = rsvp;
@@ -2877,6 +2885,156 @@ namespace Rock.Model
         }
 
         #endregion BulkImport related
+
+        #region RealTime Related
+
+        /// <summary>
+        /// Sends the attendance updated real time notifications for the specified
+        /// attendance records.
+        /// </summary>
+        /// <param name="attendanceGuids">The attendance unique identifiers.</param>
+        /// <returns>A task that represents this operation.</returns>
+        internal static async Task SendAttendanceUpdatedRealTimeNotificationsAsync( IEnumerable<Guid> attendanceGuids )
+        {
+            var guids = attendanceGuids.ToList();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var attendanceService = new AttendanceService( rockContext );
+
+                while ( guids.Any() )
+                {
+                    // Work with at most 1,000 records at a time since it
+                    // translates to an IN query which doesn't perform well
+                    // on large sets.
+                    var guidsToProcess = guids.Take( 1_000 ).ToList();
+                    guids = guids.Skip( 1_000 ).ToList();
+
+                    try
+                    {
+                        var qry = attendanceService
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( a => attendanceGuids.Contains( a.Guid ) );
+
+                        await SendAttendanceUpdatedRealTimeNotificationsAsync( qry );
+                    }
+                    catch ( Exception ex )
+                    {
+                        Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send attendance updated real time notifications for the Attendance
+        /// records returned by the query.
+        /// </summary>
+        /// <param name="qry">The query that provides the attendance records.</param>
+        /// <returns>A task that represents this operation.</returns>
+        private static async Task SendAttendanceUpdatedRealTimeNotificationsAsync( IQueryable<Attendance> qry )
+        {
+            var filteredQry = qry
+                .Where( a => a.PersonAliasId.HasValue );
+
+            var bags = GetAttendanceUpdatedMessageBags( filteredQry );
+
+            if ( !bags.Any() )
+            {
+                return;
+            }
+
+            var topicClients = RealTimeHelper.GetTopicContext<IEntityUpdated>().Clients;
+
+            var tasks = bags
+                .Select( b =>
+                {
+                    return Task.Run( () =>
+                    {
+                        var channels = EntityUpdatedTopic.GetAttendanceChannelsForBag( b );
+
+                        return topicClients
+                            .Channels( channels )
+                            .AttendanceUpdated( b );
+                    } );
+                } )
+                .ToArray();
+
+            try
+            {
+                await Task.WhenAll( tasks );
+            }
+            catch ( Exception ex )
+            {
+                Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// Gets the attendance updated message bags from the query using the
+        /// most optimal pattern.
+        /// </summary>
+        /// <param name="qry">The query that provides the attendance records.</param>
+        /// <returns>A list of <see cref="AttendanceUpdatedMessageBag"/> objects that represent the attendance records.</returns>
+        private static List<AttendanceUpdatedMessageBag> GetAttendanceUpdatedMessageBags( IQueryable<Attendance> qry )
+        {
+            var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+
+            var records = qry
+                .Select( a => new
+                {
+                    a.Guid,
+                    OccurrenceGuid = a.Occurrence.Guid,
+                    GroupGuid = ( Guid? ) a.Occurrence.Group.Guid,
+                    GroupTypeGuid = (Guid?) a.Occurrence.Group.GroupType.Guid,
+                    LocationGuid = (Guid?) a.Occurrence.Location.Guid,
+                    a.DidAttend,
+                    a.EndDateTime,
+                    a.PresentDateTime,
+                    a.RSVP,
+                    a.PersonAlias.Person
+                } )
+                .ToList();
+
+            return records
+                .Select( a =>
+                {
+                    var bag = new AttendanceUpdatedMessageBag
+                    {
+                        AttendanceGuid = a.Guid,
+                        PersonGuid = a.Person.Guid,
+                        OccurrenceGuid = a.OccurrenceGuid,
+                        GroupGuid = a.GroupGuid,
+                        GroupTypeGuid = a.GroupTypeGuid,
+                        LocationGuid = a.LocationGuid,
+                        RSVP = a.RSVP,
+                        PersonFullName = a.Person.FullName,
+                        PersonPhotoUrl = $"{publicApplicationRoot}{a.Person.PhotoUrl.TrimStart( '~', '/' )}"
+                    };
+
+                    if ( a.DidAttend == true )
+                    {
+                        if ( a.PresentDateTime.HasValue && !a.EndDateTime.HasValue )
+                        {
+                            bag.Status = Enums.Event.AttendanceStatus.IsPresent;
+                        }
+                        else
+                        {
+                            bag.Status = Enums.Event.AttendanceStatus.DidAttend;
+                        }
+                    }
+                    else
+                    {
+                        bag.Status = Enums.Event.AttendanceStatus.DidNotAttend;
+                    }
+
+                    return bag;
+                } )
+                .ToList();
+        }
+
+        #endregion
     }
 
     #region Group Scheduling related classes and types

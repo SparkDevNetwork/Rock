@@ -100,6 +100,34 @@
     <Compile Include="Migrations\202302101002183_DeleteOrphanedAttributeMatricesSP.designer.cs">
       <DependentUpon>202302101002183_DeleteOrphanedAttributeMatricesSP.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202302152333004_AddNotificationMessageModels.cs" />
+    <Compile Include="Migrations\202302152333004_AddNotificationMessageModels.designer.cs">
+      <DependentUpon>202302152333004_AddNotificationMessageModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202302230939197_PopulateReplaceTransactionBlockEntryJob.cs" />
+    <Compile Include="Migrations\202302230939197_PopulateReplaceTransactionBlockEntryJob.designer.cs">
+      <DependentUpon>202302230939197_PopulateReplaceTransactionBlockEntryJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.cs" />
+    <Compile Include="Migrations\202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.designer.cs">
+      <DependentUpon>202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202302231949549_UpdateSecuritySettingsWithWellknownGuid.cs" />
+    <Compile Include="Migrations\202302231949549_UpdateSecuritySettingsWithWellknownGuid.designer.cs">
+      <DependentUpon>202302231949549_UpdateSecuritySettingsWithWellknownGuid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202302232150265_Rollup_20230223.cs" />
+    <Compile Include="Migrations\202302232150265_Rollup_20230223.designer.cs">
+      <DependentUpon>202302232150265_Rollup_20230223.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202302232229245_CodeGenerated_20230223.cs" />
+    <Compile Include="Migrations\202302232229245_CodeGenerated_20230223.designer.cs">
+      <DependentUpon>202302232229245_CodeGenerated_20230223.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202302240038117_UpdateShortTermServingProjects.cs" />
+    <Compile Include="Migrations\202302240038117_UpdateShortTermServingProjects.designer.cs">
+      <DependentUpon>202302240038117_UpdateShortTermServingProjects.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1549,6 +1577,27 @@
     <EmbeddedResource Include="Migrations\202302101002183_DeleteOrphanedAttributeMatricesSP.resx">
       <DependentUpon>202302101002183_DeleteOrphanedAttributeMatricesSP.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302152333004_AddNotificationMessageModels.resx">
+      <DependentUpon>202302152333004_AddNotificationMessageModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302230939197_PopulateReplaceTransactionBlockEntryJob.resx">
+      <DependentUpon>202302230939197_PopulateReplaceTransactionBlockEntryJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.resx">
+      <DependentUpon>202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302231949549_UpdateSecuritySettingsWithWellknownGuid.resx">
+      <DependentUpon>202302231949549_UpdateSecuritySettingsWithWellknownGuid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302232150265_Rollup_20230223.resx">
+      <DependentUpon>202302232150265_Rollup_20230223.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302232229245_CodeGenerated_20230223.resx">
+      <DependentUpon>202302232229245_CodeGenerated_20230223.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302240038117_UpdateShortTermServingProjects.resx">
+      <DependentUpon>202302240038117_UpdateShortTermServingProjects.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
     </EmbeddedResource>
@@ -2634,6 +2683,7 @@
     <Content Include="Migrations\202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices.sql">
       <DependentUpon>202302101002183_DeleteOrphanedAttributeMatricesSP.cs</DependentUpon>
     </Content>
+    <None Include="Migrations\202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
     <Content Include="Migrations\Version 14.0\Version 1.14.1\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql">
       <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
     </Content>

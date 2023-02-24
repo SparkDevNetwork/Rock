@@ -1363,8 +1363,11 @@ const dateRangePickerGallery = defineComponent({
     setup() {
         return {
             date: ref({}),
+            disallowPastDateSelection: ref(false),
             importCode: getControlImportPath("dateRangePicker"),
-            exampleCode: `<DateRangePicker label="Date Range" v-model="date" />`
+            exampleCode: `<DateRangePicker label="Date Range" v-model="date"
+    :disallowPastDateSelection="false"
+/>`
         };
     },
     template: `

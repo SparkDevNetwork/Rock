@@ -153,7 +153,7 @@
                     </div>
                 <% } %>
                     <asp:Panel ID="pnlPersonalization" runat="server" CssClass="col-md-3 sidebar">
-                        <h4>Personalization Profile</h4>
+                        <h4>Personalization Options</h4>
                         <Rock:RockListBox ID="lbSegments" runat="server" Label="Segments" DataTextField="Name" DataValueField="Id" />
                         <Rock:RockListBox ID="lbRequestFilters" runat="server" Label="Request Filters" DataTextField="Name" DataValueField="Id" />
                     </asp:Panel>

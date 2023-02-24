@@ -1391,8 +1391,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
             {
                 foreach ( var groupRequirementType in unmetRequirementTypes.Value )
                 {
-                    var friendlyName = groupRequirementType?.NegativeLabel;
+                    if ( groupRequirementType == null )
+                    {
+                        continue;
+                    }
 
+                    var friendlyName = groupRequirementType.NegativeLabel;
                     if ( string.IsNullOrWhiteSpace( friendlyName ) )
                     {
                         friendlyName = groupRequirementType?.Name;

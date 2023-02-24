@@ -4,7 +4,7 @@
         {{ blockErrorMessage }}
     </Alert>
 
-    <Alert v-if="errorMessage" alertType="danger">
+    <Alert v-if="errorMessage" alertType="warning">
         {{ errorMessage }}
     </Alert>
 
@@ -37,7 +37,8 @@
                 </div>
                 <div v-if="config.displayDateRange" :class="columnClass">
                     <DateRangePicker v-model="selectedDateRange"
-                                     label="Date Range" />
+                                     label="Date Range"
+                                     :disallowPastDateSelection="true" />
                 </div>
                 <div v-if="config.displayLocationSort" :class="columnClass">
                     <TextBox v-model="selectedLocationSort" :label="config.locationSortLabel" class="input-max-w-xl" />
@@ -75,7 +76,7 @@
 
 <script setup lang="ts">
     import { computed, nextTick, ref } from "vue";
-    import SignUpFilter from "./SignUpFinder/signUpFilter.obs";
+    import SignUpFilter from "./SignUpFinder/signUpFilter.partial.obs";
     import { SignUpFilterType } from "./SignUpFinder/signUpFilterType";
     import Alert from "@Obsidian/Controls/alert.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker";

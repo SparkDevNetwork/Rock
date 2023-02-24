@@ -91,7 +91,7 @@ namespace Rock.Tests.Shared
                 return;
             }
 
-            Assert.IsFalse( value.Contains( substring ) );
+            Assert.IsFalse( value.Contains( substring ), $"The result \"{ value }\" contains the unexpected value \"{ substring }\"." );
         }
 
         public static void AreEqual( this Assert assert, System.Single expected, System.Single actual, System.Single delta )

@@ -106,6 +106,15 @@ namespace Rock.RealTime
         }
 
         /// <summary>
+        /// Gets the topic configurations. This should only be used for debugging.
+        /// </summary>
+        /// <returns>An enumeration of all the topic configurations.</returns>
+        internal IEnumerable<TopicConfiguration> GetTopicConfigurations()
+        {
+            return RegisteredTopics.ToList();
+        }
+
+        /// <summary>
         /// Get the context to send messages to connections on a topic.
         /// </summary>
         /// <typeparam name="TTopicClient">The type that identifies the interface associated with the topic.</typeparam>

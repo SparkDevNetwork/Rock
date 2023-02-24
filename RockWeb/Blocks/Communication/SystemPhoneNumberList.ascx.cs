@@ -201,7 +201,7 @@ namespace RockWeb.Blocks.Communication
                     return;
                 }
 
-                if ( systemPhoneNumberService.CanDelete( systemPhoneNumber, out string errorMessage ) )
+                if ( !systemPhoneNumberService.CanDelete( systemPhoneNumber, out string errorMessage ) )
                 {
                     ShowMessage( errorMessage, NotificationBoxType.Warning );
                     return;

@@ -34,7 +34,13 @@ export default defineComponent({
         modelValue: {
             type: Object as PropType<DateRangeParts>,
             default: {}
-        }
+        },
+
+        /** Whether or not the user should be able to select dates in the past. NOT Reactive */
+        disallowPastDateSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     },
 
     setup(props, { emit }) {
@@ -47,6 +53,12 @@ export default defineComponent({
             }
 
             return `{lowerValue.value},{upperValue.value}`;
+        });
+
+        const basePickerProps = computed(() => {
+            return {
+                disallowPastDateSelection: props.disallowPastDateSelection
+            };
         });
 
         watch(() => props.modelValue, () => {
@@ -64,7 +76,8 @@ export default defineComponent({
         return {
             internalValue,
             lowerValue,
-            upperValue
+            upperValue,
+            basePickerProps
         };
     },
 
@@ -73,7 +86,7 @@ export default defineComponent({
     <div class="control-wrapper">
         <div class="picker-daterange">
             <div class="form-control-group">
-                <DatePickerBase v-model="lowerValue" />
+                <DatePickerBase v-model="lowerValue" v-bind="basePickerProps" />
                 <div class="input-group form-control-static"> to </div>
                 <DatePickerBase v-model="upperValue" />
             </div>

@@ -18,7 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
+
+using Rock.Data;
 using Rock.Media;
 using Rock.Model;
 using Rock.Web.UI;
@@ -352,52 +356,21 @@ so you can customize this to be exactly what you want.</p>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
             var currentPerson = GetCurrentPerson( context );
-            var settings = GetAttributesFromMarkup( _markup, context );
+            var parms = ParseMarkup( _markup, context );
+
+            Guid? sessionGuid;
 
             // Attempt to get the session guid
-            Guid? sessionGuid;
             try
             {
-                sessionGuid = ( HttpContext.Current?.Handler as RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
+                sessionGuid = ( HttpContext.Current.Handler as RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
             }
             catch
             {
                 sessionGuid = null;
             }
 
-            RenderToWriter( settings.Attributes, currentPerson, sessionGuid, result );
-        }
-
-        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
-        {
-            // Parse attributes string.
-            var settings = LavaElementAttributes.NewFromMarkup( markup, context );
-
-            // Add default settings.
-            settings.AddOrIgnore( ParameterKeys.AutoPause, "true" );
-            settings.AddOrIgnore( ParameterKeys.AutoPlay, "false" );
-            settings.AddOrIgnore( ParameterKeys.AutoResumeInDays, "7" );
-            settings.AddOrIgnore( ParameterKeys.ClickToPlay, "true" );
-            settings.AddOrIgnore( ParameterKeys.CombinePlayStatisticsInDays, "7" );
-            settings.AddOrIgnore( ParameterKeys.Controls, "play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen" );
-            settings.AddOrIgnore( ParameterKeys.Debug, "false" );
-            settings.AddOrIgnore( ParameterKeys.HideControls, "true" );
-            settings.AddOrIgnore( ParameterKeys.HideControlsStopped, "false" );
-            settings.AddOrIgnore( ParameterKeys.Media, "" );
-            settings.AddOrIgnore( ParameterKeys.Muted, "false" );
-            settings.AddOrIgnore( ParameterKeys.PrimaryColor, "var(--brand-primary)" );
-            settings.AddOrIgnore( ParameterKeys.RelatedEntityId, "" );
-            settings.AddOrIgnore( ParameterKeys.RelatedEntityTypeId, "" );
-            settings.AddOrIgnore( ParameterKeys.SeekTime, "10" );
-            settings.AddOrIgnore( ParameterKeys.Source, "" );
-            settings.AddOrIgnore( ParameterKeys.Thumbnail, "" );
-            settings.AddOrIgnore( ParameterKeys.TrackAnonymousSession, "true" );
-            settings.AddOrIgnore( ParameterKeys.TrackSession, "true" );
-            settings.AddOrIgnore( ParameterKeys.Type, "" );
-            settings.AddOrIgnore( ParameterKeys.Volume, "1" );
-            settings.AddOrIgnore( ParameterKeys.Width, "" );
-
-            return settings;
+            RenderToWriter( parms, currentPerson, sessionGuid, result );
         }
 
         /// <summary>
@@ -414,9 +387,7 @@ so you can customize this to be exactly what you want.</p>
             {
                 var httpContext = HttpContext.Current;
 
-                if ( context != null
-                    && httpContext != null
-                    && httpContext.Items.Contains( "CurrentPerson" ) )
+                if ( context != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
@@ -496,6 +467,75 @@ so you can customize this to be exactly what you want.</p>
             {
                 Rock.Web.UI.Controls.MediaPlayer.AddLinksForMediaToPage( options.MediaUrl, page );
             }
+        }
+
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
+        {
+            // first run lava across the inputted markup
+            var internalMergeFields = context.GetMergeFields();
+
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+
+            return ParseResolvedMarkup( resolvedMarkup );
+        }
+
+        /// <summary>
+        /// Parses the resolved markup to get the passed parameters.
+        /// </summary>
+        /// <param name="resolvedMarkup">The resolved markup.</param>
+        /// <returns>A dictionary of all the parameters and values.</returns>
+        internal static Dictionary<string, string> ParseResolvedMarkup( string resolvedMarkup )
+        {
+            // Initialize default parameter values.
+            var parms = new Dictionary<string, string>
+            {
+                { ParameterKeys.AutoPause, "true" },
+                { ParameterKeys.AutoPlay, "false" },
+                { ParameterKeys.AutoResumeInDays, "7" },
+                { ParameterKeys.ClickToPlay, "true" },
+                { ParameterKeys.CombinePlayStatisticsInDays, "7" },
+                { ParameterKeys.Controls, "play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen" },
+                { ParameterKeys.Debug, "false" },
+                { ParameterKeys.HideControls, "true" },
+                { ParameterKeys.HideControlsStopped, "false" },
+                { ParameterKeys.Media, "" },
+                { ParameterKeys.Muted, "false" },
+                { ParameterKeys.PrimaryColor, "var(--brand-primary)" },
+                { ParameterKeys.RelatedEntityId, "" },
+                { ParameterKeys.RelatedEntityTypeId, "" },
+                { ParameterKeys.SeekTime, "10" },
+                { ParameterKeys.Source, "" },
+                { ParameterKeys.Thumbnail, "" },
+                { ParameterKeys.TrackAnonymousSession, "true" },
+                { ParameterKeys.TrackSession, "true" },
+                { ParameterKeys.Type, "" },
+                { ParameterKeys.Volume, "1" },
+                { ParameterKeys.Width, "" }
+            };
+
+            // Parse each parameter name and value in the format of name:'value'
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+
+                if ( itemParts.Length > 1 )
+                {
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                }
+            }
+
+            return parms;
         }
 
         #endregion

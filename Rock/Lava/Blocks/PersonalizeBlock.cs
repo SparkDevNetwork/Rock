@@ -162,13 +162,13 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         private bool ShowContentForCurrentRequest( ILavaRenderContext context )
         {
-            var matchType = _settings.GetString( ParameterMatchType, "any" ).ToLower();
+            var matchType = _settings.GetStringValue( ParameterMatchType, "any" ).ToLower();
 
             // Apply the request filters if we are processing a HTTP request.
             // Do this first because we may have the opportunity to exit early and avoid retrieving personalization segments.
             bool? requestFilterIsValid = null;
-            var requestFilterParameterString = _settings.GetStringOrNull( ParameterRequestFilters )
-                ?? _settings.GetString( "requestfilters" );
+            var requestFilterParameterString = _settings.GetStringValue( ParameterRequestFilters )
+                ?? _settings.GetStringValue( "requestfilters" );
 
             if ( !string.IsNullOrWhiteSpace( requestFilterParameterString ) )
             {
@@ -219,12 +219,12 @@ namespace Rock.Lava.Blocks
 
             // Determine if the current block segments match the segments for the user in the current context.
             bool? segmentFilterIsValid = null;
-            var segmentParameterString = _settings.GetStringOrNull( ParameterSegments )
-                ?? _settings.GetString( "segments" );
+            var segmentParameterString = _settings.GetStringValue( ParameterSegments )
+                ?? _settings.GetStringValue( "segments" );
             if ( !string.IsNullOrWhiteSpace( segmentParameterString ) )
             {
                 // Get personalization segments for the target person.
-                var personReference = _settings.GetString( "person" );
+                var personReference = _settings.GetStringValue( "person" );
                 Person person;
                 if ( !string.IsNullOrEmpty( personReference ) )
                 {

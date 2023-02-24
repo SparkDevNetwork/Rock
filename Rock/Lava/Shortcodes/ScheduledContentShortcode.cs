@@ -22,6 +22,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Lava.Shortcodes
@@ -171,15 +173,16 @@ of how it works.</p>
 
                 base.OnRender( context, writer );
 
-                var settings = LavaElementAttributes.NewFromMarkup( _markup, context );
+                var parms = ParseMarkup( _markup, context );
+                var lookAheadDays = parms[LOOK_AHEAD_DAYS].AsInteger();
+                var scheduleCategoryId = parms[SCHEDULE_CATEGORY_ID].AsIntegerOrNull();
+                var asAtDate = parms[AS_AT_DATE].AsDateTime();
 
-                var lookAheadDays = settings.GetInteger( LOOK_AHEAD_DAYS );
-                var scheduleCategoryId = settings.GetIntegerOrNull( SCHEDULE_CATEGORY_ID );
-                var asAtDate = settings.GetDateTime( AS_AT_DATE, RockDateTime.Now );
+                var now = asAtDate ?? RockDateTime.Now;
 
                 var scheduleIds = new List<int>();
 
-                var requestedSchedules = settings.GetString( SCHEDULE_ID ).StringToIntList();
+                var requestedSchedules = parms[SCHEDULE_ID].StringToIntList();
 
                 var schedulesQry = new ScheduleService( rockContext ).Queryable().AsNoTracking()
                     .Where( s => s.IsActive == true );
@@ -204,8 +207,8 @@ of how it works.</p>
 
                 // Get the schedules are order them by the next start time
                 var schedules = schedulesQry.ToList()
-                                .Where( s => s.GetNextStartDateTime( asAtDate ) != null )
-                                .OrderBy( s => s.GetNextStartDateTime( asAtDate ) );
+                                .Where( s => s.GetNextStartDateTime( now ) != null )
+                                .OrderBy( s => s.GetNextStartDateTime( now ) );
 
                 if ( schedules.Count() == 0 )
                 {
@@ -214,17 +217,17 @@ of how it works.</p>
 
                 var nextSchedule = schedules.FirstOrDefault();
 
-                var nextStartDateTime = nextSchedule.GetNextStartDateTime( asAtDate );
+                var nextStartDateTime = nextSchedule.GetNextStartDateTime( now );
                 var isLive = false;
                 DateTime? occurrenceEndDateTime = null;
 
                 // Determine if we're live
-                if ( nextSchedule.WasScheduleActive( asAtDate ) )
+                if ( nextSchedule.WasScheduleActive( now ) )
                 {
                     isLive = true;
-                    var occurrences = nextSchedule.GetICalOccurrences( asAtDate, asAtDate.AddDays( lookAheadDays ) ).Take( 2 );
+                    var occurrences = nextSchedule.GetICalOccurrences( now, now.AddDays( lookAheadDays ) ).Take( 2 );
                     var activeOccurrence = occurrences.FirstOrDefault();
-                    occurrenceEndDateTime = ( DateTime ) activeOccurrence.Period.EndTime.Value;
+                    occurrenceEndDateTime = (DateTime)activeOccurrence.Period.EndTime.Value;
 
                     // Set the next occurrence to be the literal next occurrence (vs the current occurrence)
                     nextStartDateTime = null;
@@ -235,14 +238,14 @@ of how it works.</p>
                 }
 
                 // Determine when not to show the content
-                if ( ( settings.GetString( SHOW_WHEN ) == "notlive" && isLive )
-                    || ( settings.GetString( SHOW_WHEN ) == "live" && !isLive ) )
+                if ( ( parms[SHOW_WHEN] == "notlive" && isLive )
+                    || ( parms[SHOW_WHEN] == "live" && !isLive ) )
                 {
                     return;
                 }
 
                 // Check role membership
-                var roleId = settings.GetIntegerOrNull( ROLE_ID );
+                var roleId = parms[ROLE_ID].AsIntegerOrNull();
 
                 if ( roleId.HasValue )
                 {
@@ -298,6 +301,43 @@ of how it works.</p>
             }
 
             return currentPerson;
+        }
+
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
+        {
+            // first run lava across the inputted markup
+            var internalMergeFields = context.GetMergeFields();
+
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+
+            var parms = new Dictionary<string, string>();
+            parms.Add( SCHEDULE_ID, "" );
+            parms.Add( ROLE_ID, "" );
+            parms.Add( SHOW_WHEN, "live" );
+            parms.Add( LOOK_AHEAD_DAYS, "30" );
+            parms.Add( SCHEDULE_CATEGORY_ID, "" );
+            parms.Add( AS_AT_DATE, "" );
+
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                }
+            }
+            return parms;
         }
     }
 }

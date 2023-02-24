@@ -7,16 +7,12 @@
             <tr>
                 <th>You?</th>
                 <th>Name</th>
-                <th>Gender</th>
-                <th>Birth Day</th>
             </tr>
         </template>
         <template #row="{item}: {item: AccountEntryDuplicatePersonItemBag}">
             <tr>
                 <td><input v-model="internalModelValue" :disabled="disabled" name="DuplicatePerson" type="radio" :value="item" /></td>
                 <td>{{ item.fullName }}</td>
-                <td>{{ item.gender }}</td>
-                <td>{{ formatBirthDate(item.birthDate) }}</td>
             </tr>
         </template>
     </SimpleGrid>
@@ -100,25 +96,6 @@
     //#endregion
 
     //#region Functions
-
-    /**
-     * Formats an ISO date to a friendly birth date.
-     *
-     * @param birthDate The ISO date to format.
-     */
-    function formatBirthDate(birthDate?: string | null | undefined): string {
-        if (!birthDate) {
-            return "";
-        }
-
-        const rockBirthDate = RockDateTime.parseISO(birthDate);
-
-        if (!rockBirthDate) {
-            return "";
-        }
-
-        return formatAspDate(rockBirthDate, "MMMM d");
-    }
 
     //#endregion
 </script>

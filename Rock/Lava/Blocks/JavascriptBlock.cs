@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -62,8 +64,7 @@ namespace Rock.Lava.Blocks
                 page = HttpContext.Current.Handler as RockPage;
             }
 
-            var settings = GetAttributesFromMarkup( _markup, context );
-            var parms = settings.Attributes;
+            var parms = ParseMarkup( _markup, context );
 
             using ( TextWriter twJavascript = new StringWriter() )
             {
@@ -201,16 +202,39 @@ namespace Rock.Lava.Blocks
             return page.ResolveUrl( url );
         }
 
-        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
         {
-            var settings = LavaElementAttributes.NewFromMarkup( markup, context );
+            // first run lava across the inputted markup
+            var internalMergeFields = context.GetMergeFields();
 
-            settings.AddOrIgnore( "cacheduration", "0" );
-            settings.AddOrIgnore( "references", string.Empty );
-            settings.AddOrIgnore( "disableanonymousfunction", "false" );
-            settings.AddOrIgnore( "url", string.Empty );
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
-            return settings;
+            var parms = new Dictionary<string, string>();
+            parms.Add( "cacheduration", "0" );
+            parms.Add( "references", string.Empty );
+            parms.Add( "disableanonymousfunction", "false" );
+            parms.Add( "url", string.Empty );
+
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                }
+            }
+            return parms;
         }
     }
 }

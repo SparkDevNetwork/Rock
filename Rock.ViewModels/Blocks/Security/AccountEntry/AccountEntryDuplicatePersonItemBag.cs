@@ -29,16 +29,7 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// <summary>
         /// Gets or sets the person's full name.
         /// </summary>
+        /// <remarks>May be obscured if the potential duplicate person doesn't match by exact name.</remarks>
         public string FullName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the person's gender.
-        /// </summary>
-        public string Gender { get; set; }
-
-        /// <summary>
-        /// Gets or sets the person's birth date.
-        /// </summary>
-        public string BirthDate { get; set; }
     }
 }

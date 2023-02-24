@@ -447,7 +447,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         {
             List<Opportunity> opportunities = null;
 
-            if (e.IsExporting )
+            if ( e.IsExporting )
             {
                 opportunities = this.OpportunitiesState;
 
@@ -506,8 +506,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     .ToList();
 
                 /*
-                 * For now, this is safe, as [GroupMemberAssignment] is a pretty low-level Entity with no child Entities.
-                 * We will need to check GroupMemberAssignmentService.CanDelete() for each assignment if this changes in the future.
+                 * For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
+                 * We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
+                 * delete approach) if this changes in the future.
                  */
                 groupMemberAssignmentService.DeleteRange( groupMemberAssignments );
 
@@ -560,7 +561,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 rockContext.WrapTransaction( () =>
                 {
-                    // Initial save to release FK constraints tied to child entities we'll be deleting.
+                    // Initial save to release FK constraints tied to referenced entities we'll be deleting.
                     rockContext.SaveChanges();
 
                     var scheduleService = new ScheduleService( rockContext );
@@ -574,12 +575,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     }
 
                     /*
-                     * We cannot safely remove child Locations (even non-named ones):
+                     * We cannot safely remove referenced Locations (even non-named ones):
                      *   1) because of the way we reuse/share Locations across entities (the LocationPicker control auto-searches/matches and saves Locations).
                      *   2) because of the cascade deletes many of the referencing entities have on their LocationId FK constraints (we might accidentally delete a lot of unintended stuff).
                      */
 
-                    // Follow-up save for deleted child entities.
+                    // Follow-up save for deleted referenced entities.
                     rockContext.SaveChanges();
                 } );
             }
@@ -713,9 +714,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             public string ProjectName { get; set; }
 
-            public DateTime? LastStartDateTime { get; set; }
-
             public DateTime? NextStartDateTime { get; set; }
+
+            public DateTime? LastStartDateTime { get; set; }
 
             public int? SlotsMin { get; set; }
 
@@ -858,27 +859,35 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 } );
 
             // Filter by date range.
+            DateTime fromDateTime = RockDateTime.Now;
+            DateTime? toDateTime = null;
+
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpDateRange.DelimitedValues );
-            if ( dateRange == null || ( !dateRange.Start.HasValue && !dateRange.End.HasValue ) )
-            {
-                // Default date range filter.
-                qryGroupLocationSchedules = qryGroupLocationSchedules
-                    .Where( gls => !gls.Schedule.EffectiveEndDate.HasValue || gls.Schedule.EffectiveEndDate >= RockDateTime.Now );
-            }
-            else
+            if ( dateRange != null && ( dateRange.Start.HasValue || dateRange.End.HasValue ) )
             {
                 if ( dateRange.Start.HasValue )
                 {
-                    qryGroupLocationSchedules = qryGroupLocationSchedules
-                        .Where( gls => gls.Schedule.EffectiveStartDate.HasValue && gls.Schedule.EffectiveStartDate >= dateRange.Start );
+                    // Allow displaying past opportunities since we're on the administrative side.
+                    fromDateTime = dateRange.Start.Value;
                 }
 
                 if ( dateRange.End.HasValue )
                 {
-                    qryGroupLocationSchedules = qryGroupLocationSchedules
-                        .Where( gls => gls.Schedule.EffectiveEndDate.HasValue && gls.Schedule.EffectiveEndDate < dateRange.End );
+                    /*
+                     * Set this to the end of the selected day to perform a search fully-inclusive of the day the individual
+                     * selected. Note also that we cannot apply this filter during the query phase; we need to wait until we
+                     * materialize Schedule objects so we can compare this value to Schedule.Next[or last]StartDateTime, which
+                     * is a runtime-calculated value. If we instead applied this filter to the Schedule.EffectiveEndDate,
+                     * we could accidentally rule out opportunites that the individual might otherwise be interested in managing.
+                     * We'll apply this filter value below.
+                     */
+                    toDateTime = dateRange.End.Value.EndOfDay();
                 }
             }
+
+            // Don't rule out a schedule just because it doesn't have an EffectiveStartDate since we're on the administrative side.
+            qryGroupLocationSchedules = qryGroupLocationSchedules
+                .Where( gls => !gls.Schedule.EffectiveStartDate.HasValue || gls.Schedule.EffectiveStartDate >= fromDateTime );
 
             // Filter by parent group.
             var parentGroupId = gpParentGroup.SelectedValueAsId();
@@ -913,6 +922,20 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         .Where( a => a.LocationId == locationId && a.ScheduleId == scheduleId )
                         .ToList();
 
+                    DateTime? nextStartDateTime = gls.Schedule.NextStartDateTime;
+                    DateTime? lastStartDateTime = null;
+
+                    if ( !nextStartDateTime.HasValue )
+                    {
+                        // Give preference to NextStartDateTime, but if not available, fall back to LastStartDateTime. We need something to sort on and display.
+                        var startDateTimes = gls.Schedule.GetScheduledStartTimes( fromDateTime, toDateTime ?? DateTime.MaxValue );
+                        var lastScheduledStartDateTime = startDateTimes.LastOrDefault();
+                        if ( lastScheduledStartDateTime != default )
+                        {
+                            lastStartDateTime = lastScheduledStartDateTime;
+                        }
+                    }
+
                     return new Opportunity
                     {
                         Id = ++_entitySetItemEntityId,
@@ -922,8 +945,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         LocationId = locationId,
                         ScheduleId = scheduleId,
                         ProjectName = gls.Group.Name,
-                        LastStartDateTime = gls.Schedule.EffectiveEndDate,
-                        NextStartDateTime = gls.Schedule.NextStartDateTime,
+                        NextStartDateTime = nextStartDateTime,
+                        LastStartDateTime = lastStartDateTime,
                         SlotsMin = gls.Config?.MinimumCapacity,
                         SlotsDesired = gls.Config?.DesiredCapacity,
                         SlotsMax = gls.Config?.MaximumCapacity,
@@ -931,6 +954,17 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         ParticipantCount = participants.Count
                     };
                 } );
+
+            // Now that we have Schedule objects in memory, let's further apply date(/time) filtering.
+            opportunities = opportunities
+                .Where( o =>
+                    o.NextOrLastStartDateTime.HasValue
+                    && o.NextOrLastStartDateTime.Value >= fromDateTime
+                    && (
+                        !toDateTime.HasValue // The individual didn't select an end date.
+                        || o.NextOrLastStartDateTime.Value < toDateTime.Value // The project's [next or last] start date time is/was less than the [end of the] end date they selected.
+                    )
+                );
 
             // Filter by slots available.
             var comparisonType = NumberComparisonFilter.SelectedComparisonType( ddlSlotsAvailableComparisonType );

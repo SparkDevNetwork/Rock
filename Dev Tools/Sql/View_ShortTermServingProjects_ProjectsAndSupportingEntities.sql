@@ -1,3 +1,8 @@
+
+/********************************************************************************************************************
+ Short Term Serving Projects - View sign-up projects and supporting entities.
+*********************************************************************************************************************/
+
 DECLARE @DefinedTypeId int = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = 'B7842AF3-6F04-495E-9A6C-F403D06C02F3');
 SELECT 'DefinedType' AS Entity, * FROM [DefinedType] WHERE [Id] = @DefinedTypeId;
 SELECT 'DefinedValue' AS Entity, * FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId;

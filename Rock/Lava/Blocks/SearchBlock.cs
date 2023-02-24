@@ -66,8 +66,7 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            var settings = GetAttributesFromMarkup( _markup, context );
-            var parms = settings.Attributes;
+            var parms = ParseMarkup( _markup, context );
 
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
 
@@ -170,20 +169,42 @@ namespace Rock.Lava.Blocks
             base.OnRender( context, result );
         }
 
-        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
         {
-            // Create default settings
-            var settings = LavaElementAttributes.NewFromMarkup( markup, context );
+            // first run lava across the inputted markup
+            var internalMergeFields = context.GetMergeFields();
 
-            if ( settings.Count == 0 )
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+
+            var parms = new Dictionary<string, string>();
+            parms.Add( "iterator", "results" );
+            parms.Add( "searchtype", "wildcard" );
+
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            if ( markupItems.Count == 0 )
             {
                 throw new Exception( "No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes)." );
             }
 
-            settings.AddOrIgnore( "iterator", "results" );
-            settings.AddOrIgnore( "searchtype", "wildcard" );
-
-            return settings;
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                }
+            }
+            return parms;
         }
 
         #region ILavaSecured

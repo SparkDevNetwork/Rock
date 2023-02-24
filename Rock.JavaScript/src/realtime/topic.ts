@@ -96,6 +96,15 @@ export class Topic<TServer extends ServerFunctions<TServer> = GenericServerFunct
     }
 
     /**
+     * Registers a handler to be called when any message is received.
+     *
+     * @param handler The handler to be called when a message is received.
+     */
+    public onMessage(handler: ((messageName: string, args: unknown[]) => void)): void {
+        this.engine.onMessage(this.identifier, handler);
+    }
+
+    /**
      * Registers a callback to be called when the connection has been
      * temporarily lost. An automatic reconnection is in progress. The topic
      * is now in a state where it can not send any messages.

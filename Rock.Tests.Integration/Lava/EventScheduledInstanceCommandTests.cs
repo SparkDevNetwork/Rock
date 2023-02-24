@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -23,7 +22,6 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -191,7 +189,7 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void EventScheduledInstanceCommand_WithDateRangeInWeeks_ReturnsExpectedEvents()
         {
-            var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'5w'" );
+            var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'4w'" );
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
@@ -199,7 +197,8 @@ namespace Rock.Tests.Integration.Lava
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
-                // Staff Meeting recurs every 2 weeks, so our date range of 5 weeks should only include 2 occurrences.
+                // Staff Meeting recurs every 2 weeks, so our date range of 4 weeks should only include 2 occurrences.
+                Assert.That.Contains( output, "<<EventCount = 2>>" );
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
 
@@ -210,20 +209,63 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void EventScheduledInstanceCommand_WithDateRangeInDays_ReturnsExpectedEvents()
         {
-            var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'27d'" );
+            const string NewEventGuid = "F7CE040E-CD1C-41E0-81D7-9F88BCDAF6A7";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            var rockContext = new RockContext();
+
+            // Create a new Event that occurs daily.
+            var startDateTime = RockDateTime.New( 2020, 1, 1 ).Value.AddHours(19).AddMinutes(30);
+            var endDate = startDateTime.AddMonths( 3 );
+
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime, endDate, new TimeSpan(1,0,0) );
+
+            var createEventInfo = new TestDataHelper.Events.CreateEventItemActionArgs
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                Guid = NewEventGuid.AsGuid(),
+                Schedule = schedule,
+                EventName = "Test Daily Event",
+                MeetingLocation = "Test Location"
+            };
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
+            TestDataHelper.Events.DeleteEventItem( NewEventGuid, rockContext );
+            rockContext.SaveChanges();
 
-                // Staff Meeting recurs every 2 weeks, so our date range of 27d should only include 2 occurrences.
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+            TestDataHelper.Events.CreateEventItem( createEventInfo, rockContext );
+            rockContext.SaveChanges();
 
-                Assert.That.DoesNotContain( output, "<<Staff Meeting|2020-01-29|12:00 AM|All Campuses>>" );
-            } );
+            try
+            {
+                // A request for a date range of 1 day with 2020-01-01 as the first day should yield 1 entry.
+                var templateDays01 = GetTestTemplate( "eventid:'Test Daily Event' startdate:'2020-01-01' daterange:'1d'" );
+
+                // A request for a date range of 10 days with 2020-01-01 as the first day should yield 10 entries,
+                // from 2020-01-01 to 2020-01-10.
+                var templateDays10 = GetTestTemplate( "eventid:'Test Daily Event' startdate:'2020-01-01' daterange:'10d'" );
+
+                TestHelper.ExecuteForActiveEngines( ( engine ) =>
+                {
+                    // Verify output for 1 day range.
+                    var output01 = TestHelper.GetTemplateOutput( engine, templateDays01 );
+
+                    Assert.That.Contains( output01, "<<EventCount = 1>>" );
+                    Assert.That.Contains( output01, "<<Test Daily Event|2020-01-01|7:30 PM|Main Campus>>" );
+                    Assert.That.DoesNotContain( output01, "<<Test Daily Event|2020-01-02|7:30 PM|Main Campus>>" );
+
+                    // Verify output for 10 day range.
+                    var output10 = TestHelper.GetTemplateOutput( engine, templateDays10 );
+
+                    Assert.That.Contains( output10, "<<EventCount = 10>>" );
+                    Assert.That.Contains( output10, "<<Test Daily Event|2020-01-01|7:30 PM|Main Campus>>" );
+                    Assert.That.Contains( output10, "<<Test Daily Event|2020-01-10|7:30 PM|Main Campus>>" );
+                    Assert.That.DoesNotContain( output10, "<<Test Daily Event|2020-01-11|7:30 PM|Main Campus>>" );
+                } );
+            }
+            finally
+            {
+                // Remove the test event so it does not interfere with other tests.
+                TestDataHelper.Events.DeleteEventItem( NewEventGuid, rockContext );
+                rockContext.SaveChanges();
+            }
         }
 
         [TestMethod]
