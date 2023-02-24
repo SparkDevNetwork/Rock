@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -442,6 +442,11 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView
         /// </summary>
         public const string MOBILE_COMMUNICATION_COMMUNICATIONVIEW_BLOCK_TYPE = "4AF5FCEF-CBF6-486B-A04D-920E31356B7F";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationEntry
+        /// </summary>
+        public const string MOBILE_COMMUNICATION_COMMUNICATIONENTRY_BLOCK_TYPE = "9A952F9F-F619-4063-B1BB-CFB2E6983C01";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventItemOccurrenceView

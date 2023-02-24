@@ -678,6 +678,7 @@
     <Compile Include="Blocks\IRockObsidianBlockType.cs" />
     <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\CommunicationEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\SmsConversation.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\SmsConversationList.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionOpportunityList.cs" />
