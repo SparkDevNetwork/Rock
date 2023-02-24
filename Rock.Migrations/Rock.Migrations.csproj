@@ -124,6 +124,10 @@
     <Compile Include="Migrations\202302232229245_CodeGenerated_20230223.designer.cs">
       <DependentUpon>202302232229245_CodeGenerated_20230223.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202302240038117_UpdateShortTermServingProjects.cs" />
+    <Compile Include="Migrations\202302240038117_UpdateShortTermServingProjects.designer.cs">
+      <DependentUpon>202302240038117_UpdateShortTermServingProjects.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1590,6 +1594,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202302232229245_CodeGenerated_20230223.resx">
       <DependentUpon>202302232229245_CodeGenerated_20230223.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202302240038117_UpdateShortTermServingProjects.resx">
+      <DependentUpon>202302240038117_UpdateShortTermServingProjects.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>

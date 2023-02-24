@@ -4,16 +4,89 @@
         {{ blockErrorMessage }}
     </Alert>
 
+    <Alert v-if="errorMessage" alertType="warning">
+        {{ errorMessage }}
+    </Alert>
+
+    <Alert v-if="registeredRegistrantNames?.length || unregisteredRegistrantNames?.length" alertType="success">
+        <div v-if="registeredRegistrantNames?.length">
+            <p>Successfully registered individual(s):</p>
+            <ul>
+                <li v-for="(name, i) in registeredRegistrantNames" :key="`registered-{i}`">
+                    {{ name }}
+                </li>
+            </ul>
+        </div>
+        <div v-if="unregisteredRegistrantNames?.length">
+            <p>Successfully unregistered individual(s):</p>
+            <ul>
+                <li v-for="(name, i) in unregisteredRegistrantNames" :key="`unregistered-{i}`">
+                    {{ name }}
+                </li>
+            </ul>
+        </div>
+    </Alert>
+
+    <Alert v-if="unsuccessfulRegistrantNames?.length" alertType="warning">
+        <div>
+            <p>Unable to register individual(s):</p>
+            <ul>
+                <li v-for="(name, i) in unsuccessfulRegistrantNames" :key="`registered-{i}`">
+                    {{ name }}
+                </li>
+            </ul>
+        </div>
+    </Alert>
+
     <div v-if="!blockErrorMessage">
-        Hello!
+        <RockForm @submit="onSubmit">
+
+            <RegisterAnonymous v-if="registerMode == RegisterMode.Anonymous"
+                               :isRegistering="isRegistering"
+                               :registrants="registrants"
+                               :projectHasRequiredGroupRequirements="config.projectHasRequiredGroupRequirements"
+                               :requireEmail="config.requireEmail"
+                               :requireMobilePhone="config.requireMobilePhone" />
+
+            <RegisterFamily v-if="registerMode == RegisterMode.Family"
+                            :isRegistering="isRegistering"
+                            :registrants="registrants"
+                            :anyEligibleRegistrants="anyEligibleRegistrants"
+                            :communicationPreferenceItems="communicationPreferenceItems"
+                            :title="config.title" />
+
+            <RegisterGroup v-if="registerMode == RegisterMode.Group"
+                           :isRegistering="isRegistering"
+                           :registrants="registrants"
+                           :title="config.title" />
+
+            <div v-if="anyEligibleRegistrants" class="mt-5">
+                <Loading :isLoading="isRegistering">
+                    <RockButton type="submit" :btnType="BtnType.Warning" :disabled="isRegistering">{{ submitButtonText }}</RockButton>
+                </Loading>
+            </div>
+        </RockForm>
     </div>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
+    import RegisterAnonymous from "./SignUpRegister/registerAnonymous.partial.obs";
+    import RegisterFamily from "./SignUpRegister/registerFamily.partial.obs";
+    import RegisterGroup from "./SignUpRegister/registerGroup.partial.obs";
     import Alert from "@Obsidian/Controls/alert.obs";
+    import Loading from "@Obsidian/Controls/loading";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockForm from "@Obsidian/Controls/rockForm";
+    import { RegisterMode } from "@Obsidian/Enums/Blocks/Engagement/SignUp/registerMode";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { SignUpRegisterInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegisterInitializationBox";
+    import { SignUpRegisterRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegisterRequestBag";
+    import { SignUpRegisterResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegisterResponseBag";
+    import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<SignUpRegisterInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -21,7 +94,19 @@
 
     // #region Values
 
+    const registerMode = ref<RegisterMode>(config.mode ?? RegisterMode.Anonymous);
+    const communicationPreferenceItems = ref<ListItemBag[]>(config.communicationPreferenceItems ?? []);
+    const registrants = ref<SignUpRegistrantBag[]>(config.registrants ?? []);
 
+    const isRegistering = ref(false);
+    const errorMessage = ref("");
+
+    const registeredRegistrantNames = ref<string[]>([]);
+    const unregisteredRegistrantNames = ref<string[]>([]);
+    const unsuccessfulRegistrantNames = ref<string[]>([]);
+
+    // We'll set this value on initial load + whenever a registration attempt is succesful.
+    const submitButtonText = ref(getSubmitButtonText(config.registrants));
 
     // #endregion
 
@@ -31,17 +116,61 @@
         return config.errorMessage;
     });
 
+    const anyEligibleRegistrants = computed((): boolean => {
+        return registrants.value.some((r: SignUpRegistrantBag) => r && !r.unmetGroupRequirements?.length);
+    });
+
     // #endregion
 
     // #region Functions
 
-
+    /**
+     * Gets the text to use for the submit button:
+     * "Register" if there are not any registrants who were already registered.
+     * "Update Registration" if there are any registrants who were already registered.
+     *
+     * @param registrants The array of registrants to consider.
+     */
+    function getSubmitButtonText(registrants: SignUpRegistrantBag[] | null | undefined): string {
+        return registrants?.some((r: SignUpRegistrantBag) => r?.willAttend && r?.personIdKey)
+            ? "Update Registration"
+            : "Register";
+    }
 
     // #endregion
 
     // #region Event Handlers
 
+    /**
+     * Handles the form submission.
+     */
+    async function onSubmit(): Promise<void> {
+        isRegistering.value = true;
+        errorMessage.value = "";
 
+        registeredRegistrantNames.value = [];
+        unregisteredRegistrantNames.value = [];
+        unsuccessfulRegistrantNames.value = [];
+
+        const bag: SignUpRegisterRequestBag = {
+            registrants: registrants.value
+        };
+
+        const result: HttpResult<SignUpRegisterResponseBag> = await invokeBlockAction("Register", { bag });
+        isRegistering.value = false;
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error when trying to register for this project.";
+            return;
+        }
+
+        registeredRegistrantNames.value = result.data?.registeredRegistrantNames ?? [];
+        unregisteredRegistrantNames.value = result.data?.unregisteredRegistrantNames ?? [];
+        unsuccessfulRegistrantNames.value = result.data?.unsuccessfulRegistrantNames ?? [];
+
+        // Only update this value if the registration attempt was successful.
+        submitButtonText.value = getSubmitButtonText(registrants.value);
+    }
 
     // #endregion
 

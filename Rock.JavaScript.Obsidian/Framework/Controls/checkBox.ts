@@ -46,6 +46,10 @@ export default defineComponent({
         }
     },
 
+    emits: {
+        "update:modelValue": (_value: boolean) => true
+    },
+
     setup(props, { emit }) {
         const internalValue = ref(props.modelValue);
 

@@ -1280,7 +1280,7 @@ namespace Rock.Client.Enums.Blocks.Engagement.SignUp
     {
         Family = 0x0,
         Anonymous = 0x1,
-        Group = 0x3,
+        Group = 0x2,
     }
 
 }

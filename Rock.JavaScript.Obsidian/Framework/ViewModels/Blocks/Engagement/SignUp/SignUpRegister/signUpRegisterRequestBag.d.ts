@@ -21,26 +21,10 @@
 // </copyright>
 //
 
-/** The register mode options available in the Sign-Up Register block. */
-export const RegisterMode = {
-    /** The logged-in user and any family members will be presented for selection. */
-    Family: 0,
+import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
 
-    /** An anonymous form (with the logged-in user pre-filled, if applicable) will be presented. */
-    Anonymous: 1,
-
-    /** The specified group's members - assuming the logged-in user belongs to the group - will be presented for selection. */
-    Group: 2
-} as const;
-
-/** The register mode options available in the Sign-Up Register block. */
-export const RegisterModeDescription: Record<number, string> = {
-    0: "Family",
-
-    1: "Anonymous",
-
-    2: "Group"
+/** The information about registrants to be registered, updated or unregistered when registering for a sign-up project occurrence. */
+export type SignUpRegisterRequestBag = {
+    /** Gets or sets the registrants to be registered, updated or unregistered. */
+    registrants?: SignUpRegistrantBag[] | null;
 };
-
-/** The register mode options available in the Sign-Up Register block. */
-export type RegisterMode = typeof RegisterMode[keyof typeof RegisterMode];

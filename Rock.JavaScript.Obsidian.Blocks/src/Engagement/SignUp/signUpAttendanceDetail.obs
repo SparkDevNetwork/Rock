@@ -4,7 +4,7 @@
         {{ blockErrorMessage }}
     </Alert>
 
-    <Alert v-if="errorMessage" alertType="danger">
+    <Alert v-if="errorMessage" alertType="warning">
         {{ errorMessage }}
     </Alert>
 
@@ -15,7 +15,7 @@
     <div v-if="!blockErrorMessage">
         <div ref="headerElement"></div>
         <hr />
-        <RockForm @submit="onSaveAttendance">
+        <RockForm @submit="onSubmit">
             <CheckboxList v-model="selectedAttendees" label="Attendees" :items="attendees" @update:modelValue="onAttendeesUpdated" />
             <RockButton type="submit" :disabled="isSaving">Save</RockButton>
         </RockForm>
@@ -40,10 +40,11 @@
 
     // #region Values
 
-    const errorMessage = ref("");
-    const successMessage = ref("");
     const headerElement = ref<HTMLElement | null>(null);
     const selectedAttendees = ref<string[]>([]);
+
+    const errorMessage = ref("");
+    const successMessage = ref("");
     const isSaving = ref(false);
 
     // #endregion
@@ -79,9 +80,9 @@
     }
 
     /**
-     * Saves attendance records.
+     * Handles the form submission.
      */
-    async function onSaveAttendance(): Promise<void> {
+    async function onSubmit(): Promise<void> {
         isSaving.value = true;
         errorMessage.value = "";
         successMessage.value = "";

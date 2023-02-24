@@ -1051,6 +1051,7 @@
     <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
     <Compile Include="RealTime\Topics\ITestCommunicationTransport.cs" />
     <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
+    <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoMembersFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
     <Compile Include="RealTime\Context.cs" />
     <Compile Include="RealTime\Engine.cs" />
@@ -1627,6 +1628,7 @@
     <Compile Include="Tasks\ProcessSendDigitalSignatureRequest.cs" />
     <Compile Include="Tasks\ProcessSendPaymentReceiptEmails.cs" />
     <Compile Include="Tasks\ProcessSendRegistrationConfirmation.cs" />
+    <Compile Include="Tasks\ProcessSendSignUpRegistrationConfirmation.cs" />
     <Compile Include="Tasks\ProcessStreakTypeExclusionChange.cs" />
     <Compile Include="Tasks\ProcessWorkflowTrigger.cs" />
     <Compile Include="Tasks\RegisterRestControllers.cs" />

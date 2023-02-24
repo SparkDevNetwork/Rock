@@ -21,26 +21,14 @@
 // </copyright>
 //
 
-/** The register mode options available in the Sign-Up Register block. */
-export const RegisterMode = {
-    /** The logged-in user and any family members will be presented for selection. */
-    Family: 0,
+/** The information about registrants that were successfully registered, unregistered or unable to be registered, for a given register request. */
+export type SignUpRegisterResponseBag = {
+    /** Gets or sets the full names of individuals who were successfully registered for a sign-up project. */
+    registeredRegistrantNames?: string[] | null;
 
-    /** An anonymous form (with the logged-in user pre-filled, if applicable) will be presented. */
-    Anonymous: 1,
+    /** Gets or sets the full names of individuals who were unregistered for a sign-up project. */
+    unregisteredRegistrantNames?: string[] | null;
 
-    /** The specified group's members - assuming the logged-in user belongs to the group - will be presented for selection. */
-    Group: 2
-} as const;
-
-/** The register mode options available in the Sign-Up Register block. */
-export const RegisterModeDescription: Record<number, string> = {
-    0: "Family",
-
-    1: "Anonymous",
-
-    2: "Group"
+    /** Gets or sets the full names of individuals who were unable to be registered for a sign-up project. */
+    unsuccessfulRegistrantNames?: string[] | null;
 };
-
-/** The register mode options available in the Sign-Up Register block. */
-export type RegisterMode = typeof RegisterMode[keyof typeof RegisterMode];

@@ -636,7 +636,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 rockContext.WrapTransaction( () =>
                 {
-                    // Initial save to get the group ID for any child entities.
+                    // Initial save to get the group ID for any referenced entities.
                     rockContext.SaveChanges();
 
                     if ( groupRequirementsToInsert.Any() )
@@ -645,7 +645,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         groupRequirementService.AddRange( groupRequirementsToInsert );
                     }
 
-                    // Follow-up save for newly-added child entities.
+                    // Follow-up save for newly-added referenced entities.
                     rockContext.SaveChanges();
 
                     group.SaveAttributeValues( rockContext );
@@ -1126,7 +1126,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 rockContext.WrapTransaction( () =>
                 {
-                    // Initial save to release FK constraints tied to child schedules we'll be deleting.
+                    // Initial save to release FK constraints tied to referenced schedules we'll be deleting.
                     rockContext.SaveChanges();
 
                     var scheduleService = new ScheduleService( rockContext );
@@ -1139,7 +1139,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                     }
 
-                    // Follow-up save for deleted child entities.
+                    // Follow-up save for deleted referenced entities.
                     rockContext.SaveChanges();
                 } );
             }
@@ -1549,7 +1549,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 rockContext.WrapTransaction( () =>
                 {
-                    // Initial save to get needed parent Id values && release FK constraints tied to child entities we'll be adding/updating/deleting.
+                    // Initial save to get needed parent Id values && release FK constraints tied to referenced entities we'll be adding/updating/deleting.
                     rockContext.SaveChanges();
 
                     if ( newSchedule != null )
@@ -1600,7 +1600,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                     }
 
-                    // Follow-up save for added/updated/deleted child entities.
+                    // Follow-up save for added/updated/deleted referenced entities.
                     rockContext.SaveChanges();
                 } );
             }
@@ -1654,8 +1654,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     .ToList();
 
                 /*
-                 * For now, this is safe, as [GroupMemberAssignment] is a pretty low-level Entity with no child Entities.
-                 * We will need to check GroupMemberAssignmentService.CanDelete() for each assignment if this changes in the future.
+                 * For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
+                 * We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
+                 * delete approach) if this changes in the future.
                  */
                 groupMemberAssignmentService.DeleteRange( groupMemberAssignments );
 
@@ -1668,7 +1669,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 {
                     if ( !groupTypeCache.EnableGroupHistory && !groupMemberService.CanDelete( groupMember, out string groupMemberErrorMessage ) )
                     {
-                        // The Attendee (Group Member Assignment) record itself will be deleted, but we cannot delete the underlying GroupMember record.
+                        // The Attendee (Group Member Assignment) record itself will be deleted, but we cannot delete the corresponding GroupMember record.
                         continue;
                     }
 
@@ -1708,7 +1709,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 rockContext.WrapTransaction( () =>
                 {
-                    // Initial save to release FK constraints tied to child entities we'll be deleting.
+                    // Initial save to release FK constraints tied to referenced entities we'll be deleting.
                     rockContext.SaveChanges();
 
                     var scheduleService = new ScheduleService( rockContext );
@@ -1722,12 +1723,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     }
 
                     /*
-                     * We cannot safely remove child Locations (even non-named ones):
+                     * We cannot safely remove referenced Locations (even non-named ones):
                      *   1) because of the way we reuse/share Locations across entities (the LocationPicker control auto-searches/matches and saves Locations).
                      *   2) because of the cascade deletes many of the referencing entities have on their LocationId FK constraints (we might accidentally delete a lot of unintended stuff).
                      */
 
-                    // Follow-up save for deleted child entities.
+                    // Follow-up save for deleted referenced entities.
                     rockContext.SaveChanges();
                 } );
             }
@@ -2594,9 +2595,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             public string Name { get; set; }
 
-            public DateTime? LastStartDateTime { get; set; }
-
             public DateTime? NextStartDateTime { get; set; }
+
+            public DateTime? LastStartDateTime { get; set; }
 
             public string FriendlyDateTime { get; set; }
 
@@ -2862,6 +2863,20 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         .ToList() // Execute the query.
                         .Select( gls =>
                         {
+                            DateTime? nextStartDateTime = gls.Schedule.NextStartDateTime;
+                            DateTime? lastStartDateTime = null;
+
+                            if ( !nextStartDateTime.HasValue )
+                            {
+                                // Give preference to NextStartDateTime, but if not available, fall back to LastStartDateTime. We need something to sort on and display.
+                                var startDateTimes = gls.Schedule.GetScheduledStartTimes( RockDateTime.Now, DateTime.MaxValue );
+                                var lastScheduledStartDateTime = startDateTimes.LastOrDefault();
+                                if ( lastScheduledStartDateTime != default )
+                                {
+                                    lastStartDateTime = lastScheduledStartDateTime;
+                                }
+                            }
+
                             var particpantCount = participantCounts.FirstOrDefault( c =>
                                 c.GroupId == gls.Group.Id
                                 && c.LocationId == gls.Location.Id
@@ -2877,8 +2892,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
                                 LocationId = gls.Location.Id,
                                 ScheduleId = gls.Schedule.Id,
                                 Name = gls.Config?.ConfigurationName,
-                                LastStartDateTime = gls.Schedule.EffectiveEndDate,
-                                NextStartDateTime = gls.Schedule.NextStartDateTime,
+                                NextStartDateTime = nextStartDateTime,
+                                LastStartDateTime = lastStartDateTime,
                                 FriendlyDateTime = gls.Schedule.ToString(),
                                 FriendlyLocation = gls.Location.ToString( true ),
                                 SlotsMin = gls.Config?.MinimumCapacity,

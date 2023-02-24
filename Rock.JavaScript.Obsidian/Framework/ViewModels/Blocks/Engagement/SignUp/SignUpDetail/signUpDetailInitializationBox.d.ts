@@ -21,26 +21,20 @@
 // </copyright>
 //
 
-/** The register mode options available in the Sign-Up Register block. */
-export const RegisterMode = {
-    /** The logged-in user and any family members will be presented for selection. */
-    Family: 0,
+/** The box that contains all the initialization information for the Sign-Up Detail block. */
+export type SignUpDetailInitializationBox = {
+    /**
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
+     */
+    errorMessage?: string | null;
 
-    /** An anonymous form (with the logged-in user pre-filled, if applicable) will be presented. */
-    Anonymous: 1,
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
 
-    /** The specified group's members - assuming the logged-in user belongs to the group - will be presented for selection. */
-    Group: 2
-} as const;
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 
-/** The register mode options available in the Sign-Up Register block. */
-export const RegisterModeDescription: Record<number, string> = {
-    0: "Family",
-
-    1: "Anonymous",
-
-    2: "Group"
+    /** Gets or sets the sign-up detail HTML. */
+    signUpDetailHtml?: string | null;
 };
-
-/** The register mode options available in the Sign-Up Register block. */
-export type RegisterMode = typeof RegisterMode[keyof typeof RegisterMode];

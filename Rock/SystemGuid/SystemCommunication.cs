@@ -244,6 +244,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SIGNUP_GROUP_REMINDER = "530ADF1E-C2D9-4A67-BADF-5EF65222CA7E";
 
+        /// <summary>
+        /// Gets the template guid for Sign-Up Group Registration Confirmations.
+        /// </summary>
+        public const string SIGNUP_GROUP_REGISTRATION_CONFIRMATION = "B546C11D-6C92-400F-BA56-AAA22D7BAC01";
+
         #endregion
     }
 }

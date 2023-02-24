@@ -161,7 +161,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
             occurrenceData.Group = group;
 
-            var currentPerson = RequestContext.CurrentPerson;
+            var currentPerson = this.RequestContext.CurrentPerson;
             if ( !group.IsAuthorized( Authorization.VIEW, currentPerson ) )
             {
                 occurrenceData.ErrorMessage = EditModeMessage.NotAuthorizedToView( Group.FriendlyTypeName );
@@ -347,7 +347,7 @@ namespace Rock.Blocks.Engagement.SignUp
         private string GetHeaderHtml( OccurrenceData occurrenceData )
         {
             var lavaTemplate = GetAttributeValue( AttributeKey.HeaderLavaTemplate );
-            var mergeFields = RequestContext.GetCommonMergeFields();
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
 
             mergeFields.Add( "Group", occurrenceData.Group );
             mergeFields.Add( "Location", occurrenceData.Location );
@@ -438,7 +438,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 if ( !occurrenceData.CanTakeAttendance )
                 {
-                    return ActionBadRequest( occurrenceData.ErrorMessage );
+                    return ActionBadRequest( occurrenceData.ErrorMessage ?? "Unable to take attendance for this occurrence." );
                 }
 
                 SaveAttendanceRecords( rockContext, occurrenceData, bag.Attendees );

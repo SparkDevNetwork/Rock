@@ -44,6 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\Engagement\SignUp\SignUpDetail\SignUpDetailInitializationBox.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterRequestBag.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterResponseBag.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryAccountInfoBag.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryCompletedStepBag.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryConfirmationSentStepBag.cs" />
