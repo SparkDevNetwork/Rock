@@ -924,8 +924,13 @@ namespace Rock.Blocks.Engagement.SignUp
                 }
             }
 
+            /*
+             * Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveStartDates,
+             * which only hold a date value (without the time component)
+             */
+            DateTime fromDate = fromDateTime.Date;
             qryGroupLocationSchedules = qryGroupLocationSchedules
-                .Where( gls => gls.Schedule.EffectiveStartDate.HasValue && gls.Schedule.EffectiveStartDate >= fromDateTime );
+                .Where( gls => gls.Schedule.EffectiveStartDate.HasValue && gls.Schedule.EffectiveStartDate >= fromDate );
 
             // Get all participant counts for all filtered opportunities; we'll hook them up to their respective opportunities below.
             var participantCounts = new GroupMemberAssignmentService( rockContext )

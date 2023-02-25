@@ -885,9 +885,15 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
             }
 
-            // Don't rule out a schedule just because it doesn't have an EffectiveStartDate since we're on the administrative side.
+            /*
+             * Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveStartDates,
+             * which only hold a date value (without the time component). Also, don't rule out a Schedule just because it doesn't
+             * have an EffectiveStartDate, since we're on the administrative side. A Schedule should always have this value defined,
+             * but just in case it doesn't, we still need the admin to be able to see it so they can manage it.
+             */
+            DateTime fromDate = fromDateTime.Date;
             qryGroupLocationSchedules = qryGroupLocationSchedules
-                .Where( gls => !gls.Schedule.EffectiveStartDate.HasValue || gls.Schedule.EffectiveStartDate >= fromDateTime );
+                .Where( gls => !gls.Schedule.EffectiveStartDate.HasValue || gls.Schedule.EffectiveStartDate >= fromDate );
 
             // Filter by parent group.
             var parentGroupId = gpParentGroup.SelectedValueAsId();
