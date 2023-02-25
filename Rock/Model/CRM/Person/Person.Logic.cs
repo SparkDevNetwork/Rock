@@ -112,6 +112,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the initials for the person based on the nick name and last name.
+        /// </summary>
+        /// /// <value>
+        /// A <see cref="System.String"/> representing the initials of a Person using the NickName and LastName.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string Initials
+        {
+            get
+            {
+                return $"{NickName.Truncate( 1, false )}{LastName.Truncate( 1, false )}";
+            }
+            private set
+            {
+                // intentionally blank
+            }
+        }
+
+        /// <summary>
         /// Determines whether the <see cref="RecordTypeValue"/> of this Person is Business
         /// </summary>
         /// <returns>
