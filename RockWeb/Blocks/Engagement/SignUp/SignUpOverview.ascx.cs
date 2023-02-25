@@ -886,14 +886,20 @@ namespace RockWeb.Blocks.Engagement.SignUp
             }
 
             /*
-             * Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveStartDates,
-             * which only hold a date value (without the time component). Also, don't rule out a Schedule just because it doesn't
-             * have an EffectiveStartDate, since we're on the administrative side. A Schedule should always have this value defined,
-             * but just in case it doesn't, we still need the admin to be able to see it so they can manage it.
+             * Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveEndDates, which hold
+             * only a date value (without the time component). Return any Schedules whose EffectiveEndDate:
+             *  1) is not defined (this should never happen, but get them just in case), OR
+             *  2) is greater than or equal to the "from" date being filtered against.
+             * 
+             * We'll do this to rule out any Schedules that have already ended, therefore making the initial results record set smaller,
+             * since we still have to do additional Schedule-based filtering below: once we materialize the Schedule objects, we'll use their
+             * runtime-calculated "Start[Date]Time" properties and methods to ensure we're only showing Schedules that actually qualify to
+             * be shown, based on the DateTime filter criteria provided to this method (either RockDateTime.Now OR the "from" date selected
+             * by the individual performing the search).
              */
             DateTime fromDate = fromDateTime.Date;
             qryGroupLocationSchedules = qryGroupLocationSchedules
-                .Where( gls => !gls.Schedule.EffectiveStartDate.HasValue || gls.Schedule.EffectiveStartDate >= fromDate );
+                .Where( gls => !gls.Schedule.EffectiveEndDate.HasValue || gls.Schedule.EffectiveEndDate >= fromDate );
 
             // Filter by parent group.
             var parentGroupId = gpParentGroup.SelectedValueAsId();
@@ -961,7 +967,10 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     };
                 } );
 
-            // Now that we have Schedule objects in memory, let's further apply date(/time) filtering.
+            /*
+             * Now that we have materialized Schedule objects in memory, let's further apply DateTime filtering using the Schedules' runtime-calculated
+             * "Start[Date]Time" method and property values.
+             */
             opportunities = opportunities
                 .Where( o =>
                     o.NextOrLastStartDateTime.HasValue

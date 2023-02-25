@@ -925,12 +925,20 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             /*
-             * Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveStartDates,
-             * which only hold a date value (without the time component)
+             * Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveEndDates, which hold
+             * only a date value (without the time component). Return any Schedules whose EffectiveEndDate:
+             *  1) is not defined (this should never happen, but get them just in case), OR
+             *  2) is greater than or equal to the "from" date being filtered against.
+             * 
+             * We'll do this to rule out any Schedules that have already ended, therefore making the initial results record set smaller,
+             * since we still have to do additional Schedule-based filtering below: once we materialize the Schedule objects, we'll use their
+             * runtime-calculated "Start[Date]Time" properties and methods to ensure we're only showing Schedules that actually qualify to
+             * be shown, based on the DateTime filter criteria provided to this method (either RockDateTime.Now OR the "from" date selected
+             * by the individual performing the search).
              */
             DateTime fromDate = fromDateTime.Date;
             qryGroupLocationSchedules = qryGroupLocationSchedules
-                .Where( gls => gls.Schedule.EffectiveStartDate.HasValue && gls.Schedule.EffectiveStartDate >= fromDate );
+                .Where( gls => !gls.Schedule.EffectiveEndDate.HasValue || gls.Schedule.EffectiveEndDate >= fromDate );
 
             // Get all participant counts for all filtered opportunities; we'll hook them up to their respective opportunities below.
             var participantCounts = new GroupMemberAssignmentService( rockContext )
@@ -984,7 +992,10 @@ namespace Rock.Blocks.Engagement.SignUp
                     };
                 } );
 
-            // Now that we have Schedule objects in memory, let's further apply date(/time) filtering.
+            /*
+             * Now that we have materialized Schedule objects in memory, let's further apply DateTime filtering using the Schedules' runtime-calculated
+             * "NextStartDateTime" property values; only show Schedules that have current or upcoming start DateTimes.
+             */
             opportunities = opportunities
                 .Where( o =>
                     o.NextStartDateTime.HasValue
