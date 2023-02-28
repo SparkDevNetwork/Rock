@@ -196,11 +196,11 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Gets the group for the specified Guid.
+        /// Gets the group for the specified identifier.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="groupId">The group identifier.</param>
-        /// <returns>The group for the specified Guid.</returns>
+        /// <returns>The group for the specified identifier.</returns>
         private Group GetGroup( RockContext rockContext, int groupId )
         {
             return new GroupService( rockContext )
@@ -452,8 +452,9 @@ namespace Rock.Blocks.Engagement.SignUp
         #region Support Classes
 
         /// <summary>
-        /// A runtime object to represent a <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> combination,
-        /// along with it's <see cref="GroupMember"/> collection, against which an attendance occurrence should be saved.
+        /// A runtime object to represent a <see cref="Rock.Model.Group"/>, <see cref="Rock.Model.Location"/> and
+        /// <see cref="Rock.Model.Schedule"/> combination, along with it's <see cref="GroupMember"/> collection,
+        /// against which an attendance occurrence should be saved.
         /// </summary>
         private class OccurrenceData
         {

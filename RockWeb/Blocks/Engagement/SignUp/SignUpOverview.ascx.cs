@@ -484,7 +484,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                  * When deleting an Opportunity we should delete the following:
                  * 
                  * 1) GroupMemberAssignments
-                 * 2) GroupMembers (if no more GroupMemberAssignents for a given GroupMember)
+                 * 2) GroupMembers (if no more GroupMemberAssignments for a given GroupMember)
                  * 3) GroupLocationSchedule & GroupLocationScheduleConfig
                  * 4) GroupLocation (if no more Schedules tied to it)
                  * 5) Schedule (if non-named and nothing else is using it)
@@ -600,7 +600,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             gOpportunities.ExportFilename = $"{this.SignUpGroupType.Name} Opportunities";
             gOpportunities.EntityIdField = "Id";
 
-            // We'll have custom javascript (see SignUpOverview.ascx) do this instead.
+            // We'll have custom JavaScript (see SignUpOverview.ascx) do this instead.
             gOpportunities.ShowConfirmDeleteDialog = false;
 
             gOpportunities.IsDeleteEnabled = _canEdit;
@@ -878,7 +878,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                      * selected. Note also that we cannot apply this filter during the query phase; we need to wait until we
                      * materialize Schedule objects so we can compare this value to Schedule.Next[or last]StartDateTime, which
                      * is a runtime-calculated value. If we instead applied this filter to the Schedule.EffectiveEndDate,
-                     * we could accidentally rule out opportunites that the individual might otherwise be interested in managing.
+                     * we could accidentally rule out opportunities that the individual might otherwise be interested in managing.
                      * We'll apply this filter value below.
                      */
                     toDateTime = dateRange.End.Value.EndOfDay();
@@ -909,7 +909,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             }
 
             // Get all group member assignments for all filtered opportunities; we'll hook them up to their respective opportunities below.
-            var assigments = new GroupMemberAssignmentService( rockContext )
+            var assignments = new GroupMemberAssignmentService( rockContext )
                 .Queryable()
                 .AsNoTracking()
                 .Include( gma => gma.GroupMember.GroupRole )
@@ -930,7 +930,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     var locationId = gls.Location.Id;
                     var scheduleId = gls.Schedule.Id;
 
-                    var participants = assigments
+                    var participants = assignments
                         .Where( a => a.LocationId == locationId && a.ScheduleId == scheduleId )
                         .ToList();
 

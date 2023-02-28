@@ -917,7 +917,7 @@ namespace Rock.Blocks.Engagement.SignUp
                      * selected. Note also that we cannot apply this filter during the query phase; we need to wait until we
                      * materialize Schedule objects so we can compare this value to Schedule.NextStartDateTime, which is a
                      * runtime-calculated value. If we instead applied this filter to the Schedule.EffectiveEndDate, we could
-                     * accidentally rule out opportunites for which the individual might otherwise be interested in signing up.
+                     * accidentally rule out opportunities for which the individual might otherwise be interested in signing up.
                      * We'll apply this filter value below.
                      */
                     toDateTime = selectedFilters.EndDate.Value.EndOfDay();
@@ -1001,7 +1001,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     o.NextStartDateTime.HasValue
                     && o.NextStartDateTime.Value >= fromDateTime
                     && (
-                        !toDateTime.HasValue // The indivdual didn't select an end date.
+                        !toDateTime.HasValue // The individual didn't select an end date.
                         || o.NextStartDateTime.Value < toDateTime.Value // The project's [next] start date time is less than the [end of the] end date they selected.
                     )
                 );
@@ -1071,14 +1071,14 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             // Sort.
-            List<Opportunity> sortedOpportunties = filteredOpportunities
+            List<Opportunity> sortedOpportunities = filteredOpportunities
                 .OrderBy( o => o.DistanceInMiles.HasValue ? o.DistanceInMiles : double.MaxValue )
                 .ThenBy( o => o.NextStartDateTime ?? DateTime.MaxValue )
                 .ThenBy( o => o.ProjectName )
                 .ThenByDescending( o => o.ParticipantCount )
                 .ToList();
 
-            return sortedOpportunties;
+            return sortedOpportunities;
         }
 
         /// <summary>

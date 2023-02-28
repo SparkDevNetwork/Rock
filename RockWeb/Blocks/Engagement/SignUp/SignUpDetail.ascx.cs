@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         {
             get
             {
-                return this.ResolveUrl( $"~/Grouptype/{this.GroupTypeId}" );
+                return this.ResolveUrl( $"~/GroupType/{this.GroupTypeId}" );
             }
         }
 
@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             gOpportunities.Actions.AddClick += gOpportunities_Add;
             gOpportunities.EmptyDataText = Server.HtmlEncode( None.Text );
 
-            // we'll have custom javascript (see SignUpDetail.ascx ) do this instead.
+            // we'll have custom JavaScript (see SignUpDetail.ascx ) do this instead.
             gOpportunities.ShowConfirmDeleteDialog = false;
 
             // This event gets fired after block settings are updated. It's nice to repaint the screen if these settings would alter it.
@@ -1320,7 +1320,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             }
 
             var newScheduleType = parsed.NewScheduleType;
-            var newICalendarContent = parsed.NewICalaendarContent;
+            var newICalendarContent = parsed.NewICalendarContent;
             var newScheduleId = parsed.NewScheduleId;
             var newLocationId = parsed.NewLocationId;
 
@@ -1632,7 +1632,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                  * When deleting an Opportunity we should delete the following:
                  * 
                  * 1) GroupMemberAssignments
-                 * 2) GroupMembers (if no more GroupMemberAssignents for a given GroupMember)
+                 * 2) GroupMembers (if no more GroupMemberAssignments for a given GroupMember)
                  * 3) GroupLocationSchedule & GroupLocationScheduleConfig
                  * 4) GroupLocation (if no more Schedules tied to it)
                  * 5) Schedule (if non-named and nothing else is using it)
@@ -3119,7 +3119,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         {
             public ScheduleType NewScheduleType { get; set; }
 
-            public string NewICalaendarContent { get; set; }
+            public string NewICalendarContent { get; set; }
 
             public int? NewScheduleId { get; set; }
 
@@ -3145,8 +3145,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
             // Ensure a valid Schedule was selected.
             if ( newScheduleType == ScheduleType.Custom )
             {
-                parsed.NewICalaendarContent = sbSchedule.iCalendarContent;
-                var calEvent = InetCalendarHelper.CreateCalendarEvent( parsed.NewICalaendarContent );
+                parsed.NewICalendarContent = sbSchedule.iCalendarContent;
+                var calEvent = InetCalendarHelper.CreateCalendarEvent( parsed.NewICalendarContent );
                 if ( !sbSchedule.IsValid || calEvent == null || calEvent.DtStart == null )
                 {
                     parsed.ErrorMessages.Add( "Schedule is required." );

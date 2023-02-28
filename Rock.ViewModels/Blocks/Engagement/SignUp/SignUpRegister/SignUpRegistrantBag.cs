@@ -67,6 +67,14 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
         public string FullName { get; set; }
 
         /// <summary>
+        /// Gets or sets whether this <see cref="SignUpRegistrantBag"/> instance represents a child.
+        /// </summary>
+        /// <value>
+        /// Whether this <see cref="SignUpRegistrantBag"/> instance represents a child.
+        /// </value>
+        public bool IsChild { get; set; }
+
+        /// <summary>
         /// Gets or sets the registrant's communication preference.
         /// </summary>
         /// <value>

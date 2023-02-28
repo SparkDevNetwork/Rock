@@ -194,7 +194,7 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Tries to get the <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> instances for this occurrence,
+        /// Tries to get the <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> instances for this occurrence,
         /// loading them onto the <see cref="OccurrenceData"/> instance.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -202,7 +202,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <param name="projectId">The project identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
-        /// <returns>Whether <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> instances were successfully loaded for this occurrence.</returns>
+        /// <returns>Whether <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> instances were successfully loaded for this occurrence.</returns>
         private bool TryGetGroupLocationSchedule( RockContext rockContext, OccurrenceData occurrenceData, int projectId, int locationId, int scheduleId )
         {
             // We'll filter against the allowed GroupType(s) to ensure this block isn't being misused.
@@ -257,7 +257,7 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Gets the participant count for this <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> occurrence.
+        /// Gets the participant count for this <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> occurrence.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="occurrenceData">The occurrence data.</param>
@@ -331,7 +331,7 @@ namespace Rock.Blocks.Engagement.SignUp
         #region Supporting Classes
 
         /// <summary>
-        /// A runtime object to represent a <see cref="Rock.Model.Group"/>, <see cref="Rock.Model.Location"/> &
+        /// A runtime object to represent a <see cref="Rock.Model.Group"/>, <see cref="Rock.Model.Location"/> and
         /// <see cref="Rock.Model.Schedule"/> combination, along with convenience properties for the final,
         /// Lava class, <see cref="SignUpDetail.Project"/> to easily pick from.
         /// </summary>

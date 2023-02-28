@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -25,63 +26,130 @@ namespace Rock.Tasks
 
             using ( var rockContext = new RockContext() )
             {
-                var groupMemberAssignment = new GroupMemberAssignmentService( rockContext )
+                var confirmationData = new GroupLocationService( rockContext )
                     .Queryable()
                     .AsNoTracking()
-                    .Include( gma => gma.GroupMember.Person )
-                    .Include( gma => gma.GroupMember.Group )
-                    .Include( gma => gma.Location )
-                    .Include( gma => gma.Schedule )
-                    .FirstOrDefault( gma => gma.Id == message.GroupMemberAssignmentId );
-
-                if ( groupMemberAssignment == null
-                     || string.IsNullOrEmpty( groupMemberAssignment.GroupMember.Person.Email )
-                     || groupMemberAssignment.Location == null
-                     || groupMemberAssignment.Schedule == null )
-                {
-                    return;
-                }
-
-                var systemCommunication = new SystemCommunicationService( rockContext )
-                    .GetNoTracking( message.SystemCommunicationGuid );
-
-                if ( systemCommunication == null || string.IsNullOrEmpty( systemCommunication.Body ) )
-                {
-                    return;
-                }
-
-                var person = groupMemberAssignment.GroupMember.Person;
-                var group = groupMemberAssignment.GroupMember.Group;
-                var location = groupMemberAssignment.Location;
-                var schedule = groupMemberAssignment.Schedule;
-
-                var groupLocationScheduleConfig = new GroupLocationService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Include( gl => gl.GroupLocationScheduleConfigs )
-                    .Where( gl => gl.GroupId == group.Id && gl.LocationId == location.Id )
-                    .Select( gl => gl.GroupLocationScheduleConfigs.FirstOrDefault( glsc => glsc.ScheduleId == schedule.Id ) )
+                    .Where( gl =>
+                        gl.Group.IsActive
+                        && gl.Group.Id == message.GroupId
+                        && gl.Location.Id == message.LocationId
+                    )
+                    .SelectMany( gl => gl.Schedules, ( gl, s ) => new
+                    {
+                        gl.Group,
+                        gl.Location,
+                        Schedule = s,
+                        Config = gl.GroupLocationScheduleConfigs.FirstOrDefault( glsc => glsc.ScheduleId == s.Id )
+                    } )
+                    .Where( gls => gls.Schedule.Id == message.ScheduleId )
+                    .Select( gls => new
+                    {
+                        gls.Group,
+                        gls.Location,
+                        gls.Schedule,
+                        gls.Config,
+                        Recipient = gls.Group.Members
+                            .SelectMany( gm => gm.GroupMemberAssignments, ( gm, gma ) => new
+                            {
+                                gm.Person,
+                                GroupMember = gm,
+                                Assignment = gma
+                            } )
+                            .FirstOrDefault( gmas =>
+                                !gmas.Person.IsDeceased
+                                && gmas.Assignment.Id == message.GroupMemberAssignmentId
+                            )
+                    } )
                     .FirstOrDefault();
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, groupMemberAssignment.GroupMember.Person );
-                mergeFields.Add( "Registrant", person );
-                mergeFields.Add( "ProjectName", group.Name );
-                mergeFields.Add( "OpportunityName", groupLocationScheduleConfig?.ConfigurationName );
-                mergeFields.Add( "FriendlyLocation", location.ToString( true ) );
-                mergeFields.Add( "StartDateTime", schedule.NextStartDateTime );
-                mergeFields.Add( "Group", group );
-                mergeFields.Add( "Location", location );
-                mergeFields.Add( "Schedule", schedule );
+                if ( confirmationData == null
+                    || confirmationData.Group == null
+                    || confirmationData.Location == null
+                    || confirmationData.Schedule == null
+                    || confirmationData.Recipient?.GroupMember == null
+                    || confirmationData.Recipient?.Person == null )
+                {
+                    ExceptionLogService.LogException( $"Unable to find necessary data to send sign-up project registration confirmation. Group ID = {message.GroupId}, Location ID = {message.LocationId}, Schedule ID = {message.ScheduleId}, GroupMemberAssignment ID = {message.GroupMemberAssignmentId}." );
+                    return;
+                }
 
-                var emailMessage = new RockEmailMessage();
-                emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
-                emailMessage.FromEmail = systemCommunication.From;
-                emailMessage.FromName = systemCommunication.FromName;
-                emailMessage.Subject = systemCommunication.Subject;
-                emailMessage.Message = systemCommunication.Body;
-                emailMessage.AppRoot = message.AppRoot;
-                emailMessage.ThemeRoot = message.ThemeRoot;
-                emailMessage.Send();
+                var systemCommunication = new SystemCommunicationService( rockContext ).GetNoTracking( message.SystemCommunicationGuid );
+                if ( systemCommunication == null )
+                {
+                    ExceptionLogService.LogException( $"Unable to find system communication with Guid '{message.SystemCommunicationGuid}'." );
+                    return;
+                }
+
+                if ( string.IsNullOrEmpty( systemCommunication.Body ) )
+                {
+                    ExceptionLogService.LogException( $"System communication with Guid '{message.SystemCommunicationGuid}' has no body." );
+                    return;
+                }
+
+                var isSmsEnabled = MediumContainer.HasActiveSmsTransport();
+                var templateCommunicationPreference = CommunicationType.RecipientPreference;
+                if ( !isSmsEnabled || string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
+                {
+                    templateCommunicationPreference = CommunicationType.Email;
+                }
+
+                var group = confirmationData.Group;
+                var location = confirmationData.Location;
+                var schedule = confirmationData.Schedule;
+                var config = confirmationData.Config;
+                var groupMember = confirmationData.Recipient.GroupMember;
+                var person = confirmationData.Recipient.Person;
+
+                var additionalDetailsSb = new StringBuilder();
+                if ( !string.IsNullOrWhiteSpace( group.ConfirmationAdditionalDetails ) )
+                {
+                    additionalDetailsSb.Append( group.ConfirmationAdditionalDetails );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( config?.ConfirmationAdditionalDetails ) )
+                {
+                    additionalDetailsSb.Append( config.ConfirmationAdditionalDetails );
+                }
+
+                var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                mergeObjects.Add( "Registrant", person );
+                mergeObjects.Add( "ProjectName", group.Name );
+                mergeObjects.Add( "OpportunityName", config?.ConfigurationName );
+                mergeObjects.Add( "FriendlyLocation", location.ToString( true ) );
+                mergeObjects.Add( "StartDateTime", schedule.NextStartDateTime );
+                mergeObjects.Add( "Group", group );
+                mergeObjects.Add( "Location", location );
+                mergeObjects.Add( "Schedule", schedule );
+                mergeObjects.Add( "AdditionalDetails", additionalDetailsSb.ToString() );
+
+                var mediumType = Rock.Model.Communication.DetermineMediumEntityTypeId(
+                    ( int ) CommunicationType.Email,
+                    ( int ) CommunicationType.SMS,
+                    ( int ) CommunicationType.PushNotification,
+                    templateCommunicationPreference,
+                    groupMember.CommunicationPreference,
+                    person.CommunicationPreference );
+
+                try
+                {
+                    var sendResult = CommunicationHelper.SendMessage( person, mediumType, systemCommunication, mergeObjects );
+
+                    var errorMessage = $"Error while sending sign-up project registration confirmation for Group ID = {message.GroupId}, Location ID = {message.LocationId}, Schedule ID = {message.ScheduleId}, GroupMemberAssignment ID = {message.GroupMemberAssignmentId}, SystemCommunication Guid = '{message.SystemCommunicationGuid}'.";
+
+                    if ( sendResult.Errors?.Any() == true )
+                    {
+                        ExceptionLogService.LogException( $"{errorMessage} {string.Join( "; ", sendResult.Errors )}" );
+                    }
+
+                    if ( sendResult.Exceptions?.Any() == true )
+                    {
+                        ExceptionLogService.LogException( new AggregateException( errorMessage, sendResult.Exceptions ) );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
             }
         }
 
@@ -91,6 +159,30 @@ namespace Rock.Tasks
         public sealed class Message : BusStartedTaskMessage
         {
             /// <summary>
+            /// Gets or sets the sign-up project's <see cref="Rock.Model.Group"/> identifier.
+            /// </summary>
+            /// <value>
+            /// The sign-up project's <see cref="Rock.Model.Group"/> identifier.
+            /// </value>
+            public int GroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the sign-up project's <see cref="Rock.Model.Location"/> identifier.
+            /// </summary>
+            /// <value>
+            /// The sign-up project's <see cref="Rock.Model.Location"/> identifier.
+            /// </value>
+            public int LocationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the sign-up project's <see cref="Rock.Model.Schedule"/> identifier.
+            /// </summary>
+            /// <value>
+            /// The sign-up project's <see cref="Rock.Model.Schedule"/> identifier.
+            /// </value>
+            public int ScheduleId { get; set; }
+
+            /// <summary>
             /// Gets or sets the sign-up registrant's <see cref="Rock.Model.GroupMemberAssignment"/> identifier.
             /// </summary>
             /// <value>
@@ -99,10 +191,10 @@ namespace Rock.Tasks
             public int GroupMemberAssignmentId { get; set; }
 
             /// <summary>
-            /// Gets or sets the registrant confimation <see cref="SystemCommunication"/> identifier.
+            /// Gets or sets the registrant confirmation <see cref="SystemCommunication"/> identifier.
             /// </summary>
             /// <value>
-            /// The registrant confimation <see cref="SystemCommunication"/> identifier.
+            /// The registrant confirmation <see cref="SystemCommunication"/> identifier.
             /// </value>
             public Guid SystemCommunicationGuid { get; set; }
 
