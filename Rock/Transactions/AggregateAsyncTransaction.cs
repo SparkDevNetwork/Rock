@@ -50,7 +50,7 @@ namespace Rock.Transactions
         }
 
         /// <inheritdoc/>
-        public void WillEnqueue()
+        public void OnEnqueue()
         {
             _items.Enqueue( _item );
         }
