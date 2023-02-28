@@ -908,6 +908,12 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
+    <Compile Include="Drawing\Avatar\AvatarColors.cs" />
+    <Compile Include="Drawing\Avatar\AvatarFormat.cs" />
+    <Compile Include="Drawing\Avatar\AvatarHelper.cs" />
+    <Compile Include="Drawing\Avatar\AvatarSettings.cs" />
+    <Compile Include="Drawing\Avatar\AvatarStyle.cs" />
+    <Compile Include="Drawing\RockImage.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\Poll.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\ShortAnswer.cs" />
@@ -1707,6 +1713,7 @@
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Image.cs" />
     <Compile Include="Utility\IdHasher.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
