@@ -103,19 +103,36 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            var settings = LavaElementAttributes.NewFromMarkup( _markup, context );
-
             var attributes = new Dictionary<string, string>();
-            string parmWorkflowType = settings.GetStringOrNull( "workflowtype" );
-            string parmWorkflowName = settings.GetStringOrNull( "workflowname" );
-            string parmWorkflowId = settings.GetStringOrNull( "workflowid" );
-            string parmActivityType = settings.GetStringOrNull( "activitytype" );
+            string parmWorkflowType = null;
+            string parmWorkflowName = null;
+            string parmWorkflowId = null;
+            string parmActivityType = null;
 
             /* Parse the markup text to pull out configuration parameters. */
-            var knownParameterKeys = new List<string> { "workflowtype", "workflowname", "workflowid", "activitytype" };
-            foreach ( var attributeKey in settings.GetUnmatchedAttributes( knownParameterKeys ) )
+            var parms = ParseMarkup( _markup, context );
+            foreach ( var p in parms )
             {
-                attributes.AddOrReplace( attributeKey, settings.GetString( attributeKey ) );
+                if ( p.Key.ToLower() == "workflowtype" )
+                {
+                    parmWorkflowType = p.Value;
+                }
+                else if ( p.Key.ToLower() == "workflowname" )
+                {
+                    parmWorkflowName = p.Value;
+                }
+                else if ( p.Key.ToLower() == "workflowid" )
+                {
+                    parmWorkflowId = p.Value;
+                }
+                else if ( p.Key.ToLower() == "activitytype" )
+                {
+                    parmActivityType = p.Value;
+                }
+                else
+                {
+                    attributes.AddOrReplace( p.Key, p.Value );
+                }
             }
 
             /* Process inside a new stack level so our own created variables do not

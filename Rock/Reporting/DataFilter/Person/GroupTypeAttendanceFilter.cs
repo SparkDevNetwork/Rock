@@ -115,7 +115,7 @@ namespace Rock.Reporting.DataFilter.Person
                 }
 
                 filterName = string.Format(
-                    "Attended '{0}'{4} {1} {2} times. Date Range: {3}",
+                    "Attended '{0}' Group Type {4} {1} {2} times. Date Range: {3}",
                     groupType ?? "?",
                     comparisonType.ConvertToString(),
                     options[2],
@@ -141,7 +141,7 @@ namespace Rock.Reporting.DataFilter.Person
             var cbChildGroupTypes = new RockCheckBox();
             cbChildGroupTypes.ID = filterControl.ID + "_cbChildGroupTypes";
             cbChildGroupTypes.AddCssClass( "js-child-group-types" );
-            cbChildGroupTypes.Text = "Include Child Group Types(s)";
+            cbChildGroupTypes.Text = "Include Child Group Type(s)";
             filterControl.Controls.Add( cbChildGroupTypes );
 
             var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );

@@ -1101,6 +1101,46 @@ namespace Rock.Client.Enums
 
 }
 
+namespace Rock.Client.Enums.Event
+{
+    /// <summary>
+    /// </summary>
+    public enum AttendanceStatus
+    {
+        DidNotAttend = 0x0,
+        DidAttend = 0x1,
+        IsPresent = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceApprovalStatus
+    {
+        Pending = 0x0,
+        Approved = 0x1,
+        Rejected = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceCampusBehavior
+    {
+        FilterSchedulesByCampusGeofences = 0x0,
+        DetermineCampusFromGeofence = 0x1,
+        UseIndividualsCampus = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperiencePushNotificationType
+    {
+        Never = 0x0,
+        EveryAction = 0x1,
+        SpecificActions = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Communication
 {
     /// <summary>
@@ -1199,37 +1239,6 @@ namespace Rock.Client.Enums.Reporting
 
 }
 
-namespace Rock.Client.Enums.Event
-{
-    /// <summary>
-    /// </summary>
-    public enum InteractiveExperienceApprovalStatus
-    {
-        Pending = 0x0,
-        Approved = 0x1,
-        Rejected = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum InteractiveExperienceCampusBehavior
-    {
-        FilterSchedulesByCampusGeofences = 0x0,
-        DetermineCampusFromGeofence = 0x1,
-        UseIndividualsCampus = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum InteractiveExperiencePushNotificationType
-    {
-        Never = 0x0,
-        EveryAction = 0x1,
-        SpecificActions = 0x2,
-    }
-
-}
-
 namespace Rock.Client.Enums.Blocks.Security.Login
 {
     /// <summary>
@@ -1250,6 +1259,19 @@ namespace Rock.Client.Enums.Blocks.Security.Login
 
 }
 
+namespace Rock.Client.Enums.Core
+{
+    /// <summary>
+    /// </summary>
+    public enum NotificationMessageActionType
+    {
+        Invalid = 0x0,
+        ShowMessage = 0x1,
+        LinkToPage = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Blocks.Engagement.SignUp
 {
     /// <summary>
@@ -1258,7 +1280,7 @@ namespace Rock.Client.Enums.Blocks.Engagement.SignUp
     {
         Family = 0x0,
         Anonymous = 0x1,
-        Group = 0x3,
+        Group = 0x2,
     }
 
 }

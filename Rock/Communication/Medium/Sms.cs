@@ -330,6 +330,7 @@ namespace Rock.Communication.Medium
             // Fire off notifications on background tasks.
             CommunicationService.SendInboundSmsRealTimeNotificationsInBackground( communicationResponse.Id );
             CommunicationService.SendInboundSmsPushPushNotificationsInBackground( communicationResponse.Id );
+            CommunicationResponseService.UpdateResponseNotificationMessagesInBackground( rockSmsFromPhoneNumber, fromPerson.Id );
         }
 
         /// <summary>

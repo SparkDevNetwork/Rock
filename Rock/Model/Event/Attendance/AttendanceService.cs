@@ -2286,7 +2286,11 @@ namespace Rock.Model
                     scheduledAttendance.RequestedToAttend = true;
                 }
 
-                // if they previously declined, set RSVP back to Unknown if they are added as pending again
+                /* For all the attendance where RSVP is previously declined and now added as Pending again need to follow below rules for RSVP
+                     - if ScheduleConfirmationLogic is auto accept and Occurrence GroupId has value then set RSVP to Yes
+                     - else Set RSVP to Unknown
+                */
+
                 if ( scheduledAttendance.RSVP == RSVP.No )
                 {
                     scheduledAttendance.RSVP = rsvp;

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -442,6 +442,11 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView
         /// </summary>
         public const string MOBILE_COMMUNICATION_COMMUNICATIONVIEW_BLOCK_TYPE = "4AF5FCEF-CBF6-486B-A04D-920E31356B7F";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationEntry
+        /// </summary>
+        public const string MOBILE_COMMUNICATION_COMMUNICATIONENTRY_BLOCK_TYPE = "9A952F9F-F619-4063-B1BB-CFB2E6983C01";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventItemOccurrenceView
@@ -1779,5 +1784,15 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.SystemPhoneNumber"/> 
         /// </summary>
         public const string SYSTEM_PHONE_NUMBER = "66D62A9F-13CD-4160-8653-211B2A4ABF16";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.NotificationMessage"/> 
+        /// </summary>
+        public const string NOTIFICATION_MESSAGE = "239ADD2E-2DBF-46A7-BD28-4A2A201D4E7B";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.NotificationMessageType"/> 
+        /// </summary>
+        public const string NOTIFICATION_MESSAGE_TYPE = "36FB1038-8836-429F-BAD4-04D32892D6D0";
     }
 }

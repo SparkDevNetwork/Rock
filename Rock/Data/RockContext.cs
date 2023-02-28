@@ -1595,6 +1595,18 @@ namespace Rock.Data
         public DbSet<NoteWatch> NoteWatches { get; set; }
 
         /// <summary>
+        /// Gets or sets the notification message types.
+        /// </summary>
+        /// <value>The notification message types.</value>
+        public DbSet<NotificationMessageType> NotificationMessageTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notification messages.
+        /// </summary>
+        /// <value>The notification messages.</value>
+        public DbSet<NotificationMessage> NotificationMessages { get; set; }
+
+        /// <summary>
         /// Gets or sets the notifications.
         /// </summary>
         /// <value>

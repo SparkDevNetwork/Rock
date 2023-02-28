@@ -757,7 +757,6 @@ namespace Rock.Model
                 var personIdQry = new GroupMemberService( rockContext )
                     .Queryable()
                     .Where( gm => gm.GroupId == systemPhoneNumber.SmsNotificationGroupId.Value
-                        && !gm.IsArchived
                         && gm.GroupMemberStatus == GroupMemberStatus.Active )
                     .Select( gm => gm.PersonId );
 

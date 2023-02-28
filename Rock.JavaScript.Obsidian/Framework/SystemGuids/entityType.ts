@@ -503,6 +503,10 @@ export const EntityType = {
     NoteWatch: "A5C129C2-E64D-4B72-B94D-DBA6DA6AC2E3",
     /** The EntityType Guid for Rock.Model.Notification  */
     Notification: "6DB6D280-9740-41FD-B8BD-0AA29E12F4B6",
+    /** The EntityType Guid for Rock.Model.NotificationMessage  */
+    NotificationMessage: "239ADD2E-2DBF-46A7-BD28-4A2A201D4E7B",
+    /** The EntityType Guid for Rock.Model.NotificationMessageType  */
+    NotificationMessageType: "36FB1038-8836-429F-BAD4-04D32892D6D0",
     /** The EntityType Guid for Rock.Model.NotificationRecipient  */
     NotificationRecipient: "2ECE2776-0FE2-429D-B655-AB56A2D6EE0B",
     /** The obsidian event registration entry */

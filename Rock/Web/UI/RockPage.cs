@@ -1590,6 +1590,11 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
 
+                // Add reponse headers to request that the client tell us if they prefer dark mode
+                Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme" );
+                Response.Headers.Add( "Vary", "Sec-CH-Prefers-Color-Scheme" );
+                Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme" );
+
                 if ( _showDebugTimings )
                 {
                     stopwatchInitEvents.Stop();

@@ -9,18 +9,8 @@
         </template>
 
         <template #preBody>
-            <TransitionVerticalCollapse>
-                <div v-if="isReconnecting || isDisconnected">
-                    <div v-if="isDisconnected" class="realtime-status realtime-status-disconnected">
-                        <i class="fa fa-fw fa-ban"></i>
-                        Disconnected
-                    </div>
-                    <div v-else-if="isReconnecting" class="realtime-status realtime-status-reconnecting">
-                        <i class="fa fa-fw fa-spin fa-sync"></i>
-                        Reconnecting
-                    </div>
-                </div>
-            </TransitionVerticalCollapse>
+            <ConnectionStatus :isReconnecting="isReconnecting"
+                              :isDisconnected="isDisconnected" />
         </template>
 
         <div class="d-flex flex-column outer-container">
@@ -109,21 +99,6 @@
     margin: 0px;
 }
 
-.realtime-status {
-    text-align: center;
-    padding: 4px 24px;
-}
-
-.realtime-status-disconnected {
-    background-color: #fcf2f1;
-    color: #e55235;
-}
-
-.realtime-status-reconnecting {
-    background-color: #fffae5;
-    color: #8a6d3b;
-}
-
 .message-text :deep(pre .string) {
     color: green;
 }
@@ -147,11 +122,11 @@
 
 <script setup lang="ts">
     import Block from "@Obsidian/Templates/block";
+    import ConnectionStatus from "@Obsidian/Controls/connectionStatus.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import TextBox from "@Obsidian/Controls/textBox";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ref } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
@@ -346,5 +321,5 @@
         messages.value.splice(0, messages.value.length);
     }
 
-    // #endregion
+        // #endregion
 </script>

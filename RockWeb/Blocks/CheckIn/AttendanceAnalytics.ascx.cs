@@ -1619,8 +1619,8 @@ var headerText = dp.label;
             {
                 taskLogMessage += $"Task Name: {info.name}, Time To Run: {info.TimeToRun()}. ";
             }
-            RockLogger.Log.Debug( RockLogDomains.Reporting, "Attendance Analytics Task Times: " + taskLogMessage );
-            RockLogger.Log.Debug( RockLogDomains.Reporting, "Attendance Analytics Parameters: " +
+            RockLogger.Log.Information( RockLogDomains.Reporting, "Attendance Analytics Task Times: " + taskLogMessage );
+            RockLogger.Log.Information( RockLogDomains.Reporting, "Attendance Analytics Parameters: " +
                 "groupTypeIdList: {@groupTypeIdList}, groupIdList: {@groupIdList}, start: {@start}, end: {@end}, " +
                 "campusIdList: {@campusIdList}, includeNullCampus: {@includeNullCampus}, scheduleIdList: {@scheduleIdList}",
                 groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList );

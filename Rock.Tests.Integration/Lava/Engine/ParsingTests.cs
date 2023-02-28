@@ -301,45 +301,4 @@ Slow
             Assert.That.AreEqualIgnoreWhitespace( expectedOutput, output );
         }
     }
-
-    /// <summary>
-    /// Test the compatibility of the Lava parser with the Liquid language syntax.
-    /// </summary>
-    [TestClass]
-    public class ParameterParsingTests : LavaIntegrationTestBase
-    {
-        [TestMethod]
-        public void BlockParameters_WithDelimiterInParameterLavaValue_EvaluatesValueCorrectly()
-        {
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-                {
-                    var parameterString = "workflowtype:'51FE9641-FB8F-41BF-B09E-235900C3E53E' workflowname:'{{WorkflowName}}'";
-
-                    var mergeFields = new LavaDataDictionary
-                    {
-                        { "WorkflowName", "Ted's Workflow" }
-                    };
-
-                    var context = engine.NewRenderContext( mergeFields );
-                    var settings = LavaElementAttributes.NewFromMarkup( parameterString, context );
-
-                    Assert.That.AreEqual( "Ted's Workflow", settings.GetString( "workflowname" ) );
-                } );
-        }
-
-        [TestMethod]
-        public void BlockParameters_NamesThatDifferOnlyByCase_AreReferencedAsTheSameParameter()
-        {
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var parameterString = "param1:'1' PARAM2:'2'";
-
-                var context = engine.NewRenderContext();
-                var settings = LavaElementAttributes.NewFromMarkup( parameterString, context );
-
-                Assert.That.AreEqual( "2", settings.GetString( "param2" ) );
-            } );
-        }
-
-    }
 }

@@ -192,6 +192,7 @@
     <Compile Include="Field.Types\MediaWatchFieldTypeTests.cs" />
     <Compile Include="Field.Types\MergeTemplateFieldTypeTests.cs" />
     <Compile Include="Field.Types\MetricCategoriesFieldTypeTests.cs" />
+    <Compile Include="Crm\FollowingTests.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
     <Compile Include="Interactions\PopulateInteractionSessionTests.cs" />
     <Compile Include="Issues\Issues_v14.cs" />

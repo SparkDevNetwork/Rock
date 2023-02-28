@@ -21,7 +21,7 @@ using System.IO;
 using System.Web;
 
 using DotLiquid;
-using Rock.Lava.DotLiquid;
+
 using Rock.Model;
 
 namespace Rock.Lava.Shortcodes
@@ -67,20 +67,20 @@ namespace Rock.Lava.Shortcodes
         public override void Render( Context context, TextWriter result )
         {
             var currentPerson = GetCurrentPerson( context );
-            var settings = MediaPlayerShortcode.GetAttributesFromMarkup( this.Markup, new RockLiquidRenderContext( context ) );
+            var parms = ParseMarkup( Markup, context );
+            Guid? sessionGuid;
 
             // Attempt to get the session guid
-            Guid? sessionGuid;
             try
             {
-                sessionGuid = ( HttpContext.Current?.Handler as Web.UI.RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
+                sessionGuid = ( HttpContext.Current.Handler as Web.UI.RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
             }
             catch
             {
                 sessionGuid = null;
             }
 
-            MediaPlayerShortcode.RenderToWriter( settings.Attributes, currentPerson, sessionGuid, result );
+            MediaPlayerShortcode.RenderToWriter( parms, currentPerson, sessionGuid, result );
         }
 
         /// <summary>
@@ -109,15 +109,47 @@ namespace Rock.Lava.Shortcodes
             {
                 var httpContext = HttpContext.Current;
 
-                if ( context != null
-                    && httpContext != null
-                    && httpContext.Items.Contains( "CurrentPerson" ) )
+                if ( context != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
             }
 
             return currentPerson;
+        }
+
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
+        {
+            // first run lava across the inputted markup
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+
+            return Rock.Lava.Shortcodes.MediaPlayerShortcode.ParseResolvedMarkup( resolvedMarkup );
         }
 
         #endregion

@@ -161,7 +161,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
             occurrenceData.Group = group;
 
-            var currentPerson = RequestContext.CurrentPerson;
+            var currentPerson = this.RequestContext.CurrentPerson;
             if ( !group.IsAuthorized( Authorization.VIEW, currentPerson ) )
             {
                 occurrenceData.ErrorMessage = EditModeMessage.NotAuthorizedToView( Group.FriendlyTypeName );
@@ -196,11 +196,11 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Gets the group for the specified Guid.
+        /// Gets the group for the specified identifier.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="groupId">The group identifier.</param>
-        /// <returns>The group for the specified Guid.</returns>
+        /// <returns>The group for the specified identifier.</returns>
         private Group GetGroup( RockContext rockContext, int groupId )
         {
             return new GroupService( rockContext )
@@ -347,7 +347,7 @@ namespace Rock.Blocks.Engagement.SignUp
         private string GetHeaderHtml( OccurrenceData occurrenceData )
         {
             var lavaTemplate = GetAttributeValue( AttributeKey.HeaderLavaTemplate );
-            var mergeFields = RequestContext.GetCommonMergeFields();
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
 
             mergeFields.Add( "Group", occurrenceData.Group );
             mergeFields.Add( "Location", occurrenceData.Location );
@@ -438,7 +438,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 if ( !occurrenceData.CanTakeAttendance )
                 {
-                    return ActionBadRequest( occurrenceData.ErrorMessage );
+                    return ActionBadRequest( occurrenceData.ErrorMessage ?? "Unable to take attendance for this occurrence." );
                 }
 
                 SaveAttendanceRecords( rockContext, occurrenceData, bag.Attendees );
@@ -452,8 +452,9 @@ namespace Rock.Blocks.Engagement.SignUp
         #region Support Classes
 
         /// <summary>
-        /// A runtime object to represent a <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> combination,
-        /// along with it's <see cref="GroupMember"/> collection, against which an attendance occurrence should be saved.
+        /// A runtime object to represent a <see cref="Rock.Model.Group"/>, <see cref="Rock.Model.Location"/> and
+        /// <see cref="Rock.Model.Schedule"/> combination, along with it's <see cref="GroupMember"/> collection,
+        /// against which an attendance occurrence should be saved.
         /// </summary>
         private class OccurrenceData
         {

@@ -23,11 +23,12 @@
 
 import { RegisterMode } from "@Obsidian/Enums/Blocks/Engagement/SignUp/registerMode";
 import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The box that contains all the initialization information for the Sign-Up Register block. */
 export type SignUpRegisterInitializationBox = {
-    /** Gets or sets whether to display the "send reminder using" option. */
-    displaySendReminderOption: boolean;
+    /** Gets or sets the communication preference items available for the registrant to select. */
+    communicationPreferenceItems?: ListItemBag[] | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that
@@ -41,19 +42,25 @@ export type SignUpRegisterInitializationBox = {
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
+    /** Gets or sets whether this project has required group requirements. */
+    projectHasRequiredGroupRequirements: boolean;
+
     /**
-     * Gets or sets the list of existing or possible registrants.
+     * Gets or sets the list of existing or possible registrants, including the registrar.
      * 
-     * Each <see cref="P:Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag.WillAttend" /> indicates whether they're already registered (<see langword="true" />) or available to be registered (<see langword="false" />).
+     * Each <see cref="P:Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag.WillAttend" /> value indicates whether they're already registered (<see langword="true" />) or available to be registered (<see langword="false" />).
      */
     registrants?: SignUpRegistrantBag[] | null;
 
     /** Gets or sets whether to require that a value be entered for email when registering in Anonymous mode. */
     requireEmail: boolean;
 
-    /** Gets or sets whether to require that a value be entered for email when registering in Anonymous mode. */
+    /** Gets or sets whether to require that a value be entered for mobile phone when registering in Anonymous mode. */
     requireMobilePhone: boolean;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
+
+    /** Gets or sets the optional title to display above the register form. */
+    title?: string | null;
 };

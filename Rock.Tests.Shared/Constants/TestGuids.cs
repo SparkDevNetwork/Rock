@@ -67,6 +67,10 @@ namespace Rock.Tests.Shared
 
             public static string CategoryGroupsGuid = "5CF5224C-F01D-4904-91D0-E58B723F0D2A";
             public static string CategoryLocationsGuid = "1D45C0A7-3DE8-428C-94A8-14E5ED5E2E36";
+
+            public static string SmallGroupDeckerGuid = "62dc3753-01d5-48b5-b22d-d2825d92900b";
+            public static string SmallGroupAlishaMarbleGuid = "10b60f8d-0f23-4faa-b35f-9a5f19f5f995";
+            public static string SmallGroupMarbleGuid = "90b2ceda-ae3a-4c10-a2e1-b987020379ad";
         }
 
         public static class TestPeople

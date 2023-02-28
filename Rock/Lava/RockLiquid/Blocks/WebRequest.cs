@@ -30,7 +30,6 @@ using Newtonsoft.Json.Converters;
 using RestSharp;
 using RestSharp.Authenticators;
 using Rock.Lava.Blocks;
-using Rock.Lava.DotLiquid;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -80,8 +79,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                 return;
             }
 
-            var settings = WebRequestBlock.GetAttributesFromMarkup( _markup, new RockLiquidRenderContext( context ) );
-            var parms = settings.Attributes;
+            var parms = ParseMarkup( _markup, context );
 
             if ( !string.IsNullOrWhiteSpace( parms["url"] ) )
             {
@@ -187,6 +185,65 @@ namespace Rock.Lava.RockLiquid.Blocks
             }
             base.Render( context, result );
         }
+
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
+        {
+            // first run lava across the inputted markup
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            foreach( var environment in context.Environments )
+            {
+                foreach ( var item in environment )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+
+            var parms = new Dictionary<string, string>();
+            parms.Add( "method", "GET" );
+            parms.Add( "return", "results" );
+            parms.Add( "basicauth", "" );
+            parms.Add( "parameters", "" );
+            parms.Add( "headers", "" );
+            parms.Add( "responsecontenttype", "json" );
+            parms.Add( "body", "" );
+            parms.Add( "requesttype", "text/plain" );
+            parms.Add( "timeout", "12000" );
+
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                }
+            }
+            return parms;
+        }
+
 
         /// <summary>
         /// Helper class to turn XML in an expando
