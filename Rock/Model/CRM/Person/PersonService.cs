@@ -319,6 +319,7 @@ namespace Rock.Model
             {
                 query = query.Where( a => a.Gender == searchParameters.Gender.Value || a.Gender == Gender.Unknown );
             }
+
             // Create dictionary
             var foundPeople = query
                 .Select( p => new PersonSummary()
@@ -343,8 +344,7 @@ namespace Rock.Model
                             LastNameMatched = true
                         };
                         return result;
-                    }
-                );
+                    } );
 
             if ( searchParameters.Email.IsNotNullOrWhiteSpace() )
             {
@@ -357,8 +357,7 @@ namespace Rock.Model
                     .Where(
                         p => previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id
                             && a.SearchValue == searchParameters.Email
-                            && a.SearchTypeValueId == searchTypeValueId )
-                    )
+                            && a.SearchTypeValueId == searchTypeValueId ) )
                     .Select( p => new PersonSummary()
                     {
                         Id = p.Id,
@@ -686,7 +685,7 @@ namespace Rock.Model
                     if they have different emails. However, this is been changed so that people with a
                     low AccountProtectionProfile (no Login, for example) can be matched even though
                     the email address doesn't exactly match (as long as the ConfidenceScore is
-                    above MATCH_SCORE_CUTOFF). Note that this change also results in Never attemping to match people with
+                    above MATCH_SCORE_CUTOFF). Note that this change also results in Never attempting to match people with
                     higher AccountProtectionProfile, regardless of the ConfidenceScore.
 
                     2020-11-12 - MDP (outdated, see 2021-09-27 note)
@@ -699,10 +698,8 @@ namespace Rock.Model
 
                     if ( MatchingDisabledForAccountProtectionProfile )
                     {
-
                         return false;
                     }
-
 
                     return true;
                 }
@@ -788,7 +785,6 @@ namespace Rock.Model
         }
 
         #endregion
-
 
         /// <summary>
         /// Looks for a single exact match based on the critieria provided. If more than one person is found it will return null (consider using FindPersons).
@@ -1362,7 +1358,6 @@ namespace Rock.Model
             }
 
             return personSearchQry;
-
         }
 
         /// <summary>
@@ -1411,6 +1406,7 @@ namespace Rock.Model
                 {
                     lastNames.Add( nameParts[0].Trim() );
                 }
+
                 if ( nameParts.Count >= 2 )
                 {
                     firstNames.Add( nameParts[1].Trim() );
@@ -1462,7 +1458,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // Originally written as:
+                    /* Originally written as:
                     // return Queryable( includeDeceased, includeBusinesses )
                     //    .Where( p =>
                     //        p.LastName.StartsWith( singleName ) ||
@@ -1487,6 +1483,7 @@ namespace Rock.Model
                     //            ( x, y ) => new { Person = x.Person, PrevName = y } )
                     //    .Where( x => x.Person.LastName.StartsWith( singleName ) || x.PrevName.LastName.StartsWith( singleName ) )
                     //    .Select( x => x.Person );
+                    */
 
                     return from person in Queryable( includeDeceased, includeBusinesses )
                            join personPreviousName in previousNamesQry
@@ -2324,7 +2321,7 @@ namespace Rock.Model
         /// <param name="lastName">The last name.</param>
         public void SplitName( string fullName, out string firstName, out string lastName )
         {
-            //Uses logic from IQueryable<Person> GetByFullName
+            // Uses logic from IQueryable<Person> GetByFullName
             firstName = string.Empty;
             lastName = string.Empty;
 
@@ -2348,7 +2345,6 @@ namespace Rock.Model
                 firstName = fullName.Trim();
             }
         }
-
 
         /// <summary>
         /// Gets the first group location.
@@ -2384,6 +2380,7 @@ namespace Rock.Model
                     .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id )
                     .FirstOrDefault();
             }
+
             return null;
         }
 
@@ -2660,6 +2657,7 @@ namespace Rock.Model
                     }
                 }
             }
+
             return null;
         }
 
@@ -2748,6 +2746,7 @@ namespace Rock.Model
                         personToken.LastUsedDateTime = RockDateTime.Now;
                         personTokenRockContext.SaveChanges();
                     }
+
                     if ( personToken.UsageLimit.HasValue )
                     {
                         if ( personToken.TimesUsed > personToken.UsageLimit.Value )
@@ -2941,6 +2940,7 @@ namespace Rock.Model
 
             return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
+
                 // In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
                 .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
@@ -2963,6 +2963,7 @@ namespace Rock.Model
             {
                 return null;
             }
+
             return GetFamilyMembers( family, person.Id, true )
                 .Where( m => !m.Person.IsDeceased )
                 .OrderBy( m => m.GroupRole.Order )
@@ -2988,6 +2989,7 @@ namespace Rock.Model
             {
                 return null;
             }
+
             return GetFamilyMembers( family, person.Id, true )
                 .Where( m => !m.Person.IsDeceased )
                 .OrderBy( m => m.GroupRole.Order )
@@ -3244,6 +3246,7 @@ namespace Rock.Model
                         {
                             anonymousPerson.SetBirthDate( expungePerson.BirthDate );
                         }
+
                         anonymousPerson.AnniversaryDate = anonymousPerson.AnniversaryDate.HasValue ? anonymousPerson.AnniversaryDate : expungePerson.AnniversaryDate;
                         anonymousPerson.GraduationYear = GetSelectedValue( anonymousPerson.GraduationYear, expungePerson.GraduationYear );
                         anonymousPerson.Email = GetSelectedValue( anonymousPerson.Email, expungePerson.Email );
@@ -3261,6 +3264,7 @@ namespace Rock.Model
                             if ( anonymousPersonPhoneNumber == null )
                             {
                                 var expungePersonphoneNumber = expungePerson.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
+
                                 // New phone doesn't match old
                                 if ( expungePersonphoneNumber != null )
                                 {
@@ -3392,7 +3396,6 @@ namespace Rock.Model
                             }
                         }
 
-
                         // Flush any security roles that the merged person's other records were a part of
                         foreach ( var groupMember in groupMemberService.Queryable().Where( m => m.PersonId == expungePerson.Id ) )
                         {
@@ -3435,6 +3438,37 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Removes duplicate and empty number phone numbers from a person
+        /// </summary>
+        /// <param name="person">The Person.</param>
+        /// <param name="phoneNumberTypeIds">The list of phone number type ids.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public void RemoveEmptyAndDuplicatePhoneNumbers( Person person, List<int> phoneNumberTypeIds, RockContext rockContext )
+        {
+            var phoneNumberService = new PhoneNumberService( rockContext );
+
+            // Remove any empty numbers
+            foreach ( var phoneNumber in person.PhoneNumbers
+                            .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
+                            .ToList() )
+            {
+                person.PhoneNumbers.Remove( phoneNumber );
+                phoneNumberService.Delete( phoneNumber );
+            }
+
+            // Remove any duplicate numbers
+            var isDuplicate = person.PhoneNumbers.GroupBy( pn => pn.Number ).Where( g => g.Count() > 1 ).Any();
+
+            if ( isDuplicate )
+            {
+                var listOfValidNumbers = person.PhoneNumbers.OrderBy( o => o.NumberTypeValueId ).GroupBy( pn => pn.Number ).Select( y => y.First() ).ToList();
+                var removedNumbers = person.PhoneNumbers.Except( listOfValidNumbers ).ToList();
+                phoneNumberService.DeleteRange( removedNumbers );
+                person.PhoneNumbers = listOfValidNumbers;
+            }
+        }
+
+        /// <summary>
         /// Gets the selected value.
         /// </summary>
         /// <param name="anonymousPersonValue">Anonymous person value.</param>
@@ -3472,8 +3506,7 @@ namespace Rock.Model
                                     .Where(
                                         m => m.PersonId == personId
                                         && m.GroupRoleId == impliedOwnerRole.Id
-                                        && m.Group.GroupTypeId == peerNetworkGroupType.Id
-                                    )
+                                        && m.Group.GroupTypeId == peerNetworkGroupType.Id )
                                     .Select( m => m.Group )
                                     .FirstOrDefault();
 
@@ -3908,7 +3941,6 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
             }
-
         }
 
         /// <summary>
@@ -4316,7 +4348,6 @@ namespace Rock.Model
                 p => new Person { AgeClassification = AgeClassification.Child } );
 
             // NOTE: A person can't become 'AgeClassification.Unknown' if they have already bet set to Adult or Child so we don't have to recalculate for new AgeClassification.Unknown
-
             return updatedAdultCount + updatedAdultCount + updatedLockedChildCount;
         }
 
@@ -4579,13 +4610,12 @@ FROM (
         /// </returns>
         public static int UpdateGroupSalutations( int personId, RockContext rockContext )
         {
-            // use specified rockContext to person's PrimaryFamilyId because rockContext
-            // might be in a transaction that hasn't been committed yet
+            // Use specified rockContext to person's PrimaryFamilyId because rockContext
+            // Might be in a transaction that hasn't been committed yet
             var primaryFamilyId = new PersonService( rockContext ).GetSelect( personId, s => s.PrimaryFamilyId );
 
             if ( !primaryFamilyId.HasValue )
             {
-
                 // If this is a new person, and the GroupMember record for the Family hasn't been saved to the database this could happen.
                 // If so, the GroupMember.PostSaveChanges will call this and that should take care of it
                 return 0;
@@ -4704,7 +4734,6 @@ FROM (
 
              */
 
-
             // combine to get PersonAliasIds that have any type of financial data
             var personAliasIdsWithFinancialDataQuery = personAliasWithFinancialPersonSavedAccountQuery.Union( personAliasIdsWithFinancialScheduledTransactionQuery );
 
@@ -4742,8 +4771,7 @@ FROM (
                     && !personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id )
                     && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
                     && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
-                    && p.AccountProtectionProfile != AccountProtectionProfile.Low
-                    );
+                    && p.AccountProtectionProfile != AccountProtectionProfile.Low );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileLowQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Low } );
 
@@ -4755,8 +4783,7 @@ FROM (
                     && !personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id )
                     && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
                     && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
-                    && p.AccountProtectionProfile != AccountProtectionProfile.Medium
-                    );
+                    && p.AccountProtectionProfile != AccountProtectionProfile.Medium );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileMediumQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Medium } );
 
@@ -4766,8 +4793,7 @@ FROM (
             var personToSetAsAccountProtectionProfileHighQuery = personQuery.Where( p =>
                     ( personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id ) || personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) )
                     && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
-                    && p.AccountProtectionProfile != AccountProtectionProfile.High
-                    );
+                    && p.AccountProtectionProfile != AccountProtectionProfile.High );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileHighQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.High } );
 
@@ -4825,7 +4851,6 @@ FROM (
         {
             using ( var anonymousVisitorPersonRockContext = new RockContext() )
             {
-
                 var connectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
                 var recordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
                 var recordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
@@ -4882,7 +4907,6 @@ FROM (
         {
             using ( var anonymousGiverPersonRockContext = new RockContext() )
             {
-
                 var connectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
                 var recordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
                 var recordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
