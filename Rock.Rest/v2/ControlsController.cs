@@ -723,34 +723,29 @@ namespace Rock.Rest.v2
                     }
                 }
 
-                var categoryItems = new List<CategorizedValuePickerNode>();
+                var categoryItems = new List<CategorizedValuePickerNodeBag>();
 
                 // Create a selection tree structure from the Categories.
                 // Categories are created with a placeholder label which will be replaced by applying the naming rules.
                 foreach ( var category in categories.Values )
                 {
-                    var listItem = new CategorizedValuePickerNode
+                    var listItem = new CategorizedValuePickerNodeBag
                     {
                         Value = category.Guid.ToString(),
                         Text = category.Name,
-                        HasChildren = true,
-                        IsFolder = true,
-                        IconCssClass = category.IconCssClass,
-                        ChildCategories = new List<CategorizedValuePickerNode>(),
-                        ChildValues = new List<CategorizedValuePickerNode>()
+                        ChildCategories = new List<CategorizedValuePickerNodeBag>(),
+                        ChildValues = new List<CategorizedValuePickerNodeBag>()
                     };
 
                     categoryItems.Add( listItem );
                 }
 
-                var root = new CategorizedValuePickerNode
+                var root = new CategorizedValuePickerNodeBag
                 {
                     Value = null,
-                    Text = null,
-                    HasChildren = true,
-                    IsFolder = true,
-                    ChildCategories = new List<CategorizedValuePickerNode>(),
-                    ChildValues = new List<CategorizedValuePickerNode>()
+                    Text = definedType.Name,
+                    ChildCategories = new List<CategorizedValuePickerNodeBag>(),
+                    ChildValues = new List<CategorizedValuePickerNodeBag>()
                 };
 
                 // Go through the categories and add child categories as children of their parents
@@ -775,12 +770,10 @@ namespace Rock.Rest.v2
                 // Go through the defined values and add them as children of their categories
                 foreach ( var definedValue in definedValues )
                 {
-                    var listItem = new CategorizedValuePickerNode
+                    var listItem = new CategorizedValuePickerNodeBag
                     {
                         Value = definedValue.Guid.ToString(),
-                        Text = definedValue.Value,
-                        HasChildren = false,
-                        IsFolder = false,
+                        Text = definedValue.Value
                     };
 
                     // No category? Throw it at the root of the list
@@ -796,7 +789,7 @@ namespace Rock.Rest.v2
                     }
                 }
 
-                return Ok( new CategorizedValuePickerGetTreeResults {
+                return Ok( new CategorizedValuePickerGetTreeResultsBag {
                     Tree = root,
                     DefinedType = definedType.Name
                 } );
@@ -809,7 +802,7 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="definedValue">The defined value.</param>
         /// <param name="category">The category node.</param>
-        private void AddDefinedValueToCategoryAndChildCategories( CategorizedValuePickerNode definedValue, CategorizedValuePickerNode category )
+        private void AddDefinedValueToCategoryAndChildCategories( CategorizedValuePickerNodeBag definedValue, CategorizedValuePickerNodeBag category )
         {
             category.ChildValues.Add( definedValue );
             foreach ( var childCat in category.ChildCategories )

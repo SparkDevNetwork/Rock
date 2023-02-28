@@ -945,6 +945,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFilePickerGetBinaryFilesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusPickerGetCampusesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\connectionRequestPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewPickerGetDataViewsOptionsBag.d.ts" />

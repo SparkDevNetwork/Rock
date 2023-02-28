@@ -24,12 +24,12 @@ namespace Rock.ViewModels.Rest.Controls
     /// The options that can be passed to the GetGoogleMapSettings API action of
     /// the GeoPicker control.
     /// </summary>
-    public class CategorizedValuePickerGetTreeResults
+    public class CategorizedValuePickerGetTreeResultsBag
     {
         /// <summary>
         /// A tree of nodes of categories and defined values
         /// </summary>
-        public CategorizedValuePickerNode Tree { get; set; }
+        public CategorizedValuePickerNodeBag Tree { get; set; }
 
         /// <summary>
         /// Name of the defined type that contains these values
