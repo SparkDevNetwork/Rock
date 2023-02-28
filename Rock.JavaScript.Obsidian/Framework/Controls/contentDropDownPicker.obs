@@ -6,15 +6,12 @@
                 <slot name="prepend" :isInputGroupSupported="true" />
                 <div :class="{ 'input-group': $slots.inputGroupPrepend || $slots.inputGroupAppend }">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-                    <div class="picker picker-select rollover-container" :class="pickerClass + (internalShowPopup ? ' open' : '')">
+                    <div class="picker picker-obsidian picker-select rollover-container" :class="additionalPickerClass">
                         <a class="picker-label" href="#" @click.prevent.stop="togglePickerMenu" :class="{ 'has-ig-prepend': $slots.inputGroupPrepend }">
                             <i :class="pickerIconClass"></i>
                             <slot name="innerLabel"><span class="selected-names">{{ innerLabel }}</span></slot>
                             <b class="fa fa-caret-down pull-right"></b>
-                        </a>
-
-                        <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onAction('clear')">
-                            <i class="fa fa-times"></i>
+                            <b v-if="showClear" class="fa fa-times pull-right" @click.prevent.stop="onAction('clear')"></b>
                         </a>
 
                         <Fullscreen v-show="internalShowPopup" v-if="internalShowPopup || !forceContentReloadOnOpen" v-model="internalIsFullscreen" class="picker-menu" :class="internalIsFullscreen ? 'is-fullscreen' : 'dropdown-menu'" :style="pickerMenuStyles">
@@ -284,6 +281,15 @@
         forceContentReloadOnOpen: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * When true the picker will take the full width available rather than
+         * limiting itself to a standard width.
+         */
+        fullWidth: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -318,6 +324,23 @@
     /** The CSS class to use for the picker icon. */
     const pickerIconClass = computed((): string => `${props.iconCssClass} fa-fw`);
 
+    const additionalPickerClass = computed((): string => {
+        let classes = props.pickerClass ? props.pickerClass : "";
+
+        if (internalShowPopup.value) {
+            classes += " open";
+        }
+
+        if (props.showClear) {
+            classes += " picker-show-clear";
+        }
+
+        if (props.fullWidth) {
+            classes += " picker-full-width";
+        }
+
+        return classes;
+    });
 
     // Style up the picker content box
     const pickerMenuInnerStyles = computed<string>(() => {
