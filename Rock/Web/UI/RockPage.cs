@@ -2898,7 +2898,7 @@ Sys.Application.add_load(function () {
 
                         Type modelType = entity.GetEntityType();
 
-                        if ( modelType == null )
+                        if ( modelType == null && entity.AssemblyName.IsNotNullOrWhiteSpace() )
                         {
                             // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assembly it is in and look in there
                             string[] assemblyNameParts = entity.AssemblyName.Split( new char[] { ',' } );

@@ -243,12 +243,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Full Name of the Person using the Title FirstName LastName format.
+        /// Gets the Full Name of the Person using the Title FirstName LastName Suffix format.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
+        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName Suffix format.
         /// </value>
         [NotMapped]
+        [LavaVisible]
         public virtual string FullNameFormal
         {
             get
@@ -260,7 +261,7 @@ namespace Rock.Model
 
                 var fullName = new StringBuilder();
 
-                fullName.AppendFormat( "{0} {1}", FirstName, LastName );
+                fullName.AppendFormat( "{0} {1} {2}", TitleValue, FirstName, LastName );
 
                 if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
                 {
