@@ -79,7 +79,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         <h4>{{ Project.Name }}</h4>
                         {% if Project.CampusName and Project.CampusName != empty %}
                             <div class=""panel-labels"">
-                                <span class=""label label-default"">hello</span>
+                                <span class=""label label-default"">{{ Project.CampusName }}</span>
                             </div>
                         {% endif %}
                     </div>

@@ -28,7 +28,6 @@ namespace Rock.Tasks
             {
                 var confirmationData = new GroupLocationService( rockContext )
                     .Queryable()
-                    .AsNoTracking()
                     .Where( gl =>
                         gl.Group.IsActive
                         && gl.Group.Id == message.GroupId
@@ -98,6 +97,7 @@ namespace Rock.Tasks
                 var schedule = confirmationData.Schedule;
                 var config = confirmationData.Config;
                 var groupMember = confirmationData.Recipient.GroupMember;
+                var assignment = confirmationData.Recipient.Assignment;
                 var person = confirmationData.Recipient.Person;
 
                 var additionalDetailsSb = new StringBuilder();
@@ -144,6 +144,12 @@ namespace Rock.Tasks
                     if ( sendResult.Exceptions?.Any() == true )
                     {
                         ExceptionLogService.LogException( new AggregateException( errorMessage, sendResult.Exceptions ) );
+                    }
+
+                    if ( sendResult.MessagesSent > 0 )
+                    {
+                        assignment.ConfirmationSentDateTime = RockDateTime.Now;
+                        rockContext.SaveChanges();
                     }
                 }
                 catch ( Exception ex )
