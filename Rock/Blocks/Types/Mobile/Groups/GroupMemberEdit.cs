@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -672,7 +672,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             if ( AllowNoteEdit )
             {
-                sb.AppendLine( MobileHelper.GetSingleFieldXaml( MobileHelper.GetTextEditFieldXaml( "note", "Note", member.Note, false, true ) ) );
+                sb.AppendLine( MobileHelper.GetSingleFieldXaml( MobileHelper.GetTextEditFieldXaml( "note", "Note", member.Note, true, false, true ) ) );
                 parameters.Add( "note", "Text" );
             }
             else
