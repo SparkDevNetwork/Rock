@@ -169,6 +169,9 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\CategorizedValuePickerGetTreeResultsBag.cs" />
+    <Compile Include="Rest\Controls\CategorizedValuePickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CategorizedValuePickerNodeBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerFormatSelectedValueOptionsBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PhoneNumberBoxGetConfigurationResultsBag.cs" />
@@ -505,7 +508,7 @@
     <Compile Include="Rest\Controls\AchievementTypePickerGetAchievementTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\BadgeComponentPickerGetBadgeComponentsOptionsBag.cs" />
     <Compile Include="Rest\Controls\BadgeListGetBadgesOptionsBag.cs" />
-    <Compile Include="Rest\Controls\CategoryPickerChildTreeItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CategorizedValuePickerGetTreeOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerGetDefinedValuesOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTagListAddEntityTagOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTagListCreatePersonalTagOptionsBag.cs" />

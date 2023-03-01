@@ -20,6 +20,7 @@
  *
  * - attributeEditor
  * - blockActionSourceGrid
+ * - categorizedValuePickerDropDownLevel
  * - componentFromUrl
  * - fieldFilterContainer
  * - fieldFilterRuleRow
@@ -200,6 +201,7 @@ import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
 import RacePicker from "@Obsidian/Controls/racePicker.obs";
 import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
 import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
+import CategorizedValuePicker from "@Obsidian/Controls/categorizedValuePicker.obs";
 
 // #region Gallery Support
 
@@ -6955,6 +6957,53 @@ const mergeFieldPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+
+/** Demonstrates categorized value picker */
+const categorizedValuePickerGallery = defineComponent({
+    name: "CategorizedValuePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        CategorizedValuePicker,
+        TextBox
+    },
+    setup() {
+        return {
+            multiple: ref(true),
+            value: ref(null),
+            required: ref(false),
+            definedType: ref(DefinedType.PowerbiAccounts),
+            importCode: getSfcControlImportPath("categorizedValuePicker"),
+            exampleCode: `<CategorizedValuePicker label="Categorized Defined Value" v-model="value" :definedTypeGuid="DefinedType.PowerbiAccounts" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <CategorizedValuePicker label="Categorized Defined Value" v-model="value" :definedTypeGuid="definedType" :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+        </div>
+        <p class="my-4">
+            <strong>NOTE:</strong> This picker will be empty unless you specify a defined type that has
+            categorized values. By default, there aren't any, so you may need to configure a defined type to
+            have categories and add values to those categories in order to see what this control can do.
+        </p>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
     attributeValuesContainerGallery,
@@ -7084,6 +7133,7 @@ const controlGalleryComponents: Record<string, Component> = [
     racePickerGallery,
     mediaElementPickerGallery,
     mergeFieldPickerGallery,
+    categorizedValuePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
