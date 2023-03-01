@@ -64,5 +64,16 @@ namespace Rock.Apps.StatementGenerator
             // Output the Results
             resultsSummary.SaveResultsToFile();
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnPrev_Click( object sender, RoutedEventArgs e )
+        {
+            var reportSettings = new ReportSettings();
+            this.NavigationService.Navigate( reportSettings );
+        }
     }
 }
