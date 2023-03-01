@@ -7438,7 +7438,7 @@ export default defineComponent({
 }
 
 .galleryContent .rock-header {
-    margin: -12px -20px 0px -20px;
+    margin: 0 -20px;
 }
 
 .galleryContent .rock-header .title {
