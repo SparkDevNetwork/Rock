@@ -136,7 +136,16 @@ namespace Rock.Drawing.Avatar
             {
                 if ( _cacheKey.IsNullOrWhiteSpace() )
                 {
-                    _cacheKey = $"{Size}-{Text}-{AvatarColors.ForegroundColor.Replace( "#", "" )}_{AvatarColors.BackgroundColor.Replace( "#", "" )}-{CornerRadius}-{AvatarStyle}-{AgeClassification}-{Gender}-{IsBold.ToString().Truncate( 1, false )}-{PhotoId}-{PrefersLight.ToString().Truncate( 1, false )}-{RecordTypeId}";
+                    // If the configuration has a photo use a cache key without a style (initials/icon) as the photo will be shown in both cases. This
+                    // prevents redundant files
+                    if ( PhotoId.HasValue )
+                    {
+                        _cacheKey = $"{Size}-{Text}-{AvatarColors.ForegroundColor.Replace( "#", "" )}_{AvatarColors.BackgroundColor.Replace( "#", "" )}-{CornerRadius}-no_style-{AgeClassification}-{Gender}-{IsBold.ToString().Truncate( 1, false )}-{PhotoId}-{PrefersLight.ToString().Truncate( 1, false )}-{RecordTypeId}";
+                    }
+                    else
+                    {
+                        _cacheKey = $"{Size}-{Text}-{AvatarColors.ForegroundColor.Replace( "#", "" )}_{AvatarColors.BackgroundColor.Replace( "#", "" )}-{CornerRadius}-{AvatarStyle}-{AgeClassification}-{Gender}-{IsBold.ToString().Truncate( 1, false )}-{PhotoId}-{PrefersLight.ToString().Truncate( 1, false )}-{RecordTypeId}";
+                    }
                 }
 
                 return _cacheKey;

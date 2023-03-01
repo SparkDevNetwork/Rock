@@ -126,15 +126,6 @@ namespace Rock.Drawing.Avatar
             PersonRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
         }
 
-
-        /// <summary>
-        /// Creates an icon mask with the provided color.
-        /// </summary>
-        /// <param name="mask">The mask.</param>
-        /// <param name="color">The color.</param>
-        /// <returns>Image.</returns>
-
-
         /// <summary>
         /// Creates the avatar based on the provided settings
         /// </summary>

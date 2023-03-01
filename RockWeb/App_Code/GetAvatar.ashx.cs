@@ -76,6 +76,9 @@ namespace RockWeb
             string cacheFolder = context.Request.MapPath( $"~/App_Data/Avatar/Cache/" );
             string cachedFilePath = $"{cacheFolder}{settings.CacheKey}.png";
 
+            // Fill in missing colors. This must be done after the creation of the cache key to prevent caching avatars in every color of the rainbow
+            settings.AvatarColors.GenerateMissingColors();
+
             // Process any cache refresh request for single item
             if ( context.Request.QueryString["RefreshItemCache"] != null && context.Request.QueryString["RefreshItemCache"].AsBoolean() )
             {
@@ -224,8 +227,7 @@ namespace RockWeb
             // Colors
             settings.AvatarColors.BackgroundColor = ( request.QueryString["BackgroundColor"] ?? "" ).ToString();
             settings.AvatarColors.ForegroundColor = ( request.QueryString["ForegroundColor"] ?? "" ).ToString();
-            settings.AvatarColors.GenerateMissingColors();
-
+            
             // Size
             if ( request.QueryString["Size"] != null )
             {

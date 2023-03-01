@@ -1427,7 +1427,18 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
+            return GetPersonPhotoUrl( person.Initials, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification, size );
         }
 
         /// <summary>
@@ -1439,10 +1450,21 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( int personId, int? maxWidth = null, int? maxHeight = null )
         {
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
             using ( RockContext rockContext = new RockContext() )
             {
                 Person person = new PersonService( rockContext ).Get( personId );
-                return GetPersonPhotoUrl( person, maxWidth, maxHeight );
+                return GetPersonPhotoUrl( person, size );
             }
         }
 
@@ -1455,7 +1477,18 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonNoPictureUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
+            return GetPersonPhotoUrl( person.Initials, null, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification, size );
         }
 
         /// <summary>

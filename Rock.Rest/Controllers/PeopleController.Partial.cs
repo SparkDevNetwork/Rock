@@ -974,7 +974,7 @@ namespace Rock.Rest.Controllers
             var connectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ) : null;
             var campus = person.PrimaryCampusId.HasValue ? CampusCache.Get( person.PrimaryCampusId.Value ) : null;
 
-            personSearchResult.ImageUrl = Person.GetPersonPhotoUrl( person, 200, 200 );
+            personSearchResult.ImageUrl = Person.GetPersonPhotoUrl( person );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
             personSearchResult.AgeClassification = person.AgeClassification;
             personSearchResult.FormattedAge = person.FormatAge();
@@ -1003,7 +1003,7 @@ namespace Rock.Rest.Controllers
 
             string imageHtml = string.Format(
                 "<div class='person-image' style='background-image:url({0}&width=65);'></div>",
-                Person.GetPersonPhotoUrl( person, 200, 200 ) );
+                Person.GetPersonPhotoUrl( person ) );
 
             StringBuilder personInfoHtmlBuilder = new StringBuilder();
             int? groupLocationTypeValueId;
