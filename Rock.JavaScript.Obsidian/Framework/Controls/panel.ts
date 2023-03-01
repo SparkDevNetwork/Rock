@@ -319,11 +319,11 @@ export default defineComponent({
         </div>
 
         <div v-if="$slots.subheaderLeft || $slots.subheaderRight" class="panel-sub-header">
-            <div v-if="$slots.subheaderLeft" class="panel-sub-header-left">
+            <div class="panel-sub-header-left">
                 <slot name="subheaderLeft" />
             </div>
 
-            <div v-if="$slots.subheaderRight" class="panel-sub-header-right">
+            <div class="panel-sub-header-right">
                 <slot name="subheaderRight" />
             </div>
         </div>
