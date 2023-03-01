@@ -7370,21 +7370,29 @@ export default defineComponent({
 
     template: `
 <v-style>
-.galleryContainer {
-    margin: -18px;
-}
-
-.galleryContainer > * {
-    padding: 24px;
-}
-
 .gallerySidebar {
     border-radius: 0;
     margin: -1px 0 -1px -1px;
+    overflow-y: auto;
 }
 
 .gallerySidebar li.current {
     font-weight: 700;
+}
+
+.galleryContent {
+    flex-grow: 1;
+    overflow-x: clip;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.galleryContent .rock-header {
+    margin: -12px -20px 0px -20px;
+}
+
+.galleryContent .rock-header .title {
+    margin-left: 20px;
 }
 </v-style>
 <Panel type="block">
@@ -7392,9 +7400,9 @@ export default defineComponent({
         Obsidian Control Gallery
     </template>
     <template #default>
-        <div class="galleryContainer row">
+        <div class="panel-flex-fill-body flex-row">
 
-            <div class="gallerySidebar well col-sm-3">
+            <div class="gallerySidebar well">
                 <h4>Components</h4>
 
                 <ul class="list-unstyled mb-0">
@@ -7412,7 +7420,7 @@ export default defineComponent({
                 </ul>
             </div>
 
-            <div class="galleryContent col-sm-9">
+            <div class="galleryContent">
                 <component :is="currentComponent" />
             </div>
 
