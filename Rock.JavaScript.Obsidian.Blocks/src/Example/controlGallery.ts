@@ -2150,6 +2150,7 @@ const panelGallery = defineComponent({
             collapsibleValue: ref(true),
             drawerValue: ref(false),
             hasFullscreen: ref(false),
+            hasZoom: ref(false),
             headerSecondaryActions,
             simulateValues,
             simulateOptions: [
@@ -2218,7 +2219,7 @@ const panelGallery = defineComponent({
 <GalleryAndResult
     :importCode="importCode"
     :exampleCode="exampleCode" >
-    <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsibleValue" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
+    <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsibleValue" :hasZoom="hasZoom" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
         <template v-if="simulateHelp" #helpContent>
             This is some help text.
         </template>
@@ -2280,6 +2281,7 @@ const panelGallery = defineComponent({
             <CheckBox formGroupClasses="col-sm-3" v-model="value" label="Panel Open" />
             <CheckBox formGroupClasses="col-sm-3" v-model="hasFullscreen" label="Has Fullscreen" />
             <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
+            <CheckBox formGroupClasses="col-sm-3" v-model="hasZoom" label="Has Zoom" />
         </div>
         <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" />
 
