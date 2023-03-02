@@ -241,7 +241,7 @@ DELETE [Block] WHERE [Id] = @BlockToBeReplacedBlockId
             <dt>Payment Method</dt>
         <dd>{{ PaymentDetail.CurrencyTypeValue.Description}}</dd>
     
-        {% if PaymentDetail.AccountNumberMasked  != '' %}
+        {% if PaymentDetail.AccountNumberMasked  != '''' %}
             <dt>Account Number</dt>
             <dd>{{ PaymentDetail.AccountNumberMasked }}</dd>
         {% endif %}
