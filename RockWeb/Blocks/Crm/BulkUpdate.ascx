@@ -210,7 +210,7 @@
                 </asp:Panel>
 
                 <Rock:TaskActivityProgressReporter ID="tapReporter" runat="server" />
-
+                <Rock:NotificationBox ID="nbTapReportFailed" runat="server" Visible="false" NotificationBoxType="Info" Text="Bulk update task sent. This message is being shown because there was a problem creating the progress bar."></Rock:NotificationBox>
             </div>
         </div>
 
