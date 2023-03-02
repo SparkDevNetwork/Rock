@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Cms.ContentCollection.Search;
 using Rock.Data;
+using Rock.Field;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -298,13 +299,48 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
             foreach ( var attributeValue in sourceModel.AttributeValues )
             {
                 var key = MakeAttributeKeySafe( attributeValue.Key );
-                var value = attributeValue.Value.Value;
-                var formattedValue = attributeValue.Value.ValueFormatted;
 
-                this[$"{key}ValueRaw"] = value;
-                this[$"{key}ValueFormatted"] = formattedValue;
+                if ( !sourceModel.Attributes.TryGetValue( attributeValue.Key, out var attribute ) )
+                {
+                    continue;
+                }
 
-                FieldValueHelper.AddAttributeFieldValue( source.ContentCollectionId, key, value, formattedValue );
+                // If the field type supports splitting multiple values then try
+                // to process each individual value after it is split.
+                if ( attribute.FieldType.Field is ISplitMultiValueFieldType multiFieldType )
+                {
+                    var rawValues = multiFieldType.SplitMultipleValues( attributeValue.Value.Value );
+                    var formattedValue = attributeValue.Value.ValueFormatted;
+
+                    // If we only got a single value after the split, store it
+                    // as a single value for backwards compatibility.
+                    if ( rawValues.Count == 1 )
+                    {
+                        this[$"{key}ValueRaw"] = attributeValue.Value.Value;
+                    }
+                    else
+                    {
+                        this[$"{key}ValueRaw"] = rawValues;
+                    }
+
+                    this[$"{key}ValueFormatted"] = formattedValue;
+
+                    foreach ( var value in rawValues )
+                    {
+                        formattedValue = attribute.FieldType.Field.GetTextValue( value, attribute.ConfigurationValues );
+                        FieldValueHelper.AddAttributeFieldValue( source.ContentCollectionId, key, value, formattedValue );
+                    }
+                }
+                else
+                {
+                    var value = attributeValue.Value.Value;
+                    var formattedValue = attributeValue.Value.ValueFormatted;
+
+                    this[$"{key}ValueRaw"] = value;
+                    this[$"{key}ValueFormatted"] = formattedValue;
+
+                    FieldValueHelper.AddAttributeFieldValue( source.ContentCollectionId, key, value, formattedValue );
+                }
             }
         }
 

@@ -927,6 +927,7 @@
     <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\WordCloud.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerTypeContainer.cs" />
     <Compile Include="Field\IEntityReferenceFieldType.cs" />
+    <Compile Include="Field\ISplitMultiValueFieldType.cs" />
     <Compile Include="Field\PersistedValues.cs" />
     <Compile Include="Field\ReferencedEntity.cs" />
     <Compile Include="Field\ReferencedProperty.cs" />
