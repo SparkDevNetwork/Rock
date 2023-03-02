@@ -210,5 +210,10 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.ProcessReminders"/> job.
         /// </summary>
         public const string PROCESS_REMINDERS = "3F697C80-4C33-4552-9038-D3470445EA40";
+
+        /// <summary>
+        /// The <see cref="Rock.Jobs.UpdatePersistedAttributeValues">Update Persisted Attribute Values</see> job.
+        /// </summary>
+        public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
     }
 }
