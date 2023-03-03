@@ -265,7 +265,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             var cbChildGroupsPlusDescendants = new RockCheckBox();
             cbChildGroupsPlusDescendants.ID = filterControl.ID + "_cbChildGroupsPlusDescendants";
-            cbChildGroupsPlusDescendants.Text = "Include All Descendants(s)";
+            cbChildGroupsPlusDescendants.Text = "Include All Descendants";
             cbChildGroupsPlusDescendants.CssClass = "js-include-child-groups-descendants";
             cbChildGroupsPlusDescendants.AutoPostBack = true;
             cbChildGroupsPlusDescendants.CheckedChanged += gp_SelectItem;

@@ -203,7 +203,7 @@ console.log(websiteNames);
             controls.Add( rlbWebsites );
 
             var websiteslabel = new Label();
-            websiteslabel.Text = " sites(s) ";
+            websiteslabel.Text = " site(s) ";
             filterControl.Controls.Add( websiteslabel );
             controls.Add( websiteslabel );
 
