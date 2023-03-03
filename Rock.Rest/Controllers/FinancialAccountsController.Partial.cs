@@ -178,18 +178,21 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
         /// <param name="displayPublicName">if set to <c>true</c> [public name].</param>
-        /// <param name="countsType"></param>
+        /// <param name="countsType">The counts type, if set to <see cref="AccountTreeViewItem.GetCountsType.ChildGroups"/>the count of all child accounts of a parent account is added.</param>
+        /// <param name="loadChildren">if set to true all the child accounts of the financial accounts are loaded.
+        /// It is not advisable to set this to true when there more than several hunderd accounts as it can result in a performance hit.
+        /// </param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}" )]
         [Rock.SystemGuid.RestActionGuid( "976BDF2A-92E6-4902-A84D-BE7CB25A3824" )]
-        public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None )
+        public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None, bool loadChildren = false )
         {
-            return GetChildrenData( id, activeOnly, displayPublicName, countsType );
+            return GetChildrenData( id, activeOnly, displayPublicName, countsType, loadChildren );
         }
 
         #region Methods
-        private IQueryable<AccountTreeViewItem> GetChildrenData( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None )
+        private IQueryable<AccountTreeViewItem> GetChildrenData( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None, bool loadChildren = false )
         {
             var financialAccountService = new FinancialAccountService( new Data.RockContext() );
 
@@ -245,6 +248,8 @@ namespace Rock.Rest.Controllers
             var childrenList = childQry.Select( f => f.ParentAccountId.Value )
                 .ToList();
 
+            var totalCount = financialAccountService.Queryable().Count();
+
             foreach ( var accountTreeViewItem in accountTreeViewItems )
             {
                 int accountId = int.Parse( accountTreeViewItem.Id );
@@ -259,10 +264,16 @@ namespace Rock.Rest.Controllers
                         accountTreeViewItem.CountInfo = childrenCount;
                     }
 
+                    if ( loadChildren )
+                    {
+                        accountTreeViewItem.Children = GetChildrenData( accountId, activeOnly, displayPublicName, countsType, loadChildren ).ToList();
+                    }
+
                     accountTreeViewItem.ParentId = id.ToString();
                 }
 
                 accountTreeViewItem.IconCssClass = "fa fa-file-o";
+                accountTreeViewItem.TotalCount = totalCount;
             }
 
             return accountTreeViewItems.AsQueryable();
