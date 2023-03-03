@@ -88,6 +88,7 @@
     <Compile Include="Crm\BadgeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
     <Compile Include="Bus\QueueDetail.cs" />
+    <Compile Include="Finance\FinancialBatchDetail.cs" />
     <Compile Include="Security\ForgotUserName.cs" />
     <Compile Include="Security\ConfirmAccount.cs" />
     <Compile Include="Security\RestKeyDetail.cs" />
@@ -157,7 +158,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Finance\" />
     <Folder Include="Groups\" />
     <Folder Include="Utility\" />
     <Folder Include="Security\" />
