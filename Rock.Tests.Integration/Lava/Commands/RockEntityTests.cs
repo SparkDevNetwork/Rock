@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using Rock.Tests.Shared;
 using Rock.Lava.Blocks;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -57,9 +58,6 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [Ignore( "In the Fluid framework, this test incorrectly displays the same EventItemOccurrence on each pass through the loop." )]
-        // This bug may be fixed, included in the next release: https://github.com/sebastienros/fluid/issues/317
-        // Perhaps the "occurrence" variable in the inner loop is not regarded as IEnumerable?
         public void EntityCommandBlock_ContainingForBlock_ExecutesCorrectly()
         {
             var template = @"
@@ -129,6 +127,29 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 //Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
                 //Assert.That.Contains( output, "<b>Series 2</b>" );
                 //Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+            } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WhereFilterByAttribute_ReturnsMatchedEntitiesOnly()
+        {
+            var template = @"
+{% contentchannelitem where:'Speaker == ""Pete Foster""' iterator:'items' %}
+
+  {% for item in items %}
+  {{ item.Title }} ({{ item | Attribute:'Speaker' }})
+  {% endfor %}
+{% endcontentchannelitem %}
+";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                Assert.That.Contains( output, "Of Faith and Firsts (Pete Foster)" );
+                Assert.That.Contains( output, "1x8 (Pete Foster)" );
             } );
         }
     }
