@@ -287,7 +287,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
                 // Load the actual "recipients".
                 var entitySetItems = new EntitySetItemService( rockContext )
-                    .GetByEntitySetId( entitySet.Id, true )
+                    .GetByEntitySetId( entitySet.Id )
                     .Select( esi => new
                     {
                         esi.Guid,

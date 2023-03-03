@@ -1972,8 +1972,16 @@ formfield .required-indicator {
 
 /* Recipient View */
 .recipient-container {
-    height: 70;
-    background-color: white;
+    padding: 8, 0;
+    -xf-spacing: 8;
+}
+
+.recipient-name-and-communication {
+    -xf-spacing: 0;
+}
+
+.recipients-layout {
+    -xf-spacing: 0;
 }
 
 .block-communication-entry .recipients-icon {
@@ -1981,9 +1989,17 @@ formfield .required-indicator {
     font-size: 18;
 }
 
-.recipient-image {
+.recipient-container .recipient-image {
     height: 50;
     width: 50;
+}
+
+.recipient-name-and-communication {
+    -xf-spacing: 0;
+}
+
+.recipient-container .swipe-to-remove-detail {
+    padding: 8;
 }
 
 .block-communication-entry .recipient-name {
@@ -1992,20 +2008,19 @@ formfield .required-indicator {
 }
 
 .block-communication-entry .success-layout {
-  -xf-spacing: 16;
+    -xf-spacing: 16;
+}
+
+.block-communication-entry .swipe-to-remove-detail {
+    padding: 8;
 }
 
 .block-communication-entry .failed-recipients-layout {
-  -xf-spacing: 0;
+    -xf-spacing: 0;
 }
 
 .block-communication-entry .failed-recipient-item {
-  height: 30;
-}
-
-.text-and-icon
-{
-    padding: 8, 12;
+    height: 30;
 }
 ";
         #endregion
