@@ -21,23 +21,19 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
+import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
 
-/**
- * The settings that describe additional details about a content collection
- * source that will be used during indexing.
- */
-export type ContentCollectionSourceAdditionalSettingsBag = {
-    /**
-     * Gets or sets the attribute unique identifiers that are included
-     * for indexing from this source.
-     */
-    attributeGuids?: Guid[] | null;
+/** The settings for a single custom field filter configured on a content collection. */
+export type ContentCollectionCustomFieldFilterSettingsBag = {
+    /** Gets or sets the search filter control. */
+    filterControl: ContentCollectionFilterControl;
 
-    /**
-     * Gets or sets the custom fields that when indexing content for
-     * this source.
-     */
-    customFields?: ContentCollectionCustomFieldBag[] | null;
+    /** Gets or sets a value indicating if this search filter is enabled. */
+    isEnabled: boolean;
+
+    /** Gets or sets a value indicating if multiple selection is allowed. */
+    isMultipleSelection: boolean;
+
+    /** Gets or sets the label to use for the filter. */
+    label?: string | null;
 };

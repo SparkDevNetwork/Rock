@@ -21,23 +21,24 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
-
 /**
- * The settings that describe additional details about a content collection
- * source that will be used during indexing.
+ * Defines a custom field that will be used to store custom data in the
+ * index for an item.
  */
-export type ContentCollectionSourceAdditionalSettingsBag = {
+export type ContentCollectionCustomFieldBag = {
     /**
-     * Gets or sets the attribute unique identifiers that are included
-     * for indexing from this source.
+     * Gets or sets a value indicating whether the value will be treated
+     * as a multi-value field. When enabled the final value will be split
+     * by comma and turned into multiple values.
      */
-    attributeGuids?: Guid[] | null;
+    isMultiple: boolean;
 
-    /**
-     * Gets or sets the custom fields that when indexing content for
-     * this source.
-     */
-    customFields?: ContentCollectionCustomFieldBag[] | null;
+    /** Gets or sets the key used in the item index. */
+    key?: string | null;
+
+    /** Gets or sets the lava template to use when generating custom content. */
+    template?: string | null;
+
+    /** Gets or sets the friendly display title. */
+    title?: string | null;
 };

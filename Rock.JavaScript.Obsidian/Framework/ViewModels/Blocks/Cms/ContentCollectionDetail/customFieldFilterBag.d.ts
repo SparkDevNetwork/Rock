@@ -21,23 +21,28 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
+import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
 
-/**
- * The settings that describe additional details about a content collection
- * source that will be used during indexing.
- */
-export type ContentCollectionSourceAdditionalSettingsBag = {
-    /**
-     * Gets or sets the attribute unique identifiers that are included
-     * for indexing from this source.
-     */
-    attributeGuids?: Guid[] | null;
+/** Represents a single custom field filter for a content collection. */
+export type CustomFieldFilterBag = {
+    /** Gets or sets the type of control to use when displaying this filter. */
+    filterControl: ContentCollectionFilterControl;
 
-    /**
-     * Gets or sets the custom fields that when indexing content for
-     * this source.
-     */
-    customFields?: ContentCollectionCustomFieldBag[] | null;
+    /** Gets or sets the friendly label to use when displaying this filter. */
+    filterLabel?: string | null;
+
+    /** Gets or sets the enabled state of this filter. */
+    isEnabled: boolean;
+
+    /** Gets or sets if multiple selections are allowed. */
+    isMultipleSelection: boolean;
+
+    /** Gets or sets the internal identification key of the field. */
+    key?: string | null;
+
+    /** Gets or sets the names of the sources that make up this filter. */
+    sourceNames?: string[] | null;
+
+    /** Gets or sets the friendly name of the field. */
+    title?: string | null;
 };
