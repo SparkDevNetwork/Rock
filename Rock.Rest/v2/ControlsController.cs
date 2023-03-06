@@ -3924,6 +3924,46 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Reminder Type Picker
+
+        /// <summary>
+        /// Gets the reminder types that can be displayed in the reminder type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the reminder types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReminderTypePickerGetReminderTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "c1c338d2-6364-4217-81ec-7fc34e9218b6" )]
+        public IHttpActionResult ReminderTypePickerGetReminderTypes( [FromBody] ReminderTypePickerGetReminderTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderTypesQuery = new ReminderTypeService( rockContext ).Queryable();
+
+                if ( options.EntityTypeGuid != null )
+                {
+                    reminderTypesQuery = reminderTypesQuery.Where(t => t.EntityType.Guid == options.EntityTypeGuid );
+                }
+
+                var orderedReminderTypes = reminderTypesQuery
+                    .OrderBy( t => t.EntityType.FriendlyName )
+                    .ThenBy( t => t.Name )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.EntityType.FriendlyName + " - " + t.Name
+                    } )
+                    .ToList();
+
+                //return orderedReminderTypes;
+
+                return Ok( orderedReminderTypes );
+            }
+        }
+
+        #endregion
+
         #region Remote Auths Picker
 
         /// <summary>
