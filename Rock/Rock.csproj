@@ -939,6 +939,7 @@
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
+    <Compile Include="Jobs\PostV15DataMigrationsMobileRestUserGroup.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsSystemPhoneNumbers.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
