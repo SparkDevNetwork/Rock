@@ -61,7 +61,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
         private static class PageParameterKey
         {
-            public const string GroupId = "GroupId";
+            public const string ProjectId = "ProjectId";
             public const string LocationId = "LocationId";
             public const string ScheduleId = "ScheduleId";
             public const string AttendanceDate = "AttendanceDate";
@@ -145,17 +145,17 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var occurrenceData = new OccurrenceData();
 
-            var groupId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.GroupId ) );
-            if ( !groupId.HasValue )
+            var projectId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ProjectId ) );
+            if ( !projectId.HasValue )
             {
-                occurrenceData.ErrorMessage = "Group ID was not provided.";
+                occurrenceData.ErrorMessage = "Project ID was not provided.";
                 return occurrenceData;
             }
 
-            var group = GetGroup( rockContext, groupId.Value );
+            var group = GetGroup( rockContext, projectId.Value );
             if ( group == null )
             {
-                occurrenceData.ErrorMessage = "Group was not found.";
+                occurrenceData.ErrorMessage = "Project was not found.";
                 return occurrenceData;
             }
 

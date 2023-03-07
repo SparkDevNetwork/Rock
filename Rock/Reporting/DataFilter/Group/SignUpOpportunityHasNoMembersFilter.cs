@@ -32,9 +32,9 @@ using Rock.Web.Utilities;
 namespace Rock.Reporting.DataFilter.Group
 {
     /// <summary>
-    /// A Data Filter to select Groups with sign-up opportunities that have no members.
+    /// A Data Filter to select Groups that have at least one opportunity (GroupLocationScheduleConfig), with no corresponding group member assignment records.
     /// </summary>
-    [Description( "Filter groups based on sign-up opportunities that have no members." )]
+    [Description( "Lists any groups (projects) that have at least one opportunity (GroupLocationScheduleConfig), with no corresponding group member assignment records." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Sign-Up Opportunity Has No Members" )]
     [Rock.SystemGuid.EntityTypeGuid( "92E7406D-723A-4302-A36A-83374E706160" )]
@@ -53,7 +53,7 @@ namespace Rock.Reporting.DataFilter.Group
         #region Settings
 
         /// <summary>
-        /// Get and set the filter settings from DataViewFilter.Selection
+        /// Get and set the filter settings from DataViewFilter.Selection.
         /// </summary>
         private class SelectionConfig
         {
@@ -353,7 +353,7 @@ function() {
         }
 
         /// <summary>
-        /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.
+        /// Creates a LINQ Expression that can be applied to an IQueryable to filter the result set.
         /// </summary>
         /// <param name="entityType">The type of entity in the result set.</param>
         /// <param name="serviceInstance">A service instance that can be queried to obtain the result set.</param>
@@ -375,22 +375,28 @@ function() {
                 return null;
             }
 
+            var groupTypeId = GroupTypeCache.GetId( groupTypeGuid.Value );
+            if ( !groupTypeId.HasValue )
+            {
+                return null;
+            }
+
             // We'll use today's date @ 12:00 AM to compare against Schedule.EffectiveEndDate below, in order to filter out past opportunities if needed.
             var startOfToday = RockDateTime.Now.StartOfDay();
 
             var membersByOpportunityQuery = new GroupLocationService( ( RockContext ) serviceInstance.Context )
                 .Queryable()
                 .AsNoTracking()
-                .Where( gl => gl.Group.GroupType.Guid == groupTypeGuid.Value )
+                .Where( gl => gl.Group.GroupTypeId == groupTypeId.Value )
                 .SelectMany( gl => gl.Schedules, ( gl, s ) => new
                 {
                     gl.Group,
-                    gl.Location,
+                    gl.LocationId,
                     Schedule = s
                 } )
                 /*
                  * We now have GroupLocationSchedule instances:
-                 * One for each combination of Group, Location & Schedule, where [Group].[GroupTypeId] == selectionConfig.GroupTypeId.
+                 * One for each combination of Group, Location & Schedule, where [Group].[GroupTypeId] == selectionConfig's GroupTypeId.
                  */
                 .Where( gls =>
                     !hidePastOpportunities
@@ -409,7 +415,7 @@ function() {
                 .Select( gls => new
                 {
                     GroupId = gls.Group.Id,
-                    LocationId = gls.Location.Id,
+                    gls.LocationId,
                     ScheduleId = gls.Schedule.Id,
                     Members = gls.Group.Members
                         .SelectMany( gm => gm.GroupMemberAssignments, ( gm, gma ) => new
@@ -418,7 +424,8 @@ function() {
                             Assignment = gma
                         } )
                         .Where( gmas =>
-                            gmas.Assignment.LocationId == gls.Location.Id
+                            !gmas.GroupMember.Person.IsDeceased
+                            && gmas.Assignment.LocationId == gls.LocationId
                             && gmas.Assignment.ScheduleId == gls.Schedule.Id
                         )
                         .Select( gmas => new
