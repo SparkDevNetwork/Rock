@@ -458,7 +458,13 @@ namespace Rock.Web.Cache
         internal static AttributeCache[] GetByEntityType( int? entityTypeId )
         {
             var attributeIds = EntityTypeAttributesCache.Get( entityTypeId ).AttributeIds;
-            return attributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
+
+            if ( attributeIds.Length == 0 )
+            {
+                return new AttributeCache[0];
+            }
+
+            return GetMany( attributeIds, null ).ToArray();
         }
 
         /// <summary>
