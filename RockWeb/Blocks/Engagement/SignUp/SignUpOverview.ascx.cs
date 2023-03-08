@@ -767,7 +767,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 get
                 {
                     /*
-                     * This more complex approach uses a dynamic/floating minuend (the first number in a subtraction problem):
+                     * This more complex approach uses a dynamic/floating minuend:
                      * 1) If the max value is defined, use that;
                      * 2) Else, if the desired value is defined, use that;
                      * 3) Else, if the min value is defined, use that;
@@ -782,15 +782,17 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     //            : int.MaxValue;
 
                     /*
-                     * This approach still uses a dynamic minuend, but it's much simpler:
-                     * 1) If the max value is defined, use that;
-                     * 2) Else, use int.MaxValue (there is no limit to the slots available).
+                     * Simple approach:
+                     * 1) If the max value is defined, subtract participant count from that;
+                     * 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
                      */
-                    var minuend = this.SlotsMax.GetValueOrDefault() > 0
-                        ? this.SlotsMax.Value
-                        : int.MaxValue;
+                    var available = int.MaxValue;
+                    if ( this.SlotsMax.GetValueOrDefault() > 0 )
+                    {
+                        available = this.SlotsMax.Value - this.ParticipantCount;
+                    }
 
-                    return minuend - this.ParticipantCount;
+                    return available < 0 ? 0 : available;
                 }
             }
         }
