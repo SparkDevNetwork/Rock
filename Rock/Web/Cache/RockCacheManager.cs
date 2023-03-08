@@ -235,6 +235,10 @@ namespace Rock.Web.Cache
 
             CacheManager.Clear();
             CacheWasUpdatedMessage.Publish<T>();
+
+            // This is somewhat temporary. In the future this should be updated
+            // to use it's own domain.
+            RockLogger.Log.WriteToLog( RockLogLevel.Debug, RockLogDomains.Other, $"Cache was cleared for {typeof(T).Name}. StackTrace: {Environment.StackTrace}" );
         }
 
         /// <summary>

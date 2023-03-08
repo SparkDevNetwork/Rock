@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
 using Rock.Financial;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -614,6 +615,17 @@ UPDATE [{analyticsTableName}]
 
             try
             {
+                // Remove any analytics records that do not correspond to an existing Person.
+                using ( var rockContext = GetNewConfiguredDataContext() )
+                {
+                    var recordsDeleted = rockContext.Database.ExecuteSqlCommand( "DELETE FROM [AnalyticsSourcePersonHistorical] WHERE [PersonId] NOT IN (SELECT [Id] FROM [Person])" );
+
+                    if ( recordsDeleted > 0 )
+                    {
+                        RockLogger.Log.Debug( RockLogDomains.Jobs, $"(Process BI Analytics) Removed {recordsDeleted} history records that do not correspond to a Person record." );
+                    }
+                }
+
                 // Ensure that the Schema of AnalyticsSourcePersonHistorical matches the current fields for Attributes that are marked as IsAnalytic
                 UpdateAnalyticsSchemaForModel( analyticsSourcePersonHistoricalFields, personAnalyticAttributes, "AnalyticsSourcePersonHistorical", _personJobStats );
 

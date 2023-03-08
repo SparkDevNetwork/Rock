@@ -812,6 +812,14 @@ namespace RockWeb.Blocks.Crm
                     }
                 } );
 
+                // Remove analytics data associated with the merged records.
+                var mergedPersonIdList = MergeData.People.Where( p => p.Id != primaryPersonId.Value ).Select( p => p.Id ).ToList();
+
+                if ( mergedPersonIdList.Any() )
+                {
+                    DbService.ExecuteCommand( $"DELETE FROM [AnalyticsSourcePersonHistorical] WHERE [PersonId] IN ({ mergedPersonIdList.AsDelimited( "," ) })" );
+                }
+
                 foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
                 {
                     // Run merge proc to merge all associated data
