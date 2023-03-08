@@ -141,6 +141,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Attempts to get an item from the cache without adding it if it does
+        /// not already exist.
+        /// </summary>
+        /// <param name="key">The key that identifies the item.</param>
+        /// <param name="item">On return will contain the item.</param>
+        /// <returns><c>true</c> if the item was found in cache, <c>false</c> otherwise.</returns>
+        internal protected static bool TryGet( string key, out T item )
+        {
+            string qualifiedKey = QualifiedKey( key );
+
+            item = RockCacheManager<T>.Instance.Get( qualifiedKey );
+
+            return item != null;
+        }
+
+        /// <summary>
         /// Updates the cache item.
         /// </summary>
         /// <param name="key">The key.</param>

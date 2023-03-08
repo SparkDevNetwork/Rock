@@ -57,6 +57,30 @@ namespace Rock.Web.Cache
             return GetOrAddExisting( guid.ToString(), () => null )?.Id;
         }
 
+        /// <summary>
+        /// Attempts to get an item from the cache without adding it if it does
+        /// not already exist.
+        /// </summary>
+        /// <param name="key">The key that identifies the item.</param>
+        /// <param name="id">On return will contain the identifier.</param>
+        /// <typeparam name="T">The type of the cached object whose identifier is to be looked up.</typeparam>
+        /// <returns><c>true</c> if the item was found in cache, <c>false</c> otherwise.</returns>
+        internal protected static bool TryGetId<T>( string key, out int id )
+        {
+            var result = TryGet( $"{typeof( T ).FullName}-{key}", out var item );
+
+            if ( result )
+            {
+                id = item.Id;
+            }
+            else
+            {
+                id = 0;
+            }
+
+            return result;
+        }
+
         #endregion
     }
 }
