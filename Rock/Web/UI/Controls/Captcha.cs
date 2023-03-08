@@ -381,6 +381,14 @@ function onloadTurnstileCallback(token) {
         }
     } else {
         hfToken.value = token;
+        // Hide control after captcha is solved and we get the token so it is not re-rendered for every post back.
+        // Give it a 1 sec delay so success message is displayed to the user.
+        const captcha = document.querySelector('.js-captcha');
+        if(captcha && token){
+            setTimeout(() => {
+                captcha.style.display = 'none';  
+            }, 1000);       
+        }
     }
 }
 ";
