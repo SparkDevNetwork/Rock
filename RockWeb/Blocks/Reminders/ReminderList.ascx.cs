@@ -625,7 +625,9 @@ namespace RockWeb.Blocks.Reminders
             // Keep any existing page parameters that we didn't modify.
             foreach ( var paramKey in PageParameters().Keys )
             {
-                if ( paramKey != "PageId" && !queryParameters.ContainsKey( paramKey ) )
+                if ( paramKey != "PageId"
+                    && paramKey != PageParameterKey.ReminderTypeId
+                    && !queryParameters.ContainsKey( paramKey ) )
                 {
                     queryParameters.Add( paramKey, PageParameter( paramKey ) );
                 }
@@ -897,6 +899,12 @@ namespace RockWeb.Blocks.Reminders
         protected void btnDueFilter_Click( object sender, EventArgs e )
         {
             var btnDueFilter = sender as LinkButton;
+
+            if ( btnDueFilter.CommandArgument == "Custom Date Range" )
+            {
+                drpCustomDate_SelectedDateRangeChanged( sender, e );
+                return;
+            }
 
             var queryParameters = new Dictionary<string, string>
             {
