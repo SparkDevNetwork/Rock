@@ -1,0 +1,245 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-html="contentTemplate"></div>
+    <div ref="itemContainer" class="realtime-visualizer-container" style="width: 100%; height: 400px; --animation-translate-size: 30px; --animation-duration: 1s;">
+    </div>
+</template>
+
+<style>
+.realtime-visualizer-container {
+    display: flex;
+    flex-direction: column;
+    background: #aaa;
+    padding: 15px;
+    overflow: hidden;
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item {
+    height: 0px;
+}
+
+/* IN transition initial states. */
+.realtime-visualizer-container > .realtime-visualizer-item.left-in {
+    transform: translateX(calc(var(--animation-translate-size) * -1));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.top-in {
+    transform: translateY(calc(var(--animation-translate-size) * -1));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.right-in {
+    transform: translateX(var(--animation-translate-size));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.bottom-in {
+    transform: translateY(var(--animation-translate-size));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.fade-in {
+    opacity: 0;
+}
+
+/* IN transition final states. */
+.realtime-visualizer-container > .realtime-visualizer-item.left-in.in,
+.realtime-visualizer-container > .realtime-visualizer-item.top-in.in,
+.realtime-visualizer-container > .realtime-visualizer-item.right-in.in,
+.realtime-visualizer-container > .realtime-visualizer-item.bottom-in.in {
+    transform: initial;
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.fade-in.in {
+    opacity: 1;
+}
+
+/* OUT transition final states. */
+.realtime-visualizer-container > .realtime-visualizer-item.left-out.out {
+    transform: translateX(calc(var(--animation-translate-size) * -1));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.top-out.out {
+    transform: translateY(calc(var(--animation-translate-size) * -1));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.right-out.out {
+    transform: translateX(var(--animation-translate-size));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.bottom-out.out {
+    transform: translateY(var(--animation-translate-size));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.fade-out.out {
+    opacity: 0;
+    overflow-y: initial;
+}
+
+/* Transition Timings. */
+.realtime-visualizer-container > .realtime-visualizer-item.in {
+    transition: height var(--animation-duration), transform var(--animation-duration), opacity var(--animation-duration);
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.out {
+    transition: opacity var(--animation-duration), transform var(--animation-duration), height var(--animation-duration);
+}
+
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    type Message = {
+        topic: string;
+        message: string;
+        arguments?: string;
+    };
+
+    type Configuration = {
+        resolve: boolean;
+        javaScript: string;
+        topics: string[];
+    };
+
+    const config = useConfigurationValues<Configuration>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    let realTimeTopics: Record<string, ITopic> = {};
+    const messages = ref<Message[]>([]);
+    const isReconnecting = ref(false);
+    const isAutoConnecting = ref(false);
+    const isDisconnected = ref(false);
+    const contentTemplate = ref("");
+    const showMessageFunctionName = `showMessage${newGuid().replace(/-/g, "")}`;
+    const itemContainer = ref<HTMLElement | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Attempt to reconnect to the server and rejoin all channels that were
+     * previously joined.
+     */
+    async function startConnect(reconnecting: boolean): Promise<void> {
+        if (isAutoConnecting.value) {
+            return;
+        }
+
+        isAutoConnecting.value = true;
+        isReconnecting.value = reconnecting;
+
+        try {
+            realTimeTopics = {};
+
+            for (const topicIdentifier of config.topics) {
+                await joinTopic(topicIdentifier);
+            }
+
+            if (Object.keys(realTimeTopics).length > 0) {
+                const connectionId = realTimeTopics[Object.keys(realTimeTopics)[0]].connectionId;
+
+                await invokeBlockAction("Subscribe", {
+                    connectionId
+                });
+            }
+
+            isAutoConnecting.value = false;
+            isReconnecting.value = false;
+        }
+        catch (error) {
+            console.error(error instanceof Error ? error.message : error);
+            isDisconnected.value = true;
+        }
+    }
+
+    /**
+     * Joins the specified topic.
+     *
+     * @param topicIdentifier The identifier of the topic that will be joined.
+     */
+    async function joinTopic(topicIdentifier: string): Promise<void> {
+        let topic = realTimeTopics[topicIdentifier];
+
+        if (!topic) {
+            topic = await getTopic(topicIdentifier);
+
+            topic.onMessage((message, args) => onMessageReceived(topicIdentifier, message, args));
+            topic.onReconnecting(() => isReconnecting.value = true);
+            topic.onReconnected(() => isReconnecting.value = false);
+            topic.onDisconnected(() => startConnect(true));
+
+            realTimeTopics[topicIdentifier] = topic;
+        }
+    }
+
+    /**
+     * Injects the script tag that will contain the user-specified script
+     * from the block settings.
+     */
+    function injectScriptTag(): void {
+        // This creates a unique function name we can use. It is constructed
+        // by nesting the custom JavaScript from the block settings and then
+        // returning the showMessage function if it is defined. This ensures
+        // that we don't pollute the global namespace.
+        const script = `window["${showMessageFunctionName}"] = (function() { ${config.javaScript}; return typeof showMessage !== "undefined" ? showMessage : function () {}; })();`;
+
+        const scriptNode = document.createElement("script");
+        scriptNode.type = "text/javascript";
+        scriptNode.appendChild(document.createTextNode(script));
+        document.body.appendChild(scriptNode);
+    }
+
+    /**
+     *
+     * @param content The content to be shown.
+     */
+    function showMessage(content: unknown): void {
+        window[showMessageFunctionName](content, itemContainer.value);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the topic receives any message.
+     *
+     * @param topicIdentifier The topic that received the message.
+     * @param message The name of the message that was received.
+     * @param args The arguments that were passed to the message.
+     */
+    async function onMessageReceived(topicIdentifier: string, message: string, args: unknown[]): Promise<void> {
+        if (config.resolve) {
+            const result = await invokeBlockAction<string>("Resolve", {
+                topicIdentifier,
+                message,
+                arguments: args
+            });
+
+            if (result.data) {
+                showMessage(result.data);
+            }
+        }
+        else {
+            showMessage({
+                topic: topicIdentifier,
+                message,
+                arguments: args
+            });
+        }
+    }
+
+    // #endregion
+
+    injectScriptTag();
+
+    startConnect(false);
+</script>
