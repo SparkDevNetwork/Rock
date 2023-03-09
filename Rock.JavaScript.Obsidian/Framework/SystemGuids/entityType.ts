@@ -409,6 +409,8 @@ export const EntityType = {
     MobileCmsHeroBlockType: "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.StructuredContentView */
     MobileCmsStructuredcontentviewBlockType: "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationEntry */
+    MobileCommunicationCommunicationentryBlockType: "9A952F9F-F619-4063-B1BB-CFB2E6983C01",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView */
     MobileCommunicationCommunicationviewBlockType: "4AF5FCEF-CBF6-486B-A04D-920E31356B7F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList. */
