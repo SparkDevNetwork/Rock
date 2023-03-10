@@ -235,6 +235,10 @@ export const FieldType = {
     RegistrationInstance: "5F0F6D6A-DEB7-47AD-93C7-4CCC88EF932D",
     /** Registration Template field type */
     RegistrationTemplate: "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620",
+    /** Registration Template field type */
+    ReminderType: "94A5DF3C-A7E0-451E-9DBA-86A6CFD5DF70",
+    /** Registration Template field type */
+    ReminderTypes: "C66E6BF9-4A73-4429-ACAD-D94D5E3A89B7",
     /** Remote Auths field type */
     RemoteAuths: "ECA90666-E7A0-4406-8559-0153DCB908FD",
     /** Report field type */

@@ -20,16 +20,53 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Model;
+using Rock.ViewModels.Utility
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Select multiple Badges from a checkbox list. Stored as a comma-delimited list of Badge Guids
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "C66E6BF9-4A73-4429-ACAD-D94D5E3A89B7" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMINDER_TYPES )]
     public class ReminderTypesFieldType : SelectFromListFieldType
     {
+        private class ReminderTypeFieldItem
+        {
+            public Guid Guid;
+            public string Name;
+            public string EntityTypeName;
+        }
+
+        #region Configuration
+
+        private const string VALUES_PUBLIC_KEY = "values";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+            Dictionary<string, ConfigurationValue> sourceConfigurationValues = privateConfigurationValues.ToDictionary( cv => cv.Key, cv => new ConfigurationValue { Value = cv.Value } );
+
+            var listSourceValues = GetListSource( sourceConfigurationValues );
+            var publicValues = new List<ListItemBag>();
+
+            if ( usage == ConfigurationValueUsage.View )
+            {
+                publicValues = listSourceValues
+                    .Where( v => v.Value.ToLower() == privateValue.ToLower() )
+                    .ToList()
+                    .Select(kv => new ListItemBag { Value = kv.Key, Text = kv.Value })
+                    .ToList();
+            }
+
+            publicConfigurationValues[VALUES_PUBLIC_KEY] = publicValues.ToCamelCaseJson( false, true );
+
+            return publicConfigurationValues;
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>

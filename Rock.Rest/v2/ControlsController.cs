@@ -3956,8 +3956,6 @@ namespace Rock.Rest.v2
                     } )
                     .ToList();
 
-                //return orderedReminderTypes;
-
                 return Ok( orderedReminderTypes );
             }
         }
