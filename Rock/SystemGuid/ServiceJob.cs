@@ -129,6 +129,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_150_REPLACE_TRANSACTION_ENTRY_BLOCKS_WITH_UTILITY_PAYMENT_ENTRY_BLOCK = "8A013CC5-CB51-48F3-8AF8-767BDECACAFE";
 
         /// <summary>
+        /// The Job to run Post v15.0 Data Migrations to add a new mobile rest group and add existing mobile applications into that group.
+        /// </summary>
+        public const string DATA_MIGRATIONS_150_MOBILE_APPLICATION_USERS_REST_GROUP = "480E996E-6A31-40DB-AE98-BFF85CDED506";
+
+        /// <summary>
         /// The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId.
         /// </summary>
         public const string DATA_MIGRATIONS_140_CREATE_FK_INDEXES = "D96BD1F7-6A4A-4DC0-B10D-40031F709573";

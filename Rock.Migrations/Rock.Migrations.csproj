@@ -132,6 +132,14 @@
     <Compile Include="Migrations\202302281609572_UpdateSignUpSystemCommunications.designer.cs">
       <DependentUpon>202302281609572_UpdateSignUpSystemCommunications.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202303091707261_Rollup_20230309.cs" />
+    <Compile Include="Migrations\202303091707261_Rollup_20230309.designer.cs">
+      <DependentUpon>202303091707261_Rollup_20230309.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202303092116131_CodeGenerated_20230309.cs" />
+    <Compile Include="Migrations\202303092116131_CodeGenerated_20230309.designer.cs">
+      <DependentUpon>202303092116131_CodeGenerated_20230309.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1604,6 +1612,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202302281609572_UpdateSignUpSystemCommunications.resx">
       <DependentUpon>202302281609572_UpdateSignUpSystemCommunications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202303091707261_Rollup_20230309.resx">
+      <DependentUpon>202303091707261_Rollup_20230309.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202303092116131_CodeGenerated_20230309.resx">
+      <DependentUpon>202303092116131_CodeGenerated_20230309.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>

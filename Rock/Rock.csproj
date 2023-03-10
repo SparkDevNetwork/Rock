@@ -939,6 +939,7 @@
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
+    <Compile Include="Jobs\PostV15DataMigrationsMobileRestUserGroup.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsSystemPhoneNumbers.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
@@ -1052,6 +1053,7 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\168_MigrationRollupsForV14_2_1.cs" />
     <Compile Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid.cs" />
     <Compile Include="Plugin\HotFixes\166_MigrationRollupsForV14_2_0.cs" />
     <Compile Include="Plugin\HotFixes\165_EnableTextToGiveMultiAcct.cs" />
@@ -1083,6 +1085,7 @@
     <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
     <Compile Include="RealTime\Topics\ITestCommunicationTransport.cs" />
     <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
+    <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoMembersFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
     <Compile Include="RealTime\Context.cs" />

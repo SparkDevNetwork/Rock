@@ -18,6 +18,7 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.UI.Controls;
 using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
@@ -38,7 +39,9 @@ namespace Rock.Rest.Controllers
         /// <returns>IQueryable&lt;AccountTreeViewItem&gt;.</returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildrenBySearchTerm/{activeOnly}/{displayPublicName}/{searchTerm}" )]
-        [Rock.SystemGuid.RestActionGuid( "21BF6409-CC65-4562-BD1A-F9FEEC1634F3" )]
+        [Rock.SystemGuid.RestActionGuid( "C8715F2B-BAE6-4F92-A651-AD8CC7B104F1" )]
+        [RockObsolete( "1.14.1" )]
+        [Obsolete( "Use api/FinancialAccounts/GetChildrenBySearchTerm instead" )]
         public IQueryable<AccountTreeViewItem> GetChildrenBySearchTermObsolete( bool activeOnly, bool displayPublicName, string searchTerm )
         {
             return GetSearchTermData( activeOnly, displayPublicName, searchTerm );
@@ -110,7 +113,9 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}" )]
-        [Rock.SystemGuid.RestActionGuid( "5C21D8B8-5C68-42CA-BF19-80050C8FF2A4" )]
+        [Rock.SystemGuid.RestActionGuid( "B1C3FF53-CE30-4006-8ABC-5A513933CAF0" )]
+        [RockObsolete( "1.14.1" )]
+        [Obsolete( "Use api/FinancialAccounts/GetChildren/{id} instead" )]
         public IQueryable<AccountTreeViewItem> GetChildrenObsolete( int id, bool activeOnly )
         {
             return GetChildrenData( id, activeOnly, true );
@@ -137,7 +142,9 @@ namespace Rock.Rest.Controllers
         /// <returns>IQueryable&lt;TreeViewItem&gt;.</returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetInactive/{displayPublicName}" )]
-        [Rock.SystemGuid.RestActionGuid( "4B08E38F-0C6A-41B1-9C52-DEB40028927F" )]
+        [Rock.SystemGuid.RestActionGuid( "06082C90-48C4-4D29-9E31-1A9BED21859E" )]
+        [RockObsolete( "1.14.1" )]
+        [Obsolete( "Use api/FinancialAccounts/GetInactive instead" )]
         public IQueryable<AccountTreeViewItem> GetInactiveObsolete( bool displayPublicName )
         {
             return GetInactiveData( displayPublicName );
@@ -166,7 +173,9 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}/{displayPublicName}" )]
-        [Rock.SystemGuid.RestActionGuid( "976BDF2A-92E6-4902-A84D-BE7CB25A3824" )]
+        [Rock.SystemGuid.RestActionGuid( "5289EB7D-5A89-4E99-BEF6-44C81EBB2BCB" )]
+        [RockObsolete( "1.14.1" )]
+        [Obsolete( "Use api/FinancialAccounts/GetChildren/{id} instead" )]
         public IQueryable<AccountTreeViewItem> GetChildrenObsolete( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None )
         {
             return GetChildrenData( id, activeOnly, displayPublicName, countsType );

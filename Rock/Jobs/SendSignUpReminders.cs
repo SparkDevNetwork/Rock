@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -143,8 +159,8 @@ namespace Rock.Jobs
                  *  2) According to our 202 guide, "Group attributes are the most complicated to load since they can inherit attributes from their parent
                  *     GroupType(s) and the [below] snippet wouldn't work if a Group inherited an attribute value from a GroupType." This is our exact
                  *     scenario: we can have GroupTypes that inherit from the default "Sign-Up Group" GroupType, and the Attribute we care about filtering
-                 *     against - "ProjectType" - exists on this parent "Sign-Up Group" GroupType; we'll have to just get all Groups up front, and filter
-                 *     out the ones we don't care about below.
+                 *     against - "ProjectType" - exists on the parent "Sign-Up Group" GroupType; we'll need to get all Groups up front, and filter out
+                 *     the ones we don't care about below, in-memory.
                  */
                 //.WhereAttributeValue( rockContext, "ProjectType", Rock.SystemGuid.DefinedValue.PROJECT_TYPE_IN_PERSON )
                 .SelectMany( gl => gl.Schedules, ( gl, s ) => new
@@ -205,8 +221,7 @@ namespace Rock.Jobs
              *      a) their Group's ReminderOffsetDays, or
              *      b) a default offset of 2 days if not defined.
              * 
-             * Let's perform the Schedule filtering first, so we only look up the attributes for Groups that we actually care about,
-             * since that will require an additional database query per Group.
+             * Let's perform the Schedule filtering first, so we only look up the attributes for Groups that we actually care about.
              */
             recipientsByOpportunity = recipientsByOpportunity
                 .Where( o =>
@@ -228,16 +243,15 @@ namespace Rock.Jobs
                 return null;
             }
 
+            // Load Groups' Attributes in bulk for the final comparison.
+            var groups = recipientsByOpportunity.Select( o => o.Group ).Distinct().ToList();
+            groups.LoadAttributes( new RockContext() );
+
             var inPersonProjectTypeGuid = Rock.SystemGuid.DefinedValue.PROJECT_TYPE_IN_PERSON.AsGuid();
 
             return recipientsByOpportunity
                 .Where( o =>
                 {
-                    if ( o.Group.AttributeValues == null )
-                    {
-                        o.Group.LoadAttributes( rockContext );
-                    }
-
                     return o.Group.GetAttributeValue( "ProjectType" ).AsGuidOrNull() == inPersonProjectTypeGuid;
                 } )
                 .Select( o => new SignUpOpportunity

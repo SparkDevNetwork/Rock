@@ -83,8 +83,12 @@
             email: null,
             firstName: null,
             fullName: null,
+            isChild: false,
             isRegistrar: true,
             lastName: null,
+            mobilePhoneCountryCode: null,
+            mobilePhoneNumber: null,
+            mobilePhoneNumberFormatted: null,
             personIdKey: null,
             unmetGroupRequirements: null,
             willAttend: true

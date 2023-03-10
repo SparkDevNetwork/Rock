@@ -3088,6 +3088,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             nbLocationModeNotAllowed.Visible = false;
             lpLocation.Location = null;
             lpLocation.AllowedPickerModes = AllowedLocationPickerModes;
+            lpLocation.SetBestPickerModeForLocation( null );
 
             if ( location != null )
             {
