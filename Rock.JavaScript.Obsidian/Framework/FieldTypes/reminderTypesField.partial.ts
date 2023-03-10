@@ -16,28 +16,47 @@
 //
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";
 
+export const enum ConfigurationValueKey {
+    Values = "values",
+    EnhancedSelection = "enhancedselection",
+    RepeatColumns = "repeatColumns",
+}
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
-    return (await import("./decimalFieldComponents")).EditComponent;
+    return (await import("./reminderTypesFieldComponents")).EditComponent;
 });
 
 // The configuration component can be quite large, so load it only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
-    return (await import("./decimalFieldComponents")).ConfigurationComponent;
+    return (await import("./reminderTypesFieldComponents")).ConfigurationComponent;
 });
 
 /**
- * The field type handler for the Decimal field.
+ * The field type handler for the Reminder Types field.
  */
 export class ReminderTypesFieldType extends FieldTypeBase {
-    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
-        return toNumberOrNull(value)?.toString() ?? "";
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
+        if (value === undefined || value === null || value === "") {
+            return "";
+        }
+
+        try {
+            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const userValues = value.split(",");
+            const selectedValues = values.filter(o => userValues.includes(o.value ?? ""));
+
+            return selectedValues.map(o => o.text).join(", ");
+        }
+        catch {
+            return value;
+        }
     }
 
     public override getEditComponent(): Component {

@@ -95,6 +95,12 @@ export const ConfigurationComponent = defineComponent({
 
     props: getFieldConfigurationProps(),
 
+    emit: {
+        "update:modelValue": (_v: Record<string, string>) => true,
+        "updateConfigurationValue": (_k: string, _v: string) => true,
+        "updateConfiguration": () => true
+    },
+
     setup(props, { emit }) {
         // Define the properties that will hold the current selections.
         const enhancedSelection = ref(false);
@@ -201,7 +207,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */
