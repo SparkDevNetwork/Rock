@@ -193,6 +193,14 @@ namespace RockWeb.Blocks.Finance
         DefaultValue = "Make my gift go further. Please increase my gift by {%if IsPercentage %} {{ Percentage }}% ({{ AmountHTML }}) {% else %} {{ AmountHTML }} {% endif %} to help cover the electronic transaction fees.",
         Order = 28 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Key = AttributeKey.DisableCaptchaSupport,
+        DefaultBooleanValue = false,
+        Order = 29
+        )]
+
     #region Scheduled Transactions
 
     [BooleanField(
@@ -780,6 +788,8 @@ mission. We are so grateful for your commitment.</p>
             public const string FeeCoverageDefaultState = "FeeCoverageDefaultState";
 
             public const string FeeCoverageMessage = "FeeCoverageMessage";
+
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         #endregion Attribute Keys
@@ -1061,6 +1071,9 @@ mission. We are so grateful for your commitment.</p>
             // Evaluate if comment entry box should be displayed
             tbCommentEntry.Label = GetAttributeValue( AttributeKey.CommentEntryLabel );
             tbCommentEntry.Visible = GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean();
+
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            cpCaptcha.Visible = !disableCaptchaSupport;
         }
 
         /// <summary>
@@ -3528,17 +3541,11 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGiveNow_Click( object sender, EventArgs e )
         {
-            if ( tbRockFullName_AmountEntry.Text.IsNotNullOrWhiteSpace() )
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
             {
-                /* 03/22/2021 MDP
-
-                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                */
-
-                nbRockFullName_AmountEntry.Visible = true;
-                nbRockFullName_AmountEntry.NotificationBoxType = NotificationBoxType.Validation;
-                nbRockFullName_AmountEntry.Text = "Invalid Form Value";
+                nbPromptForAmountsWarning.Visible = true;
+                nbPromptForAmountsWarning.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
                 return;
             }
 
@@ -3669,20 +3676,6 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPersonalInformationNext_Click( object sender, EventArgs e )
         {
-            if ( tbRockFullName_PersonalInformation.Text.IsNotNullOrWhiteSpace() )
-            {
-                /* 03/22/2021 MDP
-
-                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                */
-
-                nbRockFullName_PersonalInformation.Visible = true;
-                nbRockFullName_PersonalInformation.NotificationBoxType = NotificationBoxType.Validation;
-                nbRockFullName_PersonalInformation.Text = "Invalid Form Value";
-                return;
-            }
-
             ProcessTransaction();
         }
 

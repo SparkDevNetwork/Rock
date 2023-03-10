@@ -38,6 +38,7 @@
     <Content Include="Framework\Controls\buttonGroup.obs" />
     <Content Include="Framework\Controls\cacheabilityPicker.obs" />
     <Content Include="Framework\Controls\campusPicker.obs" />
+    <Content Include="Framework\Controls\categorizedValuePicker.obs" />
     <Content Include="Framework\Controls\contentDropDownPicker.obs" />
     <Content Include="Framework\Controls\datePickerBase.obs" />
     <Content Include="Framework\Controls\datePicker.obs" />
@@ -568,6 +569,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\contentCollectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\contentCollectionDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\contentSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\customFieldFilterBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\filterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\contentCollectionInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\contentCollectionListItemBag.d.ts" />
@@ -664,6 +666,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversation\conversationDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\blockCustomActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionAttributeFilterSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionCustomFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionCustomFieldFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionSourceAdditionalSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\obsidianBlockConfigBag.d.ts" />
@@ -953,6 +957,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFilePickerGetBinaryFilesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusPickerGetCampusesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\connectionRequestPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewPickerGetDataViewsOptionsBag.d.ts" />

@@ -326,7 +326,7 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Tries the get the <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> instances for this registration,
+        /// Tries the get the <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> instances for this registration,
         /// loading them onto the <see cref="RegistrationData"/> instance.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -334,7 +334,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <param name="projectId">The project identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
-        /// <returns>Whether <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> instances were successfully loaded for this registration.</returns>
+        /// <returns>Whether <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> instances were successfully loaded for this registration.</returns>
         private bool TryGetGroupLocationSchedule( RockContext rockContext, RegistrationData registrationData, int projectId, int locationId, int scheduleId )
         {
             // We'll filter against the allowed GroupType(s) to ensure this block isn't being misused.
@@ -639,6 +639,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 FirstName = person.NickName,
                 LastName = person.LastName,
                 FullName = person.FullName,
+                IsChild = person.AgeClassification == AgeClassification.Child,
                 CommunicationPreference = communicationPreference,
                 Email = person.Email,
                 MobilePhoneNumber = mobilePhone?.Number,
@@ -758,9 +759,10 @@ namespace Rock.Blocks.Engagement.SignUp
             GroupMemberAssignment existingRegistration = null;
 
             var registrantsToRegister = new List<SignUpRegistrantBag>();
+            var registrantsToMessage = new List<SignUpRegistrantBag>();
+
             var communicationUpdates = new List<CommunicationUpdate>();
 
-            var groupMemberAssignmentsAdded = new List<GroupMemberAssignment>();
             var groupMemberAssignmentsToDelete = new List<GroupMemberAssignment>();
             var groupMembersToDelete = new List<GroupMember>();
 
@@ -924,7 +926,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                         if ( communicationPreference != CommunicationType.RecipientPreference )
                         {
-                            // Set their `GroupMember.CommunicationPrefernce` value once we create a new GroupMember record below.
+                            // Set their `GroupMember.CommunicationPreference` value once we create a new GroupMember record below.
                             communicationUpdates.Add( new CommunicationUpdate
                             {
                                 Registrant = registrant,
@@ -974,7 +976,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                         if ( unmetRequirements.Any() )
                         {
-                            // Don't supplement the registrant with ummet requirements data, as that could be a security risk.
+                            // Don't supplement the registrant with unmet requirements data, as that could be a security risk.
 
                             if ( existingRegistration != null )
                             {
@@ -1008,8 +1010,9 @@ namespace Rock.Blocks.Engagement.SignUp
                     }
                     else
                     {
-                        // New or existing Person is eligible to be registered.
+                        // New or existing Person is eligible to be registered, and should be sent a confirmation communication.
                         registrantsToRegister.Add( registrant );
+                        registrantsToMessage.Add( registrant );
                     }
                 }
             }
@@ -1077,6 +1080,8 @@ namespace Rock.Blocks.Engagement.SignUp
                     existingRegistration = registrationData.ExistingRegistrations
                             .FirstOrDefault( gma => gma.GroupMember.Person.IdKey == registrant.PersonIdKey );
 
+                    var isRegistrar = registrant == registrarRegistrant;
+
                     // We're guaranteed to find a registrant match within the available GroupMembers based on the existence check performed above.
                     var groupMemberRegistrant = groupMemberRegistrants.First( r => r.PersonIdKey == registrant.PersonIdKey );
 
@@ -1117,6 +1122,17 @@ namespace Rock.Blocks.Engagement.SignUp
                             if ( mode == RegisterMode.Family )
                             {
                                 addCommunicationUpdate = true;
+
+                                // Only send confirmation communications to family members if they're an adult or the registrar.
+                                if ( isRegistrar || !groupMemberRegistrant.IsChild )
+                                {
+                                    registrantsToMessage.Add( registrant );
+                                }
+                            }
+                            else
+                            {
+                                // Always send confirmation communications to newly-added registrants in Group mode.
+                                registrantsToMessage.Add( registrant );
                             }
                         }
                     }
@@ -1138,8 +1154,6 @@ namespace Rock.Blocks.Engagement.SignUp
                     {
                         // This individual wasn't registered before and they're still not registered; nothing to do.
                     }
-
-                    var isRegistrar = registrant == registrarRegistrant;
 
                     if ( addCommunicationUpdate || isRegistrar )
                     {
@@ -1216,6 +1230,9 @@ namespace Rock.Blocks.Engagement.SignUp
                  */
                 _groupMemberAssignmentService.DeleteRange( groupMemberAssignmentsToDelete );
             }
+
+            var workflowMembers = new List<GroupMember>();
+            var communicationRecipients = new List<GroupMemberAssignment>();
 
             if ( registrantsToRegister.Any() )
             {
@@ -1340,9 +1357,14 @@ namespace Rock.Blocks.Engagement.SignUp
                     }
 
                     _groupMemberAssignmentService.Add( groupMemberAssignment );
-                    groupMemberAssignmentsAdded.Add( groupMemberAssignment );
 
                     registered.Add( registrant );
+                    workflowMembers.Add( projectGroupMember );
+
+                    if ( registrantsToMessage.Contains( registrant ) )
+                    {
+                        communicationRecipients.Add( groupMemberAssignment );
+                    }
                 }
             }
 
@@ -1395,17 +1417,15 @@ namespace Rock.Blocks.Engagement.SignUp
             {
                 ExceptionLogService.LogException( ex );
 
-                groupMemberAssignmentsAdded.Clear();
-
                 unsuccessful.AddRange( registered );
                 registered.Clear();
+
+                communicationRecipients.Clear();
+                workflowMembers.Clear();
             }
 
-            if ( groupMemberAssignmentsAdded.Any() )
-            {
-                SendConfirmationCommunications( registrationData, groupMemberAssignmentsAdded );
-                LaunchWorkflow( registrationData, groupMemberAssignmentsAdded, registrarPerson );
-            }
+            SendConfirmationCommunications( registrationData, communicationRecipients );
+            LaunchWorkflow( registrationData, workflowMembers, registrarPerson );
 
             return new SignUpRegisterResponseBag
             {
@@ -1419,8 +1439,9 @@ namespace Rock.Blocks.Engagement.SignUp
         /// Sends sign-up confirmation SystemCommunications to the specified registrants.
         /// </summary>
         /// <param name="registrationData">The registration data.</param>
-        /// <param name="groupMemberAssignments">The <see cref="GroupMemberAssignment"/>s for individuals that were registered.</param>
-        private void SendConfirmationCommunications( RegistrationData registrationData, List<GroupMemberAssignment> groupMemberAssignments )
+        /// <param name="communicationRecipients">The <see cref="GroupMemberAssignment"/> instances for individuals that should receive a
+        /// confirmation communication.</param>
+        private void SendConfirmationCommunications( RegistrationData registrationData, List<GroupMemberAssignment> communicationRecipients )
         {
             var systemCommunicationGuid = GetAttributeValue( AttributeKey.RegistrantConfirmationSystemCommunication ).AsGuidOrNull();
             if ( !systemCommunicationGuid.HasValue )
@@ -1428,10 +1449,13 @@ namespace Rock.Blocks.Engagement.SignUp
                 return;
             }
 
-            foreach ( var groupMemberAssignment in groupMemberAssignments )
+            foreach ( var groupMemberAssignment in communicationRecipients )
             {
                 var processMessage = new ProcessSendSignUpRegistrationConfirmation.Message
                 {
+                    GroupId = registrationData.Project.Id,
+                    LocationId = registrationData.Location.Id,
+                    ScheduleId = registrationData.Schedule.Id,
                     GroupMemberAssignmentId = groupMemberAssignment.Id,
                     SystemCommunicationGuid = systemCommunicationGuid.Value,
                     AppRoot = "/",
@@ -1446,9 +1470,9 @@ namespace Rock.Blocks.Engagement.SignUp
         /// Launches any workflow defined within this Block's settings.
         /// </summary>
         /// <param name="registrationData">The registration data.</param>
-        /// <param name="groupMemberAssignments">The <see cref="GroupMemberAssignment"/>s for individuals that were registered.</param>
+        /// <param name="workflowMembers">The <see cref="GroupMember"/> instances for individuals that were registered.</param>
         /// <param name="registrar">The <see cref="Person"/> representing the registrar, if any.</param>
-        private void LaunchWorkflow( RegistrationData registrationData, List<GroupMemberAssignment> groupMemberAssignments, Person registrar )
+        private void LaunchWorkflow( RegistrationData registrationData, List<GroupMember> workflowMembers, Person registrar )
         {
             var workflowTypeGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
             if ( !workflowTypeGuid.HasValue )
@@ -1462,7 +1486,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 return;
             }
 
-            foreach ( var groupMemberAssignment in groupMemberAssignments )
+            foreach ( var groupMember in workflowMembers )
             {
                 var workflowAttributeValues = new Dictionary<string, string>
                 {
@@ -1472,7 +1496,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     { WorkflowAttributeKey.Schedule, registrationData.Schedule.Guid.ToString() }
                 };
 
-                groupMemberAssignment.GroupMember.LaunchWorkflow
+                groupMember.LaunchWorkflow
                 (
                     workflowTypeGuid,
                     $"{registrationData.Project.Name} Sign-Up Registration",
@@ -1522,7 +1546,7 @@ namespace Rock.Blocks.Engagement.SignUp
         #region Supporting Classes
 
         /// <summary>
-        /// A runtime object to represent a <see cref="Group"/>, <see cref="Rock.Model.Location"/> &
+        /// A runtime object to represent a <see cref="Group"/>, <see cref="Rock.Model.Location"/> and
         /// <see cref="Rock.Model.Schedule"/> combination, for which registrations can be saved.
         /// </summary>
         private class RegistrationData

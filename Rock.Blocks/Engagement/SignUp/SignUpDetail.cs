@@ -1,4 +1,21 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -79,7 +96,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         <h4>{{ Project.Name }}</h4>
                         {% if Project.CampusName and Project.CampusName != empty %}
                             <div class=""panel-labels"">
-                                <span class=""label label-default"">hello</span>
+                                <span class=""label label-default"">{{ Project.CampusName }}</span>
                             </div>
                         {% endif %}
                     </div>
@@ -194,7 +211,7 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Tries to get the <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> instances for this occurrence,
+        /// Tries to get the <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> instances for this occurrence,
         /// loading them onto the <see cref="OccurrenceData"/> instance.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -202,7 +219,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <param name="projectId">The project identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
-        /// <returns>Whether <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> instances were successfully loaded for this occurrence.</returns>
+        /// <returns>Whether <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> instances were successfully loaded for this occurrence.</returns>
         private bool TryGetGroupLocationSchedule( RockContext rockContext, OccurrenceData occurrenceData, int projectId, int locationId, int scheduleId )
         {
             // We'll filter against the allowed GroupType(s) to ensure this block isn't being misused.
@@ -257,7 +274,7 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Gets the participant count for this <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> occurrence.
+        /// Gets the participant count for this <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> occurrence.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="occurrenceData">The occurrence data.</param>
@@ -331,7 +348,7 @@ namespace Rock.Blocks.Engagement.SignUp
         #region Supporting Classes
 
         /// <summary>
-        /// A runtime object to represent a <see cref="Rock.Model.Group"/>, <see cref="Rock.Model.Location"/> &
+        /// A runtime object to represent a <see cref="Rock.Model.Group"/>, <see cref="Rock.Model.Location"/> and
         /// <see cref="Rock.Model.Schedule"/> combination, along with convenience properties for the final,
         /// Lava class, <see cref="SignUpDetail.Project"/> to easily pick from.
         /// </summary>
@@ -420,7 +437,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     }
 
                     /*
-                     * This more complex approach uses a dynamic/floating minuend (the first number in a subtraction problem):
+                     * This more complex approach uses a dynamic/floating minuend:
                      * 1) If the max value is defined, use that;
                      * 2) Else, if the desired value is defined, use that;
                      * 3) Else, if the min value is defined, use that;
@@ -435,15 +452,15 @@ namespace Rock.Blocks.Engagement.SignUp
                     //            : int.MaxValue;
 
                     /*
-                     * This approach still uses a dynamic minuend, but it's much simpler:
-                     * 1) If the max value is defined, use that;
-                     * 2) Else, use int.MaxValue (there is no limit to the slots available).
+                     * Simple approach:
+                     * 1) If the max value is defined, subtract participant count from that;
+                     * 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
                      */
-                    var minuend = this.SlotsMax.GetValueOrDefault() > 0
-                        ? this.SlotsMax.Value
-                        : int.MaxValue;
-
-                    var available = minuend - this.ParticipantCount;
+                    var available = int.MaxValue;
+                    if ( this.SlotsMax.GetValueOrDefault() > 0 )
+                    {
+                        available = this.SlotsMax.Value - this.ParticipantCount;
+                    }
 
                     return available < 0 ? 0 : available;
                 }

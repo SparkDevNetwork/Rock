@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Cms
         Description = "Whether family members are shown or not.",
         DefaultBooleanValue = true,
         Order = 6 )]
-     
+
     [BooleanField(
         "Show Addresses",
         Key = AttributeKey.ShowAddresses,
@@ -465,7 +465,6 @@ namespace RockWeb.Blocks.Cms
 
             cpCampus.Label = GetAttributeValue( AttributeKey.CampusSelectorLabel );
 
-
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ) ) )
             {
                 _requiredPhoneNumberGuids = GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ).Split( ',' ).Select( Guid.Parse ).ToList();
@@ -747,7 +746,7 @@ namespace RockWeb.Blocks.Cms
             tbNickName.Visible = GetAttributeValue( AttributeKey.ShowNickName ).AsBoolean();
 
             rpRace.Visible = GetAttributeValue( AttributeKey.RaceOption ) != "Hide";
-            rpRace.Required  = GetAttributeValue( AttributeKey.RaceOption ) == "Required";
+            rpRace.Required = GetAttributeValue( AttributeKey.RaceOption ) == "Required";
 
             epEthnicity.Visible = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
             epEthnicity.Required = GetAttributeValue( AttributeKey.EthnicityOption ) == "Required";
@@ -1059,15 +1058,8 @@ namespace RockWeb.Blocks.Cms
 
                         var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypeValueGuids ).Split( ',' ).AsGuidList();
 
-                        // Remove any blank numbers
-                        var phoneNumberService = new PhoneNumberService( rockContext );
-                        foreach ( var phoneNumber in person.PhoneNumbers
-                            .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) && selectedPhoneTypeGuids.Contains( n.NumberTypeValue.Guid ) )
-                            .ToList() )
-                        {
-                            person.PhoneNumbers.Remove( phoneNumber );
-                            phoneNumberService.Delete( phoneNumber );
-                        }
+                        // Remove any duplicates and blank numbers
+                        personService.RemoveEmptyAndDuplicatePhoneNumbers( person, phoneNumberTypeIds, rockContext );
                     }
 
                     person.Email = tbEmail.Text.Trim();

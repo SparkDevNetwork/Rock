@@ -44,10 +44,6 @@
 
                             <asp:Literal ID="lIntroMessage" runat="server" />
 
-                            <%-- Special input with rock-fullname class --%>
-                            <Rock:RockTextBox ID="tbRockFullName_AmountEntry" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName_AmountEntry" Placeholder="Please enter name (Required)" autocomplete="new-password" />
-                            <Rock:NotificationBox ID="nbRockFullName_AmountEntry" runat="server" NotificationBoxType="Validation" />
-
                             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
                             <asp:Panel ID="pnlScheduledTransactionFrequency" runat="server">
@@ -74,6 +70,8 @@
                             <asp:Panel ID="pnlGiveNowCoverTheFee" runat="server" CssClass="js-coverthefee-container" Visible="false">
                                 <Rock:RockCheckBox ID="cbGiveNowCoverTheFee" runat="server" Text="$<span class='js-coverthefee-checkbox-fee-amount-text'></span>" CssClass="js-givenow-coverthefee" />
                             </asp:Panel>
+
+                            <Rock:Captcha ID="cpCaptcha" runat="server" />
 
                             <Rock:BootstrapButton ID="btnGiveNow" runat="server" CssClass="btn btn-primary btn-give-now" Text="Give Now" OnClick="btnGiveNow_Click" />
 
@@ -127,10 +125,6 @@
                         <asp:Panel ID="pnlPersonalInformation" runat="server" Visible="false">
 
                             <Rock:Toggle ID="tglIndividualOrBusiness" runat="server" ButtonGroupCssClass="btn-group-justified" OnText="Business" OffText="Individual" OnCheckedChanged="tglIndividualOrBusiness_CheckedChanged" />
-
-                            <%-- Special input with rock-fullname class --%>
-                            <Rock:RockTextBox ID="tbRockFullName_PersonalInformation" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName_PersonalInformation" Placeholder="Please enter name (Required)" autocomplete="new-password" />
-                            <Rock:NotificationBox ID="nbRockFullName_PersonalInformation" runat="server" NotificationBoxType="Validation" />
 
                             <asp:Panel ID="pnlPersonInformationAsIndividual" runat="server">
                                 <asp:Panel ID="pnlLoggedInNameDisplay" runat="server">

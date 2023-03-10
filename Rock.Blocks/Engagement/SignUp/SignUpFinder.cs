@@ -917,15 +917,28 @@ namespace Rock.Blocks.Engagement.SignUp
                      * selected. Note also that we cannot apply this filter during the query phase; we need to wait until we
                      * materialize Schedule objects so we can compare this value to Schedule.NextStartDateTime, which is a
                      * runtime-calculated value. If we instead applied this filter to the Schedule.EffectiveEndDate, we could
-                     * accidentally rule out opportunites for which the individual might otherwise be interested in signing up.
+                     * accidentally rule out opportunities for which the individual might otherwise be interested in signing up.
                      * We'll apply this filter value below.
                      */
                     toDateTime = selectedFilters.EndDate.Value.EndOfDay();
                 }
             }
 
+            /*
+             * Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveEndDates, which hold
+             * only a date value (without the time component). Return any Schedules whose EffectiveEndDate:
+             *  1) is not defined (this should never happen, but get them just in case), OR
+             *  2) is greater than or equal to the "from" date being filtered against.
+             * 
+             * We'll do this to rule out any Schedules that have already ended, therefore making the initial results record set smaller,
+             * since we still have to do additional Schedule-based filtering below: once we materialize the Schedule objects, we'll use their
+             * runtime-calculated "Start[Date]Time" properties and methods to ensure we're only showing Schedules that actually qualify to
+             * be shown, based on the DateTime filter criteria provided to this method (either RockDateTime.Now OR the "from" date selected
+             * by the individual performing the search).
+             */
+            DateTime fromDate = fromDateTime.Date;
             qryGroupLocationSchedules = qryGroupLocationSchedules
-                .Where( gls => gls.Schedule.EffectiveStartDate.HasValue && gls.Schedule.EffectiveStartDate >= fromDateTime );
+                .Where( gls => !gls.Schedule.EffectiveEndDate.HasValue || gls.Schedule.EffectiveEndDate >= fromDate );
 
             // Get all participant counts for all filtered opportunities; we'll hook them up to their respective opportunities below.
             var participantCounts = new GroupMemberAssignmentService( rockContext )
@@ -979,13 +992,16 @@ namespace Rock.Blocks.Engagement.SignUp
                     };
                 } );
 
-            // Now that we have Schedule objects in memory, let's further apply date(/time) filtering.
+            /*
+             * Now that we have materialized Schedule objects in memory, let's further apply DateTime filtering using the Schedules' runtime-calculated
+             * "NextStartDateTime" property values; only show Schedules that have current or upcoming start DateTimes.
+             */
             opportunities = opportunities
                 .Where( o =>
                     o.NextStartDateTime.HasValue
                     && o.NextStartDateTime.Value >= fromDateTime
                     && (
-                        !toDateTime.HasValue // The indivdual didn't select an end date.
+                        !toDateTime.HasValue // The individual didn't select an end date.
                         || o.NextStartDateTime.Value < toDateTime.Value // The project's [next] start date time is less than the [end of the] end date they selected.
                     )
                 );
@@ -1055,14 +1071,14 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             // Sort.
-            List<Opportunity> sortedOpportunties = filteredOpportunities
+            List<Opportunity> sortedOpportunities = filteredOpportunities
                 .OrderBy( o => o.DistanceInMiles.HasValue ? o.DistanceInMiles : double.MaxValue )
                 .ThenBy( o => o.NextStartDateTime ?? DateTime.MaxValue )
                 .ThenBy( o => o.ProjectName )
                 .ThenByDescending( o => o.ParticipantCount )
                 .ToList();
 
-            return sortedOpportunties;
+            return sortedOpportunities;
         }
 
         /// <summary>
@@ -1711,7 +1727,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     }
 
                     /*
-                     * This more complex approach uses a dynamic/floating minuend (the first number in a subtraction problem):
+                     * This more complex approach uses a dynamic/floating minuend:
                      * 1) If the max value is defined, use that;
                      * 2) Else, if the desired value is defined, use that;
                      * 3) Else, if the min value is defined, use that;
@@ -1726,15 +1742,15 @@ namespace Rock.Blocks.Engagement.SignUp
                     //            : int.MaxValue;
 
                     /*
-                     * This approach still uses a dynamic minuend, but it's much simpler:
-                     * 1) If the max value is defined, use that;
-                     * 2) Else, use int.MaxValue (there is no limit to the slots available).
+                     * Simple approach:
+                     * 1) If the max value is defined, subtract participant count from that;
+                     * 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
                      */
-                    var minuend = this.SlotsMax.GetValueOrDefault() > 0
-                        ? this.SlotsMax.Value
-                        : int.MaxValue;
-
-                    var available = minuend - this.ParticipantCount;
+                    var available = int.MaxValue;
+                    if ( this.SlotsMax.GetValueOrDefault() > 0 )
+                    {
+                        available = this.SlotsMax.Value - this.ParticipantCount;
+                    }
 
                     return available < 0 ? 0 : available;
                 }

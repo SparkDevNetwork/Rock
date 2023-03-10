@@ -782,7 +782,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                 }
 
                 // parse the part to get the expression
-                string regexPattern = @"([a-zA-Z]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
+                var regexPattern = @"((?!_=|_!)[a-zA-Z_]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
                 var expressionParts = Regex.Matches( component, regexPattern )
                .Cast<Match>()
                .Select( m => m.Value )
@@ -836,13 +836,20 @@ namespace Rock.Lava.RockLiquid.Blocks
                             filterAttribute = attribute;
                             var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
+                            var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            if ( filterExpression is NoAttributeFilterExpression )
+                            {
+                                // Ignore this filter because it would cause the Where expression to match everything.
+                                continue;
+                            }
+
                             if ( attributeWhereExpression == null )
                             {
-                                attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                                attributeWhereExpression = filterExpression;
                             }
                             else
                             {
-                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
+                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, filterExpression );
                             }
                         }
 

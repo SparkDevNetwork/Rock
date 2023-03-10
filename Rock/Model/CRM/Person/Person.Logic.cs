@@ -112,6 +112,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the initials for the person based on the nick name and last name.
+        /// </summary>
+        /// /// <value>
+        /// A <see cref="System.String"/> representing the initials of a Person using the NickName and LastName.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string Initials
+        {
+            get
+            {
+                return $"{NickName.Truncate( 1, false )}{LastName.Truncate( 1, false )}";
+            }
+            private set
+            {
+                // intentionally blank
+            }
+        }
+
+        /// <summary>
         /// Determines whether the <see cref="RecordTypeValue"/> of this Person is Business
         /// </summary>
         /// <returns>
@@ -223,12 +243,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Full Name of the Person using the Title FirstName LastName format.
+        /// Gets the Full Name of the Person using the Title FirstName LastName Suffix format.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
+        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName Suffix format.
         /// </value>
         [NotMapped]
+        [LavaVisible]
         public virtual string FullNameFormal
         {
             get
@@ -240,7 +261,7 @@ namespace Rock.Model
 
                 var fullName = new StringBuilder();
 
-                fullName.AppendFormat( "{0} {1}", FirstName, LastName );
+                fullName.AppendFormat( "{0} {1} {2}", TitleValue, FirstName, LastName );
 
                 if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
                 {
@@ -1406,7 +1427,18 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
+            return GetPersonPhotoUrl( person.Initials, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification, size );
         }
 
         /// <summary>
@@ -1418,10 +1450,21 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( int personId, int? maxWidth = null, int? maxHeight = null )
         {
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
             using ( RockContext rockContext = new RockContext() )
             {
                 Person person = new PersonService( rockContext ).Get( personId );
-                return GetPersonPhotoUrl( person, maxWidth, maxHeight );
+                return GetPersonPhotoUrl( person, size );
             }
         }
 
@@ -1434,7 +1477,18 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonNoPictureUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
+            return GetPersonPhotoUrl( person.Initials, null, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification, size );
         }
 
         /// <summary>

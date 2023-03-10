@@ -23,6 +23,7 @@
 
 import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
 import { ContentCollectionAttributeFilterSettingsBag } from "@Obsidian/ViewModels/Cms/contentCollectionAttributeFilterSettingsBag";
+import { ContentCollectionCustomFieldFilterSettingsBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldFilterSettingsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
@@ -41,6 +42,9 @@ export type ContentCollectionFilterSettingsBag = {
      * are used to display the known values in the filter panel.
      */
     attributeValues?: Record<string, ListItemBag[]> | null;
+
+    /** Gets or sets the custom field filters that are enabled for filtering. */
+    customFieldFilters?: Record<string, ContentCollectionCustomFieldFilterSettingsBag> | null;
 
     /**
      * Gets or sets the field values that have been learned. These

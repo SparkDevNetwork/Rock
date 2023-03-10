@@ -87,6 +87,14 @@
                         <Rock:NumberBox ID="numLoginCookieTimeout" runat="server" NumberType="Integer" Label="Login Cookie Persistence Length" CssClass="input-width-lg" MinimumValue="1" AppendText="minutes" ValidationGroup="WebConfigSetting"
                             Help="The length a login cookie persists in minutes. This should be set to a large number. This reduces 'login friction' and increases the chance that someone will remain logged in for a long period of time." />
                         <Rock:RockCheckBox ID="cbEnableAdoNetPerformanceCounters" runat="server" Label="Enable Database Performance Counters" Text="Yes" Help="When checked, metric values regarding the counts of active and available database connections will be collected, for reporting within the 'Hosting Metrics' category. Note that website performance can be impacted when this option is enabled; consider using only when investigating possible database performance issues." ValidationGroup="WebConfigSetting" />
+                        <div class="row">
+                            <div class="col-md-4">
+                                <Rock:RockTextBox ID="rtbAzureSignalREndpoint" runat="server" Label="Azure SignalR Endpoint" ValidationGroup="UISettings" Help="The Azure SignalR endpoint."></Rock:RockTextBox>
+                            </div>
+                            <div class="col-md-4">
+                                <Rock:RockTextBox ID="rtbAzureSignalRAccessKey" runat="server" Label="Azure SignalR AccessKey" ValidationGroup="UISettings" Help="The Azure SignalR access key."></Rock:RockTextBox>
+                            </div>
+                        </div>
                     </fieldset>
                     <div class="actions">
                         <Rock:BootstrapButton ID="btnSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSaveConfig_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="WebConfigSetting"></Rock:BootstrapButton>

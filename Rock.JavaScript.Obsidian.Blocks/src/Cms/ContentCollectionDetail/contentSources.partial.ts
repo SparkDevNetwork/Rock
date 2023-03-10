@@ -17,6 +17,7 @@
 
 import { computed, defineComponent, onBeforeUnmount, PropType, ref, watch } from "vue";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+import CustomKeySource from "./customKeySource.partial.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import Modal from "@Obsidian/Controls/modal";
 import NumberBox from "@Obsidian/Controls/numberBox";
@@ -36,12 +37,14 @@ import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { areEqual } from "@Obsidian/Utility/guid";
 import Source from "./source.partial";
+import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
 
 export default defineComponent({
     name: "Cms.ContentCollectionDetail.ContentSources",
 
     components: {
         CheckBoxList,
+        CustomKeySource,
         DropDownList,
         Modal,
         NumberBox,
@@ -84,6 +87,8 @@ export default defineComponent({
         const sourceEntityItems = ref<ListItemBag[]>([]);
         const sourceEntityAttributeTable = ref<Record<string, ListItemBag[]>>({});
         const sourceSelectedEntityOccurrences = ref<number | null>(null);
+        const sourceCustomFields = ref<ContentCollectionCustomFieldBag[]>([]);
+        const sourceNewCustomField = ref<ContentCollectionCustomFieldBag | null>(null);
 
         // #endregion
 
@@ -199,6 +204,9 @@ export default defineComponent({
                 itemCount: 0
             };
 
+            sourceCustomFields.value = [];
+            sourceNewCustomField.value = null;
+
             isSourceModalOpen.value = true;
         };
 
@@ -245,6 +253,9 @@ export default defineComponent({
                 itemCount: 0
             };
 
+            sourceCustomFields.value = [];
+            sourceNewCustomField.value = null;
+
             isSourceModalOpen.value = true;
         };
 
@@ -257,8 +268,9 @@ export default defineComponent({
                 guid: sourceEditBag.value?.guid,
                 entityTypeGuid: sourceEditBag.value.entityTypeGuid,
                 entityGuid: sourceSelectedEntity.value,
-                attributes: sourceSelectedEntityAttributes.value.map(a => ({value: a})),
+                attributes: sourceSelectedEntityAttributes.value.map(a => ({ value: a })),
                 occurrencesToShow: sourceSelectedEntityOccurrences.value ?? 0,
+                customFields: sourceCustomFields.value,
                 itemCount: 0
             };
 
@@ -351,6 +363,8 @@ export default defineComponent({
             }, {} as Record<string, ListItemBag[]>);
 
             sourceEditBag.value = source;
+            sourceCustomFields.value = source.customFields ? [...source.customFields] : [];
+            sourceNewCustomField.value = null;
 
             isSourceModalOpen.value = true;
         };
@@ -376,6 +390,51 @@ export default defineComponent({
                 return;
             }
         };
+
+        /**
+         * Event Handler for when a new custom field has been requested to
+         * added by the individual.
+         */
+        function onAddCustomFieldClick(): void {
+            if (sourceNewCustomField.value === null) {
+                sourceNewCustomField.value = {
+                    isMultiple: false
+                };
+            }
+        }
+
+        /**
+         * Event Handler for when the save button on a new custom field is
+         * clicked. Add it to the list and remove the new custom field UI.
+         *
+         * @param field The field that should be saved.
+         */
+        function onNewCustomFieldSave(field: ContentCollectionCustomFieldBag): void {
+            sourceCustomFields.value.push(field);
+            sourceNewCustomField.value = null;
+        }
+
+        /**
+         * Event Handler for when the cancel button is clicked on the new
+         * custom field UI. This triggers it to revert to non-edit mode.
+         *
+         * @param value The new value of the add custom field editor.
+         */
+        function onNewCustomFieldEditModeChanged(value: boolean): void {
+            if (!value) {
+                sourceNewCustomField.value = null;
+            }
+        }
+
+        /**
+         * Event Handler for when the remove button of a custom field row
+         * is clicked.
+         *
+         * @param index The custom field row index to be removed.
+         */
+        function onCustomFieldRemove(index: number): void {
+            sourceCustomFields.value.splice(index, 1);
+        }
 
         // #endregion
 
@@ -410,16 +469,22 @@ export default defineComponent({
             collectionSources,
             onAddCalendarSource,
             onAddContentChannelSource,
+            onAddCustomFieldClick,
             onAddSourceClick,
+            onCustomFieldRemove,
+            onNewCustomFieldEditModeChanged,
+            onNewCustomFieldSave,
             onSourceSave,
             onDeleteSource,
             onEditSource,
             reorderDragOptions,
+            sourceCustomFields,
             sourceEntityAttributeItems,
             sourceEntityItems,
             sourceModalEntityName,
             sourceModalTitle,
             sourceModalEntityTitle,
+            sourceNewCustomField,
             sourceSelectedEntity,
             sourceSelectedEntityAttributes,
             sourceSelectedEntityOccurrences
@@ -479,6 +544,48 @@ export default defineComponent({
                 rules="gte:1" />
         </div>
     </div>
+
+    <SectionHeader title="Custom Values"
+                   description="Most of the content you provide for the collection will be based on the attributes mentioned above. Additionally, you can provide properties below that can be used for filtering or to provide more information." />
+
+    <table class="grid-table table table-condensed table-light">
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Title</th>
+                <th>Multiple</th>
+                <th class="grid-columncommand"></th>
+                <th class="grid-columncommand"></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <CustomKeySource v-for="(customField, index) in sourceCustomFields"
+                v-model="sourceCustomFields[index]"
+                v-model:editMode="sourceCustomFieldEditMode"
+                @remove="onCustomFieldRemove(index)" />
+
+            <CustomKeySource v-if="sourceNewCustomField"
+                :modelValue="sourceNewCustomField"
+                editMode
+                @update:modelValue="onNewCustomFieldSave"
+                @update:editMode="onNewCustomFieldEditModeChanged" />
+
+            <tr v-else-if="!sourceCustomFields.length">
+                <td colspan="5">No custom fields defined.</td>
+            </tr>
+        </tbody>
+
+        <tfoot>
+            <tr>
+                <td class="grid-actions" colspan="6">
+                    <a class="btn btn-grid-action btn-add btn-default btn-sm" accesskey="n" title="Alt+N" href="#" @click.prevent="onAddCustomFieldClick">
+                        <i class="fa fa-plus-circle fa-fw"></i>
+                    </a>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
 
     <div style="margin-bottom: 40px;"></div>
 </Modal>

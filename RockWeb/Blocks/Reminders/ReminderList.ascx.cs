@@ -76,9 +76,24 @@ namespace RockWeb.Blocks.Reminders
         /// </summary>
         private static class AttributeKey
         {
+            /// <summary>
+            /// The Edit Reminder Page.
+            /// </summary>
             public const string EditReminderPage = "EditReminderPage";
+
+            /// <summary>
+            /// The Reminder Types to Include.
+            /// </summary>
             public const string ReminderTypesInclude = "ReminderTypesInclude";
+
+            /// <summary>
+            /// The Reminder Types to Exclude.
+            /// </summary>
             public const string ReminderTypesExclude = "ReminderTypesExclude";
+
+            /// <summary>
+            /// Whether to Show Filters.
+            /// </summary>
             public const string ShowFilters = "ShowFilters";
         }
 
@@ -106,16 +121,21 @@ namespace RockWeb.Blocks.Reminders
             /// The Reminder Identifier.
             /// </summary>
             public const string ReminderId = "ReminderId";
-        }
 
-        /// <summary>
-        /// Keys for User Preference settings.
-        /// </summary>
-        private static class UserPreferenceKey
-        {
-            public const string CompletionFilter = "CompletionFilter";
-            public const string DueFilter = "DueFilter";
-            public const string CustomDateRange = "CustomDateRange";
+            /// <summary>
+            /// The Completion Status.
+            /// </summary>
+            public const string CompletionStatus = "CompletionStatus";
+
+            /// <summary>
+            /// The Reminder Due Date.
+            /// </summary>
+            public const string Due = "Due";
+
+            /// <summary>
+            /// The Reminder Due Date Range (for Custom Date Range filter).
+            /// </summary>
+            public const string DueDateRange = "DueDateRange";
         }
 
         #endregion Keys
@@ -205,7 +225,6 @@ namespace RockWeb.Blocks.Reminders
                 hfReminderTypesExclude.Value = reminderTypeIdExcludeList.AsDelimited( "," );
             }
         }
-
 
         /// <summary>
         /// Recalculates the reminder count for the current person.  This is done during the page init
@@ -408,8 +427,8 @@ namespace RockWeb.Blocks.Reminders
         {
             var reminderViewModels = new List<ReminderViewModel>();
 
-            var completionFilter = GetBlockUserPreference( UserPreferenceKey.CompletionFilter );
-            var dueFilter = GetBlockUserPreference( UserPreferenceKey.DueFilter );
+            var completionFilter = PageParameter( PageParameterKey.CompletionStatus );
+            var dueFilter = PageParameter( PageParameterKey.Due );
 
             var showFilters = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
             if ( !showFilters )
@@ -484,7 +503,7 @@ namespace RockWeb.Blocks.Reminders
                 else
                 {
                     // Custom date range.
-                    var selectedDateRange = GetBlockUserPreference( UserPreferenceKey.CustomDateRange );
+                    var selectedDateRange = PageParameter( PageParameterKey.DueDateRange );
                     if ( selectedDateRange.IsNotNullOrWhiteSpace() )
                     {
                         drpCustomDate.DelimitedValues = selectedDateRange;
@@ -559,12 +578,12 @@ namespace RockWeb.Blocks.Reminders
         /// <summary>
         /// Reload the page with appropriate page parameters.  This is useful when the filter values are updated.
         /// </summary>
-        private void RefreshPage()
+        private void RefreshPage( Dictionary<string, string> queryParameters )
         {
             var selectedEntityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsIntegerOrNull();
             var selectedEntityId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
             var selectedReminderTypeId = PageParameter( PageParameterKey.ReminderTypeId ).AsIntegerOrNull();
-            RefreshPage( selectedEntityTypeId, selectedEntityId, selectedReminderTypeId );
+            RefreshPage( selectedEntityTypeId, selectedEntityId, selectedReminderTypeId, queryParameters );
         }
 
         /// <summary>
@@ -584,26 +603,37 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="reminderTypeId">The reminder type identifier.</param>
-        private void RefreshPage( int? entityTypeId, int? entityId, int? reminderTypeId )
+        private void RefreshPage( int? entityTypeId, int? entityId, int? reminderTypeId, Dictionary<string, string> queryParameters = null )
         {
-            var queryParams = new Dictionary<string, string>();
+            queryParameters = queryParameters ?? new Dictionary<string, string>();
 
             if ( entityTypeId.HasValue && entityTypeId != 0 )
             {
-                queryParams.Add( PageParameterKey.EntityTypeId, entityTypeId.ToString() );
+                queryParameters.AddOrReplace( PageParameterKey.EntityTypeId, entityTypeId.ToString() );
             }
 
             if ( entityId.HasValue )
             {
-                queryParams.Add( PageParameterKey.EntityId, entityId.ToString() );
+                queryParameters.AddOrReplace( PageParameterKey.EntityId, entityId.ToString() );
             }
 
             if ( reminderTypeId.HasValue )
             {
-                queryParams.Add( PageParameterKey.ReminderTypeId, reminderTypeId.ToString() );
+                queryParameters.AddOrReplace( PageParameterKey.ReminderTypeId, reminderTypeId.ToString() );
             }
 
-            NavigateToCurrentPage( queryParams );
+            // Keep any existing page parameters that we didn't modify.
+            foreach ( var paramKey in PageParameters().Keys )
+            {
+                if ( paramKey != "PageId"
+                    && paramKey != PageParameterKey.ReminderTypeId
+                    && !queryParameters.ContainsKey( paramKey ) )
+                {
+                    queryParameters.Add( paramKey, PageParameter( paramKey ) );
+                }
+            }
+
+            NavigateToCurrentPage( queryParameters );
         }
 
         /// <summary>
@@ -835,8 +865,12 @@ namespace RockWeb.Blocks.Reminders
         protected void btnCompletionFilter_Click( object sender, EventArgs e )
         {
             var btnCompletionFilter = sender as LinkButton;
-            SetBlockUserPreference( UserPreferenceKey.CompletionFilter, btnCompletionFilter.CommandArgument );
-            RefreshPage();
+            var queryParameters = new Dictionary<string, string>
+            {
+                { PageParameterKey.CompletionStatus, btnCompletionFilter.CommandArgument }
+            };
+
+            RefreshPage( queryParameters );
         }
 
         /// <summary>
@@ -853,6 +887,7 @@ namespace RockWeb.Blocks.Reminders
             {
                 reminderTypeId = int.Parse( btnReminderTypeFilter.CommandArgument );
             }
+
             RefreshPage( reminderTypeId );
         }
 
@@ -864,8 +899,19 @@ namespace RockWeb.Blocks.Reminders
         protected void btnDueFilter_Click( object sender, EventArgs e )
         {
             var btnDueFilter = sender as LinkButton;
-            SetBlockUserPreference( UserPreferenceKey.DueFilter, btnDueFilter.CommandArgument );
-            RefreshPage();
+
+            if ( btnDueFilter.CommandArgument == "Custom Date Range" )
+            {
+                drpCustomDate_SelectedDateRangeChanged( sender, e );
+                return;
+            }
+
+            var queryParameters = new Dictionary<string, string>
+            {
+                { PageParameterKey.Due, btnDueFilter.CommandArgument }
+            };
+
+            RefreshPage( queryParameters );
         }
 
         /// <summary>
@@ -877,9 +923,13 @@ namespace RockWeb.Blocks.Reminders
         {
             if ( Page.IsPostBack )
             {
-                SetBlockUserPreference( UserPreferenceKey.DueFilter, "Custom Date Range" );
-                SetBlockUserPreference( UserPreferenceKey.CustomDateRange, drpCustomDate.DelimitedValues );
-                RefreshPage();
+                var queryParameters = new Dictionary<string, string>
+                {
+                    { PageParameterKey.Due, "Custom Date Range" },
+                    { PageParameterKey.DueDateRange, drpCustomDate.DelimitedValues }
+                };
+
+                RefreshPage( queryParameters );
             }
         }
 

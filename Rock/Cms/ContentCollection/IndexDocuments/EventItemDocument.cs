@@ -97,9 +97,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                 document.EventItemOccurrences = new List<DateTime>();
             }
 
-            document.AddPersonalizationData( eventItem, source );
-            document.AddIndexableAttributes( eventItem, source );
-            await document.AddExistingTrendingDataAsync( source );
+            await document.AddStandardFieldsAsync( eventItem, source );
 
             return document;
         }

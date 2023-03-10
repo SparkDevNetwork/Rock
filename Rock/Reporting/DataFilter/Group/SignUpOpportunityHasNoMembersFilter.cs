@@ -1,4 +1,21 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
@@ -15,9 +32,9 @@ using Rock.Web.Utilities;
 namespace Rock.Reporting.DataFilter.Group
 {
     /// <summary>
-    /// A Data Filter to select Groups with sign-up opportunities that have no members.
+    /// A Data Filter to select Groups that have at least one opportunity (GroupLocationScheduleConfig), with no corresponding group member assignment records.
     /// </summary>
-    [Description( "Filter groups based on sign-up opportunities that have no members." )]
+    [Description( "Lists any groups (projects) that have at least one opportunity (GroupLocationScheduleConfig), with no corresponding group member assignment records." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Sign-Up Opportunity Has No Members" )]
     [Rock.SystemGuid.EntityTypeGuid( "92E7406D-723A-4302-A36A-83374E706160" )]
@@ -36,7 +53,7 @@ namespace Rock.Reporting.DataFilter.Group
         #region Settings
 
         /// <summary>
-        /// Get and set the filter settings from DataViewFilter.Selection
+        /// Get and set the filter settings from DataViewFilter.Selection.
         /// </summary>
         private class SelectionConfig
         {
@@ -61,7 +78,7 @@ namespace Rock.Reporting.DataFilter.Group
             /// <summary>
             /// Whether to hide past opportunities.
             /// </summary>
-            public bool HidePastOpportunties { get; set; }
+            public bool HidePastOpportunities { get; set; }
 
             /// <summary>
             /// Parses the specified selection from a JSON string.
@@ -168,7 +185,7 @@ namespace Rock.Reporting.DataFilter.Group
             // Define control: hide past opportunities check box.
             var cbHidePastOpportunities = new RockCheckBox();
             cbHidePastOpportunities.ID = filterControl.GetChildControlInstanceName( "_cbHidePastOpportunities" );
-            cbHidePastOpportunities.Label = "Hide Past Opportunties";
+            cbHidePastOpportunities.Label = "Hide Past Opportunities";
             cbHidePastOpportunities.AddCssClass( "js-cb-hide-past-opportunities" );
             filterControl.Controls.Add( cbHidePastOpportunities );
 
@@ -265,7 +282,7 @@ function() {
         {
             var selectionConfig = SelectionConfig.Parse( selection );
 
-            var timeframe = selectionConfig.HidePastOpportunties
+            var timeframe = selectionConfig.HidePastOpportunities
                 ? "Current"
                 : "Current or past";
 
@@ -310,7 +327,7 @@ function() {
             {
                 GroupTypeGuid = groupTypePicker.SelectedValue,
                 MemberType = ddlMemberType.SelectedValue,
-                HidePastOpportunties = cbHidePastOpportunities.Checked
+                HidePastOpportunities = cbHidePastOpportunities.Checked
             };
 
             return selectionConfig.ToJson();
@@ -332,11 +349,11 @@ function() {
 
             groupTypePicker.SetValue( selectionConfig.GroupTypeGuid );
             ddlMemberType.SetValue( selectionConfig.MemberType );
-            cbHidePastOpportunities.Checked = selectionConfig.HidePastOpportunties;
+            cbHidePastOpportunities.Checked = selectionConfig.HidePastOpportunities;
         }
 
         /// <summary>
-        /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.
+        /// Creates a LINQ Expression that can be applied to an IQueryable to filter the result set.
         /// </summary>
         /// <param name="entityType">The type of entity in the result set.</param>
         /// <param name="serviceInstance">A service instance that can be queried to obtain the result set.</param>
@@ -350,7 +367,7 @@ function() {
             var selectionConfig = SelectionConfig.Parse( selection );
             var requireLeader = selectionConfig.MemberType == MemberTypeValue.Leader;
             var requireNonLeader = selectionConfig.MemberType == MemberTypeValue.NotLeader;
-            var hidePastOpportunities = selectionConfig.HidePastOpportunties;
+            var hidePastOpportunities = selectionConfig.HidePastOpportunities;
 
             var groupTypeGuid = selectionConfig.GroupTypeGuid.AsGuidOrNull();
             if ( !groupTypeGuid.HasValue )
@@ -358,19 +375,28 @@ function() {
                 return null;
             }
 
+            var groupTypeId = GroupTypeCache.GetId( groupTypeGuid.Value );
+            if ( !groupTypeId.HasValue )
+            {
+                return null;
+            }
+
+            // We'll use today's date @ 12:00 AM to compare against Schedule.EffectiveEndDate below, in order to filter out past opportunities if needed.
+            var startOfToday = RockDateTime.Now.StartOfDay();
+
             var membersByOpportunityQuery = new GroupLocationService( ( RockContext ) serviceInstance.Context )
                 .Queryable()
                 .AsNoTracking()
-                .Where( gl => gl.Group.GroupType.Guid == groupTypeGuid.Value )
+                .Where( gl => gl.Group.GroupTypeId == groupTypeId.Value )
                 .SelectMany( gl => gl.Schedules, ( gl, s ) => new
                 {
                     gl.Group,
-                    gl.Location,
+                    gl.LocationId,
                     Schedule = s
                 } )
                 /*
-                 * We now have [GroupLocationSchedule] instances:
-                 * One for each combination of Group, Location & Schedule, where [Group].[GroupTypeId] == selectionConfig.GroupTypeId.
+                 * We now have GroupLocationSchedule instances:
+                 * One for each combination of Group, Location & Schedule, where [Group].[GroupTypeId] == selectionConfig's GroupTypeId.
                  */
                 .Where( gls =>
                     !hidePastOpportunities
@@ -378,18 +404,18 @@ function() {
                         gls.Schedule.IsActive
                         && (
                             !gls.Schedule.EffectiveEndDate.HasValue
-                            || gls.Schedule.EffectiveEndDate.Value >= RockDateTime.Now
+                            || gls.Schedule.EffectiveEndDate.Value >= startOfToday
                         )
                     )
                 )
                 /*
-                 * We've now filtered out any past opportunities if indicated by selectionConfig.HidePastOpportunties.
-                 * If not, we have all opportunites (GroupLocationSchedules): past, present and future.
+                 * If indicated by selectionConfig.HidePastOpportunities, we've now filtered out any past opportunities.
+                 * If not, we have all opportunities (GroupLocationSchedules): past, present and future.
                  */
                 .Select( gls => new
                 {
                     GroupId = gls.Group.Id,
-                    LocationId = gls.Location.Id,
+                    gls.LocationId,
                     ScheduleId = gls.Schedule.Id,
                     Members = gls.Group.Members
                         .SelectMany( gm => gm.GroupMemberAssignments, ( gm, gma ) => new
@@ -398,7 +424,8 @@ function() {
                             Assignment = gma
                         } )
                         .Where( gmas =>
-                            gmas.Assignment.LocationId == gls.Location.Id
+                            !gmas.GroupMember.Person.IsDeceased
+                            && gmas.Assignment.LocationId == gls.LocationId
                             && gmas.Assignment.ScheduleId == gls.Schedule.Id
                         )
                         .Select( gmas => new

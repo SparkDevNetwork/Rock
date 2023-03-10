@@ -25,6 +25,6 @@ namespace Rock.Transactions
         /// <summary>
         /// Called when the transaction is about to be placed into the queue.
         /// </summary>
-        void WillEnqueue();
+        void OnEnqueue();
     }
 }

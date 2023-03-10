@@ -264,7 +264,6 @@ export default defineComponent({
             // exist in the array of filters.
             for (const f of collectionFilters) {
                 if (!newFilters.some(a => a.sourceKey === f.value)) {
-                    console.log("filters missing", f, newFilters);
                     newFilters.push({
                         show: false,
                         sourceKey: f.value,

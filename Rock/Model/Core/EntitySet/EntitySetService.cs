@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -215,6 +217,119 @@ namespace Rock.Model
             launchWorkflowsTransaction.InitiatorPersonAliasId = initiatorPersonAliasId;
             // Queue a transaction to launch workflow
             launchWorkflowsTransaction.Enqueue();
+        }
+
+        /// <summary>
+        /// Creates an entity set from a list of entity item IDs and an entity type ID.
+        /// </summary>
+        /// <param name="entityItemIds">The list of entity item IDs to include in the entity set.</param>
+        /// <param name="entityTypeId">The ID of the entity type of the entity set.</param>
+        /// <param name="rockContext">The optional rock context to use for the operation.</param>
+        /// <returns>The ID of the newly created entity set, or null if it was unable to create.</returns>
+        [RockInternal("1.15")]
+        internal static int? CreateEntitySetFromItems( List<int> entityItemIds, int entityTypeId, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            return CreateEntitySetFromItemIds( entityItemIds, entityTypeId, rockContext )?.Id;
+        }
+
+        /// <summary>
+        /// Creates an entity set from a list of entity item GUIDs and an entity type GUID.
+        /// </summary>
+        /// <param name="entityItemGuids">The list of entity item GUIDs to include in the entity set.</param>
+        /// <param name="entityTypeGuid">The GUID of the entity type of the entity set.</param>
+        /// <param name="rockContext">The optional rock context to use for the operation.</param>
+        /// <returns>The GUID of the newly created entity set, or null if the entity service for the entity type was not found.</returns>
+        [RockInternal( "1.15" )]
+        internal static Guid? CreateEntitySetFromItems( List<Guid> entityItemGuids, Guid entityTypeGuid, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            // Get the entity type from its GUID.
+            var entityType = EntityTypeCache.Get( entityTypeGuid );
+
+            // Dynamically get the IService for the entity type and then get a queryable to load the entities.
+            var entityService = Rock.Reflection.GetServiceForEntityType( entityType.GetEntityType(), rockContext );
+            var asQueryableMethod = entityService?.GetType().GetMethod( "Queryable", Array.Empty<Type>() );
+
+            // If the entity service is null, then the entity type is not a valid IEntity type.
+            if ( asQueryableMethod == null )
+            {
+                return null;
+            }
+
+            // Get a queryable for the IEntity type.
+            var entityQry = ( IQueryable<IEntity> ) asQueryableMethod.Invoke( entityService, Array.Empty<object>() );
+
+            var entityIds = new List<int>();
+            while ( entityItemGuids.Any() )
+            {
+                // Load at most 1,000 entities at a time since it performs better than loading all of them at once.
+                var guidsToProcess = entityItemGuids.Take( 1_000 ).ToList();
+                entityItemGuids = entityItemGuids.Skip( 1_000 ).ToList();
+
+                // Load all the entities from the GUIDs.
+                var ids = entityQry
+                    .AsNoTracking()
+                    .Where( e => guidsToProcess.Contains( e.Guid ) )
+                    .Select( e => e.Id )
+                    .ToList();
+
+                entityIds.AddRange( ids );
+            }
+
+            // Create an entity set from the entity item IDs.
+            return CreateEntitySetFromItemIds( entityIds, entityType.Id, rockContext )?.Guid;
+        }
+
+        /// <summary>
+        /// Creates an entity set and returns the ID and Guid of that entity set.
+        /// </summary>
+        /// <param name="entityItemIds">The entity item ids.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The Guid and the Id of the entity set that was created, or null if it was unable to create.</returns>
+        private static (int Id, Guid Guid)? CreateEntitySetFromItemIds( List<int> entityItemIds, int entityTypeId, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            // Create the entity set and set the default expiration date.
+            var entitySet = new Rock.Model.EntitySet();
+            entitySet.EntityTypeId = entityTypeId;
+            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+
+            // For each entity item id, add a new entity set item to the entity set.
+            List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
+            foreach ( var entityItemId in entityItemIds )
+            {
+                try
+                {
+                    var item = new Rock.Model.EntitySetItem();
+                    item.EntityId = ( int ) entityItemId;
+                    entitySetItems.Add( item );
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+
+            if ( entitySetItems.Any() )
+            {
+                var service = new Rock.Model.EntitySetService( rockContext );
+                service.Add( entitySet );
+                rockContext.SaveChanges();
+                entitySetItems.ForEach( a =>
+                {
+                    a.EntitySetId = entitySet.Id;
+                } );
+
+                rockContext.BulkInsert( entitySetItems );
+
+                return (entitySet.Id, entitySet.Guid);
+            }
+
+            return null;
         }
 
         /// <summary>

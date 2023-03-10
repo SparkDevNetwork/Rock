@@ -614,6 +614,16 @@ namespace RockWeb.Blocks.Crm
         public string NickName { get; set; }
 
         /// <summary>
+        /// Gets or sets the initials of the person.
+        /// </summary>
+        public string Initials {
+            get
+            {
+                return $"{NickName.Truncate( 1, false )}{LastName.Truncate( 1, false )}";
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is business.
         /// </summary>
         /// <value>
@@ -646,16 +656,7 @@ namespace RockWeb.Blocks.Crm
         {
             get
             {
-                if ( RecordTypeValueId.HasValue )
-                {
-                    var recordType = DefinedValueCache.Get( RecordTypeValueId.Value );
-                    if ( recordType != null )
-                    {
-                        return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid, this.AgeClassification, 200, 200 );
-                    }
-                }
-
-                return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, null, this.AgeClassification, 200, 200 );
+                return Person.GetPersonPhotoUrl( this.Initials, this.PhotoId, this.Age, this.Gender, this.RecordTypeValueId, this.AgeClassification );
             }
             private set { }
         }

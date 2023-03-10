@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.WorkFlow
 
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If enabled, prevents the use of captcha verification on the form.",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         Key = AttributeKey.DisableCaptchaSupport,
         DefaultBooleanValue = false,
         Order = 8

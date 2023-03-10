@@ -650,8 +650,13 @@ namespace RockWeb.Blocks.Crm
             }
 
             var processor = this.GetProcessorForCurrentConfiguration( HttpContext.Current.Request );
-            var progress = new TaskActivityProgress( RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Clients.Client( tapReporter.ConnectionId ) );
-            tapReporter.TaskId = progress.TaskId;
+            TaskActivityProgress progress = null;
+            
+            if ( tapReporter.ConnectionId.IsNotNullOrWhiteSpace() )
+            {
+                progress = new TaskActivityProgress( RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Clients.Client( tapReporter.ConnectionId ) );
+                tapReporter.TaskId = progress.TaskId;
+            }
 
             // Define a background task for the bulk update process, because it may take considerable time.
             var task = new Task( () =>
@@ -659,6 +664,11 @@ namespace RockWeb.Blocks.Crm
                 // Handle status notifications from the bulk processor.
                 processor.StatusUpdated += ( s, args ) =>
                 {
+                    if ( progress == null )
+                    {
+                        return;
+                    }
+
                     if ( args.UpdateType == PersonBulkUpdateProcessor.ProcessorStatusUpdateTypeSpecifier.Progress )
                     {
                         // Progress Update
@@ -688,7 +698,8 @@ namespace RockWeb.Blocks.Crm
             } );
 
             pnlConfirm.Visible = false;
-            tapReporter.Visible = true;
+            tapReporter.Visible = progress != null;
+            nbTapReportFailed.Visible = progress == null;
 
             // Start the background processing task and complete this request.
             // The task will continue to run until complete, delivering client

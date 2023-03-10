@@ -115,7 +115,7 @@ export default defineComponent({
         const spouseEntry = ref(props.modelValue.spouseEntry?.toString() ?? FormFieldVisibility.Hidden.toString());
         const spouseLabel = ref(props.modelValue.spouseLabel ?? "Spouse");
         const raceEntry = ref(props.modelValue.raceEntry?.toString() ?? FormFieldVisibility.Hidden.toString());
-        const ethnicityEntry = ref(props.modelValue.raceEntry?.toString() ?? FormFieldVisibility.Hidden.toString());
+        const ethnicityEntry = ref(props.modelValue.ethnicityEntry?.toString() ?? FormFieldVisibility.Hidden.toString());
 
         /** The column span class to apply to the columns. */
         const columnClass = computed((): string => props.isVertical ? "col-xs-12" : "col-md-3");

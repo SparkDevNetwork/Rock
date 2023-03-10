@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\Cms\ContentCollectionDetail\CustomFieldFilterBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpDetail\SignUpDetailInitializationBox.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterRequestBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterResponseBag.cs" />
@@ -150,6 +151,8 @@
     <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
     <Compile Include="Blocks\Mobile\Communication\SmsConversationList\PhoneNumberBag.cs" />
     <Compile Include="Blocks\Mobile\Communication\SmsConversation\ConversationDetailBag.cs" />
+    <Compile Include="Cms\ContentCollectionCustomFieldBag.cs" />
+    <Compile Include="Cms\ContentCollectionCustomFieldFilterSettingsBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
     <Compile Include="Core\NotificationMessageActionBag.cs" />
@@ -169,6 +172,9 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\CategorizedValuePickerGetTreeResultsBag.cs" />
+    <Compile Include="Rest\Controls\CategorizedValuePickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CategorizedValuePickerNodeBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerFormatSelectedValueOptionsBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PhoneNumberBoxGetConfigurationResultsBag.cs" />
@@ -505,7 +511,7 @@
     <Compile Include="Rest\Controls\AchievementTypePickerGetAchievementTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\BadgeComponentPickerGetBadgeComponentsOptionsBag.cs" />
     <Compile Include="Rest\Controls\BadgeListGetBadgesOptionsBag.cs" />
-    <Compile Include="Rest\Controls\CategoryPickerChildTreeItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CategorizedValuePickerGetTreeOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerGetDefinedValuesOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTagListAddEntityTagOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTagListCreatePersonalTagOptionsBag.cs" />

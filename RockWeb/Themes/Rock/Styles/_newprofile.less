@@ -67,13 +67,20 @@
 .person-profile-row {
   display: flex;
   flex-wrap: wrap;
-  margin: 24px -9px 0;
+  margin: 24px 0 0;
   > * {
     flex-shrink: 0;
     width: 100%;
     max-width: 100%;
-    padding-right: 9px !important;
-    padding-left: 9px !important;
+  }
+
+  @media (min-width: @grid-float-breakpoint) {
+    margin: 24px -9px 0;
+
+    > * {
+      padding-right: 9px !important;
+      padding-left: 9px !important;
+    }
   }
 }
 
@@ -108,6 +115,25 @@
 .person-profile-ext {
   margin-right: 24px;
   margin-left: 24px;
+}
+
+@media (max-width: @grid-float-breakpoint-max) {
+  .person-profile-ext {
+    overflow-x: hidden;
+    margin-left: 0;
+    margin-right: 0;
+
+    > .row {
+      margin-left: 0;
+      margin-right: 0;
+
+      > .col,
+      > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
 }
 
 @media (min-width: 647px) {

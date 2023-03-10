@@ -635,6 +635,184 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Categorized Value Picker
+
+        /// <summary>
+        /// Gets the child items that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "CategorizedValuePickerGetTree" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9294f070-e8c8-48da-bd50-076f26200d75" )]
+        public IHttpActionResult CategorizedValuePickerGetTree( [FromBody] CategorizedValuePickerGetTreeOptionsBag options )
+        {
+
+            // NO Parent -> get roots using DefinedTypeGuid
+            // Parent -> get children of ParentGuid
+            // Eliminate values not in the LimitTo list
+
+            if ( options.DefinedTypeGuid == null )
+            {
+                return BadRequest( "Please provide a Defined Type GUID" );
+            }
+
+            // Get the Defined Type and associated values.
+            var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+
+            if ( definedType == null || !definedType.IsActive )
+            {
+                return BadRequest( "Please provide a valid Defined Type GUID" );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+
+                var definedValueService = new DefinedValueService( rockContext );
+                var definedValues = definedValueService.GetByDefinedTypeGuid( options.DefinedTypeGuid )
+                    .Where( x => x.IsActive )
+                    .OrderBy( x => x.Order )
+                    .ToList();
+
+                // Filter the selectable values.
+                if ( options.OnlyIncludeGuids != null && options.OnlyIncludeGuids.Any() )
+                {
+                    definedValues = definedValues.Where( x => options.OnlyIncludeGuids.Contains( x.Guid ) ).ToList();
+                }
+
+                if ( !definedValues.Any() )
+                {
+                    return NotFound();
+                }
+
+                // Get a list of the Categories associated with the Defined Values.
+                var categories = new Dictionary<int, Category>();
+                var definedValueCategoryIdList = new List<int>();
+
+                foreach ( var definedValue in definedValues )
+                {
+                    if ( definedValue.CategoryId != null )
+                    {
+                        if ( !definedValueCategoryIdList.Contains( definedValue.CategoryId.Value ) )
+                        {
+                            definedValueCategoryIdList.Add( definedValue.CategoryId.Value );
+                        }
+                    }
+                }
+
+                // Retrieve the Category details, including any parent categories required to build the selection tree.
+                var categoryService = new CategoryService( rockContext );
+
+                foreach ( var categoryId in definedValueCategoryIdList )
+                {
+                    // If this category already exists in the categories list, ignore it as an ancestor of a previous category.
+                    if ( categories.ContainsKey( categoryId ) )
+                    {
+                        continue;
+                    }
+
+                    var ancestors = categoryService.GetAllAncestors( categoryId ).ToList();
+                    foreach ( var ancestor in ancestors )
+                    {
+                        if ( !categories.ContainsKey( ancestor.Id ) )
+                        {
+                            categories.Add( ancestor.Id, ancestor );
+                        }
+                    }
+                }
+
+                var categoryItems = new List<CategorizedValuePickerNodeBag>();
+
+                // Create a selection tree structure from the Categories.
+                // Categories are created with a placeholder label which will be replaced by applying the naming rules.
+                foreach ( var category in categories.Values )
+                {
+                    var listItem = new CategorizedValuePickerNodeBag
+                    {
+                        Value = category.Guid.ToString(),
+                        Text = category.Name,
+                        ChildCategories = new List<CategorizedValuePickerNodeBag>(),
+                        ChildValues = new List<CategorizedValuePickerNodeBag>()
+                    };
+
+                    categoryItems.Add( listItem );
+                }
+
+                var root = new CategorizedValuePickerNodeBag
+                {
+                    Value = null,
+                    Text = definedType.Name,
+                    ChildCategories = new List<CategorizedValuePickerNodeBag>(),
+                    ChildValues = new List<CategorizedValuePickerNodeBag>()
+                };
+
+                // Go through the categories and add child categories as children of their parents
+                foreach ( var category in categories.Values )
+                {
+                    var listItem = categoryItems.Find( c => c.Value == category.Guid.ToString() );
+
+                    // No parent? Throw it at the root of the list
+                    if ( category.ParentCategory == null )
+                    {
+                        root.ChildCategories.Add( listItem );
+                    }
+                    // Has a parent. Add it as a child of its parent
+                    else
+                    {
+                        var parent = categoryItems.Find( c => c.Value == category.ParentCategory.Guid.ToString() );
+
+                        parent.ChildCategories.Add( listItem );
+                    }
+                }
+
+                // Go through the defined values and add them as children of their categories
+                foreach ( var definedValue in definedValues )
+                {
+                    var listItem = new CategorizedValuePickerNodeBag
+                    {
+                        Value = definedValue.Guid.ToString(),
+                        Text = definedValue.Value
+                    };
+
+                    // No category? Throw it at the root of the list
+                    if ( definedValue.Category == null )
+                    {
+                        AddDefinedValueToCategoryAndChildCategories( listItem, root );
+                    }
+                    // Has a category. Add it as a child of its category
+                    else
+                    {
+                        var category = categoryItems.Find( c => c.Value == definedValue.Category.Guid.ToString() );
+                        AddDefinedValueToCategoryAndChildCategories( listItem, category );
+                    }
+                }
+
+                return Ok( new CategorizedValuePickerGetTreeResultsBag {
+                    Tree = root,
+                    DefinedType = definedType.Name
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Adds the defined value to its category and all child categories of that category. It's added to the children
+        /// to facilitate the picker showing values from ancestors.
+        /// </summary>
+        /// <param name="definedValue">The defined value.</param>
+        /// <param name="category">The category node.</param>
+        private void AddDefinedValueToCategoryAndChildCategories( CategorizedValuePickerNodeBag definedValue, CategorizedValuePickerNodeBag category )
+        {
+            category.ChildValues.Add( definedValue );
+            foreach ( var childCat in category.ChildCategories )
+            {
+                AddDefinedValueToCategoryAndChildCategories( definedValue, childCat );
+            }
+        }
+
+        #endregion
+
         #region Category Picker
 
         private static readonly Regex QualifierValueLookupRegex = new Regex( "^{EL:((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12})):((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12}))}$", RegexOptions.IgnoreCase );

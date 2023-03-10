@@ -468,11 +468,9 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            var uri = new UriBuilder( outputBinaryFileDoc.Url );
-            var qry = System.Web.HttpUtility.ParseQueryString( uri.Query );
-            qry["attachment"] = true.ToTrueFalse();
-            uri.Query = qry.ToString();
-            Response.Redirect( uri.ToString(), false );
+            var baseUrl = ResolveRockUrl( "~/GetFile.ashx" );
+            var getFileUrl = $"{baseUrl}?Guid={outputBinaryFileDoc.Guid}&attachment=true";
+            Response.Redirect( getFileUrl, false );
             Context.ApplicationInstance.CompleteRequest();
         }
 

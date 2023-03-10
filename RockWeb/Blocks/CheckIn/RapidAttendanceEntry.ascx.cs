@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.CheckIn
 
         #region Properties
 
-        private List<CampusCache> CachedCampuses => CampusCache.All( false);
+        private List<CampusCache> CachedCampuses => CampusCache.All( false );
 
         #endregion Properties
 
@@ -531,7 +531,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( !IsPostBack )
             {
                 _personInputsState = new List<PersonInput>();
-                
+
                 if ( showCampus )
                 {
                     cpCampus.Visible = true;
@@ -1486,15 +1486,8 @@ namespace RockWeb.Blocks.CheckIn
                         }
                     }
 
-                    // Remove any blank numbers
-                    var phoneNumberService = new PhoneNumberService( rockContext );
-                    foreach ( var phoneNumber in person.PhoneNumbers
-                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) && selectedPhoneTypeGuids.Contains( n.NumberTypeValue.Guid ) )
-                        .ToList() )
-                    {
-                        person.PhoneNumbers.Remove( phoneNumber );
-                        phoneNumberService.Delete( phoneNumber );
-                    }
+                    // Remove any duplicates and blank numbers
+                    personService.RemoveEmptyAndDuplicatePhoneNumbers( person, phoneNumberTypeIds, rockContext );
 
                     /* 2020-10-06 MDP
                      To help prevent a person from setting their communication preference to SMS, even if they don't have an SMS number,

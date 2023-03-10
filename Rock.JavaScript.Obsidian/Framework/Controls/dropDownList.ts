@@ -385,6 +385,7 @@ export default defineComponent({
                     :filterOption="filterItem"
                     :mode="mode"
                     :getPopupContainer="getPopupContainer"
+                    showArrow
                     @dropdownVisibleChange="onDropdownVisibleChange">
                     <template #clearIcon>
                         <i class="fa fa-times"></i>
