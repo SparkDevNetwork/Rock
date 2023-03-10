@@ -1,8 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-html="contentTemplate"></div>
-    <div ref="itemContainer" class="realtime-visualizer-container" style="--animation-translate-size: 300px; --animation-duration: 0.6s;">
-    </div>
+    <div ref="visualizerContainer"
+         :id="visualizerId"
+         :style="containerStyles"
+         v-html="contentTemplate"></div>
 </template>
 
 <style>
@@ -78,11 +79,10 @@
 .realtime-visualizer-container > .realtime-visualizer-item.out {
     transition: opacity var(--animation-duration) ease-in, transform var(--animation-duration) ease-in, height var(--animation-duration) ease-in;
 }
-
 </style>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { ref, unref } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -94,9 +94,12 @@
     };
 
     type Configuration = {
-        resolve: boolean;
-        javaScript: string;
+        hasItemTemplate: boolean;
+        pageTemplate: string;
+        script: string;
+        style: string;
         topics: string[];
+        settings: Record<string, string>;
     };
 
     const config = useConfigurationValues<Configuration>();
@@ -105,13 +108,14 @@
     // #region Values
 
     let realTimeTopics: Record<string, ITopic> = {};
-    const messages = ref<Message[]>([]);
     const isReconnecting = ref(false);
     const isAutoConnecting = ref(false);
     const isDisconnected = ref(false);
-    const contentTemplate = ref("");
+    const contentTemplate = ref(config.pageTemplate);
     const showMessageFunctionName = `showMessage${newGuid().replace(/-/g, "")}`;
-    const itemContainer = ref<HTMLElement | null>(null);
+    const visualizerContainer = ref<HTMLElement | null>(null);
+    const visualizerId = `visualizer-${newGuid()}`;
+    const containerStyles: Record<string, string> = {};
 
     // #endregion
 
@@ -186,7 +190,7 @@
         // by nesting the custom JavaScript from the block settings and then
         // returning the showMessage function if it is defined. This ensures
         // that we don't pollute the global namespace.
-        const script = `window["${showMessageFunctionName}"] = (function() { ${config.javaScript}; return typeof showMessage !== "undefined" ? showMessage : function () {}; })();`;
+        const script = `window["${showMessageFunctionName}"] = (function() { ${config.script}; return typeof showMessage !== "undefined" ? showMessage : function () {}; })();`;
 
         const scriptNode = document.createElement("script");
         scriptNode.type = "text/javascript";
@@ -194,12 +198,67 @@
         document.body.appendChild(scriptNode);
     }
 
+    function injectStyleTag(): void {
+        const styleNode = document.createElement("style");
+        const css = scopeCss(config.style, `#${visualizerId}`);
+        styleNode.appendChild(document.createTextNode(css));
+        document.body.appendChild(styleNode);
+    }
+
     /**
+     * Shows the message that was received.
      *
      * @param content The content to be shown.
      */
     function showMessage(content: unknown): void {
-        window[showMessageFunctionName](content, itemContainer.value);
+        if (visualizerContainer.value) {
+            window[showMessageFunctionName](content,
+                visualizerContainer.value,
+                unref(config.settings));
+        }
+    }
+
+    function scopeCss(css: string, parent: string): string {
+        css = css.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g, parent + " $1$2");
+
+        //regexp.escape
+        var parentRe = parent.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+        //replace self-selectors
+        css = css.replace(new RegExp("(" + parentRe + ")\\s*\\1(?=[\\s\\r\\n,{])", "g"), "$1");
+
+        //revoke wrongly replaced @ statements, like @supports, @import, @media etc.
+        css = css.replace(new RegExp("(" + parentRe + ")\\s*@", "g"), "@");
+
+        //revoke wrongly replaced :root blocks
+        css = css.replace(new RegExp("(" + parentRe + ")\\s*:root", "g"), ":root");
+
+        //animations: prefix animation anmes
+        const animations: string[] = [];
+        const animationNameRe = /@keyframes\s+([a-zA-Z0-9_-]+)\s*{/g;
+        let match: RegExpExecArray | null;
+        while ((match = animationNameRe.exec(css)) !== null) {
+            if (animations.indexOf(match[1]) < 0) {
+                animations.push(match[1]);
+            }
+        }
+
+        var slug = parent.replace(/[^A-Za-z0-9\s]/g, "")
+            .trim()
+            .replace(/\s+/g, "-");
+
+        animations.forEach(function (name) {
+            var newName = `${slug}-${name}`;
+
+            css = css.replace(new RegExp("(@keyframes\\s+)" + name + "(\\s*{)", "g"),
+                "$1" + newName + "$2");
+            css = css.replace(new RegExp("(animation(?:-name)?\\s*:[^;]*\\s*)" + name + "([\\s;}])", "g"),
+                "$1" + newName + "$2");
+        });
+        //animation: revoke wrongly replaced keyframes
+        css = css.replace(new RegExp("(" + parentRe + " )(\\s*(?:to|from|[+-]?(?:(?:\\.\\d+)|(?:\\d+(?:\\.\\d*)?))%))(?=[\\s\\r\\n,{])", "g"), "$2");
+
+        return css;
     }
 
     // #endregion
@@ -214,7 +273,7 @@
      * @param args The arguments that were passed to the message.
      */
     async function onMessageReceived(topicIdentifier: string, message: string, args: unknown[]): Promise<void> {
-        if (config.resolve) {
+        if (config.hasItemTemplate) {
             const result = await invokeBlockAction<string>("Resolve", {
                 topicIdentifier,
                 message,
@@ -236,7 +295,12 @@
 
     // #endregion
 
+    for (const k in config.settings) {
+        containerStyles[`--${k}`] = config.settings[k];
+    }
+
     injectScriptTag();
+    injectStyleTag();
 
     startConnect(false);
 </script>

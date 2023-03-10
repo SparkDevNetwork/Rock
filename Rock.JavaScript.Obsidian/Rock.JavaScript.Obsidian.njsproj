@@ -179,6 +179,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Mobile\Communication\" />
     <Folder Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversation\" />
+    <Folder Include="Framework\ViewModels\Blocks\Utility\" />
     <Folder Include="Framework\ViewModels\Cms\" />
     <Folder Include="Framework\ViewModels\Communication\" />
     <Folder Include="Framework\ViewModels\Connection\" />
@@ -664,6 +665,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\remoteLoginStartResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversationList\phoneNumberBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversation\conversationDetailBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\customSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\customSettingsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\themeListItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\blockCustomActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionAttributeFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionCustomFieldBag.d.ts" />

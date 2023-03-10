@@ -23,11 +23,15 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.RealTime;
-using Rock.ViewModels.Utility;
+using Rock.ViewModels.Blocks.Utility.RealTimeVisualizer;
+using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Cms;
 using Rock.Web.Cache;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Utility
 {
@@ -59,25 +63,31 @@ namespace Rock.Blocks.Utility
         Order = 1,
         Key = AttributeKeys.Template )]
 
-    [BlockTemplateField( "Display Script",
-        Description = "The JavaScript that will be used to display the rendered message. The function 'showMessage' will be called.",
-        TemplateBlockValueGuid = "961e542b-14e5-4d5c-8a03-90ecc175593e",
-        DefaultValue = "",
-        IsRequired = true,
-        Order = 2,
-        Key = AttributeKeys.DisplayScript )]
-
     [LavaCommandsField( "Enabled Lava Commands",
         Description = "The Lava commands that should be enabled for this block.",
         IsRequired = false,
         Key = AttributeKeys.EnabledLavaCommands,
-        Order = 3 )]
+        Order = 2 )]
+
+    [TextField( "Theme",
+        Description = "The theme of the visualizer when rendering items.",
+        DefaultValue = "",
+        IsRequired = true,
+        Category = "CustomSetting",
+        Key = AttributeKeys.Theme )]
+
+    [TextField( "Theme Settings",
+        Description = "The custom settings for the selected theme.",
+        DefaultValue = "",
+        IsRequired = false,
+        Category = "CustomSetting",
+        Key = AttributeKeys.ThemeSettings )]
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "77f4ea4a-ce87-4309-a7a0-2a1a75ab61cd" )]
     [Rock.SystemGuid.BlockTypeGuid( "ce185083-df13-48f9-8c97-83eda1ca65c2" )]
-    public class RealTimeVisualizer : RockObsidianDetailBlockType
+    public class RealTimeVisualizer : RockObsidianDetailBlockType, IHasCustomActions
     {
         #region Keys
 
@@ -85,8 +95,10 @@ namespace Rock.Blocks.Utility
         {
             public const string Channels = "Channels";
             public const string Template = "Template";
-            public const string DisplayScript = "DisplayScript";
             public const string EnabledLavaCommands = "EnabledLavaCommands";
+
+            public const string Theme = "Theme";
+            public const string ThemeSettings = "ThemeSettings";
         }
 
         #endregion
@@ -103,14 +115,6 @@ namespace Rock.Blocks.Utility
         /// </value>
         protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
-        /// <summary>
-        /// Gets the JavaScript to use when displaying messages.
-        /// </summary>
-        /// <value>
-        /// The JavaScript to use when displaying messages.
-        /// </value>
-        protected string DisplayScript => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.DisplayScript ) );
-
         #endregion
 
         #region Methods
@@ -118,43 +122,153 @@ namespace Rock.Blocks.Utility
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
+            var theme = GetThemeTemplate();
+            var settings = GetCurrentSettings( theme );
+            var mergeFields = RequestContext.GetCommonMergeFields();
+
+            mergeFields.Add( "Settings", settings );
+
             return new
             {
-                Resolve = Template.IsNotNullOrWhiteSpace(),
-                Topics = GetTopicsAndChannels().Select( t => t.Topic ).ToList(),
-                JavaScript = DisplayScript ?? ""
+                HasItemTemplate = Template.IsNotNullOrWhiteSpace(),
+                Topics = GetTopicsAndChannels().Select( t => t.Topic ).Distinct().ToList(),
+                PageTemplate = theme.PageTemplate?.ResolveMergeFields( mergeFields ) ?? string.Empty,
+                Script = theme.Script ?? string.Empty,
+                Style = theme.Style?.ResolveMergeFields( mergeFields ) ?? string.Empty,
+                Settings = GetCurrentSettings( theme )
             };
+        }
+
+        private List<KeyValuePair<string, string>> GetKeyValueList( string dataValue )
+        {
+            var valuePairs = dataValue?.Split( '|' ) ?? new string[0];
+            var values = new List<KeyValuePair<string, string>>();
+
+            foreach ( string valuePair in valuePairs )
+            {
+                var keyAndValue = valuePair.Split( new char[] { '^' } );
+
+                // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
+                keyAndValue = keyAndValue.Select( s => s.GetFullyUrlDecodedValue() ).ToArray();
+
+                if ( keyAndValue.Length != 2 )
+                {
+                    continue;
+                }
+
+                var key = keyAndValue[0];
+                var value = keyAndValue[1];
+
+                if ( key.IsNullOrWhiteSpace() || value.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                values.Add( new KeyValuePair<string, string>( key, value ) );
+            }
+
+            return values;
         }
 
         private List<(string Topic, string Channel)> GetTopicsAndChannels()
         {
-            var channelValues = GetAttributeValue( AttributeKeys.Channels )?.Split( '|' ) ?? new string[0];
-            var topicsAndChannels = new List<(string Topic, string Channel)>();
+            return GetKeyValueList( GetAttributeValue( AttributeKeys.Channels ) )
+                .Where( kv => kv.Value.IsNotNullOrWhiteSpace() )
+                .Select( kv => (kv.Key, kv.Value) )
+                .ToList();
+        }
 
-            foreach ( string channelValue in channelValues )
+        private ThemeTemplate GetThemeTemplate()
+        {
+            var themeValue = GetAttributeValue( AttributeKeys.Theme );
+
+            if ( Guid.TryParse( themeValue, out var themeGuid ) )
             {
-                var topicAndChannel = channelValue.Split( new char[] { '^' } );
+                var dv = DefinedValueCache.Get( themeGuid );
 
-                // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
-                topicAndChannel = topicAndChannel.Select( s => s.GetFullyUrlDecodedValue() ).ToArray();
-
-                if ( topicAndChannel.Length != 2 )
+                if ( dv == null )
                 {
-                    continue;
+                    return new ThemeTemplate();
                 }
 
-                var topicIdentifier = topicAndChannel[0];
-                var channelName = topicAndChannel[1];
+                var settings = new Dictionary<string, string>();
 
-                if ( topicIdentifier.IsNullOrWhiteSpace() || channelName.IsNullOrWhiteSpace() )
+                foreach ( var setting in GetKeyValueList( dv.GetAttributeValue( "Settings" ) ) )
                 {
-                    continue;
+                    settings.AddOrReplace( setting.Key, setting.Value );
                 }
 
-                topicsAndChannels.Add( (topicIdentifier, channelName) );
+                return new ThemeTemplate
+                {
+                    PageTemplate = dv.GetAttributeValue( "PageTemplate" ),
+                    Script = dv.GetAttributeValue( "Script" ),
+                    Style = dv.GetAttributeValue( "Style" ),
+                    Settings = settings
+                };
             }
 
-            return topicsAndChannels;
+            return themeValue.FromJsonOrNull<ThemeTemplate>() ?? new ThemeTemplate();
+        }
+
+        private Dictionary<string, string> GetCurrentSettings( ThemeTemplate theme )
+        {
+            var settings = GetAttributeValue( AttributeKeys.ThemeSettings )
+                .FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+            foreach ( var kvp in theme.Settings )
+            {
+                settings.AddOrIgnore( kvp.Key, kvp.Value );
+            }
+
+            return settings;
+        }
+
+        private List<ThemeListItemBag> GetThemeBags()
+        {
+            return DefinedTypeCache.Get( Guid.Parse( "b8a57dfe-827a-40c1-b8de-f6ea0c50b864" ) )
+                .DefinedValues
+                .Select( dv => new ThemeListItemBag
+                {
+                    Value = dv.Guid.ToString(),
+                    Text = dv.Value,
+                    Settings = GetKeyValueList( dv.GetAttributeValue( "Settings" ) )
+                        .Select( kvp => kvp.Key )
+                        .ToList()
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            return new Rock.Security.SecurityGrant()
+                .ToToken();
+        }
+
+        #endregion
+
+        #region IHasCustomActions
+
+        /// <inheritdoc/>
+        List<BlockCustomActionBag> IHasCustomActions.GetCustomActions( bool canEdit, bool canAdministrate )
+        {
+            var actions = new List<BlockCustomActionBag>();
+
+            if ( canAdministrate )
+            {
+                actions.Add( new BlockCustomActionBag
+                {
+                    IconCssClass = "fa fa-edit",
+                    Tooltip = "Settings",
+                    ComponentFileUrl = "/Obsidian/Blocks/Utility/realTimeVisualizerCustomSettings.obs"
+                } );
+            }
+
+            return actions;
         }
 
         #endregion
@@ -206,6 +320,126 @@ namespace Rock.Blocks.Utility
             var result = Template.ResolveMergeFields( mergeFields, null, enabledLavaCommands ).Trim();
 
             return ActionOk( result );
+        }
+
+        /// <summary>
+        /// Gets the values and all other required details that will be needed
+        /// to display the custom settings modal.
+        /// </summary>
+        /// <returns>A box that contains the custom settings values and additional data.</returns>
+        [BlockAction]
+        public BlockActionResult GetCustomSettings()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    return ActionForbidden( "Not authorized to edit block settings." );
+                }
+
+                var options = new CustomSettingsOptionsBag
+                {
+                    Themes = GetThemeBags()
+                };
+
+                var settings = new CustomSettingsBag
+                {
+                };
+
+                var themeGuid = GetAttributeValue( AttributeKeys.Theme ).AsGuidOrNull();
+                var theme = GetThemeTemplate();
+
+                if ( themeGuid.HasValue )
+                {
+                    settings.ThemeGuid = themeGuid.Value;
+                    settings.ThemeSettings = GetAttributeValue( AttributeKeys.ThemeSettings )
+                        .FromJsonOrNull<Dictionary<string, string>>()
+                        ?? new Dictionary<string, string>();
+                }
+                else
+                {
+                    settings.PageTemplate = theme.PageTemplate;
+                    settings.Script = theme.Script;
+                    settings.Style = theme.Style;
+                    settings.ThemeSettings = new Dictionary<string, string>();
+                }
+
+                return ActionOk( new CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>
+                {
+                    Settings = settings,
+                    Options = options,
+                    SecurityGrantToken = GetSecurityGrantToken()
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Saves the updates to the custom setting values for this block.
+        /// </summary>
+        /// <param name="box">The box that contains the setting values.</param>
+        /// <returns>A response that indicates if the save was successful or not.</returns>
+        [BlockAction]
+        public BlockActionResult SaveCustomSettings( CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag> box )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    return ActionForbidden( "Not authorized to edit block settings." );
+                }
+
+                var block = new BlockService( rockContext ).Get( BlockId );
+                block.LoadAttributes( rockContext );
+
+                if ( box.IsValidProperty( nameof( box.Settings.ThemeGuid ) ) )
+                {
+                    if ( box.Settings.ThemeGuid.HasValue )
+                    {
+                        if ( !box.IsValidProperty( nameof( box.Settings.ThemeSettings ) ) )
+                        {
+                            return ActionBadRequest( $"{nameof( box.Settings.ThemeSettings )} is required if {nameof( box.Settings.ThemeGuid )} has a value." );
+                        }
+
+                        block.SetAttributeValue( AttributeKeys.Theme, box.Settings.ThemeGuid.ToString() );
+                        block.SetAttributeValue( AttributeKeys.ThemeSettings, box.Settings.ThemeSettings.ToJson() );
+                    }
+                    else
+                    {
+                        var theme = block.GetAttributeValue( AttributeKeys.Theme ).FromJsonOrNull<ThemeTemplate>() ?? new ThemeTemplate();
+
+                        box.IfValidProperty( nameof( box.Settings.PageTemplate ),
+                            () => theme.PageTemplate = box.Settings.PageTemplate );
+
+                        box.IfValidProperty( nameof( box.Settings.Script ),
+                            () => theme.Script = box.Settings.Script );
+
+                        box.IfValidProperty( nameof( box.Settings.Style ),
+                            () => theme.Style = box.Settings.Style );
+
+                        block.SetAttributeValue( AttributeKeys.Theme, theme.ToJson() );
+                        block.SetAttributeValue( AttributeKeys.ThemeSettings, "" );
+                    }
+                }
+
+                block.SaveAttributeValues( rockContext );
+
+                return ActionOk();
+            }
+        }
+
+        #endregion
+
+        #region Support Classes
+
+        private class ThemeTemplate
+        {
+            public string PageTemplate { get; set; } = string.Empty;
+
+            public string Style { get; set; } = string.Empty;
+
+            public string Script { get; set; } = string.Empty;
+
+            public Dictionary<string, string> Settings { get; set; } = new Dictionary<string, string>();
         }
 
         #endregion

@@ -1,0 +1,229 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen"
+           title="Real Time Visualizer Settings"
+           :saveText="saveButtonText"
+           @save="onSave">
+
+        <Alert v-if="errorMessage"
+               v-text="errorMessage"
+               alertType="warning" />
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <div v-else>
+
+            <DropDownList v-model="themeGuid"
+                          label="Theme"
+                          rules="required"
+                          :items="themeItems"
+                          showBlankItem />
+
+            <div v-if="themeGuid === customThemeGuid">
+                <CodeEditor v-model="pageTemplate"
+                            label="Page Template"
+                            mode="lava"
+                            rules="required" />
+
+                <CodeEditor v-model="style"
+                            label="Style"
+                            mode="text" />
+
+                <CodeEditor v-model="script"
+                            label="Script"
+                            mode="javascript" />
+            </div>
+
+            <div v-else-if="themeGuid">
+                <KeyValueList v-model="themeSettings"
+                              label="Theme Settings"
+                              :valueOptions="themeSettingsItems"
+                              displayValueFirst
+                              fullWidth />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import Alert from "@Obsidian/Controls/alert.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
+    import Modal from "@Obsidian/Controls/modal";
+    import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/customSettingsBag";
+    import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/customSettingsOptionsBag";
+    import { ThemeListItemBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/themeListItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+
+
+    const emit = defineEmits<{
+        (e: "close"): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(null);
+    const reloadBlock = useReloadBlock();
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const isLoading = ref(true);
+    const isModalOpen = ref(true);
+
+    const customThemeGuid = newGuid();
+    const themeGuid = ref("");
+    const systemThemes = ref<ThemeListItemBag[]>([]);
+    const pageTemplate = ref("");
+    const style = ref("");
+    const script = ref("");
+    const themeSettings = ref<KeyValueItem[]>([]);
+    const themeSettingsItems = ref<ListItemBag[]>([]);
+    let originalSelectedThemeGuid: string = "";
+    let originalSelectedThemeSettings: KeyValueItem[] = [];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || !isLoading.value ? "Save" : "";
+    });
+
+    const themeItems = computed((): ListItemBag[] => {
+        const items: ListItemBag[] = [
+            {
+                value: customThemeGuid,
+                text: "Custom"
+            },
+            ...systemThemes.value
+        ];
+
+        return items;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Begins loading the current settings in the background so that the UI
+     * can be displayed.
+     */
+    const startLoading = async (): Promise<void> => {
+        const result = await invokeBlockAction<CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>>("GetCustomSettings");
+
+        if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+            // Set the values for the UI.
+            themeGuid.value = result.data.settings.themeGuid ?? "";
+            pageTemplate.value = result.data.settings.pageTemplate ?? "";
+            style.value = result.data.settings.style ?? "";
+            script.value = result.data.settings.script ?? "";
+
+            // Set any additional information required by the UI to paint the
+            // custom settings interface.
+            securityGrant.updateToken(result.data.securityGrantToken);
+
+            originalSelectedThemeGuid = result.data.settings.themeGuid ?? "";
+            originalSelectedThemeSettings = [];
+            if (result.data.settings.themeSettings) {
+                for (const key in result.data.settings.themeSettings) {
+                    originalSelectedThemeSettings.push({
+                        value: key,
+                        key: result.data.settings.themeSettings[key]
+                    });
+                }
+            }
+
+            systemThemes.value = result.data.options.themes ?? [];
+            updateSelectedTheme();
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+
+        isLoading.value = false;
+    };
+
+    function updateSelectedTheme(): void {
+        const theme = systemThemes.value.find(t => areEqual(t.value, themeGuid.value));
+
+        if (!themeGuid.value || !theme || areEqual(themeGuid.value, customThemeGuid)) {
+            themeSettings.value = [];
+            themeSettingsItems.value = [];
+
+            return;
+        }
+
+        themeSettingsItems.value = theme.settings?.map(s => ({
+            value: s,
+            text: s
+        })) ?? [];
+
+        if (areEqual(themeGuid.value, originalSelectedThemeGuid)) {
+            themeSettings.value = originalSelectedThemeSettings;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the person clicks the Save button and all
+     * components have validated their values.
+     */
+    const onSave = async (): Promise<void> => {
+        const box: CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag> = {};
+
+        const settings: Record<string, string> = {};
+
+        for (const setting of themeSettings.value) {
+            if (setting.value) {
+                settings[setting.value] = setting.key ?? "";
+            }
+        }
+
+        setCustomSettingsBoxValue(box, "themeGuid", themeGuid.value);
+        setCustomSettingsBoxValue(box, "pageTemplate", pageTemplate.value);
+        setCustomSettingsBoxValue(box, "style", style.value);
+        setCustomSettingsBoxValue(box, "script", script.value);
+        setCustomSettingsBoxValue(box, "themeSettings", settings);
+
+        const data = {
+            box
+        };
+
+        const result = await invokeBlockAction("SaveCustomSettings", data);
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    };
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    watch(themeGuid, () => {
+        updateSelectedTheme();
+    });
+
+    startLoading();
+</script>
