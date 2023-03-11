@@ -60,6 +60,7 @@
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Cms\BlockTypeDetail.cs" />
+    <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
     <Compile Include="Cms\ContentCollectionView.cs" />
@@ -159,8 +160,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Groups\" />
-    <Folder Include="Utility\" />
-    <Folder Include="Security\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DefaultTvApplication.js" />
