@@ -18,7 +18,7 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
-import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
+import { binaryComparisonTypes, containsComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";
 
@@ -68,6 +68,6 @@ export class ReminderTypesFieldType extends FieldTypeBase {
     }
 
     public override getSupportedComparisonTypes(): ComparisonType {
-        return numericComparisonTypes;
+        return binaryComparisonTypes | containsComparisonTypes;
     }
 }
