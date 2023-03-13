@@ -21,6 +21,7 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import NumberBox from "@Obsidian/Controls/numberBox";
+import DropDownList from "@Obsidian/Controls/dropDownList";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationPropertyKey, ConfigurationValueKey } from "./campusesField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -40,7 +41,8 @@ export const EditComponent = defineComponent({
     name: "CampusesField.Edit",
 
     components: {
-        CheckBoxList
+        CheckBoxList,
+        DropDownList
     },
 
     props: getFieldEditorProps(),
@@ -56,6 +58,10 @@ export const EditComponent = defineComponent({
             catch {
                 return [];
             }
+        });
+
+        const enhance = computed(() => {
+            return props.configurationValues[ConfigurationValueKey.EnhancedSelection] == "True";
         });
 
         const repeatColumns = computed(() => {
@@ -75,12 +81,14 @@ export const EditComponent = defineComponent({
         return {
             internalValue,
             options,
-            repeatColumns
+            repeatColumns,
+            enhance
         };
     },
 
     template: `
-<CheckBoxList v-model="internalValue" horizontal :items="options" :repeatColumns="repeatColumns" />
+<DropDownList v-if="enhance" v-model="internalValue" enhanceForLongLists multiple :items="options" />
+<CheckBoxList v-else v-model="internalValue" horizontal :items="options" :repeatColumns="repeatColumns" />
 `
 });
 
