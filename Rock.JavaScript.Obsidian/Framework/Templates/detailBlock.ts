@@ -228,6 +228,15 @@ export default defineComponent({
         onDelete: {
             type: Function as PropType<() => false | string | PromiseLike<false | string>>,
             required: false
+        },
+
+        /**
+         * An optional string that may be displayed along with the confirmation
+         * question in the modal after the delete is clicked on the entity.
+         */
+        additionalDeleteMessage: {
+            type: String as PropType<string | null>,
+            required: false
         }
     },
 
@@ -638,7 +647,7 @@ export default defineComponent({
          */
         const onDeleteClick = async (): Promise<void> => {
             if (props.onDelete) {
-                if (!await confirmDelete(props.entityTypeName)) {
+                if (!await confirmDelete(props.entityTypeName, props.additionalDeleteMessage ?? "")) {
                     return;
                 }
 

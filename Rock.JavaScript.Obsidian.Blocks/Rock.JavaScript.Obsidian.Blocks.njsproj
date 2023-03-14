@@ -39,6 +39,9 @@
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
+    <Content Include="src\Core\scheduleDetail.obs" />
+    <Content Include="src\Core\ScheduleDetail\editPanel.partial.obs" />
+    <Content Include="src\Core\ScheduleDetail\viewPanel.partial.obs" />
     <Content Include="src\Crm\documentTypeDetail.vue" />
     <Content Include="src\Crm\DocumentTypeDetail\editPanel.partial.vue" />
     <Content Include="src\Crm\DocumentTypeDetail\viewPanel.partial.vue" />
@@ -140,6 +143,7 @@
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
+    <Folder Include="src\Core\ScheduleDetail\" />
     <Folder Include="src\Crm\DocumentTypeDetail\" />
     <Folder Include="src\Core\LocationDetail\" />
     <Folder Include="src\Core\NoteTypeDetail\" />
@@ -244,6 +248,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Core\ScheduleDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Crm\DocumentTypeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\locationDetail.ts" />
     <TypeScriptCompile Include="src\Core\LocationDetail\editPanel.partial.ts" />
