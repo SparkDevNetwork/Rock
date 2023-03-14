@@ -170,11 +170,22 @@ namespace Rock.Blocks.Utility
             return values;
         }
 
-        private List<(string Topic, string Channel)> GetTopicsAndChannels()
+        private string ToKeyValueList( IEnumerable<KeyValuePair<string, string>> items )
+        {
+            return items
+                .Select( item => $"{item.Key.UrlEncode()}^{item.Value.UrlEncode()}" )
+                .JoinStrings( "|" );
+        }
+
+        private List<TopicAndChannelBag> GetTopicsAndChannels()
         {
             return GetKeyValueList( GetAttributeValue( AttributeKeys.Channels ) )
                 .Where( kv => kv.Value.IsNotNullOrWhiteSpace() )
-                .Select( kv => (kv.Key, kv.Value) )
+                .Select( kv => new TopicAndChannelBag
+                {
+                    Topic = kv.Key,
+                    Channel = kv.Value
+                } )
                 .ToList();
         }
 
@@ -235,6 +246,13 @@ namespace Rock.Blocks.Utility
                         .Select( kvp => kvp.Key )
                         .ToList()
                 } )
+                .ToList();
+        }
+
+        private List<string> GetAvailableTopics()
+        {
+            return RealTimeHelper.Engine.GetTopicConfigurations()
+                .Select( tc => tc.TopicIdentifier )
                 .ToList();
         }
 
@@ -339,11 +357,13 @@ namespace Rock.Blocks.Utility
 
                 var options = new CustomSettingsOptionsBag
                 {
-                    Themes = GetThemeBags()
+                    Themes = GetThemeBags(),
+                    Topics = GetAvailableTopics()
                 };
 
                 var settings = new CustomSettingsBag
                 {
+                    TopicConfiguration = GetTopicsAndChannels()
                 };
 
                 var themeGuid = GetAttributeValue( AttributeKeys.Theme ).AsGuidOrNull();
@@ -420,6 +440,14 @@ namespace Rock.Blocks.Utility
                         block.SetAttributeValue( AttributeKeys.ThemeSettings, "" );
                     }
                 }
+
+                box.IfValidProperty( nameof( box.Settings.TopicConfiguration ), () =>
+                {
+                    var topicsAndChannels = box.Settings.TopicConfiguration
+                        .Select( tc => new KeyValuePair<string, string>( tc.Topic, tc.Channel ) );
+
+                    block.SetAttributeValue( AttributeKeys.Channels, ToKeyValueList( topicsAndChannels ) );
+                } );
 
                 block.SaveAttributeValues( rockContext );
 

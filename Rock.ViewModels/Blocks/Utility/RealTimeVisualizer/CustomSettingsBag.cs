@@ -55,5 +55,11 @@ namespace Rock.ViewModels.Blocks.Utility.RealTimeVisualizer
         /// </summary>
         /// <value>The custom theme settings.</value>
         public Dictionary<string, string> ThemeSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the topic configuration for which topics and channels to monitor.
+        /// </summary>
+        /// <value>The topic configuration for which topics and channels to monitor.</value>
+        public List<TopicAndChannelBag> TopicConfiguration { get; set; }
     }
 }

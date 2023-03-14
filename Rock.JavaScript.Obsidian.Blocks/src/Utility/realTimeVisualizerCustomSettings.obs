@@ -13,6 +13,12 @@
 
         <div v-else>
 
+            <KeyValueList v-model="topicConfiguration"
+                              label="Topic Configuration"
+                              :valueOptions="topicConfigurationItems"
+                              displayValueFirst
+                              fullWidth />
+
             <DropDownList v-model="themeGuid"
                           label="Theme"
                           rules="required"
@@ -57,6 +63,7 @@
     import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
     import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/customSettingsBag";
     import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/customSettingsOptionsBag";
+    import { TopicAndChannelBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/topicAndChannelBag";
     import { ThemeListItemBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/themeListItemBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -77,6 +84,8 @@
     const isLoading = ref(true);
     const isModalOpen = ref(true);
 
+    const topicConfiguration = ref<KeyValueItem[]>([]);
+    const topicConfigurationItems = ref<ListItemBag[]>([]);
     const customThemeGuid = newGuid();
     const themeGuid = ref("");
     const systemThemes = ref<ThemeListItemBag[]>([]);
@@ -130,6 +139,8 @@
             // custom settings interface.
             securityGrant.updateToken(result.data.securityGrantToken);
 
+            // Configure the original theme settings. These will be used
+            // when switching back to the original theme.
             originalSelectedThemeGuid = result.data.settings.themeGuid ?? "";
             originalSelectedThemeSettings = [];
             if (result.data.settings.themeSettings) {
@@ -143,6 +154,17 @@
 
             systemThemes.value = result.data.options.themes ?? [];
             updateSelectedTheme();
+
+            // Configure the topics and channels to be monitored.
+            topicConfiguration.value = result.data.settings.topicConfiguration?.map(tc => ({
+                value: tc.topic,
+                key: tc.channel
+            })) ?? [];
+
+            topicConfigurationItems.value = result.data.options.topics?.map(t => ({
+                value: t,
+                text: t
+            })) ?? [];
         }
         else {
             errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
@@ -190,11 +212,17 @@
             }
         }
 
+        const tcs: TopicAndChannelBag[] = topicConfiguration.value.map(tc => ({
+            topic: tc.value,
+            channel: tc.key
+        }));
+
         setCustomSettingsBoxValue(box, "themeGuid", themeGuid.value);
         setCustomSettingsBoxValue(box, "pageTemplate", pageTemplate.value);
         setCustomSettingsBoxValue(box, "style", style.value);
         setCustomSettingsBoxValue(box, "script", script.value);
         setCustomSettingsBoxValue(box, "themeSettings", settings);
+        setCustomSettingsBoxValue(box, "topicConfiguration", tcs);
 
         const data = {
             box

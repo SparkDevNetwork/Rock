@@ -21,29 +21,11 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-import { TopicAndChannelBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/topicAndChannelBag";
+/** A pair that describes a topic and channel to be monitored. */
+export type TopicAndChannelBag = {
+    /** Gets or sets the channel name. */
+    channel?: string | null;
 
-/**
- * The settings that will be edited in the custom settings panel for the
- * Real Time Visualizer block.
- */
-export type CustomSettingsBag = {
-    /** Gets or sets the custom page template. */
-    pageTemplate?: string | null;
-
-    /** Gets or sets the custom script that will show a message. */
-    script?: string | null;
-
-    /** Gets or sets the custom CSS stylesheet content. */
-    style?: string | null;
-
-    /** Gets or sets the unique identifier of the selected theme. */
-    themeGuid?: Guid | null;
-
-    /** Gets or sets the custom theme settings. */
-    themeSettings?: Record<string, string> | null;
-
-    /** Gets or sets the topic configuration for which topics and channels to monitor. */
-    topicConfiguration?: TopicAndChannelBag[] | null;
+    /** Gets or sets the topic identifier. */
+    topic?: string | null;
 };

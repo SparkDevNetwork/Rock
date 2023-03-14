@@ -15,26 +15,23 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
 namespace Rock.ViewModels.Blocks.Utility.RealTimeVisualizer
 {
     /// <summary>
-    /// The additional information required to build the custom settings UI
-    /// for the Real Time Visualizer block.
+    /// A pair that describes a topic and channel to be monitored.
     /// </summary>
-    public class CustomSettingsOptionsBag
+    public class TopicAndChannelBag
     {
         /// <summary>
-        /// Gets or sets the themes that can be picked by the individual.
+        /// Gets or sets the topic identifier.
         /// </summary>
-        /// <value>The themes that can be picked by the individual.</value>
-        public List<ThemeListItemBag> Themes { get; set; }
+        /// <value>The topic identifer.</value>
+        public string Topic { get; set; }
 
         /// <summary>
-        /// Gets or sets the topics that can be picked by the individual.
+        /// Gets or sets the channel name.
         /// </summary>
-        /// <value>The topics that can be picked by the individual.</value>
-        public List<string> Topics { get; set; }
+        /// <value>The channel name.</value>
+        public string Channel { get; set; }
     }
 }

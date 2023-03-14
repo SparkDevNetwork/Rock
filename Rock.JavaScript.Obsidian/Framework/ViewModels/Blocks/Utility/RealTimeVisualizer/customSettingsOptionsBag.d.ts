@@ -30,4 +30,7 @@ import { ThemeListItemBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVi
 export type CustomSettingsOptionsBag = {
     /** Gets or sets the themes that can be picked by the individual. */
     themes?: ThemeListItemBag[] | null;
+
+    /** Gets or sets the topics that can be picked by the individual. */
+    topics?: string[] | null;
 };
