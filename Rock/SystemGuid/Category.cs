@@ -274,6 +274,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string METRIC_HOSTING_METRICS = "370FBBD8-7766-4B3F-81A9-F13EE819A832";
 
+        /// <summary>
+        /// The who we are metrics Category Guid
+        /// </summary>
+        public const string WHO_WE_ARE_KPI = "CEC746EE-76D6-477F-B7CF-374542F92041";
+
         #endregion
 
         #region WorkflowType Categories
