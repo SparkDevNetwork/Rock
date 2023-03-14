@@ -987,6 +987,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\gradePickerGetGradesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetAllForGroupRoleOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetAllForGroupRoleResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetGroupRolesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupTypePickerGetGroupTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionComponentPickerGetInteractionComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationItemPickerGetActiveChildrenOptionsBag.d.ts" />
