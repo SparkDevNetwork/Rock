@@ -234,6 +234,12 @@ namespace Rock.Blocks.Finance
         {
             errorMessage = null;
 
+            if ( !financialPledge.IsValid )
+            {
+                errorMessage = string.Format( "Please correct the following:{0}", financialPledge.ValidationResults.AsDelimited( " ," ) );
+                return false;
+            }
+
             return true;
         }
 
@@ -298,17 +304,27 @@ namespace Rock.Blocks.Finance
                 return null;
             }
 
-            return new FinancialPledgeBag
+            var entityBag = new FinancialPledgeBag
             {
                 IdKey = entity.IdKey,
-                EndDate = entity.EndDate,
                 Group = entity.Group.ToListItemBag(),
                 CurrentPerson = RequestContext.CurrentPerson.ToListItemBag(),
                 PersonAlias = entity.PersonAlias.ToListItemBag(),
                 PledgeFrequencyValue = entity.PledgeFrequencyValue.ToListItemBag(),
-                StartDate = entity.StartDate,
                 TotalAmount = entity.TotalAmount
             };
+
+            if ( entity.StartDate != DateTime.MinValue )
+            {
+                entityBag.StartDate = entity.StartDate;
+            }
+
+            if ( entity.EndDate != DateTime.MinValue )
+            {
+                entityBag.EndDate = entity.EndDate;
+            }
+
+            return entityBag;
         }
 
         /// <summary>
@@ -369,7 +385,7 @@ namespace Rock.Blocks.Finance
                 () => entity.PersonAliasId = box.Entity.PersonAlias.GetEntityId<PersonAlias>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.EndDate ),
-                () => entity.EndDate = box.Entity.EndDate );
+                () => entity.EndDate = box.Entity.EndDate ?? DateTime.MinValue );
 
             box.IfValidProperty( nameof( box.Entity.Group ),
                 () => entity.GroupId = box.Entity.Group.GetEntityId<Group>( rockContext ) );
@@ -378,7 +394,7 @@ namespace Rock.Blocks.Finance
                 () => entity.PledgeFrequencyValueId = box.Entity.PledgeFrequencyValue.GetEntityId<DefinedValue>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.StartDate ),
-                () => entity.StartDate = box.Entity.StartDate );
+                () => entity.StartDate = box.Entity.StartDate ?? DateTime.MinValue );
 
             box.IfValidProperty( nameof( box.Entity.TotalAmount ),
                 () => entity.TotalAmount = box.Entity.TotalAmount );
@@ -681,7 +697,6 @@ namespace Rock.Blocks.Finance
                     // Ensure navigation properties will work now.
                     entity = entityService.Get( entity.Id );
                     entity.LoadAttributes( rockContext );
-
 
                     // populate PledgeFrequencyValue so that Liquid can access it
                     entity.PledgeFrequencyValue = definedValueService.Get( entity.PledgeFrequencyValueId ?? 0 );

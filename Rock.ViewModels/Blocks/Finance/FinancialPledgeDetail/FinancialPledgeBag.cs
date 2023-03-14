@@ -55,7 +55,7 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
         /// <summary>
         /// Gets or sets the end date of the pledge period.
         /// </summary>
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the Rock.Model.Group.
@@ -81,7 +81,7 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
         /// <summary>
         /// Gets or sets the start date of the pledge period.
         /// </summary>
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the pledge amount that is promised to be given.
