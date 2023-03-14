@@ -202,6 +202,7 @@ import RacePicker from "@Obsidian/Controls/racePicker.obs";
 import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
 import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
 import CategorizedValuePicker from "@Obsidian/Controls/categorizedValuePicker.obs";
+import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
 
 // #region Gallery Support
 
@@ -7006,6 +7007,48 @@ const categorizedValuePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+
+/** Demonstrates group role picker */
+const groupRolePickerGallery = defineComponent({
+    name: "GroupRolePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        GroupRolePicker,
+        TextBox
+    },
+    setup() {
+        return {
+            multiple: ref(true),
+            value: ref(null),
+            required: ref(false),
+            importCode: getSfcControlImportPath("groupRolePicker"),
+            exampleCode: `<GroupRolePicker label="Group Type and Role" v-model="value" :definedTypeGuid="DefinedType.PowerbiAccounts" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <GroupRolePicker label="Group Type and Role" v-model="value" :definedTypeGuid="definedType" :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
     attributeValuesContainerGallery,
@@ -7136,6 +7179,7 @@ const controlGalleryComponents: Record<string, Component> = [
     mediaElementPickerGallery,
     mergeFieldPickerGallery,
     categorizedValuePickerGallery,
+    groupRolePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
