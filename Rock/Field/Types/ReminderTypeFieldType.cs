@@ -34,10 +34,60 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of reminder types
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "94A5DF3C-A7E0-451E-9DBA-86A6CFD5DF70" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMINDER_TYPE )]
     public class ReminderTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
+        private class ReminderTypeFieldItem
+        {
+            public Guid Guid;
+            public string Name;
+            public string EntityTypeName;
+        }
+
+        #region Configuration
+
+        private const string VALUES_PUBLIC_KEY = "values";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            var publicValues = GetListSource();
+
+            if ( usage == ConfigurationValueUsage.View )
+            {
+                publicValues = publicValues.Where( v => v.Guid == privateValue.AsGuid() ).ToList();
+            }
+
+            publicConfigurationValues[VALUES_PUBLIC_KEY] = publicValues.ToCamelCaseJson( false, true );
+
+            return publicConfigurationValues;
+        }
+
+        /// <summary>
+        /// Gets the list source.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        private List<ReminderTypeFieldItem> GetListSource()
+        {
+            return new ReminderTypeService( new RockContext() )
+                .Queryable().AsNoTracking()
+                .OrderBy( o => o.Name )
+                .Select( o => new ReminderTypeFieldItem
+                {
+                    Guid = o.Guid,
+                    Name = o.Name,
+                    EntityTypeName = o.EntityType.FriendlyName
+                } )
+                .ToList();
+        }
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -163,16 +213,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var types = new ReminderTypeService( new RockContext() )
-                .Queryable().AsNoTracking()
-                .OrderBy( o => o.Name )
-                .Select( o => new
-                {
-                    o.Guid,
-                    o.Name,
-                    EntityTypeName = o.EntityType.FriendlyName,
-                } )
-                .ToList();
+            var types = GetListSource();
 
             if ( types.Any() )
             {

@@ -172,6 +172,7 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\ReminderTypePickerGetReminderTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerGetTreeResultsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerNodeBag.cs" />
