@@ -2352,6 +2352,119 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Role Picker
+
+        /// <summary>
+        /// Gets the group types that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupRolePickerGetGroupTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "56891c9b-f714-4083-8252-4c73b358aa02" )]
+        public IHttpActionResult GroupRolePickerGetGroupTypes( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupTypeService = new Rock.Model.GroupTypeService( rockContext );
+
+                // get all group types that have at least one role
+                var groupTypes = groupTypeService.Queryable()
+                    .Where( a => a.Roles.Any() )
+                    .OrderBy( a => a.Name )
+                    .Select(g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                    .ToList();
+
+                return Ok( groupTypes );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group roles that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupRolePickerGetGroupRoles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "968033ab-2596-4b0c-b06e-2c9cf59949c5" )]
+        public IHttpActionResult GroupRolePickerGetGroupRoles( [FromBody] GroupRolePickerGetGroupRolesOptionsBag options )
+        {
+            return Ok( GroupRolePickerGetGroupRolesForGroupType( options.GroupTypeGuid, options.ExcludeGroupRoles ) );
+        }
+
+        /// <summary>
+        /// Gets the group roles and group type information based on a selected group role.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>All the data for the selected role, selected type, and all of the group roles</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupRolePickerGetAllForGroupRole" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "e55374dd-7715-4392-a162-c40f09d25fc9" )]
+        public IHttpActionResult GroupRolePickerGetAllForGroupRole( [FromBody] GroupRolePickerGetAllForGroupRoleOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                List<Guid> excludeGroupRoles = options.ExcludeGroupRoles;
+
+                var groupRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
+                var groupRole = groupRoleService.Queryable()
+                    .Where( r => r.Guid == options.GroupRoleGuid )
+                    .First();
+
+                var groupType = groupRole.GroupType;
+
+                var groupRoles = GroupRolePickerGetGroupRolesForGroupType( groupType.Guid, excludeGroupRoles, rockContext );
+
+                return Ok( new GroupRolePickerGetAllForGroupRoleResultsBag
+                {
+                    SelectedGroupRole = new ListItemBag { Text = groupRole.Name, Value = groupRole.Guid.ToString()},
+                    SelectedGroupType = new ListItemBag { Text = groupType.Name, Value = groupType.Guid.ToString()},
+                    GroupRoles = groupRoles
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group roles that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="groupTypeGuid">Load group roles of this type</param>
+        /// <param name="excludeGroupRoles">Do not include these roles in the result</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        private List<ListItemBag> GroupRolePickerGetGroupRolesForGroupType( Guid groupTypeGuid, List<Guid> excludeGroupRoles )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return GroupRolePickerGetGroupRolesForGroupType( groupTypeGuid, excludeGroupRoles, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group roles that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="groupTypeGuid">Load group roles of this type</param>
+        /// <param name="excludeGroupRoles">Do not include these roles in the result</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        private List<ListItemBag> GroupRolePickerGetGroupRolesForGroupType( Guid groupTypeGuid, List<Guid> excludeGroupRoles, RockContext rockContext )
+        {
+            var groupRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
+
+            var groupRoles = groupRoleService.Queryable()
+                .Where( r =>
+                    r.GroupType.Guid == groupTypeGuid &&
+                    !excludeGroupRoles.Contains( r.Guid ) )
+                .OrderBy( r => r.Name )
+                .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
+                .ToList();
+
+            return groupRoles;
+        }
+
+        #endregion
+
         #region Interaction Channel Picker
 
         /// <summary>
