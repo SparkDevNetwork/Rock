@@ -36,9 +36,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddPage( Rock.SystemGuid.Page.REPORTING, Rock.SystemGuid.Layout.FULL_WIDTH_INTERNAL_SITE, "Who We Are", "Shows high-level statistics of the Rock database", "721C8E32-CAAD-4670-AD1B-04FC42A26BB2" );
-            RockMigrationHelper.AddBlockType( "Who We Are", "Shows high-level statistics of the Rock database.", "~/Blocks/Reporting/WhoWeAre.ascx", "Reporting", "B215F5FA-410C-4674-8C47-43DC40AF9F67" );
-            RockMigrationHelper.AddBlock( "721C8E32-CAAD-4670-AD1B-04FC42A26BB2", null, "B215F5FA-410C-4674-8C47-43DC40AF9F67", "Who We Are", "Main", "", "", 0, "D916FCD5-F58C-4BCC-87CA-A78595A04734" );
+            RockMigrationHelper.AddPage( Rock.SystemGuid.Page.REPORTING, Rock.SystemGuid.Layout.FULL_WIDTH_INTERNAL_SITE, "Insights", "Shows high-level statistics of the Rock database", "721C8E32-CAAD-4670-AD1B-04FC42A26BB2" );
+            RockMigrationHelper.AddBlockType( "Insights", "Shows high-level statistics of the Rock database.", "~/Blocks/Reporting/Insights.ascx", "Reporting", "B215F5FA-410C-4674-8C47-43DC40AF9F67" );
+            RockMigrationHelper.AddBlock( "721C8E32-CAAD-4670-AD1B-04FC42A26BB2", null, "B215F5FA-410C-4674-8C47-43DC40AF9F67", "Insights", "Main", "", "", 0, "D916FCD5-F58C-4BCC-87CA-A78595A04734" );
 
             AddSchedule();
             AddMetrics();
@@ -50,30 +50,35 @@ namespace Rock.Migrations
 DECLARE @ScheduleId int = ( 
     SELECT [Id] 
     FROM Schedule 
-    WHERE Guid = '{WHO_WE_ARE_SCHEDULE_GUID}'
+    WHERE Guid = '{WHO_WE_ARE_SCHEDULE_GUID}'),
+
+@MetricsCategoryId int = ( 
+    SELECT [Id] 
+    FROM Category 
+    WHERE Guid = '5A794741-5444-43F0-90D7-48E47276D426'
 )
 IF @ScheduleId IS NULL
 BEGIN
 	INSERT [dbo].[Schedule] ([Name], [Description], [iCalendarContent], [CategoryId], [Guid], [IsActive])
-	VALUES (N'Who We Are Metrics Schedule', NULL, N'BEGIN:VCALENDAR
+	VALUES (N'Insights Metrics Schedule', NULL, N'BEGIN:VCALENDAR
 PRODID:-//github.com/rianjs/ical.net//NONSGML ical.net 4.0//EN
 VERSION:2.0
 BEGIN:VEVENT
 DTEND:20230301T050001
 DTSTAMP:20230301T102849
 DTSTART:20230301T050000
-RRULE:FREQ=DAILY
+RRULE:FREQ=MONTHLY;BYMONTHDAY=28
 SEQUENCE:0
 UID:3736edbb-2e51-4114-bd4f-3ed62b98ed12
 END:VEVENT
-END:VCALENDAR
-	', 138, N'{WHO_WE_ARE_SCHEDULE_GUID}', 1)
+END:VCALENDAR',
+@MetricsCategoryId, N'{WHO_WE_ARE_SCHEDULE_GUID}', 1)
 END" );
         }
 
         private void AddMetrics()
         {
-            RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.METRICCATEGORY, "Who We Are Metrics", "fa fa-chart-pie", "A few metrics to show high-level statistics of the Rock database.", SystemGuid.Category.WHO_WE_ARE_KPI );
+            RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.METRICCATEGORY, "Insights Metrics", "fa fa-chart-pie", "A few metrics to show high-level statistics of the Rock database.", SystemGuid.Category.INSIGHTS );
 
             AddGenderMetrics();
             AddConnectionStatusMetric();
@@ -116,7 +121,7 @@ GROUP BY P.[PrimaryCampusId] ORDER BY P.[PrimaryCampusId]";
 ";
 
             // Add Age Range Sub-Category
-            RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.METRICCATEGORY, "Age Range", "fa fa-birthday-cake", "Metrics to show statistics of the age distribution of people in the database.", AGE_RANGE_CATEGORY_GUID, parentCategoryGuid: SystemGuid.Category.WHO_WE_ARE_KPI );
+            RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.METRICCATEGORY, "Age Range", "fa fa-birthday-cake", "Metrics to show statistics of the age distribution of people in the database.", AGE_RANGE_CATEGORY_GUID, parentCategoryGuid: SystemGuid.Category.INSIGHTS );
 
             var zeroTo12RangeSql = string.Format( ageRangeSqlFormat, string.Format( getAgeSqlFormat, "BETWEEN 0 AND 12" ) );
             AddSqlSourcedMetric( "EEDEE264-F49D-46B9-815D-C5DBB5DCC9CE", "0-12", AGE_RANGE_CATEGORY_GUID, zeroTo12RangeSql, new List<PartitionDetails> { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) }, "Active people between the ages of 0 and 12" );
@@ -216,7 +221,7 @@ GROUP BY P.PrimaryCampusId
 ";
 
             // Add Information Completeness Sub-Category
-            RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.METRICCATEGORY, "Information Completeness", "fa fa-info-circle", "Metrics to show statistics of data completeness for people in the database.", INFORMATION_COMPLETENESS_CATEGORY_GUID, parentCategoryGuid: SystemGuid.Category.WHO_WE_ARE_KPI );
+            RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.METRICCATEGORY, "Information Completeness", "fa fa-info-circle", "Metrics to show statistics of data completeness for people in the database.", INFORMATION_COMPLETENESS_CATEGORY_GUID, parentCategoryGuid: SystemGuid.Category.INSIGHTS );
 
             // Add Age Metric
             var ageSql = string.Format( informationCompletenessFormat, "P.[BirthDate] IS NOT NULL" );
@@ -276,7 +281,7 @@ GROUP BY P.PrimaryCampusId";
                 new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ),
             };
 
-            AddSqlSourcedMetric( "7AE9475F-389E-496F-8DF0-508B66ADA6A0", "Active Records", SystemGuid.Category.WHO_WE_ARE_KPI, sql, partitions, "Percentage of people with an active Record status" );
+            AddSqlSourcedMetric( "7AE9475F-389E-496F-8DF0-508B66ADA6A0", "Active Records", SystemGuid.Category.INSIGHTS, sql, partitions, "Percentage of people with an active Record status" );
         }
 
         private void AddEthnicityMetric()
@@ -307,7 +312,7 @@ GROUP BY  P.[PrimaryCampusId], P.[EthnicityValueId] ORDER BY P.[PrimaryCampusId]
                 new PartitionDetails( "Ethnicity", Rock.SystemGuid.EntityType.DEFINED_VALUE, "DefinedTypeId", Rock.SystemGuid.DefinedType.PERSON_ETHNICITY ),
             };
 
-            AddSqlSourcedMetric( "B0420908-6AED-487C-BCA4-9B63EA4F87F5", "Ethnicity", SystemGuid.Category.WHO_WE_ARE_KPI, sql, partitions, "Active people broken down by Ethnicity" );
+            AddSqlSourcedMetric( "B0420908-6AED-487C-BCA4-9B63EA4F87F5", "Ethnicity", SystemGuid.Category.INSIGHTS, sql, partitions, "Active people broken down by Ethnicity" );
         }
 
         private void AddRaceMetric()
@@ -338,7 +343,7 @@ GROUP BY P.[PrimaryCampusId], P.[RaceValueId] ORDER BY P.[PrimaryCampusId]";
                 new PartitionDetails( "Race", Rock.SystemGuid.EntityType.DEFINED_VALUE, "DefinedTypeId", Rock.SystemGuid.DefinedType.PERSON_RACE ),
             };
 
-            AddSqlSourcedMetric( "3EB53204-CED6-4ACF-8045-288BD2EA8E82", "Race", SystemGuid.Category.WHO_WE_ARE_KPI, sql, partitions, "Active people broken down by Race" );
+            AddSqlSourcedMetric( "3EB53204-CED6-4ACF-8045-288BD2EA8E82", "Race", SystemGuid.Category.INSIGHTS, sql, partitions, "Active people broken down by Race" );
         }
 
         private void AddMaritalStatusMetric()
@@ -369,7 +374,7 @@ GROUP BY P.[MaritalStatusValueId], P.[PrimaryCampusId] ORDER BY P.[PrimaryCampus
                 new PartitionDetails( "Marital Status", Rock.SystemGuid.EntityType.DEFINED_VALUE, "DefinedTypeId", Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ),
             };
 
-            AddSqlSourcedMetric( "D9B85AD9-2573-4EAE-8DCF-980FC13B81B5", "Marital Status", SystemGuid.Category.WHO_WE_ARE_KPI, sql, partitions, "Active people broken down by Marital Status" );
+            AddSqlSourcedMetric( "D9B85AD9-2573-4EAE-8DCF-980FC13B81B5", "Marital Status", SystemGuid.Category.INSIGHTS, sql, partitions, "Active people broken down by Marital Status" );
         }
 
         private void AddConnectionStatusMetric()
@@ -400,7 +405,7 @@ GROUP BY  P.[PrimaryCampusId], P.[ConnectionStatusValueId] ORDER BY P.[PrimaryCa
                 new PartitionDetails( "Connection Status", Rock.SystemGuid.EntityType.DEFINED_VALUE, "DefinedTypeId", Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ),
             };
 
-            AddSqlSourcedMetric( "08A7360A-642E-4FA9-A5F8-288496D380EF", "Connection Status", SystemGuid.Category.WHO_WE_ARE_KPI, sql, partitions, "Active people broken down by Connection Status" );
+            AddSqlSourcedMetric( "08A7360A-642E-4FA9-A5F8-288496D380EF", "Connection Status", SystemGuid.Category.INSIGHTS, sql, partitions, "Active people broken down by Connection Status" );
         }
 
         private void AddGenderMetrics()
@@ -427,7 +432,7 @@ WHERE P.[RecordTypeValueId] = @PersonRecordTypeValueId
 GROUP BY P.[PrimaryCampusId] ORDER BY P.[PrimaryCampusId]";
 
             // Add Gender Sub-Category
-            RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.METRICCATEGORY, "Gender", "fa fa-venus-mars", "Metrics to show statistics of the gender distribution of people in the database.", GENDER_CATEGORY_GUID, parentCategoryGuid: SystemGuid.Category.WHO_WE_ARE_KPI );
+            RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.METRICCATEGORY, "Gender", "fa fa-venus-mars", "Metrics to show statistics of the gender distribution of people in the database.", GENDER_CATEGORY_GUID, parentCategoryGuid: SystemGuid.Category.INSIGHTS );
 
             var maleSql = string.Format( genderSqlFormat, "1" );
             AddSqlSourcedMetric( "44A00879-D836-4BA1-8CD1-B74EC2C53D5F", "Men", GENDER_CATEGORY_GUID, maleSql, new List<PartitionDetails> { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) }, "Active people whose gender is male" );
@@ -613,7 +618,7 @@ BEGIN
             RockMigrationHelper.DeleteCategory( GENDER_CATEGORY_GUID );
             RockMigrationHelper.DeleteCategory( AGE_RANGE_CATEGORY_GUID );
             RockMigrationHelper.DeleteCategory( INFORMATION_COMPLETENESS_CATEGORY_GUID );
-            RockMigrationHelper.DeleteCategory( SystemGuid.Category.WHO_WE_ARE_KPI );
+            RockMigrationHelper.DeleteCategory( SystemGuid.Category.INSIGHTS );
         }
 
         private void DeleteMetric( string guid )

@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using Microsoft.Ajax.Utilities;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -30,12 +29,12 @@ using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Reporting
 {
-    [DisplayName( "Who We Are" )]
+    [DisplayName( "Insights" )]
     [Category( "Reporting" )]
     [Description( "Shows high-level statistics of the Rock database." )]
 
     [Rock.SystemGuid.BlockTypeGuid( "B215F5FA-410C-4674-8C47-43DC40AF9F67" )]
-    public partial class WhoWeAre : RockBlock
+    public partial class Insights : RockBlock
     {
         #region Fields
 
@@ -319,18 +318,24 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void GetPercentOfActiveIndividualsWithAssessments( RockContext rockContext, int total )
         {
-            var query = new AssessmentService( rockContext ).Queryable();
             var personRecordDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid();
             var activePersonDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
+            var assessmentQry = new AssessmentService( rockContext ).Queryable()
+                .Where( a => a.PersonAlias.Person.RecordTypeValue.Guid == personRecordDefinedValueGuid
+                    && a.PersonAlias.Person.RecordStatusValue.Guid == activePersonDefinedValueGuid
+                    && !a.PersonAlias.Person.IsDeceased );
+            var assessmentTypeQry = new AssessmentTypeService( rockContext ).Queryable();
 
-            var groupedQuery = query
-                .Where( a =>
-                   a.PersonAlias.Person.RecordTypeValue.Guid == personRecordDefinedValueGuid
-                   && a.PersonAlias.Person.RecordStatusValue.Guid == activePersonDefinedValueGuid
-                   && !a.PersonAlias.Person.IsDeceased )
-                .GroupBy( a => a.AssessmentType.Title ).ToList();
+            // Perform an outer join so we get records for every assessmentType even those with no assessments.
+            var groupedQuery = assessmentTypeQry.GroupJoin( assessmentQry, assessmentType => assessmentType.Id,
+                assessment => assessment.AssessmentTypeId,
+                ( assessmentType, assessments ) => new { AssessmentType = assessmentType, Assessments = assessments } )
+                .SelectMany( assessmentTypeAssessments => assessmentTypeAssessments.Assessments.DefaultIfEmpty(),
+                ( assessmentTypeAssessments, assessment ) => new { AssessmentType = assessmentTypeAssessments.AssessmentType, Assessment = assessment } )
+                .GroupBy( assessmentTypePerson => assessmentTypePerson.AssessmentType.Title )
+                .ToList();
 
-            var dataItems = groupedQuery.Select( a => new DataItem( a.Key, DataItem.GetPercentage( a.Count(), total ) ) ).ToList();
+            var dataItems = groupedQuery.Select( a => new DataItem( a.Key, DataItem.GetPercentage( a.Count( m => m.Assessment != null ), total ) ) ).ToList();
 
             const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' ]}";
             const string noItemsNotification = @"

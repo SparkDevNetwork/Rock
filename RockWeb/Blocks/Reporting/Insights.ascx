@@ -1,11 +1,11 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="WhoWeAre.ascx.cs" Inherits="RockWeb.Blocks.Reporting.WhoWeAre" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Insights.ascx.cs" Inherits="RockWeb.Blocks.Reporting.Insights" %>
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <div class="panel panel-block">
 
             <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
-                    Who We Are
+                    Insights
                 </h1>
             </div>
 
