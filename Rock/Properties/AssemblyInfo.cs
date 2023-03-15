@@ -39,6 +39,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.Performance" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 
 // The following type forwardings were setup in Rock 1.13.0
