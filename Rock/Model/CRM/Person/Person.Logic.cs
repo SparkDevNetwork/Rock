@@ -498,19 +498,20 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
         /// </value>
         [DataMember]
-        [NotMapped]
-        public virtual int? Age
+        public int? Age
         {
             get
             {
-                return Person.GetAge( this.BirthDate, this.DeceasedDate );
+                return _age ?? Person.GetAge( this.BirthDate, this.DeceasedDate );
             }
 
-            private set
+            set
             {
-                // intentionally blank
+                _age = value;
             }
         }
+
+        private int? _age;
 
         /// <summary>
         /// Gets the age of the person in years. For infants under the age of 1, the value returned would be 0.
