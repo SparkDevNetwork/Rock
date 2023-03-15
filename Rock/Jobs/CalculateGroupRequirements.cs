@@ -82,7 +82,7 @@ namespace Rock.Jobs
                 }
 
                 var groupList = groupQuery.Select( a => new { a.Id, a.Name } ).ToList();
-                var groupCount = groupList.Count();
+
                 foreach ( var group in groupList )
                 {
                     this.UpdateLastStatusMessage( $"Calculating group requirement '{groupRequirement.GroupRequirementType.Name}' for {group.Name}" );
@@ -119,29 +119,32 @@ namespace Rock.Jobs
                             break;
                         }
 
-                        var personQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
+                        var groupMembersThatDoNotMeetRequirementsPersonQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
 
-                        var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, group.Id, groupRequirement.GroupRoleId ).ToList();
+                        var personGroupRequirementStatuses = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, groupMembersThatDoNotMeetRequirementsPersonQry, group.Id, groupRequirement.GroupRoleId ).ToList();
 
-                        groupRequirementsCalculatedPersonIds.AddRange( results.Select( a => a.PersonId ).Distinct() );
-                        foreach ( var result in results )
+                        groupRequirementsCalculatedPersonIds.AddRange( personGroupRequirementStatuses.Select( a => a.PersonId ).Distinct() );
+                        foreach ( var personGroupRequirementStatus in personGroupRequirementStatuses )
                         {
                             try
                             {
                                 // Use a fresh rockContext per result so that ChangeTracker doesn't get bogged down.
                                 using ( var rockContextUpdate = new RockContext() )
                                 {
-                                    groupRequirement.UpdateGroupMemberRequirementResult( rockContextUpdate, result.PersonId, group.Id, result.MeetsGroupRequirement );
+                                    groupRequirement.UpdateGroupMemberRequirementResult( rockContextUpdate, personGroupRequirementStatus.PersonId, group.Id, personGroupRequirementStatus.MeetsGroupRequirement );
 
-                                    bool shouldRunNotMetWorkflow = result.MeetsGroupRequirement == MeetsGroupRequirement.NotMet &&
+                                    bool shouldRunNotMetWorkflow = personGroupRequirementStatus.MeetsGroupRequirement == MeetsGroupRequirement.NotMet &&
                                         groupRequirement.GroupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow &&
                                         groupRequirement.GroupRequirementType.DoesNotMeetWorkflowTypeId.HasValue;
-                                    bool shouldRunWarningWorkflow = result.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning &&
+                                    bool shouldRunWarningWorkflow = personGroupRequirementStatus.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning &&
                                         groupRequirement.GroupRequirementType.ShouldAutoInitiateWarningWorkflow &&
                                         groupRequirement.GroupRequirementType.WarningWorkflowTypeId.HasValue;
 
-                                    var workflowName = personQry.Any() ?
-                                        personQry.First( p => p.Id == result.PersonId ).FullName + " (" + groupRequirement.GroupRequirementType.Name + ")"
+                                    // If the person's group requirement status is in the query of group members who do not meet the group's requirements
+                                    // then use the workflow name will include the person's name with the group requirement type name
+                                    // otherwise, just use the group requirement type name.
+                                    var workflowName = groupMembersThatDoNotMeetRequirementsPersonQry.Any( p => p.Id == personGroupRequirementStatus.PersonId ) ?
+                                        groupMembersThatDoNotMeetRequirementsPersonQry.First( p => p.Id == personGroupRequirementStatus.PersonId ).FullName + " (" + groupRequirement.GroupRequirementType.Name + ")"
                                         : groupRequirement.GroupRequirementType.Name;
 
                                     try
@@ -151,18 +154,18 @@ namespace Rock.Jobs
                                         {
                                             var workflowTypeCache = WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.DoesNotMeetWorkflowTypeId.Value );
                                             workflowName = $"({workflowTypeCache.Name}) {workflowName}";
-                                            LaunchRequirementWorkflow( rockContextUpdate, workflowTypeCache, workflowName, result, group.Id, shouldRunNotMetWorkflow, false );
+                                            LaunchRequirementWorkflow( rockContextUpdate, workflowTypeCache, workflowName, personGroupRequirementStatus, group.Id, shouldRunNotMetWorkflow, false );
                                         }
                                         else if ( shouldRunWarningWorkflow )
                                         {
                                             var workflowTypeCache = WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.WarningWorkflowTypeId.Value );
                                             workflowName = $"({workflowTypeCache.Name}) {workflowName}";
-                                            LaunchRequirementWorkflow( rockContextUpdate, workflowTypeCache, workflowName, result, group.Id, false, shouldRunWarningWorkflow );
+                                            LaunchRequirementWorkflow( rockContextUpdate, workflowTypeCache, workflowName, personGroupRequirementStatus, group.Id, false, shouldRunWarningWorkflow );
                                         }
                                     }
                                     catch ( Exception ex )
                                     {
-                                        calculationExceptions.Add( new Exception( $"Exception when launching workflow: {workflowName} with group requirement: {groupRequirement} for person.Id: {result.PersonId}", ex ) );
+                                        calculationExceptions.Add( new Exception( $"Exception when launching workflow: {workflowName} with group requirement: {groupRequirement} for person.Id: {personGroupRequirementStatus.PersonId}", ex ) );
                                     }
 
                                     rockContextUpdate.SaveChanges();
@@ -170,7 +173,7 @@ namespace Rock.Jobs
                             }
                             catch ( Exception ex )
                             {
-                                calculationExceptions.Add( new Exception( $"Exception when updating group requirement result: {groupRequirement} for person.Id: {result.PersonId}", ex ) );
+                                calculationExceptions.Add( new Exception( $"Exception when updating group requirement result: {groupRequirement} for person.Id: {personGroupRequirementStatus.PersonId}", ex ) );
                             }
                         }
                     }
