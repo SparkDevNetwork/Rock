@@ -3537,7 +3537,7 @@ namespace Rock.Utility
             /// <summary>
             /// The alias identifier of the person who is deemed the creator of the sample data.
             /// </summary>
-            public int CreatorPersonAliasId { get; set; }
+            public int? CreatorPersonAliasId { get; set; }
         }
 
         /// <summary>
