@@ -2395,10 +2395,10 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// Gets the group roles that can be displayed in the group role picker.
+        /// Gets the group roles and group type information based on a selected group role.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        /// <returns>All the data for the selected role, selected type, and all of the group roles</returns>
         [HttpPost]
         [System.Web.Http.Route( "GroupRolePickerGetAllForGroupRole" )]
         [Authenticate]
@@ -2430,8 +2430,8 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the group roles that can be displayed in the group role picker.
         /// </summary>
-        /// <param name="groupTypeGuid">The options that describe which items to load.</param>
-        /// <param name="excludeGroupRoles">The options that describe which items to load.</param>
+        /// <param name="groupTypeGuid">Load group roles of this type</param>
+        /// <param name="excludeGroupRoles">Do not include these roles in the result</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
         private List<ListItemBag> GroupRolePickerGetGroupRolesForGroupType( Guid groupTypeGuid, List<Guid> excludeGroupRoles )
         {
@@ -2444,9 +2444,9 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the group roles that can be displayed in the group role picker.
         /// </summary>
-        /// <param name="groupTypeGuid">The options that describe which items to load.</param>
-        /// <param name="excludeGroupRoles">The options that describe which items to load.</param>
-        /// <param name="rockContext"></param>
+        /// <param name="groupTypeGuid">Load group roles of this type</param>
+        /// <param name="excludeGroupRoles">Do not include these roles in the result</param>
+        /// <param name="rockContext">DB context</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
         private List<ListItemBag> GroupRolePickerGetGroupRolesForGroupType( Guid groupTypeGuid, List<Guid> excludeGroupRoles, RockContext rockContext )
         {

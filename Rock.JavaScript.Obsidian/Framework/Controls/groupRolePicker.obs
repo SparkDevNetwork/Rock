@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { standardAsyncPickerProps, updateRefValue, useStandardAsyncPickerProps } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, nextTick, ref, watch } from "vue";
@@ -56,10 +56,16 @@
     const standardProps = useStandardAsyncPickerProps(props);
     const http = useHttp();
 
-    const loadedTypeItems = ref<ListItemBag[] | null>(null);
     const internalTypeValue = ref<ListItemBag | null>(null);
+    const loadedTypeItems = ref<ListItemBag[] | null>(null);
 
-    const internalRoleValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalRoleValue = ref(props.modelValue);
+    const loadedRoleItems = ref<ListItemBag[] | null>(null);
+
+    // #endregion
+
+    // #region Computed
+
     const groupTypeGuidValue = computed(() => {
         return props.groupTypeGuid || internalTypeValue.value?.value || null;
     });
@@ -72,7 +78,6 @@
         // Otherwise we label it based off the selected group type if there is one
         return internalTypeValue.value?.text ? internalTypeValue.value?.text + " Role" : "Role";
     });
-    const loadedRoleItems = ref<ListItemBag[] | null>(null);
 
     // #endregion
 
@@ -99,7 +104,7 @@
     // #region Functions
 
     /**
-     * Loads the items from the server.
+     * Loads the group type items from the server.
      */
     async function loadTypeOptions(): Promise<ListItemBag[]> {
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupRolePickerGetGroupTypes");
@@ -117,7 +122,7 @@
     }
 
     /**
-     * Loads the items from the server.
+     * Loads the group role items from the server.
      */
     async function loadRoleOptions(): Promise<ListItemBag[]> {
         if (!groupTypeGuidValue.value) {
@@ -144,7 +149,7 @@
     }
 
     /**
-     * Loads the items from the server.
+     * Gets all the data needed to fill in the pickers when we're given a value to start
      */
     async function loadRoleOptionsFromValue(): Promise<void> {
         const options: GroupRolePickerGetAllForGroupRoleOptionsBag = {
@@ -173,6 +178,15 @@
 
     // #region Watchers
 
+    /** If the value is changed from the outside, fill in all the required data */
+    watch(() => props.modelValue, () => {
+        if (updateRefValue(internalRoleValue, props.modelValue)) {
+            loadRoleOptionsFromValue();
+        }
+    });
+
+    watch(internalRoleValue, () => emit("update:modelValue", internalRoleValue.value));
+
     /** Reload Roles if the type or excluded roles list change */
     watch([groupTypeGuidValue, () => props.excludeGroupRoles], () => {
         internalRoleValue.value = null;
@@ -183,7 +197,8 @@
 
     // #endregion
 
-    // Initialize
+    // #region Initialization
+
     if (props.modelValue) {
         // Load the type and list of items based on the selected value
         loadRoleOptionsFromValue();
@@ -191,4 +206,6 @@
     else if (props.groupTypeGuid) {
         loadRoleOptions();
     }
+
+        // #endregion
 </script>
