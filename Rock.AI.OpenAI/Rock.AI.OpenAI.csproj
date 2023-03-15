@@ -36,6 +36,7 @@
       <HintPath>..\RockWeb\Bin\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -45,10 +46,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="OpenAIApiClient\Classes\OpenAICompletionResponseUsage.cs" />
-    <Compile Include="OpenAIApiClient\Classes\OpenAICompletionResponseChoice.cs" />
-    <Compile Include="OpenAIApiClient\Classes\OpenAICompletionResponse.cs" />
-    <Compile Include="OpenAIApiClient\Classes\OpenAICompletionRequest.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResultsCategoryScores.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResultsCategories.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResults.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponse.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Completions\OpenAICompletionsResponseUsage.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Completions\OpenAICompletionsResponseChoice.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Completions\OpenAICompletionsResponse.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Completions\OpenAICompletionsRequest.cs" />
     <Compile Include="OpenAIApiClient\OpenAIApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Provider\OpenAIProvider.cs" />

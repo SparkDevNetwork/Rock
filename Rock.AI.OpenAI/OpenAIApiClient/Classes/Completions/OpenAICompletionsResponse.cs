@@ -15,16 +15,20 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Rock.AI.Classes.Completions;
 
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes
+namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
 {
     /// <summary>
     /// The Reponse object for a completion.
     /// </summary>
-    internal class OpenAICompletionResponse
+    internal class OpenAICompletionsResponse
     {
+        #region Properties
+
         /// <summary>
         /// Unique identifier for the completion request.
         /// </summary>
@@ -41,7 +45,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes
         /// Unix timestamp that indicates when the completion request was created.
         /// </summary>
         [JsonProperty( "created" )]
-        public int Created { get; set; }
+        public long Created { get; set; }
 
         /// <summary>
         /// Specifies the ID of the language model used to generate the completion
@@ -53,12 +57,37 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes
         ///  Array of one or more completion candidates
         /// </summary>
         [JsonProperty( "choices" )]
-        public List<OpenAICompletionResponseChoice> Choices { get; set; }
+        public List<OpenAICompletionsResponseChoice> Choices { get; set; }
 
         /// <summary>
         /// Information on the resource usage of the request.
         /// </summary>
         [JsonProperty( "usage" )]
-        public OpenAICompletionResponseUsage Usage { get; set; }
+        public OpenAICompletionsResponseUsage Usage { get; set; }
+
+        #endregion
+
+        #region Methods
+        /// <summary>
+        /// Converst the OpenAI completion response to a generic response.
+        /// </summary>
+        /// <returns></returns>
+        internal CompletionsResponse AsCompletionsResponse()
+        {
+            var response = new CompletionsResponse();
+
+            response.Id = this.Id;
+            response.TokensUsed = this.Usage.TotalTokens;
+            response.CompletionDateTime = DateTimeOffset.FromUnixTimeSeconds( this.Created ).UtcDateTime;
+
+            foreach( var choice in this.Choices )
+            {
+                response.Choices.Add( choice.AsCompletionResponseChoice() );
+            }
+
+            return response;
+        }
+
+        #endregion
     }
 }

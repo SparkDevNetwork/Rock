@@ -11,7 +11,7 @@ namespace Rock.AI.Provider
     internal abstract class AIProviderComponent : Component
     {
 
-        public abstract CompletionResponse GetCompletion( CompletionRequest request );
+        internal abstract CompletionsResponse GetCompletions( CompletionsRequest request );
 
     }
 }

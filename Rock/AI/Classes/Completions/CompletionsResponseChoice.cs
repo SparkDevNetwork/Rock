@@ -20,8 +20,11 @@ namespace Rock.AI.Classes.Completions
     /// <summary>
     /// The class for holding the response choice from a completion.
     /// </summary>
-    public class CompletionResponseChoice
+    public class CompletionsResponseChoice
     {
+        /// <summary>
+        /// The completion response text.
+        /// </summary>
         public string Text { get; set; }
     }
 }

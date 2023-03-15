@@ -23,6 +23,8 @@ using RestSharp;
 using RestSharp.Authenticators;
 using Rock.AI.Classes.Completions;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient
 {
@@ -66,36 +68,58 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
 
             return client;
         }
+
+        /// <summary>
+        /// Creates a standard rest request for OpenAI
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
+        private RestRequest GetOpenAIRequest( string resource )
+        {
+            var request = new RestRequest( resource );
+            request.AddHeader( "OpenAI-Organization", _organization );
+
+            return request; 
+        }
+
         #endregion
 
         #region Requests
         /// <summary>
-        /// Performs a completion on the OpenAI API.
+        /// Performs a completions request on the OpenAI API.
         /// </summary>
         /// <param name="completionRequest"></param>
         /// <returns></returns>
-        public async Task<OpenAICompletionResponse> GetCompletion( CompletionRequest completionRequest )
+        internal async Task<OpenAICompletionsResponse> GetCompletions( OpenAICompletionsRequest completionRequest )
         {
-            var request = new RestRequest( "completions" );
-            request.AddHeader( "OpenAI-Organization", _organization );
-
-            // Create request
-            var openAICompletionRequest = new OpenAICompletionRequest();
-            openAICompletionRequest.Model = completionRequest.Model;
-            openAICompletionRequest.Prompt = completionRequest.Prompt;
-            openAICompletionRequest.Temperature = completionRequest.Temperature;
-            openAICompletionRequest.N = completionRequest.DesiredCompletionCount;
-
-            // Provide a default model
-            if ( openAICompletionRequest.Model.IsNullOrWhiteSpace() )
-            {
-                openAICompletionRequest.Model = _defaultGptModel;
-            }
-
-            request.AddParameter( "application/json", openAICompletionRequest.ToJson(), ParameterType.RequestBody );
+            var request = GetOpenAIRequest( "completions" );
+                                    
+            request.AddParameter( "application/json", completionRequest.ToJson(), ParameterType.RequestBody );
 
             // Execute request
-            var response = await _client.ExecuteTaskAsync<OpenAICompletionResponse>( request );
+            var response = await _client.ExecuteTaskAsync<OpenAICompletionsResponse>( request );
+
+            if ( response.StatusCode == System.Net.HttpStatusCode.OK )
+            {
+                return response.Data;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Performs a moderations request on the OpenAI API.
+        /// </summary>
+        /// <param name="moderationRequest"></param>
+        /// <returns></returns>
+        internal async Task<OpenAIModerationsResponse> GetModerations( OpenAIModerationsRequest moderationRequest )
+        {
+            var request = GetOpenAIRequest( "moderations" );
+
+            request.AddParameter( "application/json", moderationRequest.ToJson(), ParameterType.RequestBody );
+
+            // Execute request
+            var response = await _client.ExecuteTaskAsync<OpenAIModerationsResponse>( request );
 
             if ( response.StatusCode == System.Net.HttpStatusCode.OK )
             {

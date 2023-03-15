@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ using Rock.UniversalSearch;
 
 namespace Rock.AI.Provider
 {
+    
     internal class AIProviderContainer : Container<AIProviderComponent, IComponentData>
     {
         /// <summary>
@@ -55,7 +57,7 @@ namespace Rock.AI.Provider
         /// <value>
         /// The MEF components.
         /// </value>
-        [ImportMany( typeof( AIProviderContainer ) )]
+        [ImportMany( typeof( AIProviderComponent ) )]
         protected override IEnumerable<Lazy<AIProviderComponent, IComponentData>> MEFComponents { get; set; }
     }
 }

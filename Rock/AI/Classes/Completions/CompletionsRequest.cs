@@ -20,7 +20,7 @@ namespace Rock.AI.Classes.Completions
     /// <summary>
     /// The class for creating a new request for a completion.
     /// </summary>
-    public class CompletionRequest
+    public class CompletionsRequest
     {
         /// <summary>
         /// The model to use for the completion. See the documentation for your provider for valid values.

@@ -19,9 +19,22 @@ using Rock.AI.Classes.Completions;
 using Rock.AI.Provider;
 using Rock.Attribute;
 using Rock.AI.OpenAI.OpenAIApiClient;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+using Rock.Crm.ConnectionStatusChangeReport;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions;
 
 namespace Rock.AI.OpenAI.Provider
 {
+    /// <summary>
+    /// Open AI Provider
+    /// </summary>
+    /// <seealso cref="Rock.AI.AIProviderComponent" />
+    [Description( "Provider to use the OpenAI API for use in Rock." )]
+    [Export( typeof( AIProviderComponent ) )]
+    [ExportMetadata( "ComponentName", "Open AI" )]
+
     [TextField(
         "Secret Key",
         Key = AttributeKey.SecretKey,
@@ -33,7 +46,9 @@ namespace Rock.AI.OpenAI.Provider
         Key = AttributeKey.Organization,
         Description = "The OpenAI Organization.",
         IsRequired = true,
-        Order = 1 )]
+        Order = 0 )]
+
+    [Rock.SystemGuid.EntityTypeGuid( "8D3F25B1-4891-31AA-4FA6-365F5C808563" )]
     internal class OpenAIProvider : AIProviderComponent
     {
         private static class AttributeKey
@@ -42,16 +57,22 @@ namespace Rock.AI.OpenAI.Provider
             public const string Organization = "Organization";
         }
 
+        internal const string OpenAIDefaultGptModel = "";
+
         /// <summary>
-        /// Gets the contents of the completion.
+        /// Gets the contents of the completions.
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public override CompletionResponse GetCompletion( CompletionRequest request )
+        internal override CompletionsResponse GetCompletions( CompletionsRequest request )
         {
             var openAIApi = new OpenAIApi( GetAttributeValue( AttributeKey.SecretKey ), GetAttributeValue( AttributeKey.Organization ) );
-            return new CompletionResponse();
-            //return openAIApi.GetCompletion( request );
+
+            var response = openAIApi.GetCompletions( new OpenAICompletionsRequest( request ) );
+
+            //response.
+
+            return null;
         }
     }
 }

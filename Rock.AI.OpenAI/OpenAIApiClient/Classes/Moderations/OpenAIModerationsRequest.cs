@@ -15,39 +15,32 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Rock.AI.Classes.Moderations;
 
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes
+namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
 {
     /// <summary>
-    /// The Choice data for the Response object for a completion.
+    /// The Request object for a moderation.
     /// </summary>
-    internal class OpenAICompletionResponseChoice
+    internal class OpenAIModerationsRequest
     {
+        #region Properties
+
         /// <summary>
-        /// The text reponse for the completion.
+        /// Text for the moderation request.
         /// </summary>
         [JsonProperty( "text" )]
         public string Text { get; set; }
 
         /// <summary>
-        /// The returned order of the completion.
+        /// Specifies the ID of the language model used to generate the moderation
         /// </summary>
-        [JsonProperty( "index" )]
-        public int Index { get; set; }
+        [JsonProperty( "model" )]
+        public string Model { get; set; }
 
-        /// <summary>
-        /// List of the most likely tokens
-        /// </summary>
-        [JsonProperty( "logprobs" )]
-        public object Logprobs { get; set; }
-
-        /// <summary>
-        /// Information about the reason why the completion request was completed, such as whether it was successful or encountered
-        /// an error. Possible values include: stop, timeout, length, input_empty, model_error, server_error
-        /// </summary>
-        [JsonProperty( "finish_reason" )]
-        public string FinishReason { get; set; }
+        #endregion
     }
 }

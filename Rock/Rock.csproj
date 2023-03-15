@@ -545,9 +545,11 @@
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
-    <Compile Include="AI\Classes\Completions\CompletionRequest.cs" />
-    <Compile Include="AI\Classes\Completions\CompletionResponse.cs" />
-    <Compile Include="AI\Classes\Completions\CompletionResponseChoice.cs" />
+    <Compile Include="AI\Classes\Completions\CompletionsRequest.cs" />
+    <Compile Include="AI\Classes\Completions\CompletionsResponse.cs" />
+    <Compile Include="AI\Classes\Completions\CompletionsResponseChoice.cs" />
+    <Compile Include="AI\Classes\Moderations\ModerationsResponseCategories.cs" />
+    <Compile Include="AI\Classes\Moderations\ModerationsResponse.cs" />
     <Compile Include="AI\Provider\AIProviderComponent.cs" />
     <Compile Include="AI\Provider\AIProviderContainer.cs" />
     <Compile Include="AI\Utilities\AIHelpers.cs" />

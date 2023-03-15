@@ -18,12 +18,12 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.AI.Classes.Completions
+namespace Rock.AI.Classes.Moderations
 {
     /// <summary>
     /// The class for holding the response from a completion.
     /// </summary>
-    public class CompletionResponse
+    public class ModerationsResponse
     {
         /// <summary>
         /// A unique identifier for the completion.
@@ -31,18 +31,14 @@ namespace Rock.AI.Classes.Completions
         public string Id { get; set; }
 
         /// <summary>
-        /// The date time that the completion was processed.
+        /// Is the text flagged for moderation.
         /// </summary>
-        public DateTime CompletionDateTime { get; set; }
+        public bool IsFlagged { get; set; }
 
         /// <summary>
-        /// A list of possible choices returned from the provider.
+        /// Moderation data by category
         /// </summary>
-        public List<CompletionResponseChoice> Choices { get; set; } = new List<CompletionResponseChoice>();
+        public ModerationsResponseCategories ModerationsResponseCategories { get; set; }
 
-        /// <summary>
-        /// The number of tokens used in the request.
-        /// </summary>
-        public int TokensUsed { get; set; }
     }
 }

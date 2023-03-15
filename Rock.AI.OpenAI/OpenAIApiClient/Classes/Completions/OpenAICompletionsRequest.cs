@@ -16,13 +16,15 @@
 //
 
 using Newtonsoft.Json;
+using Rock.AI.Classes.Completions;
+using Rock.AI.OpenAI.Provider;
 
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes
+namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
 {
     /// <summary>
     /// The Request object for a completion.
     /// </summary>
-    internal class OpenAICompletionRequest
+    internal class OpenAICompletionsRequest
     {
         /// <summary>
         /// The model to use.
@@ -77,5 +79,24 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes
         /// </summary>
         [JsonProperty( "stop" )]
         public string Stop { get; set; }
+
+        /// <summary>
+        /// Convert a generic AI completion request to a OpenAI completion request.
+        /// </summary>
+        /// <param name="request"></param>
+        internal OpenAICompletionsRequest ( CompletionsRequest request )
+        {
+            
+            this.Model = request.Model;
+            this.Prompt = request.Prompt;
+            this.Temperature = request.Temperature;
+            this.N = request.DesiredCompletionCount;
+
+            // Provide a default model
+            if ( this.Model.IsNullOrWhiteSpace() )
+            {
+                this.Model = OpenAIProvider.OpenAIDefaultGptModel;
+            }
+        }
     }
 }
