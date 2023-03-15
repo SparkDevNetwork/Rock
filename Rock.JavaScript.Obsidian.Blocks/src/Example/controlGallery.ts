@@ -7019,11 +7019,10 @@ const groupRolePickerGallery = defineComponent({
     },
     setup() {
         return {
-            multiple: ref(true),
             value: ref(null),
             required: ref(false),
             importCode: getSfcControlImportPath("groupRolePicker"),
-            exampleCode: `<GroupRolePicker label="Group Type and Role" v-model="value" :definedTypeGuid="DefinedType.PowerbiAccounts" />`
+            exampleCode: `<GroupRolePicker label="Group Type and Role" v-model="value" />`
         };
     },
     template: `
@@ -7033,13 +7032,10 @@ const groupRolePickerGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <GroupRolePicker label="Group Type and Role" v-model="value" :definedTypeGuid="definedType" :rules="required ? 'required' : ''" />
+    <GroupRolePicker label="Group Type and Role" v-model="value" :rules="required ? 'required' : ''" />
 
     <template #settings>
         <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Multiple" v-model="multiple" />
-            </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
             </div>
