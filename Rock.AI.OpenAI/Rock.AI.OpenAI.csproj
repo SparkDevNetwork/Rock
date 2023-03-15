@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsRequest.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResultsCategoryScores.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResultsCategories.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResults.cs" />

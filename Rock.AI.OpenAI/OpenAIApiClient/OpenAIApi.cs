@@ -15,14 +15,10 @@
 // </copyright>
 //
 
-using System;
-using System.Threading;
+
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using RestSharp;
 using RestSharp.Authenticators;
-using Rock.AI.Classes.Completions;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
 
@@ -34,6 +30,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         private const string _openAIApiHost = "https://api.openai.com/v1";
         private const int _apiTimeoutLength = 30000;
         private const string _defaultGptModel = "gpt-3.5-turbo";
+        private const string _defaultModerationModel = "";
 
 
         private RestClient _client = null;
