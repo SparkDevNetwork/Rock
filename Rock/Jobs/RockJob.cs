@@ -51,7 +51,7 @@ namespace Rock.Jobs
         /// Gets the name of the service job.
         /// </summary>
         /// <value>The name of the service job.</value>
-        public string ServiceJobName => ServiceJob.Name;
+        public string ServiceJobName => ServiceJob?.Name;
 
         /// <summary>
         /// Gets the service job.
