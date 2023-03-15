@@ -284,6 +284,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "remove old notification message types", () => RemoveOldNotificationMessageTypes() );
 
+            RunCleanupTask( "update person viewed count", () => UpdatePersonViewedCount() );
+
             /*
              * 21-APR-2022 DMV
              *
@@ -2533,6 +2535,36 @@ SELECT @@ROWCOUNT
             }
 
             return deletedCount;
+        }
+
+        /// <summary>
+        /// Updates Person.ViewedCount based on the count of ViewCount.PersonId for the past 90 days
+        /// </summary>
+        /// <returns>The number of Person rows updated</returns>
+        private int UpdatePersonViewedCount()
+        {
+            var updateCount = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                var updateQuery = @"
+                    UPDATE p
+                    SET p.[ViewedCount] = u.[ViewCount]
+                    FROM [Person] p
+                    INNER JOIN (
+                        SELECT
+                            pat.[PersonId]
+                            , COUNT(*) AS [ViewCount]
+                        FROM [PersonViewed] pv
+                            INNER JOIN [PersonAlias] pat ON pat.[Id] = pv.[TargetPersonAliasId]
+                        WHERE pv.[ViewDateTime] > DATEADD( DAY, -90, GETDATE() )
+                        GROUP BY pat.[PersonId]
+                    ) AS u ON u.[PersonId] = p.[Id]";
+
+                rockContext.Database.CommandTimeout = commandTimeout;
+                updateCount = rockContext.Database.ExecuteSqlCommand( updateQuery );
+            }
+
+            return updateCount;
         }
 
         /// <summary>
