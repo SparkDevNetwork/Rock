@@ -879,7 +879,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     return paymentList;
                 }
 
-                XDocument doc = XDocument.Parse( response.Content );
+                XDocument doc = ParseXmlDocument( response.Content );
 
                 var responseNode = doc.Descendants( "nm_response" ).FirstOrDefault();
                 var jsonResponse = JsonConvert.SerializeXNode( responseNode );
@@ -1257,12 +1257,43 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 return null;
             }
 
+            return ParseXmlDocument( response.Content );
+        }
+
+        /// <summary>
+        /// Parses the XML document (with a specific workaround to fix bad XML from NMI).
+        /// </summary>
+        /// <param name="xmlDocumentText">The XML document text.</param>
+        /// <returns>XDocument.</returns>
+        private XDocument ParseXmlDocument( string xmlDocumentText )
+        {
             try
             {
-                return XDocument.Parse( response.Content );
+                return XDocument.Parse( xmlDocumentText );
             }
             catch ( Exception ex )
             {
+                if ( ex is System.Xml.XmlException )
+                {
+                    /*
+                         02/24/2023 - SMC
+
+                         NMI's query API may return invalid XML with HTML entity codes (like &eacute;) contained within the
+                         document and not properly declared in the DTD.  If not corrected, this causes an error and results
+                         in the transaction not being recorded in Rock.  As a workaround for this, we will HTML decode the text
+                         to replace any HTML entity codes with their Unicode character values and if the resulting output is
+                         different than the input, we'll try to parse the document again.
+
+                         Reason:  Bad XML from NMI.
+                    */
+
+                    var newXmlDocumentText = WebUtility.HtmlDecode( xmlDocumentText );
+                    if ( newXmlDocumentText != xmlDocumentText )
+                    {
+                        return ParseXmlDocument( newXmlDocumentText );
+                    }
+                }
+
                 // This error condition is always logged, regardless of the logErrors flag, because it indicates something
                 // went wrong while converting what appears to be an XML response, which shoud never happen.
                 var loggedException = new Exception( "Invalid Response From NMI Gateway:  Unknown error.", ex );
@@ -1863,7 +1894,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             restRequest.AddParameter( "result_limit", resultLimit.ToString() );
 
             var response = restClient.Execute( restRequest );
-            XDocument doc = XDocument.Parse( response.Content );
+            XDocument doc = ParseXmlDocument( response.Content );
 
             var responseNode = doc.Descendants( "nm_response" ).FirstOrDefault();
             var jsonResponse = JsonConvert.SerializeXNode( responseNode );
@@ -1900,7 +1931,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             restRequest.AddParameter( "customer_vault_id", customerVaultId );
 
             var response = restClient.Execute( restRequest );
-            XDocument doc = XDocument.Parse( response.Content );
+            XDocument doc = ParseXmlDocument( response.Content );
 
             var customerVaultNode = doc.Descendants( "customer_vault" ).FirstOrDefault();
             var jsonResponse = JsonConvert.SerializeXNode( customerVaultNode );
