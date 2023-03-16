@@ -539,7 +539,7 @@ function () {
             // Only consider opportunities that have at least one non-leader member.
             foreach ( var opportunity in opportunities.Where( o => o.Members.Any( m => !m.IsLeader ) ) )
             {
-                if ( groupsMissingAttendance.Contains( opportunity.Group ) )
+                if ( groupsMissingAttendance.Any( g => g.Id == opportunity.Group.Id ) )
                 {
                     // No need to check this Group again, as it's already been included due to another Schedule's missing attendance data.
                     continue;

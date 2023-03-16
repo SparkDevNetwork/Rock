@@ -267,6 +267,8 @@ namespace Rock.Blocks.Engagement.SignUp
                 return registrationData;
             }
 
+            GetParticipantCount( rockContext, registrationData );
+
             var groupRequirements = registrationData.Project.GetGroupRequirements( rockContext );
             if ( groupRequirements.Any( gr => gr.MustMeetRequirementToAddMember ) )
             {
@@ -356,26 +358,21 @@ namespace Rock.Blocks.Engagement.SignUp
                     gl.Group,
                     gl.Group.GroupType,
                     gl.Location,
-                    Schedule = s
+                    Schedule = s,
+                    Config = gl.GroupLocationScheduleConfigs.FirstOrDefault( glsc => glsc.ScheduleId == s.Id )
                 } )
                 .ToList();
 
             // Ensure the requested schedule exists.
-            var schedule = groupLocationSchedules
-                .Where( gls => gls.Schedule?.Id == scheduleId )
-                .Select( gls => gls.Schedule )
-                .FirstOrDefault();
+            var occurrence = groupLocationSchedules.FirstOrDefault( gls => gls.Schedule?.Id == scheduleId );
 
-            if ( schedule == null )
+            if ( occurrence == null )
             {
                 registrationData.ErrorMessage = "Project occurrence not found.";
                 return false;
             }
 
-            registrationData.Project = groupLocationSchedules.Select( gls => gls.Group ).First();
-            registrationData.GroupType = groupLocationSchedules.Select( gls => gls.GroupType ).First();
-            registrationData.Location = groupLocationSchedules.Select( gls => gls.Location ).First();
-            registrationData.Schedule = schedule;
+            registrationData.Schedule = occurrence.Schedule;
 
             if ( !registrationData.ScheduleHasFutureStartDateTime )
             {
@@ -383,7 +380,36 @@ namespace Rock.Blocks.Engagement.SignUp
                 return false;
             }
 
+            registrationData.Project = occurrence.Group;
+            registrationData.GroupType = occurrence.GroupType;
+            registrationData.Location = occurrence.Location;
+            registrationData.SlotsMin = occurrence.Config?.MinimumCapacity;
+            registrationData.SlotsDesired = occurrence.Config?.DesiredCapacity;
+            registrationData.SlotsMax = occurrence.Config?.MaximumCapacity;
+
             return true;
+        }
+
+        /// <summary>
+        /// Gets the participant count for this <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> occurrence,
+        /// and sets it on the <see cref="RegistrationData"/> instance.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationData">The registration data.</param>
+        private void GetParticipantCount( RockContext rockContext, RegistrationData registrationData )
+        {
+            // This should be incorporated into the above [TryGetGroupLocationSchedule] query (for performance reasons) when we have more time to do so.
+            var participantCount = new GroupMemberAssignmentService( rockContext )
+                .Queryable()
+                .Where( gma =>
+                    !gma.GroupMember.Person.IsDeceased
+                    && gma.GroupMember.GroupId == registrationData.Project.Id
+                    && gma.LocationId == registrationData.Location.Id
+                    && gma.ScheduleId == registrationData.Schedule.Id
+                )
+                .Count();
+
+            registrationData.ParticipantCount = participantCount;
         }
 
         /// <summary>
@@ -758,6 +784,7 @@ namespace Rock.Blocks.Engagement.SignUp
             ExistingProjectMember existingProjectMember = null;
             GroupMemberAssignment existingRegistration = null;
 
+            string warningMessage = null;
             var registrantsToRegister = new List<SignUpRegistrantBag>();
             var registrantsToMessage = new List<SignUpRegistrantBag>();
 
@@ -1231,6 +1258,23 @@ namespace Rock.Blocks.Engagement.SignUp
                 _groupMemberAssignmentService.DeleteRange( groupMemberAssignmentsToDelete );
             }
 
+            /*
+             * If they're attempting to register more individuals than this occurrence's available spots, don't register anybody.
+             * Instead, give them an opportunity to choose who - if anybody - should fill the remaining spots.
+             * 
+             * Note that they might be swapping one-for-another, Etc., so factor in the count of any individuals that are being unregistered.
+             */
+            var registrantsToRegisterCount = registrantsToRegister.Count - unregistered.Count;
+            if ( registrantsToRegisterCount > registrationData.SlotsAvailable )
+            {
+                unsuccessful.AddRange( registrantsToRegister );
+                registrantsToRegister.Clear();
+
+                warningMessage = registrationData.SlotsAvailable == 0
+                    ? $"This project doesn't have any available spots remaining."
+                    : $"This project only has {registrationData.SlotsAvailable} available spots remaining.";
+            }
+
             var workflowMembers = new List<GroupMember>();
             var communicationRecipients = new List<GroupMemberAssignment>();
 
@@ -1431,7 +1475,8 @@ namespace Rock.Blocks.Engagement.SignUp
             {
                 RegisteredRegistrantNames = registered.Select( r => r.FullName ).ToList(),
                 UnregisteredRegistrantNames = unregistered.Select( r => r.FullName ).ToList(),
-                UnsuccessfulRegistrantNames = unsuccessful.Select( r => r.FullName ).ToList()
+                UnsuccessfulRegistrantNames = unsuccessful.Select( r => r.FullName ).ToList(),
+                WarningMessage = warningMessage
             };
         }
 
@@ -1584,6 +1629,26 @@ namespace Rock.Blocks.Engagement.SignUp
             public Schedule Schedule { get; set; }
 
             /// <summary>
+            /// Gets or sets the minimum participant count for this sign-up project occurrence.
+            /// </summary>
+            public int? SlotsMin { get; set; }
+
+            /// <summary>
+            /// Gets or sets the desired participant count for this sign-up project occurrence.
+            /// </summary>
+            public int? SlotsDesired { get; set; }
+
+            /// <summary>
+            /// Gets or sets the maximum participant count for this sign-up project occurrence.
+            /// </summary>
+            public int? SlotsMax { get; set; }
+
+            /// <summary>
+            /// Gets or sets the current participant count for this sign-up project occurrence.
+            /// </summary>
+            public int ParticipantCount { get; set; }
+
+            /// <summary>
             /// Gets or sets the registration mode the block is in.
             /// </summary>
             public RegisterMode Mode { get; set; }
@@ -1631,6 +1696,48 @@ namespace Rock.Blocks.Engagement.SignUp
                     return this.Schedule != null
                         && this.Schedule.NextStartDateTime.HasValue
                         && this.Schedule.NextStartDateTime.Value >= RockDateTime.Now;
+                }
+            }
+
+            /// <summary>
+            /// Gets the remaining participant slots available for this sign-up project occurrence.
+            /// </summary>
+            public int SlotsAvailable
+            {
+                get
+                {
+                    if ( !this.ScheduleHasFutureStartDateTime )
+                    {
+                        return 0;
+                    }
+
+                    /*
+                     * This more complex approach uses a dynamic/floating minuend:
+                     * 1) If the max value is defined, use that;
+                     * 2) Else, if the desired value is defined, use that;
+                     * 3) Else, if the min value is defined, use that;
+                     * 4) Else, use int.MaxValue (there is no limit to the slots available).
+                     */
+                    //var minuend = this.SlotsMax.GetValueOrDefault() > 0
+                    //    ? this.SlotsMax.Value
+                    //    : this.SlotsDesired.GetValueOrDefault() > 0
+                    //        ? this.SlotsDesired.Value
+                    //        : this.SlotsMin.GetValueOrDefault() > 0
+                    //            ? this.SlotsMin.Value
+                    //            : int.MaxValue;
+
+                    /*
+                     * Simple approach:
+                     * 1) If the max value is defined, subtract participant count from that;
+                     * 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
+                     */
+                    var available = int.MaxValue;
+                    if ( this.SlotsMax.GetValueOrDefault() > 0 )
+                    {
+                        available = this.SlotsMax.Value - this.ParticipantCount;
+                    }
+
+                    return available < 0 ? 0 : available;
                 }
             }
 

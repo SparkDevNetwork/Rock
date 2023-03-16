@@ -6,13 +6,13 @@
         <div class="col-md-6">
             <TextBox v-model="firstName"
                      label="First Name"
-                     :rules="nameRules"
+                     rules="required"
                      :disabled="disabled" />
         </div>
         <div class="col-md-6">
             <TextBox v-model="lastName"
                      label="Last Name"
-                     :rules="nameRules"
+                     rules="required"
                      :disabled="disabled" />
         </div>
     </div>
@@ -91,12 +91,6 @@
         set(newValue: string) {
             props.registrant.lastName = newValue;
         }
-    });
-
-    const nameRules = computed((): string => {
-        return props.registrant.firstName || props.registrant.lastName
-            ? "required"
-            : "";
     });
 
     const email = computed<string>({

@@ -109,7 +109,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     {% if Project.AvailableSpots != null %}
                         <span class=""badge badge-info"">Available Spots: {{ Project.AvailableSpots }}</span>
                     {% endif %}
-                    {% if Project.ScheduleHasFutureStartDateTime %}
+                    {% if Project.ShowRegisterButton == true %}
                         <div class=""mt-4"">
                             <a href=""{{ Project.RegisterPageUrl }}"" class=""btn btn-warning"">Register</a>
                         </div>
@@ -274,16 +274,14 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Gets the participant count for this <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> occurrence.
+        /// Gets the participant count for this <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> occurrence,
+        /// and sets it on the <see cref="OccurrenceData"/> instance.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="occurrenceData">The occurrence data.</param>
         private void GetParticipantCount( RockContext rockContext, OccurrenceData occurrenceData )
         {
-            /*
-             * Get the participant count for this opportunity.
-             * This should be incorporated into the above query (for performance reasons) when we have more time to do so.
-             */
+            // This should be incorporated into the above [TryGetGroupLocationSchedule] query (for performance reasons) when we have more time to do so.
             var participantCount = new GroupMemberAssignmentService( rockContext )
                 .Queryable()
                 .Where( gma =>
@@ -490,6 +488,13 @@ namespace Rock.Blocks.Engagement.SignUp
                     availableSpots = this.SlotsAvailable;
                 }
 
+                var showRegisterButton = this.ScheduleHasFutureStartDateTime
+                    &&
+                    (
+                        !availableSpots.HasValue
+                        || availableSpots.Value > 0
+                    );
+
                 string mapCenter = null;
                 if ( this.Location.Latitude.HasValue && this.Location.Longitude.HasValue )
                 {
@@ -510,7 +515,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     Description = this.Description,
                     ScheduleName = this.ScheduleName,
                     FriendlySchedule = this.FriendlySchedule,
-                    ScheduleHasFutureStartDateTime = this.ScheduleHasFutureStartDateTime,
+                    ShowRegisterButton = showRegisterButton,
                     CampusName = this.Project.Campus?.Name,
                     AvailableSpots = availableSpots,
                     MapCenter = mapCenter,
@@ -536,7 +541,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
             public string FriendlySchedule { get; set; }
 
-            public bool ScheduleHasFutureStartDateTime { get; set; }
+            public bool ShowRegisterButton { get; set; }
 
             public string CampusName { get; set; }
 
