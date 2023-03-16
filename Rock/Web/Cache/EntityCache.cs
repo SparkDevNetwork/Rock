@@ -465,7 +465,7 @@ namespace Rock.Web.Cache
                 return new List<T>();
             }
 
-            return GetMany( cachedKeys.AsIntegerList(), rockContext ).ToList();
+            return GetMany( cachedKeys.ToList().AsIntegerList(), rockContext ).ToList();
         }
 
         #endregion

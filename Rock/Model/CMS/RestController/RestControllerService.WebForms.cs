@@ -89,7 +89,7 @@ namespace Rock.Model
             var config = GlobalConfiguration.Configuration;
             var explorer = config.Services.GetApiExplorer();
 
-            if ( !explorer.ApiDescriptions.Any() )
+            if ( explorer.ApiDescriptions.Count == 0 )
             {
                 // Just in case ApiDescriptions wasn't populated, exit and don't do anything
                 return;
