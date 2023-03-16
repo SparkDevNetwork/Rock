@@ -1,14 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockErrorMessage" alertType="warning">
+    <Alert v-if="blockErrorMessage" :alertType="AlertType.Warning">
         {{ blockErrorMessage }}
     </Alert>
 
-    <Alert v-if="errorMessage" alertType="warning">
+    <Alert v-if="errorMessage" :alertType="AlertType.Warning">
         {{ errorMessage }}
     </Alert>
 
-    <Alert v-if="registeredRegistrantNames?.length || unregisteredRegistrantNames?.length" alertType="success">
+    <Alert v-if="registeredRegistrantNames?.length || unregisteredRegistrantNames?.length" :alertType="AlertType.Success">
         <div v-if="registeredRegistrantNames?.length">
             <p>Successfully registered individual(s):</p>
             <ul>
@@ -27,11 +27,16 @@
         </div>
     </Alert>
 
-    <Alert v-if="unsuccessfulRegistrantNames?.length" alertType="warning">
-        <div>
+    <Alert v-if="showRegistrationWarning" :alertType="AlertType.Warning">
+        <div v-if="registrationWarning">
+            <p>
+                {{ registrationWarning }}
+            </p>
+        </div>
+        <div v-if="unsuccessfulRegistrantNames?.length">
             <p>Unable to register individual(s):</p>
             <ul>
-                <li v-for="(name, i) in unsuccessfulRegistrantNames" :key="`registered-{i}`">
+                <li v-for="(name, i) in unsuccessfulRegistrantNames" :key="`unsuccessful-{i}`">
                     {{ name }}
                 </li>
             </ul>
@@ -79,6 +84,7 @@
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
     import { RegisterMode } from "@Obsidian/Enums/Blocks/Engagement/SignUp/registerMode";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
@@ -101,6 +107,7 @@
     const isRegistering = ref(false);
     const errorMessage = ref("");
 
+    const registrationWarning = ref("");
     const registeredRegistrantNames = ref<string[]>([]);
     const unregisteredRegistrantNames = ref<string[]>([]);
     const unsuccessfulRegistrantNames = ref<string[]>([]);
@@ -118,6 +125,10 @@
 
     const anyEligibleRegistrants = computed((): boolean => {
         return registrants.value.some((r: SignUpRegistrantBag) => r && !r.unmetGroupRequirements?.length);
+    });
+
+    const showRegistrationWarning = computed((): boolean => {
+        return !!(unsuccessfulRegistrantNames.value?.length || registrationWarning.value?.length);
     });
 
     // #endregion
@@ -148,6 +159,7 @@
         isRegistering.value = true;
         errorMessage.value = "";
 
+        registrationWarning.value = "";
         registeredRegistrantNames.value = [];
         unregisteredRegistrantNames.value = [];
         unsuccessfulRegistrantNames.value = [];
@@ -164,6 +176,7 @@
             return;
         }
 
+        registrationWarning.value = result.data?.warningMessage ?? "";
         registeredRegistrantNames.value = result.data?.registeredRegistrantNames ?? [];
         unregisteredRegistrantNames.value = result.data?.unregisteredRegistrantNames ?? [];
         unsuccessfulRegistrantNames.value = result.data?.unsuccessfulRegistrantNames ?? [];

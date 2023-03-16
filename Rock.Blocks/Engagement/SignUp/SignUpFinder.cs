@@ -354,12 +354,12 @@ namespace Rock.Blocks.Engagement.SignUp
                             </p>
                         {% endif %}
                     </div>
-                    {% if project.ScheduleHasFutureStartDateTime %}
-                        <div class=""card-footer bg-white border-0"">
-                            <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs pl-0 text-muted"">Details</a>
+                    <div class=""card-footer bg-white border-0"">
+                        <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs pl-0 text-muted"">Details</a>
+                        {% if project.ShowRegisterButton == true %}
                             <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-warning btn-xs pull-right"">Register</a>
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         {% endfor %}
@@ -1770,6 +1770,13 @@ namespace Rock.Blocks.Engagement.SignUp
                     availableSpots = this.SlotsAvailable;
                 }
 
+                var showRegisterButton = this.ScheduleHasFutureStartDateTime
+                    &&
+                    (
+                        !availableSpots.HasValue
+                        || availableSpots.Value > 0
+                    );
+
                 string mapCenter = null;
                 if ( this.Location.Latitude.HasValue && this.Location.Longitude.HasValue )
                 {
@@ -1790,8 +1797,8 @@ namespace Rock.Blocks.Engagement.SignUp
                     Description = this.Description,
                     ScheduleName = this.ScheduleName,
                     FriendlySchedule = this.FriendlySchedule,
-                    ScheduleHasFutureStartDateTime = this.ScheduleHasFutureStartDateTime,
                     AvailableSpots = availableSpots,
+                    ShowRegisterButton = showRegisterButton,
                     DistanceInMiles = this.DistanceInMiles,
                     MapCenter = mapCenter,
                     ProjectDetailPageUrl = projectDetailPageUrl,
@@ -1817,9 +1824,9 @@ namespace Rock.Blocks.Engagement.SignUp
 
             public string FriendlySchedule { get; set; }
 
-            public bool ScheduleHasFutureStartDateTime { get; set; }
-
             public int? AvailableSpots { get; set; }
+
+            public bool ShowRegisterButton { get; set; }
 
             public double? DistanceInMiles { get; set; }
 
