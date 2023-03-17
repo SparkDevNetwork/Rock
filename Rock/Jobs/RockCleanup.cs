@@ -415,7 +415,7 @@ namespace Rock.Jobs
         {
             if ( result.HasException )
             {
-                return $"<i class='fa fa-circle text-danger'></i> { result.Title}";
+                return $"<i class='fa fa-circle text-danger'></i> {result.Title} ({result.Elapsed.TotalMilliseconds:N0}ms)";
             }
             else
             {
@@ -571,16 +571,21 @@ namespace Rock.Jobs
             int resultCount = 0;
 
             // Add any missing person aliases
-            using ( var personRockContext = new Rock.Data.RockContext() )
+            using ( var personRockContext = CreateRockContext() )
             {
-                personRockContext.Database.CommandTimeout = commandTimeout;
-
-                PersonService personService = new PersonService( personRockContext );
-                PersonAliasService personAliasService = new PersonAliasService( personRockContext );
+                var personService = new PersonService( personRockContext );
+                var personAliasService = new PersonAliasService( personRockContext );
                 var personAliasServiceQry = personAliasService.Queryable();
-                foreach ( var person in personService.Queryable( "Aliases" )
+                var personSearchOptions = PersonService.PersonQueryOptions.AllRecords();
+
+                personSearchOptions.IncludeAnonymousVisitor = false;
+
+                var people = personService.Queryable( personSearchOptions )
+                    .Include( p => p.Aliases )
                     .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
-                    .Take( 300 ) )
+                    .Take( 300 );
+
+                foreach ( var person in people )
                 {
                     person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
                     resultCount++;
@@ -775,17 +780,22 @@ namespace Rock.Jobs
         /// to avoid any possible memory issues. Processes about 150k records
         /// in 52 seconds.
         /// </summary>
-        private static int AddMissingAlternateIds()
+        private int AddMissingAlternateIds()
         {
             int resultCount = 0;
-            using ( var personRockContext = new Rock.Data.RockContext() )
+            using ( var personRockContext = CreateRockContext() )
             {
                 var personService = new PersonService( personRockContext );
+                var personAliasService = new PersonAliasService( personRockContext );
                 int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
                 var personSearchKeyService = new PersonSearchKeyService( personRockContext );
                 var alternateKeyQuery = personSearchKeyService.Queryable().AsNoTracking().Where( a => a.SearchTypeValueId == alternateValueId );
 
-                IQueryable<Person> personQuery = personService.Queryable( includeDeceased: true ).AsNoTracking();
+                // Only process people that have a person alias, since that is required.
+                var personAliasServiceQry = personAliasService.Queryable();
+                var personQuery = personService.Queryable( includeDeceased: true )
+                    .AsNoTracking()
+                    .Where( p => personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) );
 
                 // Make a list of items that we're going to bulk insert.
                 var itemsToInsert = new List<PersonSearchKey>();
@@ -1144,25 +1154,43 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleans up expired entity sets.
         /// </summary>
-        
+
         private int CleanupExpiredEntitySets()
         {
-            var entitySetRockContext = new RockContext();
-            entitySetRockContext.Database.CommandTimeout = commandTimeout;
+            List<int> entitySetIds;
 
-            var currentDateTime = RockDateTime.Now;
-            var entitySetService = new EntitySetService( entitySetRockContext );
+            using ( var entitySetRockContext = CreateRockContext() )
+            {
+                entitySetRockContext.Database.CommandTimeout = commandTimeout;
 
-            var qry = entitySetService.Queryable().Where( a => a.ExpireDateTime.HasValue && a.ExpireDateTime < currentDateTime );
+                var currentDateTime = RockDateTime.Now;
+                var entitySetService = new EntitySetService( entitySetRockContext );
+
+                entitySetIds = entitySetService.Queryable()
+                    .Where( a => a.ExpireDateTime.HasValue && a.ExpireDateTime < currentDateTime )
+                    .Select( es => es.Id )
+                    .ToList();
+            }
+
             int totalRowsDeleted = 0;
 
-            foreach ( var entitySet in qry.ToList() )
+            foreach ( var entitySetId in entitySetIds )
             {
-                string deleteWarning;
-                if ( entitySetService.CanDelete( entitySet, out deleteWarning ) )
+                using ( var entitySetRockContext = CreateRockContext() )
                 {
-                    var entitySetItemsToDeleteQuery = new EntitySetItemService( entitySetRockContext ).Queryable().Where( a => a.EntitySetId == entitySet.Id );
-                    BulkDeleteInChunks( entitySetItemsToDeleteQuery, batchAmount, commandTimeout );
+                    var entitySetService = new EntitySetService( entitySetRockContext );
+                    var entitySet = entitySetService.Get( entitySetId );
+
+                    if ( entitySet != null && entitySetService.CanDelete( entitySet, out _ ) )
+                    {
+                        var entitySetItemsToDeleteQuery = new EntitySetItemService( entitySetRockContext ).Queryable().Where( a => a.EntitySetId == entitySet.Id );
+                        BulkDeleteInChunks( entitySetItemsToDeleteQuery, batchAmount, commandTimeout );
+
+                        entitySetService.Delete( entitySet );
+                        entitySetRockContext.SaveChanges();
+
+                        totalRowsDeleted += 1;
+                    }
                 }
             }
 
@@ -2672,6 +2700,20 @@ END
                 int result = rockContext.Database.ExecuteSqlCommand( UpdateAgeAndAgeRangeSql );
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="RockContext"/> that is properly configured
+        /// for use on this instance.
+        /// </summary>
+        /// <returns>A new instance of <see cref="RockContext"/>.</returns>
+        private RockContext CreateRockContext()
+        {
+            var rockContext = new RockContext();
+
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            return rockContext;
         }
 
         /// <summary>
