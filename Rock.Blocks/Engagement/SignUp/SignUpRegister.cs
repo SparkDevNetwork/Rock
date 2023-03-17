@@ -1272,7 +1272,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 warningMessage = registrationData.SlotsAvailable == 0
                     ? $"This project doesn't have any available spots remaining."
-                    : $"This project only has {registrationData.SlotsAvailable} available spots remaining.";
+                    : $"This project only has {registrationData.SlotsAvailable} available {"spot".PluralizeIf( registrationData.SlotsAvailable > 1 )} remaining.";
             }
 
             var workflowMembers = new List<GroupMember>();
