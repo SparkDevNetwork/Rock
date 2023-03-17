@@ -949,6 +949,7 @@
     <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
+    <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />

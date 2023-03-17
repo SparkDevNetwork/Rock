@@ -763,6 +763,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// AttendanceOccurrence that either have attendees, or are marked as "Did not occur", or has already had an attendance reminder sent today.
+        /// </summary>
+        /// <param name="attendanceOccurrences">The attendance occurrences.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> HasAttendeesOrDidNotOccurOrRemindersAlreadySentToday( this IQueryable<AttendanceOccurrence> attendanceOccurrences )
+        {
+            return attendanceOccurrences
+                    .Where(
+                        a => a.Attendees.Any()
+                        || ( a.DidNotOccur.HasValue && a.DidNotOccur.Value )
+                        || a.AttendanceReminderLastSentDateTime >= RockDateTime.Today
+                    );
+        }
+
+        /// <summary>
         /// Where the attendance occurred at an active location (or the location is null).
         /// </summary>
         /// <param name="query">The query.</param>
