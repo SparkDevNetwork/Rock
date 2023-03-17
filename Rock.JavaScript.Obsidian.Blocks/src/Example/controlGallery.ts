@@ -204,6 +204,8 @@ import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
 import CategorizedValuePicker from "@Obsidian/Controls/categorizedValuePicker.obs";
 import ReminderTypePicker from "@Obsidian/Controls/reminderTypePicker.obs";
 import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
+import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
 
 // #region Gallery Support
 
@@ -7079,7 +7081,6 @@ const reminderTypePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-
 /** Demonstrates group role picker */
 const groupRolePickerGallery = defineComponent({
     name: "GroupRolePickerGallery",
@@ -7116,6 +7117,70 @@ const groupRolePickerGallery = defineComponent({
     </template>
 </GalleryAndResult>`
 });
+
+/** Demonstrates modal alert */
+const modalAlertGallery = defineComponent({
+    name: "ModalAlertGallery",
+    components: {
+        GalleryAndResult,
+        RockButton,
+        ModalAlert,
+        TextBox,
+        DropDownList
+    },
+    setup() {
+        const types = [
+            {
+                text: "Alert",
+                value: "Alert"
+            },
+            {
+                text: "Information",
+                value: "Information"
+            },
+            {
+                text: "Warning",
+                value: "Warning"
+            },
+            {
+                text: "None",
+                value: "None"
+            }
+        ];
+
+        return {
+            types,
+            type: ref("Alert"),
+            isShowing: ref(false),
+            message: ref("Message I want to alert you to."),
+            importCode: getSfcControlImportPath("modalAlert"),
+            exampleCode: `<ModalAlert v-model="isShowing" type="ModalAlertType.Alert">Message I want to alert you to.</ModalAlert>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <ModalAlert v-model="isShowing" :type="type">{{message}}</ModalAlert>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <RockButton @click="isShowing = true">Show</RockButton>
+            </div>
+            <div class="col-md-4">
+                <TextBox label="Message" v-model="message" />
+            </div>
+            <div class="col-md-4">
+                <DropDownList label="Alert Type" v-model="type" :items="types" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -7249,6 +7314,7 @@ const controlGalleryComponents: Record<string, Component> = [
     categorizedValuePickerGallery,
     reminderTypePickerGallery,
     groupRolePickerGallery,
+    modalAlertGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
