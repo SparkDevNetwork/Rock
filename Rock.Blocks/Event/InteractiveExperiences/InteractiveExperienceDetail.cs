@@ -1020,6 +1020,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new InteractiveExperienceService( rockContext );
+                var interactiveExperienceAnswerService = new InteractiveExperienceAnswerService( rockContext );
 
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -1031,8 +1032,18 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     return ActionBadRequest( errorMessage );
                 }
 
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
+                var answers = interactiveExperienceAnswerService.Queryable()
+                    .Where( a => a.InteractiveExperienceAction.InteractiveExperienceId == entity.Id )
+                    .ToList();
+
+                rockContext.WrapTransaction( () =>
+                {
+                    interactiveExperienceAnswerService.DeleteRange( answers );
+                    rockContext.SaveChanges();
+
+                    entityService.Delete( entity );
+                    rockContext.SaveChanges();
+                } );
 
                 return ActionOk( this.GetParentPageUrl() );
             }
