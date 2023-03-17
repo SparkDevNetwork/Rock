@@ -1055,6 +1055,112 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Content Channel Item Picker
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannels" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2182388d-ccae-44df-a0de-597b8d123666" )]
+        public IHttpActionResult ContentChannelItemPickerGetContentChannels()
+        {
+            var contentChannels = ContentChannelCache.All()
+                .OrderBy( cc => cc.Name )
+                .Select( cc => new ListItemBag { Text = cc.Name, Value = cc.Guid.ToString() } )
+                .ToList();
+
+            return Ok( contentChannels );
+        }
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannelItems" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "e1f6ad6b-c3f5-4a1a-abc2-46726732daee" )]
+        public IHttpActionResult ContentChannelItemPickerGetContentChannelItems( [FromBody] ContentChannelItemPickerGetContentChannelItemsOptionsBag options )
+        {
+            return Ok( ContentChannelItemPickerGetContentChannelItemsForContentChannel( options.ContentChannelGuid, options.ExcludeContentChannelItems ) );
+        }
+
+        /// <summary>
+        /// Gets the content channel items and content channel information based on a selected content channel item.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>All the data for the selected role, selected type, and all of the content channel items</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ContentChannelItemPickerGetAllForContentChannelItem" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "ef6d055f-38b1-4225-b95f-cfe703f4d425" )]
+        public IHttpActionResult ContentChannelItemPickerGetAllForContentChannelItem( [FromBody] ContentChannelItemPickerGetAllForContentChannelItemOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                List<Guid> excludeContentChannelItems = options.ExcludeContentChannelItems;
+
+                var contentChannelItemService = new Rock.Model.ContentChannelItemService( rockContext );
+                var contentChannelItem = contentChannelItemService.Queryable()
+                    .Where( cc => cc.Guid == options.ContentChannelItemGuid )
+                    .First();
+
+                var contentChannel = contentChannelItem.ContentChannel;
+
+                var contentChannelItems = ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannel.Guid, excludeContentChannelItems, rockContext );
+
+                return Ok( new ContentChannelItemPickerGetAllForContentChannelItemResultsBag
+                {
+                    SelectedContentChannelItem = new ListItemBag { Text = contentChannelItem.Title, Value = contentChannelItem.Guid.ToString() },
+                    SelectedContentChannel = new ListItemBag { Text = contentChannel.Name, Value = contentChannel.Guid.ToString() },
+                    ContentChannelItems = contentChannelItems
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="contentChannelGuid">Load content channel items of this type</param>
+        /// <param name="excludeContentChannelItems">Do not include these items in the result</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        private List<ListItemBag> ContentChannelItemPickerGetContentChannelItemsForContentChannel( Guid contentChannelGuid, List<Guid> excludeContentChannelItems )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannelGuid, excludeContentChannelItems, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="contentChannelGuid">Load content channel items of this type</param>
+        /// <param name="excludeContentChannelItems">Do not include these items in the result</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        private List<ListItemBag> ContentChannelItemPickerGetContentChannelItemsForContentChannel( Guid contentChannelGuid, List<Guid> excludeContentChannelItems, RockContext rockContext )
+        {
+            var contentChannelItemService = new Rock.Model.ContentChannelItemService( rockContext );
+            
+            var contentChannelitems = contentChannelItemService.Queryable()
+                .Where( r =>
+                    r.ContentChannel.Guid == contentChannelGuid &&
+                    !excludeContentChannelItems.Contains( r.Guid ) )
+                .OrderBy( a => a.Title )
+                .Select( r => new ListItemBag { Text = r.Title, Value = r.Guid.ToString() } )
+                .ToList();
+
+            return contentChannelitems;
+        }
+
+        #endregion
+
         #region Data View Picker
 
         /// <summary>

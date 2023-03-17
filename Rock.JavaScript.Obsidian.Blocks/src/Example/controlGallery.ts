@@ -206,6 +206,7 @@ import ReminderTypePicker from "@Obsidian/Controls/reminderTypePicker.obs";
 import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
 import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
 import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+import ContentChannelItemPicker from "@Obsidian/Controls/contentChannelItemPicker.obs";
 
 // #region Gallery Support
 
@@ -7131,20 +7132,20 @@ const modalAlertGallery = defineComponent({
     setup() {
         const types = [
             {
-                text: "Alert",
-                value: "Alert"
+                text: ModalAlertType.Alert,
+                value: ModalAlertType.Alert
             },
             {
-                text: "Information",
-                value: "Information"
+                text: ModalAlertType.Information,
+                value: ModalAlertType.Information
             },
             {
-                text: "Warning",
-                value: "Warning"
+                text: ModalAlertType.Warning,
+                value: ModalAlertType.Warning
             },
             {
-                text: "None",
-                value: "None"
+                text: ModalAlertType.None,
+                value: ModalAlertType.None
             }
         ];
 
@@ -7174,6 +7175,46 @@ const modalAlertGallery = defineComponent({
             </div>
             <div class="col-md-4">
                 <DropDownList label="Alert Type" v-model="type" :items="types" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates content channel item picker */
+const contentChannelItemPickerGallery = defineComponent({
+    name: "ContentChannelItemPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        ContentChannelItemPicker,
+        TextBox
+    },
+    setup() {
+        return {
+            value: ref({
+                "value": "d6d4a292-f794-4d0c-bd29-420631a858b3",
+                "text": "Miracles in Luke",
+                "category": null
+            }),
+            required: ref(false),
+            importCode: getSfcControlImportPath("contentChannelItemPicker"),
+            exampleCode: `<ContentChannelItemPicker label="Content Channel Item" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <ContentChannelItemPicker label="Choose A Content Channel Item" v-model="value" :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
             </div>
         </div>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
@@ -7315,6 +7356,7 @@ const controlGalleryComponents: Record<string, Component> = [
     reminderTypePickerGallery,
     groupRolePickerGallery,
     modalAlertGallery,
+    contentChannelItemPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
