@@ -44,6 +44,11 @@ export default defineComponent({
             default: false
         },
 
+        formGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         repeatColumns: {
             type: Number as PropType<number>,
             default: 0
@@ -150,7 +155,9 @@ export default defineComponent({
     },
 
     template: `
-<RockFormField formGroupClasses="rock-radio-button-list" #default="{uniqueId}" name="radiobuttonlist" v-model="internalValue">
+<RockFormField
+    :formGroupClasses="'rock-radio-button-list ' + formGroupClasses"
+     #default="{uniqueId}" name="radiobuttonlist" v-model="internalValue">
     <div class="control-wrapper">
         <slot name="prepend" :isInputGroupSupported="false" />
         <div class="controls rockradiobuttonlist" :class="containerClasses">

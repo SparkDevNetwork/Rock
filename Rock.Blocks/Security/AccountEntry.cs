@@ -614,8 +614,6 @@ namespace Rock.Blocks.Security
                 person.PhoneNumbers.Add( phoneNumber );
             }
 
-            // JMH Should we allow attributes like the WebForms block?
-            ////avcAttributes.GetEditValues( person );
             int? campusId = null;
             if ( config.IsCampusPickerShown && box.PersonInfo.Campus.HasValue )
             {

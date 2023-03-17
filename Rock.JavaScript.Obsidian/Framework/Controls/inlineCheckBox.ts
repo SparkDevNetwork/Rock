@@ -22,6 +22,11 @@ export default defineComponent({
     components: {
     },
 
+    emits: [
+         // Explicitly define "update:modelValue" event; otherwise v-bind="$attrs" could attach a duplicate event handler to the underlying checkbox input.
+        "update:modelValue"
+    ],
+
     props: {
         modelValue: {
             type: Boolean as PropType<boolean>,

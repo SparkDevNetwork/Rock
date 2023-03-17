@@ -1,0 +1,110 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TextBox v-model="searchText" placeholder="Search" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { createFilter, IAttendanceFilter, NoFilter } from "./utils.partial";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Groups/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
+
+    const isRegex: RegExp = /\/(.+)\/(.*)/; // Matches regex strings in the form /<regex>/<flags>
+    const debouncedUpdateSearchFilter = debounce(updateSearchFilter, 250);
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<IAttendanceFilter>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: IAttendanceFilter): void
+    }>();
+
+    //#region Values
+
+    let internalSearchText = ref<string>("");
+
+    //#endregion
+
+    //#region Computed Values
+
+    const searchText = computed<string>({
+        get() {
+            return internalSearchText.value;
+        },
+        set(newValue: string) {
+            internalSearchText.value = newValue;
+            debouncedUpdateSearchFilter();
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Creates a filter that returns `true` if an attendance record's full name contains the specified text.
+     */
+    function createNameContainsFilter(text: string): IAttendanceFilter {
+        return createFilter((attendance: GroupAttendanceDetailAttendanceBag) => {
+            return !!attendance.fullName && attendance.fullName.toLocaleLowerCase().indexOf(text.toLocaleLowerCase()) >= 0;
+        });
+    }
+
+    /**
+     * Creates a filter that returns `true` if an attendance record's full name matches the specified regex.
+     */
+    function createNameMatchesRegexFilter(regex: RegExp): IAttendanceFilter {
+        return createFilter((attendance: GroupAttendanceDetailAttendanceBag) => {
+            return !!attendance.fullName && regex.test(attendance.fullName);
+        });
+    }
+
+    /**
+     * Updates the search filter based on the current search text.
+     */
+    function updateSearchFilter(): void {
+        let filter: IAttendanceFilter = NoFilter;
+        const newValue = internalSearchText.value;
+
+        if (newValue) {
+            const match = newValue.match(isRegex);
+            if (match && match.length) {
+                try {
+                    const regex = new RegExp(match[1], match[2]);
+                    if (regex) {
+                        filter = createNameMatchesRegexFilter(regex);
+                    }
+                }
+                catch {
+                    // `newValue` is not a valid regex string so use a simple text match.
+                    filter = createNameContainsFilter(newValue);
+                }
+            }
+            else {
+                filter = createNameContainsFilter(newValue);
+            }
+        }
+
+        return emit("update:modelValue", filter);
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    /**
+     * Clears the filter if the modelValue is set to NoFilter.
+     */
+    watch(() => props.modelValue, () => {
+        if (props.modelValue.isFilter(NoFilter)) {
+            internalSearchText.value = "";
+        }
+    });
+
+    //#endregion
+</script>

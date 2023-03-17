@@ -48,6 +48,17 @@
     <Compile Include="Blocks\Engagement\SignUp\SignUpDetail\SignUpDetailInitializationBox.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterRequestBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterResponseBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailAddPersonResponseBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailAddPersonRequestBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailGetAttendanceRequestBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailPrintRosterResponseBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailGetOrCreateRequestBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailUpdateNotesRequestBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailUpdateDidNotOccurRequestBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailMarkAttendanceRequestBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailAttendanceBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailInitializationBox.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryAccountInfoBag.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryCompletedStepBag.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryConfirmationSentStepBag.cs" />
@@ -158,6 +169,7 @@
     <Compile Include="Core\NotificationMessageActionBag.cs" />
     <Compile Include="Entities\NotificationMessageTypeBag.cs" />
     <Compile Include="Engagement\AchievementCompletedMessageBag.cs" />
+    <Compile Include="Event\AttendanceOccurrenceUpdatedMessageBag.cs" />
     <Compile Include="Event\AttendanceUpdatedMessageBag.cs" />
     <Compile Include="Entities\SnippetBag.cs" />
     <Compile Include="Entities\SnippetTypeBag.cs" />
@@ -182,6 +194,9 @@
     <Compile Include="Rest\Controls\CategorizedValuePickerGetTreeResultsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerNodeBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailGetGroupLocationSchedulesRequestBag.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailGetGroupLocationsRequestBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerFormatSelectedValueOptionsBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PhoneNumberBoxGetConfigurationResultsBag.cs" />

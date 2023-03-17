@@ -2205,7 +2205,7 @@ namespace Rock.Rest.v2
 
             group = new GroupService( new RockContext() ).Get( options.GroupGuid.Value );
 
-            if ( group == null && !group.Members.Any() )
+            if ( group == null || !group.Members.Any() )
             {
                 return NotFound();
             }

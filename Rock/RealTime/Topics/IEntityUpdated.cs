@@ -56,5 +56,22 @@ namespace Rock.RealTime.Topics
         Task AttendanceDeleted( Guid attendanceGuid );
 
         #endregion
+
+        #region Attendance Occurrence Methods
+
+        /// <summary>
+        /// Called when an AttendanceOccurrence record is created or updated in a way that
+        /// would change the values of the message bag.
+        /// </summary>
+        /// <param name="bag">The message bag that represents the attendance occurrence.</param>
+        Task AttendanceOccurrenceUpdated( AttendanceOccurrenceUpdatedMessageBag bag );
+
+        /// <summary>
+        /// Called when an AttendanceOccurrence record has been deleted.
+        /// </summary>
+        /// <param name="attendanceOccurrenceGuid">The attendance occurrence unique identifier.</param>
+        Task AttendanceOccurrenceDeleted( Guid attendanceOccurrenceGuid );
+
+        #endregion
     }
 }

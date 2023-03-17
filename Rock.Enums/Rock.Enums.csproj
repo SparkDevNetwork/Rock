@@ -47,6 +47,9 @@
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Blocks\Engagement\SignUp\RegisterMode.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailScheduleSelectionMode.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailLocationSelectionMode.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailDateSelectionMode.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryStep.cs" />
     <Compile Include="Blocks\Security\Login\LoginMethod.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
