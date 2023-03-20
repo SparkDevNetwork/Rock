@@ -210,7 +210,7 @@
                 </asp:Panel>
 
                 <Rock:TaskActivityProgressReporter ID="tapReporter" runat="server" />
-
+                <Rock:NotificationBox ID="nbTapReportFailed" runat="server" Visible="false" NotificationBoxType="Info" Text="Bulk update task started. It should be completed shortly."></Rock:NotificationBox>
             </div>
         </div>
 
