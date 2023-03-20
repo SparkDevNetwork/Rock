@@ -72,11 +72,11 @@ namespace Rock.Model
             {
                 return string.Empty;
             }
-            else if ( currentPrincipal.Identity.Name.StartsWith( "rckipid=" ) )
-            {
-                var currentUserLogin = UserLoginService.GetCurrentUser( true );
-                return currentUserLogin?.UserName ?? currentPrincipal.Identity.Name;
-            }
+            //else if ( currentPrincipal.Identity.Name.StartsWith( "rckipid=" ) )
+            //{
+            //    var currentUserLogin = UserLoginService.GetCurrentUser( true );
+            //    return currentUserLogin?.UserName ?? currentPrincipal.Identity.Name;
+            //}
             else
             {
                 return currentPrincipal.Identity.Name;
