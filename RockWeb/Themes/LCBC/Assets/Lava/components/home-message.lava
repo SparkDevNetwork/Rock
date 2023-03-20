@@ -1,0 +1,122 @@
+/- {% include '~~/Assets/Lava/components/home-message.lava' %} -/
+
+<section class="page-section">
+    <div class="container">
+
+        <div class="card card-featured-message mb-4">
+            <div class="card-img">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/SoundtracksWeb__1600x900-SeriesHero-Homepage.jpg" alt="" class="card-img-top">
+            </div>
+
+            <div class="card-body">
+                <h3 class="mt-0 mb-1">Living with Lions</h3>
+                <span class="d-block mb-4">Matt Parks | August 28, 2022</span>
+                <div class="mb-4">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna. Do eiusmod tempor incididunt ut labore et dolore magna.</p>
+                </div>
+                <a href="#" class="btn btn-primary btn-lg">Watch Latest Message</a>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="container">
+        <div class="home-grid">
+            <div class="card justify-content-start bg-primary item g-1x1 g-lg-2x1">
+                    <h1 class="mt-0">Nice to Meet <span class="underline">You</span></h1>
+                    <p>We are one church in multiple locations - join our community and explore your faith through an on-site or online experience.</p>
+                    <a href="#" class="btn btn-default btn-lg stretched-link d-block d-lg-inline-block mt-lg-auto">Find a Location</a>
+            </div>
+
+            <div class="item card-img-overlay-gradient-diag align-items-center g-1x1">
+                <img src="{{ '~~/Assets/Images/about-hero.jpg' | ResolveRockUrl }}" alt="" class="img-cover">
+                <div class="z-10">
+                    <h3 class="m-0"><a href="#" class="stretched-link">About LCBC</a></h3>
+                </div>
+            </div>
+
+            <div class="item card-img-overlay-gradient-diag align-items-center g-1x1">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/paul-plan-a-visit.jpg" alt="" class="img-cover">
+                <div class="z-10">
+                    <h3 class="m-0"><a href="#" class="stretched-link">What to Expect</a></h3>
+                </div>
+            </div>
+
+            <div class="item card-img-overlay-gradient g-1x1 g-lg-2x1">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/kidmin-check-in.jpg" alt="" class="img-cover">
+                <div class="z-10">
+                    <h3 class="m-0">Kids (6 Weeks - Grade 4)</h3>
+                    <div class="mb-4">
+                        <p>kidVenture Island is where kids 6 Weeks - Grade 4 can grow in their relationship with Jesus.</p>
+                    </div>
+                    <a href="#" class="btn btn-default btn-lg stretched-link d-block d-lg-inline-block">Watch Latest Kids Message</a>
+                </div>
+            </div>
+
+            <div class="item card-img-overlay-gradient g-1x1 g-lg-2x1">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/StudentMin-Hero2.jpg" alt="" class="img-cover">
+                <div class="z-10">
+                    <h3 class="m-0">Students (Grades 5-12)</h3>
+                    <div class="mb-4">
+                        <p>Student Ministry is where students in grades 5-12 can have fun with friends, play games, and learn truth as they grow in their faith.</p>
+                    </div>
+                    <a href="#" class="btn btn-default btn-lg stretched-link d-block d-lg-inline-block">Watch Latest Students Message</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section discover-now bg-gray">
+    <div class="container">
+        <h1 class="text-center"><span class="underline" style="--underline-color:#D0D3D4;">Discover</span> Now</h1>
+
+        <div class="discover-category">
+            <div>
+                <h3 class="text-white">Discover by Category</h3>
+                <p>Browse content and topics around a specific category.</p>
+            </div>
+
+            <div class="btn-group btn-group-rounded mt-4 mt-lg-0" role="group">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Category <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a href="#">Faith</a></li>
+                      <li><a href="#">Relationships</a></li>
+                      <li><a href="#">Wellness</a></li>
+                      <li><a href="#">Personal Growth</a></li>
+                      <li><a href="#">Finances</a></li>
+                      <li><a href="#">Community</a></li>
+                    </ul>
+                  </div>
+                <button type="button" class="btn btn-success btn-lg">Discover</button>
+            </div>
+        </div>
+
+        /- <div class="discover-category-list d-flex d-lg-none">
+            <a href="#">Faith</a>
+            <a href="#">Relationships</a>
+            <a href="#">Wellness</a>
+            <a href="#">Personal Growth</a>
+            <a href="#">Finances</a>
+            <a href="#">Community</a>
+        </div> -/
+
+        <div class="discover-now__grid mt-4">
+            <a class="tile g-2x2" href="https://lcbcchurch.com/next-steps/groups" target="">
+                <img class="tile__image" src="https://storage.googleapis.com/lcbc-assets/images/Groups-LargeSquare-900x900-GIF.gif" alt="Groups Large Square 900x900 GIF - Learn More">
+            </a>
+            <a class="tile g-2x1" href="https://lcbcchurch.com/bible-reading/the-bible-recap" target="">
+                <img class="tile__image" src="https://storage.googleapis.com/lcbc-assets/images/TheBibleRecap-horizontal-900x428.jpg" alt="The Bible Recap - Learn More">
+            </a>
+            <a class="tile g-1x1" href="https://lcbcchurch.com/mental-health-matters" target="">
+                <img class="tile__image" src="https://storage.googleapis.com/lcbc-assets/images/FirstSteps-SmallSquare-428x428-2.jpg" alt="Resources to replace negative Soundtracks - 428x428 - Learn More">
+            </a>
+            <a class="tile g-1x1" href="https://lcbcchurch.com/studies/soundtracks" target="">
+                <img class="tile__image" src="https://storage.googleapis.com/lcbc-assets/images/SoundtracksMBQ-SmallSquare-428x428.jpg" alt="Soundtracks MBQ's - Learn More">
+            </a>
+        </div>
+    </div>
+</section>

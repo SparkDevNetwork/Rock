@@ -1,0 +1,69 @@
+/- {% include '~~/Assets/Lava/components/eventdetail.lava' %} -/
+
+<section id="main_secPageTitle" class="page-header has-image" role="banner">
+
+    <img src="/GetImage.ashx?Guid=9a7eedb9-3cbc-4096-a3a6-33a5c7c3562b" srcset="/GetImage.ashx?Guid=9a7eedb9-3cbc-4096-a3a6-33a5c7c3562b 350w,/GetImage.ashx?Guid=9a7eedb9-3cbc-4096-a3a6-33a5c7c3562b 750w,/GetImage.ashx?Guid=9a7eedb9-3cbc-4096-a3a6-33a5c7c3562b 1100w" sizes="100vw" class="hero-image" alt="" width="1600" height="600" itemprop="image">
+</section>
+
+<section class="page-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h1 class="mt-0">First Steps</h1>
+                <p>In today's world and culture centered around devices, the internet, and social media, it can be easy to feel hyper-connected while at the same time feeling alone or secluded.</p>
+            </div>
+            <div class="col-md-6">
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section bg-gray-100">
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <input type="text" class="form-control js-filter-items-search" placeholder="Search events">
+            </div>
+        </div>
+
+        <div class="row d-flex flex-wrap js-filter-items">
+            {% for i in (1..10) %}
+                <div class="js-filter-item col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-5">
+                    <div class="card card-event h-100">
+                        <div class="card-header">
+                            <h6 class="card-title">Berks</h6>
+                        </div>
+                        <div class="card-body">
+                            <span class="d-block h6 mt-0">Contact Details</span>
+
+                            <div class="text-sm">
+                                Justin Ashcraft
+                                <a href="mailto:justinashcraft@lcbcchurch.com">justinashcraft@lcbcchurch.com</a>
+                                {% if forloop.first %}
+                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda alias, nulla qui veniam aut laborum laudantium placeat quo sunt quibusdam eos modi tempora. Recusandae quae asperiores voluptatibus voluptas saepe hic!
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="card-cell">
+                            <div><i class="fa fa-map-marker"></i> Atrium</div>
+                            <div><i class="fa fa-calendar"></i> 12/4/2022 9:00AM</div>
+                            <div><i class="fa fa-child"></i> kidCare</div>
+                        </div>
+
+                        {% if true %}
+                            <div class="card-footer">
+                                <a href="#" class="btn btn-primary btn-block">Register</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="col-xs-12 js-filter-items-empty" style="display: none;">
+                <div class="alert alert-default">No events match your query. Try erasing and try again.</div>
+            </div>
+        </div>
+    </div>
+</section>

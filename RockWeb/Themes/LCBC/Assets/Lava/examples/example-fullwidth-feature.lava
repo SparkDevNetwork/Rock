@@ -1,0 +1,268 @@
+/- {% include '~~/Assets/Lava/examples/example-fullwidth-feature.lava' %} -/
+
+<section class="page-section">
+    <div class="container">
+        <div class="row g g-4 align-items-center">
+            <div class="col-xs-12 col-md-6">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/kidmin-check-in.jpg" alt="" class="img-responsive rounded">
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <h4 class="mt-0">Content Title</h4>
+                <p>Each of us is on a journey that’s racing towards eternity. We all have hopes and fears that pull us in different directions as we go through our lives. We believe that Jesus is the answer to both our present lives and our future lives. We only have one life and one eternity. What will you choose to do with Jesus?</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section bg-primary">
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-xs-12 col-md-5 text-center">
+                <h4 class="text-white">We believe following Jesus is the best life possible. He forgives our past, brings us joy, and becomes our hope for the future. When we trust Jesus, we become a life changed by Christ.
+            </h4>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section page-section-lg bg-overlay bg-gray-dark text-white">
+    <figure><img src="https://storage.googleapis.com/lcbc-assets/images/_1600xAUTO_stretch_center-center_none/537A9788.jpg" alt=""></figure>
+    <div class="container">
+        <div class="row d-flex ">
+            <div class="col-xs-12 col-md-7">
+                <h3 class="text-white mt-0">First Steps</h3>
+                <p>Hear from staff about who we are and what we believe at LCBC.</p>
+                <a href="#" class="btn btn-lg btn-outline-default">Join Us for Church</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section page-section-lg bg-overlay bg-gray-800 text-white">
+    <figure><img src="https://storage.googleapis.com/lcbc-assets/images/_1600xAUTO_stretch_center-center_none/537A5633.jpg" alt=""></figure>
+    <div class="container">
+        <div class="row d-flex ">
+            <div class="col-xs-12 col-md-8">
+                <h3 class="text-white mt-0">Worship</h3>
+                <p>This program is designed for gifted singers who are eager to grow as worship leaders and have a desire to serve in a local church setting. It provides practical training and ministry experience in Weekend Gatherings & Rehearsals, College Age Connect, Student Ministry and Weekly Staff Meetings.</p>
+                <p>To be notified when the DEVELUP application for 2023 is posted, please click below</p>
+                <a href="#" class="btn btn-lg btn-primary">Notify Me</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section">
+    <div class="container">
+        <div class="row g justify-content-center">
+            <div class="col-xs-12 col-md-10 col-lg-7">
+                <h4>The LCBC Story</h4>
+                <p>LCBC (Lives Changed By Christ) started with a small group of people who gathered in a garage in Marietta, PA to dream about a new kind of church. They asked questions like, "What if there were a church that focused on others? What if there were a place where people far from God felt comfortable coming and asking questions? What if everyone who walked through the doors felt accepted, not judged?"</p>
+                <h3 class="text-center">"We exist to introduce people to Jesus and together fully follow him."</h3>
+                <p>This others-driven mindset shaped who we are and it continues to shape us. As we've launched new locations and had the opportunity to reach more communities across the state of Pennsylvania, our mission has remained the same. We exist to introduce people to Jesus and together fully follow him.</p>
+                <p>Today, LCBC is one church with multiple <a href="#">locations</a> throughout Pennsylvania. Each location features the same unified experience of <a href="#">music</a> and one <a href="#">message</a> from a communicator that is broadcasted to each location.</p>
+                <p>Learn more about <a href="#">what we believe</a> and the <a href="#">leadership</a> of LCBC.</p>
+
+                <div class="text-center"><a href="#" class="btn btn-primary btn-lg d-block d-sm-inline-block">Plan a Visit</a></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section bg-gray-dark text-white">
+    <div class="container">
+        <h3 class="text-white">Connecting with God</h3>
+        <p>Join us weekly as your kids ages 2-Grade 4 engage with Jesus on their level through kidVenture Island Gatherings</p>
+        <hr>
+
+
+        <div class="row g g-3">
+            <div class="col-xs-12 col-md-6">
+                <h4 class="text-white">Ages 2-5</h4>
+                <img src="https://storage.googleapis.com/lcbc-assets/images/kids/2-4Wonderful_WorkshopJanuary_2023.jpg" class="img-responsive mb-2 mb-md-3">
+                <div class="row">
+                    <div class="col-xs-12 col-md-6 mb-2 mb-md-0"><a href="#" class="btn btn-primary btn-lg d-block"><i class="fa fa-youtube icon-left icon-fade"></i>Watch Now</a></div>
+                    <div class="col-xs-12 col-md-6"><a href="#" class="btn btn-primary btn-lg d-block"><i class="fa fa-map-marker icon-left icon-fade"></i>Find a Location</a></div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <h4 class="text-white">Grades K-4</h4>
+                <img src="https://storage.googleapis.com/lcbc-assets/images/kids/k-4Think_Thank_put_your_knowlege_to_the_testJanuary_2023.jpg" class="img-responsive mb-2 mb-md-3">
+                <div class="row">
+                    <div class="col-xs-12 col-md-6 mb-2 mb-md-0"><a href="#" class="btn btn-primary btn-lg d-block"><i class="fa fa-youtube icon-left icon-fade"></i>Watch Now</a></div>
+                    <div class="col-xs-12 col-md-6"><a href="#" class="btn btn-primary btn-lg d-block"><i class="fa fa-map-marker icon-left icon-fade"></i>Find a Location</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section bg-gray">
+    <div class="container">
+        <div class="row g g-4 align-items-center">
+            <div class="col-xs-12 col-md-6 order-2 order-md-1">
+                <h4 class="mt-0">First-Time Guests</h4>
+                <p>Look for the area designated for First-Time Families. We’ll meet your family, check you in, and lead you and your child to their environment. In all of our environments you'll find trained and cleared volunteers who are excited to connect and engage with your kids.</p>
+                <p>Learn more about how we handle safety at kidVenture Island.</p>
+            </div>
+            <div class="col-xs-12 col-md-6 order-1 order-md-2">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/kids/k-4Think_Thank_put_your_knowlege_to_the_testJanuary_2023.jpg" class="img-responsive ">
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<section class="page-section">
+    <div class="container">
+        <div class="row d-flex flex-wrap">
+            <div class="col-xs-12">
+                <h4>Groups</h4>
+                <p>Everything is more fun when you do it with friends! Invest in your relationship with others and join a Group with students in your grade along with a leader as you talk, ask questions, and explore what you’re learning together.</p>
+            </div>
+        </div>
+        <div class="row g gx-4 gy-3">
+            <div class="col-md-6 col-xs-12"><button type="button" class="btn btn-cta btn-callout"><span>Join a Group</span> <span class="microcopy">Collide (5-8th)</span></button></div>
+            <div class="col-md-6 col-xs-12"><button type="button" class="btn btn-cta btn-callout">Join a Group <span class="microcopy">hsm (9-12th)</span></button></div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section page-section-lg">
+    <figure class="hero-average">
+        <img src="https://storage.googleapis.com/lcbc-assets/images/SM-Web-1600x600-Group.jpg" alt="">
+    </figure>
+</section>
+
+
+<section class="page-section">
+    <div class="container">
+        <div class="row g g-4 align-items-center mb-5">
+            <div class="col-xs-12 col-md-6">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/RiseEP-Web.jpg" alt="" class="img-responsive rounded" width="2000" height="2000">
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <h6 class="text-color text-uppercase text-xs font-weight-normal m-0">Featured Album</h6>
+                <h2 class="mt-0">Rise</h2>
+                <p>LCBC Worship's 4th live album, Rise, features original music from a variety of creative and musically-collaborative artists within our church. The tracks feature hope-filled music and lyrics centered around the good news of Jesus’ resurrection! "Rise" is out now.</p>
+                <a href="#" class="btn btn-outline-primary btn-lg d-block d-sm-inline-block">Listen</a>
+            </div>
+        </div>
+
+        <div class="row g g-4">
+            <div class="col-xs-12 col-md-6 col-lg-3">
+                <div class="card card-transparent">
+                    <figure class="card-img-header">
+                        <img src="https://storage.googleapis.com/lcbc-assets/images/NothingLeft-AlbumCover-3000x3000.jpg" alt=""
+                            class="card-img-top img-responsive">
+                    </figure>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 col-lg-3">
+                <div class="card card-transparent">
+                    <figure class="card-img-header">
+                        <img src="https://storage.googleapis.com/lcbc-assets/images/YourGlory-AlbumCover-3000x3000-1.jpg" alt=""
+                            class="card-img-top img-responsive">
+                    </figure>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 col-lg-3">
+                <div class="card card-transparent">
+                    <figure class="card-img-header">
+                        <img src="https://storage.googleapis.com/lcbc-assets/images/Encounter-AlbumCover-3000x3000.jpg" alt=""
+                            class="card-img-top img-responsive">
+                    </figure>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 col-lg-3">
+                <div class="card card-transparent">
+                    <figure class="card-img-header">
+                        <img src="https://storage.googleapis.com/lcbc-assets/images/landing-pages/weAreLives-albumCover_large.jpg" alt=""
+                            class="card-img-top img-responsive">
+                    </figure>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section bg-gray">
+    <div class="container">
+        <div class="row g g-4">
+            <div class="col-xs-12">
+                <h3 class="mt-0 text-center">Ways to Give</h3>
+            </div>
+            <div class="col-xs-12 col-md-4 text-center">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/giving-icon-desktop.svg" alt="">
+                <h4>Online</h4>
+                <p>You can easily give or set up recurring gifts through our secure giving portal</p>
+            </div>
+            <div class="col-xs-12 col-md-4 text-center">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/giving-icon-mobile.svg" alt="">
+                <h4>Mobile</h4>
+                <p>Give through the <a href="https://lcbcchurch.com/app">LCBC App</a> or by texting GIVE to <a href="sms://20022">20022</a></p>
+            </div>
+            <div class="col-xs-12 col-md-4 text-center">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/giving-icon-cash.svg" alt="">
+                <h4>Cash or Check</h4>
+                <p>You can still always give during the gathering at any of our campuses</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section bg-white">
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-xs-12 col-md-7 text-center">
+                <h3>Follow Us! @lcbcstudents</h3>
+                <p>Get the latest information by following us on social media!</p>
+                <div>
+                    <a href="#" class="btn btn-default">
+                        /- <img src="https://storage.googleapis.com/lcbc-assets/images/icon-youtube.svg" class="social-icon" alt=""> -/
+                        <i class="fa fa-youtube color"></i>
+                    </a>
+                    <a href="#" class="btn btn-default">
+                        /- <img src="https://storage.googleapis.com/lcbc-assets/images/students/Instagram_Glyph_Gradient_RGB.png" class="social-icon" alt=""> -/
+                        <i class="fa fa-instagram color"></i>
+                    </a>
+                    <a href="#" class="btn btn-default">
+                        /- <img src="https://storage.googleapis.com/lcbc-assets/images/students/icons8-twitch-48.png" class="social-icon" alt=""> -/
+                        <i class="fa fa-twitch color"></i>
+                    </a>
+                    <a href="#" class="btn btn-default">
+                        /- <img src="https://storage.googleapis.com/lcbc-assets/images/students/icons8-discord-new-48.png" class="social-icon" alt=""> -/
+                        <i class="fa fa-discord color"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<section class="page-section page-section-lg bg-gray">
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-xs-12 col-md-5 text-center">
+                <h4 class="mt-0">Connect on Social</h4>
+                <p>Get the latest information, songs, and videos from kidVenture Island by following us on social media!</p>
+                <div style="font-size:58px;line-height:1;">
+                    <a href="#"><i class="fab fa-facebook-square color"></i></a>
+                    <a href="#"><i class="fa fa-instagram color"></i></a>
+                    <a href="#"><i class="fab fa-vimeo-square color"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,139 @@
+/- {% include '~~/Assets/Lava/page/article.lava' %} -/
+
+{% assign version = PageParameter.version %}
+
+<div class="container overflow-hidden">
+    <div class="row g g-6 g-md-3 g-lg-6 justify-content-between mt-0 block-pad-bottom">
+        <div class="col-md-8 col-lg-9">
+            <div>
+                <h1 class="my-0">5 Ways to Find Your People</h1>
+                <p class="lead">Finding & building a community with others like you can be challenging.
+                Here are 5 significant ways to find your people.</p>
+            </div>
+
+            <section>
+                <img src="https://storage.googleapis.com/lcbc-assets/images/5WaysToFindYourPeople-ArticleHeader-blank__1600x600-1.jpg" alt="" class="img-responsive">
+            </section>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 mb-3 mb-md-4">
+                <span class="label label-primary">Faith</span>
+
+                <div class="d-none d-md-flex flex-row align-items-center gap-20">
+                    <strong>Share This Message</strong>
+                    <ul class="socialsharing">
+                        <li>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
+                                <i class="fa fa-fw fa-facebook"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
+                                <i class="fa fa-fw fa-twitter"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' }}" class="socialicon socialicon-email" title="" data-original-title="Share via Email">
+                                <i class="fa fa-fw fa-envelope-o"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="socialicon socialicon-email btn-copy-url" title="" data-original-title="Copy URL">
+                                <i class="fa fa-fw fa-clipboard"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <div class="row d-flex flex-wrap justify-content-between flexfix">
+                <div class="col-xs-12">
+
+                    <div class="">
+                        <p dir="ltr">In today's world and culture centered around devices, the internet, and social media, it can be easy to feel hyper-connected while at the same time feeling alone or secluded. </p>
+                        <p dir="ltr">Taking the path to isolation is easy, but at LCBC, we believe God designed us for community and connection, and that life is better when we experience it alongside others. </p>
+                        <p dir="ltr">From the beginning in <a href="https://my.bible.com/bible/116/GEN.2.NLT" target="_blank">Genesis 2:18-25</a>, we see God acknowledge that Adam needed community, so he created Eve to do life alongside him. And In <a href="https://my.bible.com/bible/116/1CO.1.10.NLT" target="_blank">1 Corinthians 1:10</a>, we are challenged to be of one mind, united in thought and purpose. </p>
+                        <p dir="ltr">Finding and building a community with others like you can be challenging and seem impossible. Here are 5 significant first steps to finding people who may turn into life-long best friends. </p>
+                        <h3>1. Join a Group</h3>
+                        <p dir="ltr">At LCBC, hundreds of groups involve various activities, interests, studies, needs, or stages of life.</p>
+                        <p dir="ltr">If you <a href="https://my.lcbcchurch.com/page/1302?groupguid=4755c5a1-64a6-4820-a844-39f7b5dd124d">love riding your bike on a Saturday morning</a>, we have a group for you! If you are a <a href="https://my.lcbcchurch.com/groupfinder?GroupCategory=Moms">stay-at-home mom of a toddler</a> ready to find your community, we have plenty of groups! </p>
+                        <p dir="ltr">We have Groups to find other gamers like you, Groups for chicken wing connoisseurs, or Groups for those who want to go deeper in their faith. We have Groups for Men, Women, Parents, Divorced, Single, Married, Engaged; you name it. If you're struggling with Addiction, Depression, Finances, Faith, and Self-Worth, we have that too. </p>
+                        <p dir="ltr">Check out our <a href="https://my.lcbcchurch.com/groupfinder">group finder tool</a>, and filter through all the options to find the group of people who love to do life just like you. </p>
+                        /- <h3>2. Start a Group</h3>
+                        <p dir="ltr">If you’ve used Group Finder and still haven't found your people, no worries, you can always start your own group! </p>
+                        <p dir="ltr">You can start your group about anything, and you can be sure to find people with similar interests as you. If you love fishing and want to find others who love to fish, start a group that goes fishing, talks about fishing, and learns from each other! </p>
+                        <p dir="ltr">Start a group if you just got a brand new Study Bible and want to find others to dive deeper into the Book of Acts or the early church. You won't be the only one who has the same passion, so find your people!</p>
+                        <p dir="ltr">If you have a passion or idea to start your group and need help getting it on our website and app, email Groups@lcbcchurch.com or visit your local campus's Next Steps area, they will help you get started! </p>
+                        <h3>3. Serve at LCBC</h3>
+                        <p dir="ltr">Another way to find others interested in similar passions is by serving at your local LCBC campus. <a href="https://lcbcchurch.com/next-steps/serve">Serving with others</a> allows you to join a team and work together to accomplish a goal. </p>
+                        <p dir="ltr">If you love holding babies or playing with toddlers, you would be a great fit to spend time volunteering at kidVenture Island, and you'll meet others who love children or have children similar to you.</p>
+                        <p dir="ltr">Suppose you are interested in directing traffic, greeting people at the doors, or taking photos. If that's you, the chances are high that everyone else who volunteered for the same thing is in a similar stage of life and has similar interests as you.</p>
+                        <p dir="ltr">As you work together to serve your church and create environments that help push the mission of LCBC further, you may find the people closest to you. If this is you feel free to <a href="https://my.lcbcchurch.com/volunteer">Contact Us Here</a>. </p>
+                        <h3>4. Serve in the Community</h3>
+                        <p dir="ltr">Similarly to serving at LCBC, spending time in your community to meet people's needs could be a great avenue to find others with similar passions.</p>
+                        <p dir="ltr">If you want to connect to a local organization and offer up your time and resources, you can rest assured there will be others who feel like you. </p>
+                        <p dir="ltr">Working with others to pour your heart into the community you live in creates memories and moments that will bond you to others for a lifetime. If you think this may be your next best step, check out where you could <a href="https://lcbcchurch.com/be-rich" target="_blank">get started</a>.</p>
+                        <h3>5. Attend one of our Classes</h3>
+                        <p dir="ltr">If you're new to LCBC, or have been attending for a while, and want to get involved deeper, you're not alone.</p>
+                        <p dir="ltr">Our <a href="https://lcbcchurch.com/next-steps/first-steps" target="_blank">First Steps</a> and <a href="https://lcbcchurch.com/next-steps/growth-track" target="_blank">Growth Track</a> classes are environments explicitly designed for you to meet others like you and figure out what their next best step in faith may be. </p>
+                        <p dir="ltr">In these classes, you will get the chance to share your story and hear life journeys from others. Through these experiences, you may find out things of common interest or life experience that make you want to get to know someone deeper or follow up later more personally. </p>
+                        <p dir="ltr">-----</p>
+                        <p dir="ltr">Taking the path to isolation is easy, but we are built to be in constant relationships and community with others! Out of all five options, which one intrigues you the most? </p>
+                        <p dir="ltr">No matter what next step you decide, we guarantee that when you step out in faith and join an environment with others, you put yourself in a position to find your people and build relationships that could last a lifetime.</p>
+                        <p dir="ltr">----</p>
+                        <p dir="ltr"> </p>
+                        <p dir="ltr">If you're interested in other content similar to this, check out:</p>
+                        <ul><li dir="ltr"><p dir="ltr"><a href="https://lcbcchurch.com/articles/4-ways-to-make-our-friendships-intentional">4 Ways to Make Our Friendships Intentional</a></p></li><li dir="ltr"><p dir="ltr"><a href="https://lcbcchurch.com/articles/5-ways-to-engage-in-spiritual-growth">5 Ways to Engage in Spiritual Growth</a></p></li><li dir="ltr"><p dir="ltr"><a href="https://lcbcchurch.com/articles/5-reasons-its-worth-it-to-lead-a-group-at-lcbc-even-if-youre-an-introvert">5 Reasons It’s Worth it to Lead A Group At LCBC</a></p></li></ul> -/
+
+                    </div>
+
+                    <hr>
+
+                    <strong>Share This Message</strong>
+                    <ul class="socialsharing">
+                        <li>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
+                                <i class="fa fa-fw fa-facebook"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
+                                <i class="fa fa-fw fa-twitter"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' }}" class="socialicon socialicon-email" title="" data-original-title="Share via Email">
+                                <i class="fa fa-fw fa-envelope-o"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="socialicon socialicon-email btn-copy-url" title="" data-original-title="Copy URL">
+                                <i class="fa fa-fw fa-clipboard"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3 col-lg-3">
+            <h4>More <span class="text-primary">Faith</span> Related Content</h4>
+            <div class="row g gy-4">
+                {% for i in (1..4) %}
+                    <div class="col-xs-12 col-sm-6 col-md-12">
+                        <div class="card card-transparent">
+                            <img src="https://storage.googleapis.com/lcbc-assets/images/Foolproof-YoutubeThumbnail-Week1_2022-10-11-190500_doek.jpg" class="card-img-top" alt="">
+                            <div class="card-body">
+                                <h6 class="card-title mb-0"><a href="#" class="stretched-link">Top 15 At the Movies Films Ranked</a></h6>
+                                <span class="d-block text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor...</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

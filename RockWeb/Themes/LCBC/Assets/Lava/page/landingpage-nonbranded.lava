@@ -1,0 +1,223 @@
+/- {% include '~~/Assets/Lava/page/landingpage-nonbranded.lava' %} -/
+{% assign heroImage = Item | Attribute:'HeaderImage','Object' %}
+{% assign heroVideo = Item | Attribute:'HeaderVideo','RawValue' %}
+{% assign heroTemplate = Item | Attribute:'HeroTemplate','RawValue' %}
+
+{% assign faqs = Item | Attribute:'FAQs','Object' %}
+{% assign digitalInviteUrl = Item | Attribute:'DigitalInviteURL' %}
+
+<style>
+h2 {
+    color: #CA0153;
+    text-transform: uppercase;
+    font-size: 32px;
+}
+
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:focus,
+.btn-primary:active:focus {
+        color: #000;
+        background-color: #3DFFB3;
+        border-color: #3DFFB3;
+}
+</style>
+
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container flexfix">
+        <div id="main-navcol" class="navbar-collapse collapse flexfix flex-fill">
+            <button class="navbar-toggle navbar-toggle-mobile" type="button" data-toggle="collapse" data-target="#main-navcol">
+                <i class="fa fa-times"></i>
+            </button>
+            <ul class="nav navbar-nav">
+                {% if digitalInviteUrl != '' %}
+                <li>
+                    <a href="#invite">Invite</a>
+                </li>
+                {% endif %}
+
+                {% if faqs and faqs.AttributeMatrixItems != empty %}
+                <li>
+                    <a href="#faqs">FAQs</a>
+                </li>
+                {% endif %}
+
+                {% for link in pageNavigation %}
+                    {% assign attributeParts = link | PropertyToKeyValue %}
+                    <li>
+                        <a href="{{ attributeParts.Value }}">{{ attributeParts.Key }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="navbar-end ml-auto">
+            <a href="/search" class="btn btn-default btn-nav">
+                <i class="fa fa-search"></i>
+            </a>
+
+            <div class="dropdown">
+                <button type="button" class="btn btn-default btn-nav btn-user has-photo" data-toggle="dropdown" aria-haspopup="menu" aria-label="View profile and more" aria-expanded="false">
+                    <img src="/GetImage.ashx?Id=706&amp;w=128&amp;h=128" alt="">
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li><a href="/my/details">My Account</a></li>
+                    <li><a href="/my">Edit Account</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="/logout">Log Out</a></li>
+                </ul>
+            </div>
+
+            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                <i class="fa fa-bars"></i>
+            </button>
+
+        </div>
+
+    </div>
+</nav>
+
+<section class="page-header has-image" role="banner">
+
+    {% if heroVideo != '' %}
+        <video id="hero-video" autoplay loop muted playsinline class="hero-video" preload="auto">
+            <source src="{{ heroVideo }}" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+    {% else %}
+        {% if heroImage != empty %}
+            {% assign photoUrl = heroImage.Guid | Prepend:'/GetImage.ashx?Guid=' %}
+            {% assign width = heroImage.Width %}
+            <img
+                src="{{ photoUrl | TriumphImgCdn:'w=1100&h=550&fit=crop&auto=compress' }}"
+                srcset="{%- if width >= 550 -%}{{ photoUrl | TriumphImgCdn:'w=350&h=175&fit=crop&auto=format,compress' }} 350w{%- endif -%}
+                        {%- if width >= 1100 -%},{{ photoUrl | TriumphImgCdn:'w=750&h=375&fit=crop&auto=format,compress' }} 750w{%- endif -%}
+                        {%- if width >= 1445 -%},{{ photoUrl | TriumphImgCdn:'w=1100&h=550&fit=crop&auto=format,compress' }} 1100w{%- endif -%}
+                        {%- if width >= 1680 -%},{{ photoUrl | TriumphImgCdn:'w=1500&h=750&fit=crop&auto=format,compress' }} 1500w{%- endif -%}
+                        {%- if width >= 2048 -%},{{ photoUrl | TriumphImgCdn:'w=2200&h=1100&fit=crop&auto=format,compress' }} 2200w{%- endif -%}
+                        {%- if width >= 3000 -%},{{ photoUrl | TriumphImgCdn:'w=3000&h=1500&fit=crop&auto=format,compress' }} 3000w{%- endif -%}"
+                sizes="100vw"
+                class="hero-image"
+                alt=""
+                width="{{ heroImage.Width }}"
+                height="{{ heroImage.Height }}"
+                itemprop="image">
+            <div class="hero-overlay"></div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Start Hero Template -->
+    {{ heroTemplate | RunLava }}
+    <!-- End Hero Template -->
+</section>
+
+<section class="page-section">
+    {{ Item.Content | RunLava }}
+</section>
+
+{% if digitalInviteUrl != '' %}
+    {% capture pageUrl %}https://{{ 'Global' | Page:'Host' }}{{ 'Global' | Page:'Path' }}{% endcapture %}
+    {{ '/Scripts/clipboard.js/clipboard.min.js' | AddScriptLink }}
+    <script>
+    $('#copy').tooltip({
+    trigger: 'click',
+    placement: 'bottom'
+  });
+
+  function setTooltip(message) {
+    $('#copy').tooltip('hide')
+      .attr('data-original-title', message)
+      .tooltip('show');
+  }
+
+  function hideTooltip() {
+    setTimeout(function() {
+      $('#copy').tooltip('hide');
+    }, 1000);
+  }
+
+  // Clipboard
+  var clipboard = new ClipboardJS('#copy');
+
+  clipboard.on('success', function(e) {
+       setTooltip('Copied!');
+       hideTooltip();
+  });
+
+  clipboard.on('error', function(e) {
+      setTooltip('Failed!');
+      hideTooltip();
+  });
+    </script>
+
+    <section class="page-section bg-gray-900 text-white text-center">
+        <div class="container">
+            <h2 class="text-white">Invite Someone</h2>
+            <a href="#" class="btn btn-primary btn-lg d-block d-sm-inline-block">Digital Invite</a>
+
+
+            <div class="mt-5">
+                <strong>Other Ways to Invite</strong>
+                <div class="d-flex gap-3 mt-2 flex-column flex-sm-row justify-content-center">
+                    <a href="https://www.facebook.com/share.php?u={{ pageUrl }}&title={{ Item.Title | EscapeDataString | Replace:' ','%20' }}" class="btn btn-muted d-block d-sm-inline-block" target="_blank"><i class="fa fa-facebook text-facebook icon-left"></i>Facebook</a>
+                    <a href="https://twitter.com/intent/tweet?text=You%27re%20invited%20to%20join%20me%20for%20{{ Item.Title | EscapeDataString | Replace:' ','%20' }}!+{{ pageUrl }}" class="btn btn-muted d-block d-sm-inline-block" target="_blank"><i class="fa fa-twitter text-twitter icon-left"></i>Twitter</a>
+                    <button id="copy" class="btn btn-muted d-block d-sm-inline-block" type="button" data-clipboard-text="{{ pageUrl }}">
+                        <i class="fa fa-clipboard text-curlean o-70 icon-left"></i>Copy URL
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </section>
+{% endif %}
+
+{% if faqs and faqs.AttributeMatrixItems != empty %}
+    <section id="FAQs" class="page-section bg-gray">
+        <div class="container text-center">
+            <h1 class="display-2">FAQS</h1>
+        </div>
+
+        {% assign firstCol = '' %}
+        {% assign secondCol = '' %}
+        {% assign questionCount = faqs.AttributeMatrixItems | Size %}
+        {% for item in faqs.AttributeMatrixItems %}
+            {% assign mod = forloop.index | Modulo:2 %}
+            {% assign question = item | Attribute:'Question' %}
+            {% assign answer = item | Attribute:'Description1' %}
+
+            {% capture output %}
+                [[ item title:'{{ question }}' ]]
+                    {{ answer }}
+                [[ enditem ]]
+            {% endcapture %}
+
+            {% if questionCount > 4 %}
+                {%- if mod == 0 -%}
+                    {% assign secondCol = secondCol | Append:output %}
+                {%- else -%}
+                    {% assign firstCol = firstCol | Append:output %}
+                {%- endif -%}
+            {% else %}
+                {% assign firstCol = firstCol | Append:output %}
+            {% endif %}
+        {% endfor %}
+
+        <div class="container">
+            <div class="row g justify-content-center">
+                <div class="col-md-6 col-xs-12">
+                    {[ accordion ]}
+                        {{ firstCol }}
+                    {[ endaccordion ]}
+                </div>
+                {% if questionCount > 4 %}
+                    <div class="col-md-6 col-xs-12">
+                        {[ accordion ]}
+                            {{ secondCol }}
+                        {[ endaccordion ]}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endif %}

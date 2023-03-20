@@ -1,0 +1,8 @@
+/- {% include '~~/Assets/Lava/examples/banner-onechurch.lava' %} -/
+
+<section class="page-section bg-gray">
+    <div class="container text-center">
+        <h1>One Church. Multiple Locations.</h1>
+        <p class="lead">We can’t wait to connect with you! Find the location closest to you below or join us for Church Online.</p>
+    </div>
+</section>

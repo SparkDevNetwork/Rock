@@ -1,0 +1,134 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<%@ Import Namespace="Rock" %>
+<%@ Import Namespace="Rock.Web.UI" %>
+<%@ Import Namespace="Rock.Web.Cache" %><!DOCTYPE html>
+<script runat="server">
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+    protected void Page_Load( object sender, EventArgs e )
+    {
+        var page = ( RockPage ) this.Page;
+        var pageCache = Rock.Web.Cache.PageCache.Get( page.PageId );
+
+        if ( body != null )
+        {
+            // if page parameter modal=true, then set the page to be modal
+            if ( page.Request.QueryString["modal"] == "true" )
+            {
+                body.Attributes["class"] += " is-modal";
+            }
+        
+
+            if ( body.Attributes["class"] != null )
+            {
+                body.Attributes["class"] += " page-id-" + page.PageId.ToString();
+            }
+            else
+            {
+                body.Attributes.Add( "class", "page-id-" + page.PageId.ToString() );
+            }
+
+            if (pageCache != null )
+            {
+                var layoutName = pageCache.Layout.Name.ToLower().Replace(" ", "");
+                body.Attributes["class"] += " page-layout-" + layoutName;
+
+                if (pageCache.PageDisplayTitle == true || string.IsNullOrWhiteSpace( pageCache.PageTitle ) )
+                {
+                    body.Attributes["class"] += " has-page-header" ;
+                }
+
+                if ( page.Layout.Site.DefaultPageId == page.PageId ) {
+                    body.Attributes["class"] += " home" ;
+                }
+
+            }
+
+            var hasTransparentNav = page.GetAttributeValue( "TransparentNavigation" );
+            if ( hasTransparentNav == "True" )
+            {
+                body.Attributes["class"] += " transparent-nav" ;
+            }
+
+        }
+    }
+</script><html lang="en">
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+    <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js", true) %>"></script>
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+    <asp:ContentPlaceHolder ID="head" runat="server" />
+</head>
+<body runat="server" id="body">
+    <form id="form1" runat="server">
+        <Rock:Lava ID="notifications" runat="server">
+            {[ sitewidenotification ]}
+        </Rock:Lava>
+
+        <div class="page">
+            <nav id="site-nav" class="navbar navbar-default navbar-static-top">
+                <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
+            </nav>
+            <asp:ContentPlaceHolder ID="feature" runat="server" />
+            <asp:ContentPlaceHolder ID="main" runat="server" />
+        </div>
+
+
+        <Rock:Lava ID="prayercta" runat="server">
+            {[ prayerctalauncher ]}
+        </Rock:Lava>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                        </div>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+    </form>
+
+    <script>
+        Sys.Application.add_load(HandleBackForwardCache);
+
+        // Fixes an issue with the wait spinner caused by browser Back/Forward caching.
+        function HandleBackForwardCache() {
+
+            // Forcibly hide the wait spinner if the page is being reloaded from cache.
+            // Browsers that implement back/forward caching may otherwise continue to display the wait spinner when the page is restored.
+            // This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
+            // (https://bugs.webkit.org/show_bug.cgi?id=156356)
+            $(window).bind('pageshow', function (e) {
+                if ( e.originalEvent.persisted )
+                {
+                    $('#updateProgress').hide();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

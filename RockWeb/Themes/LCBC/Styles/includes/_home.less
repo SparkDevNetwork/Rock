@@ -1,0 +1,64 @@
+.jump-in {
+  .card {
+    &::before {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 1;
+      content: "";
+      background: #000;
+      opacity: .2;
+    }
+  }
+}
+
+.discover-category {
+  display: flex;
+  flex-direction: column;
+  padding: 34px 40px;
+  color: @white;
+  text-align: center;
+  background: @color-dark-cerulean;
+  border-radius: 4px;
+
+  h3 {
+    margin: 0 0 8px;
+  }
+
+  p {
+    margin: 0;
+    opacity: .7;
+  }
+
+  @media screen and (min-width: @screen-lg-min) {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
+
+
+// .discover-category-list {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 16px;
+
+//   a {
+//     padding: 18px;
+//     font-weight: 800;
+//     color: @text-color;
+//     text-decoration: none;
+//     background: #fff;
+//     border: 1px solid #d0d3d4;
+
+//     &:hover {
+//       border-color: @brand-primary;
+//     }
+//   }
+
+//   @media screen and (min-width: @screen-lg-min) {
+//     display: none;
+//   }
+// }

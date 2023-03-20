@@ -1,0 +1,560 @@
+/- {% include '~~/Assets/Lava/styleguide/components/cards.lava' %} -/
+
+
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"
+  />
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+
+{% include '~~/Assets/Images/campus-symbols.svg' %}
+
+{% capture cardMarkup %}
+<div class="card h-100">
+    <div class="card-img-header">
+        <img src="https://via.placeholder.com/491x180" alt="" class="card-img-top img-responsive">
+    </div>
+    <div class="card-body">
+        <h3 class="card-title">Card Title</h3>
+        <div class="card-text">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laborum excepturi fuga hic, aut expedita molestias illo dolorum!</div>
+    </div>
+    <div class="card-footer">
+        <a href="#" class="btn btn-sm btn-primary">More Info</a>
+        <a href="#" class="btn btn-sm btn-action">Register</a>
+    </div>
+</div>
+{% endcapture %}
+
+
+<h1>Cards</h1>
+<h6>Styles</h6>
+<ul class="nav nav-pills mb-4">
+        <li><a href="#standard">Standard</a></li>
+        <li><a href="#transparent">Transparent</a></li>
+        <li><a href="#shadow">Shadow</a></li>
+        <li><a href="#map">Map</a></li>
+        <li><a href="#campus">Campus</a></li>
+</ul>
+
+<h6>Formats</h6>
+<ul class="nav nav-pills mb-4">
+        <li><a href="#card-horizontal">Card Horizontal</a></li>
+</ul>
+
+<h6>In Use</h6>
+<ul class="nav nav-pills mb-4">
+        <li><a href="#eventfeature">Event Feature</a></li>
+</ul>
+
+
+
+<div class="card mb-4" id="standard">
+    <div class="card-header">
+        <h4 class="m-0">Standard</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g">
+            {% for i in (1..2) %}
+                <div class="col-xs-12 col-sm-6 mb-4">
+                    {{ cardMarkup }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ cardMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+
+{% capture codeMarkup %}
+<div class="row g">
+    <div class="col-xs-12 col-md-6">
+        <div class="card card-transparent h-100">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">Worship In-Person</h3>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-primary">Worship In-Person</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6"></div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="transparent">
+    <div class="card-header">
+        <h4 class="m-0">Transparent</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+
+{% capture codeMarkup %}
+<div class="row g g-4">
+    <div class="col-xs-12 col-md-6">
+        <div class="card card-shadow h-100">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">Worship In-Person</h3>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-primary">Worship In-Person</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6"></div>
+
+
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="shadow">
+    <div class="card-header">
+        <h4 class="m-0">Shadow</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+
+{% capture codeMarkup %}
+<div class="row g g-4">
+    <div class="col-xs-12 col-md-6">
+        <div class="card card-shadow h-100">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">Worship In-Person</h3>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-primary">Worship In-Person</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6"></div>
+
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="shadow">
+    <div class="card-header">
+        <h4 class="m-0">Shadow</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture codeMarkup %}
+<div class="row g g-4">
+    <div class="col-xs-12 col-md-6">
+        <div class="card card-map h-100">
+            <div class="card-body d-flex flex-row align-items-start">
+                <img src="{{ '~~/Assets/Images/icons/campus.svg' | ResolveRockUrl }}" class="flex-shrink-0 mr-3">
+                <div>
+                    <h3 class="h6 card-title mb-2">Waynesboro Campus</h3>
+                    <div class="card-text">
+                        4686 US Route 209<br>
+                        Elizabethville, PA 17023 in Lykens Valley Plaza<br><br>
+
+                        <a href="#">717-921-5977</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary btn-sm"><span class="icon-alignment">
+                    <svg class="icon"><use xlink:href="#info" /></svg> Details
+                </span></a>
+                <a href="#" class="btn btn-default btn-sm"><span class="icon-alignment">
+                    <svg class="icon"><use xlink:href="#envelope" /></svg> Send Email
+                </span></a>
+                <a href="#" class="btn btn-default btn-sm"><span class="icon-alignment">
+                    <svg class="icon"><use xlink:href="#info" /></svg> Directions
+                </span></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-md-6">
+        <div class="card card-map h-100">
+            <div class="card-body d-flex flex-row align-items-start">
+                <img src="{{ '~~/Assets/Images/icons/gathering.svg' | ResolveRockUrl }}" class="flex-shrink-0 mr-3">
+                <div>
+                    <h3 class="h6 card-title mb-2">Coal Township Community Gathering</h3>
+                    <div class="card-text">
+                        4686 US Route 209<br>
+                        Elizabethville, PA 17023 in Lykens Valley Plaza<br><br>
+
+                        <a href="#">717-921-5977</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary btn-sm"><span class="icon-alignment">
+                    <svg class="icon"><use xlink:href="#info" /></svg> Details
+                </span></a>
+                <a href="#" class="btn btn-default btn-sm"><span class="icon-alignment">
+                    <svg class="icon"><use xlink:href="#envelope" /></svg> Send Email
+                </span></a>
+                <a href="#" class="btn btn-default btn-sm"><span class="icon-alignment">
+                    <svg class="icon"><use xlink:href="#info" /></svg> Directions
+                </span></a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="map">
+    <div class="card-header">
+        <h4 class="m-0">Map</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+
+{% capture codeMarkup %}
+<div class="row g g-3">
+    <div class="col-xs-12">
+        <div class="card card-shadow card-campus card-horizontal h-100">
+            <div class="card-img-header">
+                <img src="https://swiperjs.com/demos/images/nature-1.jpg" class="w-100 h-100" />
+            </div>
+            <div class="card-body">
+                <h4 class="card-title my-0">LCBC Online</h4>
+                <span class="d-block text-primary">No Matter Where You Are</span>
+                <div class="card-text">
+                    Saturdays: 4pm, & 6pm<br>
+                    Sundays: 9am, 10:45am, 1pm, 3pm, 5pm, 7pm, 9pm, & 11pm<br>
+                    Mondays: 6:30pm, 9pm, & 11pm
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-primary btn-square">
+                    <svg class="icon"><use xlink:href="#monitor" /></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <div class="card card-shadow card-campus card-horizontal h-100">
+            <div class="card-img-header">
+                <div class="swiper campus-swiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-1.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                          <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-2.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                          <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-3.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                          <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-4.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                          <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-5.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-pagination"></div>
+                  </div>
+            </div>
+            <div class="card-body">
+                <h4 class="card-title my-0">Berks Campus</h4>
+                <div class="card-text">
+                    Sundays: 9am, 10:45am
+                </div>
+
+                <div class="card-details">40.4 miles away</div>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-action btn-square">
+                    <svg class="icon"><use xlink:href="#info" /></svg>
+                </a>
+                <a href="#" class="btn btn-sm btn-action btn-square">
+                    <svg class="icon"><use xlink:href="#campus" /></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <div class="card card-shadow card-campus card-horizontal h-100">
+            <div class="card-img-header">
+                <div class="swiper campus-swiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-1.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                          <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-2.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                          <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-3.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                          <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-4.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                          <div class="swiper-slide">
+                            <img src="https://swiperjs.com/demos/images/nature-5.jpg" loading="lazy" />
+                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                          </div>
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-pagination"></div>
+                  </div>
+            </div>
+            <div class="card-body">
+                <h4 class="card-title my-0">Coal Township Community Gathering</h4>
+                <div class="card-text">
+                    Sundays: 9am, 10:45am
+                </div>
+
+                <div class="card-details">40.4 miles away</div>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-action btn-square">
+                    <svg class="icon"><use xlink:href="#info" /></svg>
+                </a>
+                <a href="#" class="btn btn-sm btn-action btn-square">
+                    <svg class="icon"><use xlink:href="#gathering" /></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <div class="card card-shadow card-campus card-horizontal h-100">
+            <div class="card-img-header bg-primary text-white">
+                <svg class="icon"><use xlink:href="#home" /></svg>
+            </div>
+            <div class="card-body">
+                <h4 class="card-title my-0">Home Gathering - College State, West</h4>
+                <div class="card-text">
+                    Saturdays: 9am
+                </div>
+
+                <div class="card-details">40.4 miles away</div>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-action btn-square">
+                    <svg class="icon"><use xlink:href="#info" /></svg>
+                </a>
+                <a href="#" class="btn btn-sm btn-action btn-square">
+                    <svg class="icon"><use xlink:href="#home" /></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="campus">
+    <div class="card-header">
+        <h4 class="m-0">Campus</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture codeMarkup %}
+<div class="row g g-4">
+    <div class="col-xs-12">
+        <div class="card card-horizontal">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">Worship In-Person</h3>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest.</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-primary">Worship In-Person</a>
+                <a href="#" class="btn btn-sm btn-action">M</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <div class="card card-horizontal">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">Worship In-Person</h3>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest.</p>
+            </div>
+            <div class="card-footer card-footer-centered">
+                <a href="#" class="btn btn-sm btn-primary">Worship In-Person</a>
+                <a href="#" class="btn btn-sm btn-action">M</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="card-horizontal">
+    <div class="card-header">
+        <h4 class="m-0">Card Horizontal</h4>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-default">Use <code>card-footer card-footer-centered</code> to vertically center footer buttons with <code>card-horizontal</code>.</div>
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+{% capture codeMarkup %}
+<div class="row g g-4">
+    <div class="col-xs-12">
+        <div class="card card-transparent card-horizontal">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">Worship In-Person</h3>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <div class="card card-transparent card-horizontal">
+            <div class="card-img-header">
+                <img src="https://via.placeholder.com/426x213" alt="" class="card-img-top img-responsive">
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">Worship In-Person</h3>
+                <p class="card-text">Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest. Check in your child safely right here and we’ll take care of the rest.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endcapture %}
+
+<div class="card mb-4" id="card-horizontal-transparent">
+    <div class="card-header">
+        <h4 class="m-0">Card Horizontal Transparent</h4>
+    </div>
+    <div class="card-body">
+        {{ codeMarkup }}
+    </div>
+    <div class="card-footer">
+        <pre><code>{{ codeMarkup | Trim | Escape }}</code></pre>
+    </div>
+</div>
+
+
+<div class="card mb-4" id="eventfeature">
+    <div class="card-header">
+        <h4 class="m-0">Event Feature</h4>
+    </div>
+    <div class="card-body">
+        /- Event Example -/
+        {% capture codeMarkup %}
+        <div class="row d-flex flex-wrap">
+            {% for i in (1..3) %}
+                <div class="col-md-4 col-xs-12 mb-5">
+                    <div class="card card-event h-100">
+                        <div class="card-header">
+                            <h6 class="card-title">Berks</h6>
+                        </div>
+                        <div class="card-body">
+                            <span class="d-block h6 mt-0">Contact Details</span>
+
+                            <div class="text-sm">
+                                Justin Ashcraft
+                                <a href="mailto:justinashcraft@lcbcchurch.com">justinashcraft@lcbcchurch.com</a>
+                                {% if forloop.first %}
+                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda alias, nulla qui veniam aut laborum laudantium placeat quo sunt quibusdam eos modi tempora. Recusandae quae asperiores voluptatibus voluptas saepe hic!
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="card-cell">
+                            <div><i class="fa fa-map-marker"></i> Atrium</div>
+                            <div><i class="fa fa-calendar"></i> 12/4/2022 9:00AM</div>
+                            <div><i class="fa fa-child"></i> kidCare</div>
+                        </div>
+
+                        {% if true %}
+                            <div class="card-footer">
+                                <a href="#" class="btn btn-primary btn-block">Register</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endcapture %}
+        /- EndEventExample -/
+        <div class="bg-black p-4">{{ codeMarkup }}</div>
+    </div>
+</div>
+
+
+
+
+<script>
+    var swiper = new Swiper(".campus-swiper", {
+      lazy: true,
+      loop: true,
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true
+      },
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+    });
+  </script>

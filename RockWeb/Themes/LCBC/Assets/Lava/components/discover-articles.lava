@@ -1,0 +1,47 @@
+/- {% include '~~/Assets/Lava/components/discover-articles.lava' %} -/
+
+
+<section class="mt-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <h4>Articles</h4>
+
+        <a href="#">See All Articles</a>
+    </div>
+
+    <div class="article-pad bg-gray">
+        <div class="row g g-5">
+            <div class="col-md-6 col-xs-12">
+                <div class="card card-transparent">
+                    <img src="https://storage.googleapis.com/lcbc-assets/images/LivingWithLions_600x290-Horizontal.jpg" class="card-img-top" alt="">
+                    <div class="card-header">
+                        <h4 class="card-title"><a href="#" class="stretched-link">3 Things the Church Needs to be Built to Last</a></h4>
+                        <span class="d-block card-subtitle"><span class="label label-primary">Faith</span></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-text text-sm">
+                            <p>How do we keep the church from getting burn out by building something that lasts? Check out 3 things straight from Jesus in Matthew 25.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xs-12">
+                {% for i in (1..3) %}
+                    <div class="card card-transparent">
+                        <div class="card-header">
+                            <h4 class="card-title"><a href="#" class="stretched-link">3 Things the Church Needs to be Built to Last</a></h4>
+                            <span class="d-block card-subtitle"><span class="label label-primary">Faith</span></span>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="card-text text-sm">
+                                How do we keep the church from getting burn out by building something that lasts? Check out 3 things straight from Jesus in Matthew 25.
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</section>

@@ -1,0 +1,169 @@
+/- {% include '~~/Assets/Lava/examples/example-ministryteam.lava' %} -/
+
+<section class="page-section">
+    <div class="container">
+        <h2>Ministry Team</h2>
+        <div class="row">
+            {% for i in (1..2) %}
+                <div class="col-xs-12 col-md-6">
+                    <div class="card card-transparent card-horizontal card-split">
+                        <div class="card-img-header">
+                            <img src="https://picsum.photos/500?random={{ forloop.index }}" alt="" class="card-img-top img-responsive" width="500" height="500">
+                        </div>
+
+                        <div class="card-body">
+                            <h4 class="card-title">Jason Mitchell</h4>
+                            <p class="card-subtitle">Ministry Team Leader and Teaching Pastor</p>
+
+                            <p class="card-text"><a href="#">Email</a></p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section">
+    <div class="container">
+        <h4>Sponsor a Child</h4>
+        <div class="row">
+            {% for i in (1..4) %}
+                <div class="col-xs-12 col-md-6 col-lg-3">
+                    <div class="card card-transparent">
+                        <div class="card-img-header">
+                            <img src="https://picsum.photos/500?random={{ forloop.index }}" alt="" class="card-img-top img-responsive" width="500" height="500">
+                        </div>
+                        <div class="card-body text-center">
+                            <h4 class="card-title">Honduras</h4>
+                            <div class="card-text">
+                                <p>
+                                    Locations involved: <br>
+                                    <strong>LCBC BranchCreek (Harleysville)</strong>
+                                </p>
+                                <p>
+                                    Locations involved: <br>
+                                    <strong>Christian Relief Fund</strong>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a href="#" class="btn btn-primary btn-lg">Sponsor a Child</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section">
+    <div class="container">
+        <h4>Learn More About Global Initiatives at LCBC Church</h4>
+        <div class="row">
+            {% for i in (1..3) %}
+                <div class="col-xs-12 col-md-4">
+                    <div class="card card-transparent">
+                        <div class="card-img-header">
+                            <img src="https://picsum.photos/400/200?random={{ forloop.index }}" alt="" class="card-img-top img-responsive" width="400" height="200">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">The Ukraine Crisis: How Can I Help?</h5>
+                            <div class="card-text">
+                                As the news continues to build around those affected by the crisis in Ukraine, it can be easy to get overwhelmed and wonder what we could possibly do to help those who have been impacted.
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="btn btn-link p-0">Read More »</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section page-section-lg">
+    <figure class="hero-average">
+        <img src="https://storage.googleapis.com/lcbc-assets/images/LivingWithLions_1600x900-SeriesHero.jpg" alt="">
+    </figure>
+</section>
+
+<section class="page-section">
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-lg-7 text-center">
+                <div class="lead">
+                    <p>2,600 years ago a man named Daniel was captured and forced to live in the hostile, godless nation of Babylon. If you think our culture is bad, his was worse. But he was able to thrive in the midst of the pressure, staying faithful to God and growing in influence. What can we learn from Daniel to help us in our world today?</p><br>
+                    <p><em>Series starts August 27/28/29</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                {% for i in (1..2) %}
+                    <div class="card card-transparent card-horizontal card-hover">
+                        <div class="card-img-header">
+                            <img src="https://storage.googleapis.com/lcbc-assets/images/_1600xAUTO_stretch_center-center_none/LWL-Week1Thumbnail_2022-10-11-200339_eqbj.jpg" alt="" class="card-img-top img-responsive" width="400" height="200">
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title"><a href="#" class="text-link stretched-link">When It Feels Like You've Lost Control</a></h4>
+                            <p class="card-subtitle">Matt Parks · August 28, 2022</p>
+                            <div class="card-text">
+                                What do we do when it feels like everything is falling apart? When people are being hurt, when the chaos is overwhelming, and it feels like evil has won - is it still possible to…
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12">
+                <p>This others-driven mindset shaped who we are and it continues to shape us. As we've launched new locations and had the opportunity to reach more communities across the state of Pennsylvania, our mission has remained the same. We exist to introduce people to Jesus and together fully follow him.</p>
+                <p>Today, LCBC is one church with multiple locations throughout Pennsylvania. Each location features the same unified experience of music and one message from a communicator that is broadcasted to each location.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12">
+                <strong>Share This Message</strong>
+                <ul class="socialsharing">
+                    <li>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
+                            <i class="fa fa-fw fa-facebook"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
+                            <i class="fa fa-fw fa-twitter"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' }}" class="socialicon socialicon-email" title="" data-original-title="Share via Email">
+                            <i class="fa fa-fw fa-envelope-o"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="socialicon socialicon-email btn-copy-url" title="" data-original-title="Copy URL">
+                            <i class="fa fa-fw fa-clipboard"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>

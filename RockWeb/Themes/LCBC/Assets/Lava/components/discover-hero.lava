@@ -1,0 +1,18 @@
+/- {% include '~~/Assets/Lava/components/discover-hero.lava' %} -/
+
+<div class="card card-featured-message card-featured-message-hero mb-4">
+    <div class="card-img">
+        <img src="https://storage.googleapis.com/lcbc-assets/images/SoundtracksWeb__1600x900-SeriesHero-Homepage.jpg" alt="" class="card-img-top">
+    </div>
+
+    <div class="container">
+        <div class="card-body">
+            <h3 class="mt-0 mb-1">Living with Lions</h3>
+            <span class="d-block mb-4">Matt Parks | August 28, 2022</span>
+            <div class="mb-4">
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna. Do eiusmod tempor incididunt ut labore et dolore magna.</p>
+            </div>
+            <a href="#" class="btn btn-primary d-block d-md-inline-block">Watch Latest Message</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,37 @@
+/- {% include '~~/Assets/Lava/components/discover-cta.lava' %} -/
+
+<div class="bg-black text-white rounded overflow-hidden my-5">
+    <div class="row no-gutters d-flex flex-wrap">
+        <div class="col-md-6 col-xs-12">
+            <div class="card card-mega">
+                <img src="https://storage.googleapis.com/lcbc-assets/images/VerseOfTheWeek-PhotoHero-1600x600-1.png" alt="" class="card-img">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-lg-row gap-20 align-items-center">
+                        <div class="card-thumb">
+                            <img src="https://storage.googleapis.com/lcbc-assets/images/VerseOfTheWeek-PhotoHero-1600x600-1.png" alt="" class="img-cover">
+                        </div>
+                        <div>
+                            <h3 class="card-title text-white">Verse of the Week</h3>
+                            <p>Dive deeper with our verse of the week taken from the weekend message.</p>
+                            <a href="#" class="btn btn-link-white stretched-link">Get Started</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xs-12">
+            <div class="card card-mega bg-dark-cerulean">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-lg-row gap-20">
+                        <div>
+                            <h3 class="card-title text-white">Discover A Bible Reading Plan</h3>
+                            <p>Join our quarterly Bible Reading Plans and to find more plans you can use to read the Bible each day.</p>
+                            <a href="#" class="btn btn-link-white stretched-link">See Plans</a>
+                        </div>
+                        <img src="{{ '~~/Assets/Images/bible.svg' | ResolveRockUrl }}" alt="" class="img-responsive o-70">
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
