@@ -81,6 +81,9 @@ namespace Rock.Tests.Shared
         public static class TestPeople
         {
             public static string TedDecker = "8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4";
+            public static string CindyDecker = "B71494DB-D809-451A-A950-28898D0FD92C";
+            public static string AlexDecker = "27919690-3CCE-4FA6-95C4-CD21419EB51F";
+
             public static string BillMarble = "1EA811BB-3118-42D1-B020-32A82BC8081A";
             public static string AlishaMarble = "69DC0FDC-B451-4303-BD91-EF17C0015D23";
 

@@ -2692,16 +2692,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( Context context, object input )
         {
-            Person person = GetPerson( input );
-
-            if ( person != null )
-            {
-                Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-                var parents = new PersonService( new RockContext() ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == adultGuid ).Select( a => a.Person );
-                return parents.ToList();
-            }
-
-            return new List<Person>();
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.Parents( lavaContext, input );
         }
 
         /// <summary>
@@ -2712,16 +2704,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( Context context, object input )
         {
-            Person person = GetPerson( input );
-
-            if ( person != null )
-            {
-                Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                var children = new PersonService( new RockContext() ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == childGuid ).Select( a => a.Person );
-                return children.ToList();
-            }
-
-            return new List<Person>();
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.Children( lavaContext, input );
         }
 
         /// <summary>

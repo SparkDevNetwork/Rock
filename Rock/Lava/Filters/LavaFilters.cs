@@ -2524,13 +2524,21 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input, context );
-
+            var person = GetPerson( input, context );
             if ( person != null )
             {
-                Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-                var parents = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == adultGuid ).Select( a => a.Person );
-                return parents.ToList();
+                var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                var parents = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) )
+                    .GetFamilyMembers( person.Id, includeSelf: true )
+                    .Where( m => m.GroupRole.Guid == adultGuid )
+                    .Select( a => a.Person )
+                    .ToList();
+
+                // If the list includes the target Person, they are a parent themselves.
+                if ( !parents.Any( c => c.Id == person.Id ) )
+                {
+                    return parents.ToList();
+                }
             }
 
             return new List<Person>();
@@ -2544,13 +2552,22 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input, context );
-
+            var person = GetPerson( input, context );
             if ( person != null )
             {
-                Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                var children = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == childGuid ).Select( a => a.Person );
-                return children.ToList();
+                var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+
+                var children = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) )
+                    .GetFamilyMembers( person.Id, includeSelf: true )
+                    .Where( m => m.GroupRole.Guid == childGuid )
+                    .Select( a => a.Person )
+                    .ToList();
+
+                // If the list includes the target Person, they are a child themselves.
+                if ( !children.Any( c => c.Id == person.Id ) )
+                {
+                    return children.ToList();
+                }
             }
 
             return new List<Person>();
