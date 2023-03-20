@@ -169,7 +169,7 @@
     
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [totalAmount, group, pledgeFrequencyValue, personAlias, account];
+    const propRefs = [startDate, endDate, totalAmount, group, pledgeFrequencyValue, personAlias, account];
 
     // #endregion
 
@@ -190,6 +190,8 @@
     watch(() => props.modelValue, () => {
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.startDate ?? "");
         updateRefValue(totalAmount, props.modelValue.totalAmount);
         updateRefValue(group, props.modelValue.group ?? {});
         updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue ?? {});
