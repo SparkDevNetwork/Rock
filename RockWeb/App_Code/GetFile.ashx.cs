@@ -79,7 +79,8 @@ namespace RockWeb
                 if ( binaryFile != null )
                 {
                     binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
-                    UserLogin currentUser = UserLoginService.GetCurrentUser();
+                    //UserLogin currentUser = UserLoginService.GetCurrentUser();
+                    var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
                     Person currentPerson = currentUser?.Person;
                     var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
