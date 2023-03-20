@@ -247,10 +247,10 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         }
 
         [TestMethod]
-        public void EntityCommandBlock_WhereFilterByCoreAttribute_ReturnsMatchedEntitiesOnly()
+        public void EntityCommandBlock_WhereFilterWithAlphanumericFieldName_IsParsedCorrectly()
         {
             var template = @"
-{% person where:'core_CurrentlyAnEra == true' iterator:'items' %}
+{% person where:'core_TimesCheckedIn16Wks > 1' iterator:'items' %}
 <ul>
   {% for item in items %}
     <li>{{ item.NickName }} {{ item.LastName }}</li>
@@ -266,7 +266,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "Ted Decker" );
-                Assert.That.DoesNotContain( output, "Pete Foster" );
+                Assert.That.DoesNotContain( output, "Bill Marble" );
             } );
         }
 
