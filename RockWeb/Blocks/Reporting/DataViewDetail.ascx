@@ -23,31 +23,66 @@
                     <fieldset>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
-                                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                                <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" AutoPostBack="true" EnhanceForLongLists="true" Required="true" />
+                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" AutoPostBack="true" OnTextChanged="tbName_TextChanged" CssClass="" />
                                 <Rock:RockCheckBox ID="cbDisableUseOfReadOnlyContext" runat="server" Visible="false" Label="Disable Use Of Read Only Context" Help="Enabling this option will cause the data view to run with a normal database context instead of using a read-only context. This may be needed if the results of the data view will be used for updating data, or for specific plugin filters that update data during the query process." />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
                                 <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.DataView" Label="Category" Required="true" />
-                                <Rock:RockCheckBox ID="cbIncludeDeceased" runat="server" Label="Include Deceased" Visible="false" />
-
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" AutoPostBack="true" EnhanceForLongLists="true" Required="true" />
+                                <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:Toggle ID="tglIncludeDeceased" runat="server" Label="Include Deceased" OnText="Yes" OffText="No" Visible="false" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
                                 <%-- Persistence Schedule Settings --%>
                                 <asp:UpdatePanel runat="server" UpdateMode="Conditional">
                                     <ContentTemplate>
-                                        <h5>Speed Settings</h5>
-                                        <Rock:Switch ID="swPersistDataView" runat="server" Text="Enable Persistence" BoldText="true" AutoPostBack="true" OnCheckedChanged="swPersistDataView_CheckedChanged" Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed."  />
 
-                                        <asp:Panel runat="server" ID="pnlSpeedSettings" class="mt-4">
-                                            <Rock:IntervalPicker ID="ipPersistedScheduleInterval" runat="server" Label="Persistence Interval" DefaultValue="12" DefaultInterval="Hour" />
+                                        <Rock:Switch ID="swPersistDataView" runat="server" CssClass="form-group" Text="Persistence Schedule" BoldText="true" AutoPostBack="true" OnCheckedChanged="swPersistDataView_CheckedChanged" Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed." />
+
+                                        <asp:Panel runat="server" ID="pnlPersistenceSchedule" class="mt-4">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <Rock:RockRadioButtonList ID="rblPersistenceType" runat="server" Label="Type"
+                                                        OnSelectedIndexChanged="rblPersistenceType_SelectedIndexChanged" AutoPostBack="true">
+                                                        <asp:ListItem Text="Interval" Value="0"></asp:ListItem>
+                                                        <asp:ListItem Text="Schedule" Value="1"></asp:ListItem>
+                                                    </Rock:RockRadioButtonList>
+                                                </div>
+                                                <asp:Panel runat="server" ID="pnlPersistenceScheduleControls">
+                                                    <div class="col-md-3">
+                                                        <Rock:RockRadioButtonList ID="rblPersistenceSchedule" runat="server" Label="Persistence Schedule"
+                                                            OnSelectedIndexChanged="rblPersistenceSchedule_SelectedIndexChanged" AutoPostBack="true" Visible="false">
+                                                            <asp:ListItem Text="Unique" Value="0"></asp:ListItem>
+                                                            <asp:ListItem Text="Named Schedule" Value="1"></asp:ListItem>
+                                                        </Rock:RockRadioButtonList>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <Rock:SchedulePicker ID="spNamedSchedule" runat="server" Label="Named" CssClass="picker-lg picker-schedule" AllowInactiveSelection="true" Visible="false" />
+                                                        <Rock:ScheduleBuilder ID="sbUniqueSchedule" runat="server" Label="Unique" Visible="false" />
+                                                    </div>
+                                                </asp:Panel>
+                                                <asp:Panel runat="server" ID="pnlScheduleIntervalControls" class="col-md-9">
+                                                    <Rock:IntervalPicker ID="ipPersistedScheduleInterval" runat="server" Label="Persistence Interval" DefaultValue="12" DefaultInterval="Hour" Visible="false" />
+                                                </asp:Panel>
+                                            </div>
                                         </asp:Panel>
                                     </ContentTemplate>
                                 </asp:UpdatePanel>
-
                             </div>
                         </div>
-
                     </fieldset>
 
 

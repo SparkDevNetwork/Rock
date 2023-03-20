@@ -152,6 +152,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SCHEDULE_METRICS = "5A794741-5444-43F0-90D7-48E47276D426";
 
+        /// <summary>
+        /// Gets the DataView Persisted Schedule category guid
+        /// </summary>
+        public const string SCHEDULE_PERSISTED_DATAVIEWS = "EEC7A935-BEF2-4450-9CBF-B85CEC6F7FEA";
+
         #endregion
 
         #region Person Attributes
