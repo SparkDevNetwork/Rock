@@ -1,0 +1,240 @@
+.welcome {
+  .checkin-active .checkin-body .scroller,
+  .checkin-active .checkin-scroll-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100% !important;
+    padding: 0;
+  }
+
+  // Add offset when there is no checkin header present (Reprint Labels)
+  .checkin-body:first-child .checkin-scroll-panel:first-child {
+    top: 66px !important;
+    bottom: 0 !important;
+
+    @media (min-width: @screen-xs-min) {
+      top: 100px !important;
+    }
+  }
+
+  // Show on Reprint Labels
+  .checkbox-container {
+    display: block;
+  }
+
+  .kioskmanager-locations {
+    br {
+      display: none;
+    }
+
+    .checkin-scroll-panel {
+      right: 40px;
+      bottom: 90px;
+      left: 40px;
+      width: auto !important;
+    }
+  }
+
+  .kioskmanager-location {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 0 15px 20px 0;
+
+    @media (min-width: @screen-sm-min) {
+      margin: 0 40px 20px 0;
+    }
+
+    .kioskmanager-location-toggle {
+      margin: 0;
+    }
+
+    .kioskmanager-location-count {
+      position: relative;
+      right: 0;
+      margin: 0 0 0 auto;
+    }
+  }
+
+  .checkin-active {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    // Images are contained in checkin-theme.less for easier compilation
+  }
+
+  .checkin-start {
+    margin-top: 0;
+  }
+
+  .start-button-container {
+    position: absolute;
+    right: 0;
+    bottom: 200px;
+    bottom: clamp(80px,42vw,200px);
+    left: 0;
+    display: flex;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0;
+    text-align: center;
+    background: @checkin-button-background;
+
+    @media (min-width: @screen-xs-min) {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: auto;
+      width: 40.3%;
+    }
+
+    .checkin-search-actions {
+      width: 100%;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      font-size: 42px;
+      line-height: 1;
+      white-space: normal;
+      border-radius: 0;
+
+
+      @media (min-width: @screen-xs-min) {
+        height: 50vh;
+        font-size: 72px;
+      }
+
+      @media (min-width: @screen-sm-min) {
+        font-size: 80px;
+      }
+    }
+
+    .btn-barcode {
+      margin-top: 0;
+    }
+  }
+}
+
+.welcome-banner {
+  position: absolute;
+  top: 80px;
+  right: 4%;
+  left: 4%;
+  font-size: 18px;
+  font-style: normal;
+  line-height: 1.2;
+  color: @welcome-text-color;
+
+  @media (max-width: @screen-xs-max) {
+    bottom: 290px;
+    bottom: clamp(305px,93vw,390px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media (min-width: @screen-xs-min) {
+    right: 44.4%;
+  }
+
+  @media (min-width: @screen-xs-min) and (min-height: 430px) {
+    top: 25%;
+  }
+
+  @media (min-width: @screen-sm-min) and (min-height: 580px) {
+    font-size: 24px;
+  }
+
+  @media (min-width: @screen-md-min) {
+    font-size: 28px;
+  }
+
+  @media (min-width: @screen-lg-min) {
+    font-size: 32px;
+  }
+
+  .heading {
+    display: block;
+    font-size: 2em;
+    font-weight: 800;
+
+    @media (min-width: @screen-xs-min) {
+      font-size: 2.433em;
+    }
+  }
+
+  .emphasis {
+    color: @welcome-emphasis-color;
+  }
+}
+
+// Kiosk Manager and Scheduled Locations Blocks
+.scheduled-locations-actions,
+.kioskmanager-actions {
+  right: 0 !important;
+  bottom: 12px !important;
+  left: 0 !important;
+  display: flex;
+  flex-direction: row-reverse;
+
+  @media (min-width: @screen-md-min) {
+    right: 70px !important;
+    bottom: 24px !important;
+    left: 25px !important;
+  }
+
+  .btn,
+  .btn:active,
+  .btn:active:hover {
+    display: inline-flex;
+    min-height: auto;
+    padding: 6px;
+    margin: 0 5px;
+    font-size: @font-size-base;
+
+
+    @media (min-width: @screen-sm-min) {
+      padding: 12px;
+    }
+
+    @media (min-width: @screen-lg-min) {
+      margin: 0 10px;
+      font-size: 24px;
+    }
+
+    + .btn {
+      margin-top: 0;
+    }
+  }
+}
+
+// Location Closed
+// Sheet is attached to checkin-closed-header
+.checkin-inactive .scroller > h1,
+.checkin-inactive .scroller > p {
+  font-size: 24px;
+  font-weight: @font-weight-bold;
+  color: @text-color;
+  text-align: center;
+}
+
+/* stylelint-disable */
+.welcome-cover-mixin(@welcome-background-cover-mode) when not (@welcome-background-cover-mode = false) {
+  .welcome .checkin-active::before {
+    background-position: center;
+    background-size: cover;
+  }
+}
+/* stylelint-enable */
