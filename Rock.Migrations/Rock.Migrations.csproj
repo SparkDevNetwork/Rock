@@ -156,6 +156,10 @@
     <Compile Include="Migrations\202303172232393_AddDataViewPersistenceSchedule.designer.cs">
       <DependentUpon>202303172232393_AddDataViewPersistenceSchedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202303201615387_AddInternalMessageToPersonAlias.cs" />
+    <Compile Include="Migrations\202303201615387_AddInternalMessageToPersonAlias.designer.cs">
+      <DependentUpon>202303201615387_AddInternalMessageToPersonAlias.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1646,6 +1650,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202303172232393_AddDataViewPersistenceSchedule.resx">
       <DependentUpon>202303172232393_AddDataViewPersistenceSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202303201615387_AddInternalMessageToPersonAlias.resx">
+      <DependentUpon>202303201615387_AddInternalMessageToPersonAlias.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
