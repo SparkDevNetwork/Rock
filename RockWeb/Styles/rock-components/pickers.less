@@ -154,6 +154,7 @@
   .picker-menu {
     width: 400px;
     padding: @picker-menu-padding;
+    max-height: auto; // Added to fix issue where picker paints incorrectly in modals.
 
     @media (max-width: @screen-xs-max) {
       position: static;
