@@ -31,13 +31,6 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMINDER_TYPES )]
     public class ReminderTypesFieldType : SelectFromListFieldType
     {
-        private class ReminderTypeFieldItem
-        {
-            public Guid Guid;
-            public string Name;
-            public string EntityTypeName;
-        }
-
         #region Configuration
 
         private const string VALUES_PUBLIC_KEY = "values";
