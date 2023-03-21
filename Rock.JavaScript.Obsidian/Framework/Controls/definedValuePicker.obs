@@ -3,8 +3,8 @@
     <template v-if="allowAdd && isShowingAddForm">
         <RockLabel :help="help">{{ label }}</RockLabel>
         <Loading :isLoading="isLoading" class="well">
-            <Alert v-if="fetchError" alertType="danger">Error: {{ fetchError }}</Alert>
-            <Alert v-else-if="saveError" alertType="danger">Error: {{ saveError }}</Alert>
+            <NotificationBox v-if="fetchError" alertType="danger">Error: {{ fetchError }}</NotificationBox>
+            <NotificationBox v-else-if="saveError" alertType="danger">Error: {{ saveError }}</NotificationBox>
 
             <RockForm v-else @submit="saveNewValue">
                 <TextBox label="Value" v-model="newValue" rules="required" />
@@ -49,7 +49,7 @@
     import TextBox from "./textBox";
     import RockButton from "./rockButton";
     import Loading from "./loading";
-    import Alert from "./alert.obs";
+    import NotificationBox from "./notificationBox.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -205,5 +205,5 @@
     const newValue = ref("");
     const newDescription = ref("");
 
-    // #endregion
+                    // #endregion
 </script>

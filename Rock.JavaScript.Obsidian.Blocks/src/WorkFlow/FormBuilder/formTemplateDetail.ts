@@ -18,7 +18,7 @@
 import { computed, defineComponent, ref } from "vue";
 import Panel from "@Obsidian/Controls/panel";
 import RockForm from "@Obsidian/Controls/rockForm";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -33,7 +33,7 @@ export default defineComponent({
     name: "WorkFlow.FormTemplateDetail",
 
     components: {
-        Alert,
+        NotificationBox,
         AuditDetail,
         EditPanel,
         Panel,
@@ -146,9 +146,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="isStartupError" alertType="warning">
+<NotificationBox v-if="isStartupError" alertType="warning">
     Unable to view details of this template.
-</Alert>
+</NotificationBox>
 
 <Panel v-else type="block" :title="blockTitle" titleIconCssClass="fa fa-align-left">
     <template v-if="!isEditMode" #headerActions>

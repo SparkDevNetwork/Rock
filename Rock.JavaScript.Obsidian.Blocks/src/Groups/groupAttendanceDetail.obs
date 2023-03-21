@@ -1,21 +1,21 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="config.isNotAuthorizedError" alertType="danger">
+    <NotificationBox v-if="config.isNotAuthorizedError" alertType="danger">
         <strong>Sorry</strong>
         <p>You're not authorized to update the attendance for the selected group.</p>
-    </Alert>
-    <Alert v-if="config.isNoAttendanceOccurrencesError" alertType="danger">
+    </NotificationBox>
+    <NotificationBox v-if="config.isNoAttendanceOccurrencesError" alertType="danger">
         <strong>No Occurrences</strong>
         <p>There are currently not any active occurrences for selected group for which to take attendance.</p>
-    </Alert>
-    <Alert v-if="config.isGroupNotFoundError" alertType="danger">
+    </NotificationBox>
+    <NotificationBox v-if="config.isGroupNotFoundError" alertType="danger">
         <strong>No Group</strong>
         Group was not found.
-    </Alert>
-    <Alert v-if="config.errorMessage" alertType="danger">
+    </NotificationBox>
+    <NotificationBox v-if="config.errorMessage" alertType="danger">
         <strong>Sorry</strong>
         <p>{{ config.errorMessage }}</p>
-    </Alert>
+    </NotificationBox>
     <div v-if="!config.isConfigError">
         <Panel :title="panelTitle">
             <template v-if="config.isCampusFilteringAllowed" #headerActions>
@@ -29,18 +29,17 @@
                     <div class="row">
                         <div class="col-sm-4">
                             <DatePicker
-                                v-if="config.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.DatePicker"
-                                :modelValue="attendanceForDateString"
-                                @update:modelValue="onAttendanceForDateUpdated"
-                                :displayCurrentOption="false"
-                                :isCurrentDateOffset="false"
-                                :disableForceParse="false"
-                                :disableShowOnFocus="false"
-                                :disableHighlightToday="false"
-                                :disallowFutureDateSelection="config.isFutureOccurrenceDateSelectionRestricted"
-                                :disallowPastDateSelection="false"
-                                label="Attendance For"
-                            />
+                                        v-if="config.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.DatePicker"
+                                        :modelValue="attendanceForDateString"
+                                        @update:modelValue="onAttendanceForDateUpdated"
+                                        :displayCurrentOption="false"
+                                        :isCurrentDateOffset="false"
+                                        :disableForceParse="false"
+                                        :disableShowOnFocus="false"
+                                        :disableHighlightToday="false"
+                                        :disallowFutureDateSelection="config.isFutureOccurrenceDateSelectionRestricted"
+                                        :disallowPastDateSelection="false"
+                                        label="Attendance For" />
                             <div v-else-if="config.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.Readonly">
                                 <RockLabel>Attendance For</RockLabel>
                                 <div>{{ attendanceForDateString }}</div>
@@ -49,11 +48,11 @@
 
                         <div class="col-sm-4">
                             <GroupLocationPicker
-                                v-if="config.locationSelectionMode === GroupAttendanceDetailLocationSelectionMode.GroupLocationPicker"
-                                :groupGuid="config.groupGuid"
-                                label="Location"
-                                :showBlankItem="true"
-                                @update:modelValue="onGroupLocationPickerChanged" />
+                                                 v-if="config.locationSelectionMode === GroupAttendanceDetailLocationSelectionMode.GroupLocationPicker"
+                                                 :groupGuid="config.groupGuid"
+                                                 label="Location"
+                                                 :showBlankItem="true"
+                                                 @update:modelValue="onGroupLocationPickerChanged" />
                             <div v-else-if="config.locationSelectionMode === GroupAttendanceDetailLocationSelectionMode.Readonly">
                                 <RockLabel>Location</RockLabel>
                                 <div>{{ config.locationLabel }}</div>
@@ -63,21 +62,20 @@
                         <div class="col-sm-4">
                             <template v-if="locationGuid">
                                 <GroupLocationScheduleDatePicker v-if="config.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.ScheduledDatePicker"
-                                    @update:modelValue="onGroupLocationScheduleDatePickerChanged"
-                                    :groupGuid="config.groupGuid"
-                                    label="Attendance For"
-                                    :locationGuid="locationGuid"
-                                    :numberOfPreviousDaysToShow="config.numberOfPreviousDaysToShow"
-                                    :showBlankItem="true" />
+                                                                 @update:modelValue="onGroupLocationScheduleDatePickerChanged"
+                                                                 :groupGuid="config.groupGuid"
+                                                                 label="Attendance For"
+                                                                 :locationGuid="locationGuid"
+                                                                 :numberOfPreviousDaysToShow="config.numberOfPreviousDaysToShow"
+                                                                 :showBlankItem="true" />
                                 <GroupLocationSchedulePicker
-                                    v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.GroupLocationSchedulePicker"
-                                    @update:modelValue="onGroupLocationSchedulePickerChanged"
-                                    :groupGuid="config.groupGuid"
-                                    label="Schedule"
-                                    :locationGuid="locationGuid"
-                                    :isoDateString="attendanceForDateIsoString"
-                                    :showBlankItem="true"
-                                    />
+                                                             v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.GroupLocationSchedulePicker"
+                                                             @update:modelValue="onGroupLocationSchedulePickerChanged"
+                                                             :groupGuid="config.groupGuid"
+                                                             label="Schedule"
+                                                             :locationGuid="locationGuid"
+                                                             :isoDateString="attendanceForDateIsoString"
+                                                             :showBlankItem="true" />
                                 <div v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.Specific">
                                     <RockLabel>Schedule</RockLabel>
                                     <div>{{ config.scheduleLabel }}</div>
@@ -90,21 +88,21 @@
                         <div v-show="attendanceOccurrenceGuid" class="mt-5">
                             <div class="d-flex align-items-end">
                                 <InlineCheckBox
-                                    v-if="isDidNotMeetShown"
-                                    class="mb-0"
-                                    :modelValue="didNotOccur"
-                                    :disabled="isSavingDidNotOccur || config.isDidNotMeetDisabled"
-                                    label="We Did Not Meet"
-                                    @update:modelValue="onDidNotOccurChanged" />
+                                                v-if="isDidNotMeetShown"
+                                                class="mb-0"
+                                                :modelValue="didNotOccur"
+                                                :disabled="isSavingDidNotOccur || config.isDidNotMeetDisabled"
+                                                label="We Did Not Meet"
+                                                @update:modelValue="onDidNotOccurChanged" />
 
                                 <RadioButtonList
-                                    v-if="config.attendanceOccurrenceTypes && config.isAttendanceOccurrenceTypesSectionShown"
-                                    :formGroupClasses="'mb-0' + (isDidNotMeetShown ? ' ml-3' : '')"
-                                    :modelValue="attendanceOccurrenceTypeGuid"
-                                    :label="config.attendanceOccurrenceTypesSectionLabel"
-                                    :horizontal="true"
-                                    :items="config.attendanceOccurrenceTypes"
-                                    @update:modelValue="onAttendanceOccurrenceTypeChanged" />
+                                                 v-if="config.attendanceOccurrenceTypes && config.isAttendanceOccurrenceTypesSectionShown"
+                                                 :formGroupClasses="'mb-0' + (isDidNotMeetShown ? ' ml-3' : '')"
+                                                 :modelValue="attendanceOccurrenceTypeGuid"
+                                                 :label="config.attendanceOccurrenceTypesSectionLabel"
+                                                 :horizontal="true"
+                                                 :items="config.attendanceOccurrenceTypes"
+                                                 @update:modelValue="onAttendanceOccurrenceTypeChanged" />
 
                                 <div class="ml-auto d-flex align-items-end">
                                     <PersonPicker v-if="config.isNewAttendeeAdditionAllowed" formGroupClasses="mb-0" :label="addPersonAsLabel" @update:modelValue="onAddPerson($event)" :modelValue="addPersonSelection" />
@@ -117,8 +115,8 @@
             </template>
 
             <template #default>
-                <Alert v-if="errorMessage" alertType="danger">{{ errorMessage }}</Alert>
-                <Alert v-if="!isPrintingRoster && printRosterWarning" alertType="warning">{{ printRosterWarning }}</Alert>
+                <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+                <NotificationBox v-if="!isPrintingRoster && printRosterWarning" alertType="warning">{{ printRosterWarning }}</NotificationBox>
 
                 <TransitionVerticalCollapse speed="fast">
                     <div v-show="attendanceOccurrenceGuid">
@@ -133,9 +131,9 @@
                                     <div class="col-sm-8 d-flex justify-content-end flex-row">
                                         <div class="btn-group">
                                             <RockButton v-if="!config.isNotesSectionHidden"
-                                                CssClass="btn btn-default btn-sm btn-square pull-right"
-                                                :btnType="isNotesShown ? 'primary' : 'default'"
-                                                @click="onShowNotesClicked()"><i class="fa fa-pencil-alt"></i> Notes</RockButton>
+                                                        CssClass="btn btn-default btn-sm btn-square pull-right"
+                                                        :btnType="isNotesShown ? 'primary' : 'default'"
+                                                        @click="onShowNotesClicked()"><i class="fa fa-pencil-alt"></i> Notes</RockButton>
                                             <RockButton CssClass="btn btn-default btn-sm btn-square pull-right" @click="onPrintAttendanceRosterClicked()"><i class="fa fa-file-download"></i> Roster</RockButton>
                                         </div>
                                     </div>
@@ -144,23 +142,23 @@
                                 <TransitionVerticalCollapse speed="fast" v-if="!config.isNotesSectionHidden">
                                     <div v-show="isNotesShown" class="row">
                                         <TextBox
-                                            v-model="notes"
-                                            formGroupClasses="mt-3 col-sm-12"
-                                            :label="config.notesSectionLabel || 'Notes'"
-                                            :rows="3"
-                                            textMode="multiline"
-                                            @update:modelValue="autoUpdateNotes" />
+                                                 v-model="notes"
+                                                 formGroupClasses="mt-3 col-sm-12"
+                                                 :label="config.notesSectionLabel || 'Notes'"
+                                                 :rows="3"
+                                                 textMode="multiline"
+                                                 @update:modelValue="autoUpdateNotes" />
                                     </div>
                                 </TransitionVerticalCollapse>
 
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <RosterFilterPicker
-                                            v-model="rosterFilter"
-                                            class="mt-3"
-                                            :attendances="attendances"
-                                            :isFilterByFirstNameInitial="false"
-                                            :isMultiselect="true">
+                                                            v-model="rosterFilter"
+                                                            class="mt-3"
+                                                            :attendances="attendances"
+                                                            :isFilterByFirstNameInitial="false"
+                                                            :isMultiselect="true">
                                         </RosterFilterPicker>
                                     </div>
                                 </div>
@@ -168,12 +166,12 @@
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <AttendanceRoster
-                                            :attendances="attendances"
-                                            :filterBy="attendanceFilterByDelegate"
-                                            :groupBy="attendanceGroupByDelegate"
-                                            :groupWhenFilteredAttendanceCountExceeds="50"
-                                            :sortBy="attendanceSortByDelegate"
-                                            @attendanceChanged="onAttendanceChanged($event)" />
+                                                          :attendances="attendances"
+                                                          :filterBy="attendanceFilterByDelegate"
+                                                          :groupBy="attendanceGroupByDelegate"
+                                                          :groupWhenFilteredAttendanceCountExceeds="50"
+                                                          :sortBy="attendanceSortByDelegate"
+                                                          @attendanceChanged="onAttendanceChanged($event)" />
                                     </div>
                                 </div>
                             </div>
@@ -188,10 +186,10 @@
         </Panel>
     </div>
     <Modal v-if="modalOptions"
-        v-model="modalOptions.isOpen"
-        :cancelText="modalOptions.cancelText"
-        :saveText="modalOptions.saveText"
-        @save="onModalSave">{{ modalOptions.text }}</Modal>
+           v-model="modalOptions.isOpen"
+           :cancelText="modalOptions.cancelText"
+           :saveText="modalOptions.saveText"
+           @save="onModalSave">{{ modalOptions.text }}</Modal>
 </template>
 
 <style scoped>
@@ -219,7 +217,7 @@
     import GroupLocationSchedulePicker from "./GroupAttendanceDetail/groupLocationSchedulePicker.partial.obs";
     import SearchFilter from "./GroupAttendanceDetail/searchFilter.partial.obs";
     import { AttendanceSortByDelegate, AttendanceFilterByDelegate, AttendanceGroupByDelegate, ModalOptionsBag } from "./GroupAttendanceDetail/types";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
     import Modal from "@Obsidian/Controls/modal";
@@ -311,7 +309,7 @@
     const attendanceForDateString = computed<string>(() => attendanceForDate.value.toASPString(dateFormat.value));
     const addPersonAsLabel = computed(() => {
         if (config.value.addPersonAs) {
-            return `Add Person As ${ config.value.addPersonAs }`;
+            return `Add Person As ${config.value.addPersonAs}`;
         }
         else {
             return "Add Person";
@@ -464,7 +462,7 @@
             autoUpdateDidNotOccur({
                 attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
                 didNotOccur: newDidNotOccur
-            }).then(() => {/* do nothing */});
+            }).then(() => {/* do nothing */ });
         }
     }
 
@@ -822,11 +820,11 @@
      */
     watch(config, () => {
         attendanceForDate.value = config.value.attendanceOccurrenceDate && RockDateTime.parseISO(config.value.attendanceOccurrenceDate) || RockDateTime.now();
-        locationGuid.value =  config.value.locationGuid;
+        locationGuid.value = config.value.locationGuid;
         scheduleGuid.value = config.value.scheduleGuid;
         attendanceOccurrenceGuid.value = config.value.attendanceOccurrenceGuid;
         attendanceOccurrenceTypeGuid.value = config.value.selectedAttendanceOccurrenceTypeValue ?? undefined;
-        didNotOccur.value =  config.value.isDidNotMeetChecked;
+        didNotOccur.value = config.value.isDidNotMeetChecked;
         campusGuid.value = config.value.campusGuid;
         notes.value = config.value.notes ?? "";
     });

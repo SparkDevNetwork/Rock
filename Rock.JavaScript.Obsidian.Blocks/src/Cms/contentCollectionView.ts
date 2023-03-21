@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, onMounted, ref, shallowRef, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import TextBox from "@Obsidian/Controls/textBox";
 import { dispatchBlockEvent, getSecurityGrant, provideSecurityGrant, useBlockGuid, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -223,7 +223,7 @@ export default defineComponent({
     name: "Cms.ContentCollectionView",
 
     components: {
-        Alert,
+        NotificationBox,
         DropDownList,
         FiltersContainer,
         TextBox
@@ -410,7 +410,7 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+<NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
 
 <div v-if="!blockError" class="collectionsearch">
     <div v-if="showFullTextSearch" class="collectionsearch-fulltext">

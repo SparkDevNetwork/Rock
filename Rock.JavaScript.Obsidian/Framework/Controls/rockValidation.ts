@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import Alert from "./alert.obs";
+import NotificationBox from "./notificationBox.obs";
 import { computed, defineComponent, PropType } from "vue";
 import { FormError } from "@Obsidian/Utility/form";
 
@@ -22,7 +22,7 @@ export default defineComponent({
     name: "RockValidation",
 
     components: {
-        Alert
+        NotificationBox
     },
 
     props: {
@@ -42,7 +42,7 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-show="hasErrors" alertType="validation">
+<NotificationBox v-show="hasErrors" alertType="validation">
     Please correct the following:
     <ul>
         <li v-for="error of errors">
@@ -50,6 +50,6 @@ export default defineComponent({
             {{error.text}}
         </li>
     </ul>
-</Alert>
+</NotificationBox>
 `
 });

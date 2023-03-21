@@ -151,7 +151,7 @@ import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker";
 import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
 import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
 import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
@@ -1054,7 +1054,7 @@ const dropDownListGallery = defineComponent({
             <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1130,7 +1130,7 @@ const checkBoxGallery = defineComponent({
     <CheckBox label="Check Box" text="Enable" v-model="isChecked" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1462,7 +1462,7 @@ const datePartsPickerGallery = defineComponent({
     <template #settings>
         <Toggle label="Show Year" v-model="showYear" />
         <p class="mt-4 mb-4">The <a href="#BirthdayPickerGallery">Birthday Picker</a> simply wraps this control and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1492,7 +1492,7 @@ const textBoxGallery = defineComponent({
     <TextBox label="Memo" v-model="text" textMode="MultiLine" :rows="10" :maxLength="100" showCountDown />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1521,7 +1521,7 @@ const colorPickerGallery = defineComponent({
     <ColorPicker label="Color" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1570,7 +1570,7 @@ const numberBoxGallery = defineComponent({
         <TextBox label="Minimum Value" v-model="minimumValue" />
         <TextBox label="Maximum Value" v-model="maximumValue" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1599,7 +1599,7 @@ const numberRangeBoxGallery = defineComponent({
     <NumberRangeBox label="Number Range" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1628,7 +1628,7 @@ const genderDropDownListGallery = defineComponent({
     <GenderDropDownList label="Your Gender" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1657,7 +1657,7 @@ const socialSecurityNumberBoxGallery = defineComponent({
     <SocialSecurityNumberBox label="SSN" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1686,7 +1686,7 @@ const timePickerGallery = defineComponent({
     <TimePicker label="Time" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1746,7 +1746,7 @@ const switchGallery = defineComponent({
     <Switch text="Switch" v-model="isChecked" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1778,7 +1778,7 @@ const inlineSwitchGallery = defineComponent({
 
     <template #settings>
         <CheckBox label="Is Bold" v-model="isBold" />
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1806,7 +1806,7 @@ const currencyBoxGallery = defineComponent({
     <CurrencyBox label="Currency" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1835,7 +1835,7 @@ const emailBoxGallery = defineComponent({
     <EmailBox label="Email" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -1864,7 +1864,7 @@ const numberUpDownGallery = defineComponent({
     <NumberUpDown label="Number" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -2073,7 +2073,7 @@ const urlLinkBoxGallery = defineComponent({
     <UrlLinkBox label="URL" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -2290,7 +2290,7 @@ const panelGallery = defineComponent({
         </div>
         <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2317,7 +2317,7 @@ const personPickerGallery = defineComponent({
     enableReflection >
     <PersonPicker v-model="value" label="Person" />
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -2498,7 +2498,7 @@ const definedValuePickerGallery = defineComponent({
             <CheckBox formGroupClasses="col-md-3" label="Enhance For Long Lists" v-model="enhanceForLongLists" />
             <CheckBox formGroupClasses="col-md-3" label="Allow Adding Values" v-model="allowAdd" />
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2571,7 +2571,7 @@ const entityTypePickerGallery = defineComponent({
             </div>
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -2827,7 +2827,7 @@ const sectionContainerGallery = defineComponent({
             <CheckBox formGroupClasses="col-xs-4" v-model="showActionBar" label="Show Action Bar" />
             <CheckBox formGroupClasses="col-xs-4" v-model="showContentToggle" label="Show Content Toggle" />
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2880,7 +2880,7 @@ const categoryPickerGallery = defineComponent({
             </div>
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -2913,7 +2913,7 @@ const locationItemPickerGallery = defineComponent({
     <template #settings>
         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2945,7 +2945,7 @@ const connectionRequestPickerGallery = defineComponent({
     <template #settings>
         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -3136,7 +3136,7 @@ const assessmentTypePickerGallery = defineComponent({
             </div>
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -3205,7 +3205,7 @@ const assetStorageProviderPickerGallery = defineComponent({
             </div>
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -4700,24 +4700,31 @@ const badgePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates an alert list */
-const alertGallery = defineComponent({
-    name: "AlertGallery",
+/** Demonstrates an notification box */
+const notificationBoxGallery = defineComponent({
+    name: "NotificationBoxGallery",
     components: {
         GalleryAndResult,
-        Alert,
+        NotificationBox,
         DropDownList,
-        CheckBox
+        CheckBox,
+        TextBox
     },
     setup() {
-        const options: ListItemBag[] = ["default", "success", "info", "danger", "warning", "primary", "validation"].map(key => ({ text: key, value: key }));
+        const options: ListItemBag[] = ["default", "success", "info", "danger", "warning", "primary", "validation"].map(key => ({ text: upperCaseFirstCharacter(key), value: key }));
         return {
             isDismissible: ref(false),
-            onDismiss: () => alert('"dismiss" event fired.'),
+            heading: ref(""),
+            onDismiss: () => alert('"dismiss" event fired. Parents are responsible for hiding the component.'),
             options,
             alertType: ref(AlertType.Default),
-            importCode: getControlImportPath("alert"),
-            exampleCode: `<Alert :dismissable="false" alertType="default" @dismiss="onDismiss">This is an alert!</Alert>`
+            importCode: getSfcControlImportPath("notificationBox"),
+            exampleCode: `<NotificationBox dismissable alertType="AlertType.Info" @dismiss="onDismiss" heading="Heading Text">
+    This is an alert!
+    <template #details>
+        Here's a place where you can place details that show up when you click "Show Details".
+    </template>
+</NotificationBox>`
         };
     },
     template: `
@@ -4725,14 +4732,25 @@ const alertGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode" >
 
-    <Alert :dismissible="isDismissible" :alertType="alertType" @dismiss="onDismiss">This is an alert!</Alert>
+    <NotificationBox :dismissible="isDismissible" :alertType="alertType" @dismiss="onDismiss" :heading="heading">
+        This is an alert!
+        <template #details>
+        Here's a place where you can place details that show up when you click "Show Details".
+        </template>
+    </NotificationBox>
 
     <template #settings>
         <div class="row">
-            <DropDownList formGroupClasses="col-md-4" label="Alert Type" v-model="alertType" :items="options" :showBlankItem="false" />
-            <CheckBox formGroupClasses="col-md-4" label="Dismissable" v-model="isDismissible" />
+            <div class="col-md-4">
+                <DropDownList label="Alert Type" v-model="alertType" :items="options" :showBlankItem="false" />
+            </div>
+            <div class="col-md-4">
+                <TextBox v-model="heading" label="Heading Text" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Dismissable" v-model="isDismissible" />
+            </div>
         </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -4808,7 +4826,7 @@ const basicTimePickerGallery = defineComponent({
     <BasicTimePicker label="Time" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -4846,7 +4864,7 @@ const birthdayPickerGallery = defineComponent({
     <template #settings>
         <Toggle label="Show Year" v-model="showYear" />
         <p class="mt-4 mb-4">This simply wraps the <a href="#DatePartsPickerGallery">Date Parts Picker</a> and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -5669,7 +5687,7 @@ const pagePickerGallery = defineComponent({
                 <CheckBox label="Prompt for Route" v-model="promptForPageRoute" help="Only works if not selecting multiple values" />
             </div>
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -5719,7 +5737,7 @@ const groupPickerGallery = defineComponent({
         </div>
     </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -5772,7 +5790,7 @@ const mergeTemplatePickerGallery = defineComponent({
         </div>
     </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -5808,7 +5826,7 @@ const metricCategoryPickerGallery = defineComponent({
     <template #settings>
         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -5844,7 +5862,7 @@ const metricItemPickerGallery = defineComponent({
     <template #settings>
         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -5882,7 +5900,7 @@ const registrationTemplatePickerGallery = defineComponent({
 
         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -5919,7 +5937,7 @@ const reportPickerGallery = defineComponent({
 
         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -5956,7 +5974,7 @@ const schedulePickerGallery = defineComponent({
 
         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -5993,7 +6011,7 @@ const workflowActionTypePickerGallery = defineComponent({
 
         <CheckBox label="Multiple" v-model="multiple" />
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -6032,7 +6050,7 @@ const dayOfWeekPickerGallery = defineComponent({
             <NumberUpDown v-if="multiple" formGroupClasses="col-sm-4" label="Columns" v-model="columns" />
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6063,7 +6081,7 @@ const monthDayPickerGallery = defineComponent({
     <MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6094,7 +6112,7 @@ const monthYearPickerGallery = defineComponent({
     <MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6125,7 +6143,7 @@ const cacheabilityPickerGallery = defineComponent({
     <CacheabilityPicker label="Cacheability" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6278,7 +6296,7 @@ const geoPickerGallery = defineComponent({
             <Toggle formGroupClasses="col-md-3" v-model="toggleValue" label="Drawing Mode" trueText="Point" falseText="Polygon" help="This will not update while the picker is open. Re-open picker to see change. You may also need to clear the value" />
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6381,7 +6399,7 @@ const contentDropDownPickerGallery = defineComponent({
             <div class="col-md-3"><InlineCheckBox label="Show Clear Button" v-model="showClearButton" /></div>
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6527,7 +6545,7 @@ const eventCalendarPickerGallery = defineComponent({
     <EventCalendarPicker label="Event Calendar" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6569,7 +6587,7 @@ const groupTypePickerGallery = defineComponent({
                 <CheckBox v-model="multiple" label="Multiple" />
             </div>
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6603,7 +6621,7 @@ const locationAddressPickerGallery = defineComponent({
     <LocationAddressPicker label="Location Address Picker" v-model="value" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6635,7 +6653,7 @@ const locationPickerGallery = defineComponent({
     <LocationPicker label="Location" v-model="value" :multiple="multiple" />
 
     <template #settings>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -6699,7 +6717,7 @@ const locationListGallery = defineComponent({
                 <DefinedValuePicker v-model="locationType" label="Location Type" definedTypeGuid="3285DCEF-FAA4-43B9-9338-983F4A384ABA" showBlankItem />
             </div>
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -6765,7 +6783,7 @@ const ethnicityPickerGallery = defineComponent({
             </div>
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6832,7 +6850,7 @@ const racePickerGallery = defineComponent({
             </div>
         </div>
 
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -6907,7 +6925,7 @@ const mediaElementPickerGallery = defineComponent({
                 <CheckBox v-model="hideMediaPicker" label="Hide Media Picker" />
             </div>
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -6959,7 +6977,7 @@ const mergeFieldPickerGallery = defineComponent({
                 <TextBox label="Root Merge Fields" v-model="additionalFields" />
             </div>
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -7006,7 +7024,7 @@ const categorizedValuePickerGallery = defineComponent({
             categorized values. By default, there aren't any, so you may need to configure a defined type to
             have categories and add values to those categories in order to see what this control can do.
         </p>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -7077,7 +7095,7 @@ const reminderTypePickerGallery = defineComponent({
                 <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
             </div>
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -7114,7 +7132,7 @@ const groupRolePickerGallery = defineComponent({
                 <CheckBox label="Required" v-model="required" />
             </div>
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -7177,7 +7195,7 @@ const modalAlertGallery = defineComponent({
                 <DropDownList label="Alert Type" v-model="type" :items="types" />
             </div>
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -7217,14 +7235,14 @@ const contentChannelItemPickerGallery = defineComponent({
                 <CheckBox label="Required" v-model="required" />
             </div>
         </div>
-        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
 
 
 const controlGalleryComponents: Record<string, Component> = [
-    alertGallery,
+    notificationBoxGallery,
     attributeValuesContainerGallery,
     badgeListGallery,
     fieldFilterEditorGallery,

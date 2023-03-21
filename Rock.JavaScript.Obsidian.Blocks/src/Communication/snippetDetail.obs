@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockError" alertType="warning" v-html="blockError"></Alert>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
 
-    <Alert v-if="errorMessage" alertType="danger" v-html="errorMessage"></Alert>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";

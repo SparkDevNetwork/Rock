@@ -34,7 +34,7 @@
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\addressControl.obs" />
-    <Content Include="Framework\Controls\alert.obs" />
+    <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
     <Content Include="Framework\Controls\cacheabilityPicker.obs" />
     <Content Include="Framework\Controls\campusPicker.obs" />

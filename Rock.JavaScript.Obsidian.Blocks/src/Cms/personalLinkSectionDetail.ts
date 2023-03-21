@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
@@ -34,7 +34,7 @@ export default defineComponent({
     name: "Cms.PersonalLinkSectionDetail",
 
     components: {
-        Alert,
+        NotificationBox,
         EditPanel,
         DetailBlock,
         ViewPanel
@@ -269,9 +269,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+<NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
 
-<Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+<NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
 <DetailBlock v-if="!blockError"
     v-model:mode="panelMode"

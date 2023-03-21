@@ -1,16 +1,16 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockErrorMessage" alertType="warning">
+    <NotificationBox v-if="blockErrorMessage" alertType="warning">
         {{ blockErrorMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <Alert v-if="errorMessage" alertType="warning">
+    <NotificationBox v-if="errorMessage" alertType="warning">
         {{ errorMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <Alert v-if="successMessage" alertType="success" :dismissible="true" @dismiss="successMessage = ''">
+    <NotificationBox v-if="successMessage" alertType="success" :dismissible="true" @dismiss="successMessage = ''">
         {{ successMessage }}
-    </Alert>
+    </NotificationBox>
 
     <div v-if="!blockErrorMessage">
         <div ref="headerElement"></div>
@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
     import { computed, onMounted, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckboxList from "@Obsidian/Controls/checkBoxList";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";

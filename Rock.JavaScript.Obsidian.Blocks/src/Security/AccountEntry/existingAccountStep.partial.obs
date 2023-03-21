@@ -1,28 +1,28 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="options.caption" alertType="warning">{{ options.caption }}</Alert>
+    <NotificationBox v-if="options.caption" alertType="warning">{{ options.caption }}</NotificationBox>
 
     <div class="actions">
         <RockButton
-            :btnType="BtnType.Link"
-            :disabled="disabled"
-            @click="onPreviousClicked">Previous</RockButton>
+                    :btnType="BtnType.Link"
+                    :disabled="disabled"
+                    @click="onPreviousClicked">Previous</RockButton>
         <RockButton
-            :btnType="BtnType.Primary"
-            class="ml-1"
-            :disabled="disabled"
-            @click="onEmailUsernameClicked">Yes, send it</RockButton>
+                    :btnType="BtnType.Primary"
+                    class="ml-1"
+                    :disabled="disabled"
+                    @click="onEmailUsernameClicked">Yes, send it</RockButton>
         <RockButton
-            :btnType="BtnType.Primary"
-            class="ml-1"
-            :disabled="disabled"
-            @click="onSendToLoginClicked">No, just let me log in</RockButton>
+                    :btnType="BtnType.Primary"
+                    class="ml-1"
+                    :disabled="disabled"
+                    @click="onSendToLoginClicked">No, just let me log in</RockButton>
     </div>
 </template>
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { AccountEntryExistingAccountStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryExistingAccountStepBag";
@@ -72,5 +72,5 @@
         emit("sendToLogin");
     }
 
-    //#endregion
+                    //#endregion
 </script>

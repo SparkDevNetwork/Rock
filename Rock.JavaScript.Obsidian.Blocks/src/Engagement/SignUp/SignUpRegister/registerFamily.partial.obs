@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="!registrar" alertType="warning">
+    <NotificationBox v-if="!registrar" alertType="warning">
         {{ unableToRegisterMsgPrefix }}.
-    </Alert>
+    </NotificationBox>
 
     <div v-else>
         <h3 v-if="props.title">{{ props.title }}</h3>
@@ -77,7 +77,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import ListUnmetRequirements from "./listUnmetRequirements.partial.obs";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList";
     import EmailBox from "@Obsidian/Controls/emailBox";

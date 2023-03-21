@@ -313,7 +313,7 @@ export default defineComponent({
                 <LoadingIndicator v-if="isConditionalsLoading" />
 
                 <div v-else-if="conditionalSources.length < 1">
-                    <Alert alertType="warning">No source fields available.</Alert>
+                    <NotificationBox alertType="warning">No source fields available.</NotificationBox>
 
                     <div class="d-flex justify-content-end">
                         <RockButton btnType="default" btnSize="sm" disabled><i class="fa fa-pencil"></i></RockButton>

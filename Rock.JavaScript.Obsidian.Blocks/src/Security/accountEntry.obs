@@ -1,53 +1,54 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="errorMessage" alertType="validation" v-html="errorMessage"></Alert>
+    <NotificationBox v-if="errorMessage" alertType="validation" v-html="errorMessage">
+    </NotificationBox>
 
     <RegistrationStep
-        v-if="step.isRegistration"
-        v-model="registrationInfo"
-        v-model:isUsernameAvailable="isUsernameAvailable"
-        :config="config"
-        :disabled="isRegistering || isNavigating"
-        @checkUsernameAvailability="onCheckUsernameAvailability"
-        @error="showError"
-        @register="onRegister">
+                      v-if="step.isRegistration"
+                      v-model="registrationInfo"
+                      v-model:isUsernameAvailable="isUsernameAvailable"
+                      :config="config"
+                      :disabled="isRegistering || isNavigating"
+                      @checkUsernameAvailability="onCheckUsernameAvailability"
+                      @error="showError"
+                      @register="onRegister">
     </RegistrationStep>
 
     <DuplicatePersonSelectionStep
-        v-else-if="step.isDuplicatePersonSelection"
-        v-model="selectedDuplicatePerson"
-        :disabled="isRegistering || isNavigating"
-        :options="duplicatePersonSelectionStepOptions"
-        @movePrevious="onDuplicatePersonSelectionStepMovePrevious()"
-        @personSelected="onDuplicatePersonSelected"
-        @noPersonSelected="onNoDuplicatePersonSelected"></DuplicatePersonSelectionStep>
+                                  v-else-if="step.isDuplicatePersonSelection"
+                                  v-model="selectedDuplicatePerson"
+                                  :disabled="isRegistering || isNavigating"
+                                  :options="duplicatePersonSelectionStepOptions"
+                                  @movePrevious="onDuplicatePersonSelectionStepMovePrevious()"
+                                  @personSelected="onDuplicatePersonSelected"
+                                  @noPersonSelected="onNoDuplicatePersonSelected"></DuplicatePersonSelectionStep>
 
     <PasswordlessConfirmationSentStep
-        v-else-if="step.isPasswordlessConfirmationSent"
-        v-model="passwordlessConfirmationCode"
-        :disabled="isRegistering || isNavigating"
-        :options="passwordlessConfirmationSentStepOptions"
-        @movePrevious="onPasswordlessConfirmationSentStepMovePrevious()"
-        @submit="onPasswordlessConfirmationSubmitted"></PasswordlessConfirmationSentStep>
+                                      v-else-if="step.isPasswordlessConfirmationSent"
+                                      v-model="passwordlessConfirmationCode"
+                                      :disabled="isRegistering || isNavigating"
+                                      :options="passwordlessConfirmationSentStepOptions"
+                                      @movePrevious="onPasswordlessConfirmationSentStepMovePrevious()"
+                                      @submit="onPasswordlessConfirmationSubmitted"></PasswordlessConfirmationSentStep>
 
     <ExistingAccountStep
-        v-else-if="step.isExistingAccount"
-        :disabled="isSendingForgotUsername || isRegistering || isNavigating"
-        :options="existingAccountStepOptions"
-        @movePrevious="onMovePrevious()"
-        @emailUsername="onEmailUsername"
-        @sendToLogin="onSendToLogin"></ExistingAccountStep>
+                         v-else-if="step.isExistingAccount"
+                         :disabled="isSendingForgotUsername || isRegistering || isNavigating"
+                         :options="existingAccountStepOptions"
+                         @movePrevious="onMovePrevious()"
+                         @emailUsername="onEmailUsername"
+                         @sendToLogin="onSendToLogin"></ExistingAccountStep>
 
     <ConfirmationSentStep
-        v-else-if="step.isConfirmationSent"
-        :options="confirmationSentStepOptions">
+                          v-else-if="step.isConfirmationSent"
+                          :options="confirmationSentStepOptions">
     </ConfirmationSentStep>
 
     <CompletedStep
-        v-else-if="step.isCompleted"
-        :disabled="isRegistering || isNavigating"
-        :options="completedStepOptions"
-        @navigate="onNavigate($event)">
+                   v-else-if="step.isCompleted"
+                   :disabled="isRegistering || isNavigating"
+                   :options="completedStepOptions"
+                   @navigate="onNavigate($event)">
     </CompletedStep>
 </template>
 
@@ -59,7 +60,7 @@
     import ExistingAccountStep from "./AccountEntry/existingAccountStep.partial.obs";
     import PasswordlessConfirmationSentStep from "./AccountEntry/passwordlessConfirmationSentStep.partial.obs";
     import RegistrationStep from "./AccountEntry/registrationStep.partial.obs";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AccountEntryStep } from "@Obsidian/Enums/Blocks/Security/AccountEntry/accountEntryStep";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { useHttp } from "@Obsidian/Utility/http";

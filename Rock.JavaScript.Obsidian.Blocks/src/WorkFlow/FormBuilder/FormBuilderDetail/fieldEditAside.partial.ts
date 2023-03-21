@@ -18,7 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import Modal from "@Obsidian/Controls/modal";
 import Panel from "@Obsidian/Controls/panel";
 import RockForm from "@Obsidian/Controls/rockForm";
@@ -87,7 +87,7 @@ export default defineComponent({
         RockForm,
         Slider,
         TextBox,
-        Alert
+        NotificationBox
     },
 
     props: {
@@ -458,7 +458,7 @@ export default defineComponent({
                 <LoadingIndicator v-if="isConditionalsLoading" />
 
                 <div v-else-if="conditionalSources.length < 1">
-                    <Alert alertType="warning">No source fields available.</Alert>
+                    <NotificationBox alertType="warning">No source fields available.</NotificationBox>
 
                     <div class="d-flex justify-content-end">
                         <RockButton btnType="default" btnSize="sm" disabled><i class="fa fa-pencil"></i></RockButton>

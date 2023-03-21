@@ -1,12 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockErrorMessage" alertType="warning">
+    <NotificationBox v-if="blockErrorMessage" alertType="warning">
         {{ blockErrorMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <Alert v-if="errorMessage" alertType="warning">
+    <NotificationBox v-if="errorMessage" alertType="warning">
         {{ errorMessage }}
-    </Alert>
+    </NotificationBox>
 
     <div v-if="!blockErrorMessage">
         <RockForm @submit="onSearch">
@@ -33,7 +33,7 @@
                 <div v-for="a in attributeFilters" :key="a.key" :class="columnClass">
                     <RockLabel>{{ a.attribute.name }}</RockLabel>
                     <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
-                        :attribute="a.attribute" />
+                                         :attribute="a.attribute" />
                 </div>
                 <div v-if="config.displayDateRange" :class="columnClass">
                     <DateRangePicker v-model="selectedDateRange"
@@ -78,7 +78,7 @@
     import { computed, nextTick, ref } from "vue";
     import SignUpFilter from "./SignUpFinder/signUpFilter.partial.obs";
     import { SignUpFilterType } from "./SignUpFinder/signUpFilterType";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
     import { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
     import InputGroupDropDown from "@Obsidian/Controls/inputGroupDropDown.obs";
@@ -181,7 +181,7 @@
      * attribute guids belong to each group type, and maintaining a local cache of selected comparison values.
      */
     const attributeFilters = computed((): ({ key: string, attribute: PublicAttributeBag, comparisonValue: ComparisonValue }[]) => {
-        const filters: { key:string, attribute: PublicAttributeBag, comparisonValue: ComparisonValue }[] = [];
+        const filters: { key: string, attribute: PublicAttributeBag, comparisonValue: ComparisonValue }[] = [];
 
         Object.keys(attributesByProjectType.value).forEach((projectTypeGuid: string) => {
             const attributes: Record<string, PublicAttributeBag> = attributesByProjectType.value[projectTypeGuid];

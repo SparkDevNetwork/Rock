@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, ref, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import CodeEditor from "@Obsidian/Controls/codeEditor";
@@ -70,7 +70,7 @@ export default defineComponent({
     name: "Cms.ContentCollectionView.CustomSettings",
 
     components: {
-        Alert,
+        NotificationBox,
         CheckBox,
         CheckBoxList,
         CodeEditor,
@@ -329,7 +329,7 @@ export default defineComponent({
     :saveText="saveButtonText"
     @save="onSave">
 
-    <Alert v-if="errorMessage"
+    <NotificationBox v-if="errorMessage"
         v-text="errorMessage"
         alertType="warning" />
 
