@@ -548,6 +548,7 @@
     <Compile Include="AI\Classes\Completions\CompletionsRequest.cs" />
     <Compile Include="AI\Classes\Completions\CompletionsResponse.cs" />
     <Compile Include="AI\Classes\Completions\CompletionsResponseChoice.cs" />
+    <Compile Include="AI\Classes\Moderations\ModerationsRequest.cs" />
     <Compile Include="AI\Classes\Moderations\ModerationsResponseCategories.cs" />
     <Compile Include="AI\Classes\Moderations\ModerationsResponse.cs" />
     <Compile Include="AI\Provider\AIProviderComponent.cs" />
