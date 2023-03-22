@@ -289,7 +289,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update analytics source date age and age bracket", () => CalculateAgeAndAgeBracketOnAnalyticsSourceDate() );
 
-            RunCleanupTask( "update person age and age range", () => UpdateAgeAndAgeRangeOnPerson() );
+            RunCleanupTask( "update person age and age range", () => UpdateAgeAndAgeBracketOnPerson() );
 
             /*
              * 21-APR-2022 DMV
@@ -2782,13 +2782,12 @@ END
         /// Updates the age and age range on person.
         /// </summary>
         /// <returns></returns>
-        private int UpdateAgeAndAgeRangeOnPerson()
+        private int UpdateAgeAndAgeBracketOnPerson()
         {
             const string UpdateAgeAndAgeRangeSql = @"
 BEGIN
 	UPDATE Person
 	SET [BirthDateKey] = FORMAT([BirthDate],'yyyyMMdd')
-	WHERE [BirthDate] IS NOT NULL AND [BirthDateKey] IS NULL
 
 	UPDATE P
 	SET P.[Age] = CASE
@@ -2798,14 +2797,13 @@ BEGIN
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], P.[DeceasedDate]), P.[DeceasedDate]) > p.[DeceasedDate] THEN 1
 				ELSE 0
 				END
-			ELSE A.[Age] 
-			END,
+		WHEN p.[BirthDate] IS NULL THEN NULL
+		ELSE A.[Age] 
+		END,
 	P.[AgeBracket] = A.[AgeBracket]
 	FROM Person P
-	INNER JOIN AnalyticsSourceDate A
+	LEFT JOIN AnalyticsSourceDate A
 	ON A.[DateKey] = P.[BirthDateKey]
-	WHERE P.[BirthDate] IS NOT NULL
-    AND P.[IsDeceased] = 0
 END
 ";
             using ( var rockContext = new RockContext() )
