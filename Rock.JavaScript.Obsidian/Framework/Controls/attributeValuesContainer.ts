@@ -76,6 +76,10 @@ export default defineComponent({
         entityTypeName: {
             type: String as PropType<string>,
             default: ""
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 

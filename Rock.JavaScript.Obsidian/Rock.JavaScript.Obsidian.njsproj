@@ -192,6 +192,8 @@
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleSignup\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\" />
+    <Folder Include="Framework\ViewModels\Blocks\Prayer\" />
+    <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\" />
@@ -217,6 +219,8 @@
     <Folder Include="Framework\ViewModels\Event\" />
     <Folder Include="Framework\ViewModels\Event\InteractiveExperiences\" />
     <Folder Include="Framework\ViewModels\Finance\" />
+    <Folder Include="Framework\ViewModels\Prayer\" />
+    <Folder Include="Framework\ViewModels\Prayer\PrayerRequestEntry\" />
     <Folder Include="Framework\ViewModels\Reporting\" />
     <Folder Include="Framework\ViewModels\Rest\" />
     <Folder Include="Framework\ViewModels\Rest\Controls\" />
@@ -699,6 +703,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\landingPageContentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntryInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountAccountConfirmationViewOptionsBag.d.ts" />
@@ -1027,6 +1034,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\visualizerRenderConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Finance\savedFinancialAccountListItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\index.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Prayer\PrayerRequestEntry\prayerRequestEntryInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRuleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />

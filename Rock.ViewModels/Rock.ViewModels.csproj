@@ -230,6 +230,9 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Blocks\Prayer\PrayerRequestEntry\PrayerRequestEntryInitializationBox.cs" />
+    <Compile Include="Blocks\Prayer\PrayerRequestEntry\PrayerRequestEntrySaveRequestBag.cs" />
+    <Compile Include="Blocks\Prayer\PrayerRequestEntry\PrayerRequestEntrySaveResponseBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerFormatSelectedValueOptionsBag.cs" />
     <Compile Include="Rest\Controls\MergeFieldPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PhoneNumberBoxGetConfigurationResultsBag.cs" />

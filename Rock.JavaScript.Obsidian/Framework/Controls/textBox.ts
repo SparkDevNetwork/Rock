@@ -119,7 +119,7 @@ export default defineComponent({
             <slot name="prepend" :isInputGroupSupported="true" />
             <div :class="controlContainerClass">
                 <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-                <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
+                <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field" :placeholder="placeholder"></textarea>
                 <input v-else v-model="internalValue" :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" />
                 <slot name="inputGroupAppend" :isInputGroupSupported="true" />
             </div>
