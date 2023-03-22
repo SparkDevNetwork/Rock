@@ -719,14 +719,9 @@ namespace Rock.Blocks.Groups
                     }
                 }
 
-                var uri = new UriBuilder( outputBinaryFileDoc.Url );
-                var queryString = uri.Query.ParseQueryString();
-                queryString["attachment"] = true.ToTrueFalse();
-                uri.Query = queryString.ToString();
-
                 return ActionOk( new GroupAttendanceDetailPrintRosterResponseBag
                 {
-                    RedirectUrl = uri.ToString()
+                    RedirectUrl = $"{this.RequestContext.RootUrlPath}/GetFile.ashx?Guid={outputBinaryFileDoc.Guid}&attachment=true"
                 } );
             }
         }
