@@ -32,14 +32,28 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
         /// <summary>
         /// Text for the moderation request.
         /// </summary>
-        [JsonProperty( "text" )]
-        public string Text { get; set; }
+        [JsonProperty( "input" )]
+        public string Input { get; set; }
 
         /// <summary>
-        /// Specifies the ID of the language model used to generate the moderation
+        /// Specifies the ID of the language model used to generate the moderation.
         /// </summary>
         [JsonProperty( "model" )]
         public string Model { get; set; }
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Converts the generic moderations request to an OpenAI moderation request.
+        /// </summary>
+        /// <param name="request"></param>
+        public OpenAIModerationsRequest( ModerationsRequest request )
+        {
+            this.Input = request.Input;
+            this.Model = request.Model;
+        }
 
         #endregion
     }

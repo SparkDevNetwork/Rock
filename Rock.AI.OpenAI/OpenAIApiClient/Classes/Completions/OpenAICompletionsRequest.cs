@@ -72,7 +72,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
         /// Request the model to return the log probability of each generated token in the output text.
         /// </summary>
         [JsonProperty( "logprobs" )]
-        public object Logprobs { get; set; }
+        public int Logprobs { get; set; }
 
         /// <summary>
         /// Parameter that can be used to specify a sequence of tokens that the model should stop generating at.
@@ -95,7 +95,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
             // Provide a default model
             if ( this.Model.IsNullOrWhiteSpace() )
             {
-                this.Model = OpenAIProvider.OpenAIDefaultGptModel;
+                this.Model = OpenAIApi.OpenAIDefaultCompletionsModel;
             }
         }
     }

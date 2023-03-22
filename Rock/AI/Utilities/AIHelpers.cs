@@ -20,6 +20,9 @@ using System;
 
 namespace Rock.AI.Utilities
 {
+    /// <summary>
+    /// A set of helpful utilities for AI work.
+    /// </summary>
     public static class AIHelpers
     {
 

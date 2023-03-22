@@ -37,7 +37,7 @@ namespace Rock.AI.Classes.Completions
         /// <summary>
         /// The level of randomness or creativity in the generated text. See documentation for your provider for valid values.
         /// </summary>
-        public double Temperature { get; set; }
+        public double Temperature { get; set; } = 0.8;
 
         /// <summary>
         /// The number of completions to return for the given prompt.

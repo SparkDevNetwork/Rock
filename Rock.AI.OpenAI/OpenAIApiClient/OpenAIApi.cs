@@ -26,16 +26,15 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
 {
     internal class OpenAIApi
     {
-
         private const string _openAIApiHost = "https://api.openai.com/v1";
         private const int _apiTimeoutLength = 30000;
-        private const string _defaultGptModel = "gpt-3.5-turbo";
-        private const string _defaultModerationModel = "";
-
 
         private RestClient _client = null;
         private string _organization = string.Empty;
-        
+
+        #region Static Properties
+        public const string OpenAIDefaultCompletionsModel = "text-davinci-003";
+        #endregion
 
         #region Constructors
 
@@ -71,9 +70,9 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         /// </summary>
         /// <param name="resource"></param>
         /// <returns></returns>
-        private RestRequest GetOpenAIRequest( string resource )
+        private RestRequest GetOpenAIRequest( string resource, Method method = Method.GET )
         {
-            var request = new RestRequest( resource );
+            var request = new RestRequest( resource, method );
             request.AddHeader( "OpenAI-Organization", _organization );
 
             return request; 
@@ -89,12 +88,12 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         /// <returns></returns>
         internal async Task<OpenAICompletionsResponse> GetCompletions( OpenAICompletionsRequest completionRequest )
         {
-            var request = GetOpenAIRequest( "completions" );
+            var request = GetOpenAIRequest( "completions", Method.POST );
                                     
             request.AddParameter( "application/json", completionRequest.ToJson(), ParameterType.RequestBody );
 
             // Execute request
-            var response = await _client.ExecuteTaskAsync<OpenAICompletionsResponse>( request );
+            var response = await _client.ExecuteTaskAsync<OpenAICompletionsResponse>( request ).ConfigureAwait( false );
 
             if ( response.StatusCode == System.Net.HttpStatusCode.OK )
             {
@@ -111,7 +110,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         /// <returns></returns>
         internal async Task<OpenAIModerationsResponse> GetModerations( OpenAIModerationsRequest moderationRequest )
         {
-            var request = GetOpenAIRequest( "moderations" );
+            var request = GetOpenAIRequest( "moderations", Method.POST );
 
             request.AddParameter( "application/json", moderationRequest.ToJson(), ParameterType.RequestBody );
 

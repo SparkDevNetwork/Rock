@@ -5,6 +5,8 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DDay.iCal;
+using Mono.CSharp;
 using Rock.Address;
 using Rock.Extension;
 using Rock.UniversalSearch;
@@ -12,7 +14,7 @@ using Rock.UniversalSearch;
 namespace Rock.AI.Provider
 {
     
-    internal class AIProviderContainer : Container<AIProviderComponent, IComponentData>
+    public class AIProviderContainer : Container<AIProviderComponent, IComponentData>
     {
         /// <summary>
         /// Singleton instance
@@ -49,6 +51,15 @@ namespace Rock.AI.Provider
         public static string GetComponentName( string entityType )
         {
             return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Returns the active component
+        /// </summary>
+        /// <returns></returns>
+        public static AIProviderComponent GetActiveComponent()
+        {
+            return Instance.Components.Select( c => c.Value.Value ).Where( c => c.IsActive ).FirstOrDefault();
         }
 
         /// <summary>

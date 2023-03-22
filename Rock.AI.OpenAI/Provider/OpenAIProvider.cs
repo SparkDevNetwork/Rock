@@ -24,6 +24,9 @@ using System.ComponentModel.Composition;
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions;
+using System.Threading.Tasks;
+using Rock.AI.Classes.Moderations;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
 
 namespace Rock.AI.OpenAI.Provider
 {
@@ -57,22 +60,52 @@ namespace Rock.AI.OpenAI.Provider
             public const string Organization = "Organization";
         }
 
-        internal const string OpenAIDefaultGptModel = "";
-
         /// <summary>
         /// Gets the contents of the completions.
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        internal override CompletionsResponse GetCompletions( CompletionsRequest request )
+        public override async Task<CompletionsResponse> GetCompletions( CompletionsRequest request )
         {
-            var openAIApi = new OpenAIApi( GetAttributeValue( AttributeKey.SecretKey ), GetAttributeValue( AttributeKey.Organization ) );
+            var openAIApi = GetOpenAIApi();
 
-            var response = openAIApi.GetCompletions( new OpenAICompletionsRequest( request ) );
+            var response = await openAIApi.GetCompletions( new OpenAICompletionsRequest( request ) );
 
-            //response.
+            if ( response == null )
+            {
+                return null;
+            }
 
-            return null;
+            return response.AsCompletionsResponse();
+        }
+
+        /// <summary>
+        /// Processes a moderation request for the text provided.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override async Task<ModerationsResponse> GetModerations( ModerationsRequest request )
+        {
+            var openAIApi = GetOpenAIApi();
+
+            var response = await openAIApi.GetModerations( new OpenAIModerationsRequest( request ) );
+
+            if (response == null )
+            {
+                return null;
+            }
+
+            return response.AsModerationsResponse();
+        }
+
+        /// <summary>
+        /// Method to return an OpenAIApi object providing the connection information.
+        /// </summary>
+        /// <returns></returns>
+        private OpenAIApi GetOpenAIApi()
+        {
+            return new OpenAIApi( GetAttributeValue( AttributeKey.SecretKey ), GetAttributeValue( AttributeKey.Organization ) );
         }
     }
 }

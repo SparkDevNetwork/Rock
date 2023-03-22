@@ -18,24 +18,18 @@
 namespace Rock.AI.Classes.Moderations
 {
     /// <summary>
-    /// The class for holding the response from a moderation.
+    /// The class for holding the request for a moderation of text.
     /// </summary>
-    public class ModerationsResponse
+    public class ModerationsRequest
     {
         /// <summary>
-        /// A unique identifier for the completion.
+        /// The text to moderate.
         /// </summary>
-        public string Id { get; set; }
+        public string Input { get; set; }
 
         /// <summary>
-        /// Is the text flagged for moderation.
+        /// The model to use for moderation.
         /// </summary>
-        public bool IsFlagged { get; set; }
-
-        /// <summary>
-        /// Moderation data by category
-        /// </summary>
-        public ModerationsResponseCategories ModerationsResponseCategories { get; set; }
-
+        public string Model { get; set; }
     }
 }

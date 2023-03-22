@@ -24,6 +24,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
+using System.Web;
 
 namespace Rock.Drawing.Avatar
 {
