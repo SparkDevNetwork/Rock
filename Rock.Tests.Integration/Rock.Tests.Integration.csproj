@@ -198,6 +198,7 @@
     <Compile Include="Modules\Core\FieldTypesListing.cs" />
     <Compile Include="Modules\Crm\CrmModuleTestHelper.cs" />
     <Compile Include="Modules\Crm\PersonAddressTests.cs" />
+    <Compile Include="Modules\Reporting\DataFilter\DataViewTests.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
     <Compile Include="TestData\Crm\HistoryDataFactory.cs" />
     <Compile Include="TestData\Engagement\PrayerFeatureDataHelper.cs" />
