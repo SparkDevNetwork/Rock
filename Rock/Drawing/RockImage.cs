@@ -19,10 +19,6 @@ using Rock.Model;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing.Processors.Drawing;
 using SixLabors.ImageSharp;
-using System.Threading;
-using System;
-using System.Web;
-using System.IO;
 
 namespace Rock.Drawing
 {
