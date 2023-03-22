@@ -19,6 +19,10 @@ using Rock.Model;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing.Processors.Drawing;
 using SixLabors.ImageSharp;
+using System.Threading;
+using System;
+using System.Web;
+using System.IO;
 
 namespace Rock.Drawing
 {
@@ -67,19 +71,19 @@ namespace Rock.Drawing
         /// <param name="photoId"></param>
         /// <returns></returns>
         public static Image GetImageFromBinaryFileService( int photoId )
-        {
-            var binaryFileData = new BinaryFileDataService( new RockContext() ).Get( photoId );
+        {          
+            var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
 
-            // If the file was not found return a blank image
-            if ( binaryFileData == null )
+            if ( binaryFile == null || binaryFile.ContentStream == null )
             {
+                // Image does not exist so return a blank image
                 return new Image<Rgba32>( 1, 1 );
             }
 
-            // Return the binary file's content as a new image
+            // Load image from stream
             try
             {
-                return Image.Load<Rgba32>( binaryFileData.Content );
+                return Image.Load<Rgba32>( binaryFile.ContentStream );
             }
             catch { }
 
