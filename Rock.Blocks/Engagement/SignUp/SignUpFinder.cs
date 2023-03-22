@@ -355,10 +355,10 @@ namespace Rock.Blocks.Engagement.SignUp
                         {% endif %}
                     </div>
                     <div class=""card-footer bg-white border-0"">
-                        <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs pl-0 text-muted"">Details</a>
                         {% if project.ShowRegisterButton == true %}
-                            <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-warning btn-xs pull-right"">Register</a>
+                            <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-primary btn-xs"">Register</a>
                         {% endif %}
+                        <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs"">Details</a>
                     </div>
                 </div>
             </div>
@@ -372,7 +372,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
             public const string ResultsHeaderLavaTemplate = @"<h3>Results</h3>
 <p>Below is a listing of the projects that match your search results.</p>
-<hr class=""mb-5"" />";
+<hr>";
         }
 
         private static class FilterDisplayType

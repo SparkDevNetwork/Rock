@@ -7,15 +7,17 @@
     <div v-else>
         <h3 v-if="props.title">{{ props.title }}</h3>
 
-        <div v-if="registrar?.mobilePhoneNumberFormatted">
-            Mobile Phone: {{ registrar.mobilePhoneNumberFormatted }}
+        <div v-if="showRegistrarContactSummary" class="form-group">
+            <div v-if="registrar?.mobilePhoneNumberFormatted">
+                Mobile Phone: {{ registrar.mobilePhoneNumberFormatted }}
+            </div>
+
+            <div v-if="registrar?.email">
+                Email: {{ registrar?.email }}
+            </div>
         </div>
 
-        <div v-if="registrar?.email">
-            Email: {{ registrar?.email }}
-        </div>
-
-        <div v-if="registrarUnmetRequirements.length" class="mt-3">
+        <div v-if="registrarUnmetRequirements.length" class="form-group">
             {{ unableToRegisterMsgPrefix }} as you don't currently meet the requirement(s) below:
             <ul>
                 <li v-for="(requirement, i) in registrarUnmetRequirements" :key="`requirement-{i}`">
@@ -24,53 +26,50 @@
             </ul>
         </div>
 
-        <div v-else class="mt-3">
+        <div v-else class="form-group">
             <CheckBox v-model="registrar.willAttend"
                       label=""
                       text="I will attend"
                       :disabled="isRegistering" />
         </div>
 
-        <div v-if="anyEligibleRegistrants && props.communicationPreferenceItems.length" class="mt-3">
+        <div v-if="anyEligibleRegistrants && props.communicationPreferenceItems.length">
             <RadioButtonList v-model="registrarCommunicationPreference"
                              label="Please send reminder using"
                              :items="props.communicationPreferenceItems"
                              :horizontal="true"
                              :disabled="isRegistering" />
 
-            <div v-if="communicationPreferenceIsSms" class="mt-3">
+            <div v-if="communicationPreferenceIsSms">
                 <PhoneNumberBox v-model="registrarMobilePhoneNumber"
                                 v-model:countryCode="registrarMobilePhoneCountryCode"
                                 label="Mobile Phone"
                                 class="input-max-w-xl"
                                 :disabled="isRegistering" />
-                <div class="mt-1 text-muted">
+                <div class="form-group">
                     The number provided will be updated on your personal profile with permissions to allow us to send SMS messages.
                 </div>
             </div>
 
-            <div v-if="communicationPreferenceIsEmail" class="mt-3">
+            <div v-if="communicationPreferenceIsEmail">
                 <EmailBox v-model="registrarEmail"
                           label="Email"
                           class="input-max-w-xl"
                           :disabled="isRegistering" />
-                <div class="mt-1 text-muted">
+                <div class="form-group">
                     The email provided will be updated on your personal profile.
                 </div>
             </div>
         </div>
 
-        <div v-if="eligibleFamilyMembers.length" class="mt-3">
-            <CheckBoxList v-model="registeredFamilyMembers"
-                          :label="registerFamilyMembersLabel"
-                          :items="eligibleFamilyMembers"
-                          :disabled="isRegistering"
-                          @update:modelValue="onRegisteredFamilyMembersChanged" />
-        </div>
+        <CheckBoxList v-if="eligibleFamilyMembers.length"
+                      v-model="registeredFamilyMembers"
+                      :label="registerFamilyMembersLabel"
+                      :items="eligibleFamilyMembers"
+                      :disabled="isRegistering"
+                      @update:modelValue="onRegisteredFamilyMembersChanged" />
 
-        <div v-if="ineligibleFamilyMembers.length" class="mt-3">
-            <ListUnmetRequirements :registrants="ineligibleFamilyMembers" groupTerm="family" />
-        </div>
+        <ListUnmetRequirements v-if="ineligibleFamilyMembers.length" :registrants="ineligibleFamilyMembers" groupTerm="family" />
     </div>
 </template>
 
@@ -119,6 +118,10 @@
 
     const registrar = computed((): SignUpRegistrantBag | null | undefined => {
         return props.registrants?.find((r: SignUpRegistrantBag) => r.isRegistrar);
+    });
+
+    const showRegistrarContactSummary = computed((): boolean => {
+        return !!(registrar.value?.mobilePhoneNumberFormatted || registrar.value?.email);
     });
 
     const registrarUnmetRequirements = computed((): string[] => {

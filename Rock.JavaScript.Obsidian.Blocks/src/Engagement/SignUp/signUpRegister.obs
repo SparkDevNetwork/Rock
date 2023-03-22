@@ -8,7 +8,7 @@
         {{ errorMessage }}
     </NotificationBox>
 
-    <NotificationBox v-if="registeredRegistrantNames?.length || unregisteredRegistrantNames?.length" :alertType="AlertType.Success">
+    <NotificationBox v-if="showRegistrationSuccess" :alertType="AlertType.Success">
         <div v-if="registeredRegistrantNames?.length">
             <p>Successfully registered individual(s):</p>
             <ul>
@@ -43,7 +43,7 @@
         </div>
     </NotificationBox>
 
-    <div v-if="!blockErrorMessage">
+    <div v-if="showRegistrationForm">
         <RockForm @submit="onSubmit">
 
             <RegisterAnonymous v-if="registerMode == RegisterMode.Anonymous"
@@ -65,11 +65,11 @@
                            :registrants="registrants"
                            :title="config.title" />
 
-            <div v-if="anyEligibleRegistrants" class="mt-5">
-                <Loading :isLoading="isRegistering">
-                    <RockButton type="submit" :btnType="BtnType.Warning" :disabled="isRegistering">{{ submitButtonText }}</RockButton>
-                </Loading>
-            </div>
+            <Loading :isLoading="isRegistering">
+                <div v-if="anyEligibleRegistrants" class="actions">
+                    <RockButton type="submit" :btnType="BtnType.Primary" :disabled="isRegistering">{{ submitButtonText }}</RockButton>
+                </div>
+            </Loading>
         </RockForm>
     </div>
 </template>
@@ -127,8 +127,25 @@
         return registrants.value.some((r: SignUpRegistrantBag) => r && !r.unmetGroupRequirements?.length);
     });
 
+    const showRegistrationSuccess = computed((): boolean => {
+        return !!(registeredRegistrantNames.value?.length || unregisteredRegistrantNames.value?.length);
+    });
+
     const showRegistrationWarning = computed((): boolean => {
         return !!(unsuccessfulRegistrantNames.value?.length || registrationWarning.value?.length);
+    });
+
+    const showRegistrationForm = computed((): boolean => {
+        if (blockErrorMessage.value) {
+            return false;
+        }
+
+        if (showRegistrationSuccess.value) {
+            // If registration was successful, only re-show the form if there was also a registration warning.
+            return showRegistrationWarning.value;
+        }
+
+        return true;
     });
 
     // #endregion

@@ -91,32 +91,32 @@ namespace Rock.Blocks.Engagement.SignUp
         </div>
         <div class=""panel-body"">
             <div class=""row"">
-                <div class=""col-md-6 mb-3"">
-                    <div class=""d-flex justify-content-between"">
+                <div class=""col-md-6"">
+                    <div class=""d-flex justify-content-between align-items-center"">
                         <h4>{{ Project.Name }}</h4>
                         {% if Project.CampusName and Project.CampusName != empty %}
-                            <div class=""panel-labels"">
-                                <span class=""label label-default"">{{ Project.CampusName }}</span>
-                            </div>
+                            <span class=""label label-default"">{{ Project.CampusName }}</span>
                         {% endif %}
                     </div>
                     {% if Project.ScheduleName and Project.ScheduleName != empty %}
-                        <p class=""text-muted mb-3"">{{ Project.ScheduleName }}</p>
+                        <p class=""text-muted"">{{ Project.ScheduleName }}</p>
                     {% endif %}
                     {% if Project.Description and Project.Description != empty %}
                         <p>{{ Project.Description }}</p>
                     {% endif %}
                     {% if Project.AvailableSpots != null %}
-                        <span class=""badge badge-info"">Available Spots: {{ Project.AvailableSpots }}</span>
+                        <p>
+                            <span class=""badge badge-info"">Available Spots: {{ Project.AvailableSpots }}</span>
+                        </p>
                     {% endif %}
                     {% if Project.ShowRegisterButton == true %}
-                        <div class=""mt-4"">
-                            <a href=""{{ Project.RegisterPageUrl }}"" class=""btn btn-warning"">Register</a>
+                        <div class=""actions"">
+                            <a href=""{{ Project.RegisterPageUrl }}"" class=""btn btn-primary"">Register</a>
                         </div>
                     {% endif %}
                 </div>
                 {% if Project.MapCenter and Project.MapCenter != empty %}
-                    <div class=""col-md-6 mb-3"">
+                    <div class=""col-md-6 mt-3 mt-md-0"">
                         {[ googlestaticmap center:'{{ Project.MapCenter }}' zoom:'15' ]}
                         {[ endgooglestaticmap ]}
                     </div>

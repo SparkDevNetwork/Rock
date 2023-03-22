@@ -7,17 +7,14 @@
     <div v-else>
         <h3 v-if="props.title">{{ props.title }}</h3>
 
-        <div v-if="eligibleGroupMembers.length" class="mt-3">
-            <CheckBoxList v-model="registeredGroupMembers"
-                          label=""
-                          :items="eligibleGroupMembers"
-                          :disabled="isRegistering"
-                          @update:modelValue="onRegisteredGroupMembersChanged" />
-        </div>
+        <CheckBoxList v-if="eligibleGroupMembers.length"
+                      v-model="registeredGroupMembers"
+                      label="Group Members"
+                      :items="eligibleGroupMembers"
+                      :disabled="isRegistering"
+                      @update:modelValue="onRegisteredGroupMembersChanged" />
 
-        <div v-if="ineligibleGroupMembers.length" class="mt-3">
-            <ListUnmetRequirements :registrants="ineligibleGroupMembers" />
-        </div>
+        <ListUnmetRequirements v-if="ineligibleGroupMembers.length" :registrants="ineligibleGroupMembers" />
     </div>
 </template>
 

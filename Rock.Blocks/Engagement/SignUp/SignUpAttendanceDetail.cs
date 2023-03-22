@@ -77,14 +77,15 @@ namespace Rock.Blocks.Engagement.SignUp
             public const string HeaderLavaTemplate = @"<h3>{{ Group.Name }}</h3>
 <div>
     Please enter attendance for the project below.
-    <br />Date: {{ AttendanceOccurrenceDate | Date:'dddd, MMM d' }}
+    <br>Date: {{ AttendanceOccurrenceDate | Date:'dddd, MMM d' }}
     {% if WasScheduleParamProvided %}
-        <br />Schedule: {{ ScheduleName }}
+        <br>Schedule: {{ ScheduleName }}
     {% endif %}
     {% if WasLocationParamProvided %}
-        <br />Location: {{ LocationName }}
+        <br>Location: {{ LocationName }}
     {% endif %}
-</div>";
+</div>
+<hr>";
         }
 
         #endregion

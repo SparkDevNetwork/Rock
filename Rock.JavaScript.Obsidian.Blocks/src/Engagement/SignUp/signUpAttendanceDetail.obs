@@ -8,16 +8,18 @@
         {{ errorMessage }}
     </NotificationBox>
 
-    <NotificationBox v-if="successMessage" alertType="success" :dismissible="true" @dismiss="successMessage = ''">
+    <NotificationBox v-if="successMessage" alertType="success">
         {{ successMessage }}
     </NotificationBox>
 
-    <div v-if="!blockErrorMessage">
+    <div v-if="shouldShowAttendanceForm">
         <div ref="headerElement"></div>
-        <hr />
         <RockForm @submit="onSubmit">
             <CheckboxList v-model="selectedAttendees" label="Attendees" :items="attendees" @update:modelValue="onAttendeesUpdated" />
-            <RockButton type="submit" :disabled="isSaving">Save</RockButton>
+
+            <div class="actions">
+                <RockButton type="submit" :btnType="BtnType.Primary" :disabled="isSaving">Save</RockButton>
+            </div>
         </RockForm>
     </div>
 </template>
@@ -28,6 +30,7 @@
     import CheckboxList from "@Obsidian/Controls/checkBoxList";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { SignUpAttendanceBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpAttendanceDetail/signUpAttendanceBag";
@@ -62,6 +65,14 @@
         })) ?? [];
 
         return listItemBag;
+    });
+
+    const shouldShowAttendanceForm = computed((): boolean => {
+        if (blockErrorMessage.value) {
+            return false;
+        }
+
+        return !successMessage.value;
     });
 
     // #endregion
