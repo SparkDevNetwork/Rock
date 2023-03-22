@@ -405,7 +405,7 @@
 
                     <a id="SlidingDateRangePicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:SlidingDateRangePicker ID="sdrpExample" runat="server" Label="Rock:SlidingDateRangePicker" />
+                        <Rock:SlidingDateRangePicker ID="sdrpExample" runat="server" Label="Rock:SlidingDateRangePicker" PreviewLocation="Top" />
                     </div>
 
                     <a id="BirthdayPicker"></a>

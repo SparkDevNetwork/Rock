@@ -22,7 +22,7 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import Block from "@Obsidian/Templates/block";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
 import RockForm from "@Obsidian/Controls/rockForm";
-import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
+import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";

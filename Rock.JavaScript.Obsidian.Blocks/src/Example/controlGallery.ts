@@ -100,7 +100,7 @@ import AssessmentTypePicker from "@Obsidian/Controls/assessmentTypePicker";
 import AssetStorageProviderPicker from "@Obsidian/Controls/assetStorageProviderPicker";
 import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
 import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker";
-import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
+import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
@@ -121,7 +121,7 @@ import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
 import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-import { SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+import { SlidingDateRange, rangeTypeOptions } from "@Obsidian/Utility/slidingDateRange";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
@@ -2424,17 +2424,35 @@ const slidingDateRangePickerGallery = defineComponent({
     name: "SlidingDateRangePickerGallery",
     components: {
         GalleryAndResult,
-        SlidingDateRangePicker
+        SlidingDateRangePicker,
+        DropDownList
     },
     setup() {
         const value = ref<SlidingDateRange | null>(null);
-        const valueText = computed((): string => value.value ? slidingDateRangeToString(value.value) : "");
 
         return {
             value,
-            valueText,
-            importCode: getControlImportPath("slidingDateRangePicker"),
-            exampleCode: `<SlidingDateRangePicker v-model="value" label="Sliding Date Range" />`
+            rangeTypeOptions: rangeTypeOptions,
+            rangeTypes: ref(null),
+            previewLocation: ref("Right"),
+            previewLocationOptions: [
+                {
+                    text: "Right (Default)",
+                    value: "Right"
+                },
+                {
+                    text: "Top",
+                    value: "Top"
+                },
+                {
+                    text: "None",
+                    value: "None"
+                },
+            ],
+            importCode: getSfcControlImportPath("slidingDateRangePicker") +
+                "\n// If Customizing Date Range Types" +
+                "\nimport { RangeType } from \"@Obsidian/Utility/slidingDateRange\";",
+            exampleCode: `<SlidingDateRangePicker v-model="value" label="Sliding Date Range" :enabledSlidingDateRangeUnits="[RangeType.Current, RangeType.Previous, RangeType.Next]" previewLocation="Right" />`
         };
     },
     template: `
@@ -2443,9 +2461,22 @@ const slidingDateRangePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <SlidingDateRangePicker v-model="value" label="Sliding Date Range" />
+
+    <SlidingDateRangePicker
+        v-model="value"
+        label="Sliding Date Range"
+        :enabledSlidingDateRangeUnits="rangeTypes"
+        :previewLocation="previewLocation" />
 
     <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList v-model="rangeTypes" :items="rangeTypeOptions" multiple showBlankItem label="Available Range Types" />
+            </div>
+            <div class="col-md-4">
+                <DropDownList v-model="previewLocation" :items="previewLocationOptions" showBlankItem label="Date Preview Location" />
+            </div>
+        </div>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -4715,6 +4746,7 @@ const notificationBoxGallery = defineComponent({
         return {
             isDismissible: ref(false),
             heading: ref(""),
+            details: ref("Here's a place where you can place details that show up when you click \"Show Details\"."),
             onDismiss: () => alert('"dismiss" event fired. Parents are responsible for hiding the component.'),
             options,
             alertType: ref(AlertType.Default),
@@ -4734,20 +4766,23 @@ const notificationBoxGallery = defineComponent({
 
     <NotificationBox :dismissible="isDismissible" :alertType="alertType" @dismiss="onDismiss" :heading="heading">
         This is an alert!
-        <template #details>
-        Here's a place where you can place details that show up when you click "Show Details".
+        <template #details v-if="details">
+            {{details}}
         </template>
     </NotificationBox>
 
     <template #settings>
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <DropDownList label="Alert Type" v-model="alertType" :items="options" :showBlankItem="false" />
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <TextBox v-model="heading" label="Heading Text" />
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <TextBox v-model="details" label="Details Text" />
+            </div>
+            <div class="col-md-3">
                 <CheckBox label="Dismissable" v-model="isDismissible" />
             </div>
         </div>
