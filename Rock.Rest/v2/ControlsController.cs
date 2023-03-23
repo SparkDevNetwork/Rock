@@ -1060,7 +1060,6 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the content channel items that can be displayed in the content channel item picker.
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
         [HttpPost]
         [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannels" )]
@@ -2463,7 +2462,6 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the group types that can be displayed in the group role picker.
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "GroupRolePickerGetGroupTypes" )]

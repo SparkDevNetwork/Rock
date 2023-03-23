@@ -160,6 +160,14 @@
     <Compile Include="Migrations\202303201615387_AddInternalMessageToPersonAlias.designer.cs">
       <DependentUpon>202303201615387_AddInternalMessageToPersonAlias.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202303231713546_Rollup_20230323.cs" />
+    <Compile Include="Migrations\202303231713546_Rollup_20230323.designer.cs">
+      <DependentUpon>202303231713546_Rollup_20230323.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202303231952517_CodeGenerated_20230323.cs" />
+    <Compile Include="Migrations\202303231952517_CodeGenerated_20230323.designer.cs">
+      <DependentUpon>202303231952517_CodeGenerated_20230323.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1654,6 +1662,12 @@
     <EmbeddedResource Include="Migrations\202303201615387_AddInternalMessageToPersonAlias.resx">
       <DependentUpon>202303201615387_AddInternalMessageToPersonAlias.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202303231713546_Rollup_20230323.resx">
+      <DependentUpon>202303231713546_Rollup_20230323.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202303231952517_CodeGenerated_20230323.resx">
+      <DependentUpon>202303231952517_CodeGenerated_20230323.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
     </EmbeddedResource>
@@ -2739,6 +2753,8 @@
     <Content Include="Migrations\202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices.sql">
       <DependentUpon>202302101002183_DeleteOrphanedAttributeMatricesSP.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\202303231713546_Rollup_20230323_ChartColorUpdate.sql" />
+    <Content Include="Migrations\202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars.sql" />
     <None Include="Migrations\202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
     <Content Include="Migrations\Version 14.0\Version 1.14.1\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql">
       <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
