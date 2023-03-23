@@ -2634,160 +2634,120 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
             }
 
-            private class BadgeColor
+            private class ProgressState
             {
-                public const string Danger = "danger";
                 public const string Success = "success";
-                public const string SuccessPlus = "success-plus";
                 public const string Warning = "warning";
-                public const string White = "white";
+                public const string Critical = "critical";
+                public const string Danger = "danger";
             }
 
-            private class BadgeThreshold
-            {
-                public const string Minimum = "min";
-                public const string Desired = "desired";
-            }
-
-            public string SlotsBadge
+            public string ProgressBar
             {
                 get
                 {
-                    var htmlSb = new StringBuilder( $"<div class='sign-up-slots-badge' data-tip='{SlotsBadgeTooltipId}'>&nbsp;" );
-                    var slotsFilled = SlotsFilled.GetValueOrDefault();
-                    string fillColor;
-                    string thresholdColor;
+                    var min = this.SlotsMin.GetValueOrDefault();
+                    var desired = this.SlotsDesired.GetValueOrDefault();
+                    var max = this.SlotsMax.GetValueOrDefault();
+                    var filled = this.SlotsFilled.GetValueOrDefault();
+                    var whole = 0;
 
-                    int GetPercentageOf( int whole, int part )
+                    if ( max > 0 )
                     {
-                        var percentage = ( int ) ( ( double ) part / whole * 100 );
-                        return percentage > 100 ? 100 : percentage;
+                        whole = max;
+                    }
+                    else if ( desired > 0 )
+                    {
+                        whole = desired;
+                    }
+                    else if ( min > 0 )
+                    {
+                        whole = min;
                     }
 
-                    string GetFilledVisual( string color, int whole, int? partOverride = null )
+                    if ( filled > whole )
                     {
-                        return $"<div class='sign-up-slots slots-filled-{color}' style='width: {GetPercentageOf( whole, partOverride ?? slotsFilled )}%'>&nbsp;</div>";
+                        whole = filled;
                     }
 
-                    string GetThresholdVisual( string threshold, string color, int whole, int part )
-                    {
-                        return $"<div class='sign-up-slots slots-{threshold}-{color}' style='width: {GetPercentageOf( whole, part )}%'>&nbsp;</div>";
-                    }
+                    var minPercentage = 0;
+                    var desiredPercentage = 0;
+                    var maxPercentage = 0;
+                    var filledPercentage = 0;
 
-                    if ( SlotsMax.GetValueOrDefault() > 0 )
+                    if ( whole > 0 )
                     {
-                        if ( slotsFilled > 0 )
+                        int GetPercentageOfWhole( int part, bool isThreshold = true )
                         {
-                            fillColor = slotsFilled < SlotsMin.GetValueOrDefault()
-                                ? BadgeColor.Warning
-                                : slotsFilled < SlotsMax.Value
-                                    ? BadgeColor.Success
-                                    : BadgeColor.Danger;
-
-                            int? partOverride = null;
-                            if ( fillColor == BadgeColor.Success )
+                            if ( isThreshold )
                             {
-                                if ( SlotsDesired.GetValueOrDefault() > 0 && slotsFilled > SlotsDesired.Value )
-                                {
-                                    fillColor = BadgeColor.SuccessPlus;
-                                    partOverride = SlotsDesired;
-                                }
-                                else if ( SlotsDesired.GetValueOrDefault() <= 0 && SlotsMin.GetValueOrDefault() > 0 && slotsFilled > SlotsMin.Value )
-                                {
-                                    fillColor = BadgeColor.SuccessPlus;
-                                    partOverride = SlotsMin;
-                                }
+                                // Show threshold "ticks" to the left of the spot that will satisfy a given value.
+                                part = part > 0 ? part - 1 : part;
                             }
 
-                            htmlSb.Append( GetFilledVisual( fillColor, SlotsMax.Value ) );
-
-                            if ( fillColor == BadgeColor.SuccessPlus )
-                            {
-                                htmlSb.Append( GetFilledVisual( BadgeColor.Success, SlotsMax.Value, partOverride ) );
-                            }
+                            var percentage = ( int ) ( ( double ) part / whole * 100 );
+                            return percentage > 100 ? 100 : percentage;
                         }
 
-                        if ( SlotsMin.GetValueOrDefault() > 0 )
-                        {
-                            thresholdColor = slotsFilled < SlotsMin.Value ? BadgeColor.Warning : BadgeColor.White;
-                            htmlSb.Append( GetThresholdVisual( BadgeThreshold.Minimum, thresholdColor, SlotsMax.Value, SlotsMin.Value ) );
-                        }
-
-                        if ( SlotsDesired.GetValueOrDefault() > 0 )
-                        {
-                            thresholdColor = slotsFilled < SlotsDesired.Value ? BadgeColor.Success : BadgeColor.White;
-                            htmlSb.Append( GetThresholdVisual( BadgeThreshold.Desired, thresholdColor, SlotsMax.Value, SlotsDesired.Value ) );
-                        }
+                        minPercentage = GetPercentageOfWhole( min );
+                        desiredPercentage = GetPercentageOfWhole( desired );
+                        maxPercentage = GetPercentageOfWhole( max );
+                        filledPercentage = GetPercentageOfWhole( filled, false );
                     }
-                    else if ( SlotsDesired.GetValueOrDefault() > 0 )
+
+                    var progressState = ProgressState.Danger;
+                    if ( filled > 0 )
                     {
-                        if ( slotsFilled > 0 )
+                        progressState = ProgressState.Success;
+
+                        if ( max > 0 && filled > max )
                         {
-                            fillColor = slotsFilled < SlotsMin.GetValueOrDefault()
-                                ? BadgeColor.Warning
-                                : BadgeColor.Success;
-
-                            if ( fillColor == BadgeColor.Success && SlotsMin.GetValueOrDefault() > 0 && slotsFilled > SlotsMin.Value )
-                            {
-                                fillColor = BadgeColor.SuccessPlus;
-                            }
-
-                            htmlSb.Append( GetFilledVisual( fillColor, SlotsDesired.Value ) );
-
-                            if ( fillColor == BadgeColor.SuccessPlus )
-                            {
-                                htmlSb.Append( GetFilledVisual( BadgeColor.Success, SlotsDesired.Value, SlotsMin ) );
-                            }
+                            progressState = ProgressState.Critical;
                         }
-
-                        if ( SlotsMin.GetValueOrDefault() > 0 )
+                        else if ( filled < min )
                         {
-                            thresholdColor = SlotsFilled < SlotsMin.Value ? BadgeColor.Warning : BadgeColor.White;
-                            htmlSb.Append( GetThresholdVisual( BadgeThreshold.Minimum, thresholdColor, SlotsDesired.Value, SlotsMin.Value ) );
+                            progressState = ProgressState.Danger;
+                        }
+                        else if ( filled < desired )
+                        {
+                            progressState = ProgressState.Warning;
                         }
                     }
-                    else if ( SlotsMin.GetValueOrDefault() > 0 )
+
+                    string GetIndicator( int percentage, bool isMaxIndicator = false )
                     {
-                        if ( slotsFilled > 0 )
+                        var shouldShow = percentage > 0 && percentage < 100;
+                        if ( shouldShow && isMaxIndicator )
                         {
-                            fillColor = slotsFilled < SlotsMin.Value ? BadgeColor.Warning : BadgeColor.Success;
-                            htmlSb.Append( GetFilledVisual( fillColor, SlotsMin.Value ) );
+                            shouldShow = filled > max;
                         }
-                    }
-                    else
-                    {
-                        if ( slotsFilled > 0 )
+
+                        if ( !shouldShow )
                         {
-                            fillColor = BadgeColor.Success;
-                            htmlSb.Append( GetFilledVisual( fillColor, slotsFilled, slotsFilled ) );
+                            return string.Empty;
                         }
+
+                        return $@"
+    <div class=""indicator"" style=""left: {percentage}%;""></div>";
                     }
 
-                    return $"{htmlSb}</div><span class='hide js-slots-filled'>{SlotsFilled.GetValueOrDefault()}</span>{SlotsBadgeTooltip}";
+                    return $@"<div class=""progress progress-sign-ups text-{progressState} m-0 flex-fill js-progress-sign-ups"" role=""progressbar"" title=""{ProgressBarTooltip.EncodeHtml()}"" aria-label=""Sign-Ups Progress"">
+    <div class=""progress-bar progress-bar-sign-ups bg-{progressState}"" style=""width: {filledPercentage}%""></div>{GetIndicator( minPercentage )}{GetIndicator( desiredPercentage )}{GetIndicator( maxPercentage, true )}
+</div>";
                 }
             }
 
-            public string SlotsBadgeTooltipId
+            private string ProgressBarTooltip
             {
                 get
                 {
-                    return $"sign-up-slots-badge-tooltip-{GroupLocationId}-{LocationId}-{ScheduleId}";
-                }
-            }
-
-            private string SlotsBadgeTooltip
-            {
-                get
-                {
-                    return $@"<div id='{SlotsBadgeTooltipId}'>
-    <div class='sign-up-slots-badge-tooltip'>
-        <span class='slot-counts mr-5'>Slots Filled: {SlotsFilled.GetValueOrDefault():N0}</span>
-        <span class='slot-counts'>
-            <span{( SlotsMin.GetValueOrDefault() > 0 ? string.Empty : " class='hide'" )}>Minimum: {SlotsMin.GetValueOrDefault():N0}</span>
-            <span{( SlotsDesired.GetValueOrDefault() > 0 ? string.Empty : " class='hide'" )}>Desired: {SlotsDesired.GetValueOrDefault():N0}</span>
-            <span{( SlotsMax.GetValueOrDefault() > 0 ? string.Empty : " class='hide'" )}>Maximum: {SlotsMax.GetValueOrDefault():N0}</span>
-        </span>
-    </div>
+                    return $@"<div class='d-flex justify-content-between align-items-center'>
+    <span class='text-nowrap mr-5'>Slots Filled: {SlotsFilled.GetValueOrDefault():N0}</span>
+    <span class='text-nowrap'>
+        <div class='{( SlotsMin.GetValueOrDefault() > 0 ? "text-nowrap" : "hide" )}'>Minimum: {SlotsMin.GetValueOrDefault():N0}</div>
+        <div class='{( SlotsDesired.GetValueOrDefault() > 0 ? "text-nowrap" : "hide" )}'>Desired: {SlotsDesired.GetValueOrDefault():N0}</div>
+        <div class='{( SlotsMax.GetValueOrDefault() > 0 ? "text-nowrap" : "hide" )}'>Maximum: {SlotsMax.GetValueOrDefault():N0}</div>
+    </span>
 </div>";
                 }
             }

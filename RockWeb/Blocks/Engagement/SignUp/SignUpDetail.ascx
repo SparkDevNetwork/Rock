@@ -193,7 +193,7 @@
                                             <Rock:RockBoundField DataField="Name" HeaderText="Opportunity Name" />
                                             <Rock:RockBoundField DataField="FriendlyDateTime" HeaderText="Date/Time" />
                                             <Rock:RockBoundField DataField="FriendlyLocation" HeaderText="Location" />
-                                            <Rock:RockBoundField DataField="SlotsBadge" HeaderText="Slots Available" HtmlEncode="false" ItemStyle-VerticalAlign="Middle" ItemStyle-CssClass="sign-up-opportunities-grid-slots-badge" />
+                                            <Rock:RockBoundField DataField="ProgressBar" HeaderText="Sign-Ups" ItemStyle-CssClass="progress-sign-ups-cell align-middle" HtmlEncode="false" />
                                             <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='fa fa-users'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                             <Rock:EditField ID="efOpportunities" OnClick="gOpportunities_Edit" />
                                             <Rock:DeleteField ID="dfOpportunities" OnClick="gOpportunities_Delete" />
@@ -313,16 +313,12 @@
                     }
                 }
 
-                function initializeSlotsBadgeTooltips() {
-                    $thisBlock.find('.sign-up-slots-badge').each(function () {
-                        var $badge = $(this);
-                        var tooltip = $('#' + $badge.data('tip')).html();
-                        $badge.tooltip({
-                            html: true,
-                            title: tooltip
-                        });
+                $thisBlock.find('.js-progress-sign-ups').each(function () {
+                    var $progress = $(this);
+                    $progress.tooltip({
+                        html: true
                     });
-                }
+                });
 
                 $thisBlock.find('.js-project-type .rockradiobuttonlist > label').on('click', function () {
                     var projectTypeGuid = $(this).find('input').first().val();
@@ -333,7 +329,6 @@
                 });
 
                 toggleReminderControlsVisibility();
-                initializeSlotsBadgeTooltips();
 
                 var participantLabel;
 
