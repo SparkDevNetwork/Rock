@@ -51,6 +51,8 @@
 
                     <h1 runat="server">General Information</h1>
 
+                    <Rock:NotificationBox ID="notification" runat="server" Title="Title" Heading="Heading" Dismissable="true" Text="This the main text" Details="These are the details" NotificationBoxType="Danger" />
+
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">
@@ -403,7 +405,7 @@
 
                     <a id="SlidingDateRangePicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:SlidingDateRangePicker ID="sdrpExample" runat="server" Label="Rock:SlidingDateRangePicker" />
+                        <Rock:SlidingDateRangePicker ID="sdrpExample" runat="server" Label="Rock:SlidingDateRangePicker" PreviewLocation="Top" />
                     </div>
 
                     <a id="BirthdayPicker"></a>

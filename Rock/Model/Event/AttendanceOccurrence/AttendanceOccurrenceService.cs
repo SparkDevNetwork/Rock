@@ -21,7 +21,11 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
+using Rock.RealTime.Topics;
+using Rock.RealTime;
+using Rock.ViewModels.Event;
 using Rock.Web.Cache;
+using System.Threading.Tasks;
 
 namespace Rock.Model
 {
@@ -708,6 +712,124 @@ namespace Rock.Model
             /// </value>
             public GroupLocationScheduleConfig GroupLocationScheduleConfig { get; set; }
         }
+
+        #region RealTime Related
+
+        /// <summary>
+        /// Sends the attendance occurrence updated real time notifications for the specified
+        /// attendance records.
+        /// </summary>
+        /// <param name="attendanceOccurrenceGuids">The attendance occurrence unique identifiers.</param>
+        /// <returns>A task that represents this operation.</returns>
+        internal static async Task SendAttendanceOccurrenceUpdatedRealTimeNotificationsAsync( IEnumerable<Guid> attendanceOccurrenceGuids )
+        {
+            var guids = attendanceOccurrenceGuids.ToList();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
+
+                while ( guids.Any() )
+                {
+                    // Work with at most 1,000 records at a time since it
+                    // translates to an IN query which doesn't perform well
+                    // on large sets.
+                    var guidsToProcess = guids.Take( 1_000 ).ToList();
+                    guids = guids.Skip( 1_000 ).ToList();
+
+                    try
+                    {
+                        var qry = attendanceOccurrenceService
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( a => attendanceOccurrenceGuids.Contains( a.Guid ) );
+
+                        await SendAttendanceOccurrenceUpdatedRealTimeNotificationsAsync( qry );
+                    }
+                    catch ( Exception ex )
+                    {
+                        Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send attendance occurrence updated real time notifications for the AttendanceOccurrence
+        /// records returned by the query.
+        /// </summary>
+        /// <param name="qry">The query that provides the attendance occurrence records.</param>
+        /// <returns>A task that represents this operation.</returns>
+        private static async Task SendAttendanceOccurrenceUpdatedRealTimeNotificationsAsync( IQueryable<AttendanceOccurrence> qry )
+        {
+            var bags = GetAttendanceOccurrenceUpdatedMessageBags( qry );
+
+            if ( !bags.Any() )
+            {
+                return;
+            }
+
+            var topicClients = RealTimeHelper.GetTopicContext<IEntityUpdated>().Clients;
+
+            var tasks = bags
+                .Select( b =>
+                {
+                    return Task.Run( () =>
+                    {
+                        var channels = EntityUpdatedTopic.GetAttendanceOccurrenceChannelsForBag( b );
+
+                        return topicClients
+                            .Channels( channels )
+                            .AttendanceOccurrenceUpdated( b );
+                    } );
+                } )
+                .ToArray();
+
+            try
+            {
+                await Task.WhenAll( tasks );
+            }
+            catch ( Exception ex )
+            {
+                Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// Gets the attendance occurrence updated message bags from the query using the
+        /// most optimal pattern.
+        /// </summary>
+        /// <param name="qry">The query that provides the attendance occurrence records.</param>
+        /// <returns>A list of <see cref="AttendanceOccurrenceUpdatedMessageBag"/> objects that represent the attendance occurrence records.</returns>
+        private static List<AttendanceOccurrenceUpdatedMessageBag> GetAttendanceOccurrenceUpdatedMessageBags( IQueryable<AttendanceOccurrence> qry )
+        {
+            var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+
+            var records = qry
+                .Select( a => new
+                {
+                    a.Guid,
+                    OccurrenceGuid = a.Guid,
+                    GroupGuid = ( Guid? ) a.Group.Guid,
+                    LocationGuid = ( Guid? ) a.Location.Guid,
+                    a.DidNotOccur,
+                    a.AttendanceTypeValueId
+                } )
+                .ToList();
+
+            return records
+                .Select( a => new AttendanceOccurrenceUpdatedMessageBag
+                {
+                    OccurrenceGuid = a.OccurrenceGuid,
+                    GroupGuid = a.GroupGuid,
+                    LocationGuid = a.LocationGuid,
+                    AttendanceOccurrenceTypeGuid = a.AttendanceTypeValueId.HasValue ? DefinedValueCache.GetGuid( a.AttendanceTypeValueId.Value ) : ( Guid? )null,
+                    DidNotOccur = a.DidNotOccur
+                } )
+                .ToList();
+        }
+
+        #endregion
     }
 
     #region Extension Methods
@@ -760,6 +882,21 @@ namespace Rock.Model
         {
             return attendanceOccurrences
                     .Where( a => a.Attendees.Any() || ( a.DidNotOccur.HasValue && a.DidNotOccur.Value ) );
+        }
+
+        /// <summary>
+        /// AttendanceOccurrence that either have attendees, or are marked as "Did not occur", or has already had an attendance reminder sent today.
+        /// </summary>
+        /// <param name="attendanceOccurrences">The attendance occurrences.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> HasAttendeesOrDidNotOccurOrRemindersAlreadySentToday( this IQueryable<AttendanceOccurrence> attendanceOccurrences )
+        {
+            return attendanceOccurrences
+                    .Where(
+                        a => a.Attendees.Any()
+                        || ( a.DidNotOccur.HasValue && a.DidNotOccur.Value )
+                        || a.AttendanceReminderLastSentDateTime >= RockDateTime.Today
+                    );
         }
 
         /// <summary>

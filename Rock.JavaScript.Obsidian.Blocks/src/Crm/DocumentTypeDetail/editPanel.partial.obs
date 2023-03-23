@@ -21,7 +21,7 @@
                                   rules="required"
                                   :multiple="false"
                                   :includeGlobalOption="false"
-                                  enhanceForLongLists="true" />
+                                  enhanceForLongLists />
 
             </div>
             <div class="col-md-6">
@@ -53,12 +53,12 @@
         <div class="row">
             <div class="col-sm-12 text-right">
                 <RockButton v-if="!showAdvanced"
-                            :btnType="link"
+                            btnType="link"
                             @click="onShowAdvanced(true)">
                     Show Advanced Settings
                 </RockButton>
                 <RockButton v-if="showAdvanced"
-                            :btnType="link"
+                            btnType="link"
                             @click="onShowAdvanced(false)">
                     Hide Advanced Settings
                 </RockButton>
@@ -71,12 +71,12 @@
                     <div class="col-md-6">
                         <TextBox v-model="entityQualifierColumn"
                                     label="Entity Qualifier Column"
-                                    help="If you would like the document type to only apply to specific entities of the specified type you can provide a column to filter on for that entity. For example if you would like the documents to be specific to a group of a certain type the ‘Column’ would be ‘GroupTypeId’. You’ll also need to provide a Entity Qualifer Value." />
+                                    help="If you would like the document type to only apply to specific entities of the specified type you can provide a column to filter on for that entity. For example if you would like the documents to be specific to a group of a certain type the ï¿½Columnï¿½ would be ï¿½GroupTypeIdï¿½. Youï¿½ll also need to provide a Entity Qualifer Value." />
                     </div>
                     <div class="col-md-6">
                         <TextBox v-model="entityQualifierValue"
                                     label="Entity Qualifier Value"
-                                    help="Once you provide a Entity Qualifer Column, you’ll need to provide the value in that column to filter on. In the example of groups of a certain type, the value would be the Group Type Id to filter on (e.g. 12)." />
+                                    help="Once you provide a Entity Qualifer Column, youï¿½ll need to provide the value in that column to filter on. In the example of groups of a certain type, the value would be the Group Type Id to filter on (e.g. 12)." />
                     </div>
                 </div>
                 <CodeEditor v-model="defaultDocumentNameTemplate"
@@ -159,7 +159,7 @@
 
     // #region Event Handlers
 
-    function onShowAdvanced ( show: boolean ): void {
+    function onShowAdvanced (show: boolean): void {
         showAdvanced.value = show;
     }
 

@@ -32,6 +32,7 @@ using Rock.Reporting;
 using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -141,8 +142,7 @@ namespace Rock.Lava.Blocks
                     Expression queryExpression = null; // the base expression we'll use to build our query from
 
                     // Parse markup
-                    var settings = GetAttributesFromMarkup( _markup, context, this.EntityName );
-                    var parms = settings.Attributes;
+                    var parms = ParseMarkup( _markup, context );
 
                     if ( parms.Any( p => p.Key == "id" ) )
                     {
@@ -609,6 +609,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         public static void RegisterEntityCommands( ILavaEngine engine )
         {
+            // If the database is not connected, we do not have access to entity definitions.
+            // This can occur when the Lava engine is started without an attached database.
+            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            {
+                return;
+            }
+
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
@@ -685,21 +692,63 @@ namespace Rock.Lava.Blocks
             return currentPerson;
         }
 
-        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context, string entityName )
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
         {
-            // Create default settings
-            var settings = LavaElementAttributes.NewFromMarkup( markup, context );
+            // first run lava across the inputted markup
+            var internalMergeFields = context.GetMergeFields();
 
-            if ( settings.Attributes.Count == 0 )
+            /*
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.GetScopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.GetEnvironments.Count > 0 )
+            {
+                foreach ( var item in context.GetEnvironments[0] )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+            */
+
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+
+            var parms = new Dictionary<string, string>();
+            parms.Add( "iterator", string.Format( "{0}Items", EntityName ) );
+            parms.Add( "securityenabled", "true" );
+
+            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            if ( markupItems.Count == 0 )
             {
                 throw new Exception( "No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes)." );
             }
 
-            settings.AddOrIgnore( "iterator", string.Format( "{0}Items", entityName ) );
-            settings.AddOrIgnore( "securityenabled", "true" );
-            settings.AddOrIgnore( "cacheduration", "0" );
-
-            var parms = settings.Attributes;
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                }
+            }
 
             // override any dynamic parameters
             List<string> dynamicFilters = new List<string>(); // will be used to process dynamic filters
@@ -752,7 +801,8 @@ namespace Rock.Lava.Blocks
                 parms.AddOrReplace( "dynamicparameters", string.Join( ",", dynamicFilters ) );
             }
 
-            return settings;
+
+            return parms;
         }
 
         /// <summary>
@@ -821,7 +871,7 @@ namespace Rock.Lava.Blocks
                 }
 
                 // parse the part to get the expression
-                string regexPattern = @"([a-zA-Z]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
+                var regexPattern = @"((?!_=|_!)[a-zA-Z_]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
                 var expressionParts = Regex.Matches( component, regexPattern )
                .Cast<Match>()
                .Select( m => m.Value )
@@ -875,13 +925,20 @@ namespace Rock.Lava.Blocks
                             filterAttribute = attribute;
                             var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
+                            var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            if ( filterExpression is NoAttributeFilterExpression )
+                            {
+                                // Ignore this filter because it would cause the Where expression to match everything.
+                                continue;
+                            }
+
                             if ( attributeWhereExpression == null )
                             {
-                                attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                                attributeWhereExpression = filterExpression;
                             }
                             else
                             {
-                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
+                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, filterExpression );
                             }
                         }
 

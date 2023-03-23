@@ -25,7 +25,7 @@ import EditPanel from "./AssetStorageProviderDetail/editPanel.partial";
 import ViewPanel from "./AssetStorageProviderDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { debounce } from "@Obsidian/Utility/util";
-import { NavigationUrlKey } from "./AssetStorageProviderDetail/types";
+import { NavigationUrlKey } from "./AssetStorageProviderDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { AssetStorageProviderBag } from "@Obsidian/ViewModels/Blocks/Core/AssetStorageProviderDetail/assetStorageProviderBag";
 import { AssetStorageProviderDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AssetStorageProviderDetail/assetStorageProviderDetailOptionsBag";

@@ -30,7 +30,7 @@
                                  help="The input type for the signature. Drawn will display an area where the individual can use the mouse or a finger to draw a representation of their signature.
                                  Typed will allow them to type their name as their digital signature. Both are legally acceptable in the US and Canada.
                                  The drawn value is considered Personally identifiable information (PII) and is more sensitive to keep. It is encrypted in the database."
-                                 horizontal="true"
+                                 horizontal
                                  :items="signatureInputTypes" />
             </div>
 
@@ -38,7 +38,7 @@
                 <BinaryFileTypePicker v-model="binaryFileType"
                                       label="File Type"
                                       help="Determines which file type is used when storing the signed document."
-                                      :showBlankItem="showBlankItem"
+                                      showBlankItem
                                       rules="required" />
 
                 <DropDownList v-model="completionSystemCommunicationValue"
@@ -52,7 +52,7 @@
 
         </div>
 
-        <RockButton :btnType="link"
+        <RockButton btnType="link"
                     @click="onTemplateTipsClick">
             Template Tips
         </RockButton>
@@ -183,7 +183,6 @@
     const showLegacyExternalProviders = ref(props.options.showLegacyExternalProviders);
     const showTips = ref(false);
     const isPreviewMode = ref(false);
-    const containerType = ref("Rock.Security.DigitalSignatureContainer");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -200,9 +199,11 @@
     // #endregion
 
     // #region Event Handlers
-    const onTemplateTipsClick = () => {
+
+    function onTemplateTipsClick(): void {
         showTips.value = !showTips.value;
     }
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.

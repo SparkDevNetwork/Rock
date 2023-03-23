@@ -82,7 +82,6 @@ namespace Rock.Web.UI.Controls
                             else
                             {
                                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "breadcrumb-item" );
-                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "active" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.Li );
                                 writer.Write( crumb.Name );
                                 writer.RenderEndTag();

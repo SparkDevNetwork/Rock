@@ -20,16 +20,55 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Select multiple Badges from a checkbox list. Stored as a comma-delimited list of Badge Guids
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "C66E6BF9-4A73-4429-ACAD-D94D5E3A89B7" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMINDER_TYPES )]
     public class ReminderTypesFieldType : SelectFromListFieldType
     {
+        #region Configuration
+
+        private const string VALUES_PUBLIC_KEY = "values";
+        private const string ENHANCED_SELECTION_KEY = "enhancedselection";
+        private const string REPEAT_COLUMNS_KEY = "repeatColumns";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+            var publicValues = publicConfigurationValues.GetValueOrNull( VALUES_PUBLIC_KEY );
+
+            if ( usage == ConfigurationValueUsage.View )
+            {
+                if ( publicValues != null )
+                {
+                    var selectedValuesList = privateValue.ToLower().Split( ',' );
+                    var publicValuesList = publicValues.FromJsonOrNull<List<ListItemBag>>();
+
+                    if (publicValuesList != null)
+                    {
+                        publicValues = publicValuesList
+                            .Where( v => selectedValuesList.Contains(v.Value.ToLower()) )
+                            .ToCamelCaseJson( false, true );
+
+                        publicConfigurationValues[VALUES_PUBLIC_KEY] = publicValues;
+                    }
+                }
+
+                publicConfigurationValues.Remove( ENHANCED_SELECTION_KEY );
+                publicConfigurationValues.Remove( REPEAT_COLUMNS_KEY );
+            }
+
+            return publicConfigurationValues;
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>

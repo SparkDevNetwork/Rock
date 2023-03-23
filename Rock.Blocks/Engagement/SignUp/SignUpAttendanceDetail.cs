@@ -61,7 +61,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
         private static class PageParameterKey
         {
-            public const string GroupId = "GroupId";
+            public const string ProjectId = "ProjectId";
             public const string LocationId = "LocationId";
             public const string ScheduleId = "ScheduleId";
             public const string AttendanceDate = "AttendanceDate";
@@ -77,14 +77,15 @@ namespace Rock.Blocks.Engagement.SignUp
             public const string HeaderLavaTemplate = @"<h3>{{ Group.Name }}</h3>
 <div>
     Please enter attendance for the project below.
-    <br />Date: {{ AttendanceOccurrenceDate | Date:'dddd, MMM d' }}
+    <br>Date: {{ AttendanceOccurrenceDate | Date:'dddd, MMM d' }}
     {% if WasScheduleParamProvided %}
-        <br />Schedule: {{ ScheduleName }}
+        <br>Schedule: {{ ScheduleName }}
     {% endif %}
     {% if WasLocationParamProvided %}
-        <br />Location: {{ LocationName }}
+        <br>Location: {{ LocationName }}
     {% endif %}
-</div>";
+</div>
+<hr>";
         }
 
         #endregion
@@ -145,23 +146,23 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var occurrenceData = new OccurrenceData();
 
-            var groupId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.GroupId ) );
-            if ( !groupId.HasValue )
+            var projectId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ProjectId ) );
+            if ( !projectId.HasValue )
             {
-                occurrenceData.ErrorMessage = "Group ID was not provided.";
+                occurrenceData.ErrorMessage = "Project ID was not provided.";
                 return occurrenceData;
             }
 
-            var group = GetGroup( rockContext, groupId.Value );
+            var group = GetGroup( rockContext, projectId.Value );
             if ( group == null )
             {
-                occurrenceData.ErrorMessage = "Group was not found.";
+                occurrenceData.ErrorMessage = "Project was not found.";
                 return occurrenceData;
             }
 
             occurrenceData.Group = group;
 
-            var currentPerson = RequestContext.CurrentPerson;
+            var currentPerson = this.RequestContext.CurrentPerson;
             if ( !group.IsAuthorized( Authorization.VIEW, currentPerson ) )
             {
                 occurrenceData.ErrorMessage = EditModeMessage.NotAuthorizedToView( Group.FriendlyTypeName );
@@ -196,11 +197,11 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Gets the group for the specified Guid.
+        /// Gets the group for the specified identifier.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="groupId">The group identifier.</param>
-        /// <returns>The group for the specified Guid.</returns>
+        /// <returns>The group for the specified identifier.</returns>
         private Group GetGroup( RockContext rockContext, int groupId )
         {
             return new GroupService( rockContext )
@@ -347,7 +348,7 @@ namespace Rock.Blocks.Engagement.SignUp
         private string GetHeaderHtml( OccurrenceData occurrenceData )
         {
             var lavaTemplate = GetAttributeValue( AttributeKey.HeaderLavaTemplate );
-            var mergeFields = RequestContext.GetCommonMergeFields();
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
 
             mergeFields.Add( "Group", occurrenceData.Group );
             mergeFields.Add( "Location", occurrenceData.Location );
@@ -438,7 +439,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 if ( !occurrenceData.CanTakeAttendance )
                 {
-                    return ActionBadRequest( occurrenceData.ErrorMessage );
+                    return ActionBadRequest( occurrenceData.ErrorMessage ?? "Unable to take attendance for this occurrence." );
                 }
 
                 SaveAttendanceRecords( rockContext, occurrenceData, bag.Attendees );
@@ -452,8 +453,9 @@ namespace Rock.Blocks.Engagement.SignUp
         #region Support Classes
 
         /// <summary>
-        /// A runtime object to represent a <see cref="Group"/>, <see cref="Location"/> & <see cref="Schedule"/> combination,
-        /// along with it's <see cref="GroupMember"/> collection, against which an attendance occurrence should be saved.
+        /// A runtime object to represent a <see cref="Rock.Model.Group"/>, <see cref="Rock.Model.Location"/> and
+        /// <see cref="Rock.Model.Schedule"/> combination, along with it's <see cref="GroupMember"/> collection,
+        /// against which an attendance occurrence should be saved.
         /// </summary>
         private class OccurrenceData
         {

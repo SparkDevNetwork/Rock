@@ -34,6 +34,7 @@ using Rock.Update.Helpers;
 using Rock.Update.Models;
 using Rock.Update.Services;
 using Rock.VersionInfo;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Core
 {
@@ -47,8 +48,6 @@ namespace RockWeb.Blocks.Core
         private bool _isEarlyAccessOrganization = false;
         private List<RockRelease> _releases = new List<RockRelease>();
         Version _installedVersion = new Version( "0.0.0" );
-        private bool _isOkToProceed = false;
-        private bool _hasSqlServer14OrHigher = false;
         #endregion
 
         #region Properties
@@ -128,8 +127,6 @@ namespace RockWeb.Blocks.Core
 
                 var checkFrameworkVersionResultResult = VersionValidationHelper.CheckFrameworkVersion();
 
-                _isOkToProceed = true;
-
                 if ( checkFrameworkVersionResultResult == DotNetVersionCheckResult.Fail )
                 {
                     // Starting with v13, .NET 4.7.2 is required. So, show a warning if they haven't updated yet.
@@ -146,11 +143,18 @@ namespace RockWeb.Blocks.Core
                     nbBackupMessage.Visible = false;
                 }
 
-                _hasSqlServer14OrHigher = VersionValidationHelper.CheckSqlServerVersionGreaterThenSqlServer2012();
+                var hasMinimumSqlServerOrHigher = VersionValidationHelper.CheckSqlServerVersion( VersionValidationHelper.SqlServerVersion.v2016 );
 
-                if ( !_hasSqlServer14OrHigher )
+                if ( !hasMinimumSqlServerOrHigher )
                 {
                     nbSqlServerVersionIssue.Visible = true;
+                }
+
+                var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
+
+                if ( lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy )
+                {
+                    nbLegacyLavaIssue.Visible = true;
                 }
 
                 _releases = GetOrderedReleaseList( rockUpdateService, _installedVersion );
@@ -161,6 +165,21 @@ namespace RockWeb.Blocks.Core
                     {
                         // if VersionIssue is visible, and they are updating to v13 or later, show the version Warning as an Danger instead.
                         nbVersionIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                    }
+
+                    if ( new Version( _releases.Last().SemanticVersion ) >= new Version( "1.16.0" ) )
+                    {
+                        // if SqlServer2016Issue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
+                        if ( !hasMinimumSqlServerOrHigher )
+                        {
+                            nbSqlServerVersionIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                        }
+
+                        // if LegacyLavaIssue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
+                        if ( lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy )
+                        {
+                            nbLegacyLavaIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                        }
                     }
 
                     pnlUpdatesAvailable.Visible = true;
@@ -271,7 +290,7 @@ namespace RockWeb.Blocks.Core
                         divPanel.AddCssClass( "panel-block" );
                     }
 
-                    if ( !_isOkToProceed || !VersionValidationHelper.CanInstallVersion( new Version( package.SemanticVersion ) ) )
+                    if ( !VersionValidationHelper.CanInstallVersion( new Version( package.SemanticVersion ) ) )
                     {
                         lbInstall.Enabled = false;
                         lbInstall.AddCssClass( "btn-danger" );

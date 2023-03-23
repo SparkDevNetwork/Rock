@@ -140,6 +140,9 @@ namespace Rock.Client
         public EntityType EntityType { get; set; }
 
         /// <summary />
+        public ICollection<NotificationMessage> NotificationMessages { get; set; }
+
+        /// <summary />
         public Site RelatedMobileApplicationSite { get; set; }
 
         /// <summary />

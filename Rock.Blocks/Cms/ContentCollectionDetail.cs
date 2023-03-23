@@ -495,7 +495,7 @@ namespace Rock.Blocks.Cms
                 IconCssClass = iconCssClass,
                 OccurrencesToShow = source.OccurrencesToShow,
                 ItemCount = itemCount,
-                Attributes = additionalSettings.AttributeGuids
+                Attributes = additionalSettings?.AttributeGuids
                     .Select( g => AttributeCache.Get( g ) )
                     .Where( g => g != null )
                     .Select( g => new ListItemBag
@@ -503,7 +503,8 @@ namespace Rock.Blocks.Cms
                         Value = g.Guid.ToString(),
                         Text = g.Name
                     } )
-                    .ToList()
+                    .ToList() ?? new List<ListItemBag>(),
+                CustomFields = additionalSettings?.CustomFields ?? new List<ContentCollectionCustomFieldBag>()
             };
         }
 
@@ -517,7 +518,8 @@ namespace Rock.Blocks.Cms
         private static FilterSettingsBag GetFilterSettingsBag( ContentCollection collection, RockContext rockContext )
         {
             var filterSettings = collection.FilterSettings.FromJsonOrNull<ContentCollectionFilterSettingsBag>() ?? new ContentCollectionFilterSettingsBag();
-            var filters = GetAttributeFilters( collection, filterSettings, rockContext );
+            var attributeFilters = GetAttributeFilters( collection, filterSettings, rockContext );
+            var customFieldFilters = GetCustomFieldFilters( collection, filterSettings, rockContext );
 
             return new FilterSettingsBag
             {
@@ -526,7 +528,8 @@ namespace Rock.Blocks.Cms
                 YearSearchLabel = filterSettings.YearSearchLabel,
                 YearSearchFilterControl = filterSettings.YearSearchFilterControl,
                 YearSearchFilterIsMultipleSelection = filterSettings.YearSearchFilterIsMultipleSelection,
-                AttributeFilters = filters
+                AttributeFilters = attributeFilters,
+                CustomFieldFilters = customFieldFilters
             };
         }
 
@@ -600,6 +603,66 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
+        /// Gets the custom field filters for the content collection. This is an
+        /// amalgamation of the custom fields on all the sources as well as the
+        /// current filter settings.
+        /// </summary>
+        /// <param name="collection">The content collection whose filters should be retrieved.</param>
+        /// <param name="filterSettings">The current filter settings of the collection.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A collection of <see cref="CustomFieldFilterBag"/> objects that represent the filters.</returns>
+        private static List<CustomFieldFilterBag> GetCustomFieldFilters( ContentCollection collection, ContentCollectionFilterSettingsBag filterSettings, RockContext rockContext )
+        {
+            var contentChannelEntityTypeId = EntityTypeCache.GetId<ContentChannel>() ?? 0;
+            var eventCalendarEntityTypeId = EntityTypeCache.GetId<EventCalendar>() ?? 0;
+
+            // Get a list of all source custom fields.
+            var sourceFields = collection.ContentCollectionSources
+                .SelectMany( cls =>
+                {
+                    var sourceSettings = cls.AdditionalSettings.FromJsonOrNull<ContentCollectionSourceAdditionalSettingsBag>();
+                    string name;
+
+                    if ( sourceSettings == null )
+                    {
+                        return null;
+                    }
+
+                    // Get the name of the source entity.
+                    if ( cls.EntityTypeId == contentChannelEntityTypeId )
+                    {
+                        name = new ContentChannelService( rockContext )
+                            .GetSelect( cls.EntityId, cc => cc.Name );
+                    }
+                    else if ( cls.EntityTypeId == eventCalendarEntityTypeId )
+                    {
+                        name = new EventCalendarService( rockContext )
+                            .GetSelect( cls.EntityId, cc => cc.Name );
+                    }
+                    else
+                    {
+                        name = null;
+                    }
+
+                    // No name means something is invalid about the source.
+                    if ( name.IsNullOrWhiteSpace() )
+                    {
+                        return null;
+                    }
+
+                    return sourceSettings.CustomFields
+                        .Select( cf => new Tuple<string, ContentCollectionCustomFieldBag>( name, cf ) );
+                } )
+                .ToList();
+
+            // Group the source fields by key and then get the filter
+            // associated with that key.
+            return sourceFields.GroupBy( a => a.Item2.Key )
+                .Select( ga => GetCustomFieldFilterBag( ga.ToList(), ga.Key, filterSettings.CustomFieldFilters?.GetValueOrNull( ga.Key ) ) )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the filter bag that represents a single attribute key.
         /// </summary>
         /// <param name="attributes">The attributes that represent this filter key.</param>
@@ -631,6 +694,31 @@ namespace Rock.Blocks.Cms
                 FieldTypeGuid = firstAttribute.Item2.FieldType.Guid,
                 SourceNames = attributes.Select( a => a.Item1 ).ToList(),
                 FilterLabel = (settings?.Label).ToStringOrDefault( firstAttribute.Item2.Name ),
+                FilterControl = settings?.FilterControl ?? Enums.Cms.ContentCollectionFilterControl.Pills,
+                IsMultipleSelection = settings?.IsMultipleSelection ?? false
+            };
+
+            return filterBag;
+        }
+
+        /// <summary>
+        /// Gets the filter bag that represents a single custom field key.
+        /// </summary>
+        /// <param name="fields">The fields that represent this filter key.</param>
+        /// <param name="fieldKey">The common key to the fields.</param>
+        /// <param name="settings">The previously saved settings for this filter or <c>null</c>.</param>
+        /// <returns>An <see cref="AttributeFilterBag"/> that represents the filter for these fields.</returns>
+        private static CustomFieldFilterBag GetCustomFieldFilterBag( List<Tuple<string, ContentCollectionCustomFieldBag>> fields, string fieldKey, ContentCollectionCustomFieldFilterSettingsBag settings )
+        {
+            var firstField = fields.First();
+
+            var filterBag = new CustomFieldFilterBag
+            {
+                Key = fieldKey,
+                Title = firstField.Item2.Title,
+                IsEnabled = settings?.IsEnabled ?? false,
+                SourceNames = fields.Select( a => a.Item1 ).ToList(),
+                FilterLabel = ( settings?.Label ).ToStringOrDefault( firstField.Item2.Title ),
                 FilterControl = settings?.FilterControl ?? Enums.Cms.ContentCollectionFilterControl.Pills,
                 IsMultipleSelection = settings?.IsMultipleSelection ?? false
             };
@@ -1015,7 +1103,8 @@ namespace Rock.Blocks.Cms
                 // Update the source with the new settings.
                 var additionalSettings = new ContentCollectionSourceAdditionalSettingsBag
                 {
-                    AttributeGuids = bag.Attributes?.Select( a => a.Value.AsGuid() ).ToList() ?? new List<Guid>()
+                    AttributeGuids = bag.Attributes?.Select( a => a.Value.AsGuid() ).ToList() ?? new List<Guid>(),
+                    CustomFields = bag.CustomFields
                 };
 
                 source.OccurrencesToShow = bag.OccurrencesToShow;
@@ -1139,7 +1228,9 @@ namespace Rock.Blocks.Cms
 
                 var filterSettings = collection.FilterSettings.FromJsonOrNull<ContentCollectionFilterSettingsBag>() ?? new ContentCollectionFilterSettingsBag();
                 filterSettings.AttributeFilters = filterSettings.AttributeFilters ?? new Dictionary<string, ContentCollectionAttributeFilterSettingsBag>();
-                var filters = GetAttributeFilters( collection, filterSettings, rockContext );
+                filterSettings.CustomFieldFilters = filterSettings.CustomFieldFilters ?? new Dictionary<string, ContentCollectionCustomFieldFilterSettingsBag>();
+                var attributeFilters = GetAttributeFilters( collection, filterSettings, rockContext );
+                var customFieldFilters = GetCustomFieldFilters( collection, filterSettings, rockContext );
 
                 // Update all the basic properties.
                 box.IfValidProperty( nameof( box.Entity.FullTextSearchEnabled ),
@@ -1166,7 +1257,7 @@ namespace Rock.Blocks.Cms
 
                         foreach ( var attributeFilter in box.Entity.AttributeFilters )
                         {
-                            var filter = filters.FirstOrDefault( f => f.AttributeKey == attributeFilter.AttributeKey );
+                            var filter = attributeFilters.FirstOrDefault( f => f.AttributeKey == attributeFilter.AttributeKey );
 
                             // This should only happen if internal data changed
                             // while they were editing, but catch it so they know
@@ -1221,8 +1312,58 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( "Invalid attribute filter." );
                 }
 
+                // Update the custom field filters.
+                bool hasInvalidCustomFieldFilter = false;
+                box.IfValidProperty( nameof( box.Entity.CustomFieldFilters ),
+                    () =>
+                    {
+                        var newCustomFilters = new Dictionary<string, ContentCollectionCustomFieldFilterSettingsBag>();
+
+                        foreach ( var customFieldFilter in box.Entity.CustomFieldFilters )
+                        {
+                            var filter = customFieldFilters.FirstOrDefault( f => f.Key == customFieldFilter.Key );
+
+                            // This should only happen if internal data changed
+                            // while they were editing, but catch it so they know
+                            // their changes were not saved.
+                            if ( filter == null )
+                            {
+                                hasInvalidCustomFieldFilter = true;
+                                return;
+                            }
+
+                            // Get the existing settings or create a new one.
+                            if ( !filterSettings.CustomFieldFilters.TryGetValue( filter.Key, out var filterSetting ) )
+                            {
+                                filterSetting = new ContentCollectionCustomFieldFilterSettingsBag();
+                            }
+
+                            filterSetting.IsEnabled = customFieldFilter.IsEnabled;
+                            filterSetting.Label = customFieldFilter.FilterLabel;
+
+                            // Make sure the value is valid.
+                            if ( customFieldFilter.FilterControl != Enums.Cms.ContentCollectionFilterControl.Pills && customFieldFilter.FilterControl != Enums.Cms.ContentCollectionFilterControl.Dropdown )
+                            {
+                                hasInvalidCustomFieldFilter = true;
+                                return;
+                            }
+
+                            filterSetting.FilterControl = customFieldFilter.FilterControl;
+                            filterSetting.IsMultipleSelection = customFieldFilter.IsMultipleSelection;
+
+                            newCustomFilters.Add( filter.Key, filterSetting );
+                        }
+
+                        filterSettings.CustomFieldFilters = newCustomFilters;
+                    } );
+
+                if ( hasInvalidCustomFieldFilter )
+                {
+                    return ActionBadRequest( "Invalid custom field filter." );
+                }
+
                 // Clean up any attribute filters that no longer exist.
-                var validKeys = filters.Select( f => f.AttributeKey ).ToList();
+                var validKeys = attributeFilters.Select( f => f.AttributeKey ).ToList();
                 var keysToRemove = filterSettings.AttributeFilters.Keys
                     .Where( k => !validKeys.Contains( k ) )
                     .ToList();
@@ -1264,6 +1405,14 @@ namespace Rock.Blocks.Cms
                 {
                     return actionError;
                 }
+
+                // Reset the cached field values.
+                var filterSettings = collection.FilterSettings.FromJsonOrNull<ContentCollectionFilterSettingsBag>() ?? new ContentCollectionFilterSettingsBag();
+                filterSettings.FieldValues = new Dictionary<string, List<ListItemBag>>();
+                filterSettings.AttributeValues = new Dictionary<string, List<ListItemBag>>();
+                collection.FilterSettings = filterSettings.ToJson();
+
+                rockContext.SaveChanges();
 
                 contentCollectionId = collection.Id;
             }

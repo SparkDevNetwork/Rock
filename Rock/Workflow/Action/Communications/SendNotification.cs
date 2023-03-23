@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -94,7 +94,7 @@ namespace Rock.Workflow.Action
                                         {
 
                                             var person = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
-                                            var recipient = new RockPushMessageRecipient( person, deviceIds, mergeFields );
+                                            var recipient = new RockPushMessageRecipient( person, deviceIds, new Dictionary<string, object>( mergeFields ) );
                                             recipients.Add( recipient );
                                             if ( person != null )
                                             {
@@ -143,7 +143,7 @@ namespace Rock.Workflow.Action
 
                                             if ( deviceIds.IsNotNullOrWhiteSpace() )
                                             {
-                                                var recipient = new RockPushMessageRecipient( person, deviceIds, mergeFields );
+                                                var recipient = new RockPushMessageRecipient( person, deviceIds, new Dictionary<string, object> (mergeFields) );
                                                 recipients.Add( recipient );
                                                 recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                             }
@@ -159,7 +159,7 @@ namespace Rock.Workflow.Action
             {
                 if ( !string.IsNullOrWhiteSpace( toValue ) )
                 {
-                    recipients.Add( RockPushMessageRecipient.CreateAnonymous( toValue.ResolveMergeFields( mergeFields ), mergeFields ) );
+                    recipients.Add( RockPushMessageRecipient.CreateAnonymous( toValue.ResolveMergeFields( mergeFields ), new Dictionary<string, object>( mergeFields ) ) );
                 }
             }
 

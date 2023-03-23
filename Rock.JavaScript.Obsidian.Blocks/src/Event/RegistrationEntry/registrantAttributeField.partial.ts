@@ -18,9 +18,9 @@
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "@Obsidian/Controls/rockField";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
-import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types";
+import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types.partial";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 import { areEqual } from "@Obsidian/Utility/guid";
 
@@ -49,7 +49,7 @@ export default defineComponent({
     name: "Event.RegistrationEntry.RegistrantAttributeField",
 
     components: {
-        Alert,
+        NotificationBox,
         RockField
     },
 
@@ -91,12 +91,11 @@ export default defineComponent({
 
         const value = ref<string>((props.fieldValues[props.field.guid] as string) ?? "");
         const modifiedAttribute = computed(() => {
-            if (!props.field.attribute)
-            {
+            if (!props.field.attribute) {
                 return null;
             }
 
-            const fieldAttribute = {...props.field.attribute}
+            const fieldAttribute = { ...props.field.attribute };
             fieldAttribute.isRequired = props.field.isRequired;
             return fieldAttribute;
         });
@@ -120,6 +119,6 @@ export default defineComponent({
     template: `
 <template v-if="isVisible">
     <RockField v-if="modifiedAttribute" v-model="value" isEditMode :attribute="modifiedAttribute" />
-    <Alert v-else alertType="danger">Could not resolve attribute field</Alert>
+    <NotificationBox v-else alertType="danger">Could not resolve attribute field</NotificationBox>
 </template>`
 });

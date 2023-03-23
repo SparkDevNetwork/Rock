@@ -84,7 +84,7 @@ namespace Rock.Field.Types
         public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             // We need to clean up the HTML right around the truncate length.
-            return privateValue.TruncateHtml( 100 );
+            return privateValue.TruncateHtml( CondensedTruncateLength );
         }
 
         #endregion

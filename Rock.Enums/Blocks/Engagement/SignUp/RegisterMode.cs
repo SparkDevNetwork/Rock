@@ -35,6 +35,6 @@ namespace Rock.Enums.Blocks.Engagement.SignUp
         /// <summary>
         /// The specified group's members - assuming the logged-in user belongs to the group - will be presented for selection.
         /// </summary>
-        Group = 3
+        Group = 2
     }
 }

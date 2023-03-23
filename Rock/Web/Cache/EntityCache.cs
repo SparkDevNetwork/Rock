@@ -15,12 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Model;
 
 using DbContext = Rock.Data.DbContext;
 
@@ -39,7 +42,6 @@ namespace Rock.Web.Cache
         where T : IEntityCache, new()
         where TT : Entity<TT>, new()
     {
-
         #region Properties
 
         /// <summary>
@@ -325,11 +327,99 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Removes or invalidates the CachedItem based on EntityState
+        /// Gets all the cache objects for the specified identifiers.
         /// </summary>
-        /// <param name="entityId">The entity identifier.</param>
-        /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
-        public static void UpdateCachedEntity( int entityId, EntityState entityState )
+        /// <param name="ids">The identifiers of the cache objects to retrieve.</param>
+        /// <param name="rockContext">The rock context to use if database access is needed.</param>
+        /// <returns>An enumeration of the cached objects.</returns>
+        internal static IEnumerable<T> GetMany( ICollection<int> ids, RockContext rockContext = null )
+        {
+            var cachedItems = new List<T>();
+            var idsToLoad = new List<int>();
+
+            // Try to get items that already exist in cache.
+            foreach ( var id in ids )
+            {
+                if ( TryGet( id, out var cachedItem ) )
+                {
+                    cachedItems.Add( cachedItem );
+                }
+                else
+                {
+                    idsToLoad.Add( id );
+                }
+            }
+
+            if ( !idsToLoad.Any() )
+            {
+                return cachedItems;
+            }
+
+            // Get any remaining items that still need to be loaded from the database.
+            bool disposeOfContext = false;
+
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+                disposeOfContext = true;
+            }
+
+            var service = new Service<TT>( rockContext );
+
+            while ( idsToLoad.Any() )
+            {
+                var idsBatch = idsToLoad.Take( 1000 ).ToList();
+                idsToLoad = idsToLoad.Skip( 1000 ).ToList();
+
+                var itemsQry = GetQueryableForBulkLoad( rockContext )
+                    .AsNoTracking()
+                    .Where( a => idsBatch.Contains( a.Id ) );
+
+                var items = itemsQry.ToList();
+
+                // Pre-load all the attributes.
+                if ( typeof( IHasAttributes ).IsAssignableFrom( typeof( TT ) ) )
+                {
+                    items.Cast<IHasAttributes>().LoadAttributes( rockContext );
+                }
+
+                cachedItems.AddRange( items.Select( a => Get( ( TT ) a ) ) );
+            }
+
+            if ( disposeOfContext )
+            {
+                rockContext.Dispose();
+            }
+
+            return cachedItems;
+        }
+
+        /// <summary>
+        /// Gets the queryable for bulk loading of entities to be cached.
+        /// The queryable returned will have any required navigation properties
+        /// already included.
+        /// </summary>
+        /// <param name="rockContext">The rock context to use when creating the service.</param>
+        /// <returns>A queryable for the entity.</returns>
+        private static IQueryable<IEntity> GetQueryableForBulkLoad( RockContext rockContext )
+        {
+            // In the future this should be some sort of lookup.
+            if ( typeof( TT ) == typeof( Rock.Model.Attribute ) )
+            {
+                return new AttributeService( rockContext ).Queryable()
+                    .Include( a => a.Categories )
+                    .Include( a => a.AttributeQualifiers );
+            }
+
+            return new Service<TT>( rockContext ).Queryable();
+        }
+
+    /// <summary>
+    /// Removes or invalidates the CachedItem based on EntityState
+    /// </summary>
+    /// <param name="entityId">The entity identifier.</param>
+    /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
+    public static void UpdateCachedEntity( int entityId, EntityState entityState )
         {
             // NOTE: Don't read the Item into the Cache here since it could be part of a transaction that could be rolled back.
             // Reading it from the database here could also cause a deadlock depending on the database isolation level.
@@ -371,19 +461,11 @@ namespace Rock.Web.Cache
         {
             var cachedKeys = GetOrAddKeys( () => QueryDbForAllIds( rockContext ) );
             if ( cachedKeys == null )
-                return new List<T>();
-
-            var allValues = new List<T>();
-            foreach ( var key in cachedKeys.ToList() )
             {
-                var value = Get( key.AsInteger(), rockContext );
-                if ( value != null )
-                {
-                    allValues.Add( value );
-                }
+                return new List<T>();
             }
 
-            return allValues;
+            return GetMany( cachedKeys.ToList().AsIntegerList(), rockContext ).ToList();
         }
 
         #endregion

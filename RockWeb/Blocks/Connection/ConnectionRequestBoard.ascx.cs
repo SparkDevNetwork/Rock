@@ -2085,7 +2085,7 @@ namespace RockWeb.Blocks.Connection
             avcRequestModalAddEditModeRequest.ExcludedAttributes = request.Attributes.Values
                 .Where( a => a.Key == "Order" || a.Key == "Active" )
                 .ToArray();
-            avcRequestModalAddEditModeRequest.AddEditControls( request, true );
+            avcRequestModalAddEditModeRequest.AddEditControls( request, Authorization.EDIT, CurrentPerson );
         }
 
         #endregion Add Request Modal

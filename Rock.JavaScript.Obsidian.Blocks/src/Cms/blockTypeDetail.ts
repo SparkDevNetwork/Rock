@@ -25,7 +25,7 @@ import EditPanel from "./BlockTypeDetail/editPanel.partial";
 import ViewPanel from "./BlockTypeDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { debounce } from "@Obsidian/Utility/util";
-import { NavigationUrlKey } from "./BlockTypeDetail/types";
+import { NavigationUrlKey } from "./BlockTypeDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { BlockTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockTypeDetail/blockTypeBag";
 import { BlockTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockTypeDetail/blockTypeDetailOptionsBag";

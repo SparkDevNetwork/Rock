@@ -16,14 +16,14 @@
 //
 
 import { Component, defineComponent, markRaw, PropType } from "vue";
-import Alert from "./alert.obs";
+import NotificationBox from "./notificationBox.obs";
 import LoadingIndicator from "./loadingIndicator";
 
 export default defineComponent({
     name: "ComponentFromUrl",
     components: {
         LoadingIndicator,
-        Alert
+        NotificationBox
     },
     props: {
         url: {
@@ -68,7 +68,7 @@ export default defineComponent({
         }
     },
     template: `
-<Alert v-if="error" alertType="danger">{{error}}</Alert>
+<NotificationBox v-if="error" alertType="danger">{{error}}</NotificationBox>
 <LoadingIndicator v-else-if="loading" />
 <component v-else :is="control" />`
 });

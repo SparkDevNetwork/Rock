@@ -13,12 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 using System;
+using System.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.TestData
+namespace Rock.Tests.Integration
 {
     public static partial class TestDataHelper
     {
@@ -31,6 +33,66 @@ namespace Rock.Tests.Integration.TestData
             private const string FinancesClassOccurrenceSat1630Guid = "E7116C5A-9FEE-42D4-A0DB-7FEBFCCB6B8B";
             private const string FinancesClassOccurrenceSun1200Guid = "3F3EA420-E3F0-435A-9401-C2D058EF37DE";
             private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
+
+            public class CreateEventItemActionArgs
+            {
+                public Guid? Guid;
+                public Schedule Schedule;
+                public string EventName;
+                public string MeetingLocation;
+            }
+
+            public static bool DeleteEventItem( string eventItemIdentifier, RockContext context )
+            {
+                var eventItemService = new EventItemService( context );
+                var eventItem = eventItemService.Get( eventItemIdentifier );
+
+                if ( eventItem == null )
+                {
+                    return false;
+                }
+
+                return eventItemService.Delete( eventItem );
+            }
+
+            public static EventItem CreateEventItem( CreateEventItemActionArgs actionInfo, RockContext rockContext )
+            {
+                rockContext = rockContext ?? new RockContext();
+
+                // Get Event "Rock Solid Finances".
+                // This event is associated with both the Internal and Public calendars.
+                var eventItemService = new EventItemService( rockContext );
+
+                var newEvent = new EventItem();
+
+                eventItemService.Add( newEvent );
+
+                newEvent.Guid = actionInfo.Guid ?? Guid.NewGuid();
+                newEvent.Name = actionInfo.EventName;
+                newEvent.IsActive = true;
+                newEvent.IsApproved = true;
+
+                var eventCalendarService = new EventCalendarService( rockContext );
+                var eventCalendarInternal = EventCalendarCache.All().FirstOrDefault( ec => ec.Name == "Internal" );
+
+                var calendar = new EventCalendarItem();
+                calendar.EventCalendarId = eventCalendarInternal.Id;
+                calendar.EventItem = newEvent;
+
+                newEvent.EventCalendarItems.Add( calendar );
+
+                var newEvent1 = new EventItemOccurrence();
+                newEvent.EventItemOccurrences.Add( newEvent1 );
+
+                var mainCampusId = CampusCache.GetId( MainCampusGuidString.AsGuid() );
+
+                newEvent1.Location = actionInfo.MeetingLocation;
+                newEvent1.ForeignKey = TestDataForeignKey;
+                newEvent1.Schedule = actionInfo.Schedule;
+                newEvent1.CampusId = mainCampusId;
+
+                return newEvent;
+            }
 
             /// <summary>
             /// Modifies the Rock Solid Finances Class to add multiple schedules and campuses.

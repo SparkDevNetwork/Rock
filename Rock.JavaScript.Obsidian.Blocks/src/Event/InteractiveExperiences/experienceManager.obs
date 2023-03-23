@@ -1,9 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="config.errorMessage"
-           alertType="warning">
+    <NotificationBox v-if="config.errorMessage"
+                     alertType="warning">
         {{ config.errorMessage }}
-    </Alert>
+    </NotificationBox>
 
     <Panel v-else type="block" :title="panelTitle" hasFullscreen>
         <template v-if="isTabBarVisible" #preBody>
@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import LiveEventTab from "./ExperienceManager/liveEventTab.partial.obs";
     import LiveQuestionsTab from "./ExperienceManager/liveQuestionsTab.partial.obs";
     import ModerationTab from "./ExperienceManager/moderationTab.partial.obs";
@@ -44,7 +44,7 @@
     import { computed, provide, ref } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
-    import { IParticipantTopic } from "./types";
+    import { IParticipantTopic } from "./types.partial";
 
     const config = useConfigurationValues<ExperienceManagerInitializationBox>();
 

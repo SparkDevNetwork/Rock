@@ -27,7 +27,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="restKeyEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="restKeyEditBag" :options="options" />
         </template>
     </DetailBlock>
 </template>
@@ -42,7 +42,7 @@
     import EditPanel from "./RestKeyDetail/editPanel.partial.obs";
     import ViewPanel from "./RestKeyDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { NavigationUrlKey } from "./RestKeyDetail/types";
+    import { NavigationUrlKey } from "./RestKeyDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { RestKeyBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyBag";
     import { RestKeyDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyDetailOptionsBag";

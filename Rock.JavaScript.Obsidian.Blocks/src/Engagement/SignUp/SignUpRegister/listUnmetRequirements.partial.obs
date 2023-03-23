@@ -1,0 +1,49 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="Object.keys(registrantsWithUnmetRequirements).length" class="form-group">
+        <RockLabel>{{ label }}</RockLabel>
+        <div v-for="r in registrantsWithUnmetRequirements" :key="r.key">
+            {{ r.fullName }} - {{ r.unmetRequirements }}
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
+
+    const props = defineProps({
+        registrants: {
+            type: Array as PropType<SignUpRegistrantBag[]>,
+            required: true
+        },
+
+        groupTerm: {
+            type: String as PropType<string>,
+            default: "group"
+        }
+    });
+
+    // #region Computed Values
+
+    const label = computed((): string => {
+        return `The following ${props.groupTerm || "group"} member(s) do not meet the project requirements`;
+    });
+
+    const registrantsWithUnmetRequirements = computed((): ({ key: string, fullName: string, unmetRequirements: string }[]) => {
+        return props.registrants
+            ?.filter((r: SignUpRegistrantBag) =>
+                r?.personIdKey
+                && r?.fullName
+                && r?.unmetGroupRequirements?.length)
+            .map((r: SignUpRegistrantBag) => ({
+                // These property values will never be null | undefined here, but TS is only happy if we use the nullish coalescing operator.
+                key: r.personIdKey ?? "",
+                fullName: r.fullName ?? "",
+                unmetRequirements: r.unmetGroupRequirements?.join(", ") ?? ""
+            }));
+    });
+
+    // #endregion
+</script>

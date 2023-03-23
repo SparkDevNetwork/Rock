@@ -225,7 +225,7 @@ function() {
             controls.Add( rlbWebsites );
 
             var websitesLabel = new Label();
-            websitesLabel.Text = " sites(s) ";
+            websitesLabel.Text = " site(s) ";
             filterControl.Controls.Add( websitesLabel );
             controls.Add( websitesLabel );
 

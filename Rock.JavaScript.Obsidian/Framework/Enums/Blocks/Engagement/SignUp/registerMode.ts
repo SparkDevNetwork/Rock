@@ -30,7 +30,7 @@ export const RegisterMode = {
     Anonymous: 1,
 
     /** The specified group's members - assuming the logged-in user belongs to the group - will be presented for selection. */
-    Group: 3
+    Group: 2
 } as const;
 
 /** The register mode options available in the Sign-Up Register block. */
@@ -39,7 +39,7 @@ export const RegisterModeDescription: Record<number, string> = {
 
     1: "Anonymous",
 
-    3: "Group"
+    2: "Group"
 };
 
 /** The register mode options available in the Sign-Up Register block. */

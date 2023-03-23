@@ -447,6 +447,11 @@ namespace Rock.Utility
                     DbService.ExecuteCommand( @"UPDATE [PhoneNumber] SET [FullNumber] = CONCAT([CountryCode], [Number]) where [FullNumber] is null OR [FullNumber] != CONCAT([CountryCode], [Number])" );
                 }
 
+                // PA: Run the Update Persisted Attribute Value Job to populate the Field Type, like [ValueByDateTime], columns of the attributes table
+                var serviceJobService = new ServiceJobService( rockContext );
+                var updatePersistedAttributeValueJob = serviceJobService.Get( Rock.SystemGuid.ServiceJob.UPDATE_PERSISTED_ATTRIBUTE_VALUE );
+                serviceJobService.RunNow( updatePersistedAttributeValueJob );
+
                 // done.
                 LogElapsed( "done" );
 
@@ -1381,6 +1386,8 @@ namespace Rock.Utility
                             attributeValue.AttributeId = newValue.AttributeId;
                             attributeValue.EntityId = gm.Person.Id;
                             attributeValue.Value = newValue.Value;
+                            // PA: setting the dirty bit so that the Update Persisted Attribute Values job can populate the field related columns like ValueAsDateTime
+                            attributeValue.IsPersistedValueDirty = true;
                             rockContext.AttributeValues.Add( attributeValue );
                         }
                     }
@@ -3530,7 +3537,7 @@ namespace Rock.Utility
             /// <summary>
             /// The alias identifier of the person who is deemed the creator of the sample data.
             /// </summary>
-            public int CreatorPersonAliasId { get; set; }
+            public int? CreatorPersonAliasId { get; set; }
         }
 
         /// <summary>

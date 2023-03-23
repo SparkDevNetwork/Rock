@@ -42,7 +42,7 @@
     import ViewPanel from "./MergeTemplateDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./MergeTemplateDetail/types";
+    import { NavigationUrlKey } from "./MergeTemplateDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { MergeTemplateBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateDetail/mergeTemplateBag";
     import { MergeTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateDetail/mergeTemplateDetailOptionsBag";

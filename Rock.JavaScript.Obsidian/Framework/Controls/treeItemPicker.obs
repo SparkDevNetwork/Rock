@@ -5,7 +5,8 @@
                            @clearButtonClicked="onClear"
                            :iconCssClass="pickerIconClass"
                            :showClear="showClear"
-                           :modelValue="internalValues">
+                           :modelValue="internalValues"
+                           :fullWidth="fullWidth">
 
         <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
 
@@ -86,6 +87,15 @@
          * Automatically expand parents who have (sub)children that are selected
          */
         autoExpand: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When true the picker will take the full width available rather than
+         * limiting itself to a standard width.
+         */
+        fullWidth: {
             type: Boolean as PropType<boolean>,
             default: false
         }

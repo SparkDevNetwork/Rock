@@ -24,7 +24,7 @@
                                  label="Key"
                                  rules="required"
                                  help="Enter a key to use for a access token, or use the 'Generate Key' button to create a random 24 digit key."
-                                 maxLength="24" />
+                                 :maxLength="24" />
                     </div>
                     <div class="form-group">
                         <RockButton class="btn-primary ml-2" @click="onGenerateKeyClick">
@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, watch } from "vue";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import CheckBox from "@Obsidian/Controls/checkBox";

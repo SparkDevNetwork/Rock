@@ -165,10 +165,10 @@ namespace Rock.Field.Types
 
                         return new PersistedValues
                         {
-                            TextValue = textValue,
-                            CondensedTextValue = textValue.Truncate( 100 ),
+                            TextValue = textValue,  
+                            CondensedTextValue = textValue.Truncate( CondensedTruncateLength ),
                             HtmlValue = textValue,
-                            CondensedHtmlValue = textValue.Truncate( 100 )
+                            CondensedHtmlValue = textValue.Truncate( CondensedTruncateLength )
                         };
                     }
                 }

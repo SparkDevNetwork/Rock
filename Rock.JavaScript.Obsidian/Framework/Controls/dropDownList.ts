@@ -203,7 +203,7 @@ export default defineComponent({
 
         /** Determines if the clear icon should be visible. */
         const isClearable = computed((): boolean => {
-            return computedShowBlankItem.value && !computedLoading.value && hasValue.value;
+            return computedShowBlankItem.value && !computedLoading.value && hasValue.value && internalValue.value !== props.blankValue;
         });
 
         /** Determines if the control should be in a disabled state. */
@@ -385,6 +385,7 @@ export default defineComponent({
                     :filterOption="filterItem"
                     :mode="mode"
                     :getPopupContainer="getPopupContainer"
+                    showArrow
                     @dropdownVisibleChange="onDropdownVisibleChange">
                     <template #clearIcon>
                         <i class="fa fa-times"></i>

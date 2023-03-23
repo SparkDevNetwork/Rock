@@ -42,7 +42,7 @@
     import ViewPanel from "./BadgeDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./BadgeDetail/types";
+    import { NavigationUrlKey } from "./BadgeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { BadgeBag } from "@Obsidian/ViewModels/Blocks/Crm/BadgeDetail/badgeBag";
     import { BadgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/BadgeDetail/badgeDetailOptionsBag";

@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
             }
 
-            // Add lazyload so that person-link-popover javascript works
+            // Add lazy load so that person-link-popover JavaScript works
             RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             // This event gets fired after block settings are updated. It's nice to repaint the screen if these settings would alter it.
@@ -730,7 +730,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             gAttendees.GetRecipientMergeFields += gAttendees_GetRecipientMergeFields;
             gAttendees.Actions.AddClick += gAttendees_AddClick;
 
-            // we'll have custom javascript (see SignUpOpportunityAttendeeList.ascx ) do this instead.
+            // we'll have custom JavaScript (see SignUpOpportunityAttendeeList.ascx ) do this instead.
             gAttendees.ShowConfirmDeleteDialog = false;
 
             gAttendees.Actions.ShowAdd = _canEdit;
@@ -1032,13 +1032,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 .Include( gma => gma.GroupMember.GroupRole )
                 .Include( gma => gma.GroupMember.Person )
                 .Where( gma =>
-                    !gma.GroupMember.Person.IsDeceased
-                    && gma.GroupMember.GroupId == _groupId
+                    gma.GroupMember.GroupId == _groupId
                     && gma.LocationId == _locationId
                     && gma.ScheduleId == _scheduleId
                 );
 
-            var slotsFilled = qry.Count();
+            var slotsFilled = qry.Count( gma => !gma.GroupMember.Person.IsDeceased );
             bSlotsFilled.Text = slotsFilled.ToString( "N0" );
 
             if ( _isCommunicating )
@@ -1391,8 +1390,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
             {
                 foreach ( var groupRequirementType in unmetRequirementTypes.Value )
                 {
-                    var friendlyName = groupRequirementType?.NegativeLabel;
+                    if ( groupRequirementType == null )
+                    {
+                        continue;
+                    }
 
+                    var friendlyName = groupRequirementType.NegativeLabel;
                     if ( string.IsNullOrWhiteSpace( friendlyName ) )
                     {
                         friendlyName = groupRequirementType?.Name;

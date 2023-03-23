@@ -1,16 +1,16 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockErrorMessage" alertType="warning">
+    <NotificationBox v-if="blockErrorMessage" alertType="warning">
         {{ blockErrorMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <Alert v-if="errorMessage" alertType="danger">
+    <NotificationBox v-if="errorMessage" alertType="warning">
         {{ errorMessage }}
-    </Alert>
+    </NotificationBox>
 
     <div v-if="!blockErrorMessage">
         <RockForm @submit="onSearch">
-            <div class="row mb-3">
+            <div class="row">
                 <div v-if="projectTypes.length" :class="columnClass">
                     <SignUpFilter v-model="selectedProjectTypes"
                                   :label="config.projectTypeFilterLabel"
@@ -31,13 +31,16 @@
                                   :displayAs="displayAs" />
                 </div>
                 <div v-for="a in attributeFilters" :key="a.key" :class="columnClass">
-                    <RockLabel>{{ a.attribute.name }}</RockLabel>
-                    <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
-                        :attribute="a.attribute" />
+                    <div class="form-group">
+                        <RockLabel>{{ a.attribute.name }}</RockLabel>
+                        <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
+                                             :attribute="a.attribute" />
+                    </div>
                 </div>
                 <div v-if="config.displayDateRange" :class="columnClass">
                     <DateRangePicker v-model="selectedDateRange"
-                                     label="Date Range" />
+                                     label="Date Range"
+                                     :disallowPastDateSelection="true" />
                 </div>
                 <div v-if="config.displayLocationSort" :class="columnClass">
                     <TextBox v-model="selectedLocationSort" :label="config.locationSortLabel" class="input-max-w-xl" />
@@ -49,35 +52,33 @@
                     </div>
                 </div>
                 <div v-if="config.displaySlotsAvailableFilter" :class="columnClass">
-                    <RockLabel>Spots Available</RockLabel>
-                    <div class="input-group">
-                        <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
-                        <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" />
+                    <div class="form-group">
+                        <RockLabel>Spots Available</RockLabel>
+                        <div class="input-group">
+                            <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
+                            <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" />
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <RockButton type="submit" :btnType="BtnType.Warning" :btnSize="BtnSize.ExtraSmall" class="mr-3" :disabled="isSearching">Search</RockButton>
-                    <RockButton type="button" :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" :disabled="isSearching" @click="onClearBtnClick">Clear</RockButton>
-                </div>
+            <div class="actions">
+                <RockButton type="submit" :btnType="BtnType.Primary" :disabled="isSearching">Search</RockButton>
+                <RockButton type="button" :btnType="BtnType.Link" :disabled="isSearching" @click="onClearBtnClick">Clear</RockButton>
             </div>
         </RockForm>
 
-        <div class="mt-5">
-            <Loading :isLoading="isSearching">
-                <div ref="resultsHeaderElement"></div>
-                <div ref="resultsElement"></div>
-            </Loading>
-        </div>
+        <Loading :isLoading="isSearching">
+            <div ref="resultsHeaderElement"></div>
+            <div ref="resultsElement"></div>
+        </Loading>
     </div>
 </template>
 
 <script setup lang="ts">
     import { computed, nextTick, ref } from "vue";
-    import SignUpFilter from "./SignUpFinder/signUpFilter.obs";
-    import { SignUpFilterType } from "./SignUpFinder/signUpFilterType";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import SignUpFilter from "./SignUpFinder/signUpFilter.partial.obs";
+    import { SignUpFilterType } from "./SignUpFinder/signUpFilterType.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
     import { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
     import InputGroupDropDown from "@Obsidian/Controls/inputGroupDropDown.obs";
@@ -88,7 +89,6 @@
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import RockForm from "@Obsidian/Controls/rockForm";
     import TextBox from "@Obsidian/Controls/textBox";
-    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
@@ -166,7 +166,7 @@
                 colWidth = 12;
         }
 
-        return `col-md-${colWidth} mb-3`;
+        return `col-md-${colWidth}`;
     });
 
     const displayAs = computed((): SignUpFilterType => {
@@ -180,7 +180,7 @@
      * attribute guids belong to each group type, and maintaining a local cache of selected comparison values.
      */
     const attributeFilters = computed((): ({ key: string, attribute: PublicAttributeBag, comparisonValue: ComparisonValue }[]) => {
-        const filters: { key:string, attribute: PublicAttributeBag, comparisonValue: ComparisonValue }[] = [];
+        const filters: { key: string, attribute: PublicAttributeBag, comparisonValue: ComparisonValue }[] = [];
 
         Object.keys(attributesByProjectType.value).forEach((projectTypeGuid: string) => {
             const attributes: Record<string, PublicAttributeBag> = attributesByProjectType.value[projectTypeGuid];

@@ -173,6 +173,9 @@ namespace Rock.Model
 
                 // Calculates the BirthDate and sets it
                 this.Entity.BirthDate = this.Entity.CalculateBirthDate();
+                this.Entity.BirthDateKey = this.Entity.BirthDate?.ToString( "yyyyMMdd" ).AsIntegerOrNull();
+                this.Entity.Age = GetAge( this.Entity.BirthDate, this.Entity.DeceasedDate );
+                this.Entity.AgeBracket = GetAgeBracket( this.Entity.Age );
 
                 this.Entity.CalculateSignals();
 

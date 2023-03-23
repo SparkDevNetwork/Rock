@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import Alert from "./alert.obs";
+import NotificationBox from "./notificationBox.obs";
 import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
 import { uploadBinaryFile } from "@Obsidian/Utility/http";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -27,7 +27,7 @@ export default defineComponent({
     name: "ImageUploader",
 
     components: {
-        Alert,
+        NotificationBox,
         RockFormField
     },
 
@@ -259,10 +259,10 @@ export default defineComponent({
     name="imageuploader">
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">
-            <Alert v-if="uploadErrorMessage" alertType="warning">
+            <NotificationBox v-if="uploadErrorMessage" alertType="warning">
                 <strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>
                 <span>{{ uploadErrorMessage }}</span>
-            </Alert>
+            </NotificationBox>
 
             <div ref="dropZoneElement" :id="uniqueId" class="imageupload-group" @click="onSelectFileClick">
                 <div class="imageupload-thumbnail" style="width: 100px; height: 100px;">

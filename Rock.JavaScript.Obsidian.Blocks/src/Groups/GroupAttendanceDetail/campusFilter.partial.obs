@@ -1,0 +1,66 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <CampusPicker
+        v-model="campusPickerValue"
+        blankValue="All Campuses"
+        :includeInactive="true"
+        :multiple="false"
+        :showBlankItem="true" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { createFilter, IAttendanceFilter, NoFilter } from "./utils.partial";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<IAttendanceFilter>,
+            required: true
+        },
+
+        campusGuid: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: IAttendanceFilter): void,
+        (e: "update:campusGuid", value: string | null | undefined): void
+    }>();
+
+    //#region Values
+
+    const campusPickerValue = ref<ListItemBag | null>(props.campusGuid ? ({ text: null, value: props.campusGuid }) : null);
+
+    //#endregion
+
+    //#region Watchers
+
+    // Update the selected Campus GUID and filter whenever the Campus picker changes.
+    watch(campusPickerValue, () => {
+        let filter: IAttendanceFilter = NoFilter;
+        const campusGuid = campusPickerValue.value?.value;
+
+        if (campusGuid) {
+            filter = createFilter((attendee) => {
+                return areEqual(attendee.campusGuid, campusGuid);
+            });
+        }
+
+        emit("update:campusGuid", campusGuid);
+        emit("update:modelValue", filter);
+    });
+
+    watch(() => props.modelValue, () => {
+        if (props.modelValue.isFilter(NoFilter)) {
+            // Clear the selected campus.
+            campusPickerValue.value = null;
+        }
+    });
+
+    //#endregion
+</script>

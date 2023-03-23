@@ -40,7 +40,7 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CHECK_LIST )]
-    public class CheckListFieldType : FieldType
+    public class CheckListFieldType : FieldType, ISplitMultiValueFieldType
     {
         #region Configuration
 
@@ -222,6 +222,16 @@ namespace Rock.Field.Types
             }
 
             return comparison;
+        }
+
+        #endregion
+
+        #region ISplitMultiValueFieldType
+
+        /// <inheritdoc/>
+        public ICollection<string> SplitMultipleValues( string privateValue )
+        {
+            return privateValue.Split( ',' );
         }
 
         #endregion

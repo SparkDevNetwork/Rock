@@ -154,6 +154,12 @@ namespace Rock.Jobs
         public string SystemSettingsId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating if an email notification will be sent.
+        /// Set this value to <c>false</c> to test job processing in an environment without email infrastructure.
+        /// </summary>
+        internal bool SendEmailNotification { get; set; } = true;
+
+        /// <summary>
         /// The collection of prayer requests that match the filter conditions for this job.
         /// </summary>
         public List<PrayerRequest> PrayerRequests
@@ -493,7 +499,16 @@ namespace Rock.Jobs
 
                 emailMessage.CreateCommunicationRecord = this.CreateCommunicationRecord;
 
-                emailMessage.Send( out errors );
+                if ( SendEmailNotification )
+                {
+                    emailMessage.Send( out errors );
+                }
+                else
+                { 
+                    errors = new List<string>();
+
+                    _Log.LogWarning( $"Debug Setting: Email send is disabled." );
+                }
 
                 processedCount++;
 

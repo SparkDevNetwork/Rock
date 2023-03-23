@@ -444,7 +444,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <summary>
         /// The block setting attribute keys for the <see cref="OnboardPerson"/> block.
         /// </summary>
-        public static class AttributeKeys
+        private static class AttributeKeys
         {
             /// <summary>
             /// The allow skip of on-boarding key.

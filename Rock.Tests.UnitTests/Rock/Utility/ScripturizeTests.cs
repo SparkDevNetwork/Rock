@@ -11,7 +11,6 @@ namespace Rock.Tests.UnitTests.Utility
     public class ScripturizeTests
     {
         #region Scripturize Tests
-
         /// <summary>
         /// Scripturizes for YouVersion format with the simple cases from the documentation:
         /// John 3:16

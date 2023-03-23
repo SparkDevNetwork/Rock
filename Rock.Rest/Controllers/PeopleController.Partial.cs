@@ -575,59 +575,30 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "DA70741A-30DF-4E63-AD26-0444E2E10689" )]
         public IHttpActionResult UpdateProfilePhoto( [NakedBody] byte[] photoBytes, string filename )
         {
-            var personId = GetPerson()?.Id;
+            var personGuid = GetPerson()?.Guid;
 
-            if ( !personId.HasValue )
+            if ( !personGuid.HasValue )
             {
                 return NotFound();
             }
 
-            if ( photoBytes.Length == 0 || string.IsNullOrWhiteSpace( filename ) )
-            {
-                return BadRequest();
-            }
+            return Ok( PersonService.UpdatePersonProfilePhoto( personGuid.Value, photoBytes, filename ) );
+        }
 
-            char[] illegalCharacters = new char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
-
-            if ( filename.IndexOfAny( illegalCharacters ) >= 0 )
-            {
-                return BadRequest( "Invalid Filename.  Please remove any special characters (" + string.Join( " ", illegalCharacters ) + ")." );
-            }
-
-            using ( var rockContext = new Data.RockContext() )
-            {
-                BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
-
-                // always create a new BinaryFile record of IsTemporary when a file is uploaded
-                var binaryFileService = new BinaryFileService( rockContext );
-                var binaryFile = new BinaryFile();
-                binaryFileService.Add( binaryFile );
-
-                binaryFile.IsTemporary = false;
-                binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                binaryFile.MimeType = "octet/stream";
-                binaryFile.FileSize = photoBytes.Length;
-                binaryFile.FileName = filename;
-                binaryFile.ContentStream = new MemoryStream( photoBytes );
-
-                rockContext.SaveChanges();
-
-                var person = new Model.PersonService( rockContext ).Get( personId.Value );
-                int? oldPhotoId = person.PhotoId;
-                person.PhotoId = binaryFile.Id;
-
-                rockContext.SaveChanges();
-
-                if ( oldPhotoId.HasValue )
-                {
-                    binaryFile = binaryFileService.Get( oldPhotoId.Value );
-                    binaryFile.IsTemporary = true;
-
-                    rockContext.SaveChanges();
-                }
-
-                return Ok( $"{GlobalAttributesCache.Value( "PublicApplicationRoot" )}{person.PhotoUrl}" );
-            }
+        /// <summary>
+        /// Updates the person profile photo.
+        /// </summary>
+        /// <param name="photoBytes">The photo bytes.</param>
+        /// <param name="personGuid">The person unique identifier.</param>
+        /// <param name="filename">The filename.</param>
+        /// <returns>IHttpActionResult.</returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/People/UpdatePersonProfilePhoto" )]
+        [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "7AB0E53E-28BD-4EE6-AD31-EBAEC23B123C" )]
+        public IHttpActionResult UpdatePersonProfilePhoto( [NakedBody] byte[] photoBytes, Guid personGuid, string filename )
+        {
+            return Ok( PersonService.UpdatePersonProfilePhoto( personGuid, photoBytes, filename ) );
         }
 
         /// <summary>
@@ -974,7 +945,7 @@ namespace Rock.Rest.Controllers
             var connectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ) : null;
             var campus = person.PrimaryCampusId.HasValue ? CampusCache.Get( person.PrimaryCampusId.Value ) : null;
 
-            personSearchResult.ImageUrl = Person.GetPersonPhotoUrl( person, 200, 200 );
+            personSearchResult.ImageUrl = Person.GetPersonPhotoUrl( person );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
             personSearchResult.AgeClassification = person.AgeClassification;
             personSearchResult.FormattedAge = person.FormatAge();
@@ -1003,7 +974,7 @@ namespace Rock.Rest.Controllers
 
             string imageHtml = string.Format(
                 "<div class='person-image' style='background-image:url({0}&width=65);'></div>",
-                Person.GetPersonPhotoUrl( person, 200, 200 ) );
+                Person.GetPersonPhotoUrl( person ) );
 
             StringBuilder personInfoHtmlBuilder = new StringBuilder();
             int? groupLocationTypeValueId;

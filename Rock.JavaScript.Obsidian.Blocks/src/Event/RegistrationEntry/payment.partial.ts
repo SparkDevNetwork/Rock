@@ -21,12 +21,12 @@ import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
 import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockValidation from "@Obsidian/Controls/rockValidation";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
-import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, RegistrationEntryState } from "./types";
+import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, RegistrationEntryState } from "./types.partial";
 import { FormError } from "@Obsidian/Utility/form";
 
 export default defineComponent({
@@ -34,7 +34,7 @@ export default defineComponent({
     components: {
         RockButton,
         RockForm,
-        Alert,
+        NotificationBox,
         GatewayControl,
         RockValidation
     },
@@ -309,7 +309,7 @@ export default defineComponent({
             <div class="position-relative overflow-hidden">
                 <transition name="rockslide">
                     <div v-if="showGateway" class="hosted-gateway-container payment-method-entry">
-                        <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
+                        <NotificationBox v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</NotificationBox>
                         <RockValidation :errors="gatewayValidationFields" />
                         <div class="hosted-payment-control">
                             <GatewayControl
@@ -325,7 +325,7 @@ export default defineComponent({
             </div>
         </div>
 
-        <Alert v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</Alert>
+        <NotificationBox v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</NotificationBox>
 
         <div class="actions text-right">
             <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>

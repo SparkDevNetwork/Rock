@@ -1363,5 +1363,23 @@ namespace Rock.Migrations.Migrations {
                         "Matrices", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% assign apiKey = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;GoogleApiKey&apos;&apos; %}
+        ///
+        ///{% if apiKey == &quot;&quot; %}
+        ///    &lt;div class=&quot;alert alert-warning&quot;&gt;
+        ///        There is no Google API key defined. Please add your key under: &apos;&apos;Admin Tools &gt; General Settings &gt; Global Attributes &gt; Google API Key&apos;&apos;.
+        ///    &lt;/div&gt;
+        ///{% endif %}
+        ///
+        ///{% assign url = &apos;&apos;https://maps.googleapis.com/maps/api/staticmap?&apos;&apos; | Append:&apos;&apos;size=&apos;&apos; | Append:imagesize | Append:&apos;&apos;&amp;maptype=&apos;&apos; | Append:maptype | Append:&apos;&apos;&amp;scale=&apos;&apos; | Append [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap {
+            get {
+                return ResourceManager.GetString("_202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleSta" +
+                        "ticMap", resourceCulture);
+            }
+        }
     }
 }

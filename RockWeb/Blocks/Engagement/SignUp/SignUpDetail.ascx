@@ -179,17 +179,17 @@
 
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="sign-up-opportunities-grid-header-title mt-4">
-                                    Opportunities
-                                </div>
-                                <div class="sign-up-opportunities-grid-header-description mb-4 pb-3">
-                                    <span>
+                                <h3>Opportunities</h3>
+                                <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom">
+                                    <p>
                                         <asp:Literal ID="lOpportunitiesDescription" runat="server">Below are opportunities for the sign-up based on location and schedule.</asp:Literal>
-                                    </span>
-                                    <Rock:ButtonGroup ID="bgOpportunitiesTimeframe" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-xs btn-primary active" UnselectedItemClass="btn btn-xs btn-default" AutoPostBack="true" OnSelectedIndexChanged="bgOpportunitiesTimeframe_SelectedIndexChanged">
-                                        <asp:ListItem Text="Upcoming" Value="1" Selected="True" />
-                                        <asp:ListItem Text="Past" Value="2" />
-                                    </Rock:ButtonGroup>
+                                    </p>
+                                    <div class="form-group">
+                                        <Rock:ButtonGroup ID="bgOpportunitiesTimeframe" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-xs btn-primary active" UnselectedItemClass="btn btn-xs btn-default" AutoPostBack="true" OnSelectedIndexChanged="bgOpportunitiesTimeframe_SelectedIndexChanged">
+                                            <asp:ListItem Text="Upcoming" Value="1" Selected="True" />
+                                            <asp:ListItem Text="Past" Value="2" />
+                                        </Rock:ButtonGroup>
+                                    </div>
                                 </div>
 
                                 <Rock:NotificationBox ID="nbNoAllowedScheduleTypes" runat="server" Visible="false" NotificationBoxType="Warning" />
@@ -269,13 +269,13 @@
 
                 <div class="row">
                     <div class="col-md-11">
-                        <Rock:RockTextBox ID="tbOpportunityName" runat="server" Label="Opportunity Name" CssClass="mb-4" Help="Optional name for the opportunity. This is helpful to provide if your project will have several opportunities configured." />
+                        <Rock:RockTextBox ID="tbOpportunityName" runat="server" Label="Opportunity Name" Help="Optional name for the opportunity. This is helpful to provide if your project will have several opportunities configured." />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-8">
-                        <div id="pnlScheduleTypeButtonGroup" runat="server" class="mb-3">
+                        <div id="pnlScheduleTypeButtonGroup" runat="server" class="form-group">
                             <Rock:ButtonGroup ID="bgScheduleType" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-xs btn-primary active" UnselectedItemClass="btn btn-xs btn-default" AutoPostBack="true" OnSelectedIndexChanged="bgScheduleType_SelectedIndexChanged">
                                 <asp:ListItem Text="Custom Schedule" Value="2" Selected="True" />
                                 <asp:ListItem Text="Named Schedule" Value="4" />

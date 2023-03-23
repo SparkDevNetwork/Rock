@@ -25,8 +25,10 @@ using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Cms.ContentCollection.Search;
 using Rock.Data;
+using Rock.Field;
 using Rock.Lava;
 using Rock.Model;
+using Rock.ViewModels.Cms;
 using Rock.Web.Cache;
 
 namespace Rock.Cms.ContentCollection.IndexDocuments
@@ -284,6 +286,73 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
         }
 
         /// <summary>
+        /// Adds all standard fields to the index model. This should be called
+        /// by base classes and will be updated in the future when new standard
+        /// fields are added.
+        /// </summary>
+        /// <param name="sourceModel">The source entity model to be indexed.</param>
+        /// <param name="source">The content colleciton source object that describes the index operation.</param>
+        /// <returns>A <see cref="Task"/> that represents when this operation has completed.</returns>
+        internal async Task AddStandardFieldsAsync( IEntity sourceModel, ContentCollectionSourceCache source )
+        {
+            if ( sourceModel is IHasAttributes attributeEntity )
+            {
+                AddIndexableAttributes( attributeEntity, source );
+            }
+
+            AddCustomFields( sourceModel, source );
+
+            AddPersonalizationData( sourceModel, source );
+
+            await AddExistingTrendingDataAsync( source );
+        }
+
+        /// <summary>
+        /// Adds the custom fields defined on the source to the index document.
+        /// </summary>
+        /// <param name="entity">The entity being indexed.</param>
+        /// <param name="source">The source that defines how the document is indexed.</param>
+        internal void AddCustomFields( IEntity entity, ContentCollectionSourceCache source )
+        {
+            var additionalSettings = source.AdditionalSettings.FromJsonOrNull<ContentCollectionSourceAdditionalSettingsBag>();
+
+            if ( additionalSettings == null || additionalSettings.CustomFields == null )
+            {
+                return;
+            }
+
+            var mergeFields = new Dictionary<string, object>
+            {
+                ["Item"] = entity
+            };
+
+            foreach ( var customField in additionalSettings.CustomFields )
+            {
+                var value = customField.Template.ResolveMergeFields( mergeFields );
+
+                if ( !customField.IsMultiple )
+                {
+                    this[$"{customField.Key}ValueRaw"] = value;
+                    this[$"{customField.Key}ValueFormatted"] = value;
+
+                    FieldValueHelper.AddFieldValue( source.ContentCollectionId, customField.Key, value, value );
+                }
+                else
+                {
+                    var values = value.Split( ',' ).Select( s => s.Trim() ).Where( s => s.IsNotNullOrWhiteSpace() ).ToList();
+
+                    this[$"{customField.Key}ValueRaw"] = values;
+                    this[$"{customField.Key}ValueFormatted"] = value;
+
+                    foreach ( var v in values )
+                    {
+                        FieldValueHelper.AddFieldValue( source.ContentCollectionId, customField.Key, v, v );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Adds the indexable attributes to this index.
         /// </summary>
         /// <param name="sourceModel">The source model that has the attributes.</param>
@@ -298,13 +367,48 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
             foreach ( var attributeValue in sourceModel.AttributeValues )
             {
                 var key = MakeAttributeKeySafe( attributeValue.Key );
-                var value = attributeValue.Value.Value;
-                var formattedValue = attributeValue.Value.ValueFormatted;
 
-                this[$"{key}ValueRaw"] = value;
-                this[$"{key}ValueFormatted"] = formattedValue;
+                if ( !sourceModel.Attributes.TryGetValue( attributeValue.Key, out var attribute ) )
+                {
+                    continue;
+                }
 
-                FieldValueHelper.AddAttributeFieldValue( source.ContentCollectionId, key, value, formattedValue );
+                // If the field type supports splitting multiple values then try
+                // to process each individual value after it is split.
+                if ( attribute.FieldType.Field is ISplitMultiValueFieldType multiFieldType )
+                {
+                    var rawValues = multiFieldType.SplitMultipleValues( attributeValue.Value.Value );
+                    var formattedValue = attributeValue.Value.ValueFormatted;
+
+                    // If we only got a single value after the split, store it
+                    // as a single value for backwards compatibility.
+                    if ( rawValues.Count == 1 )
+                    {
+                        this[$"{key}ValueRaw"] = attributeValue.Value.Value;
+                    }
+                    else
+                    {
+                        this[$"{key}ValueRaw"] = rawValues;
+                    }
+
+                    this[$"{key}ValueFormatted"] = formattedValue;
+
+                    foreach ( var value in rawValues )
+                    {
+                        formattedValue = attribute.FieldType.Field.GetTextValue( value, attribute.ConfigurationValues );
+                        FieldValueHelper.AddAttributeFieldValue( source.ContentCollectionId, key, value, formattedValue );
+                    }
+                }
+                else
+                {
+                    var value = attributeValue.Value.Value;
+                    var formattedValue = attributeValue.Value.ValueFormatted;
+
+                    this[$"{key}ValueRaw"] = value;
+                    this[$"{key}ValueFormatted"] = formattedValue;
+
+                    FieldValueHelper.AddAttributeFieldValue( source.ContentCollectionId, key, value, formattedValue );
+                }
             }
         }
 

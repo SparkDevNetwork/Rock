@@ -79,7 +79,7 @@
 <script setup lang="ts">
     import { computed, PropType, reactive, ref, watch } from "vue";
     import { ITopic } from "@Obsidian/Utility/realTime";
-    import { IParticipantTopic } from "../types";
+    import { IParticipantTopic } from "../types.partial";
     import { InteractiveExperienceApprovalStatus } from "@Obsidian/Enums/Event/interactiveExperienceApprovalStatus";
     import { ExperienceManagerInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceManager/experienceManagerInitializationBox";
     import { ExperienceAnswerBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/experienceAnswerBag";

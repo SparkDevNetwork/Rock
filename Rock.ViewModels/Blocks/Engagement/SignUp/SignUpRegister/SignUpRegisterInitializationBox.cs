@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using Rock.Enums.Blocks.Engagement.SignUp;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
 {
@@ -34,12 +35,28 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
         public RegisterMode Mode { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to display the "send reminder using" option.
+        /// Gets or sets the optional title to display above the register form.
         /// </summary>
         /// <value>
-        /// Whether to display the "send reminder using" option.
+        /// The optional title to display above the register form.
         /// </value>
-        public bool DisplaySendReminderOption { get; set; }
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this project has required group requirements.
+        /// </summary>
+        /// <value>
+        /// Whether this project has required group requirements.
+        /// </value>
+        public bool ProjectHasRequiredGroupRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication preference items available for the registrant to select.
+        /// </summary>
+        /// <value>
+        /// The communication preference items available for the registrant to select.
+        /// </value>
+        public List<ListItemBag> CommunicationPreferenceItems { get; set; }
 
         /// <summary>
         /// Gets or sets whether to require that a value be entered for email when registering in Anonymous mode.
@@ -50,21 +67,21 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
         public bool RequireEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to require that a value be entered for email when registering in Anonymous mode.
+        /// Gets or sets whether to require that a value be entered for mobile phone when registering in Anonymous mode.
         /// </summary>
         /// <value>
-        /// Whether to require that a value be entered for email when registering in Anonymous mode.
+        /// Whether to require that a value be entered for mobile phone when registering in Anonymous mode.
         /// </value>
         public bool RequireMobilePhone { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of existing or possible registrants.
+        /// Gets or sets the list of existing or possible registrants, including the registrar.
         /// <para>
-        /// Each <see cref="SignUpRegistrantBag.WillAttend"/> indicates whether they're already registered (<see langword="true" />) or available to be registered (<see langword="false" />).
+        /// Each <see cref="SignUpRegistrantBag.WillAttend"/> value indicates whether they're already registered (<see langword="true" />) or available to be registered (<see langword="false" />).
         /// </para>
         /// </summary>
         /// <value>
-        /// The list of existing or possible registrants.
+        /// The list of existing or possible registrants, including the registrar.
         /// </value>
         public List<SignUpRegistrantBag> Registrants { get; set; }
     }

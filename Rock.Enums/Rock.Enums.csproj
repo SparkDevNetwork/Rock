@@ -48,6 +48,9 @@
     </Compile>
     <Compile Include="Blocks\Security\ForgotUserName\SendInstructionsResultType.cs" />
     <Compile Include="Blocks\Engagement\SignUp\RegisterMode.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailScheduleSelectionMode.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailLocationSelectionMode.cs" />
+    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailDateSelectionMode.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryStep.cs" />
     <Compile Include="Blocks\Security\Login\LoginMethod.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
@@ -98,6 +101,7 @@
     <Compile Include="Core\SpecialRole.cs" />
     <Compile Include="Core\TimeIntervalUnit.cs" />
     <Compile Include="Core\UpdatedAddressType.cs" />
+    <Compile Include="Crm\AgeBracket.cs" />
     <Compile Include="Crm\AgeClassification.cs" />
     <Compile Include="Crm\AssessmentRequestStatus.cs" />
     <Compile Include="Crm\AuthenticationServiceType.cs" />

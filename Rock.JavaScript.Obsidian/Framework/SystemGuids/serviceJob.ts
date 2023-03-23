@@ -65,6 +65,10 @@ export const ServiceJob = {
     DataMigrations141UpdateSlidingDateRangeValue: "59D32B1D-5D9A-4B1E-836A-43BBE89BA004",
     /** The Job to run Post v14.1 Data Migrations to update the ValueAs___ columns after migration. */
     DataMigrations141UpdateValueasAttributeValueColumns: "f7786b0a-e80a-4f19-b0c4-d4f85f4affa2",
+    /** The Job to run Post v15.0 Data Migrations to add a new mobile rest group and add existing mobile applications into that group. */
+    DataMigrations150MobileApplicationUsersRestGroup: "480E996E-6A31-40DB-AE98-BFF85CDED506",
+    /** The Job to run Post v14.1 Data Migrations to replace all existing instances of the TransactionEntryBlock with a new instance of the UtilityPaymentEntry block. */
+    DataMigrations150ReplaceTransactionEntryBlocksWithUtilityPaymentEntryBlock: "8A013CC5-CB51-48F3-8AF8-767BDECACAFE",
     /** The Job to run Post v15.1 Data Migrations for System Phone Numbers. */
     DataMigrations150SystemPhoneNumbers: "6DFE731E-F28B-40B3-8383-84212A301214",
     /** The Job to get NCOA */
@@ -96,6 +100,8 @@ export const ServiceJob = {
     StepsAutomation: "97858941-0447-49D6-9E35-B03665FEE965",
     /** The media synchronize job. */
     SyncMedia: "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
+    /** The Update Persisted Attribute Values job. */
+    UpdatePersistedAttributeValue: "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70",
     /** The Rock.Jobs.UpdatePersonalizationData job. */
     UpdatePersonalizationData: "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
 };

@@ -250,7 +250,7 @@ namespace Rock.Model
             }
 
             // If dataViewFilterOverrides is null assume true in order to preserve current functionality.
-            RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewFilterOverrides: {@dataViewFilterOverrides} DataviewId: {DataviewId}", nameof( GetExpression ), dataViewFilterOverrides, DataViewFilter.DataViewId );
+            // RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewFilterOverrides: {@dataViewFilterOverrides} DataviewId: {DataviewId}", nameof( GetExpression ), dataViewFilterOverrides, DataViewFilter.DataViewId );
             if ( dataViewFilterOverrides == null || dataViewFilterOverrides.ShouldUpdateStatics )
             {
                 DataViewService.AddRunDataViewTransaction( Id );

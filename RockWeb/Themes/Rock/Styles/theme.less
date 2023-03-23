@@ -14,6 +14,8 @@
 @import "_variable-overrides.less";
 @import "_root.less";
 
+
+@import "_navbar.less";
 /*
   Rock Theme Styles
   1. HTML Overrides
@@ -903,10 +905,6 @@ td.grid-actions {
 // 4. Theme Styling          */
 // -------------------------
 
-body.nav-open {
-  overflow: hidden;
-}
-
 // Fixed Navbar #target fix
 :target::before {
   display: block;
@@ -927,9 +925,10 @@ body.nav-open {
 .rock-top-header {
   display: flex;
   margin-bottom: 0;
-  background-color: @brand-primary;
+  color: var(--navbar-top-color, @navbar-top-color);
   background-color: var(--brand-primary, @brand-primary);
   border: 0;
+  min-height: 52px;
 
   @media (max-width: @screen-sm-max) {
     position: relative;
@@ -957,12 +956,15 @@ body.nav-open {
     .zone-content {
       display: flex;
       justify-content: flex-end;
+      flex-wrap: wrap;
+      align-items: center;
 
       .smart-search {
-        flex: 1 1 auto;
+        flex: 1 1 100%;
       }
 
       @media @sm {
+        flex-wrap: nowrap;
         .smart-search {
           flex: none;
         }
@@ -978,32 +980,29 @@ body.nav-open {
       }
     }
 
-    .zone-content > .personal-links,
-    .zone-content > .reminder-links,
+    // .zone-content > .personal-links,
+    // .zone-content > .reminder-links,
     .zone-content > .smart-search {
       display: block;
       @media @sm {
         float: right;
       }
     }
+
   }
 
   .navbar-toggle {
-    position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: @navbarside-width;
-    height: @navbar-top-height;
+    width: 44px;
     padding: 0;
     margin: 0;
     font-size: 1.5em;
-    color: @navbar-top-color;
+    color: currentColor;
     cursor: pointer;
-
-    .navbar-side-open & {
-      position: fixed;
-    }
+    flex: 0 0 44px;
+    border: 0;
   }
 
   .navbar-nav.contextsetter,
@@ -1060,13 +1059,14 @@ body.nav-open {
     display: flex;
     align-items: center;
     width: 100%;
-    height: @navbar-element-height;
+    height: 36px;
     padding: 0;
-    margin: @navbar-element-margin 0;
+    margin: 0;
     font-size: .875em;
     border: 0;
 
-    @media (min-width: @screen-sm-min) {
+    @media (min-width: @grid-float-breakpoint) {
+      height: @navbar-element-height;
       width: 340px;
     }
 
@@ -1095,7 +1095,8 @@ body.nav-open {
     }
 
     .tt-hint {
-      padding: 14.5px 4px 4px 34px;
+      height: 100%;
+      padding: 0 0 0 34px;
       color: @navbar-top-color;
       opacity: .5;
     }
@@ -1119,7 +1120,7 @@ body.nav-open {
         display: flex;
         align-items: center;
         padding: 0 18px;
-        color: @navbar-top-color;
+        color: currentColor;
 
         @media (max-width: @screen-sm-max) {
           padding: 0 8px;
@@ -1130,8 +1131,8 @@ body.nav-open {
 
         .profile-photo {
           float: left;
-          width: 36px;
-          height: 36px;
+          width: 32px;
+          height: 32px;
           background-repeat: no-repeat;
           background-size: cover;
           border-radius: 50%;
@@ -1165,7 +1166,7 @@ body.nav-open {
         left: auto;
         @media (max-width: @screen-xs-max) {
           position: absolute;
-          top: @navbar-top-height;
+          top: var(--top-header-height);
           left: 0;
           z-index: 1000;
           background-color: var(--brand-primary);
@@ -1209,365 +1210,43 @@ body.nav-open {
     flex-direction: row-reverse;
     align-items: center;
     width: 100%;
-    margin-left: @navbarside-width;
   }
+
+  @media (max-width: @grid-float-breakpoint-max) {
+    .block-instance .dropdown-menu {
+      right: 0;
+      left: auto;
+    }
+  }
+
 }
 
-.navbar-brand-side {
-  height: (@navbarside-width * .325) + (24 * 2);
-  color: @white;
+.navbar-side-open {
+  @media (max-width: @grid-float-breakpoint-max) {
+    .zone-content > .personal-links,
+    .zone-content > .reminder-links {
+      position: fixed;
+      display: block !important;
+      top: 60px;
+      right: 4px;
+    }
 
-  &.no-logo::after {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    content: "";
-    background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: (@navbarside-width * .525);
-  }
-
-  .logo {
-    width: 48px;
-    height: 48px;
-    margin: 3px 0;
-  }
-
-  @media (min-width: @screen-sm-min) {
-    display: none;
+    .zone-content > .reminder-links {
+      right: 44px
+    }
   }
 }
 
 #content-wrapper {
   position: relative;
 
+  @media (min-width: @grid-float-breakpoint) {
+    margin-left: @navbarside-width;
+  }
+
   > .row {
     margin-right: 0;
     margin-left: 0;
-  }
-}
-
-.navbar-side-open {
-  &::before {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    width: @navbarside-width;
-    content: "";
-    background-color: @navbarside-background-color;
-    background-color: var(--navbarside-background-color);
-  }
-}
-
-.navbar-static-side {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  z-index: @zindex-navbar-fixed - 5;
-  display: none;
-  width: @navbarside-width;
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  color: @navbarside-color;
-  background-color: @navbarside-background-color;
-  background-color: var(--navbarside-background-color);
-
-  .nav-open & {
-    z-index: 2000;
-  }
-
-  &::-webkit-scrollbar {
-    width: 6px;
-    background-color: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    width: 6px;
-    background-color: rgba(0,0,0, .2);
-    border-radius: 10px;
-  }
-
-  &.open-secondary-nav {
-    width: @navbarside-width + 280px;
-
-    &::-webkit-scrollbar-thumb {
-      background-color: rgba(0,0,0,0);
-    }
-  }
-
-  @media (min-width: @screen-sm-min) {
-    top: @navbar-top-height;
-    margin-top: 0;
-  }
-
-  // Disable Bootstrap Toggle Animation
-  &.collapsing {
-    display: none;
-    -webkit-transition: none;
-    transition: none;
-  }
-
-  .navbar-toggle-side-left {
-    display: block;
-    height: @navbar-top-height;
-    padding-top: 22px;
-    padding-left: @navbarside-width * .37;
-    font-size: 1.5em;
-    cursor: pointer;
-    border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
-
-    @media (min-width: @screen-sm-min) {
-      display: none;
-    }
-  }
-
-  .navbar-side {
-    cursor: default;
-
-    .navbar-logo {
-      @media (min-width: @screen-sm-min) {
-        display: none;
-      }
-
-      a:hover {
-        background-color: @navbarside-background-color;
-        background-color: var(--navbarside-background-color);
-      }
-    }
-
-    & > li {
-      width: @navbarside-width;
-      margin-top: 0;
-      text-align: center;
-      cursor: pointer;
-      border-top: 1px solid lighten(@navbarside-background-color, 7%);
-
-      &:last-child {
-        border-bottom: 1px solid lighten(@navbarside-background-color, 7%);
-      }
-
-      &:first-child {
-        border-top: 0;
-      }
-
-      > i {
-        display: block;
-        padding: 24px 0;
-        font-size: @navbarside-width * .325;
-
-        &:hover {
-          color: @navbarside-color;
-        }
-      }
-
-      &:hover,
-      &.open {
-        background-color: @navbarside-sub-bg;
-        box-shadow: inset 3px 0 0 0 @brand-primary;
-      }
-
-      &.open {
-        @media @sm {
-          &::before {
-            position: absolute;
-            top: -(ceil(@navbarside-width * .35));
-            right: 0;
-            width: ceil(@navbarside-width * .35);
-            height: ceil(@navbarside-width * .35);
-            content: " ";
-          }
-
-          &::after {
-            position: absolute;
-            right: 0;
-            bottom: -(ceil(@navbarside-width * .35));
-            z-index: 1;
-            width: ceil(@navbarside-width * .35);
-            height: ceil(@navbarside-width * .35);
-            content: " ";
-          }
-        }
-      }
-
-      &.current,
-      &.current:hover {
-        box-shadow: inset 3px 0 0 0 @brand-primary;
-        > i {
-          color: @white;
-        }
-      }
-
-      .nav-childpages {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: @navbarside-width;
-        display: none;
-        width: 280px;
-        padding: 0 10px 0 12px;
-        overflow-x: hidden;
-        overflow-y: auto;
-        text-align: left;
-        background-color: @navbarside-sub-bg;
-
-
-        /* Fix for https://bugs.webkit.org/show_bug.cgi?id=160953 Safari 10.1+ */
-        @media not all and (min-resolution: .001dpcm) and (min-width: @screen-sm-min) {
-          @supports (-webkit-appearance:none) {
-            top: @navbar-top-height;
-          }
-        }
-
-
-        li {
-
-          a {
-            padding: 0;
-            line-height: 2.5;
-            color: @navbarside-color;
-
-            &::before {
-              display: inline-block;
-              width: 0;
-              height: 8px;
-              margin-right: 14px;
-              margin-bottom: 1px;
-              content: " ";
-              background: @brand-primary;
-            }
-
-            &:focus {
-              color: @nav-sub-text-rollover-color;
-              background-color: @nav-sub-text-rollover-bg;
-            }
-
-            &:hover {
-              color: @white;
-              background-color: @navbarside-sub-bg;
-
-              &::before {
-                width: 8px;
-                padding-left: 8px;
-                margin-right: 6px;
-              }
-            }
-          }
-
-          &.current {
-            a {
-              font-weight: 600;
-              color: @white;
-              &::before {
-                width: 8px;
-                padding-left: 8px;
-                margin-right: 6px;
-              }
-            }
-          }
-
-          &.title {
-            padding: 24px 20px 27px;
-            margin: 0 -20px;
-            font-size: @font-size-h1;
-            font-weight: @font-weight-light;
-            line-height: 1;
-            color: @navbarside-color;
-          }
-
-          &.header {
-            padding-top: 11px;
-            padding-left: 5px !important;
-            margin-top: 24px;
-            margin-bottom: (@line-height-computed / 2);
-            font-size: @font-size-xs;
-            font-weight: 600;
-            line-height: 1;
-            color: rgba(167,174,181,.6);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-top: 1px solid rgba(167,174,181,.6);
-
-            &:nth-child(2) {
-              margin-top: 0;
-            }
-          }
-
-          &:last-child {
-            margin-bottom: 72px;
-          }
-        }
-
-
-        &::-webkit-scrollbar {
-          width: 10px;
-          background-color: transparent;
-        }
-
-        &::-webkit-scrollbar-thumb {
-          width: 10px;
-          background-color: rgba(0,0,0, .2);
-          border-radius: 10px;
-        }
-      }
-    }
-
-    > li.open {
-      .nav-childpages {
-        display: inline-block;
-
-        li.header {
-          padding-left: 0;
-        }
-      }
-    }
-  }
-
-  // Hide config-bar inside navigation since it is always cropped
-  .config-bar {
-    display: none !important;
-  }
-}
-
-
-.navbar-side-open #cms-admin-footer {
-  left: @navbarside-width;
-  width: auto;
-}
-
-@media (min-width: @screen-sm-min) {
-  #cms-admin-footer {
-    left: @navbarside-width;
-    width: auto;
-  }
-}
-
-// expanded view
-@media (min-width: @screen-sm-min) {
-  .navbar-static-side {
-    display: block;
-    height: ~"calc(100% - @{navbar-top-height})" !important; // Overrides collapse if window is resized
-  }
-
-  #content-wrapper {
-    margin-left: @navbarside-width;
-  }
-}
-
-// minimized view
-body.navbar-side-open {
-  .navbar-static-side {
-    display: block;
-  }
-
-  #content-wrapper {
-    margin-left: @navbarside-width;
   }
 }
 
@@ -1675,7 +1354,7 @@ body.navbar-side-open {
       padding: 0 @padding-base-horizontal;
     }
 
-    .login .btn {
+    .login-\(legacy\) .btn {
       display: block;
       width: 100%;
       margin: 18px 0 0;
@@ -1860,14 +1539,15 @@ body.navbar-side-open {
 
 
 .rock-bookmark {
+  --size: 32px;
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: @navbar-element-height;
-  height: @navbar-element-height;
-  margin: @navbar-element-margin 8px @navbar-element-margin 0;
-  font-size: 20px;
+  width: var(--size);
+  height: var(--size);
+  margin: 0 8px 0 0;
+  font-size: ~"calc(var(--size) * 0.5)";
   border-radius: @border-radius-base;
 
   &,
@@ -1881,7 +1561,7 @@ body.navbar-side-open {
     bottom: 0;
     right: 2px;
     text-align: right;
-    font-size: 12px;
+    font-size: ~"calc(var(--size) * 0.3)";
     font-weight: 700;
     text-shadow: -1px -1px 0 mix(@white, @brand-primary, 75%),  
     1px -1px 0 mix(@white, @brand-primary, 75%),
@@ -1913,7 +1593,9 @@ body.navbar-side-open {
     }
   }
 
-
+  @media (min-width: @grid-float-breakpoint) {
+    --size: @navbar-element-height;
+  }
 }
 
 // Move the debug timing table to the right so it's not hidden by the admin theme's left nav
@@ -2028,6 +1710,33 @@ body.navbar-side-open {
   transition: .2s color;
   &:hover {
     color: @brand-success;
+  }
+}
+
+@media (max-width: @grid-float-breakpoint-max) {
+  .main-content {
+    padding-left: 0;
+    padding-right: 0;
+
+    .page-header {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+  
+
+  #page-content {
+    overflow-x: hidden;
+    > .row {
+      margin-left: 0;
+      margin-right: 0;
+
+      > .col,
+      > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
   }
 }
 

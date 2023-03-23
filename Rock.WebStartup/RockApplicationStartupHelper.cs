@@ -129,6 +129,8 @@ namespace Rock.WebStartup
                 ShowDebugTimingMessage( "Initialize RockContext" );
             }
 
+            RockInstanceConfig.SetDatabaseIsAvailable( true );
+
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
             LogStartupMessage( "Configuring Date Settings" );
@@ -168,7 +170,7 @@ namespace Rock.WebStartup
             using ( var rockContext = new RockContext() )
             {
                 LogStartupMessage( "Loading Cache From Database" );
-                LoadCacheObjects( rockContext );
+                LoadEarlyCacheObjects( rockContext );
 
                 ShowDebugTimingMessage( "Load Cache Objects" );
 
@@ -290,68 +292,14 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// Loads the cache objects.
+        /// Loads the cache objects that are most likely required for basic
+        /// functionality. The rest of the cache will be hydrated on a
+        /// background task.
         /// </summary>
-        private static void LoadCacheObjects( RockContext rockContext )
+        private static void LoadEarlyCacheObjects( RockContext rockContext )
         {
-            // Cache all the entity types
-            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )
-            {
-                EntityTypeCache.Get( entityType );
-            }
-
-            // Cache all the Field Types
-            foreach ( var fieldType in new Rock.Model.FieldTypeService( rockContext ).Queryable().AsNoTracking() )
-            {
-                // improve performance of loading FieldTypeCache by doing LoadAttributes using an existing rockContext before doing FieldTypeCache.Get to avoid calling LoadAttributes with new context per FieldTypeCache
-                fieldType.LoadAttributes( rockContext );
-                FieldTypeCache.Get( fieldType );
-            }
-
-            var all = FieldTypeCache.All();
-
-            // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
-            var qualifiers = new Dictionary<int, Dictionary<string, string>>();
-            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable().AsNoTracking() )
-            {
-                try
-                {
-                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
-                    {
-                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
-                    }
-
-                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
-                }
-                catch ( Exception ex )
-                {
-                    var startupException = new RockStartupException( "Error loading cache objects", ex );
-                    LogError( startupException, null );
-                }
-            }
-
-            // Cache all the attributes, except for user preferences
-            var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" );
-            int? personUserValueEntityTypeId = EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
-            if ( personUserValueEntityTypeId.HasValue )
-            {
-                attributeQuery = attributeQuery.Where( a => !a.EntityTypeId.HasValue || a.EntityTypeId.Value != personUserValueEntityTypeId );
-            }
-
-            foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
-            {
-                // improve performance of loading AttributeCache by doing LoadAttributes using an existing rockContext before doing AttributeCache.Get to avoid calling LoadAttributes with new context per AttributeCache
-                attribute.LoadAttributes( rockContext );
-
-                if ( qualifiers.ContainsKey( attribute.Id ) )
-                {
-                    Rock.Web.Cache.AttributeCache.Get( attribute, qualifiers[attribute.Id] );
-                }
-                else
-                {
-                    Rock.Web.Cache.AttributeCache.Get( attribute, new Dictionary<string, string>() );
-                }
-            }
+            EntityTypeCache.All( rockContext );
+            FieldTypeCache.All( rockContext );
 
             // Force authorizations to be cached
             Rock.Security.Authorization.Get();
@@ -1093,12 +1041,21 @@ namespace Rock.WebStartup
         public static void ShowDebugTimingMessage( string message )
         {
             _debugTimingStopwatch.Stop();
+            ShowDebugTimingMessage( message, _debugTimingStopwatch.Elapsed.TotalMilliseconds );
+            _debugTimingStopwatch.Restart();
+        }
+
+        /// <summary>
+        /// Shows the debug timing message if running in a development environment
+        /// </summary>
+        /// <param name="message">The message describing the operation.</param>
+        /// <param name="duration">The duration of the operation in milliseconds.</param>
+        public static void ShowDebugTimingMessage( string message, double duration )
+        {
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
-                Debug.WriteLine( $"[{_debugTimingStopwatch.Elapsed.TotalMilliseconds,5:#0} ms] {message}" );
+                Debug.WriteLine( $"[{duration,5:#0} ms] {message}" );
             }
-
-            _debugTimingStopwatch.Restart();
         }
 
         /// <summary>

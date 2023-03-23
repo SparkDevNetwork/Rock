@@ -123,6 +123,16 @@ namespace Rock.ViewModels.Entities
         public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary>
+        /// Gets or sets the Persisted Schedule Id.
+        /// If this is null, then the DataView does not have a persisted schedule.
+        /// </summary>
+        /// <value>
+        /// A System.Int32 representing the Id of the Rock.Model.Schedule for this DataView.
+        /// If it does not have a persisted schedule, this value will be null.
+        /// </value>
+        public int? PersistedScheduleId { get; set; }
+
+        /// <summary>
         /// Gets or sets the persisted schedule interval minutes.
         /// If this is null, then the DataView is not persisted.
         /// </summary>

@@ -42,7 +42,7 @@
     import ViewPanel from "./DocumentTypeDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./DocumentTypeDetail/types";
+    import { NavigationUrlKey } from "./DocumentTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeBag";
     import { DocumentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeDetailOptionsBag";

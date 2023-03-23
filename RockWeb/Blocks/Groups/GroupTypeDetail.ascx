@@ -195,8 +195,6 @@
                                             Help="Check this option if groups of this type should support taking and tracking attendance." />
                                         <Rock:RockCheckBox ID="cbWeekendService" runat="server" Label="Weekend Service" Text="Yes"
                                             Help="Check this option if attendance in groups of this type should be counted towards attending a weekend service." />
-                                        <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
-                                            Help="Check this option if a notification should be sent to the group leaders of these group types reminding them to enter attendance information." />
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBoxList ID="cblScheduleTypes" runat="server" Label="Group Schedule Options" Help="The schedule option types to allow when editing groups of this type." />
@@ -213,6 +211,8 @@
                                             Help="This option will require that all attendance occurrences have a schedule." />
                                     </div>
                                 </div>
+
+
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcScheduleExclusions" runat="server" Label="Schedule Exclusions"
@@ -239,6 +239,32 @@
                                     <asp:ListItem Text="Device Printer" Value="1" />
                                     <asp:ListItem Text="Location Printer" Value="2" />
                                 </Rock:RockDropDownList>
+                            </div>
+
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
+                                    AutoPostBack="true" OnCheckedChanged="cbSendAttendanceReminder_CheckedChanged"
+                                    Help="Will enable the sending of automatic attendance reminders for all groups of this type." />
+
+                                <Rock:RockDropDownList ID="ddlAttendanceReminderCommunication" runat="server" Label="Attendance Reminder Communication Template"
+                                    Help="The communication template to use for sending attendance reminders." />
+
+                                <Rock:NumberBox ID="nbAttendanceReminderOffsetMinutes" runat="server" Label="Attendance Reminder Start Offset Minutes"
+                                    AppendText="minutes"
+                                    Help="The number of minutes before the group starts that the reminder should be sent if &quot;Send Attendance Reminder&quot; is checked.  By default, the &quot;Send Group Attendance Reminders&quot; job runs every 15 minutes and will only send reminders after this time has past for a given group." />
+                            </div>
+
+                            <div class="col-md-6">
+                                <Rock:RockCheckBoxList ID="cblAttendanceReminderFollowupDays" runat="server" Label="Attendance Reminder Follow-up Days" RepeatDirection="Horizontal" RepeatColumns="4"
+                                    Help="A list of days after the occurrence that a reminder should be sent if attendance has not been entered. The reminder will be sent at the same time as the original reminder.">
+                                    <asp:ListItem Text="1" Value="1" />
+                                    <asp:ListItem Text="2" Value="2" />
+                                    <asp:ListItem Text="3" Value="3" />
+                                    <asp:ListItem Text="4" Value="4" />
+                                    <asp:ListItem Text="5" Value="5" />
+                                    <asp:ListItem Text="6" Value="6" />
+                                    <asp:ListItem Text="7" Value="7" />
+                                </Rock:RockCheckBoxList>
                             </div>
                         </div>
                     </Rock:PanelWidget>

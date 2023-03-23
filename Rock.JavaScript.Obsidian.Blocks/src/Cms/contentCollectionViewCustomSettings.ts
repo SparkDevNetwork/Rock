@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, ref, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import CodeEditor from "@Obsidian/Controls/codeEditor";
@@ -36,7 +36,7 @@ import { FilterOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollect
 import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/customSettingsOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import FilterGrid from "./ContentCollectionView/filterGrid.partial";
-import { SortOrdersKey } from "./ContentCollectionView/types";
+import { SortOrdersKey } from "./ContentCollectionView/types.partial";
 import { alert } from "@Obsidian/Utility/dialogs";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { ContentCollectionListItemBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/contentCollectionListItemBag";
@@ -70,7 +70,7 @@ export default defineComponent({
     name: "Cms.ContentCollectionView.CustomSettings",
 
     components: {
-        Alert,
+        NotificationBox,
         CheckBox,
         CheckBoxList,
         CodeEditor,
@@ -264,7 +264,6 @@ export default defineComponent({
             // exist in the array of filters.
             for (const f of collectionFilters) {
                 if (!newFilters.some(a => a.sourceKey === f.value)) {
-                    console.log("filters missing", f, newFilters);
                     newFilters.push({
                         show: false,
                         sourceKey: f.value,
@@ -330,7 +329,7 @@ export default defineComponent({
     :saveText="saveButtonText"
     @save="onSave">
 
-    <Alert v-if="errorMessage"
+    <NotificationBox v-if="errorMessage"
         v-text="errorMessage"
         alertType="warning" />
 

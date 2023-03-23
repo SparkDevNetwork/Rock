@@ -45,10 +45,9 @@
            :title="modalTitle"
            saveText="Save"
            @save="onActionSave">
-        <Alert v-if="modalErrorMessage"
-               alertType="warning">
+        <NotificationBox v-if="modalErrorMessage" alertType="warning">
             {{ modalErrorMessage }}
-        </Alert>
+        </NotificationBox>
 
         <DropDownList v-model="actionType"
                       label="Action Type"
@@ -98,6 +97,7 @@
     border: 1px solid #c4c4c4;
     border-radius: 8px;
 }
+
 .action-item-count {
     display: flex;
     align-items: center;
@@ -166,7 +166,7 @@
 </style>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import DropDownList from "@Obsidian/Controls/dropDownList";

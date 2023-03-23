@@ -51,7 +51,7 @@
 
     const isLoading = ref(true);
     const isModalOpen = ref(true);
-    const entityTypeGuid = ref<Guid | null>(null);
+    const entityTypeGuid = ref<Guid | undefined>(undefined);
     const excludeCategories = ref<ListItemBag[] | null>();
     const rootCategory = ref<ListItemBag | null>();
     // #endregion
@@ -74,7 +74,7 @@
         const result = await invokeBlockAction<CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>>("GetCustomSettings");
 
         if (result.isSuccess && result.data && result.data.settings && result.data.options) {
-            entityTypeGuid.value = result.data.settings.entityTypeGuid ?? null;
+            entityTypeGuid.value = result.data.settings.entityTypeGuid ?? undefined;
             rootCategory.value = result.data.settings.rootCategory;
             excludeCategories.value = result.data.settings.excludeCategories;
 

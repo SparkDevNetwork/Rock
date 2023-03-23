@@ -1,0 +1,54 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="typeClass">
+        <button v-if="dismissible" type="button" class="close" aria-label="Hide This Alert" @click.prevent="dismiss">
+            <i class="fa fa-times" aria-hidden="true"></i>
+        </button>
+        <strong v-if="heading">{{ heading }}</strong>
+        <slot />
+        <small v-if="$slots.details" class="margin-l-sm">
+            <a href="#" @click.prevent="showDetails = !showDetails">Show&nbsp;Details</a>
+        </small>
+        <TransitionVerticalCollapse v-if="$slots.details">
+            <p class='margin-t-sm js-notification-details' v-if="showDetails">
+                <slot name="details" />
+            </p>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref } from "vue";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+
+    const props = defineProps({
+        dismissible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        alertType: {
+            type: String as PropType<LiteralUnion<AlertType>>,
+            default: AlertType.Default
+        },
+
+        /** Bold text that appears before the main message */
+        heading: {
+            type: String,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "dismiss"): void
+    }>();
+
+    function dismiss(): void {
+        emit("dismiss");
+    }
+
+    const typeClass = computed(() => `alert alert-${props.alertType}`);
+    const showDetails = ref(false);
+</script>

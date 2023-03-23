@@ -1,15 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockErrorMessage"
-           alertType="warning">
+    <NotificationBox v-if="blockErrorMessage"
+                     alertType="warning">
         {{ blockErrorMessage }}
-    </Alert>
+    </NotificationBox>
 
     <div ref="contentElement"></div>
 </template>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { LiveExperienceOccurrencesInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/LiveExperienceOccurrences/liveExperienceOccurrencesInitializationBox";
     import { computed, ref } from "vue";

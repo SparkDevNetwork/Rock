@@ -21,10 +21,11 @@
 // </copyright>
 //
 
-import { PhoneNumberBag } from "@Obsidian/ViewModels/Entities/phoneNumberBag";
-
 /** Information about a sign-up registrant. */
 export type SignUpRegistrantBag = {
+    /** Gets or sets whether to allow SMS messages to be sent to the registrant's mobile phone. */
+    allowSms: boolean;
+
     /** Gets or sets the registrant's communication preference. */
     communicationPreference: number;
 
@@ -34,14 +35,29 @@ export type SignUpRegistrantBag = {
     /** Gets or sets the registrant's first name. */
     firstName?: string | null;
 
+    /** Gets or sets the registrant's full name. */
+    fullName?: string | null;
+
+    /** Gets or sets whether this Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag instance represents a child. */
+    isChild: boolean;
+
+    /** Gets or sets whether this Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag instance represents the registrar. */
+    isRegistrar: boolean;
+
     /** Gets or sets the registrant's last name. */
     lastName?: string | null;
 
-    /** Gets or sets the registrant's mobile phone. */
-    mobilePhone?: PhoneNumberBag | null;
+    /** Gets or sets the registrant's mobile phone country code. */
+    mobilePhoneCountryCode?: string | null;
 
-    /** Gets or sets the registrant's person identifier. */
-    personId: number;
+    /** Gets or sets the registrant's mobile phone number. */
+    mobilePhoneNumber?: string | null;
+
+    /** Gets or sets the registrant's formatted mobile phone number. */
+    mobilePhoneNumberFormatted?: string | null;
+
+    /** Gets or sets the registrant's hashed person identifier key. */
+    personIdKey?: string | null;
 
     /** Gets or sets the registrant's unmet group requirements, if any. */
     unmetGroupRequirements?: string[] | null;

@@ -9,6 +9,7 @@
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
+                 :entityTypeGuid="emptyGuid"
                  entityTypeName="Web Farm Settings"
                  :isAuditHidden="false"
                  :isBadgesVisible="false"
@@ -33,7 +34,6 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import Alert from "@Obsidian/Controls/alert.obs";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
@@ -41,10 +41,11 @@
     import ViewPanel from "./WebFarmSettings/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./WebFarmSettings/types";
+    import { NavigationUrlKey } from "./WebFarmSettings/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { WebFarmSettingsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsBag";
     import { WebFarmSettingsDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsDetailOptionsBag";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();

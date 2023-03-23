@@ -81,11 +81,11 @@
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const status = propertyRef(props.modelValue.status ?? "1", "Status");
+    const status = propertyRef(props.modelValue.status?.toString() ?? "1", "Status");
     const batchStartDateTime = propertyRef(props.modelValue.batchStartDateTime ?? "", "BatchStartDateTime");
     const batchEndDateTime = propertyRef(props.modelValue.batchEndDateTime ?? "", "BatchEndDateTime");
     const controlAmount = propertyRef(props.modelValue.controlAmount ?? "", "ControlAmount");
-    const controlItemCount = propertyRef(props.modelValue.controlItemCount ?? "", "ControlItemCount");
+    const controlItemCount = propertyRef(props.modelValue.controlItemCount ?? null, "ControlItemCount");
     const accountingSystemCode = propertyRef(props.modelValue.accountingSystemCode ?? "", "AccountingCode");
     const note = propertyRef(props.modelValue.note ?? "", "Note");
 
@@ -119,11 +119,11 @@
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(status, props.modelValue.status ?? "1");
+        updateRefValue(status, props.modelValue.status?.toString() ?? "1");
         updateRefValue(batchEndDateTime, props.modelValue.batchEndDateTime ?? "");
         updateRefValue(batchStartDateTime, props.modelValue.batchStartDateTime ?? "");
         updateRefValue(controlAmount, props.modelValue.controlAmount ?? "");
-        updateRefValue(controlItemCount, props.modelValue.controlItemCount ?? "0");
+        updateRefValue(controlItemCount, props.modelValue.controlItemCount ?? null);
         updateRefValue(accountingSystemCode, props.modelValue.accountingSystemCode ?? "");
         updateRefValue(note, props.modelValue.note ?? "");
     });
@@ -135,7 +135,7 @@
             ...props.modelValue,
             attributeValues: attributeValues.value,
             name: name.value,
-            status: status.value,
+            status: toNumber(status.value),
             batchStartDateTime: batchStartDateTime.value,
             batchEndDateTime: batchEndDateTime.value,
             controlAmount: controlAmount.value,

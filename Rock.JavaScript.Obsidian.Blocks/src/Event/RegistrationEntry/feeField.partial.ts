@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";
@@ -25,7 +25,7 @@ import NumberUpDownGroup, { NumberUpDownGroupOption } from "@Obsidian/Controls/n
 import Number from "@Obsidian/Utility/numberUtils";
 import GuidHelper from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types";
+import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.FeeField",
@@ -34,7 +34,7 @@ export default defineComponent({
         NumberUpDownGroup,
         DropDownList,
         CheckBox,
-        Alert
+        NotificationBox
     },
     props: {
         modelValue: {
@@ -77,7 +77,7 @@ export default defineComponent({
                 return null;
             }
 
-            return this.fee.items[ 0 ];
+            return this.fee.items[0];
         },
         isHidden(): boolean {
             return !this.fee.items.length;
@@ -169,6 +169,6 @@ export default defineComponent({
     <NumberUpDown v-else-if="isNumberUpDown" :label="label" :min="0" :max="singleItem.countRemaining || 100" v-model="modelValue[singleItem.guid]" :rules="rules" />
     <DropDownList v-else-if="isDropDown" :label="label" :items="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
     <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="modelValue" :rules="rules" />
-    <Alert v-else alertType="danger">This fee configuration is not supported</Alert>
+    <NotificationBox v-else alertType="danger">This fee configuration is not supported</NotificationBox>
 </template>`
 });

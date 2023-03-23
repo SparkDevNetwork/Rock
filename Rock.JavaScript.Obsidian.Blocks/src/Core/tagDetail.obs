@@ -42,7 +42,7 @@
     import ViewPanel from "./TagDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./TagDetail/types";
+    import { NavigationUrlKey } from "./TagDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { TagBag } from "@Obsidian/ViewModels/Blocks/Core/TagDetail/tagBag";
     import { TagDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/TagDetail/tagDetailOptionsBag";

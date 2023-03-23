@@ -121,7 +121,34 @@ namespace RockWeb.Blocks.Groups
     public partial class GroupMemberDetail : RockBlock
     {
         #region Properties
+
         private List<GroupMemberAssignmentStateObj> GroupMemberAssignmentsState { get; set; }
+
+        private int? LocationId
+        {
+            get
+            {
+                return hfLocationId.Value.AsIntegerOrNull();
+            }
+        }
+
+        private int? ScheduleId
+        {
+            get
+            {
+                return hfScheduleId.Value.AsIntegerOrNull();
+            }
+        }
+
+        private bool IsSignUpMode
+        {
+            get
+            {
+                return this.LocationId.ToIntSafe() > 0
+                    && this.ScheduleId.ToIntSafe() > 0;
+            }
+        }
+
         #endregion
 
         private static class AttributeKey
@@ -156,7 +183,9 @@ namespace RockWeb.Blocks.Groups
             public const string CampusId = "CampusId";
             public const string GroupId = "GroupId";
             public const string GroupMemberId = "GroupMemberId";
+            public const string LocationId = "LocationId";
             public const string RegistrationId = "RegistrationId";
+            public const string ScheduleId = "ScheduleId";
         }
 
         #region Control Methods
@@ -245,7 +274,14 @@ namespace RockWeb.Blocks.Groups
             if ( !Page.IsPostBack )
             {
                 SetBlockOptions();
-                ShowDetail( PageParameter( PageParameterKey.GroupMemberId ).AsInteger(), PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull(), PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull() );
+                ShowDetail
+                (
+                    PageParameter( PageParameterKey.GroupMemberId ).AsInteger(),
+                    PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull(),
+                    PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull(),
+                    PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull(),
+                    PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull()
+                );
             }
             else
             {
@@ -411,15 +447,18 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupMemberId">The group member identifier.</param>
         public void ShowDetail( int groupMemberId )
         {
-            ShowDetail( groupMemberId, null, null );
+            ShowDetail( groupMemberId, null, null, null, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="groupMemberId">The group member identifier.</param>
-        /// <param name="groupId">The group id.</param>
-        public void ShowDetail( int groupMemberId, int? groupId, int? campusId )
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        public void ShowDetail( int groupMemberId, int? groupId, int? campusId, int? locationId, int? scheduleId )
         {
             // autoexpand the person picker if this is an add
             var personPickerStartupScript = @"Sys.Application.add_load(function () {
@@ -487,6 +526,16 @@ namespace RockWeb.Blocks.Groups
             if ( campusId.HasValue )
             {
                 hfCampusId.Value = campusId.Value.ToString();
+            }
+
+            if ( locationId.HasValue )
+            {
+                hfLocationId.Value = locationId.Value.ToString();
+            }
+
+            if ( scheduleId.HasValue )
+            {
+                hfScheduleId.Value = scheduleId.Value.ToString();
             }
 
             if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
@@ -648,7 +697,14 @@ namespace RockWeb.Blocks.Groups
                 fuSignedDocument.Visible = false;
             }
 
-            pnlScheduling.Visible = groupType.IsSchedulingEnabled;
+            /*
+             * 2/21/2023 - JPH
+             * If Location and Schedule IDs were provided in the query string, this block is being used in sign-up mode,
+             * meaning scheduling is managed differently; don't display scheduling controls.
+             * 
+             * Reason: Sign-Up Feature
+             */
+            pnlScheduling.Visible = groupType.IsSchedulingEnabled && !this.IsSignUpMode;
             ddlGroupMemberScheduleTemplate.SetValue( groupMember.ScheduleTemplateId );
             ddlGroupMemberScheduleTemplate_SelectedIndexChanged( null, null );
 
@@ -736,7 +792,7 @@ namespace RockWeb.Blocks.Groups
                                 ScheduleName = a.Schedule.Name,
                                 FormattedScheduleName = GetFormattedScheduleForListing( a.Schedule.Name, a.Schedule.StartTimeOfDay ),
                                 ScheduleOrder = a.Schedule.Order,
-                                ScheduleNextStartDateTime =  a.Schedule.GetNextStartDateTime( occurrenceDate )
+                                ScheduleNextStartDateTime = a.Schedule.GetNextStartDateTime( occurrenceDate )
                             } )
                             .ToList();
                 }
@@ -1012,6 +1068,19 @@ namespace RockWeb.Blocks.Groups
             if ( hfCampusId.Value.AsIntegerOrNull().HasValue )
             {
                 qryString[PageParameterKey.CampusId] = hfCampusId.Value;
+            }
+
+            /*
+             * 2/21/2023 - JPH
+             * If Location and Schedule IDs were provided in the query string, this block is being used in sign-up mode;
+             * send the IDs back to the parent page.
+             * 
+             * Reason: Sign-Up Feature
+             */
+            if ( this.IsSignUpMode )
+            {
+                qryString[PageParameterKey.LocationId] = hfLocationId.Value;
+                qryString[PageParameterKey.ScheduleId] = hfScheduleId.Value;
             }
 
             qryString[PageParameterKey.GroupId] = hfGroupId.Value;
@@ -1354,7 +1423,14 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( cvGroupMember.IsValid )
                 {
-                    ShowDetail( 0, hfGroupId.Value.AsIntegerOrNull(), hfCampusId.Value.AsIntegerOrNull() );
+                    ShowDetail
+                    (
+                        0,
+                        hfGroupId.Value.AsIntegerOrNull(),
+                        hfCampusId.Value.AsIntegerOrNull(),
+                        hfLocationId.Value.AsIntegerOrNull(),
+                        hfScheduleId.Value.AsIntegerOrNull()
+                    );
                 }
             }
         }
@@ -1399,15 +1475,40 @@ namespace RockWeb.Blocks.Groups
 
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                GroupMember groupMember;
+                GroupMember groupMember = null;
 
                 int groupMemberId = int.Parse( hfGroupMemberId.Value );
 
                 // if adding a new group member 
                 if ( groupMemberId.Equals( 0 ) )
                 {
-                    groupMember = new GroupMember { Id = 0 };
-                    groupMember.GroupId = group.Id;
+                    if ( this.IsSignUpMode )
+                    {
+                        /*
+                         * 2/21/2023 - JPH
+                         * Only create a new GroupMember record if one doesn't already exist for this project (Group) & Person combination.
+                         * It's possible they've already signed up for another occurrence (GroupLocationSchedule) within this same project.
+                         * 
+                         * Reason: Sign-Up Feature
+                         */
+                        groupMember = groupMemberService
+                            .Queryable()
+                            .Include( gm => gm.Person )
+                            .Where( gm =>
+                                gm.GroupId == group.Id
+                                && gm.PersonId == personId.Value
+                            )
+                            .FirstOrDefault();
+                    }
+
+                    if ( groupMember == null )
+                    {
+                        groupMember = new GroupMember
+                        {
+                            Id = 0,
+                            GroupId = group.Id
+                        };
+                    }
                 }
                 else
                 {
@@ -1484,7 +1585,48 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                if ( pnlScheduling.Visible )
+                if ( this.IsSignUpMode )
+                {
+                    /*
+                     * 2/21/2023 - JPH
+                     * If Location and Schedule IDs were provided in the query string, this block is being used in sign-up mode,
+                     * meaning scheduling is managed differently; create a GroupMemberAssignment record for this project (Group),
+                     * GroupMember, Location & Schedule combination, but only if one doesn't already exist (we might simply be
+                     * updating an existing GroupMember record).
+                     * 
+                     * Reason: Sign-Up Feature
+                     */
+                    var groupMemberAssignment = groupMemberAssignmentService
+                        .Queryable()
+                        .AsNoTracking()
+                        .FirstOrDefault( gma =>
+                            gma.GroupMember.GroupId == group.Id
+                            && gma.GroupMember.PersonId == personId.Value
+                            && gma.LocationId == LocationId.Value
+                            && gma.ScheduleId == ScheduleId.Value
+                        );
+
+                    if ( groupMemberAssignment == null )
+                    {
+                        groupMemberAssignment = new GroupMemberAssignment
+                        {
+                            LocationId = LocationId.Value,
+                            ScheduleId = ScheduleId.Value
+                        };
+
+                        if ( groupMember.Id == 0 )
+                        {
+                            groupMemberAssignment.GroupMember = groupMember;
+                        }
+                        else
+                        {
+                            groupMemberAssignment.GroupMemberId = groupMember.Id;
+                        }
+
+                        groupMemberAssignmentService.Add( groupMemberAssignment );
+                    }
+                }
+                else if ( pnlScheduling.Visible )
                 {
                     groupMember.ScheduleTemplateId = ddlGroupMemberScheduleTemplate.SelectedValue.AsIntegerOrNull();
                     groupMember.ScheduleStartDate = dpScheduleStartDate.SelectedDate;
@@ -1818,7 +1960,7 @@ namespace RockWeb.Blocks.Groups
             groupMemberAssignment.ScheduleName = schedule.Name;
             groupMemberAssignment.ScheduleOrder = schedule.Order;
             groupMemberAssignment.ScheduleNextStartDateTime = schedule.GetNextStartDateTime( occurrenceDate );
-            groupMemberAssignment.FormattedScheduleName = GetFormattedScheduleForListing(schedule.Name, schedule.StartTimeOfDay);
+            groupMemberAssignment.FormattedScheduleName = GetFormattedScheduleForListing( schedule.Name, schedule.StartTimeOfDay );
             groupMemberAssignment.LocationId = locationId;
             groupMemberAssignment.LocationName = ddlGroupScheduleAssignmentLocation.SelectedItem.Text;
 

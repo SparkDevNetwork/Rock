@@ -1112,6 +1112,48 @@ namespace Rock.Client.Enums.Blocks.Security.ConfirmAccount
         DeleteConfirmation = 0x2,
         ChangePassword = 0x3,
         Content = 0x4,
+    }
+}
+
+namespace Rock.Client.Enums.Event
+{
+    /// <summary>
+    /// </summary>
+    public enum AttendanceStatus
+    {
+        DidNotAttend = 0x0,
+        DidAttend = 0x1,
+        IsPresent = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceApprovalStatus
+    {
+        Pending = 0x0,
+        Approved = 0x1,
+        Rejected = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceCampusBehavior
+    {
+        FilterSchedulesByCampusGeofences = 0x0,
+        DetermineCampusFromGeofence = 0x1,
+        UseIndividualsCampus = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperiencePushNotificationType
+    {
+        Never = 0x0,
+        EveryAction = 0x1,
+        SpecificActions = 0x2,
+    }
+
+}
 
 namespace Rock.Client.Enums.Communication
 {
@@ -1211,37 +1253,6 @@ namespace Rock.Client.Enums.Reporting
 
 }
 
-namespace Rock.Client.Enums.Event
-{
-    /// <summary>
-    /// </summary>
-    public enum InteractiveExperienceApprovalStatus
-    {
-        Pending = 0x0,
-        Approved = 0x1,
-        Rejected = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum InteractiveExperienceCampusBehavior
-    {
-        FilterSchedulesByCampusGeofences = 0x0,
-        DetermineCampusFromGeofence = 0x1,
-        UseIndividualsCampus = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum InteractiveExperiencePushNotificationType
-    {
-        Never = 0x0,
-        EveryAction = 0x1,
-        SpecificActions = 0x2,
-    }
-
-}
-
 namespace Rock.Client.Enums.Blocks.Security.Login
 {
     /// <summary>
@@ -1283,7 +1294,7 @@ namespace Rock.Client.Enums.Blocks.Engagement.SignUp
     {
         Family = 0x0,
         Anonymous = 0x1,
-        Group = 0x3,
+        Group = 0x2,
     }
 
 }

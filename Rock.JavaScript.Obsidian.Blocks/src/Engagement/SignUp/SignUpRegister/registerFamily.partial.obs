@@ -1,0 +1,248 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!registrar" alertType="warning">
+        {{ unableToRegisterMsgPrefix }}.
+    </NotificationBox>
+
+    <div v-else>
+        <h3 v-if="props.title">{{ props.title }}</h3>
+
+        <div v-if="showRegistrarContactSummary" class="form-group">
+            <div v-if="registrar?.mobilePhoneNumberFormatted">
+                Mobile Phone: {{ registrar.mobilePhoneNumberFormatted }}
+            </div>
+
+            <div v-if="registrar?.email">
+                Email: {{ registrar?.email }}
+            </div>
+        </div>
+
+        <div v-if="registrarUnmetRequirements.length" class="form-group">
+            {{ unableToRegisterMsgPrefix }} as you don't currently meet the requirement(s) below:
+            <ul>
+                <li v-for="(requirement, i) in registrarUnmetRequirements" :key="`requirement-{i}`">
+                    {{ requirement }}
+                </li>
+            </ul>
+        </div>
+
+        <div v-else class="form-group">
+            <CheckBox v-model="registrar.willAttend"
+                      label=""
+                      text="I will attend"
+                      :disabled="isRegistering" />
+        </div>
+
+        <div v-if="anyEligibleRegistrants && props.communicationPreferenceItems.length">
+            <RadioButtonList v-model="registrarCommunicationPreference"
+                             label="Please send reminder using"
+                             :items="props.communicationPreferenceItems"
+                             :horizontal="true"
+                             :disabled="isRegistering" />
+
+            <div v-if="communicationPreferenceIsSms">
+                <PhoneNumberBox v-model="registrarMobilePhoneNumber"
+                                v-model:countryCode="registrarMobilePhoneCountryCode"
+                                label="Mobile Phone"
+                                class="input-max-w-xl"
+                                :disabled="isRegistering" />
+                <div class="form-group">
+                    The number provided will be updated on your personal profile with permissions to allow us to send SMS messages.
+                </div>
+            </div>
+
+            <div v-if="communicationPreferenceIsEmail">
+                <EmailBox v-model="registrarEmail"
+                          label="Email"
+                          class="input-max-w-xl"
+                          :disabled="isRegistering" />
+                <div class="form-group">
+                    The email provided will be updated on your personal profile.
+                </div>
+            </div>
+        </div>
+
+        <CheckBoxList v-if="eligibleFamilyMembers.length"
+                      v-model="registeredFamilyMembers"
+                      :label="registerFamilyMembersLabel"
+                      :items="eligibleFamilyMembers"
+                      :disabled="isRegistering"
+                      @update:modelValue="onRegisteredFamilyMembersChanged" />
+
+        <ListUnmetRequirements v-if="ineligibleFamilyMembers.length" :registrants="ineligibleFamilyMembers" groupTerm="family" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ListUnmetRequirements from "./listUnmetRequirements.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import EmailBox from "@Obsidian/Controls/emailBox";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        isRegistering: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        registrants: {
+            type: Array as PropType<SignUpRegistrantBag[]>,
+            required: true
+        },
+
+        anyEligibleRegistrants: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        communicationPreferenceItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string | null | undefined>,
+            default: ""
+        }
+    });
+
+    const unableToRegisterMsgPrefix = "We are unable to register you for this project";
+
+    // #region Computed Values
+
+    const registrar = computed((): SignUpRegistrantBag | null | undefined => {
+        return props.registrants?.find((r: SignUpRegistrantBag) => r.isRegistrar);
+    });
+
+    const showRegistrarContactSummary = computed((): boolean => {
+        return !!(registrar.value?.mobilePhoneNumberFormatted || registrar.value?.email);
+    });
+
+    const registrarUnmetRequirements = computed((): string[] => {
+        return registrar.value?.unmetGroupRequirements ?? [];
+    });
+
+    const registrarCommunicationPreference = computed<string | undefined>({
+        get() {
+            return registrar.value?.communicationPreference?.toString() ?? undefined;
+        },
+        set(newValue: string | undefined) {
+            if (registrar.value && newValue) {
+                if (newValue) {
+                    registrar.value.communicationPreference = +newValue;
+                }
+                else {
+                    registrar.value.communicationPreference = 0;
+                }
+            }
+        }
+    });
+
+    const communicationPreferenceIsSms = computed((): boolean => {
+        return registrarCommunicationPreference.value == "2";
+    });
+
+    const communicationPreferenceIsEmail = computed((): boolean => {
+        return registrarCommunicationPreference.value == "1";
+    });
+
+    const registrarMobilePhoneNumber = computed<string | undefined>({
+        get() {
+            return registrar.value?.mobilePhoneNumber ?? undefined;
+        },
+        set(newValue: string | undefined) {
+            if (registrar.value) {
+                registrar.value.mobilePhoneNumber = newValue;
+                registrar.value.allowSms = !!newValue;
+            }
+        }
+    });
+
+    const registrarMobilePhoneCountryCode = computed<string | undefined>({
+        get() {
+            return registrar.value?.mobilePhoneCountryCode ?? undefined;
+        },
+        set(newValue: string | undefined) {
+            if (registrar.value) {
+                registrar.value.mobilePhoneCountryCode = newValue;
+            }
+        }
+    });
+
+    const registrarEmail = computed<string>({
+        get() {
+            return registrar.value?.email ?? "";
+        },
+        set(newValue: string) {
+            if (registrar.value) {
+                registrar.value.email = newValue;
+            }
+        }
+    });
+
+    const nonRegistrarRegistrants = computed((): SignUpRegistrantBag[] => {
+        return props.registrants
+            ?.filter((r: SignUpRegistrantBag) =>
+                r?.isRegistrar === false
+                && r?.personIdKey
+                && r?.fullName
+            ) ?? [];
+    });
+
+    const eligibleFamilyMembers = computed((): ListItemBag[] => {
+        return nonRegistrarRegistrants.value
+            .filter((r: SignUpRegistrantBag) => !r.unmetGroupRequirements?.length)
+            .map((r: SignUpRegistrantBag) => ({
+                value: r.personIdKey,
+                text: r.fullName
+            }));
+    });
+
+    const registeredFamilyMembers = computed<string[]>({
+        get() {
+            return nonRegistrarRegistrants.value
+                .filter((r: SignUpRegistrantBag) => r.willAttend)
+                // r.personIdKey will never be null | undefined here, but TS is only happy if we use the nullish coalescing operator.
+                .map((r: SignUpRegistrantBag) => r.personIdKey ?? "");
+        },
+        set(newValue: string[]) {
+            nonRegistrarRegistrants.value
+                .forEach((r: SignUpRegistrantBag) => {
+                    r.willAttend = newValue.some((personIdKey: string) => personIdKey === r.personIdKey);
+                });
+        }
+    });
+
+    const ineligibleFamilyMembers = computed((): SignUpRegistrantBag[] => {
+        return nonRegistrarRegistrants.value
+            .filter((r: SignUpRegistrantBag) => r.unmetGroupRequirements?.length);
+    });
+
+    const registerFamilyMembersLabel = computed((): string => {
+        const registrarIsEligibleAndWillAttend = !registrarUnmetRequirements.value.length && registrar.value?.willAttend;
+        return `Please ${registrarIsEligibleAndWillAttend ? "also " : ""}sign-up the following family members`;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Synchronizes each family member's `SignUpRegistrantBag.willAttend` value when the control emits changes.
+     */
+    function onRegisteredFamilyMembersChanged(): void {
+        props.registrants
+            ?.filter((r: SignUpRegistrantBag) => r?.isRegistrar === false)
+            .forEach((r: SignUpRegistrantBag) => {
+                r.willAttend = registeredFamilyMembers.value.some((personIdKey: string) => personIdKey === r.personIdKey);
+            });
+    }
+
+    // #endregion
+</script>

@@ -57,7 +57,12 @@ namespace Rock.Model
                         if ( !Entity.ValidateGroupMembership( rockContext, out errorMessage ) )
                         {
                             var ex = new GroupMemberValidationException( errorMessage );
-                            ExceptionLogService.LogException( ex );
+                            /*
+                                3/14/2023 - CWR
+
+                            We should not log exceptions that are thrown here, just allow the exception to return to the calling block.
+                            Reason: Neither a person using Rock to add or change a group member, nor a Rock admin would be helped by a log exception here.
+                           */
                             throw ex;
                         }
                     }

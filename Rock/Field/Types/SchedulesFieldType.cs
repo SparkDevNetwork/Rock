@@ -34,7 +34,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SCHEDULES )]
-    public class SchedulesFieldType : FieldType, IEntityReferenceFieldType
+    public class SchedulesFieldType : FieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType
     {
         #region Formatting
 
@@ -150,6 +150,16 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<Schedule>().Value, nameof( Schedule.Name ) )
             };
+        }
+
+        #endregion
+
+        #region ISplitMultiValueFieldType
+
+        /// <inheritdoc/>
+        public ICollection<string> SplitMultipleValues( string privateValue )
+        {
+            return privateValue.Split( ',' );
         }
 
         #endregion

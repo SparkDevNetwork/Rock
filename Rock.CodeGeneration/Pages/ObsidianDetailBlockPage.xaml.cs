@@ -244,12 +244,12 @@ namespace Rock.CodeGeneration.Pages
                 files.Add( new GeneratedFile( $"editPanel.partial.obs", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
             }
 
-            // Generate the Obsidian <Entity>Detail\types.d.ts file.
+            // Generate the Obsidian <Entity>Detail\types.partial.ts file.
             content = tsGenerator.GenerateDetailBlockTypeDefinitionFile( new Dictionary<string, string>
             {
                 ["ParentPage"] = "ParentPage"
             } );
-            files.Add( new GeneratedFile( "types.d.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", content ) );
+            files.Add( new GeneratedFile( "types.partial.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", content ) );
 
             return files;
         }

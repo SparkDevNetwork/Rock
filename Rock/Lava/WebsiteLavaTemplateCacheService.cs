@@ -108,7 +108,16 @@ namespace Rock.Lava
 
             var result = engine.ParseTemplate( content );
 
-            var cacheEntry = new WebsiteLavaTemplateCache { Template = result.Template };
+            var cacheEntry = new WebsiteLavaTemplateCache();
+            if ( result.HasErrors )
+            {
+                // If the template is invalid, create a placeholder cache entry to prevent subsequent attempts to parse it.
+                cacheEntry.Template = engine.ParseTemplate( "#Error#" ).Template;
+            }
+            else
+            {
+                cacheEntry.Template = result.Template;
+            }
 
             return cacheEntry;
         }

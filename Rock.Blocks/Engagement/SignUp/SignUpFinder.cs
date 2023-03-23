@@ -226,7 +226,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [CodeEditorField( "Results Lava Template",
         Key = AttributeKey.ResultsLavaTemplate,
-        Description = "The Lava template to use to show the results of the search.",
+        Description = "The Lava template to use to show the results of the search. Merge fields include: Projects. <span class='tip tip-lava'></span>",
         Category = AttributeCategory.CustomSetting,
         EditorMode = CodeEditorMode.Lava,
         EditorHeight = 400,
@@ -326,7 +326,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 <div class=""card h-100"">
                     <div class=""card-body"">
                         <h3 class=""card-title mt-0"">{{ project.Name }}</h3>
-                        {% if project.ScheduleName != empty %}
+                        {% if project.ScheduleName and project.ScheduleName != empty %}
                             <p class=""card-subtitle text-muted mb-3"">{{ project.ScheduleName }}</p>
                         {% endif %}
                         <p class=""mb-2"">{{ project.FriendlySchedule }}</p>
@@ -342,21 +342,23 @@ namespace Rock.Blocks.Engagement.SignUp
                                 &nbsp;
                             {% endif %}
                         </div>
-                        {% if project.MapCenter != empty %}
+                        {% if project.MapCenter and project.MapCenter != empty %}
                             <div class=""mb-3"">
                                 {[ googlestaticmap center:'{{ project.MapCenter }}' zoom:'15' ]}
                                 {[ endgooglestaticmap ]}
                             </div>
                         {% endif %}
-                        {% if project.Description != empty %}
+                        {% if project.Description and project.Description != empty %}
                             <p class=""card-text"">
                                 {{ project.Description }}
                             </p>
                         {% endif %}
                     </div>
                     <div class=""card-footer bg-white border-0"">
-                        <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs pl-0 text-muted"">Details</a>
-                        <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-warning btn-xs pull-right"">Register</a>
+                        {% if project.ShowRegisterButton == true %}
+                            <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-primary btn-xs"">Register</a>
+                        {% endif %}
+                        <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs"">Details</a>
                     </div>
                 </div>
             </div>
@@ -370,7 +372,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
             public const string ResultsHeaderLavaTemplate = @"<h3>Results</h3>
 <p>Below is a listing of the projects that match your search results.</p>
-<hr class=""mb-5"" />";
+<hr>";
         }
 
         private static class FilterDisplayType
@@ -408,7 +410,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             get
             {
-                return RequestContext.CurrentUser?.IsAuthenticated == true;
+                return this.RequestContext.CurrentUser?.IsAuthenticated == true;
             }
         }
 
@@ -436,7 +438,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialState( SignUpFinderInitializationBox box, RockContext rockContext )
         {
-            var block = new BlockService( rockContext ).Get( BlockId );
+            var block = new BlockService( rockContext ).Get( this.BlockId );
             block.LoadAttributes( rockContext );
 
             box.LoadResultsOnInitialPageLoad = GetAttributeValue( AttributeKey.LoadResultsOnInitialPageLoad ).AsBoolean();
@@ -571,7 +573,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 return null;
             }
 
-            var pageContextCampus = RequestContext.GetContextEntity<Campus>();
+            var pageContextCampus = this.RequestContext.GetContextEntity<Campus>();
             if ( pageContextCampus == null )
             {
                 return null;
@@ -690,7 +692,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 group.LoadAttributes( rockContext );
 
                 // Note that we're not enforcing security here, as the public-facing individual performing the search would most likely be restricted.
-                var attributeFilterItems = group.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: shouldAddAttribute );
+                var attributeFilterItems = group.GetPublicAttributesForEdit( this.RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: shouldAddAttribute );
 
                 if ( attributeFilterItems.Any() )
                 {
@@ -801,7 +803,7 @@ namespace Rock.Blocks.Engagement.SignUp
                  *  3) Alisha Marble enables both of these project types for this block instance AND allows filtering against Project Type A's "Transportation is Provided" attribute;
                  *  4) A public-facing individual comes along and performs a search for projects where transportation is provided, but they unknowingly receive
                  *     a list of results that include projects from Project Type A (where transportation is provided) AND Project Type B (where transportation
-                 *     is NOT provided. They might accidentally sign up for a project from Project Type B thinking that transportation will be provided for them.
+                 *     is NOT provided). They might accidentally sign up for a project from Project Type B thinking that transportation will be provided for them.
                  * 
                  * This is not ideal, but not a scenario we're solving for in V1 of this feature; we might circle back in the future to improve this experience.
                  * 
@@ -896,27 +898,47 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             // Filter by date range.
+            DateTime fromDateTime = RockDateTime.Now;
+            DateTime? toDateTime = null;
+
             if ( ( selectedFilters.StartDate.HasValue || selectedFilters.EndDate.HasValue )
                 && GetAttributeValue( AttributeKey.DisplayDateRange ).AsBoolean() )
             {
-                if ( selectedFilters.StartDate.HasValue )
+                // This block shouldn't display past opportunities, since its goal is to get individuals to sign up.
+                if ( selectedFilters.StartDate.HasValue && selectedFilters.StartDate.Value > fromDateTime )
                 {
-                    qryGroupLocationSchedules = qryGroupLocationSchedules
-                        .Where( gls => gls.Schedule.EffectiveStartDate.HasValue && gls.Schedule.EffectiveStartDate >= selectedFilters.StartDate );
+                    fromDateTime = selectedFilters.StartDate.Value;
                 }
 
                 if ( selectedFilters.EndDate.HasValue )
                 {
-                    qryGroupLocationSchedules = qryGroupLocationSchedules
-                        .Where( gls => gls.Schedule.EffectiveEndDate.HasValue && gls.Schedule.EffectiveEndDate < selectedFilters.EndDate );
+                    /*
+                     * Set this to the end of the selected day to perform a search fully-inclusive of the day the individual
+                     * selected. Note also that we cannot apply this filter during the query phase; we need to wait until we
+                     * materialize Schedule objects so we can compare this value to Schedule.NextStartDateTime, which is a
+                     * runtime-calculated value. If we instead applied this filter to the Schedule.EffectiveEndDate, we could
+                     * accidentally rule out opportunities for which the individual might otherwise be interested in signing up.
+                     * We'll apply this filter value below.
+                     */
+                    toDateTime = selectedFilters.EndDate.Value.EndOfDay();
                 }
             }
-            else
-            {
-                // Default date range filter.
-                qryGroupLocationSchedules = qryGroupLocationSchedules
-                    .Where( gls => !gls.Schedule.EffectiveEndDate.HasValue || gls.Schedule.EffectiveEndDate >= RockDateTime.Now );
-            }
+
+            /*
+             * Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveEndDates, which hold
+             * only a date value (without the time component). Return any Schedules whose EffectiveEndDate:
+             *  1) is not defined (this should never happen, but get them just in case), OR
+             *  2) is greater than or equal to the "from" date being filtered against.
+             * 
+             * We'll do this to rule out any Schedules that have already ended, therefore making the initial results record set smaller,
+             * since we still have to do additional Schedule-based filtering below: once we materialize the Schedule objects, we'll use their
+             * runtime-calculated "Start[Date]Time" properties and methods to ensure we're only showing Schedules that actually qualify to
+             * be shown, based on the DateTime filter criteria provided to this method (either RockDateTime.Now OR the "from" date selected
+             * by the individual performing the search).
+             */
+            DateTime fromDate = fromDateTime.Date;
+            qryGroupLocationSchedules = qryGroupLocationSchedules
+                .Where( gls => !gls.Schedule.EffectiveEndDate.HasValue || gls.Schedule.EffectiveEndDate >= fromDate );
 
             // Get all participant counts for all filtered opportunities; we'll hook them up to their respective opportunities below.
             var participantCounts = new GroupMemberAssignmentService( rockContext )
@@ -949,7 +971,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 .ToList() // Execute the query; we have additional filtering that needs to happen once we materialize these objects.
                 .Select( gls =>
                 {
-                    var particpantCount = participantCounts.FirstOrDefault( c =>
+                    var participantCount = participantCounts.FirstOrDefault( c =>
                         c.GroupId == gls.Group.Id
                         && c.LocationId == gls.Location.Id
                         && c.ScheduleId == gls.Schedule.Id
@@ -957,25 +979,37 @@ namespace Rock.Blocks.Engagement.SignUp
 
                     return new Opportunity
                     {
-                        Group = gls.Group,
+                        Project = gls.Group,
                         Location = gls.Location,
                         Schedule = gls.Schedule,
-                        LastStartDateTime = gls.Schedule.EffectiveEndDate,
                         NextStartDateTime = gls.Schedule.NextStartDateTime,
                         ScheduleName = gls.Config?.ConfigurationName,
                         SlotsMin = gls.Config?.MinimumCapacity,
                         SlotsDesired = gls.Config?.DesiredCapacity,
                         SlotsMax = gls.Config?.MaximumCapacity,
-                        ParticipantCount = particpantCount,
+                        ParticipantCount = participantCount,
                         GeoPoint = gls.Location.GeoPoint
                     };
-                } )
-                .ToList();
+                } );
+
+            /*
+             * Now that we have materialized Schedule objects in memory, let's further apply DateTime filtering using the Schedules' runtime-calculated
+             * "NextStartDateTime" property values; only show Schedules that have current or upcoming start DateTimes.
+             */
+            opportunities = opportunities
+                .Where( o =>
+                    o.NextStartDateTime.HasValue
+                    && o.NextStartDateTime.Value >= fromDateTime
+                    && (
+                        !toDateTime.HasValue // The individual didn't select an end date.
+                        || o.NextStartDateTime.Value < toDateTime.Value // The project's [next] start date time is less than the [end of the] end date they selected.
+                    )
+                );
 
             // Filter by slots available.
             if ( GetAttributeValue( AttributeKey.HideOvercapacityProjects ).AsBoolean() )
             {
-                opportunities = opportunities.Where( o => o.SlotsAvailable > 0 ).ToList();
+                opportunities = opportunities.Where( o => o.SlotsAvailable > 0 );
             }
 
             if ( selectedFilters.SlotsAvailable.GetValueOrDefault() > 0
@@ -997,8 +1031,7 @@ namespace Rock.Blocks.Engagement.SignUp
                             default:
                                 return false;
                         }
-                    } )
-                    .ToList();
+                    } );
             }
 
             /* 
@@ -1012,6 +1045,9 @@ namespace Rock.Blocks.Engagement.SignUp
                 || sortByProvidedLocation
                 || filterByProvidedRange;
 
+            // Go ahead and materialize this list so we don't enumerate through the above filters multiple times.
+            var filteredOpportunities = opportunities.ToList();
+
             if ( calculateDistances )
             {
                 /* 
@@ -1020,13 +1056,13 @@ namespace Rock.Blocks.Engagement.SignUp
                  */
                 var throwIfUnsuccessful = sortByProvidedLocation || filterByProvidedRange;
 
-                CalculateDistances( rockContext, opportunities, selectedFilters.LocationSort, throwIfUnsuccessful );
+                CalculateDistances( rockContext, filteredOpportunities, selectedFilters.LocationSort, throwIfUnsuccessful );
             }
 
             // Filter by location range.
             if ( filterByProvidedRange )
             {
-                opportunities = opportunities
+                filteredOpportunities = filteredOpportunities
                     .Where( o =>
                         o.DistanceInMiles.HasValue
                         && o.DistanceInMiles <= selectedFilters.LocationRange.Value
@@ -1035,14 +1071,14 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             // Sort.
-            List<Opportunity> sortedOpportunties = opportunities
+            List<Opportunity> sortedOpportunities = filteredOpportunities
                 .OrderBy( o => o.DistanceInMiles.HasValue ? o.DistanceInMiles : double.MaxValue )
-                .ThenBy( o => o.NextOrLastStartDateTime ?? DateTime.MaxValue )
+                .ThenBy( o => o.NextStartDateTime ?? DateTime.MaxValue )
                 .ThenBy( o => o.ProjectName )
                 .ThenByDescending( o => o.ParticipantCount )
                 .ToList();
 
-            return sortedOpportunties;
+            return sortedOpportunities;
         }
 
         /// <summary>
@@ -1053,11 +1089,11 @@ namespace Rock.Blocks.Engagement.SignUp
         private string GetResultsHtml( List<Opportunity> opportunities )
         {
             var lavaTemplate = GetAttributeValue( AttributeKey.ResultsLavaTemplate );
-            var mergeFields = RequestContext.GetCommonMergeFields();
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
 
             var projects = opportunities.Select( o =>
             {
-                var projectIdKey = o.Group.IdKey;
+                var projectIdKey = o.Project.IdKey;
                 var locationIdKey = o.Location.IdKey;
                 var scheduleIdKey = o.Schedule.IdKey;
 
@@ -1079,7 +1115,7 @@ namespace Rock.Blocks.Engagement.SignUp
         private string GetResultsHeaderHtml()
         {
             var lavaTemplate = GetAttributeValue( AttributeKey.ResultsHeaderLavaTemplate );
-            var mergeFields = RequestContext.GetCommonMergeFields();
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
 
             return lavaTemplate.ResolveMergeFields( mergeFields );
         }
@@ -1159,7 +1195,7 @@ namespace Rock.Blocks.Engagement.SignUp
             }
             else if ( this.IsAuthenticated )
             {
-                var person = RequestContext.CurrentPerson;
+                var person = this.RequestContext.CurrentPerson;
                 if ( person != null )
                 {
                     var homeLocation = person.GetHomeLocation();
@@ -1278,20 +1314,20 @@ namespace Rock.Blocks.Engagement.SignUp
         /// Gets the linked page URL.
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="projectIdkey">The project hashed identifier key.</param>
+        /// <param name="projectIdKey">The project hashed identifier key.</param>
         /// <param name="locationIdKey">The location hashed identifier key.</param>
         /// <param name="scheduleIdKey">The schedule hashed identifier key.</param>
         /// <returns>The linked page URL or "#" if a given linked page attribute is not set.</returns>
-        private string GetLinkedPageUrl( string attributeKey, string projectIdkey, string locationIdKey, string scheduleIdKey )
+        private string GetLinkedPageUrl( string attributeKey, string projectIdKey, string locationIdKey, string scheduleIdKey )
         {
-            if ( string.IsNullOrWhiteSpace( GetAttributeValue( attributeKey) ) )
+            if ( string.IsNullOrWhiteSpace( GetAttributeValue( attributeKey ) ) )
             {
                 return "#";
             }
 
             var queryParams = new Dictionary<string, string>
             {
-                { PageParameterKey.ProjectId, projectIdkey },
+                { PageParameterKey.ProjectId, projectIdKey },
                 { PageParameterKey.LocationId, locationIdKey },
                 { PageParameterKey.ScheduleId, scheduleIdKey }
             };
@@ -1328,7 +1364,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var actions = new List<BlockCustomActionBag>();
 
-            if ( BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            if ( BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
             {
                 actions.Add( new BlockCustomActionBag
                 {
@@ -1356,7 +1392,7 @@ namespace Rock.Blocks.Engagement.SignUp
             using ( var rockContext = new RockContext() )
             {
                 // Load block attributes, as we're going to double-check the provided guid strings against those available according to the settings.
-                var block = new BlockService( rockContext ).Get( BlockId );
+                var block = new BlockService( rockContext ).Get( this.BlockId );
                 block.LoadAttributes( rockContext );
 
                 return ActionOk( GetAttributeFilterItems( rockContext, selectedProjectTypeGuidStrings ) );
@@ -1369,7 +1405,7 @@ namespace Rock.Blocks.Engagement.SignUp
             using ( var rockContext = new RockContext() )
             {
                 // Load block attributes, as we're going to double-check that each type of filtering is allowed according to the settings.
-                var block = new BlockService( rockContext ).Get( BlockId );
+                var block = new BlockService( rockContext ).Get( this.BlockId );
                 block.LoadAttributes( rockContext );
 
                 var opportunities = GetOpportunities( rockContext, bag );
@@ -1393,7 +1429,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             using ( var rockContext = new RockContext() )
             {
-                if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
                 {
                     return ActionForbidden( "Not authorized to edit block settings." );
                 }
@@ -1486,12 +1522,12 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             using ( var rockContext = new RockContext() )
             {
-                if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
                 {
                     return ActionForbidden( "Not authorized to edit block settings." );
                 }
 
-                var block = new BlockService( rockContext ).Get( BlockId );
+                var block = new BlockService( rockContext ).Get( this.BlockId );
                 block.LoadAttributes( rockContext );
 
                 #region Layout / Initial Page Load
@@ -1608,18 +1644,16 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <summary>
         /// This POCO will be used to hold project opportunity instances (GroupLocationSchedules), against which we'll perform filtering.
         /// <para>
-        /// It will also provide convenience properties for the final, Lava class, <see cref="Project"/> to easily pick from.
+        /// It will also provide convenience properties for the final, Lava class, <see cref="SignUpFinder.Project"/> to easily pick from.
         /// </para>
         /// </summary>
         private class Opportunity
         {
-            public Group Group { get; set; }
+            public Group Project { get; set; }
 
             public Location Location { get; set; }
 
             public Schedule Schedule { get; set; }
-
-            public DateTime? LastStartDateTime { get; set; }
 
             public DateTime? NextStartDateTime { get; set; }
 
@@ -1641,7 +1675,7 @@ namespace Rock.Blocks.Engagement.SignUp
             {
                 get
                 {
-                    return this.Group?.Name;
+                    return this.Project?.Name;
                 }
             }
 
@@ -1649,17 +1683,17 @@ namespace Rock.Blocks.Engagement.SignUp
             {
                 get
                 {
-                    return this.Group?.Description;
+                    return this.Project?.Description;
                 }
             }
 
-            public DateTime? NextOrLastStartDateTime
+            public bool ScheduleHasFutureStartDateTime
             {
                 get
                 {
-                    return this.NextStartDateTime.HasValue
-                        ? this.NextStartDateTime
-                        : this.LastStartDateTime;
+                    return this.Schedule != null
+                        && this.Schedule.NextStartDateTime.HasValue
+                        && this.Schedule.NextStartDateTime.Value >= RockDateTime.Now;
                 }
             }
 
@@ -1667,11 +1701,16 @@ namespace Rock.Blocks.Engagement.SignUp
             {
                 get
                 {
-                    var friendlySchedule = this.NextOrLastStartDateTime?.ToString( "dddd, MMM d h:mm tt" );
-
-                    if ( this.NextOrLastStartDateTime.HasValue && this.NextOrLastStartDateTime.Value.Year != RockDateTime.Now.Year )
+                    if ( !this.ScheduleHasFutureStartDateTime )
                     {
-                        friendlySchedule = $"{friendlySchedule} ({this.NextOrLastStartDateTime.Value.Year})";
+                        return "No upcoming occurrences.";
+                    }
+
+                    var friendlySchedule = this.NextStartDateTime.Value.ToString( "dddd, MMM d h:mm tt" );
+
+                    if ( this.NextStartDateTime.Value.Year != RockDateTime.Now.Year )
+                    {
+                        friendlySchedule = $"{friendlySchedule} ({this.NextStartDateTime.Value.Year})";
                     }
 
                     return friendlySchedule;
@@ -1682,8 +1721,13 @@ namespace Rock.Blocks.Engagement.SignUp
             {
                 get
                 {
+                    if ( !this.ScheduleHasFutureStartDateTime )
+                    {
+                        return 0;
+                    }
+
                     /*
-                     * This more complex approach uses a dynamic/floating minuend (the first number in a subtraction problem):
+                     * This more complex approach uses a dynamic/floating minuend:
                      * 1) If the max value is defined, use that;
                      * 2) Else, if the desired value is defined, use that;
                      * 3) Else, if the min value is defined, use that;
@@ -1698,24 +1742,26 @@ namespace Rock.Blocks.Engagement.SignUp
                     //            : int.MaxValue;
 
                     /*
-                     * This approach still uses a dynamic minuend, but it's much simpler:
-                     * 1) If the max value is defined, use that;
-                     * 2) Else, use int.MaxValue (there is no limit to the slots available).
+                     * Simple approach:
+                     * 1) If the max value is defined, subtract participant count from that;
+                     * 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
                      */
-                    var minuend = this.SlotsMax.GetValueOrDefault() > 0
-                        ? this.SlotsMax.Value
-                        : int.MaxValue;
+                    var available = int.MaxValue;
+                    if ( this.SlotsMax.GetValueOrDefault() > 0 )
+                    {
+                        available = this.SlotsMax.Value - this.ParticipantCount;
+                    }
 
-                    return minuend - this.ParticipantCount;
+                    return available < 0 ? 0 : available;
                 }
             }
 
             /// <summary>
-            /// Converts an <see cref="Opportunity"/> to a <see cref="Project"/> for display within the lava results template.
+            /// Converts an <see cref="Opportunity"/> to a <see cref="SignUpFinder.Project"/> for display within the lava results template.
             /// </summary>
-            /// <param name="projectDetailPageUrl">The project detail page URL for this <see cref="Project"/>.</param>
-            /// <param name="registrationPageUrl">The registration page URL for this <see cref="Project"/>.</param>
-            /// <returns>a <see cref="Project"/> instance for display within the lava results template.</returns>
+            /// <param name="projectDetailPageUrl">The project detail page URL for this <see cref="SignUpFinder.Project"/>.</param>
+            /// <param name="registrationPageUrl">The registration page URL for this <see cref="SignUpFinder.Project"/>.</param>
+            /// <returns>a <see cref="SignUpFinder.Project"/> instance for display within the lava results template.</returns>
             public Project ToProject( string projectDetailPageUrl, string registrationPageUrl )
             {
                 int? availableSpots = null;
@@ -1723,6 +1769,13 @@ namespace Rock.Blocks.Engagement.SignUp
                 {
                     availableSpots = this.SlotsAvailable;
                 }
+
+                var showRegisterButton = this.ScheduleHasFutureStartDateTime
+                    &&
+                    (
+                        !availableSpots.HasValue
+                        || availableSpots.Value > 0
+                    );
 
                 string mapCenter = null;
                 if ( this.Location.Latitude.HasValue && this.Location.Longitude.HasValue )
@@ -1745,11 +1798,12 @@ namespace Rock.Blocks.Engagement.SignUp
                     ScheduleName = this.ScheduleName,
                     FriendlySchedule = this.FriendlySchedule,
                     AvailableSpots = availableSpots,
+                    ShowRegisterButton = showRegisterButton,
                     DistanceInMiles = this.DistanceInMiles,
                     MapCenter = mapCenter,
                     ProjectDetailPageUrl = projectDetailPageUrl,
                     RegisterPageUrl = registrationPageUrl,
-                    GroupId = this.Group.Id,
+                    GroupId = this.Project.Id,
                     LocationId = this.Location.Id,
                     ScheduleId = this.Schedule.Id
                 };
@@ -1771,6 +1825,8 @@ namespace Rock.Blocks.Engagement.SignUp
             public string FriendlySchedule { get; set; }
 
             public int? AvailableSpots { get; set; }
+
+            public bool ShowRegisterButton { get; set; }
 
             public double? DistanceInMiles { get; set; }
 

@@ -29,6 +29,7 @@ import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentColle
 import { AttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/attributeFilterBag";
 import SearchFilter from "./searchFilter.partial";
 import AttributeSearchFilter from "./attributeSearchFilter.partial";
+import CustomFieldSearchFilter from "./customFieldSearchFilter.partial.obs";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { FilterSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/filterSettingsBag";
@@ -37,6 +38,7 @@ import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { ContentCollectionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionDetailOptionsBag";
 import { alert } from "@Obsidian/Utility/dialogs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { CustomFieldFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/customFieldFilterBag";
 
 /**
  * The items available for selection in the filter type radio button list.
@@ -71,7 +73,7 @@ const editFilterControlStandardItems: ListItemBag[] = [
  * The items availalbe for selection in the filter control radio button list
  * when the field type is a boolean.
  */
- const editFilterControlBooleanItems: ListItemBag[] = [
+const editFilterControlBooleanItems: ListItemBag[] = [
     {
         "value": ContentCollectionFilterControl.Boolean.toString(),
         "text": "Boolean"
@@ -83,6 +85,7 @@ export default defineComponent({
 
     components: {
         AttributeSearchFilter,
+        CustomFieldSearchFilter,
         InlineSwitch,
         Modal,
         Panel,
@@ -121,6 +124,7 @@ export default defineComponent({
         const editShowFilterType = ref(false);
         const isEditModalOpen = ref(false);
         const isEditFullTextSearch = ref(false);
+        const isEditAttributeFilter = ref(false);
 
         // #endregion
 
@@ -167,6 +171,10 @@ export default defineComponent({
             return props.modelValue.filterSettings?.attributeFilters ?? [];
         });
 
+        const customFieldFilters = computed((): CustomFieldFilterBag[] => {
+            return props.modelValue.filterSettings?.customFieldFilters ?? [];
+        });
+
         // #endregion
 
         // #region Functions
@@ -208,6 +216,34 @@ export default defineComponent({
             }
 
             isEditFullTextSearch.value = false;
+            isEditAttributeFilter.value = true;
+            isEditModalOpen.value = true;
+        };
+
+        /**
+         * Event handler for when the person clicks the edit button on one of
+         * the custom field search filters.
+         *
+         * @param filter The custom field filter that should be edited.
+         */
+        const onEditCustomFieldFilter = (filter: CustomFieldFilterBag): void => {
+            if (!filter.key) {
+                return;
+            }
+
+            // Initialize the standard values that should be edited.
+            editFilterKey.value = filter.key;
+            editFilterName.value = filter.title ?? "";
+            editFilterEnabled.value = filter.isEnabled;
+            editFilterLabel.value = filter.filterLabel ?? filter.title ?? "";
+
+            editFilterControl.value = filter.filterControl.toString();
+            editFilterControlItems.value = editFilterControlStandardItems;
+            editFilterType.value = filter.isMultipleSelection ? "1" : "0";
+            editShowFilterType.value = true;
+
+            isEditFullTextSearch.value = false;
+            isEditAttributeFilter.value = false;
             isEditModalOpen.value = true;
         };
 
@@ -272,7 +308,7 @@ export default defineComponent({
                 bag.yearSearchLabel = editFilterLabel.value;
                 validProperties = ["yearSearchEnabled", "yearSearchFilterControl", "yearSearchFilterIsMultipleSelection", "yearSearchLabel"];
             }
-            else {
+            else if (isEditAttributeFilter.value) {
                 // Update the attribute search filter settings.
 
                 // Create a new array so we don't modify the live data.
@@ -308,6 +344,34 @@ export default defineComponent({
 
                 validProperties = ["attributeFilters"];
             }
+            else {
+                // Update the custom field search filter settings.
+
+                // Create a new array so we don't modify the live data.
+                bag.customFieldFilters = [...(bag.customFieldFilters ?? [])];
+
+                // Find the specific field filter that is currently
+                // being edited in the modal.
+                const filterIndex = bag.customFieldFilters.findIndex(f => f.key === editFilterKey.value);
+
+                if (filterIndex === -1) {
+                    return;
+                }
+
+                // Make a copy of the filter so we don't modify the live data.
+                const filter = {
+                    ...bag.customFieldFilters[filterIndex]
+                };
+
+                filter.isEnabled = editFilterEnabled.value;
+                filter.filterLabel = editFilterLabel.value;
+                filter.filterControl = toNumberOrNull(editFilterControl.value) as ContentCollectionFilterControl ?? ContentCollectionFilterControl.Pills;
+                filter.isMultipleSelection = editFilterType.value === "1";
+
+                bag.customFieldFilters.splice(filterIndex, 1, filter);
+
+                validProperties = ["customFieldFilters"];
+            }
 
             const box: DetailBlockBox<FilterSettingsBag, undefined> = {
                 entity: bag,
@@ -334,6 +398,7 @@ export default defineComponent({
 
         return {
             attributeFilters,
+            customFieldFilters,
             editFilterControl,
             editFilterControlItems,
             editFilterEnabled,
@@ -346,6 +411,7 @@ export default defineComponent({
             isEditFullTextSearch,
             isEditModalOpen,
             onEditAttributeFilter,
+            onEditCustomFieldFilter,
             onEditFullTextSearch,
             onEditYearFilter,
             onModalSave,
@@ -377,6 +443,14 @@ export default defineComponent({
     <AttributeSearchFilter v-for="attribute in attributeFilters"
         :modelValue="attribute"
         @edit="onEditAttributeFilter" />
+
+    <SectionHeader title="Custom Field Filters"
+        description="The settings below allow you to provide filters for custom fields that you have configured on your content collection."
+        class="margin-t-lg" />
+
+    <CustomFieldSearchFilter v-for="customField in customFieldFilters"
+        :modelValue="customField"
+        @edit="onEditCustomFieldFilter" />
 </Panel>
 
 <Modal v-model="isEditModalOpen"

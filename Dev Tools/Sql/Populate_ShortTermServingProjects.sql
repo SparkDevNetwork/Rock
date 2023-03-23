@@ -1,6 +1,6 @@
 
 /********************************************************************************************************************
- Short Term Serving Projects - Sample Data
+ Short Term Serving Projects - Add/remove sample data.
 
  NOTE: This script assumes Sample Data (Power Tools > Sample Data) has been added for Rock version 1.15.0 or higher.
 *********************************************************************************************************************/
@@ -164,14 +164,16 @@ DECLARE @DefinedValueGuid_ProjectType_ProjectDue [uniqueidentifier] = 'C999D489-
 DECLARE @Now [datetime] = (SELECT GETDATE());
 DECLARE @DateTimeString_Now [char](15) = (SELECT FORMAT(@Now, 'yyyyMMddTHHmmss'));
 
-DECLARE @DateString_OneWeekInPast [char](8) = (SELECT FORMAT (DATEADD(week, -1, @Now), 'yyyyMMdd'));
-DECLARE @DateString_OneWeekInFuture [char](8) = (SELECT FORMAT (DATEADD(week, 1, @Now), 'yyyyMMdd'));
+DECLARE @DateTimeString_Today [char](8) = (SELECT FORMAT(@Now, 'yyyyMMdd'));
 
-DECLARE @DateString_TwoWeeksInPast [char](8) = (SELECT FORMAT (DATEADD(week, -2, @Now), 'yyyyMMdd'));
-DECLARE @DateString_TwoWeeksInFuture [char](8) = (SELECT FORMAT (DATEADD(week, 2, @Now), 'yyyyMMdd'));
+DECLARE @DateString_OneWeekInPast [char](8) = (SELECT FORMAT(DATEADD(week, -1, @Now), 'yyyyMMdd'));
+DECLARE @DateString_OneWeekInFuture [char](8) = (SELECT FORMAT(DATEADD(week, 1, @Now), 'yyyyMMdd'));
 
-DECLARE @DateString_OneYearInPast [char](8) = (SELECT FORMAT (DATEADD(year, -1, @Now), 'yyyyMMdd'));
-DECLARE @DateString_OneYearInFuture [char](8) = (SELECT FORMAT (DATEADD(year, 1, @Now), 'yyyyMMdd'));
+DECLARE @DateString_TwoWeeksInPast [char](8) = (SELECT FORMAT(DATEADD(week, -2, @Now), 'yyyyMMdd'));
+DECLARE @DateString_TwoWeeksInFuture [char](8) = (SELECT FORMAT(DATEADD(week, 2, @Now), 'yyyyMMdd'));
+
+DECLARE @DateString_OneYearInPast [char](8) = (SELECT FORMAT(DATEADD(year, -1, @Now), 'yyyyMMdd'));
+DECLARE @DateString_OneYearInFuture [char](8) = (SELECT FORMAT(DATEADD(year, 1, @Now), 'yyyyMMdd'));
 
 DECLARE @ParentGroupGuid [uniqueidentifier]
     , @GroupGuid [uniqueidentifier]
@@ -284,6 +286,63 @@ END:VCALENDAR
         @OpportunityGuid -- [OpportunityGuid] [uniqueidentifier] NOT NULL
         , '1EA811BB-3118-42D1-B020-32A82BC8081A' -- Bill Marble
         , 0 -- [IsLeader] [bit] NOT NULL
+    );
+
+    -----------------------------------------------------------------------------------------------
+    SET @LocationGuid = '54E2318F-4372-4C0B-95B3-80BC79FDF5E5';
+    SET @ScheduleGuid = '0A6E4901-77E6-431C-9CA3-AD9EE689AAD7';
+    SET @OpportunityGuid = 'E21FECD5-A9E3-4C22-A24F-A69B0B6E07EE';
+
+    INSERT INTO @Locations
+    VALUES
+    (
+        @LocationGuid -- [Guid] [uniqueidentifier] NOT NULL
+        , NULL -- [Name] [nvarchar](100) NULL
+        , 0xE6100000010C1973D712F2B1404042B28009DCF65BC0 -- [GeoPoint] [geography] NULL
+        , '1345 S Alma School Rd' -- [Street1] [nvarchar](100) NULL
+        , NULL -- [Street2] [nvarchar](100) NULL
+        , 'Mesa' -- [City] [nvarchar](50) NULL
+        , 'AZ' -- [State] [nvarchar](50) NULL
+        , 'US' -- [Country] [nvarchar](50) NULL
+        , '85210-2085' -- [PostalCode] [nvarchar](50) NULL
+        , 'Maricopa' -- [County] [varchar](50) NULL
+    );
+
+    -- Demonstrate an opportunity that was today, but has likely already passed since it started at 7:00 AM (so it shouldn't show up in the Sign-Up Finder block).
+    INSERT INTO @Schedules
+    VALUES
+    (
+        @ScheduleGuid -- [Guid] [uniqueidentifier] NOT NULL
+        , CONCAT('BEGIN:VCALENDAR
+PRODID:-//github.com/rianjs/ical.net//NONSGML ical.net 4.0//EN
+VERSION:2.0
+BEGIN:VEVENT
+DTEND:', @DateTimeString_Today,'T090000
+DTSTAMP:', @DateTimeString_Now,'
+DTSTART:', @DateTimeString_Today, 'T070000
+SEQUENCE:0
+UID:1f60c85e-dca2-4614-b09d-7c7b11d09b3e
+END:VEVENT
+END:VCALENDAR
+') -- [iCalendarContent] [nvarchar](max) NOT NULL
+        , @DateTimeString_Today -- [EffectiveStartDate] [date] NULL
+        , @DateTimeString_Today -- [EffectiveEndDate] [date] NULL
+        , NULL -- [Name] [nvarchar](50) NULL
+    );
+
+    INSERT INTO @Opportunities
+    VALUES
+    (
+        @OpportunityGuid -- [Guid] [uniqueidentifier] NOT NULL
+        , @GroupGuid -- [GroupGuid] [uniqueidentifier] NOT NULL
+        , @LocationGuid -- [LocationGuid] [uniqueidentifier] NOT NULL
+        , @ScheduleGuid -- [ScheduleGuid] [uniqueidentifier] NOT NULL
+        , 'FMSC - East Valley (Permanant Site)' -- [Name] [nvarchar](100) NULL
+        , 30 -- [MinimumCapacity] [int] NULL
+        , 50 -- [DesiredCapacity] [int] NULL
+        , 60 -- [MaximumCapacity] [int] NULL
+        , NULL -- [ConfirmationAdditionalDetails] [nvarchar](max) NULL
+        , NULL -- [ReminderAdditionalDetails] [nvarchar](max) NULL
     );
 
     -----------------------------------------------------------------------------------------------

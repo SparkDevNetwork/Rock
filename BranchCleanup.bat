@@ -140,6 +140,8 @@ DEL "RockWeb\Bin\*.xml"
 REN RockWeb\Bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.bak Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
 REN RockWeb\Bin\Rock.Common.Mobile.bak Rock.Common.Mobile.dll
 
+RMDIR "RockWeb\Obsidian" /S /Q
+
 RMDIR "Applications\Wpf\packages" /S /Q
 RMDIR "Installers\StatementGeneratorInstall\packages" /S /Q
 

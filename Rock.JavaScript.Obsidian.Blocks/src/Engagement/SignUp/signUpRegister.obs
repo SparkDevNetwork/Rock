@@ -1,19 +1,98 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockErrorMessage" alertType="warning">
+    <NotificationBox v-if="blockErrorMessage" :alertType="AlertType.Warning">
         {{ blockErrorMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <div v-if="!blockErrorMessage">
-        Hello!
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <NotificationBox v-if="showRegistrationSuccess" :alertType="AlertType.Success">
+        <div v-if="registeredRegistrantNames?.length">
+            <p>Successfully registered individual(s):</p>
+            <ul>
+                <li v-for="(name, i) in registeredRegistrantNames" :key="`registered-{i}`">
+                    {{ name }}
+                </li>
+            </ul>
+        </div>
+        <div v-if="unregisteredRegistrantNames?.length">
+            <p>Successfully unregistered individual(s):</p>
+            <ul>
+                <li v-for="(name, i) in unregisteredRegistrantNames" :key="`unregistered-{i}`">
+                    {{ name }}
+                </li>
+            </ul>
+        </div>
+    </NotificationBox>
+
+    <NotificationBox v-if="showRegistrationWarning" :alertType="AlertType.Warning">
+        <div v-if="registrationWarning">
+            <p>
+                {{ registrationWarning }}
+            </p>
+        </div>
+        <div v-if="unsuccessfulRegistrantNames?.length">
+            <p>Unable to register individual(s):</p>
+            <ul>
+                <li v-for="(name, i) in unsuccessfulRegistrantNames" :key="`unsuccessful-{i}`">
+                    {{ name }}
+                </li>
+            </ul>
+        </div>
+    </NotificationBox>
+
+    <div v-if="showRegistrationForm">
+        <RockForm @submit="onSubmit">
+
+            <RegisterAnonymous v-if="registerMode == RegisterMode.Anonymous"
+                               :isRegistering="isRegistering"
+                               :registrants="registrants"
+                               :projectHasRequiredGroupRequirements="config.projectHasRequiredGroupRequirements"
+                               :requireEmail="config.requireEmail"
+                               :requireMobilePhone="config.requireMobilePhone" />
+
+            <RegisterFamily v-if="registerMode == RegisterMode.Family"
+                            :isRegistering="isRegistering"
+                            :registrants="registrants"
+                            :anyEligibleRegistrants="anyEligibleRegistrants"
+                            :communicationPreferenceItems="communicationPreferenceItems"
+                            :title="config.title" />
+
+            <RegisterGroup v-if="registerMode == RegisterMode.Group"
+                           :isRegistering="isRegistering"
+                           :registrants="registrants"
+                           :title="config.title" />
+
+            <Loading :isLoading="isRegistering">
+                <div v-if="anyEligibleRegistrants" class="actions">
+                    <RockButton type="submit" :btnType="BtnType.Primary" :disabled="isRegistering">{{ submitButtonText }}</RockButton>
+                </div>
+            </Loading>
+        </RockForm>
     </div>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import RegisterAnonymous from "./SignUpRegister/registerAnonymous.partial.obs";
+    import RegisterFamily from "./SignUpRegister/registerFamily.partial.obs";
+    import RegisterGroup from "./SignUpRegister/registerGroup.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Loading from "@Obsidian/Controls/loading";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockForm from "@Obsidian/Controls/rockForm";
+    import { RegisterMode } from "@Obsidian/Enums/Blocks/Engagement/SignUp/registerMode";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { SignUpRegisterInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegisterInitializationBox";
+    import { SignUpRegisterRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegisterRequestBag";
+    import { SignUpRegisterResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegisterResponseBag";
+    import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<SignUpRegisterInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -21,7 +100,20 @@
 
     // #region Values
 
+    const registerMode = ref<RegisterMode>(config.mode ?? RegisterMode.Anonymous);
+    const communicationPreferenceItems = ref<ListItemBag[]>(config.communicationPreferenceItems ?? []);
+    const registrants = ref<SignUpRegistrantBag[]>(config.registrants ?? []);
 
+    const isRegistering = ref(false);
+    const errorMessage = ref("");
+
+    const registrationWarning = ref("");
+    const registeredRegistrantNames = ref<string[]>([]);
+    const unregisteredRegistrantNames = ref<string[]>([]);
+    const unsuccessfulRegistrantNames = ref<string[]>([]);
+
+    // We'll set this value on initial load + whenever a registration attempt is succesful.
+    const submitButtonText = ref(getSubmitButtonText(config.registrants));
 
     // #endregion
 
@@ -31,17 +123,84 @@
         return config.errorMessage;
     });
 
+    const anyEligibleRegistrants = computed((): boolean => {
+        return registrants.value.some((r: SignUpRegistrantBag) => r && !r.unmetGroupRequirements?.length);
+    });
+
+    const showRegistrationSuccess = computed((): boolean => {
+        return !!(registeredRegistrantNames.value?.length || unregisteredRegistrantNames.value?.length);
+    });
+
+    const showRegistrationWarning = computed((): boolean => {
+        return !!(unsuccessfulRegistrantNames.value?.length || registrationWarning.value?.length);
+    });
+
+    const showRegistrationForm = computed((): boolean => {
+        if (blockErrorMessage.value) {
+            return false;
+        }
+
+        if (showRegistrationSuccess.value) {
+            // If registration was successful, only re-show the form if there was also a registration warning.
+            return showRegistrationWarning.value;
+        }
+
+        return true;
+    });
+
     // #endregion
 
     // #region Functions
 
-
+    /**
+     * Gets the text to use for the submit button:
+     * "Register" if there are not any registrants who were already registered.
+     * "Update Registration" if there are any registrants who were already registered.
+     *
+     * @param registrants The array of registrants to consider.
+     */
+    function getSubmitButtonText(registrants: SignUpRegistrantBag[] | null | undefined): string {
+        return registrants?.some((r: SignUpRegistrantBag) => r?.willAttend && r?.personIdKey)
+            ? "Update Registration"
+            : "Register";
+    }
 
     // #endregion
 
     // #region Event Handlers
 
+    /**
+     * Handles the form submission.
+     */
+    async function onSubmit(): Promise<void> {
+        isRegistering.value = true;
+        errorMessage.value = "";
 
+        registrationWarning.value = "";
+        registeredRegistrantNames.value = [];
+        unregisteredRegistrantNames.value = [];
+        unsuccessfulRegistrantNames.value = [];
+
+        const bag: SignUpRegisterRequestBag = {
+            registrants: registrants.value
+        };
+
+        const result: HttpResult<SignUpRegisterResponseBag> = await invokeBlockAction("Register", { bag });
+        isRegistering.value = false;
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error when trying to register for this project.";
+            return;
+        }
+
+        registrationWarning.value = result.data?.warningMessage ?? "";
+        registeredRegistrantNames.value = result.data?.registeredRegistrantNames ?? [];
+        unregisteredRegistrantNames.value = result.data?.unregisteredRegistrantNames ?? [];
+        unsuccessfulRegistrantNames.value = result.data?.unsuccessfulRegistrantNames ?? [];
+
+        // Only update this value if the registration attempt was successful.
+        submitButtonText.value = getSubmitButtonText(registrants.value);
+    }
 
     // #endregion
 

@@ -311,8 +311,8 @@
     const props = defineProps({
         /** The ICS contents that represents the schedule. */
         modelValue: {
-            type: String as PropType<string>,
-            default: ""
+            type: String as PropType<string | null>,
+            required: false
         },
 
         ...standardRockFormFieldProps
@@ -522,7 +522,7 @@
     // #region Functions
 
     function updateValuesFromModel(): void {
-        const calendar = getCalendarFromString(props.modelValue);
+        const calendar = getCalendarFromString(props.modelValue ?? "");
         const event = calendar?.events && calendar.events.length > 0 ? calendar.events[0] : null;
         const rrule = event?.recurrenceRules && event.recurrenceRules.length > 0 ? event.recurrenceRules[0] : null;
 

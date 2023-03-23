@@ -41,7 +41,7 @@
     import EditPanel from "./QueueDetail/editPanel.partial.obs";
     import ViewPanel from "./QueueDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { NavigationUrlKey } from "./QueueDetail/types";
+    import { NavigationUrlKey } from "./QueueDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { QueueBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueBag";
     import { QueueDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueDetailOptionsBag";

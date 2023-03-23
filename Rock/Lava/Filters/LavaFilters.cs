@@ -5926,7 +5926,10 @@ namespace Rock.Lava
                 noteTypeIds = ( ( string ) noteType ).Split( ',' ).Select( Int32.Parse ).ToList();
             }
 
-            var notes = new NoteService( LavaHelper.GetRockContextFromLavaContext( context ) ).Queryable().AsNoTracking().Where( n => n.EntityId == entityId );
+            var notes = new NoteService( LavaHelper.GetRockContextFromLavaContext( context ) )
+                .Queryable().AsNoTracking()
+                .Include( n => n.CreatedByPersonAlias )
+                .Where( n => n.EntityId == entityId );
 
             if ( noteTypeIds.Count > 0 )
             {

@@ -1,14 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="options.isPlainCaption && options.caption">{{ options.caption }}</div>
-    <Alert v-else-if="options.caption" alertType="success">{{ options.caption }}</Alert>
+    <NotificationBox v-else-if="options.caption" alertType="success">{{ options.caption }}</NotificationBox>
 
     <RockButton v-if="options.redirectUrl" :btnType="BtnType.Primary" :disabled="disabled" @click="onContinueClicked">Continue</RockButton>
 </template>
 
 <script setup lang="ts">
     import { onMounted, PropType } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { AccountEntryCompletedStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryCompletedStepBag";

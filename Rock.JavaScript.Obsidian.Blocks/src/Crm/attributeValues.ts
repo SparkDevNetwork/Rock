@@ -19,7 +19,7 @@ import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, ref } from "vue";
 import Block from "@Obsidian/Templates/block";
 import Loading from "@Obsidian/Controls/loading";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { useStore } from "@Obsidian/PageState";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
@@ -58,7 +58,7 @@ function sortedAttributeValues(attributeValues: PublicAttributeBag[]): PublicAtt
 export default defineComponent({
     name: "Crm.AttributeValues",
     components: {
-        Alert,
+        NotificationBox,
         Block,
         Loading,
         JavaScriptAnchor,
@@ -141,7 +141,7 @@ export default defineComponent({
 
     <template #default>
         <Loading :isLoading="isLoading">
-            <Alert v-if="errorMessage" alertType="warning">{{ errorMessage }}</Alert>
+            <NotificationBox v-if="errorMessage" alertType="warning">{{ errorMessage }}</NotificationBox>
             <AttributeValuesContainer v-if="!isEditMode" :attributeValues="attributeValues" :showEmptyValues="false" :showCategoryLabel="false" />
             <RockForm v-else @submit="doSave">
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showAbbreviatedName="useAbbreviatedNames" :showCategoryLabel="false" />

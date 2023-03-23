@@ -1,3 +1,8 @@
+
+/********************************************************************************************************************
+ Short Term Serving Projects - View slots available by opportunity.
+*********************************************************************************************************************/
+
 DECLARE @SignUpGroupTypeId [int] = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '499B1367-06B3-4538-9D56-56D53F55DCB1');
 
 DECLARE @Opportunity TABLE
@@ -9,6 +14,7 @@ DECLARE @Opportunity TABLE
     , [OpportunityName] [nvarchar](100) NULL
     , [EffectiveStartDate] [date] NULL
     , [EffectiveEndDate] [date] NULL
+    , [iCalendarContent] [nvarchar](max)
     , [SlotsMin] [int] NULL
     , [SlotsDesired] [int] NULL
     , [SlotsMax] [int] NULL
@@ -24,6 +30,7 @@ WITH CTE AS
         , glsc.[ConfigurationName] AS [OpportunityName]
         , s.[EffectiveStartDate]
         , s.[EffectiveEndDate]
+        , s.[iCalendarContent]
         , glsc.[MinimumCapacity] AS [SlotsMin]
         , glsc.[DesiredCapacity] AS [SlotsDesired]
         , glsc.[MaximumCapacity] AS [SlotsMax]
@@ -55,6 +62,7 @@ GROUP BY CTE.[GroupId]
     , CTE.[OpportunityName]
     , CTE.[EffectiveStartDate]
     , CTE.[EffectiveEndDate]
+    , CTE.[iCalendarContent]
     , CTE.[SlotsMin]
     , CTE.[SlotsDesired]
     , CTE.[SlotsMax]
@@ -73,6 +81,7 @@ GROUP BY [GroupId]
     , [OpportunityName]
     , [EffectiveStartDate]
     , [EffectiveEndDate]
+    , [iCalendarContent]
     , [SlotsMin]
     , [SlotsDesired]
     , [SlotsMax]

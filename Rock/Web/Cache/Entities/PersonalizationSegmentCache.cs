@@ -66,7 +66,6 @@ namespace Rock.Web.Cache
         /// Gets the active segments with an option to include Segments that have a DataView that is not persisted.
         /// Note that Segments that have a DataView that is not persisted are considered inactive.
         /// </summary>
-        /// <param name="includeSegmentsWithNonPersistedDataViews">if set to <c>true</c> [include segments with non persisted data views].</param>
         /// <returns></returns>
         public static IEnumerable<PersonalizationSegmentCache> GetActiveSegments()
         {

@@ -66,11 +66,11 @@ namespace Rock.Rest.Swagger
             }
             catch (Exception ex)
             {
-                Rock.Model.ExceptionLogService.LogException( new Exception("Error loading XML Docs for REST Api plugins", ex ) );
+                Rock.Model.ExceptionLogService.LogException( new Exception( "Error loading XML Docs for REST Api plugins", ex ) );
                 xmlDocs = new List<string>();
             }
 
-            config.EnableCors( new EnableCorsAttribute( "*", "*", "*" ) );
+            //config.EnableCors( new EnableCorsAttribute( "*", "*", "*" ) );
 
             config
                 .EnableSwagger( swaggerRoute, c =>
@@ -79,7 +79,7 @@ namespace Rock.Rest.Swagger
                          // However, there may be situations (e.g. proxy and load-balanced environments) where this does not
                          // resolve correctly. You can workaround this by providing your own code to determine the root URL.
                          //
-                         c.RootUrl(req => DefaultRootUrlResolver( req ) );
+                         c.RootUrl( req => DefaultRootUrlResolver( req ) );
 
                          // If schemes are not explicitly provided in a Swagger 2.0 document, then the scheme used to access
                          // the docs is taken as the default. If your API supports multiple schemes and you want to be explicit

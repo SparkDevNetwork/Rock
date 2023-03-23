@@ -54,7 +54,7 @@ export default defineComponent({
         });
 
         const title = computed((): string => {
-            return props.modelValue.filterLabel ?? "";
+            return props.modelValue.attributeName ?? "";
         });
 
         const subtitle = computed((): string => {
@@ -69,7 +69,7 @@ export default defineComponent({
             const values: ListItemBag[] = [
                 {
                     text: "Filter Label",
-                    value: props.modelValue.fieldTypeName
+                    value: props.modelValue.filterLabel
                 }
             ];
 

@@ -239,7 +239,7 @@
                                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:ColorPicker ID="cpHighlightColor" runat="server" Label="Highligh Color" />
+                                        <Rock:ColorPicker ID="cpHighlightColor" runat="server" Label="Highlight Color" />
                                     </div>
                                 </div>
                             </fieldset>
