@@ -36,7 +36,7 @@ import { FilterOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollect
 import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/customSettingsOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import FilterGrid from "./ContentCollectionView/filterGrid.partial";
-import { SortOrdersKey } from "./ContentCollectionView/types";
+import { SortOrdersKey } from "./ContentCollectionView/types.partial";
 import { alert } from "@Obsidian/Utility/dialogs";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { ContentCollectionListItemBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/contentCollectionListItemBag";

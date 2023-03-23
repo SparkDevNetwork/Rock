@@ -18,7 +18,7 @@
 import { defineComponent, inject } from "vue";
 import Registrant from "./registrant.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import { RegistrantInfo, RegistrationEntryState } from "./types";
+import { RegistrantInfo, RegistrationEntryState } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrants",

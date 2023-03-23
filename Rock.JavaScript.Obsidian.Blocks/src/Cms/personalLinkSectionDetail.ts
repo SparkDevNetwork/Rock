@@ -25,7 +25,7 @@ import EditPanel from "./PersonalLinkSectionDetail/editPanel.partial";
 import ViewPanel from "./PersonalLinkSectionDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { debounce } from "@Obsidian/Utility/util";
-import { NavigationUrlKey } from "./PersonalLinkSectionDetail/types";
+import { NavigationUrlKey } from "./PersonalLinkSectionDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { PersonalLinkSectionBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinkSectionDetail/personalLinkSectionBag";
 import { PersonalLinkSectionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinkSectionDetail/personalLinkSectionDetailOptionsBag";

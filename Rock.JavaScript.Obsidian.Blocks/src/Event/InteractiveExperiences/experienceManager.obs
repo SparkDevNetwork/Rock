@@ -44,7 +44,7 @@
     import { computed, provide, ref } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
-    import { IParticipantTopic } from "./types";
+    import { IParticipantTopic } from "./types.partial";
 
     const config = useConfigurationValues<ExperienceManagerInitializationBox>();
 

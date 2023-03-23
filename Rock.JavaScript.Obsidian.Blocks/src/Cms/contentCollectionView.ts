@@ -30,7 +30,7 @@ import { Guid } from "@Obsidian/Types";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { emptyGuid } from "@Obsidian/Utility/guid";
-import { SortOrdersKey } from "./ContentCollectionView/types";
+import { SortOrdersKey } from "./ContentCollectionView/types.partial";
 
 
 /**

@@ -50,7 +50,7 @@
     import ViewPanel from "./InteractiveExperienceDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./InteractiveExperienceDetail/types";
+    import { NavigationUrlKey } from "./InteractiveExperienceDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { InteractiveExperienceBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceBag";
     import { InteractiveExperienceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceDetailOptionsBag";

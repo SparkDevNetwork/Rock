@@ -97,9 +97,9 @@
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ITopic } from "@Obsidian/Utility/realTime";
-    import { IParticipantTopic } from "../types";
+    import { IParticipantTopic } from "../types.partial";
     import { ExperienceManagerInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceManager/experienceManagerInitializationBox";
-    import { NavigationUrlKey } from "./types";
+    import { NavigationUrlKey } from "./types.partial";
 
     const props = defineProps({
         /** The identifier of the occurrence we have joined. */

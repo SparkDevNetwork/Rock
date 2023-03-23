@@ -23,7 +23,7 @@ import RadioButtonList from "@Obsidian/Controls/radioButtonList";
 import StaticFormControl from "@Obsidian/Controls/staticFormControl";
 import TextBox from "@Obsidian/Controls/textBox";
 import { getRegistrantBasicInfo,  } from "./utils.partial";
-import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
+import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { useStore } from "@Obsidian/PageState";
 import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

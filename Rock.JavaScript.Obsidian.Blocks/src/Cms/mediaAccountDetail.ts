@@ -25,7 +25,7 @@ import EditPanel from "./MediaAccountDetail/editPanel.partial";
 import ViewPanel from "./MediaAccountDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { debounce } from "@Obsidian/Utility/util";
-import { NavigationUrlKey } from "./MediaAccountDetail/types";
+import { NavigationUrlKey } from "./MediaAccountDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountBag";
 import { MediaAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountDetailOptionsBag";

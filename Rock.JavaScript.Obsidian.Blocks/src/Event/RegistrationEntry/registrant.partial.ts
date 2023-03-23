@@ -26,7 +26,7 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
+import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import RockForm from "@Obsidian/Controls/rockForm";
 import FeeField from "./feeField.partial";

@@ -216,7 +216,7 @@
     import GroupLocationScheduleDatePicker from "./GroupAttendanceDetail/groupLocationScheduleDatePicker.partial.obs";
     import GroupLocationSchedulePicker from "./GroupAttendanceDetail/groupLocationSchedulePicker.partial.obs";
     import SearchFilter from "./GroupAttendanceDetail/searchFilter.partial.obs";
-    import { AttendanceSortByDelegate, AttendanceFilterByDelegate, AttendanceGroupByDelegate, ModalOptionsBag } from "./GroupAttendanceDetail/types";
+    import { AttendanceSortByDelegate, AttendanceFilterByDelegate, AttendanceGroupByDelegate, ModalOptionsBag } from "./GroupAttendanceDetail/types.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";

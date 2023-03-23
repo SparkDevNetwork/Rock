@@ -42,7 +42,7 @@
     import ViewPanel from "./SystemPhoneNumberDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./SystemPhoneNumberDetail/types";
+    import { NavigationUrlKey } from "./SystemPhoneNumberDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { SystemPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Communication/SystemPhoneNumberDetail/systemPhoneNumberBag";
     import { SystemPhoneNumberDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SystemPhoneNumberDetail/systemPhoneNumberDetailOptionsBag";

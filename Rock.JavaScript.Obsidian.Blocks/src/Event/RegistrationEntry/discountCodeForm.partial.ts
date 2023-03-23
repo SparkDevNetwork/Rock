@@ -21,7 +21,7 @@ import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-import { RegistrationEntryBlockViewModel, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
+import { RegistrationEntryBlockViewModel, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 
 type CheckDiscountCodeResult = {
     discountCode: string;

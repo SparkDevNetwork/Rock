@@ -28,7 +28,7 @@ import { getRegistrantBasicInfo } from "./utils.partial";
 import CostSummary from "./costSummary.partial";
 import DiscountCodeForm from "./discountCodeForm.partial";
 import Registrar from "./registrar.partial";
-import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
+import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { Guid } from "@Obsidian/Types";
 
 export default defineComponent({

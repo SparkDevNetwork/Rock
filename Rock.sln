@@ -32,10 +32,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotLiquid", "DotLiquid\DotLiquid.csproj", "{00EDCB8D-EF33-459C-AD62-02876BD24DFF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{185A31D7-3037-4DAE-8797-0459849A84BD}"
-	ProjectSection(ProjectDependencies) = postProject
-		{11ACFF28-4199-450B-8A43-F59ADEF63A99} = {11ACFF28-4199-450B-8A43-F59ADEF63A99}
-		{A4FB4B9B-3564-4C25-938C-4350A9515B24} = {A4FB4B9B-3564-4C25-938C-4350A9515B24}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Mailgun", "Rock.Mailgun\Rock.Mailgun.csproj", "{D6B19C0D-DA5E-4F75-8001-04DED86B741F}"
 EndProject
@@ -64,6 +60,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Security.Authentication.Auth0", "Rock.Security.Authentication.Auth0\Rock.Security.Authentication.Auth0.csproj", "{5055F482-72C7-4CC9-8ED0-A77090C777DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.WebStartup", "Rock.WebStartup\Rock.WebStartup.csproj", "{515E22E4-4B9B-4886-8477-E5B312B75EB4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{11ACFF28-4199-450B-8A43-F59ADEF63A99} = {11ACFF28-4199-450B-8A43-F59ADEF63A99}
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24} = {A4FB4B9B-3564-4C25-938C-4350A9515B24}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Checkr", "Rock.Checkr\Rock.Checkr.csproj", "{94A5F880-31AE-4889-B9BE-BA1FDC258E83}"
 EndProject

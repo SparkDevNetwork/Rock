@@ -28,7 +28,7 @@ import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import ComponentFromUrl from "@Obsidian/Controls/componentFromUrl";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
-import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types";
+import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.RegistrantPersonField",

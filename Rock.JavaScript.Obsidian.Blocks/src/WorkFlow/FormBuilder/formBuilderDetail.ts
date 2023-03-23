@@ -28,9 +28,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import CommunicationsTab from "./FormBuilderDetail/communicationsTab.partial";
 import FormBuilderTab from "./FormBuilderDetail/formBuilderTab.partial";
 import SettingsTab from "./FormBuilderDetail/settingsTab.partial";
-import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types";
+import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types.partial";
 import { provideFormSources } from "./FormBuilderDetail/utils.partial";
-import { FormCompletionAction, FormGeneral } from "./Shared/types";
+import { FormCompletionAction, FormGeneral } from "./Shared/types.partial";
 
 export default defineComponent({
     name: "WorkFlow.FormBuilderDetail",

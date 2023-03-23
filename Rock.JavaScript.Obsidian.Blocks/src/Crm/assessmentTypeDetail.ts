@@ -24,7 +24,7 @@ import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import EditPanel from "./AssessmentTypeDetail/editPanel.partial";
 import ViewPanel from "./AssessmentTypeDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { NavigationUrlKey } from "./AssessmentTypeDetail/types";
+import { NavigationUrlKey } from "./AssessmentTypeDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { AssessmentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeDetail/assessmentTypeBag";
 import { AssessmentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeDetail/assessmentTypeDetailOptionsBag";

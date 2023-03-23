@@ -25,7 +25,7 @@ import NumberUpDownGroup, { NumberUpDownGroupOption } from "@Obsidian/Controls/n
 import Number from "@Obsidian/Utility/numberUtils";
 import GuidHelper from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types";
+import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.FeeField",

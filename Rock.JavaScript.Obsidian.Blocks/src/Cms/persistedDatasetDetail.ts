@@ -24,7 +24,7 @@ import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import EditPanel from "./PersistedDatasetDetail/editPanel.partial";
 import ViewPanel from "./PersistedDatasetDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { NavigationUrlKey } from "./PersistedDatasetDetail/types";
+import { NavigationUrlKey } from "./PersistedDatasetDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { PersistedDatasetBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetBag";
 import { PersistedDatasetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetDetailOptionsBag";

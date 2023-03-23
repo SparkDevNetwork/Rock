@@ -23,7 +23,7 @@ import { FormError } from "@Obsidian/Utility/form";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import ConfirmationEmail from "../Shared/confirmationEmail";
 import NotificationEmail from "./notificationEmail.partial";
-import { FormCommunication, FormTemplateListItem } from "./types";
+import { FormCommunication, FormTemplateListItem } from "./types.partial";
 import { useFormSources } from "./utils.partial";
 
 export default defineComponent({

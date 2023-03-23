@@ -28,8 +28,8 @@ import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import EmailSource from "../Shared/emailSource";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
-import { FormGeneral } from "../Shared/types";
-import { FormTemplateListItem } from "./types";
+import { FormGeneral } from "../Shared/types.partial";
+import { FormTemplateListItem } from "./types.partial";
 import { useFormSources } from "./utils.partial";
 
 /**

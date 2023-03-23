@@ -23,7 +23,7 @@ import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
 import EditPanel from "./CampusDetail/editPanel.partial";
 import ViewPanel from "./CampusDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { NavigationUrlKey } from "./CampusDetail/types";
+import { NavigationUrlKey } from "./CampusDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
 import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";

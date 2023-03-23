@@ -36,7 +36,7 @@
     import { ExperienceManagerOccurrencesInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceManagerOccurrences/experienceManagerOccurrencesInitializationBox";
     import { computed, ref } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { NavigationUrlKey } from "./ExperienceManagerOccurrences/types";
+    import { NavigationUrlKey } from "./ExperienceManagerOccurrences/types.partial";
 
     const config = useConfigurationValues<ExperienceManagerOccurrencesInitializationBox>();
 

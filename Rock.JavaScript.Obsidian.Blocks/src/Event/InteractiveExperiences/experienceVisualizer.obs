@@ -38,7 +38,7 @@
     import WordCloud from "./ExperienceVisualizer/wordCloud.partial.obs";
     import { Component as VueComponent, reactive, ref, watch } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
-    import { IParticipantTopic } from "./types";
+    import { IParticipantTopic } from "./types.partial";
     import { ExperienceVisualizerInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceVisualizer/experienceVisualizerInitializationBox";
     import { VisualizerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceVisualizer/visualizerOccurrenceBag";
     import { VisualizerRenderConfigurationBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/visualizerRenderConfigurationBag";

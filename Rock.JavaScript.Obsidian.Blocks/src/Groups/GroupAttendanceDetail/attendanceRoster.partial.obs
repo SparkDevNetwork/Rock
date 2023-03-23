@@ -29,7 +29,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import CardCheckBox from "./cardCheckBox.partial.obs";
-    import { AttendanceFilterByDelegate, AttendanceGroupByDelegate, AttendanceSortByDelegate } from "./types";
+    import { AttendanceFilterByDelegate, AttendanceGroupByDelegate, AttendanceSortByDelegate } from "./types.partial";
     import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Groups/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
 
     const props = defineProps({

@@ -25,9 +25,9 @@ import Switch from "@Obsidian/Controls/switch";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
-import { CampusSetFrom, FormFieldType } from "../Shared/types";
+import { CampusSetFrom, FormFieldType } from "../Shared/types.partial";
 import ConfigurableZone from "./configurableZone.partial";
-import { GeneralAsideSettings } from "./types";
+import { GeneralAsideSettings } from "./types.partial";
 import { useFormSources } from "./utils.partial";
 
 const campusSetFromOptions: ListItemBag[] = [

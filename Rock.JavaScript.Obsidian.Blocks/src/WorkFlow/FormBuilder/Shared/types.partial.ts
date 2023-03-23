@@ -202,7 +202,7 @@ export type FormFieldType = {
      * readily accessible.
      */
     isCommon: boolean;
-}
+};
 
 /**
  * Contains details about a confirmation e-mail for a Form Builder form. This

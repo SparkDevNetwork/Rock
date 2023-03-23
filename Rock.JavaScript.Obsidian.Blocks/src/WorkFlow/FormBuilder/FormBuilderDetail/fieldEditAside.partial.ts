@@ -37,7 +37,7 @@ import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
-import { FormField, FormFieldType } from "../Shared/types";
+import { FormField, FormFieldType } from "../Shared/types.partial";
 import { getFilterGroupTitle, getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils.partial";
 
 /**

@@ -77,7 +77,7 @@
 <script setup lang="ts">
     import { computed, nextTick, ref } from "vue";
     import SignUpFilter from "./SignUpFinder/signUpFilter.partial.obs";
-    import { SignUpFilterType } from "./SignUpFinder/signUpFilterType";
+    import { SignUpFilterType } from "./SignUpFinder/signUpFilterType.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
     import { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";

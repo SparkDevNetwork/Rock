@@ -21,8 +21,8 @@ import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import CompletionSettings from "../Shared/completionSettings";
 import GeneralSettings from "./generalSettings.partial";
-import { FormCompletionAction, FormGeneral } from "../Shared/types";
-import { FormTemplateListItem } from "./types";
+import { FormCompletionAction, FormGeneral } from "../Shared/types.partial";
+import { FormTemplateListItem } from "./types.partial";
 import { FormError } from "@Obsidian/Utility/form";
 
 export default defineComponent({

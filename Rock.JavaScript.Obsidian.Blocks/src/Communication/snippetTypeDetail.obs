@@ -42,7 +42,7 @@
     import ViewPanel from "./SnippetTypeDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./SnippetTypeDetail/types";
+    import { NavigationUrlKey } from "./SnippetTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { SnippetTypeBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetTypeDetail/snippetTypeBag";
     import { SnippetTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetTypeDetail/snippetTypeDetailOptionsBag";
@@ -187,7 +187,7 @@
         else {
             return false;
         }
-    };
+    }
 
     /**
      * Event handler for when a value has changed that has an associated

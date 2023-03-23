@@ -18,7 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
-import { FormConfirmationEmail, FormFieldType, FormNotificationEmail, FormPersonEntry, FormSection, FormSettings } from "../Shared/types";
+import { FormConfirmationEmail, FormFieldType, FormNotificationEmail, FormPersonEntry, FormSection, FormSettings } from "../Shared/types.partial";
 
 // #region Interfaces
 

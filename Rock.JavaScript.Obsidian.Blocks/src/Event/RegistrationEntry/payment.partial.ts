@@ -26,7 +26,7 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
-import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, RegistrationEntryState } from "./types";
+import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, RegistrationEntryState } from "./types.partial";
 import { FormError } from "@Obsidian/Utility/form";
 
 export default defineComponent({

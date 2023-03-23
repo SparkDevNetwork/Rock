@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { FormCompletionAction, FormConfirmationEmail, FormPersonEntry } from "../Shared/types";
+import { FormCompletionAction, FormConfirmationEmail, FormPersonEntry } from "../Shared/types.partial";
 
 /**
  * Represents the sources of truth for various pickers and lists of entities

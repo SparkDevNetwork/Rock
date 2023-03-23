@@ -33,7 +33,7 @@ import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
 import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
 import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
-import { RegistrantInfo, RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types";
+import { RegistrantInfo, RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types.partial";
 import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial";
 import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial";
 import RegistrationEntrySuccess from "./RegistrationEntry/success.partial";

@@ -27,7 +27,7 @@ import SearchFilters from "./ContentCollectionDetail/searchFilters.partial";
 import ViewPanel from "./ContentCollectionDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { debounce } from "@Obsidian/Utility/util";
-import { NavigationUrlKey } from "./ContentCollectionDetail/types";
+import { NavigationUrlKey } from "./ContentCollectionDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { ContentCollectionBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionBag";
 import { ContentCollectionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionDetailOptionsBag";

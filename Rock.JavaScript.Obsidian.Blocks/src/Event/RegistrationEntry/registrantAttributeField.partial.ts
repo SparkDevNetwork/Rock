@@ -20,7 +20,7 @@ import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "@Obsidian/Controls/rockField";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
-import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types";
+import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types.partial";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 import { areEqual } from "@Obsidian/Utility/guid";
 

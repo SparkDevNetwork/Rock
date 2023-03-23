@@ -42,7 +42,7 @@
     import ViewPanel from "./SnippetDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./SnippetDetail/types";
+    import { NavigationUrlKey } from "./SnippetDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { SnippetBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetBag";
     import { SnippetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetDetailOptionsBag";

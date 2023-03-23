@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-import { AttendanceSortByDelegate, ModalOptionsBag, Switch, SwitchPosition } from "./types";
+import { AttendanceSortByDelegate, ModalOptionsBag, Switch, SwitchPosition } from "./types.partial";
 import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Groups/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
 

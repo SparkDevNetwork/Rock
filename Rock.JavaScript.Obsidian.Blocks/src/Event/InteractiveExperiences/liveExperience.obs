@@ -79,7 +79,7 @@ body {
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { Component as VueComponent, computed, ref } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
-    import { IParticipantTopic } from "./types";
+    import { IParticipantTopic } from "./types.partial";
     import { LiveExperienceInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/LiveExperience/liveExperienceInitializationBox";
     import { ActionRenderConfigurationBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/actionRenderConfigurationBag";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
