@@ -551,7 +551,7 @@ namespace Rock.Blocks.Groups
                     return box;
                 }
 
-                if ( occurrenceData.IsValid && occurrenceData.IsNewOccurrence && occurrenceData.AttendanceOccurrence.IsValid )
+                if ( occurrenceData.IsValid && occurrenceData.IsNewOccurrence && occurrenceData.AttendanceOccurrence.IsValid && occurrenceData.AttendanceOccurrence.LocationId.HasValue && occurrenceData.AttendanceOccurrence.ScheduleId.HasValue )
                 {
                     var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                     attendanceOccurrenceService.Add( occurrenceData.AttendanceOccurrence );

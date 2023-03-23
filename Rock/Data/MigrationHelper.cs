@@ -8176,6 +8176,34 @@ END
 
         #endregion Index Helpers
 
+        #region ServiceJob
+
+        /// <summary>
+        /// Adds/Overwrites the ServiceJob attribute value.
+        /// </summary>
+        /// <param name="serviceJobGuid">The service job unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        public void AddServiceJobAttributeValue( string serviceJobGuid, string attributeGuid, string value )
+        {
+            Migration.Sql( $@"
+                DECLARE @ServiceJobId int
+                SET @ServiceJobId = (SELECT [Id] FROM [ServiceJob] WHERE [Guid] = '{serviceJobGuid}')
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @ServiceJobId
+                INSERT INTO [AttributeValue]
+                    ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+                VALUES
+                    (1, @AttributeId, @ServiceJobId, N'{value.Replace( "'", "''" )}', NEWID())"
+            );
+        }
+
+        #endregion
+
         /// <summary>
         /// Checks if a table column exists.
         /// </summary>

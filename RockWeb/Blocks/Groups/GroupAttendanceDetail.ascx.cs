@@ -36,7 +36,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Groups
 {
     #region Block Attributes
-    [DisplayName( "Group Attendance Detail" )]
+    [DisplayName( "Group Attendance Detail (Legacy)" )]
     [Category( "Groups" )]
     [Description( "Lists the group members for a specific occurrence date time and allows selecting if they attended or not." )]
 
