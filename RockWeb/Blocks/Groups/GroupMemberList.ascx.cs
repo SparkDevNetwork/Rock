@@ -392,8 +392,8 @@ namespace RockWeb.Blocks.Groups
         private bool _showAttendance = false;
         private bool _hasGroupRequirements = false;
         private bool _allowGroupScheduling = false;
-        private HashSet<int> _groupMemberIdsThatLackGroupRequirements = new HashSet<int>();
-        private List<int> _groupMemberIdsWithWarnings = new List<int>();
+        private HashSet<int> _groupMemberIdsThatDoNotMeetGroupRequirements = new HashSet<int>();
+        private HashSet<int> _groupMemberIdsThatHaveGroupRequirementWarnings = new HashSet<int>();
         private List<int> _groupMemberIdsPersonInMultipleRoles = new List<int>();
         private Dictionary<int, List<GroupRequirementStatus>> _memberRequirements = new Dictionary<int, List<GroupRequirementStatus>>();
         private bool _showDateAdded = false;
@@ -537,11 +537,11 @@ namespace RockWeb.Blocks.Groups
 
                 if ( _hasGroupRequirements )
                 {
-                    if ( _groupMemberIdsThatLackGroupRequirements.Contains( groupMember.Id ) )
+                    if ( _groupMemberIdsThatDoNotMeetGroupRequirements.Contains( groupMember.Id ) )
                     {
                         sbNameHtml.Append( " <i class='fa fa-exclamation-triangle text-danger'></i>" );
                     }
-                    else if ( _groupMemberIdsWithWarnings.Contains( groupMember.Id ) )
+                    else if ( _groupMemberIdsThatHaveGroupRequirementWarnings.Contains( groupMember.Id ) )
                     {
                         sbNameHtml.Append( " <i class='fa fa-exclamation-triangle text-warning'></i>" );
                     }
@@ -943,13 +943,12 @@ namespace RockWeb.Blocks.Groups
             var lRequirementStates = e.Row.FindControl( _requirementStatesField.ID ) as Literal;
             if ( _hasGroupRequirements )
             {
+                // If there are group requirements, show labels of the requirement statuses in the grid.
                 StringBuilder sbRequirements = new StringBuilder();
-                if ( _groupMemberIdsThatLackGroupRequirements.Contains( groupMember.Id ) )
+
+                foreach ( var requirementStatus in _memberRequirements.Where( k => k.Key == groupMember.Id ).SelectMany( v => v.Value ) )
                 {
-                    foreach ( var requirementStatus in _memberRequirements.Where( k => k.Key == groupMember.Id ).SelectMany( v => v.Value ) )
-                    {
-                        sbRequirements.Append( "<span class='label label-" + RequirementStatusClass( requirementStatus.MeetsGroupRequirement ) + "'>" + requirementStatus.GroupRequirement.GroupRequirementType.Name + "</span> " );
-                    }
+                    sbRequirements.Append( "<span class='label label-" + RequirementStatusClass( requirementStatus.MeetsGroupRequirement ) + "'>" + requirementStatus.GroupRequirement.GroupRequirementType.Name + "</span> " );
                 }
 
                 lRequirementStates.Text = sbRequirements.ToString();
@@ -1911,10 +1910,16 @@ namespace RockWeb.Blocks.Groups
             _hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == _group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == _group.GroupTypeId ) ).Any();
             _allowGroupScheduling = _group.GroupType.IsSchedulingEnabled;
 
-            // If there are group requirements that a member doesn't meet, show an icon in the grid
-            var groupService = new GroupService( rockContext );
-            _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( groupService.GroupMembersNotMeetingRequirements( _group, false, true ).Select( a => a.Key.Id ).ToList().Distinct() );
-            _groupMemberIdsWithWarnings = groupService.GroupMemberIdsWithRequirementWarnings( _group );
+            if ( _hasGroupRequirements )
+            {
+                foreach ( var member in _group.Members )
+                {
+                    _memberRequirements.Add( member.Id, member.GetGroupRequirementsStatuses( rockContext ).ToList() );
+                }
+
+                _groupMemberIdsThatDoNotMeetGroupRequirements = _memberRequirements.Where( r => r.Value.Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ).Any() ).Select( kvp => kvp.Key ).Distinct().ToHashSet();
+                _groupMemberIdsThatHaveGroupRequirementWarnings = _memberRequirements.Where( r => r.Value.Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning ).Any() ).Select( kvp => kvp.Key ).Distinct().ToHashSet();
+            }
 
             // Get a collection of group member Ids that are in the group more than once (because they have multiple roles in the group) if this group allows scheduling.
             if ( _allowGroupScheduling )
@@ -2099,6 +2104,17 @@ namespace RockWeb.Blocks.Groups
             }
 
             int groupId = _group.Id;
+
+            var rockContext = new RockContext();
+            _hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable()
+                .Where( a => ( a.GroupId.HasValue && a.GroupId == _group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == _group.GroupTypeId ) ).Any();
+
+            if ( !_hasGroupRequirements )
+            {
+                // If this group does not have group requirements, do not load this requirements grid.
+                return;
+            }
+
             _memberRequirements.Clear();
 
             pnlGroupMembers.Visible = true;
@@ -2116,8 +2132,6 @@ namespace RockWeb.Blocks.Groups
             _requirementStatesField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementStates" ).FirstOrDefault();
 
             _groupTypeRoleIdsWithGroupSync = new HashSet<int>( _group.GroupSyncs.Select( a => a.GroupTypeRoleId ).ToList() );
-
-            var rockContext = new RockContext();
 
             if ( _group != null &&
                 _group.RequiredSignatureDocumentTemplateId.HasValue )
@@ -2179,9 +2193,15 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            foreach ( var member in _group.Members )
+            if ( _hasGroupRequirements )
             {
-                _memberRequirements.Add( member.Id, member.GetGroupRequirementsStatuses( rockContext ).ToList() );
+                foreach ( var member in _group.Members )
+                {
+                    _memberRequirements.Add( member.Id, member.GetGroupRequirementsStatuses( rockContext ).ToList() );
+                }
+
+                _groupMemberIdsThatDoNotMeetGroupRequirements = _memberRequirements.Where( r => r.Value.Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ).Any() ).Select( kvp => kvp.Key ).Distinct().ToHashSet();
+                _groupMemberIdsThatHaveGroupRequirementWarnings = _memberRequirements.Where( r => r.Value.Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning ).Any() ).Select( kvp => kvp.Key ).Distinct().ToHashSet();
             }
 
             // Set the selected requirement type to filter states as well as types.
@@ -2237,15 +2257,6 @@ namespace RockWeb.Blocks.Groups
             }
 
             _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
-
-            _hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == _group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == _group.GroupTypeId ) ).Any();
-
-            // If there are group requirements that a member doesn't meet, show an icon in the grid
-            var groupService = new GroupService( rockContext );
-
-            _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( groupService.GroupMembersNotMeetingRequirements( _group, false, true ).Select( a => a.Key.Id ).ToList().Distinct() );
-
-            _groupMemberIdsWithWarnings = groupService.GroupMemberIdsWithRequirementWarnings( _group );
 
             // Get a collection of group member Ids that are in the group more than once (because they have multiple roles in the group) if this group allows scheduling.
             if ( _allowGroupScheduling )
