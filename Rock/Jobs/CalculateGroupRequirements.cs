@@ -102,7 +102,8 @@ namespace Rock.Jobs
                             qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue );
                         }
 
-                        var groupMemberQry = groupMemberService.Queryable();
+                        // Only run the group requirements calculation on group members that are not inactive.
+                        var groupMemberQry = groupMemberService.Queryable().Where( gm => gm.GroupMemberStatus != GroupMemberStatus.Inactive );
 
                         if ( groupRequirement.GroupId.HasValue )
                         {
@@ -179,7 +180,7 @@ namespace Rock.Jobs
                     }
                     catch ( Exception ex )
                     {
-                        calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: {0} ", groupRequirement ), ex ) );
+                        calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: '{0}' in Group '{1}'", groupRequirement, groupIdName.Name ), ex ) );
                     }
                 }
             }
