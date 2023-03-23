@@ -69,6 +69,8 @@ export const ServiceJob = {
     DataMigrations150MobileApplicationUsersRestGroup: "480E996E-6A31-40DB-AE98-BFF85CDED506",
     /** The Job to run Post v14.1 Data Migrations to replace all existing instances of the TransactionEntryBlock with a new instance of the UtilityPaymentEntry block. */
     DataMigrations150ReplaceTransactionEntryBlocksWithUtilityPaymentEntryBlock: "8A013CC5-CB51-48F3-8AF8-767BDECACAFE",
+    /** The Job to run Post v15.1 Replace Web Forms Blocks with Obsidian Blocks. */
+    DataMigrations150ReplaceWebFormsBlocksWithObsidianBlocks: "EA00D1D4-709A-4102-863D-08471AA2C345",
     /** The Job to run Post v15.1 Data Migrations for System Phone Numbers. */
     DataMigrations150SystemPhoneNumbers: "6DFE731E-F28B-40B3-8383-84212A301214",
     /** The Job to get NCOA */

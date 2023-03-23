@@ -25,8 +25,8 @@ import StringFilter from "@Obsidian/Utility/stringUtils";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
-import Alert from "@Obsidian/Controls/alert.obs";
-import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import RockForm from "@Obsidian/Controls/rockForm";
 import FeeField from "./feeField.partial";
@@ -47,7 +47,7 @@ export default defineComponent({
         RockButton,
         RegistrantPersonField,
         RegistrantAttributeField,
-        Alert,
+        NotificationBox,
         RockForm,
         FeeField,
         DropDownList,
@@ -63,7 +63,7 @@ export default defineComponent({
             required: true
         }
     },
-    setup () {
+    setup() {
         const invokeBlockAction = useInvokeBlockAction();
         const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
         const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
@@ -89,7 +89,7 @@ export default defineComponent({
             signatureToken
         };
     },
-    data () {
+    data() {
         return {
             fieldSources: {
                 personField: RegistrationFieldSource.PersonField,
@@ -100,19 +100,19 @@ export default defineComponent({
         };
     },
     computed: {
-        showPrevious (): boolean {
+        showPrevious(): boolean {
             return this.registrationEntryState.firstStep !== this.registrationEntryState.steps.perRegistrantForms;
         },
-        viewModel (): RegistrationEntryBlockViewModel {
+        viewModel(): RegistrationEntryBlockViewModel {
             return this.registrationEntryState.viewModel;
         },
-        currentFormIndex (): number {
+        currentFormIndex(): number {
             return this.registrationEntryState.currentRegistrantFormIndex;
         },
-        currentForm (): RegistrationEntryBlockFormViewModel | null {
-            return this.formsToShow[ this.currentFormIndex ] || null;
+        currentForm(): RegistrationEntryBlockFormViewModel | null {
+            return this.formsToShow[this.currentFormIndex] || null;
         },
-        isLastForm (): boolean {
+        isLastForm(): boolean {
             return (this.currentFormIndex + 1) === this.formsToShow.length;
         },
         isDataForm(): boolean {
@@ -127,7 +127,7 @@ export default defineComponent({
         },
 
         /** The filtered list of forms that will be shown */
-        formsToShow (): RegistrationEntryBlockFormViewModel[] {
+        formsToShow(): RegistrationEntryBlockFormViewModel[] {
             if (!this.isWaitList) {
                 return this.viewModel.registrantForms;
             }
@@ -136,13 +136,13 @@ export default defineComponent({
         },
 
         /** The filtered fields to show on the current form */
-        currentFormFields (): RegistrationEntryBlockFormFieldViewModel[] {
+        currentFormFields(): RegistrationEntryBlockFormFieldViewModel[] {
             return (this.currentForm?.fields || [])
                 .filter(f => !this.isWaitList || f.showOnWaitList);
         },
 
         /** The current fields as pre-post items to allow pre-post HTML to be rendered */
-        prePostHtmlItems (): ItemWithPreAndPostHtml[] {
+        prePostHtmlItems(): ItemWithPreAndPostHtml[] {
             return this.currentFormFields
                 .map(f => ({
                     preHtml: f.preHtml,
@@ -150,10 +150,10 @@ export default defineComponent({
                     slotName: f.guid
                 }));
         },
-        currentPerson (): PersonBag | null {
+        currentPerson(): PersonBag | null {
             return store.state.currentPerson;
         },
-        pluralFeeTerm (): string {
+        pluralFeeTerm(): string {
             return StringFilter.toTitleCase(this.viewModel.pluralFeeTerm || "fees");
         },
 
@@ -169,16 +169,16 @@ export default defineComponent({
 
             // Add previous registrants as options
             for (let i = 0; i < this.registrationEntryState.currentRegistrantIndex; i++) {
-                const registrant = this.registrationEntryState.registrants[ i ];
+                const registrant = this.registrationEntryState.registrants[i];
                 const info = getRegistrantBasicInfo(registrant, this.viewModel.registrantForms);
 
-                if (!usedFamilyGuids[ registrant.familyGuid ] && info?.firstName && info?.lastName) {
+                if (!usedFamilyGuids[registrant.familyGuid] && info?.firstName && info?.lastName) {
                     options.push({
                         text: `${info.firstName} ${info.lastName}`,
                         value: registrant.familyGuid
                     });
 
-                    usedFamilyGuids[ registrant.familyGuid ] = true;
+                    usedFamilyGuids[registrant.familyGuid] = true;
                 }
             }
 
@@ -204,7 +204,7 @@ export default defineComponent({
         },
 
         /** The people that can be picked from because they are members of the same family. */
-        familyMemberOptions (): ListItemBag[] {
+        familyMemberOptions(): ListItemBag[] {
             const selectedFamily = this.currentRegistrant.familyGuid;
 
             if (!selectedFamily) {
@@ -224,13 +224,13 @@ export default defineComponent({
                     value: fm.guid
                 }));
         },
-        uppercaseRegistrantTerm (): string {
+        uppercaseRegistrantTerm(): string {
             return StringFilter.toTitleCase(this.viewModel.registrantTerm);
         },
-        firstName (): string {
+        firstName(): string {
             return getRegistrantBasicInfo(this.currentRegistrant, this.viewModel.registrantForms).firstName;
         },
-        familyMember (): RegistrationEntryBlockFamilyMemberViewModel | null {
+        familyMember(): RegistrationEntryBlockFamilyMemberViewModel | null {
             const personGuid = this.currentRegistrant.personGuid;
 
             if (!personGuid) {
@@ -377,7 +377,7 @@ export default defineComponent({
             }
         }
     },
-    created () {
+    created() {
         this.copyValuesFromFamilyMember();
     },
     template: `
@@ -399,7 +399,7 @@ export default defineComponent({
                 <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
                     <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
                     <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute" :field="field" :fieldValues="currentRegistrant.fieldValues" :formFields="currentFormFields" />
-                    <Alert alertType="danger" v-else>Could not resolve field source {{field.fieldSource}}</Alert>
+                    <NotificationBox alertType="danger" v-else>Could not resolve field source {{field.fieldSource}}</NotificationBox>
                 </template>
             </ItemsWithPreAndPostHtml>
 

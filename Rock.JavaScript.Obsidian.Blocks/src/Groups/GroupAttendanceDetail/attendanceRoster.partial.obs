@@ -1,0 +1,165 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="attendance-roster mb-3">
+        <template v-for="(groupedAttendances, groupLabel, index) in attendanceGroups" :key="groupLabel">
+            <template v-if="groupedAttendances.length">
+                <hr v-if="index !== 0" />
+                <h2 v-if="groupLabel && hasMultipleGroups">{{ groupLabel }}</h2>
+                <div class="attendance-group row mr-0">
+                    <template v-for="attendance in groupedAttendances" :key="attendance.personGuid">
+                        <CardCheckBox v-if="attendance.itemTemplate" :controlWrapperClasses="'card-check-box ' + controlWrapperClasses" :cardCheckBoxClasses="cardCheckBoxClasses" :modelValue="attendance.didAttend" @update:modelValue="onInternalAttendanceChanged($event, attendance)" :html="attendance.itemTemplate" />
+                        <CardCheckBox v-else :controlWrapperClasses="'card-check-box ' + controlWrapperClasses" :cardCheckBoxClasses="cardCheckBoxClasses" :modelValue="attendance.didAttend" @update:modelValue="onInternalAttendanceChanged($event, attendance)">
+                            <div>
+                                {{ attendance.fullName }}
+                            </div>
+                        </CardCheckBox>
+                    </template>
+                </div>
+            </template>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+    .attendance-roster hr {
+        border-top-width: 5px;
+    }
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import CardCheckBox from "./cardCheckBox.partial.obs";
+    import { AttendanceFilterByDelegate, AttendanceGroupByDelegate, AttendanceSortByDelegate } from "./types.partial";
+    import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Groups/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
+
+    const props = defineProps({
+        attendances: {
+            type: Object as PropType<GroupAttendanceDetailAttendanceBag[]>,
+            required: true
+        },
+
+        filterBy: {
+            type: Object as PropType<AttendanceFilterByDelegate | null>,
+            required: false,
+            default: null
+        },
+
+        groupBy: {
+            type: Object as PropType<AttendanceGroupByDelegate | null>,
+            required: false,
+            default: null
+        },
+
+        sortBy: {
+            type: Object as PropType<AttendanceSortByDelegate | null>,
+            required: false,
+            default: null
+        },
+
+        /**
+         * If specified, will not start grouping attendances until the number of filtered attendances exceeds.
+         */
+        groupWhenFilteredAttendanceCountExceeds: {
+            type: Number as PropType<number | null>,
+            required: false,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        /**
+         * Emitted when attendance is changed by checking/unchecking an entry on the roster.
+         * Does not emit if attendance.didAttend is changed somewhere else.
+         */
+        (e: "attendanceChanged", value: GroupAttendanceDetailAttendanceBag): void
+    }>();
+
+    const controlWrapperClasses = "col-xs-12 col-sm-6 col-md-4 col-lg-3 m-0 p-0";
+    const cardCheckBoxClasses = "mt-3 ml-3";
+
+    //#region Computed Values
+
+    /**
+     * Returns the sorted attendances if a "sort by" delegate is specified; otherwise, a copy of the attendances are returned without sorting.
+     */
+    const sortedAttendances = computed<GroupAttendanceDetailAttendanceBag[]>(() => {
+        const sortByDelegate = props.sortBy;
+
+        const attendances = [...props.attendances];
+
+        if (sortByDelegate) {
+            attendances.sort(sortByDelegate);
+        }
+
+        return attendances;
+    });
+
+    /**
+     *  Returns the filtered, sorted attendances if a "filter by" delegate is specified; otherwise, the sorted attendances are returned without filtering.
+     *  We want to filter after sorting since filtering happens more often than sorting. If we filtered first, then any time the filter changed, we'd have to also re-sort.
+     *  */
+    const filteredAttendances = computed<GroupAttendanceDetailAttendanceBag[]>(() => {
+        const filterByDelegate = props.filterBy;
+        const attendances = sortedAttendances.value;
+
+        if (!filterByDelegate) {
+            return attendances;
+        }
+
+        return attendances.filter(filterByDelegate);
+    });
+
+    /**
+     * Returns the sorted and filtered attendances into groups if a "group by" delegate is specified; otherwise, a single group of attendances with a blank key is returned.
+     */
+    const attendanceGroups = computed<Record<string, GroupAttendanceDetailAttendanceBag[]>>(() => {
+        const groupBy = props.groupBy;
+        const attendances = filteredAttendances.value;
+        const onlyGroupWhenFilteredAttendanceCountExceeds = props.groupWhenFilteredAttendanceCountExceeds;
+
+        const shouldGroup = groupBy && (!onlyGroupWhenFilteredAttendanceCountExceeds || attendances.length > onlyGroupWhenFilteredAttendanceCountExceeds);
+
+        if (!shouldGroup) {
+            return { "": attendances };
+        }
+
+        const dictionary: Record<string, GroupAttendanceDetailAttendanceBag[]> = {};
+
+        const keys: string[] = [];
+
+        attendances.forEach((attendance) => {
+            const groupLabel = groupBy(attendance);
+
+            if (!dictionary[groupLabel]) {
+                dictionary[groupLabel] = [attendance];
+                keys.push(groupLabel);
+            }
+            else {
+                dictionary[groupLabel].push(attendance);
+            }
+        });
+
+        keys.sort();
+
+        const sortedDictionary: Record<string, GroupAttendanceDetailAttendanceBag[]> = {};
+        keys.forEach(key => sortedDictionary[key] = dictionary[key]);
+        return sortedDictionary;
+    });
+
+    const hasMultipleGroups = computed<boolean>(() => Object.keys(attendanceGroups.value).length > 1);
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onInternalAttendanceChanged(didAttend: boolean, attendance: GroupAttendanceDetailAttendanceBag): void {
+        const changed = attendance.didAttend !== didAttend;
+        attendance.didAttend = didAttend;
+
+        if (changed) {
+            emit("attendanceChanged", attendance);
+        }
+    }
+
+    //#endregion
+</script>

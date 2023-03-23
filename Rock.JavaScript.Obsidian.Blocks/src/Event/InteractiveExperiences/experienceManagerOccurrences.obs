@@ -1,9 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockErrorMessage"
-           alertType="warning">
+    <NotificationBox v-if="blockErrorMessage"
+                     alertType="warning">
         {{ blockErrorMessage }}
-    </Alert>
+    </NotificationBox>
 
     <Panel v-else-if="isPanelVisible" type="block" :title="experienceName">
         <SectionHeader description="There are multiple experience occurrences happening right now. Please select the one you would like to manage." />
@@ -29,14 +29,14 @@
 </template>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel";
     import SectionHeader from "@Obsidian/Controls/sectionHeader";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { ExperienceManagerOccurrencesInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceManagerOccurrences/experienceManagerOccurrencesInitializationBox";
     import { computed, ref } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { NavigationUrlKey } from "./ExperienceManagerOccurrences/types";
+    import { NavigationUrlKey } from "./ExperienceManagerOccurrences/types.partial";
 
     const config = useConfigurationValues<ExperienceManagerOccurrencesInitializationBox>();
 

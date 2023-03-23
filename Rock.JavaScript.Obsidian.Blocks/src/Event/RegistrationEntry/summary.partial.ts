@@ -19,7 +19,7 @@ import { computed, defineComponent, inject, ref } from "vue";
 import GatewayControl from "@Obsidian/Controls/gatewayControl";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockValidation from "@Obsidian/Controls/rockValidation";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import RockButton from "@Obsidian/Controls/rockButton";
@@ -28,7 +28,7 @@ import { getRegistrantBasicInfo } from "./utils.partial";
 import CostSummary from "./costSummary.partial";
 import DiscountCodeForm from "./discountCodeForm.partial";
 import Registrar from "./registrar.partial";
-import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
+import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { Guid } from "@Obsidian/Types";
 
 export default defineComponent({
@@ -37,7 +37,7 @@ export default defineComponent({
         RockButton,
         EmailBox,
         RockForm,
-        Alert,
+        NotificationBox,
         DropDownList,
         GatewayControl,
         RockValidation,
@@ -221,7 +221,7 @@ export default defineComponent({
             </ul>
         </div>
 
-        <Alert v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</Alert>
+        <NotificationBox v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</NotificationBox>
 
         <div class="actions text-right">
             <RockButton v-if="viewModel.allowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>

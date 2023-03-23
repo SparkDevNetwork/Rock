@@ -322,7 +322,7 @@ namespace Rock.Blocks.Engagement.SignUp
 {% if projectCount > 0 %}
     <div class=""row d-flex flex-wrap"">
         {% for project in Projects %}
-            <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">
+            <div class=""col-xs-12 col-sm-6 col-md-4 mb-4"">
                 <div class=""card h-100"">
                     <div class=""card-body"">
                         <h3 class=""card-title mt-0"">{{ project.Name }}</h3>
@@ -336,10 +336,9 @@ namespace Rock.Blocks.Engagement.SignUp
                             {% else %}
                                 &nbsp;
                             {% endif %}
+                            {% endif %}
                             {% if project.DistanceInMiles != null %}
                                 <span class=""badge"">{{ project.DistanceInMiles | Format:'0.0' }} miles<span>
-                            {% else %}
-                                &nbsp;
                             {% endif %}
                         </div>
                         {% if project.MapCenter and project.MapCenter != empty %}
@@ -355,10 +354,10 @@ namespace Rock.Blocks.Engagement.SignUp
                         {% endif %}
                     </div>
                     <div class=""card-footer bg-white border-0"">
-                        <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs pl-0 text-muted"">Details</a>
-                        {% if project.ShowRegisterButton == true %}
-                            <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-warning btn-xs pull-right"">Register</a>
+                        {% if project.ShowRegisterButton %}
+                            <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-primary btn-xs"">Register</a>
                         {% endif %}
+                        <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs"">Details</a>
                     </div>
                 </div>
             </div>
@@ -372,7 +371,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
             public const string ResultsHeaderLavaTemplate = @"<h3>Results</h3>
 <p>Below is a listing of the projects that match your search results.</p>
-<hr class=""mb-5"" />";
+<hr>";
         }
 
         private static class FilterDisplayType

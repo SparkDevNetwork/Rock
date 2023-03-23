@@ -17,7 +17,10 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.Threading.Tasks;
+using Rock.Data;
+using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Engagement;
 using Rock.ViewModels.Event;
 
@@ -113,6 +116,64 @@ namespace Rock.RealTime.Topics
         public static string GetAttendanceDeletedChannel()
         {
             return "Attendance:Deleted";
+        }
+
+        #endregion
+
+        #region AttendanceOccurrence Methods
+
+        /// <summary>
+        /// Gets the attendance occurrence channels that should be used when sending
+        /// notifications for this bag.
+        /// </summary>
+        /// <param name="bag">The bag that contains the attendance occurrence data.</param>
+        /// <returns>A list of strings that contain the channel names.</returns>
+        public static List<string> GetAttendanceOccurrenceChannelsForBag( AttendanceOccurrenceUpdatedMessageBag bag )
+        {
+            var channels = new List<string>();
+
+            if ( bag.GroupGuid.HasValue )
+            {
+                channels.Add( GetAttendanceOccurrenceChannelForGroup( bag.GroupGuid.Value ) );
+            }
+
+            if ( bag.LocationGuid.HasValue )
+            {
+                channels.Add( GetAttendanceOccurrenceChannelForLocation( bag.LocationGuid.Value ) );
+            }
+
+            return channels;
+        }
+
+        /// <summary>
+        /// Gets the channel for monitoring attendance occurrence notifications for the
+        /// specified group.
+        /// </summary>
+        /// <param name="guid">The group unique identifier.</param>
+        /// <returns>A string that represents the channel name.</returns>
+        public static string GetAttendanceOccurrenceChannelForGroup( Guid guid )
+        {
+            return $"AttendanceOccurrence:Group:{guid}";
+        }
+
+        /// <summary>
+        /// Gets the channel for monitoring attendance occurrence notifications for the
+        /// specified location.
+        /// </summary>
+        /// <param name="guid">The location unique identifier.</param>
+        /// <returns>A string that represents the channel name.</returns>
+        public static string GetAttendanceOccurrenceChannelForLocation( Guid guid )
+        {
+            return $"AttendanceOccurrence:Location:{guid}";
+        }
+
+        /// <summary>
+        /// Gets the channel for monitoring attendance occurrence deleted notifications.
+        /// </summary>
+        /// <returns>A string that represents the channel name.</returns>
+        public static string GetAttendanceOccurrenceDeletedChannel()
+        {
+            return "AttendanceOccurrence:Deleted";
         }
 
         #endregion

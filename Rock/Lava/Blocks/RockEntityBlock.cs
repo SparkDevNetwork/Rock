@@ -32,6 +32,7 @@ using Rock.Reporting;
 using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -608,6 +609,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         public static void RegisterEntityCommands( ILavaEngine engine )
         {
+            // If the database is not connected, we do not have access to entity definitions.
+            // This can occur when the Lava engine is started without an attached database.
+            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            {
+                return;
+            }
+
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity

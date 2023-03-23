@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="Object.keys(registrantsWithUnmetRequirements).length">
+    <div v-if="Object.keys(registrantsWithUnmetRequirements).length" class="form-group">
         <RockLabel>{{ label }}</RockLabel>
         <div v-for="r in registrantsWithUnmetRequirements" :key="r.key">
             {{ r.fullName }} - {{ r.unmetRequirements }}

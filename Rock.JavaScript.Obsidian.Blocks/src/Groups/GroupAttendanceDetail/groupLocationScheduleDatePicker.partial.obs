@@ -1,0 +1,125 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BaseAsyncPicker v-model="internalValue"
+        v-bind="standardProps"
+        :items="actualItems" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Groups/GroupAttendanceDetail/groupAttendanceDetailGetGroupLocationScheduleDatesRequestBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        groupGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            default: null
+        },
+
+        locationGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            default: null
+        },
+
+        numberOfPreviousDaysToShow: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        shouldLogNotFoundError: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        shouldLoadItemsWhetherValuesAreSet: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: ListItemBag | ListItemBag[] | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const standardProps = useStandardAsyncPickerProps(props);
+    const loadedItems = ref<ListItemBag[] | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedItems.value || loadOptions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the items from the server.
+     */
+    const loadOptions = async (): Promise<ListItemBag[]> => {
+        const bag: GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag = {
+            groupGuid: props.groupGuid,
+            locationGuid: props.locationGuid,
+            numberOfPreviousDaysToShow: props.numberOfPreviousDaysToShow
+        };
+
+        if (!props.shouldLoadItemsWhetherValuesAreSet
+            && (!bag.groupGuid || !bag.locationGuid)) {
+            loadedItems.value = [];
+            return [];
+        }
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetGroupLocationScheduleDates", { bag });
+
+        if (result.isSuccess && result.data) {
+            loadedItems.value = result.data;
+            return result.data;
+        }
+        else {
+            if (props.shouldLogNotFoundError) {
+                console.error(result.errorMessage ?? "Unknown error while loading data.");
+            }
+
+            loadedItems.value = [];
+            return [];
+        }
+    };
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Clears the loaded items whenever the Group or Location change so that the items have to be loaded again.
+     */
+    watch(() => [props.groupGuid, props.locationGuid], () => {
+        loadedItems.value = null;
+    });
+
+    // #endregion
+
+
+</script>

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="registrarUnmetRequirements.length">
+    <div v-if="registrarUnmetRequirements.length" class="form-group">
         We are unable to register you for this project as you don't currently meet the requirement(s) below:
         <ul>
             <li v-for="(requirement, i) in registrarUnmetRequirements" :key="`requirement-{i}`">
@@ -8,17 +8,20 @@
             </li>
         </ul>
     </div>
-    <div v-else v-for="(registrant, i) in registrants" :key="`registrant-{i}`">
-        <RegisterIndividual :registrant="registrant"
-                            :title="`Registrant #${i + 1}`"
-                            :requireEmail="requireEmail"
-                            :requireMobilePhone="requireMobilePhone"
-                            :disabled="isRegistering"></RegisterIndividual>
-        <hr />
+
+    <RegisterIndividual v-else v-for="(registrant, i) in registrants" :key="`registrant-{i}`"
+                        :registrant="registrant"
+                        :title="`Registrant #${i + 1}`"
+                        :requireEmail="requireEmail"
+                        :requireMobilePhone="requireMobilePhone"
+                        :disabled="isRegistering"></RegisterIndividual>
+
+    <div v-if="allowAddRegistrants" class="form-group">
+        <RockButton type="button" @click="onAddClick" class="btn-square mr-1">
+            <i class="fa fa-plus"></i>
+        </RockButton>
+        Add Additional Individual
     </div>
-    <RockButton v-if="allowAddRegistrants" type="button" @click="onAddClick">
-        <i class="fa fa-plus"></i>
-    </RockButton>
 </template>
 
 <script setup lang="ts">

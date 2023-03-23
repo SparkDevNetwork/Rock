@@ -1,14 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockErrorMessage" :alertType="AlertType.Warning">
+    <NotificationBox v-if="blockErrorMessage" :alertType="AlertType.Warning">
         {{ blockErrorMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <Alert v-if="errorMessage" :alertType="AlertType.Warning">
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
         {{ errorMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <Alert v-if="registeredRegistrantNames?.length || unregisteredRegistrantNames?.length" :alertType="AlertType.Success">
+    <NotificationBox v-if="showRegistrationSuccess" :alertType="AlertType.Success">
         <div v-if="registeredRegistrantNames?.length">
             <p>Successfully registered individual(s):</p>
             <ul>
@@ -25,9 +25,9 @@
                 </li>
             </ul>
         </div>
-    </Alert>
+    </NotificationBox>
 
-    <Alert v-if="showRegistrationWarning" :alertType="AlertType.Warning">
+    <NotificationBox v-if="showRegistrationWarning" :alertType="AlertType.Warning">
         <div v-if="registrationWarning">
             <p>
                 {{ registrationWarning }}
@@ -41,9 +41,9 @@
                 </li>
             </ul>
         </div>
-    </Alert>
+    </NotificationBox>
 
-    <div v-if="!blockErrorMessage">
+    <div v-if="showRegistrationForm">
         <RockForm @submit="onSubmit">
 
             <RegisterAnonymous v-if="registerMode == RegisterMode.Anonymous"
@@ -65,11 +65,11 @@
                            :registrants="registrants"
                            :title="config.title" />
 
-            <div v-if="anyEligibleRegistrants" class="mt-5">
-                <Loading :isLoading="isRegistering">
-                    <RockButton type="submit" :btnType="BtnType.Warning" :disabled="isRegistering">{{ submitButtonText }}</RockButton>
-                </Loading>
-            </div>
+            <Loading :isLoading="isRegistering">
+                <div v-if="anyEligibleRegistrants" class="actions">
+                    <RockButton type="submit" :btnType="BtnType.Primary" :disabled="isRegistering">{{ submitButtonText }}</RockButton>
+                </div>
+            </Loading>
         </RockForm>
     </div>
 </template>
@@ -79,7 +79,7 @@
     import RegisterAnonymous from "./SignUpRegister/registerAnonymous.partial.obs";
     import RegisterFamily from "./SignUpRegister/registerFamily.partial.obs";
     import RegisterGroup from "./SignUpRegister/registerGroup.partial.obs";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Loading from "@Obsidian/Controls/loading";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
@@ -127,8 +127,25 @@
         return registrants.value.some((r: SignUpRegistrantBag) => r && !r.unmetGroupRequirements?.length);
     });
 
+    const showRegistrationSuccess = computed((): boolean => {
+        return !!(registeredRegistrantNames.value?.length || unregisteredRegistrantNames.value?.length);
+    });
+
     const showRegistrationWarning = computed((): boolean => {
         return !!(unsuccessfulRegistrantNames.value?.length || registrationWarning.value?.length);
+    });
+
+    const showRegistrationForm = computed((): boolean => {
+        if (blockErrorMessage.value) {
+            return false;
+        }
+
+        if (showRegistrationSuccess.value) {
+            // If registration was successful, only re-show the form if there was also a registration warning.
+            return showRegistrationWarning.value;
+        }
+
+        return true;
     });
 
     // #endregion

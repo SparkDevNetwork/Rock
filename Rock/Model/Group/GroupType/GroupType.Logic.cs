@@ -29,6 +29,37 @@ namespace Rock.Model
 {
     public partial class GroupType
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the attendance reminder followup days list.  This is the logical representation of <see cref="AttendanceReminderFollowupDays"/>.
+        /// </summary>
+        /// <value>The attendance reminder followup days list.</value>
+        public List<int> AttendanceReminderFollowupDaysList
+        {
+            get
+            {
+                var intValues = new List<int>();
+
+                var values = this.AttendanceReminderFollowupDays.SplitDelimitedValues( "," );
+                foreach ( var value in values )
+                {
+                    if ( int.TryParse( value, out var intValue ) )
+                    {
+                        intValues.Add( intValue );
+                    }
+                }
+
+                return intValues;
+            }
+            set
+            {
+                this.AttendanceReminderFollowupDays = value.AsDelimited( "," );
+            }
+        }
+
+        #endregion Properties
+
         #region Methods
 
         /// <summary>

@@ -104,6 +104,12 @@ registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
 
+import { ReminderTypeFieldType } from "./reminderTypeField.partial";
+registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());
+
+import { ReminderTypesFieldType } from "./reminderTypesField.partial";
+registerFieldType(FieldTypeGuids.ReminderTypes, new ReminderTypesFieldType());
+
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
 

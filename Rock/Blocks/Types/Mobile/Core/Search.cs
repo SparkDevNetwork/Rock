@@ -22,7 +22,9 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Mobile;
+using Rock.Model;
 using Rock.Search;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Core
 {
@@ -81,19 +83,26 @@ namespace Rock.Blocks.Types.Mobile.Core
         Key = AttributeKey.ResultsSeparatorContent,
         Order = 5 )]
 
+    [CodeEditorField( "Historical Result Item Template",
+        Description = "Lava template for rendering each historical result item. The Lava merge fields will be populated by the values provided in the 'AppendToSearchHistory' command.",
+        IsRequired = true,
+        DefaultValue = defaultHistoricalItemTemplate,
+        Key = AttributeKey.HistoricalResultItemTemplate,
+        Order = 6 )]
+
     [MobileNavigationActionField( "Detail Navigation Action",
         Description = "The navigation action to perform when an item is tapped. The Guid of the item will be passed as the entity name and Guid, such as PersonGuid=value.",
         IsRequired = false,
         DefaultValue = MobileNavigationActionFieldAttribute.NoneValue,
         Key = AttributeKey.DetailNavigationAction,
-        Order = 6 )]
+        Order = 7 )]
 
     [IntegerField( "Max Results",
         Description = "The maximum number of results to show before displaying a 'Show More' option.",
         IsRequired = true,
         DefaultIntegerValue = 25,
         Key = AttributeKey.MaxResults,
-        Order = 7 )]
+        Order = 8 )]
 
     [BooleanField( "Auto Focus Keyboard",
         Description = "Determines if the keyboard should auto-focus into the search field when the page is attached.",
@@ -101,7 +110,14 @@ namespace Rock.Blocks.Types.Mobile.Core
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         Key = AttributeKey.AutoFocusKeyboard,
-        Order = 8 )]
+        Order = 9 )]
+
+    [IntegerField( "Stopped Typing Behavior Threshold",
+        Description = "Changes the amount of time (in milliseconds) that a user must stop typing for the search command to execute. Set to 0 to disable entirely.",
+        IsRequired = true,
+        DefaultIntegerValue = 200,
+        Key = AttributeKey.StoppedTypingBehaviorThreshold,
+        Order = 10 )]
 
     #endregion
 
@@ -109,7 +125,62 @@ namespace Rock.Blocks.Types.Mobile.Core
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CORE_SEARCH )]
     public class Search : RockMobileBlockType
     {
-        #region Block Attributes
+        #region Constants
+
+        private const string defaultHistoricalItemTemplate = @"<StackLayout
+    Spacing=""0"">
+    <Frame StyleClass=""search-item-container"" 
+        Margin=""0""
+        BackgroundColor=""White""
+        HasShadow=""false""
+        HeightRequest=""40"">
+            <StackLayout Orientation=""Horizontal""
+                Spacing=""0""
+                VerticalOptions=""Center"">
+                <Rock:Image Source=""{{ PhotoUrl | Escape }}""
+                    StyleClass=""search-image""
+                    VerticalOptions=""Start""
+                    Aspect=""AspectFit""
+                    Margin=""0, 4, 8, 0"">
+                    <Rock:CircleTransformation />
+                </Rock:Image>
+                
+                <StackLayout Spacing=""0"" 
+                    HorizontalOptions=""FillAndExpand"">
+                    <StackLayout Orientation=""Horizontal""
+                    VerticalOptions=""Center"">
+                        <Label StyleClass=""search-item-name""
+                            Text=""{{ Name }}""
+                            LineBreakMode=""TailTruncation""
+                            HorizontalOptions=""FillAndExpand"" />
+                    </StackLayout>
+                    {% if Text == null or Text == """" %}
+                        {% assign Text = ""No Email"" %}
+                    {% endif %}
+                        <Label StyleClass=""search-item-text""
+                            Grid.Column=""0""
+                            MaxLines=""2""
+                            LineBreakMode=""TailTruncation"">{{ Text | XamlWrap }}</Label> 
+                </StackLayout>
+
+                <Rock:Icon IconClass=""times""
+                    VerticalTextAlignment=""Center""
+                    Grid.Column=""1"" 
+                    StyleClass=""note-read-more-icon""
+                    HorizontalOptions=""End""
+                    Padding=""8, 0"">
+                    <Rock:Icon.GestureRecognizers>
+                        <TapGestureRecognizer
+                            Command=""{Binding DeleteFromSearchHistory}""
+                            CommandParameter=""{{ Guid }}"" />
+                    </Rock:Icon.GestureRecognizers>
+                </Rock:Icon>
+            </StackLayout>
+        </Frame>
+    <BoxView HorizontalOptions=""FillAndExpand""
+        HeightRequest=""1""
+        Color=""#cccccc"" />
+</StackLayout>";
 
         /// <summary>
         /// The default attribute values.
@@ -126,24 +197,62 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// </summary>
         private static class AttributeKey
         {
-            public const string SearchComponent = "SearchComponent";
+            /// <summary>
+            /// The search component attribute key.
+            /// </summary>
+            public const string SearchComponent = "SearchComponent"; // key for search component attribute
 
+            /// <summary>
+            /// The show search label attribute key.
+            /// </summary>
             public const string ShowSearchLabel = "ShowSearchLabel";
 
+            /// <summary>
+            /// The search label text attribute key.
+            /// </summary>
             public const string SearchLabelText = "SearchLabelText";
 
+            /// <summary>
+            /// The search placeholder text attribute key.
+            /// </summary>
             public const string SearchPlaceholderText = "SearchPlaceholderText";
 
+            /// <summary>
+            /// The results separator content attribute key.
+            /// </summary>
             public const string ResultsSeparatorContent = "ResultsSeparatorContent";
 
+            /// <summary>
+            /// The result item template attribute key.
+            /// </summary>
             public const string ResultItemTemplate = "ResultItemTemplate";
 
+            /// <summary>
+            /// The historical result item template attribute key.
+            /// </summary>
+            public const string HistoricalResultItemTemplate = "HistoricalResultItemTemplate";
+
+            /// <summary>
+            /// The detail navigation action attribute key.
+            /// </summary>
             public const string DetailNavigationAction = "DetailNavigationAction";
 
+            /// <summary>
+            /// The max results attribute key.
+            /// </summary>
             public const string MaxResults = "MaxResults";
 
+            /// <summary>
+            /// The autofocus keyboard attribute key.
+            /// </summary>
             public const string AutoFocusKeyboard = "AutoFocusKeyboard";
+
+            /// <summary>
+            /// The stopped typing behavior threshold attribute key.
+            /// </summary>
+            public const string StoppedTypingBehaviorThreshold = "StoppedTypingBehaviorThreshold";
         }
+
 
         /// <summary>
         /// Gets the search component to use for searches.
@@ -209,6 +318,18 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <value><c>true</c> if [automatic focus keyboard]; otherwise, <c>false</c>.</value>
         public bool AutoFocusKeyboard => GetAttributeValue( AttributeKey.AutoFocusKeyboard ).AsBoolean();
 
+        /// <summary>
+        /// Gets the historical result item template.
+        /// </summary>
+        /// <value>The historical result item template.</value>
+        public string HistoricalResultItemTemplate => GetAttributeValue( AttributeKey.HistoricalResultItemTemplate );
+
+        /// <summary>
+        /// Gets the stopped typing behavior threshold, which is a value used in the shell
+        /// to set how long (in milliseconds) to wait before a search is executed.
+        /// </summary>
+        public int StoppedTypingBehaviorThreshold => GetAttributeValue( AttributeKey.StoppedTypingBehaviorThreshold ).AsInteger();
+
         #endregion
 
         #region IRockMobileBlockType Implementation
@@ -244,7 +365,9 @@ namespace Rock.Blocks.Types.Mobile.Core
                 SearchPlaceholderText,
                 ResultsSeparatorContent,
                 DetailNavigationAction,
-                AutoFocusKeyboard
+                AutoFocusKeyboard,
+                HistoricalResultItemTemplate,
+                StoppedTypingBehaviorThreshold
             };
         }
 
@@ -276,6 +399,13 @@ namespace Rock.Blocks.Types.Mobile.Core
 
                 viewModel.Guid = entity.Guid;
                 viewModel.DetailKey = $"{type.Name}Guid";
+
+                // If this entity is a person, we also want to pass the ViewedCount to the shell.
+                var personEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PERSON ).Id;
+                if ( entity.TypeId == personEntityTypeId )
+                {
+                    viewModel.ViewedCount = new PersonService( new RockContext() ).Get( entity.Id )?.ViewedCount;
+                }
             }
 
             return viewModel;
@@ -306,13 +436,16 @@ namespace Rock.Blocks.Types.Mobile.Core
 
                     mergeFields.AddOrReplace( "Item", r );
                     mergeFields.AddOrReplace( "ItemType", type.Name );
+                    mergeFields.AddOrReplace( "DetailNavigationActionType", DetailNavigationAction.Type );
+                    mergeFields.AddOrReplace( "DetailNavigationActionPage", DetailNavigationAction.PageGuid );
 
                     var content = itemTemplate.ResolveMergeFields( mergeFields );
 
                     return GetSearchResultItemViewModel( r, content );
                 } )
+                .OrderByDescending( r => r.ViewedCount )
                 .ToList();
-
+                
             return resultItems;
         }
 
@@ -390,6 +523,12 @@ namespace Rock.Blocks.Types.Mobile.Core
             /// </summary>
             /// <value>The content to be displayed for this item.</value>
             public string Content { get; set; }
+
+            /// <summary>
+            /// Gets or sets the view count.
+            /// </summary>
+            /// <value>The view count.</value>
+            public int? ViewedCount { get; set; }
         }
 
         #endregion

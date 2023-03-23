@@ -23,7 +23,7 @@ import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import Toggle from "@Obsidian/Controls/toggle";
@@ -74,7 +74,7 @@ export default defineComponent({
         DropDownList,
         DatePicker,
         RockButton,
-        Alert,
+        NotificationBox,
         Toggle,
         TextBox,
         GatewayControl,
@@ -297,9 +297,7 @@ export default defineComponent({
 
     template: `
 <div class="transaction-entry-v2">
-    <Alert v-if="criticalError" danger>
-        {{criticalError}}
-    </Alert>
+    <NotificationBox v-if="criticalError" danger>{{criticalError}}</NotificationBox>
     <template v-else-if="!gatewayControlModel || !gatewayControlModel.fileUrl">
         <h4>Welcome to Rock's On-line Giving Experience</h4>
         <p>
@@ -314,7 +312,7 @@ export default defineComponent({
         <DropDownList label="Campus" v-model="args.campusGuid" :showBlankItem="false" :items="campuses" />
         <DropDownList label="Frequency" v-model="args.frequencyValueGuid" :showBlankItem="false" :items="frequencies" />
         <DatePicker label="Process Gift On" v-model="args.giftDate" />
-        <Alert alertType="validation" v-if="page1Error">{{page1Error}}</Alert>
+        <NotificationBox alertType="validation" v-if="page1Error">{{page1Error}}</NotificationBox>
         <RockButton btnType="primary" @click="onPageOneSubmit">Give Now</RockButton>
     </template>
     <template v-else-if="pageIndex === 2">
@@ -327,7 +325,7 @@ export default defineComponent({
             </div>
         </div>
         <div>
-            <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
+            <NotificationBox v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</NotificationBox>
             <RockValidation :errors="gatewayValidationFields" />
             <div class="hosted-payment-control">
                 <GatewayControl

@@ -1,0 +1,503 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="attendance-filter">
+        <RockFormField v-bind="standardFieldProps" name="attendanceFilter" :modelValue="allFilters">
+            <div class="attendance-filter-control-wrapper d-flex flex-row flex-nowrap">
+                <div class="status-buttons btn-group d-flex align-self-start">
+                    <RockButton btnSize="lg" :btnType="getBtnType(didAttendFilterOrDefault.hasFilter(defaultFilter))" @click="setDefaultOrDidAttendFilter(defaultFilter)"><i class="fa fa-th" /></RockButton>
+                    <RockButton btnSize="lg" :btnType="getBtnType(didAttendFilterOrDefault.hasFilter(DidAttendFilter))" @click="setDefaultOrDidAttendFilter(DidAttendFilter)">{{ didAttendCount }}</RockButton>
+                </div>
+                <div :class="`initial-buttons btn-group ml-2 d-flex ${isScrollSupported ? 'overflow-hidden' : 'flex-wrap'}`" ref="initialButtonsContainerElement" @scroll="debouncedScrollCheck">
+                    <button v-if="isScrollSupported && (isAnyInitialFilterOverflowingToLeft || isAnyInitialFilterOverflowingToRight)"
+                        :class="`align-self-start left-scroll-button btn btn-lg btn-${getBtnType(isAnyActiveInitialFilterOverflowingToLeft)}`"
+                        ref="leftScrollButtonElement"
+                        type="button"
+                        @click="onScrollLeftClicked"><i class="fa fa-angle-left"></i></button>
+                    <button v-for="(initial, index) in initials"
+                        :class="`btn btn-lg btn-${getBtnType(initialsFilters.hasFilter(getOrCreateInitialFilter(initial)))}`"
+                        :ref="(element) => (setInitialComponent(index, element, initial))"
+                        type="button"
+                        @click="onInitialFilterClicked(getOrCreateInitialFilter(initial))">{{ initial }}</button>
+                    <button v-if="isScrollSupported && (isAnyInitialFilterOverflowingToLeft || isAnyInitialFilterOverflowingToRight)"
+                        :class="`align-self-end right-scroll-button btn btn-lg btn-${getBtnType(isAnyActiveInitialFilterOverflowingToRight)}`"
+                        ref="rightScrollButtonElement"
+                        type="button"
+                        @click="onScrollRightClicked"><i class="fa fa-angle-right"></i>
+                    </button>
+                </div>
+            </div>
+        </RockFormField>
+    </div>
+</template>
+
+<style scoped>
+
+    .status-buttons,
+    .initial-buttons {
+        padding: 0.2rem 0; /* Bootstrap button box shadows are hidden from overflow:hidden so adding padding to this container. */
+    }
+
+    .initial-buttons {
+        scroll-behavior: smooth;
+    }
+
+    .left-scroll-button {
+        position: sticky;
+        left: 0;
+        order: -1; /* Moves the left scroll to the start of the flex box. */
+        z-index: 3; /* z-index is typically not recommended, but this addresses an issue where a partially covered filter button is hovered and displayed over the scroll button. */
+
+        outline: none;
+        box-shadow: -6px 0 white; /* Hides other buttons in the corner radius of this button, as they scroll beneath this button */
+    }
+
+    .right-scroll-button {
+        position: sticky;
+        right: 0;
+        z-index: 3; /* z-index is typically not recommended, but this addresses an issue where a partially covered filter button is hovered and displayed over the scroll button. */
+
+        outline: none;
+        box-shadow: 6px 0 white; /* Hides other buttons in the corner radius of this button, as they scroll beneath this button */
+    }
+</style>
+
+<script setup lang="ts">
+    import { ComponentPublicInstance, computed, nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import { createEveryFilter, createSomeFilter, DidAttendFilter, getOrCreateFirstNameStartsWithFilter, getOrCreateLastNameStartsWithFilter, IAggregateAttendanceFilter, IAttendanceFilter, NoFilter } from "./utils.partial";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Groups/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
+
+    type InitialComponent = {
+        element: Element;
+        initial: string;
+        initialFilter: IAttendanceFilter;
+    };
+
+    const props = defineProps({
+
+        modelValue: {
+            type: Object as PropType<IAttendanceFilter>,
+            required: true
+        },
+
+        attendances: {
+            type: Object as PropType<GroupAttendanceDetailAttendanceBag[]>,
+            required: true
+        },
+
+
+        defaultFilter: {
+            type: Object as PropType<IAttendanceFilter>,
+            default: NoFilter
+        },
+
+        /**
+         * When `true`, displays filter buttons for each attendee first name initial.
+         * When `false`, displays filter buttons for each attendee last name initial.
+         */
+        isFilterByFirstNameInitial: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /**
+         * The BtnType when a filter button is unselected.
+         */
+        unselectedBtnType: {
+            type: String as PropType<LiteralUnion<BtnType>>,
+            default: BtnType.Default
+        },
+
+        /**
+         * The BtnType when a filter button is selected.
+         */
+        selectedBtnType: {
+            type: String as PropType<LiteralUnion<BtnType>>,
+            default: BtnType.Primary
+        },
+
+        /**
+         * Allows filtering by multiple initials.
+         */
+        isMultiselect: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: IAttendanceFilter): void
+    }>();
+
+    //#region Values
+
+    const isScrollSupported = ref<boolean>(false);
+    const initialButtonsContainerElement = ref<HTMLElement | undefined>();
+    const leftScrollButtonElement = ref<HTMLDivElement | undefined>();
+    const rightScrollButtonElement = ref<HTMLDivElement | undefined>();
+    const initialComponents = ref<InitialComponent[]>([]);
+    const overflowingLeftInitialComponents = ref<InitialComponent[]>([]);
+    const overflowingRightInitialComponents = ref<InitialComponent[]>([]);
+
+    // Initialize the "default or has attended filter" based on the initial filter(s).
+    const didAttendFilterOrDefault = ref<typeof DidAttendFilter | typeof props.defaultFilter>(props.modelValue.hasFilter(DidAttendFilter) ? DidAttendFilter : props.defaultFilter);
+
+    // No need to initialize the "last name starts with" filter(s) yet.
+    const initialsFilters = ref<IAggregateAttendanceFilter>(createSomeFilter());
+
+    //#endregion
+
+    //#region Computed Values
+
+    const isAnyInitialFilterOverflowingToLeft = computed<boolean>(() => !!overflowingLeftInitialComponents.value.length);
+
+    const isAnyInitialFilterOverflowingToRight = computed<boolean>(() => !!overflowingRightInitialComponents.value.length);
+
+    const isAnyActiveInitialFilterOverflowingToLeft = computed<boolean>(() =>
+        overflowingLeftInitialComponents.value
+            .map(c => c.initialFilter)
+            .some(f => initialsFilters.value.hasFilter(f)));
+
+    const isAnyActiveInitialFilterOverflowingToRight = computed<boolean>(() =>
+        overflowingRightInitialComponents.value
+            .map(c => c.initialFilter)
+            .some(f => initialsFilters.value.hasFilter(f)));
+
+    const allFilters = computed({
+        get(): IAttendanceFilter {
+            return props.modelValue;
+        },
+        set(newValue: IAttendanceFilter) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    const didAttendCount = computed<number>(() => props.attendances.filter(attendance => attendance.didAttend).length);
+
+    const initials = computed<string[]>(() =>
+        props.isFilterByFirstNameInitial
+            ? props.attendances.filter(a => !!a.nickName)
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                .map(a => a.nickName!.charAt(0).toLocaleUpperCase())
+                .filter((item, index, arr) => arr.indexOf(item) === index) // Remove duplicates.
+                .sort()
+            : props.attendances.filter(a => !!a.lastName)
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                .map(a => a.lastName!.charAt(0).toLocaleUpperCase())
+                .filter((item, index, arr) => arr.indexOf(item) === index) // Remove duplicates.
+                .sort());
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for an initials filter button being clicked.
+     */
+    function onInitialFilterClicked(attendanceFilter: IAttendanceFilter): void {
+        addOrRemoveInitialsFilter(attendanceFilter);
+    }
+
+    /**
+     * Event handler for left scroll button being clicked.
+     */
+    function onScrollLeftClicked(): void {
+        const containerElement = initialButtonsContainerElement.value;
+        if (containerElement) {
+            containerElement.scrollBy({
+                // Scroll to the left by 2/5 (just under a half) the visible width.
+                left: -(containerElement.offsetWidth / 5) * 2
+            });
+        }
+    }
+
+    /**
+     * Event handler for right scroll button being clicked.
+     */
+    function onScrollRightClicked(): void {
+        const containerElement = initialButtonsContainerElement.value;
+        if (containerElement) {
+            containerElement.scrollBy({
+                // Scroll to the right by 2/5 (just under a half) the visible width.
+                left: containerElement.offsetWidth / 5 * 2
+            });
+        }
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Sets the data for a single initial filter button.
+     * @param index: The index to at which to store the data.
+     * @param component: The initial button element.
+     * @param initial: The name initial associated with the component.
+     */
+    function setInitialComponent(index: number, element: Element | ComponentPublicInstance | null, initial: string): void {
+        initialComponents.value[index] = {
+            element: element as Element,
+            initial,
+            initialFilter: getOrCreateInitialFilter(initial)};
+    }
+
+    /**
+     * Creates a (or retrieves an existing) filter that will filter attendances by their first or last initial.
+     */
+    function getOrCreateInitialFilter(initial: string): IAttendanceFilter {
+        return props.isFilterByFirstNameInitial ? getOrCreateFirstNameStartsWithFilter(initial) : getOrCreateLastNameStartsWithFilter(initial);
+    }
+
+    /**
+     * Gets the BtnType based on whether or not a button is in a "selected" state.
+     */
+    function getBtnType(isSelected: boolean): LiteralUnion<BtnType> {
+        if (isSelected) {
+            return props.selectedBtnType;
+        }
+        else {
+            return props.unselectedBtnType;
+        }
+    }
+
+    /**
+     * Sets the "default or did attend" filter.
+     */
+    function setDefaultOrDidAttendFilter(attendanceFilter: IAttendanceFilter): void {
+        didAttendFilterOrDefault.value = attendanceFilter;
+
+        notifyFiltersUpdated();
+    }
+
+    /**
+     * Toggles an initials filter.
+     *
+     * If "A" is selected, then calling this function will deselect it.
+     * If "A" is not selected, then calling this function will select it.
+     */
+    function addOrRemoveInitialsFilter(attendanceFilter: IAttendanceFilter): void {
+        // If the filter is currently selected then remove it.
+        const hasNoLastNameStartsWithFilters = !initialsFilters.value.filters.length;
+
+        if (hasNoLastNameStartsWithFilters) {
+            initialsFilters.value.filters = [attendanceFilter];
+        }
+        else {
+            // At least one filter is selected.
+            const isFilterSelected = initialsFilters.value.hasFilter(attendanceFilter);
+
+            if (!props.isMultiselect) {
+                if (isFilterSelected) {
+                    // Deselect the filter.
+                    initialsFilters.value.filters = [];
+                }
+                else {
+                    // Select the filter.
+                    initialsFilters.value.filters = [attendanceFilter];
+                }
+            }
+            else {
+                if (isFilterSelected) {
+                    // Exclude the filter.
+                    initialsFilters.value.filters = initialsFilters.value.filters.filter(f => !f.isFilter(attendanceFilter));
+                }
+                else {
+                    // Include the filter.
+                    initialsFilters.value.filters.push(attendanceFilter);
+                }
+            }
+        }
+
+        notifyFiltersUpdated();
+        checkIfInitialsFilterButtonsAreOverflowing();
+    }
+
+    /**
+     * Builds and emits the aggregate filter.
+     */
+    function notifyFiltersUpdated(): void {
+        if (!initialsFilters.value.filters.length) {
+            // There are no initials filters, so set the overall filter to the (no filter or has attended filter).
+            allFilters.value = didAttendFilterOrDefault.value;
+        }
+        else {
+            // There are initials filters, so set the overall filter to the combinations of the initials filters and the (no filter or has attended filter).
+            allFilters.value = createEveryFilter(didAttendFilterOrDefault.value, initialsFilters.value);
+        }
+    }
+
+    /**
+     * Determines whether any part of an element is to the left of a target element.
+     */
+    function isElementLeftOfElement(element: Element, targetElement: Element, targetElementLeftOffset?: number): boolean {
+        const { left: elementLeft } = element.getBoundingClientRect();
+        const { left: parentLeft } = targetElement.getBoundingClientRect();
+
+        // Add a little wiggle room (+-1) to account for rounding errors.
+        return (elementLeft + 1) < ((parentLeft + (targetElementLeftOffset || 0)) - 1);
+    }
+
+    /**
+     * Determines whether any part of an element is to the right of a target element.
+     */
+    function isElementRightOfElement(element: Element, targetElement: Element, targetElementRightOffset?: number): boolean {
+        const { right: elementRight } = element.getBoundingClientRect();
+        const { right: parentRight } = targetElement.getBoundingClientRect();
+
+        // Add a little wiggle room (+-1) to account for rounding errors.
+        return (elementRight - 1) > ((parentRight + (targetElementRightOffset || 0)) + 1);
+    }
+
+    /**
+     * Checks if the initial filter buttons are overflowing in either direction.
+     */
+    function checkIfInitialsFilterButtonsAreOverflowing(): void {
+        nextTick(() => {
+            checkIfInitialsFilterButtonsAreOverflowingToLeft();
+            checkIfInitialsFilterButtonsAreOverflowingToRight();
+        });
+    }
+
+    /**
+     * Checks if the initial filter buttons are overflowing to the left.
+     */
+    function checkIfInitialsFilterButtonsAreOverflowingToLeft(): void {
+        const parentElement = initialButtonsContainerElement.value;
+
+        if (!parentElement) {
+            // Cannot recompute if parent element does not exist.
+            return;
+        }
+
+        const components = initialComponents.value;
+
+        if (!components.length) {
+            // Cannot recompute if no initial components.
+            return;
+        }
+
+        const leftOffset = leftScrollButtonElement.value?.offsetWidth;
+
+        const overflowingComponents = components.filter(initialComponent => initialComponent?.element && isElementLeftOfElement(initialComponent.element, parentElement, leftOffset));
+        const existingOverflowingComponents = overflowingLeftInitialComponents.value;
+
+        if (overflowingComponents.length !== existingOverflowingComponents.length) {
+            overflowingLeftInitialComponents.value = overflowingComponents;
+            return;
+        }
+
+        // If both overflow arrays are empty, then do not update.
+        if (overflowingComponents.length === 0) {
+            return;
+        }
+
+        // If both overflow arrays contain the same elements, then do not update.
+        if (overflowingComponents.every(c => existingOverflowingComponents.indexOf(c) !== -1)) {
+            return;
+        }
+
+        // The overflow arrays are different.
+        overflowingLeftInitialComponents.value = overflowingComponents;
+    }
+
+    /**
+     * Checks if the initial filter buttons are overflowing to the left.
+     */
+    function checkIfInitialsFilterButtonsAreOverflowingToRight(): void {
+        const parentElement = initialButtonsContainerElement.value;
+
+        if (!parentElement) {
+            // Cannot recompute if parent element does not exist.
+            return;
+        }
+
+        const components = initialComponents.value;
+
+        if (!components.length) {
+            // Cannot recompute if no initial components.
+            return;
+        }
+
+        const rightOffset = -(rightScrollButtonElement.value?.offsetWidth ?? 0);
+
+        const overflowingComponents = components.filter(initialComponent => initialComponent?.element && isElementRightOfElement(initialComponent.element, parentElement, rightOffset));
+        const existingOverflowingComponents = overflowingRightInitialComponents.value;
+
+        if (overflowingComponents.length !== existingOverflowingComponents.length) {
+            overflowingRightInitialComponents.value = overflowingComponents;
+            return;
+        }
+
+        // If both overflow arrays are empty, then do not update.
+        if (overflowingComponents.length === 0) {
+            return;
+        }
+
+        // If both overflow arrays contain the same elements, then do not update.
+        if (overflowingComponents.every(c => existingOverflowingComponents.indexOf(c) !== -1)) {
+            return;
+        }
+
+        // The overflow arrays are different.
+        overflowingRightInitialComponents.value = overflowingComponents;
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    // Clear all filters if the modelValue changes to NoFilter.
+    watch(() => props.modelValue, () => {
+        if (props.modelValue.isFilter(NoFilter)) {
+            didAttendFilterOrDefault.value = NoFilter;
+            initialsFilters.value.filters = [];
+            notifyFiltersUpdated();
+            checkIfInitialsFilterButtonsAreOverflowing();
+        }
+    });
+
+    // Clear the initials filters when changing between filter by first and last initial.
+    watch(() => props.isFilterByFirstNameInitial, () => {
+        initialsFilters.value.filters = [];
+        notifyFiltersUpdated();
+    });
+
+    //#endregion
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    // If we don't debounce, then the overflow check would happen many times while scrolling when we only need it to check after scrolling is complete.
+    const debouncedScrollCheck = debounce(checkIfInitialsFilterButtonsAreOverflowing, 50);
+
+    if (window.ResizeObserver) {
+        isScrollSupported.value = true;
+
+        // Observe changes to the parent element containing the initials filters
+        // so we can check overflows any time the parent element changes size.
+        const initialsFilterOverflowObserver = new ResizeObserver(entries => {
+            entries.forEach(_ => {
+                checkIfInitialsFilterButtonsAreOverflowing();
+            });
+        });
+
+        onMounted(() => {
+            checkIfInitialsFilterButtonsAreOverflowing();
+            if (initialButtonsContainerElement.value) {
+                initialsFilterOverflowObserver.observe(initialButtonsContainerElement.value);
+            }
+        });
+
+
+        onUnmounted(() => {
+            // Stop observing size changes to the parent element.
+            initialsFilterOverflowObserver.disconnect();
+        });
+    }
+</script>

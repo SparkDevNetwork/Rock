@@ -30,12 +30,19 @@
                             label="Mobile Phone"
                             :rules="mobilePhoneRules"
                             :disabled="disabled" />
+        </div>
+    </div>
+
+    <div class="row -mt-form-group">
+        <div class="col-md-6 col-md-offset-6">
             <CheckBox v-model="registrant.allowSms"
                       label=""
                       text="Allow SMS Messages"
                       :disabled="disabled || !mobilePhoneNumber" />
         </div>
     </div>
+
+    <hr>
 </template>
 
 <script setup lang="ts">

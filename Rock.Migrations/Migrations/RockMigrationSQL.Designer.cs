@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -1379,6 +1379,55 @@ namespace Rock.Migrations.Migrations {
             get {
                 return ResourceManager.GetString("_202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleSta" +
                         "ticMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [AttributeValue] SET [Value]=N&apos;{
+        ///    &quot;SeriesColors&quot;: [
+        ///      &quot;#3b82f6&quot;,
+        ///      &quot;#f97316&quot;,
+        ///      &quot;#ef4444&quot;,
+        ///      &quot;#06b6d4&quot;,
+        ///      &quot;#22c55e&quot;,
+        ///      &quot;#eab308&quot;,
+        ///      &quot;#8b5cf6&quot;,
+        ///      &quot;#EC4899&quot;,
+        ///      &quot;#737373&quot;
+        ///    ],
+        ///    &quot;GoalSeriesColor&quot;: &quot;red&quot;,
+        ///    &quot;Grid&quot;: {
+        ///      &quot;ColorGradient&quot;: null,
+        ///      &quot;Color&quot;: null,
+        ///      &quot;BackgroundColorGradient&quot;: null,
+        ///      &quot;BackgroundColor&quot;: &quot;transparent&quot;,
+        ///      &quot;BorderWidth&quot;: {
+        ///        &quot;top&quot;: 0,
+        ///        &quot;right&quot;: 0,
+        ///        &quot;bottom&quot;: 1,
+        ///        &quot;left&quot;: 1
+        ///      },
+        ///      &quot;Bo [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202303231713546_Rollup_20230323_ChartColorUpdate {
+            get {
+                return ResourceManager.GetString("_202303231713546_Rollup_20230323_ChartColorUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [SystemCommunication] SET [Body]=N&apos;{% assign peopleReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,true %}
+        ///{% assign otherReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,false %}
+        ///{% assign currentDate = &apos;&apos;Now&apos;&apos; | Date:&apos;&apos;MMMM d, yyyy&apos;&apos; %}
+        ///{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///&lt;h1 style=&quot;margin:0;&quot;&gt;Your Reminders&lt;/h1&gt;
+        ///
+        ///&lt;p&gt;
+        ///    Below are {{ MaxRemindersPerEntityType }} of the most recent reminders for each feature as of {{ currentDate }}. &lt;a href=&quot;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicApplicati [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars {
+            get {
+                return ResourceManager.GetString("_202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars", resourceCulture);
             }
         }
     }

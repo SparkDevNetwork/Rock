@@ -1,9 +1,9 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>{% if UseIsSystem == true %}
-        <Alert v-if="isSystem" alertType="info">
+        <NotificationBox v-if="isSystem" alertType="info">
             <strong>Note</strong> Because this {{ EntityName | SplitCase | Downcase }} is used by Rock, editing is not enabled.
-        </Alert>{% endif %}
+        </NotificationBox>{% endif %}
 
         <ValueDetailList :modelValue="topValues" />
 
@@ -18,12 +18,13 @@
         </div>{% if UseAttributeValues == true %}
 
         <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />{% endif %}
-    </fieldset>
+    
+</fieldset>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";{% if UseIsSystem == true %}
-    import Alert from "@Obsidian/Controls/alert.obs";{% endif %}{% if UseAttributeValues == true %}
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";{% endif %}{% if UseAttributeValues == true %}
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
@@ -32,8 +33,8 @@
     import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
 
     const props = defineProps({
-        modelValue: {
-            type: Object as PropType<{{ EntityName }}Bag | null>,
+    modelValue: {
+    type: Object as PropType<{{ EntityName }}Bag | null>,
             required: false
         },
 

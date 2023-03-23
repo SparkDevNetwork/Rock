@@ -14,9 +14,9 @@
             </div>
         </div>
 
-        <Alert v-if="isExperienceInactive" alertType="warning">
+        <NotificationBox v-if="isExperienceInactive" alertType="warning">
             This experience event has ended.
-        </Alert>
+        </NotificationBox>
 
         <div class="experience-body row d-flex flex-wrap" :class="{ inactive: isExperienceInactive }">
             <div class="col-xs-12 col-md-6 col-lg-7 mb-3 mb-md-0">
@@ -38,9 +38,9 @@
             <div class="col-xs-12 col-md-6 col-lg-5">
                 <div class="preview-panel">
                     <iframe v-if="previewPageUrl" class="invisible" :src="previewPageUrl" @load="onPreviewLoad" />
-                    <Alert v-else alertType="info">
+                    <NotificationBox v-else alertType="info">
                         Live experience preview has not been configured.
-                    </Alert>
+                    </NotificationBox>
                     <div>
                         <RockLabel>Visualizer</RockLabel>
                         <div class="d-flex">
@@ -88,7 +88,7 @@
 </style>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import Kpi from "@Obsidian/Controls/kpi.obs";
     import ExperienceActionButtons from "./experienceActionButtons.partial.obs";
@@ -97,9 +97,9 @@
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ITopic } from "@Obsidian/Utility/realTime";
-    import { IParticipantTopic } from "../types";
+    import { IParticipantTopic } from "../types.partial";
     import { ExperienceManagerInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceManager/experienceManagerInitializationBox";
-    import { NavigationUrlKey } from "./types";
+    import { NavigationUrlKey } from "./types.partial";
 
     const props = defineProps({
         /** The identifier of the occurrence we have joined. */
@@ -295,7 +295,7 @@
      *
      * @param value The new value to set activeVisualizer to.
      */
-     async function onUpdateActiveVisualizer(value: string | string[]): Promise<void> {
+    async function onUpdateActiveVisualizer(value: string | string[]): Promise<void> {
         const newValue = typeof value === "string" ? value : "";
 
         if (activeVisualizer.value === newValue) {

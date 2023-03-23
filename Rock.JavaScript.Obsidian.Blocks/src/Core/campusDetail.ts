@@ -16,14 +16,14 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
 import EditPanel from "./CampusDetail/editPanel.partial";
 import ViewPanel from "./CampusDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { NavigationUrlKey } from "./CampusDetail/types";
+import { NavigationUrlKey } from "./CampusDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
 import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
@@ -34,7 +34,7 @@ export default defineComponent({
     name: "Core.CampusDetail",
 
     components: {
-        Alert,
+        NotificationBox,
         EditPanel,
         DetailBlock,
         ViewPanel
@@ -292,9 +292,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning">{{ blockError }}</Alert>
+<NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
-<Alert v-if="errorMessage" alertType="danger">{{ errorMessage }}</Alert>
+<NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
 <DetailBlock v-if="!blockError"
     v-model:mode="panelMode"

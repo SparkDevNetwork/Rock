@@ -302,16 +302,3 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
-<style>
-    .person-photo {
-        width: 43px;
-        height: 43px;
-        background-repeat: no-repeat;
-        background-size: cover;
-        border-radius: 50%;
-    }
-
-    .label-campus {
-        border-radius: 10px;
-    }
-</style>

@@ -17,11 +17,11 @@
 
 import { defineComponent, inject } from "vue";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-import { RegistrationEntryBlockViewModel, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
+import { RegistrationEntryBlockViewModel, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 
 type CheckDiscountCodeResult = {
     discountCode: string;
@@ -35,7 +35,7 @@ export default defineComponent({
     components: {
         RockButton,
         TextBox,
-        Alert
+        NotificationBox
     },
     setup() {
         const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
@@ -49,7 +49,7 @@ export default defineComponent({
     mounted() {
         this.tryDiscountCode();
     },
-    data () {
+    data() {
         return {
             /** Is there an AJAX call in-flight? */
             loading: false,
@@ -63,7 +63,7 @@ export default defineComponent({
     },
     computed: {
         /** The success message displayed once a discount code has been applied */
-        discountCodeSuccessMessage (): string {
+        discountCodeSuccessMessage(): string {
             const discountAmount = this.registrationEntryState.discountAmount;
             const discountPercent = this.registrationEntryState.discountPercentage;
 
@@ -79,7 +79,7 @@ export default defineComponent({
         },
 
         /** Should the discount panel be shown? */
-        isDiscountPanelVisible (): boolean {
+        isDiscountPanelVisible(): boolean {
             return this.viewModel.hasDiscountsAvailable;
         },
 
@@ -94,14 +94,14 @@ export default defineComponent({
         },
 
         /** This is the data sent from the C# code behind when the block initialized. */
-        viewModel (): RegistrationEntryBlockViewModel {
+        viewModel(): RegistrationEntryBlockViewModel {
             return this.registrationEntryState.viewModel;
         }
     },
     methods: {
         /** Send a user input discount code to the server so the server can check and send back
          *  the discount amount. */
-        async tryDiscountCode (): Promise<void> {
+        async tryDiscountCode(): Promise<void> {
             this.loading = true;
             try {
                 const result = await this.invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", {
@@ -137,8 +137,8 @@ export default defineComponent({
     },
     template: `
 <div v-if="isDiscountPanelVisible || discountCodeInput" class="clearfix">
-    <Alert v-if="discountCodeWarningMessage" alertType="warning">{{discountCodeWarningMessage}}</Alert>
-    <Alert v-if="discountCodeSuccessMessage" alertType="success">{{discountCodeSuccessMessage}}</Alert>
+    <NotificationBox v-if="discountCodeWarningMessage" alertType="warning">{{discountCodeWarningMessage}}</NotificationBox>
+    <NotificationBox v-if="discountCodeSuccessMessage" alertType="success">{{discountCodeSuccessMessage}}</NotificationBox>
     <div class="form-group pull-right">
         <label class="control-label">Discount Code</label>
         <div class="input-group">

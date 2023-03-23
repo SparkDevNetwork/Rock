@@ -17,12 +17,12 @@
 
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import Block from "@Obsidian/Templates/block";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
 import RockForm from "@Obsidian/Controls/rockForm";
-import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
+import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
@@ -54,7 +54,7 @@ export default defineComponent({
     /** These are the child components that are used by this block component */
     components: {
         Block,
-        Alert,
+        NotificationBox,
         RockButton,
         SectionHeader,
         RockForm,
@@ -189,7 +189,7 @@ export default defineComponent({
     </template>
 
     <template v-else #default>
-        <Alert alert-type="warning">No Step Program ID Provided</Alert>
+        <NotificationBox alert-type="warning">No Step Program ID Provided</NotificationBox>
     </template>
 </Block>`
     // #endregion

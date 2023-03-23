@@ -35,7 +35,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process communications
     /// </summary>
-    [DisplayName( "Send Attendance Reminders" )]
+    [DisplayName( "Send Attendance Reminders for Group Type" )]
     [Description( "Sends a reminder to group leaders about entering attendance for their group meeting." )]
 
     #region Job Attributes
@@ -135,14 +135,22 @@ namespace Rock.Jobs
         {
             var rockContext = new RockContext();
             var groupType = GroupTypeCache.Get( GetAttributeValue( AttributeKey.GroupType ).AsGuid() );
-            var isGroupTypeValid = groupType.TakesAttendance && groupType.SendAttendanceReminder;
             var results = new StringBuilder();
             
             this.Result = "0 attendance reminders sent.";
 
-            if ( !isGroupTypeValid )
+            if ( groupType.SendAttendanceReminder )
             {
-                var warning = $"Group Type {groupType.Name} isn't setup to take attendance or send attendance reminders.";
+                var warning = $"Group Type {groupType.Name} has been configured to send reminders through the \"Send Group Attendance Reminders\" job and this legacy job is no longer required.";
+                results.Append( FormatWarningMessage( warning ) );
+                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
+                this.Result = results.ToString();
+                throw new RockJobWarningException( warning );
+            }
+
+            if ( !groupType.TakesAttendance)
+            {
+                var warning = $"Group Type {groupType.Name} isn't setup to take attendance.";
                 results.Append( FormatWarningMessage( warning ) );
                 RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
                 this.Result = results.ToString();

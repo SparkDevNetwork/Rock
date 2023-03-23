@@ -25,6 +25,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Crm;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.Utility.Enums;
@@ -564,6 +565,23 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_ETHNICITY )]
         public int? EthnicityValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the birth date key.
+        /// </summary>
+        /// <value>
+        /// The birth date key.
+        /// </value>
+        [DataMember]
+        public int? BirthDateKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age range.
+        /// </summary>
+        /// <value>
+        /// The age range.
+        /// </value>
+        public AgeBracket? AgeBracket { get; set; }
 
         #endregion
 

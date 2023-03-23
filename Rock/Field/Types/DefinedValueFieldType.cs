@@ -299,7 +299,7 @@ namespace Rock.Field.Types
                 formattedValue = names.AsDelimited( ", " );
             }
 
-            return formattedValue.Truncate( 100 );
+            return formattedValue.Truncate( CondensedTruncateLength );
         }
 
         #endregion

@@ -21,6 +21,7 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import NumberBox from "@Obsidian/Controls/numberBox";
+import DropDownList from "@Obsidian/Controls/dropDownList";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationPropertyKey, ConfigurationValueKey } from "./campusesField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -40,7 +41,8 @@ export const EditComponent = defineComponent({
     name: "CampusesField.Edit",
 
     components: {
-        CheckBoxList
+        CheckBoxList,
+        DropDownList
     },
 
     props: getFieldEditorProps(),
@@ -56,6 +58,10 @@ export const EditComponent = defineComponent({
             catch {
                 return [];
             }
+        });
+
+        const enhance = computed(() => {
+            return props.configurationValues[ConfigurationValueKey.EnhancedSelection] == "True";
         });
 
         const repeatColumns = computed(() => {
@@ -75,12 +81,14 @@ export const EditComponent = defineComponent({
         return {
             internalValue,
             options,
-            repeatColumns
+            repeatColumns,
+            enhance
         };
     },
 
     template: `
-<CheckBoxList v-model="internalValue" horizontal :items="options" :repeatColumns="repeatColumns" />
+<DropDownList v-if="enhance" v-model="internalValue" enhanceForLongLists multiple :items="options" />
+<CheckBoxList v-else v-model="internalValue" horizontal :items="options" :repeatColumns="repeatColumns" />
 `
 });
 
@@ -94,6 +102,12 @@ export const ConfigurationComponent = defineComponent({
     },
 
     props: getFieldConfigurationProps(),
+
+    emit: {
+        "update:modelValue": (_v: Record<string, string>) => true,
+        "updateConfigurationValue": (_k: string, _v: string) => true,
+        "updateConfiguration": () => true
+    },
 
     setup(props, { emit }) {
         // Define the properties that will hold the current selections.
@@ -201,7 +215,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

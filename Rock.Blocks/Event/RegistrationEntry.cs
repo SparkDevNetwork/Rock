@@ -1227,7 +1227,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( f.ShowCurrentValue && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName
                             || f.PersonFieldType == RegistrationPersonFieldType.LastName;

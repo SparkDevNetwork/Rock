@@ -100,13 +100,14 @@
       border-bottom: 1px solid @input-border;
     }
 
-    .panel-title {
-      margin-bottom: 12px;
-    }
-
     .description {
+      display: block;
       margin: 0;
       color: @text-muted;
+    }
+
+    .panel-title + .description {
+      margin-top: 6px;
     }
   }
 

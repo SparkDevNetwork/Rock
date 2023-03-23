@@ -1,7 +1,8 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="isCompleted">
-        <Alert alertType="warning" v-html="completedCaption"></Alert>
+        <NotificationBox alertType="warning" v-html="completedCaption">
+        </NotificationBox>
     </div>
     <div v-else class="login-block">
         <fieldset>
@@ -9,62 +10,63 @@
         </fieldset>
 
         <template v-if="config.configurationErrors?.length">
-            <Alert
-                v-for="configError in config.configurationErrors"
-                alertType="warning"
-                v-text="configError" />
+            <NotificationBox
+                             v-for="configError in config.configurationErrors"
+                             alertType="warning"
+                             v-text="configError" />
         </template>
 
         <div :class="isMobileForced ? 'row' : 'row d-sm-flex'">
             <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible" :class="isMobileForced ? '' : 'col-sm-5'">
                 <ExternalLogin
-                    v-if="isAnyExternalAuthProviderVisible"
-                    :modelValue="config.externalAuthProviderButtons || []"
-                    :caption="config.remoteAuthorizationPromptMessage ?? ''"
-                    :disabled="isAuthenticating || isNavigating"
-                    @login="onExternalLogin($event)" />
+                               v-if="isAnyExternalAuthProviderVisible"
+                               :modelValue="config.externalAuthProviderButtons || []"
+                               :caption="config.remoteAuthorizationPromptMessage ?? ''"
+                               :disabled="isAuthenticating || isNavigating"
+                               @login="onExternalLogin($event)" />
 
                 <LoginMethodPicker
-                    v-if="areBothInternalAuthProvidersVisible"
-                    v-model="internalLoginMethod"
-                    :disabled="isAuthenticating || isNavigating"
-                    :isCredentialLoginSupported="config.isInternalDatabaseLoginSupported"
-                    :isPasswordlessLoginSupported="config.isPasswordlessLoginSupported" />
+                                   v-if="areBothInternalAuthProvidersVisible"
+                                   v-model="internalLoginMethod"
+                                   :disabled="isAuthenticating || isNavigating"
+                                   :isCredentialLoginSupported="config.isInternalDatabaseLoginSupported"
+                                   :isPasswordlessLoginSupported="config.isPasswordlessLoginSupported" />
 
             </div>
 
             <Divider
-                v-if="areSecondaryAndPrimaryAuthVisible"
-                :class="isMobileForced ? 'd-flex' : 'd-flex d-sm-none col-sm-1'"
-                content="or" />
+                     v-if="areSecondaryAndPrimaryAuthVisible"
+                     :class="isMobileForced ? 'd-flex' : 'd-flex d-sm-none col-sm-1'"
+                     content="or" />
 
             <Divider
-                v-if="!isMobileForced && areSecondaryAndPrimaryAuthVisible"
-                class="d-none d-sm-flex col-sm-1"
-                content="or"
-                :isVertical="true" />
+                     v-if="!isMobileForced && areSecondaryAndPrimaryAuthVisible"
+                     class="d-none d-sm-flex col-sm-1"
+                     content="or"
+                     :isVertical="true" />
 
             <div :class="isMobileForced ? '' : areSecondaryAndPrimaryAuthVisible ? 'col-sm-6' : 'col-sm-12'">
                 <CredentialLogin
-                    v-if="config.isInternalDatabaseLoginSupported && loginMethodWrapper.isCredential"
-                    :config="config"
-                    :disabled="isAuthenticating || isNavigating"
-                    :isMobileForced="isMobileForced"
-                    @forgotAccount="onForgotAccount()"
-                    @login="onCredentialLogin($event)"
-                    @register="onRegister()" />
+                                 v-if="config.isInternalDatabaseLoginSupported && loginMethodWrapper.isCredential"
+                                 :config="config"
+                                 :disabled="isAuthenticating || isNavigating"
+                                 :isMobileForced="isMobileForced"
+                                 @forgotAccount="onForgotAccount()"
+                                 @login="onCredentialLogin($event)"
+                                 @register="onRegister()" />
 
                 <PasswordlessLogin
-                    v-else-if="config.isPasswordlessLoginSupported && loginMethodWrapper.isPasswordless"
-                    v-model="passwordlessLoginOptions"
-                    :config="config"
-                    :disabled="isAuthenticating || isNavigating"
-                    :isMobileForced="isMobileForced"
-                    @start="onPasswordlessLoginStart($event)"
-                    @verify="onPasswordlessLoginVerify($event)" />
+                                   v-else-if="config.isPasswordlessLoginSupported && loginMethodWrapper.isPasswordless"
+                                   v-model="passwordlessLoginOptions"
+                                   :config="config"
+                                   :disabled="isAuthenticating || isNavigating"
+                                   :isMobileForced="isMobileForced"
+                                   @start="onPasswordlessLoginStart($event)"
+                                   @verify="onPasswordlessLoginVerify($event)" />
 
                 <div v-if="errorMessage" class="mt-3">
-                    <Alert alertType="warning" v-html="errorMessage"></Alert>
+                    <NotificationBox alertType="warning" v-html="errorMessage">
+                    </NotificationBox>
                 </div>
             </div>
         </div>
@@ -80,7 +82,7 @@
     import ExternalLogin from "./Login/externalLogin.partial.obs";
     import LoginMethodPicker from "./Login/loginMethodPicker.partial.obs";
     import PasswordlessLogin from "./Login/passwordlessLogin.partial.obs";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { LoginMethod } from "@Obsidian/Enums/Blocks/Security/Login/loginMethod";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
@@ -327,7 +329,7 @@
     function getInitialLoginMethod(): LoginMethod {
         const configuredDefaultLoginMethod = config.defaultLoginMethod;
 
-        switch(configuredDefaultLoginMethod) {
+        switch (configuredDefaultLoginMethod) {
             case LoginMethod.InternalDatabase: {
                 // If block setting default is internal database but only passwordless is supported,
                 // then initial login method should be passwordless.

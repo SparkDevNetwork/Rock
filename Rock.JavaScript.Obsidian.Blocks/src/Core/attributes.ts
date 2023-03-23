@@ -21,7 +21,7 @@ import AttributeEditor from "@Obsidian/Controls/attributeEditor";
 import Modal from "@Obsidian/Controls/modal";
 import RockField from "@Obsidian/Controls/rockField";
 import RockForm from "@Obsidian/Controls/rockForm";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import Block from "@Obsidian/Templates/block";
 import RockButton from "@Obsidian/Controls/rockButton";
@@ -84,7 +84,7 @@ export default defineComponent({
     name: "Core.Attributes",
 
     components: {
-        Alert,
+        NotificationBox,
         AttributeEditor,
         Block,
         DropDownList,
@@ -413,9 +413,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert alertType="warning">
+<NotificationBox alertType="warning">
     This is an experimental block and should not be used in production.
-</Alert>
+</NotificationBox>
 
 <Block title="Attribute List">
     <template #headerActions>
@@ -472,9 +472,9 @@ export default defineComponent({
                 </table>
             </div>
         </div>
-        <Alert v-else alertType="warning">
+        <NotificationBox v-else alertType="warning">
             Please select an entity to display attributes for.
-        </Alert>
+        </NotificationBox>
     </template>
 </Block>
 

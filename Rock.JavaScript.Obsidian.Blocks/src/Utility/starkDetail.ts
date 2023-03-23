@@ -17,7 +17,7 @@
 
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import Block from "@Obsidian/Templates/block";
 
@@ -39,7 +39,7 @@ export default defineComponent({
     /** These are the child components that are used by this block component */
     components: {
         Block,
-        Alert,
+        NotificationBox,
         RockButton
     },
 
@@ -99,7 +99,7 @@ export default defineComponent({
     },
 
     /** The template is the markup of the component. Any custom components used within this template,
-     *  like <Alert> and <PaneledBlockTemplate> must be included in the "components" option above. */
+     *  like <NotificationBox> and <PaneledBlockTemplate> must be included in the "components" option above. */
     template: `
 <Block title="Blank Detail Block">
     <template #headerActions>
@@ -111,7 +111,7 @@ export default defineComponent({
     </template>
 
     <template #default>
-        <Alert alertType="info">
+        <NotificationBox alertType="info">
             <h4>Stark Template Block</h4>
             <p>This block serves as a starting point for creating new blocks. After copy/pasting it and renaming the resulting file be sure to make the following changes:</p>
 
@@ -126,7 +126,7 @@ export default defineComponent({
             <ul>
                 <li>Remove this text... unless you really like it...</li>
             </ul>
-        </Alert>
+        </NotificationBox>
 
         <div>
             <h4>Value from Configuration</h4>

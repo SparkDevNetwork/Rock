@@ -1,8 +1,8 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockError" alertType="warning">{% raw %}{{ blockError }}{% endraw %}</Alert>
+    <NotificationBox v-if="blockError" alertType="warning">{% raw %}{{ blockError }}{% endraw %}</NotificationBox>
 
-    <Alert v-if="errorMessage" alertType="danger">{% raw %}{{ errorMessage }}{% endraw %}</Alert>
+    <NotificationBox v-if="errorMessage" alertType="danger">{% raw %}{{ errorMessage }}{% endraw %}</NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
@@ -42,7 +42,7 @@
     import ViewPanel from "./{{ EntityName }}Detail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant{% if UseAttributeValues == true %}, refreshDetailAttributes{% endif %}, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";{% if UseAttributeValues == true %}
     import { debounce } from "@Obsidian/Utility/util";{% endif %}
-    import { NavigationUrlKey } from "./{{ EntityName }}Detail/types";
+    import { NavigationUrlKey } from "./{{ EntityName }}Detail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
     import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";

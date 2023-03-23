@@ -18,19 +18,19 @@
 import { computed } from "vue";
 import { defineComponent, PropType, ref, watch } from "vue";
 import RockForm from "@Obsidian/Controls/rockForm";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { FormError } from "@Obsidian/Utility/form";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import ConfirmationEmail from "../Shared/confirmationEmail";
 import NotificationEmail from "./notificationEmail.partial";
-import { FormCommunication, FormTemplateListItem } from "./types";
+import { FormCommunication, FormTemplateListItem } from "./types.partial";
 import { useFormSources } from "./utils.partial";
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.CommunicationsTab",
 
     components: {
-        Alert,
+        NotificationBox,
         ConfirmationEmail,
         NotificationEmail,
         RockForm
@@ -124,12 +124,12 @@ export default defineComponent({
     <div class="panel-body">
         <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
             <ConfirmationEmail v-if="!isConfirmationEmailForced" v-model="confirmationEmail" :sourceTemplateOptions="sourceTemplateOptions" :recipientOptions="recipientOptions" />
-            <Alert v-else alertType="info">
+            <NotificationBox v-else alertType="info">
                 <h4 class="alert-heading">Confirmation Email</h4>
                 <p>
                     The confirmation e-mail is defined on the template and cannot be changed.
                 </p>
-            </Alert>
+            </NotificationBox>
 
             <NotificationEmail v-model="notificationEmail" :sourceTemplateOptions="sourceTemplateOptions" :campusTopicOptions="campusTopicOptions" />
         </RockForm>
