@@ -42,7 +42,7 @@
     import ViewPanel from "./{{ EntityName }}Detail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant{% if UseAttributeValues == true %}, refreshDetailAttributes{% endif %}, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";{% if UseAttributeValues == true %}
     import { debounce } from "@Obsidian/Utility/util";{% endif %}
-    import { NavigationUrlKey } from "./{{ EntityName }}Detail/types";
+    import { NavigationUrlKey } from "./{{ EntityName }}Detail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
     import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
