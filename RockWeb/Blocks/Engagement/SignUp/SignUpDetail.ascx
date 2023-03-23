@@ -51,15 +51,11 @@
                                 <Rock:RockTextBox ID="tbName" runat="server" Label="Project Name" Required="true" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Is Active" />
+                                <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="4" />
-                            </div>
-                        </div>
+                        <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="4" />
 
                         <div class="row">
                             <div class="col-md-6">
@@ -131,11 +127,7 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:HtmlEditor ID="htmlConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
-                            </div>
-                        </div>
+                        <Rock:HtmlEditor ID="htmlConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
 
                         <div class="actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -180,7 +172,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <h3>Opportunities</h3>
-                                <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom border-panel">
                                     <p>
                                         <asp:Literal ID="lOpportunitiesDescription" runat="server">Below are opportunities for the sign-up based on location and schedule.</asp:Literal>
                                     </p>
@@ -267,11 +259,7 @@
                 <Rock:NotificationBox ID="nbScheduleTypeNotAllowed" runat="server" NotificationBoxType="Warning" />
                 <Rock:NotificationBox ID="nbLocationModeNotAllowed" runat="server" NotificationBoxType="Warning" />
 
-                <div class="row">
-                    <div class="col-md-11">
-                        <Rock:RockTextBox ID="tbOpportunityName" runat="server" Label="Opportunity Name" Help="Optional name for the opportunity. This is helpful to provide if your project will have several opportunities configured." />
-                    </div>
-                </div>
+                <Rock:RockTextBox ID="tbOpportunityName" runat="server" Label="Opportunity Name" Help="Optional name for the opportunity. This is helpful to provide if your project will have several opportunities configured." />
 
                 <div class="row">
                     <div class="col-md-8">
@@ -290,19 +278,17 @@
                         <Rock:LocationPicker ID="lpLocation" runat="server" Label="Location" Required="true" OnSelectLocation="lpLocation_SelectLocation" ValidationGroup="vg_AddOpportunity_Custom" />
 
                     </div>
-                    <div class="col-md-3 well">
-                        <Rock:RockTextBox ID="tbMinimumAttendance" runat="server" Label="Minimum Attendance" />
-                        <Rock:RockTextBox ID="tbDesiredAttendance" runat="server" Label="Desired Attendance" />
-                        <Rock:RockTextBox ID="tbMaximumAttendance" runat="server" Label="Maximum Attendance" />
+                    <div class="col-md-4">
+                        <div class="well">
+                            <Rock:RockTextBox ID="tbMinimumAttendance" runat="server" Label="Minimum Attendance" />
+                            <Rock:RockTextBox ID="tbDesiredAttendance" runat="server" Label="Desired Attendance" />
+                            <Rock:RockTextBox ID="tbMaximumAttendance" runat="server" Label="Maximum Attendance" />
+                        </div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <Rock:HtmlEditor ID="htmlOpportunityReminderAddlDetails" runat="server" Label="Reminder Details" Height="90" Help="Optional additional project details that will be appended to the reminder communication." />
-                        <Rock:HtmlEditor ID="htmlOpportunityConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
-                    </div>
-                </div>
+                <Rock:HtmlEditor ID="htmlOpportunityReminderAddlDetails" runat="server" Label="Reminder Details" Height="90" Help="Optional additional project details that will be appended to the reminder communication." />
+                <Rock:HtmlEditor ID="htmlOpportunityConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
             </Content>
         </Rock:ModalDialog>
 

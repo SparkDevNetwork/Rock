@@ -10,7 +10,7 @@
 
     <div v-if="!blockErrorMessage">
         <RockForm @submit="onSearch">
-            <div class="row">
+            <div class="row d-flex flex-wrap">
                 <div v-if="projectTypes.length" :class="columnClass">
                     <SignUpFilter v-model="selectedProjectTypes"
                                   :label="config.projectTypeFilterLabel"
@@ -166,7 +166,7 @@
                 colWidth = 12;
         }
 
-        return `col-md-${colWidth}`;
+        return `col-xs-12 col-md-${colWidth}`;
     });
 
     const displayAs = computed((): SignUpFilterType => {

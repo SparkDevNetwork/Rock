@@ -87,7 +87,7 @@ namespace Rock.Blocks.Engagement.SignUp
             public const string LavaTemplate = @"{% if Project != null %}
     <div class=""panel panel-block"">
         <div class=""panel-heading"">
-            <h1 class=""panel-title pull-left"">{{ Project.Name }}</h1>
+            <h1 class=""panel-title"">{{ Project.Name }}</h1>
         </div>
         <div class=""panel-body"">
             <div class=""row"">
@@ -109,7 +109,7 @@ namespace Rock.Blocks.Engagement.SignUp
                             <span class=""badge badge-info"">Available Spots: {{ Project.AvailableSpots }}</span>
                         </p>
                     {% endif %}
-                    {% if Project.ShowRegisterButton == true %}
+                    {% if Project.ShowRegisterButton %}
                         <div class=""actions"">
                             <a href=""{{ Project.RegisterPageUrl }}"" class=""btn btn-primary"">Register</a>
                         </div>
