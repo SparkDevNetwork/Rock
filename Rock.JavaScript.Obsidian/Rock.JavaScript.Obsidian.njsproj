@@ -367,6 +367,7 @@
     <TypeScriptCompile Include="Framework\Enums\Core\specialRole.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\timeIntervalUnit.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\updatedAddressType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Crm\ageBracket.ts" />
     <TypeScriptCompile Include="Framework\Enums\Crm\ageClassification.ts" />
     <TypeScriptCompile Include="Framework\Enums\Crm\assessmentRequestStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Crm\authenticationServiceType.ts" />

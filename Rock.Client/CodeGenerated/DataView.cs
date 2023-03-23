@@ -79,9 +79,6 @@ namespace Rock.Client
         public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary />
-        public int? PersistedScheduleId { get; set; }
-
-        /// <summary />
         public int? PersistedScheduleIntervalMinutes { get; set; }
 
         /// <summary />
@@ -143,7 +140,6 @@ namespace Rock.Client
             this.Name = source.Name;
             this.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
             this.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
-            this.PersistedScheduleId = source.PersistedScheduleId;
             this.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             this.RunCount = source.RunCount;
             this.RunCountLastRefreshDateTime = source.RunCountLastRefreshDateTime;
@@ -172,9 +168,6 @@ namespace Rock.Client
 
         /// <summary />
         public EntityType EntityType { get; set; }
-
-        /// <summary />
-        public Schedule PersistedSchedule { get; set; }
 
         /// <summary />
         public EntityType TransformEntityType { get; set; }
