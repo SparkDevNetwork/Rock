@@ -336,9 +336,10 @@ namespace Rock.Blocks.Engagement.SignUp
                             {% else %}
                                 &nbsp;
                             {% endif %}
-                            {% endif %}
                             {% if project.DistanceInMiles != null %}
                                 <span class=""badge"">{{ project.DistanceInMiles | Format:'0.0' }} miles<span>
+                            {% else %}
+                                &nbsp;
                             {% endif %}
                         </div>
                         {% if project.MapCenter and project.MapCenter != empty %}
