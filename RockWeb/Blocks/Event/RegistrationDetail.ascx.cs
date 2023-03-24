@@ -745,7 +745,7 @@ namespace RockWeb.Blocks.Event
                 historyRecord.OldRawValue = oldRegistrationInstanceId.ToStringSafe();
                 historyRecord.NewValue = newRegistrationInstance.Name;
                 historyRecord.NewRawValue = newRegistrationInstance.Id.ToString();
-                historyRecord.Caption = tbComment.Text;
+                historyRecord.Caption = GetInternalComment( registration, 200 );
                 historyRecord.CategoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION ).Id;
 
                 //
@@ -1802,6 +1802,35 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Gets the formatted payment comment for a registration.
+        /// </summary>
+        /// <param name="registration">The <see cref="Registration"/>.</param>
+        /// <returns></returns>
+        private string GetPaymentComment( Registration registration )
+        {
+            return $"{registration.RegistrationInstance.Name} ({registration.RegistrationInstance.Account.GlCode})";
+        }
+
+        /// <summary>
+        /// Gets the formatted internal comment for a registration, which includes the payment comment
+        /// (sent to the processing gateway) and the comments entered by a user.
+        /// </summary>
+        /// <param name="registration">The <see cref="Registration"/>.</param>
+        /// <param name="maxLength">The maximum length of the comment, if it should be truncated.</param>
+        /// <returns></returns>
+        private string GetInternalComment( Registration registration, int maxLength = -1 )
+        {
+            var internalComment = $"{GetPaymentComment( registration )}: {tbComments.Text}";
+
+            if ( maxLength > -1 && internalComment.Length > maxLength )
+            {
+                internalComment = internalComment.Substring( 0, 200 );
+            }
+
+            return internalComment;
+        }
+
+        /// <summary>
         /// Processes the payment.
         /// </summary>
         /// <param name="submitToGateway">if set to <c>true</c> [submit to gateway].</param>
@@ -1844,7 +1873,7 @@ namespace RockWeb.Blocks.Event
                 paymentInfo.FirstName = registration.FirstName;
                 paymentInfo.LastName = registration.LastName;
 
-                paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
+                paymentInfo.Comment1 = GetPaymentComment( registration );
 
                 var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
                 paymentInfo.TransactionTypeValueId = txnType.Id;
@@ -1927,7 +1956,7 @@ namespace RockWeb.Blocks.Event
                 return false;
             }
 
-            transaction.Summary = tbComments.Text;
+            transaction.Summary = GetInternalComment( registration );
             transaction.AuthorizedPersonAliasId = personAliasId;
             transaction.TransactionDateTime = RockDateTime.Now;
 
