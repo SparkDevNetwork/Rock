@@ -36,7 +36,7 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Sign-Up Attendance Detail" )]
-    [Category( "Engagement > Sign-Up" )]
+    [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Lists the group members for a specific sign-up group/project occurrence date time and allows selecting if they attended or not." )]
     [IconCssClass( "fa fa-clipboard-check" )]
 
