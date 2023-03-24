@@ -165,13 +165,13 @@ namespace Rock.Blocks.Engagement.SignUp
             var currentPerson = this.RequestContext.CurrentPerson;
             if ( !group.IsAuthorized( Authorization.VIEW, currentPerson ) )
             {
-                occurrenceData.ErrorMessage = EditModeMessage.NotAuthorizedToView( Group.FriendlyTypeName );
+                occurrenceData.ErrorMessage = EditModeMessage.NotAuthorizedToView( Rock.Model.Group.FriendlyTypeName );
                 return occurrenceData;
             }
 
             if ( !group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson ) && !group.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
-                occurrenceData.ErrorMessage = $"You're not authorized to update the attendance for the selected {Group.FriendlyTypeName}.";
+                occurrenceData.ErrorMessage = $"You're not authorized to update the attendance for the selected {Rock.Model.Group.FriendlyTypeName}.";
                 return occurrenceData;
             }
 
@@ -202,7 +202,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <param name="rockContext">The rock context.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <returns>The group for the specified identifier.</returns>
-        private Group GetGroup( RockContext rockContext, int groupId )
+        private Rock.Model.Group GetGroup( RockContext rockContext, int groupId )
         {
             return new GroupService( rockContext )
                 .Queryable()
@@ -222,7 +222,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="attendanceOccurrenceDate">The attendance occurrence date.</param>
         /// <returns>Whether <see cref="Location"/> and <see cref="Schedule"/> instances were successfully loaded for this occurrence.</returns>
-        private bool TryGetGroupLocationSchedule( OccurrenceData occurrenceData, Group group, int? locationId, int? scheduleId, DateTime? attendanceOccurrenceDate )
+        private bool TryGetGroupLocationSchedule( OccurrenceData occurrenceData, Rock.Model.Group group, int? locationId, int? scheduleId, DateTime? attendanceOccurrenceDate )
         {
             GroupLocation groupLocation = null;
             if ( locationId.HasValue )
@@ -461,7 +461,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             public string ErrorMessage { get; set; }
 
-            public Group Group { get; set; }
+            public Rock.Model.Group Group { get; set; }
 
             public Location Location { get; set; }
 

@@ -688,7 +688,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     continue;
                 }
 
-                var group = new Group { GroupTypeId = projectTypeId.Value };
+                var group = new Rock.Model.Group { GroupTypeId = projectTypeId.Value };
                 group.LoadAttributes( rockContext );
 
                 // Note that we're not enforcing security here, as the public-facing individual performing the search would most likely be restricted.
@@ -1276,7 +1276,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         continue;
                     }
 
-                    var group = new Group { GroupTypeId = groupTypeCache.Id };
+                    var group = new Rock.Model.Group { GroupTypeId = groupTypeCache.Id };
                     group.LoadAttributes();
 
                     foreach ( var attribute in group.Attributes.Select( a => a.Value ) )
@@ -1649,7 +1649,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// </summary>
         private class Opportunity
         {
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             public Location Location { get; set; }
 

@@ -60,7 +60,7 @@
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
-    <Compile Include="Groups\GroupAttendanceDetail.cs" />
+    <Compile Include="Group\GroupAttendanceDetail.cs" />
     <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
     <Compile Include="Cms\ContentCollectionView.cs" />

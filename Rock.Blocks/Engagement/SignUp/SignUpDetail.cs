@@ -354,7 +354,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             public string ErrorMessage { get; set; }
 
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             public Location Location { get; set; }
 

@@ -855,7 +855,7 @@ namespace Rock.Blocks.Event
             // If the Registration Instance linkage specified a group, load it now
             var groupId = GetRegistrationGroupId( rockContext );
 
-            Group group = null;
+            Rock.Model.Group group = null;
 
             if ( groupId.HasValue )
             {
@@ -3637,7 +3637,7 @@ namespace Rock.Blocks.Event
         /// <param name="group">The group the person will be added to.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns>A new <see cref="GroupMember"/> instance.</returns>
-        private GroupMember BuildGroupMember( Person person, Group group, RegistrationSettings settings )
+        private GroupMember BuildGroupMember( Person person, Rock.Model.Group group, RegistrationSettings settings )
         {
             var groupMember = new GroupMember();
             groupMember.GroupId = group.Id;

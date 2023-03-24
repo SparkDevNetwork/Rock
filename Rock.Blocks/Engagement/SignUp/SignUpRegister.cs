@@ -682,7 +682,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <param name="group">The Group.</param>
         /// <param name="personId">The Person identifier.</param>
         /// <returns>The unmet GroupRequirements - if any - for the Person.</returns>
-        private List<string> GetUnmetGroupRequirementsForPerson( RockContext rockContext, Group group, int personId, int? groupRoleId )
+        private List<string> GetUnmetGroupRequirementsForPerson( RockContext rockContext, Rock.Model.Group group, int personId, int? groupRoleId )
         {
             var unmetGroupRequirements = new List<string>();
 
@@ -1606,7 +1606,7 @@ namespace Rock.Blocks.Engagement.SignUp
             /// <summary>
             /// Gets or sets the <see cref="Rock.Model.Group"/> for this sign-up project.
             /// </summary>
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             /// <summary>
             /// Gets or sets whether this sign-up project has any required GroupRequirements.
