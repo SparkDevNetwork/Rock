@@ -241,8 +241,8 @@ namespace RockWeb.Blocks.Core
             {
                 // Cancelling on Edit.  Return to Details
                 SignatureDocumentTemplateService signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
+                ShowReadonlyDetails( signatureDocumentTemplate ); // SNS 20230324 Moved this line up before the following line so the control knows about the value we're about to set it to
                 SignatureDocumentTemplate signatureDocumentTemplate = signatureDocumentTemplateService.Get( hfSignatureDocumentTemplateId.ValueAsInt() );
-                ShowReadonlyDetails( signatureDocumentTemplate );
             }
         }
 
