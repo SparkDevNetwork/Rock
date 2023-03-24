@@ -168,6 +168,10 @@
     <Compile Include="Migrations\202303231952517_CodeGenerated_20230323.designer.cs">
       <DependentUpon>202303231952517_CodeGenerated_20230323.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202303241648287_FixMigrationEncoding_Rollup_20230323.cs" />
+    <Compile Include="Migrations\202303241648287_FixMigrationEncoding_Rollup_20230323.designer.cs">
+      <DependentUpon>202303241648287_FixMigrationEncoding_Rollup_20230323.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1667,6 +1671,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202303231952517_CodeGenerated_20230323.resx">
       <DependentUpon>202303231952517_CodeGenerated_20230323.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202303241648287_FixMigrationEncoding_Rollup_20230323.resx">
+      <DependentUpon>202303241648287_FixMigrationEncoding_Rollup_20230323.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
