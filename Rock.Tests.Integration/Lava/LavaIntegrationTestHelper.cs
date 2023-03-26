@@ -73,6 +73,7 @@ namespace Rock.Tests.Integration.Lava
 
             engineOptions.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput;
             engineOptions.FileSystem = new MockFileProvider();
+            engineOptions.HostService = new WebsiteLavaHost();
             engineOptions.CacheService = new MockTemplateCacheService();
 
             if ( RockLiquidEngineIsEnabled )
@@ -941,6 +942,7 @@ namespace Rock.Tests.Integration.Lava
             var engineOptions = new LavaEngineConfigurationOptions
             {
                 FileSystem = new WebsiteLavaFileSystem(),
+                HostService = new WebsiteLavaHost(),
                 CacheService = new WebsiteLavaTemplateCacheService(),
                 TimeZone = RockDateTime.OrgTimeZoneInfo
             };

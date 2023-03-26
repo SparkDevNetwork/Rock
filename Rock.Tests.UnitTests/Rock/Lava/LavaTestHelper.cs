@@ -284,6 +284,7 @@ namespace Rock.Tests.UnitTests.Lava
             var engineOptions = new LavaEngineConfigurationOptions
             {
                 FileSystem = new WebsiteLavaFileSystem(),
+                HostService = new WebsiteLavaHost(),
                 CacheService = new WebsiteLavaTemplateCacheService(),
                 TimeZone = RockDateTime.OrgTimeZoneInfo
             };

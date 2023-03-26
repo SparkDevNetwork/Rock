@@ -4040,24 +4040,65 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ResolveRockUrl( string input )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            if ( string.IsNullOrWhiteSpace(input) )
+            {
+                return string.Empty;
+            }
 
+            var page = HttpContext.Current?.Handler as RockPage;
+
+            // Resolve theme references.
             if ( input.StartsWith( "~~" ) )
             {
-                string theme = "Rock";
-                if ( page.Theme.IsNotNullOrWhiteSpace() )
+                var theme = "Rock";
+                if ( page != null )
                 {
-                    theme = page.Theme;
-                }
-                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
-                {
-                    theme = page.Site.Theme;
+                    // Get the theme from the current page if we have one.
+                    if ( page.Theme.IsNotNullOrWhiteSpace() )
+                    {
+                        theme = page.Theme;
+                    }
+                    else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
+                    {
+                        theme = page.Site.Theme;
+                    }
                 }
 
                 input = "~/Themes/" + theme + ( input.Length > 2 ? input.Substring( 2 ) : string.Empty );
             }
 
-            return page.ResolveUrl( input );
+            // Resolve relative references.
+            string url;
+            if ( page != null )
+            {
+                url = page.ResolveUrl( input );
+            }
+            else
+            {
+                // In the absence of a HttpRequest, use the application root configuration setting as the base URL.
+                var rootUrl = GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" );
+                if ( string.IsNullOrWhiteSpace( rootUrl ) )
+                {
+                    rootUrl = "/";
+                }
+
+                if ( input.StartsWith( "~" ) )
+                {
+                    input = input.Trim( '~' );
+                }
+
+                var uri = new Uri( input, UriKind.RelativeOrAbsolute );
+                if ( uri.IsAbsoluteUri )
+                {
+                    return uri.AbsoluteUri;
+                }
+
+                // Create an absolute Uri.
+                uri = new Uri( new Uri( rootUrl ), uri );
+                url = uri.AbsoluteUri;
+            }
+
+            return url;
         }
 
         /// <summary>

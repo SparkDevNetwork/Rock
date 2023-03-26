@@ -19,18 +19,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Web;
-using System.Web.Http;
-using System.Web.Routing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
-using Rock.Lava.DotLiquid;
-using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared;
 using Rock.Utility;
 using Rock.Utility.Settings;
-using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Tests.Integration.Lava
@@ -564,6 +560,85 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
 
         #endregion
 
+        #region ResolveRockUrl
+
+        [TestMethod]
+        public void ResolveRockUrl_WithCurrentHttpRequest_ReturnsAbsoluteUrl()
+        {
+            // Fluid Engine.
+            var fluidEngine = GetFluidEngineWithMockHost( hasHttpRequest: true );
+
+            TestHelper.AssertTemplateOutput( fluidEngine,
+                "MyRockInstance/page/999",
+                @"{{ '~/page/999' | ResolveRockUrl }}",
+                new LavaTestRenderOptions() );
+
+            TestHelper.AssertTemplateOutput( fluidEngine,
+                "MyRockInstance/Themes/MyTheme/page/999",
+                @"{{ '~~/page/999' | ResolveRockUrl }}",
+                new LavaTestRenderOptions() );
+
+            // RockLiquid Engine.
+            // There is no simple means of mocking the RockPage request handler required to test this scenario.
+        }
+
+        [TestMethod]
+        public void ResolveRockUrl_WithNoHttpRequest_ReturnsAbsoluteUrlForDefaultSite()
+        {
+            var rootUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" );
+
+            // Fluid Engine.
+            var fluidEngine = GetFluidEngineWithMockHost( hasHttpRequest: false );
+            TestHelper.AssertTemplateOutput( fluidEngine, $"{rootUrl}Person/1",
+                @"{{ '~/Person/1' | ResolveRockUrl }}" );
+            TestHelper.AssertTemplateOutput( fluidEngine, $"{rootUrl}Themes/MyTheme/Person/1",
+                @"{{ '~~/Person/1' | ResolveRockUrl }}" );
+
+            // RockLiquid Engine.
+            // Note that there is no way to mock the theme setting in RockLiquid, so the default "Rock" theme is expected.
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.RockLiquid.RockLiquidEngine ),
+                $"{rootUrl}Person/1",
+                @"{{ '~/Person/1' | ResolveRockUrl }}" );
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.RockLiquid.RockLiquidEngine ),
+                $"{rootUrl}Themes/Rock/Person/1",
+                @"{{ '~~/Person/1' | ResolveRockUrl }}" );
+        }
+
+        [TestMethod]
+        public void ResolveRockUrl_WithAbsoluteUrl_ReturnsInputUnchanged()
+        {
+            // Fluid Engine.
+            var fluidEngine = GetFluidEngineWithMockHost( hasHttpRequest: true );
+            TestHelper.AssertTemplateOutput( fluidEngine,
+            $"http://www.microsoft.com/",
+            @"{{ 'http://www.microsoft.com/' | ResolveRockUrl }}" );
+
+            // RockLiquid Engine.
+            var simulator = new Http.TestLibrary.HttpSimulator();
+            using ( simulator.SimulateRequest() )
+            {
+                TestHelper.AssertTemplateOutput( typeof( Rock.Lava.RockLiquid.RockLiquidEngine ),
+                $"http://www.microsoft.com/",
+                @"{{ 'http://www.microsoft.com/' | ResolveRockUrl }}" );
+            }
+        }
+
+        private ILavaEngine GetFluidEngineWithMockHost( bool hasHttpRequest )
+        {
+            var host = new MockWebsiteLavaHost()
+            {
+                ApplicationPath = "MyRockInstance/",
+                ThemeName = "MyTheme",
+                HasActiveHttpRequest = hasHttpRequest
+            };
+            var fluidEngine = LavaService.NewEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ),
+                    new LavaEngineConfigurationOptions { HostService = host } );
+
+            return fluidEngine;
+        }
+
+        #endregion
+
         #region SetUrlParameter
 
         [TestMethod]
@@ -731,6 +806,54 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
             using ( simulator.SimulateRequest() )
             {
                 TestHelper.AssertTemplateOutput( "/page/12?PersonID=10&GroupId=20", "{{ '12' | PageRoute:'PersonID=10^GroupId=20' }}" );
+            }
+        }
+
+        #endregion
+
+        #region Support Classes
+
+        /// <summary>
+        /// Mocks the WebsiteLavaHost for a test environment in absence of the ASP.Net processing pipeline.
+        /// </summary>
+        internal class MockWebsiteLavaHost : WebsiteLavaHost
+        {
+            public bool HasActiveHttpRequest { get; set; } = true;
+            public string ApplicationPath { get; set; } = "/";
+            public string ThemeName { get; set; } = "Rock";
+
+            internal override HttpRequest GetCurrentRequest()
+            {
+                if ( HasActiveHttpRequest )
+                {
+                    var simulator = new Http.TestLibrary.HttpSimulator( "/MyRockWeb" );
+                    simulator.SimulateRequest();
+
+                    return base.GetCurrentRequest();
+                }
+                return null;
+            }
+
+            protected override string GetCurrentThemeName()
+            {
+                return ThemeName;
+            }
+
+            internal override string ResolveVirtualPath( string virtualPath )
+            {
+                if ( HasActiveHttpRequest )
+                {
+                    if ( virtualPath.StartsWith( "~" ) )
+                    {
+                        virtualPath = ApplicationPath + virtualPath.TrimStart( '~' ).TrimStart( '/' );
+                    }
+                }
+                else
+                {
+                    // If we are mocking an action with no associated HttpRequest, return the externalURL.
+
+                }
+                return virtualPath;
             }
         }
 

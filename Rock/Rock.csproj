@@ -908,6 +908,7 @@
     <Compile Include="Jobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
+    <Compile Include="Lava\WebsiteLavaHost.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.Logic.cs" />

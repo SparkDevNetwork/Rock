@@ -3767,30 +3767,20 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Resolves the rock address.
+        /// Resolves a relative URL to an absolute URL for the current Rock environment.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
         /// <returns></returns>
-        public static string ResolveRockUrl( string input )
+        public static string ResolveRockUrl( ILavaRenderContext context, string input )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var url = input;
 
-            if ( input.StartsWith( "~~" ) )
+            var host = context.GetService<ILavaHost>();
+            if ( host != null )
             {
-                string theme = "Rock";
-                if ( page.Theme.IsNotNullOrWhiteSpace() )
-                {
-                    theme = page.Theme;
-                }
-                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
-                {
-                    theme = page.Site.Theme;
-                }
-
-                input = "~/Themes/" + theme + ( input.Length > 2 ? input.Substring( 2 ) : string.Empty );
+                url = host.ResolveUrl( input );
             }
-
-            var url = page.ResolveUrl( input );
 
             return url;
         }
@@ -4467,15 +4457,16 @@ namespace Rock.Lava
         /// <summary>
         /// Adds the script link.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
         /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
         /// <returns></returns>
-        public static string AddScriptLink( string input, bool fingerprintLink = false )
+        public static string AddScriptLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
             if ( HttpContext.Current != null )
             {
                 RockPage page = HttpContext.Current.Handler as RockPage;
-                RockPage.AddScriptLink( page, ResolveRockUrl( input ), fingerprintLink );
+                RockPage.AddScriptLink( page, ResolveRockUrl( context, input ), fingerprintLink );
             }
 
             return string.Empty;
@@ -4484,15 +4475,16 @@ namespace Rock.Lava
         /// <summary>
         /// Adds the CSS link.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
         /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
         /// <returns></returns>
-        public static string AddCssLink( string input, bool fingerprintLink = false )
+        public static string AddCssLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
             if ( HttpContext.Current != null )
             {
                 RockPage page = HttpContext.Current.Handler as RockPage;
-                RockPage.AddCSSLink( page, ResolveRockUrl( input ), fingerprintLink );
+                RockPage.AddCSSLink( page, ResolveRockUrl( context, input ), fingerprintLink );
             }
 
             return string.Empty;
