@@ -315,9 +315,9 @@ $(document).ready(function() {
             rockContext.WrapTransaction( () =>
             {
                 // Determine if this DataView will have a persisted schedule.
-                bool shouldHavePersistedSchedule = swPersistDataView.Checked;
+                bool shouldHavePersistedSchedule = rblPersistenceType.SelectedValue == PersistenceType.Schedule.ConvertToInt().ToString();
 
-                if ( shouldHavePersistedSchedule )
+                if ( swPersistDataView.Checked && shouldHavePersistedSchedule )
                 {
                     var scheduleService = new ScheduleService( rockContext );
                     Schedule schedule = null;
@@ -1600,15 +1600,25 @@ $(document).ready(function() {
 
         private bool HasNamedSchedule()
         {
-            var isPersistedScheduleTypeSelected = rblPersistenceType.SelectedValue.ConvertToEnum<PersistenceType>() == PersistenceType.Schedule;
-            var isPersistedNamedScheduleSelected = rblPersistenceSchedule.SelectedValue.ConvertToEnum<PersistedScheduleType>() == PersistedScheduleType.NamedSchedule;
+            var isPersistedScheduleTypeSelected = rblPersistenceType.SelectedValue.ConvertToEnumOrNull<PersistenceType>() == PersistenceType.Schedule;
+            if ( !isPersistedScheduleTypeSelected )
+            {
+                return false;
+            }
+
+            var isPersistedNamedScheduleSelected = rblPersistenceSchedule.SelectedValue.ConvertToEnumOrNull<PersistedScheduleType>() == PersistedScheduleType.NamedSchedule;
             return swPersistDataView.Checked && isPersistedScheduleTypeSelected && isPersistedNamedScheduleSelected && spNamedSchedule.SelectedValue.IsNotNullOrWhiteSpace();
         }
 
         private bool HasUniqueSchedule()
         {
-            var isPersistedScheduleTypeSelected = rblPersistenceType.SelectedValue.ConvertToEnum<PersistenceType>() == PersistenceType.Schedule;
-            var isPersistedUniqueScheduleSelected = rblPersistenceSchedule.SelectedValue.ConvertToEnum<PersistedScheduleType>() == PersistedScheduleType.Unique;
+            var isPersistedScheduleTypeSelected = rblPersistenceType.SelectedValue.ConvertToEnumOrNull<PersistenceType>() == PersistenceType.Schedule;
+            if ( !isPersistedScheduleTypeSelected )
+            {
+                return false;
+            }
+
+            var isPersistedUniqueScheduleSelected = rblPersistenceSchedule.SelectedValue.ConvertToEnumOrNull<PersistedScheduleType>() == PersistedScheduleType.Unique;
             return swPersistDataView.Checked && isPersistedScheduleTypeSelected && isPersistedUniqueScheduleSelected && sbUniqueSchedule.iCalendarContent.IsNotNullOrWhiteSpace();
         }
 
