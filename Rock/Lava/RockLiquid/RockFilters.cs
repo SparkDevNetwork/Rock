@@ -58,8 +58,12 @@ using Rock.Cms.StructuredContent;
 namespace Rock.Lava
 {
     /// <summary>
-    ///
-    /// </summary>    
+    /// Defines filter methods available for use with the RockLiquid implementation of the Lava library.
+    /// </summary>
+    /// <remarks>
+    /// This class is marked for internal use because it should only be used in the context of resolving a Lava template.
+    /// </remarks>
+    [RockInternal( "1.15", true )]
     public static class RockFilters
     {
         static Random _randomNumberGenerator = new Random();
@@ -3828,27 +3832,14 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
-        /// <param name="groupId">The role Id.</param>
+        /// <param name="roleId">The role Id.</param>
         /// <returns>
         ///   <c>true</c> if [is in security role] [the specified context]; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsInSecurityRole( Context context, object input, int groupId )
+        public static bool IsInSecurityRole( Context context, object input, object roleId )
         {
-            var person = GetPerson( input );
-            var role = RoleCache.Get( groupId );
-
-            if ( person == null || role == null )
-            {
-                return false;
-            }
-
-            if ( !role.IsSecurityTypeGroup )
-            {
-                ExceptionLogService.LogException( $"RockFilter.IsInSecurityRole group with Id: {groupId} is not a SecurityRole" );
-                return false;
-            }
-
-            return role.IsPersonInRole( person.Guid );
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.IsInSecurityRole( lavaContext, input, roleId );
         }
 
         #endregion Person Filters

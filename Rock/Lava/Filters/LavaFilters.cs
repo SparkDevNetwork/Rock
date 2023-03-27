@@ -3622,14 +3622,14 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
-        /// <param name="groupId">The role Id.</param>
+        /// <param name="roleId">The role Id.</param>
         /// <returns>
         ///   <c>true</c> if [is in security role] [the specified context]; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsInSecurityRole( ILavaRenderContext context, object input, int groupId )
+        public static bool IsInSecurityRole( ILavaRenderContext context, object input, object roleId )
         {
             var person = GetPerson( input, context );
-            var role = RoleCache.Get( groupId );
+            var role = RoleCache.Get( roleId.ToStringSafe().AsInteger() );
 
             if ( person == null || role == null )
             {
@@ -3638,7 +3638,7 @@ namespace Rock.Lava
 
             if ( !role.IsSecurityTypeGroup )
             {
-                ExceptionLogService.LogException( $"LavaFilter.IsInSecurityRole group with Id: {groupId} is not a SecurityRole" );
+                ExceptionLogService.LogException( $"LavaFilter.IsInSecurityRole group with Id: {roleId} is not a SecurityRole" );
                 return false;
             }
 
