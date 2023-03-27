@@ -13,7 +13,9 @@ using Rock.UniversalSearch;
 
 namespace Rock.AI.Provider
 {
-    
+    /// <summary>
+    /// The container for AI components.
+    /// </summary>
     public class AIProviderContainer : Container<AIProviderComponent, IComponentData>
     {
         /// <summary>

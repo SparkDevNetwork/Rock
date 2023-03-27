@@ -15,31 +15,34 @@
 // </copyright>
 //
 
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
+namespace Rock.AI.Classes.TextCompletions
 {
     /// <summary>
-    /// The Usage data for the Response object for a completion.
+    /// The class for holding the response from a completion.
     /// </summary>
-    internal class OpenAICompletionsResponseUsage
+    public class TextCompletionsResponse
     {
         /// <summary>
-        /// How many tokens the prompt consumed.
+        /// A unique identifier for the completion.
         /// </summary>
-        [JsonProperty( "prompt_tokens" )]
-        public int PromptTokens { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
-        /// How many tokens the completion consumed.
+        /// The date time that the completion was processed.
         /// </summary>
-        [JsonProperty( "completion_tokens" )]
-        public int CompletionTokens { get; set; }
+        public DateTime CompletionDateTime { get; set; }
 
         /// <summary>
-        /// The total number of tokens the completion consumed.
+        /// A list of possible choices returned from the provider.
         /// </summary>
-        [JsonProperty( "total_tokens" )]
-        public int TotalTokens { get; set; }
+        public List<TextCompletionsResponseChoice> Choices { get; set; } = new List<TextCompletionsResponseChoice>();
+
+        /// <summary>
+        /// The number of tokens used in the request.
+        /// </summary>
+        public int TokensUsed { get; set; }
     }
 }

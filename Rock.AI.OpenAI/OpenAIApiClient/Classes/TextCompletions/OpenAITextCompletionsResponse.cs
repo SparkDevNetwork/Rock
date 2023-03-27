@@ -18,14 +18,14 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Rock.AI.Classes.Completions;
+using Rock.AI.Classes.TextCompletions;
 
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
+namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
 {
     /// <summary>
     /// The Reponse object for a completion.
     /// </summary>
-    internal class OpenAICompletionsResponse
+    internal class OpenAITextCompletionsResponse
     {
         #region Properties
 
@@ -57,13 +57,13 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
         ///  Array of one or more completion candidates
         /// </summary>
         [JsonProperty( "choices" )]
-        public List<OpenAICompletionsResponseChoice> Choices { get; set; }
+        public List<OpenAITextCompletionsResponseChoice> Choices { get; set; }
 
         /// <summary>
         /// Information on the resource usage of the request.
         /// </summary>
         [JsonProperty( "usage" )]
-        public OpenAICompletionsResponseUsage Usage { get; set; }
+        public OpenAITextCompletionsResponseUsage Usage { get; set; }
 
         #endregion
 
@@ -72,9 +72,9 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
         /// Converst the OpenAI completion response to a generic response.
         /// </summary>
         /// <returns></returns>
-        internal CompletionsResponse AsCompletionsResponse()
+        public TextCompletionsResponse AsTextCompletionsResponse()
         {
-            var response = new CompletionsResponse();
+            var response = new TextCompletionsResponse();
 
             response.Id = this.Id;
             response.TokensUsed = this.Usage.TotalTokens;

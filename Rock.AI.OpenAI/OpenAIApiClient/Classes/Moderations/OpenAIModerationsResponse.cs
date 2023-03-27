@@ -17,8 +17,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Rock.AI.Classes.Moderations;
+using Rock.IpAddress;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
 {
@@ -45,7 +47,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
         ///  Results from the moderation request
         /// </summary>
         [JsonProperty( "results" )]
-        public OpenAIModerationsResponseResults Results { get; set; }
+        public List<OpenAIModerationsResponseResults> Results { get; set; }
 
         #endregion
 
@@ -59,20 +61,26 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
             var response = new ModerationsResponse();
 
             response.Id = this.Id;
-            response.IsFlagged = this.Results.IsFlagged;
-            response.ModerationsResponseCategories = new ModerationsResponseCategories();
-            response.ModerationsResponseCategories.HateScore = this.Results.CategoryScores.Hate;
-            response.ModerationsResponseCategories.IsHate = this.Results.Categories.Hate;
-            response.ModerationsResponseCategories.IsSelfHarm = this.Results.Categories.SelfHarm;
-            response.ModerationsResponseCategories.SelfHarmScore = this.Results.CategoryScores.SelfHarm;
-            response.ModerationsResponseCategories.SexualMinorScore = this.Results.CategoryScores.SexualMinors;
-            response.ModerationsResponseCategories.IsSexualMinor = this.Results.Categories.SexualMinors;
-            response.ModerationsResponseCategories.ViolentScore = this.Results.CategoryScores.Violence;
-            response.ModerationsResponseCategories.IsViolent = this.Results.Categories.Violence;
-            response.ModerationsResponseCategories.IsSexual = this.Results.Categories.Sexual;
-            response.ModerationsResponseCategories.SexualScore = this.Results.CategoryScores.Sexual;
-            response.ModerationsResponseCategories.ThreatScore = this.Results.CategoryScores.Threatening;
-            response.ModerationsResponseCategories.IsThreat = this.Results.Categories.Threatening;
+
+            if ( this.Results.Count > 0 )
+            {
+                var result = this.Results.FirstOrDefault();
+
+                response.IsFlagged = result.IsFlagged;
+                response.ModerationsResponseCategories = new ModerationsResponseCategories();
+                response.ModerationsResponseCategories.HateScore = result.CategoryScores.Hate;
+                response.ModerationsResponseCategories.IsHate = result.Categories.Hate;
+                response.ModerationsResponseCategories.IsSelfHarm = result.Categories.SelfHarm;
+                response.ModerationsResponseCategories.SelfHarmScore = result.CategoryScores.SelfHarm;
+                response.ModerationsResponseCategories.SexualMinorScore = result.CategoryScores.SexualMinors;
+                response.ModerationsResponseCategories.IsSexualMinor = result.Categories.SexualMinors;
+                response.ModerationsResponseCategories.ViolentScore = result.CategoryScores.Violence;
+                response.ModerationsResponseCategories.IsViolent = result.Categories.Violence;
+                response.ModerationsResponseCategories.IsSexual = result.Categories.Sexual;
+                response.ModerationsResponseCategories.SexualScore = result.CategoryScores.Sexual;
+                response.ModerationsResponseCategories.ThreatScore = result.CategoryScores.Threatening;
+                response.ModerationsResponseCategories.IsThreat = result.Categories.Threatening;
+            }
 
             return response;
         }

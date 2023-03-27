@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Rock.AI.Classes.Completions;
+using Rock.AI.Classes.TextCompletions;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
 {

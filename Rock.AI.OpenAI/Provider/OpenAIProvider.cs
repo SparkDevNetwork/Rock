@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-using Rock.AI.Classes.Completions;
+using Rock.AI.Classes.TextCompletions;
 using Rock.AI.Provider;
 using Rock.Attribute;
 using Rock.AI.OpenAI.OpenAIApiClient;
@@ -23,10 +23,12 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
 using System.Threading.Tasks;
 using Rock.AI.Classes.Moderations;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
+using Rock.AI.Classes.ChatCompletions;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions;
 
 namespace Rock.AI.OpenAI.Provider
 {
@@ -61,22 +63,41 @@ namespace Rock.AI.OpenAI.Provider
         }
 
         /// <summary>
-        /// Gets the contents of the completions.
+        /// Gets the contents of the text completions.
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public override async Task<CompletionsResponse> GetCompletions( CompletionsRequest request )
+        public override async Task<TextCompletionsResponse> GetTextCompletions( TextCompletionsRequest request )
         {
             var openAIApi = GetOpenAIApi();
 
-            var response = await openAIApi.GetCompletions( new OpenAICompletionsRequest( request ) );
+            var response = await openAIApi.GetTextCompletions( new OpenAITextCompletionsRequest( request ) );
 
             if ( response == null )
             {
                 return null;
             }
 
-            return response.AsCompletionsResponse();
+            return response.AsTextCompletionsResponse();
+        }
+
+        /// <summary>
+        /// Gets the contents of the chat completions.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public override async Task<ChatCompletionsResponse> GetChatCompletions( ChatCompletionsRequest request )
+        {
+            var openAIApi = GetOpenAIApi();
+
+            var response = await openAIApi.GetChatCompletions( new OpenAIChatCompletionsRequest( request ) );
+
+            if ( response == null )
+            {
+                return null;
+            }
+
+            return response.AsChatCompletionsResponse();
         }
 
         /// <summary>

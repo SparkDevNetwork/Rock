@@ -19,8 +19,10 @@
 using System.Threading.Tasks;
 using RestSharp;
 using RestSharp.Authenticators;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
+using Rock.AI.OpenAI.OpenAIApiClient.Enums;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient
 {
@@ -33,7 +35,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         private string _organization = string.Empty;
 
         #region Static Properties
-        public const string OpenAIDefaultCompletionsModel = "text-davinci-003";
+        public const OpenAIModel OpenAIDefaultTextCompletionsModel = OpenAIModel.DaVinci3;
+        public const OpenAIModel OpenAIDefaultChatCompletionsModel = OpenAIModel.GPT4;
         #endregion
 
         #region Constructors
@@ -82,18 +85,40 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
 
         #region Requests
         /// <summary>
-        /// Performs a completions request on the OpenAI API.
+        /// Performs a chat completions request on the OpenAI API.
         /// </summary>
         /// <param name="completionRequest"></param>
         /// <returns></returns>
-        internal async Task<OpenAICompletionsResponse> GetCompletions( OpenAICompletionsRequest completionRequest )
+        internal async Task<OpenAIChatCompletionsResponse> GetChatCompletions( OpenAIChatCompletionsRequest completionRequest )
+        {
+            var request = GetOpenAIRequest( "chat/completions", Method.POST );
+
+            request.AddParameter( "application/json", completionRequest.ToJson(), ParameterType.RequestBody );
+
+            // Execute request
+            var response = await _client.ExecuteTaskAsync<OpenAIChatCompletionsResponse>( request ).ConfigureAwait( false );
+
+            if ( response.StatusCode == System.Net.HttpStatusCode.OK )
+            {
+                return response.Data;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Performs a text completions request on the OpenAI API.
+        /// </summary>
+        /// <param name="completionRequest"></param>
+        /// <returns></returns>
+        internal async Task<OpenAITextCompletionsResponse> GetTextCompletions( OpenAITextCompletionsRequest completionRequest )
         {
             var request = GetOpenAIRequest( "completions", Method.POST );
                                     
             request.AddParameter( "application/json", completionRequest.ToJson(), ParameterType.RequestBody );
 
             // Execute request
-            var response = await _client.ExecuteTaskAsync<OpenAICompletionsResponse>( request ).ConfigureAwait( false );
+            var response = await _client.ExecuteTaskAsync<OpenAITextCompletionsResponse>( request ).ConfigureAwait( false );
 
             if ( response.StatusCode == System.Net.HttpStatusCode.OK )
             {
@@ -124,6 +149,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
 
             return null;
         }
+
+        
         #endregion
 
     }

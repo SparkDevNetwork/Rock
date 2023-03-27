@@ -15,36 +15,31 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using Newtonsoft.Json;
-using Rock.AI.Classes.Completions;
+using Rock.AI.Classes.ChatCompletions;
+using Rock.AI.Classes.TextCompletions;
+using Rock.AI.OpenAI.Utilities;
 
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
+namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
 {
     /// <summary>
     /// The Choice data for the Response object for a completion.
     /// </summary>
-    internal class OpenAICompletionsResponseChoice
+    internal class OpenAIChatCompletionsResponseChoice
     {
         #region Properties
 
         /// <summary>
         /// The text reponse for the completion.
         /// </summary>
-        [JsonProperty( "text" )]
-        public string Text { get; set; }
+        [JsonProperty( "message" )]
+        public OpenAIChatCompletionsResponseChoiceMessage Message { get; set; }
 
         /// <summary>
         /// The returned order of the completion.
         /// </summary>
         [JsonProperty( "index" )]
         public int Index { get; set; }
-
-        /// <summary>
-        /// List of the most likely tokens
-        /// </summary>
-        [JsonProperty( "logprobs" )]
-        public object Logprobs { get; set; }
 
         /// <summary>
         /// Information about the reason why the completion request was completed, such as whether it was successful or encountered
@@ -61,10 +56,11 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Completions
         /// Converts the OpenAI completion response choice to a generic one.
         /// </summary>
         /// <returns></returns>
-        internal CompletionsResponseChoice AsCompletionResponseChoice()
+        internal ChatCompletionsResponseChoice AsChatCompletionResponseChoice()
         {
-            var completionResponseChoice = new CompletionsResponseChoice();
-            completionResponseChoice.Text = this.Text;
+            var completionResponseChoice = new ChatCompletionsResponseChoice();
+            completionResponseChoice.Text = this.Message.Content;
+            completionResponseChoice.Role = OpenAIUtilities.ConvertOpenAIChatRoleToRockChatRole( this.Message.Role );
             return completionResponseChoice;
         }
 

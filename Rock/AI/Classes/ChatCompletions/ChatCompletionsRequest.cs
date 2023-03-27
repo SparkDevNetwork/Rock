@@ -15,12 +15,15 @@
 // </copyright>
 //
 
-namespace Rock.AI.Classes.Completions
+using System.Collections.Generic;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
+
+namespace Rock.AI.Classes.ChatCompletions
 {
     /// <summary>
-    /// The class for creating a new request for a completion.
+    /// The class for creating a new request for a chat completion.
     /// </summary>
-    public class CompletionsRequest
+    public class ChatCompletionsRequest
     {
         /// <summary>
         /// The model to use for the completion. See the documentation for your provider for valid values.
@@ -28,11 +31,9 @@ namespace Rock.AI.Classes.Completions
         public string Model { get; set; }
 
         /// <summary>
-        /// The starting text or context that the language model uses to generate its completion or continuation. The prompt can be a sentence, a phrase, or a longer passage
-        /// of text, and it provides the model with information on the desired tone, style, topic, and other relevant factors. By adjusting the prompt, users can control the
-        /// output of the model and guide it towards a specific direction or outcome. In other words, the prompt helps to set the context and constraints for the generated text.
+        /// The messages to send the the service.
         /// </summary>
-        public string Prompt { get; set; }
+        public List<ChatCompletionsRequestMessage> Messages { get; set; } = new List<ChatCompletionsRequestMessage>();
 
         /// <summary>
         /// The level of randomness or creativity in the generated text. See documentation for your provider for valid values.
@@ -40,8 +41,8 @@ namespace Rock.AI.Classes.Completions
         public double Temperature { get; set; } = 0.8;
 
         /// <summary>
-        /// The number of completions to return for the given prompt.
+        /// The maximum number of tokens the completion should be.
         /// </summary>
-        public int DesiredCompletionCount { get; set; } = 1;
+        public int MaxTokens { get; set; }
     }
 }

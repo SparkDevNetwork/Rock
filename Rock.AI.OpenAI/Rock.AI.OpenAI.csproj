@@ -38,6 +38,11 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+    <Reference Include="System.Text.Json, Version=5.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RockWeb\Bin\System.Text.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -46,26 +51,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OpenAIApiClient\Attributes\OpenAIModelProperties.cs" />
+    <Compile Include="OpenAIApiClient\Classes\ChatCompletions\OpenAIChatCompletionsRequestMessage.cs" />
+    <Compile Include="OpenAIApiClient\Classes\ChatCompletions\OpenAIChatCompletionsResponseChoiceMessage.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsRequest.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResultsCategoryScores.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResultsCategories.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResults.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponse.cs" />
-    <Compile Include="OpenAIApiClient\Classes\Completions\OpenAICompletionsResponseUsage.cs" />
-    <Compile Include="OpenAIApiClient\Classes\Completions\OpenAICompletionsResponseChoice.cs" />
-    <Compile Include="OpenAIApiClient\Classes\Completions\OpenAICompletionsResponse.cs" />
-    <Compile Include="OpenAIApiClient\Classes\Completions\OpenAICompletionsRequest.cs" />
+    <Compile Include="OpenAIApiClient\Classes\ChatCompletions\OpenAIChatCompletionsRequest.cs" />
+    <Compile Include="OpenAIApiClient\Classes\ChatCompletions\OpenAIChatCompletionsResponse.cs" />
+    <Compile Include="OpenAIApiClient\Classes\ChatCompletions\OpenAIChatCompletionsResponseChoice.cs" />
+    <Compile Include="OpenAIApiClient\Classes\ChatCompletions\OpenAIChatCompletionsResponseUsage.cs" />
+    <Compile Include="OpenAIApiClient\Classes\TextCompletions\OpenAITextCompletionsResponseUsage.cs" />
+    <Compile Include="OpenAIApiClient\Classes\TextCompletions\OpenAITextCompletionsResponseChoice.cs" />
+    <Compile Include="OpenAIApiClient\Classes\TextCompletions\OpenAITextCompletionsResponse.cs" />
+    <Compile Include="OpenAIApiClient\Classes\TextCompletions\OpenAITextCompletionsRequest.cs" />
+    <Compile Include="OpenAIApiClient\Enums\OpenAIChatMessageRole.cs" />
+    <Compile Include="OpenAIApiClient\Enums\OpenAIModels.cs" />
     <Compile Include="OpenAIApiClient\OpenAIApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Provider\OpenAIProvider.cs" />
+    <Compile Include="Utilities\OpenAIUtilities.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Utilities\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
       <Name>Rock.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61DECE2B-0434-435E-8D65-49A4FDF98365}</Project>
+      <Name>Rock.Enums</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185A31D7-3037-4DAE-8797-0459849A84BD}</Project>

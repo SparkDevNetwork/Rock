@@ -15,12 +15,12 @@
 // </copyright>
 //
 
-namespace Rock.AI.Classes.Completions
+namespace Rock.AI.Classes.TextCompletions
 {
     /// <summary>
     /// The class for holding the response choice from a completion.
     /// </summary>
-    public class CompletionsResponseChoice
+    public class TextCompletionsResponseChoice
     {
         /// <summary>
         /// The completion response text.

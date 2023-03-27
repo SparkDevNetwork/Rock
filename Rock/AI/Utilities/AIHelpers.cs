@@ -51,5 +51,6 @@ namespace Rock.AI.Utilities
 
             return sumOfProductsOfSets / ( Math.Sqrt( totalSquaresOfLeft ) * Math.Sqrt( totalSquaresOfRight ) );
         }
+
     }
 }
