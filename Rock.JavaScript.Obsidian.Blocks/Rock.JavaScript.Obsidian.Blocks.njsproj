@@ -54,6 +54,9 @@
     <Content Include="src\Crm\BadgeDetail\viewPanel.partial.vue" />
     <Content Include="src\Bus\QueueDetail\editPanel.partial.vue" />
     <Content Include="src\Bus\QueueDetail\viewPanel.partial.vue" />
+    <Content Include="src\Engagement\streakTypeDetail.obs" />
+    <Content Include="src\Engagement\StreakTypeDetail\editPanel.partial.obs" />
+    <Content Include="src\Engagement\StreakTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Finance\financialBatchDetail.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\editPanel.partial.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\viewPanel.partial.vue" />
@@ -197,6 +200,7 @@
     <Folder Include="src\Crm\PersonDetail\" />
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
+    <Folder Include="src\Engagement\StreakTypeDetail\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
     <Folder Include="src\Security\ConfirmAccount\" />
