@@ -57,6 +57,9 @@
     <Content Include="src\Finance\financialBatchDetail.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\editPanel.partial.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\viewPanel.partial.vue" />
+    <Content Include="src\Finance\financialPledgeDetail.obs" />
+    <Content Include="src\Finance\FinancialPledgeDetail\editPanel.partial.obs" />
+    <Content Include="src\Finance\FinancialPledgeDetail\viewPanel.partial.obs" />
     <Content Include="src\Security\ConfirmAccount.obs" />
     <Content Include="src\Security\ConfirmAccount\accountConfirmation.partial.obs" />
     <Content Include="src\Security\ConfirmAccount\changePassword.partial.obs" />
@@ -195,6 +198,7 @@
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
+    <Folder Include="src\Finance\FinancialPledgeDetail\" />
     <Folder Include="src\Security\ConfirmAccount\" />
     <Folder Include="src\Security\RestKeyDetail\" />
     <Folder Include="src\Engagement\" />
@@ -320,6 +324,7 @@
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\events.d.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\views.ts" />
     <TypeScriptCompile Include="src\Security\RestKeyDetail\types.partial.ts" />
