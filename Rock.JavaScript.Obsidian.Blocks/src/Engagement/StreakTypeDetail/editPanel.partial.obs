@@ -9,7 +9,6 @@
             </div>
 
             <div class="col-md-6">
-                {{ props.modelValue.structureType ?? "None" }}
                 <CheckBox v-model="isActive"
                           label="Active" />
             </div>
@@ -55,6 +54,8 @@
                     blankValue="None"
                     help="This specifies what linked activity types this Streak Type may interface with.  Something very broad like “Attendance: Any” could
                         help measure general engagement with the church. Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
+
+                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == 'GroupType'" v-model="structureEntityId" />
             </div>
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
@@ -82,6 +83,7 @@
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
@@ -117,6 +119,7 @@
     const firstDayOfWeek = propertyRef(props.modelValue?.firstDayOfWeek?.toString() ?? null, "FirstDayOfWeek");
     const occurrenceFrequency = propertyRef(props.modelValue?.occurrenceFrequency ?? null, "OccurrenceFrequency");
     const structureType = propertyRef(props.modelValue?.structureType ?? "", "StructureType");
+    const structureEntityId = propertyRef(props.modelValue?.structureEntityId, "StructureEntityId");
 
     const isAddMode = computed((): boolean => props.modelValue?.idKey == "");
 
@@ -126,7 +129,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek, occurrenceFrequency, structureType];
+    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek, occurrenceFrequency, structureType, structureEntityId];
 
     // #endregion
 
@@ -155,6 +158,7 @@
         updateRefValue(firstDayOfWeek, props.modelValue?.firstDayOfWeek?.toString() ?? null);
         updateRefValue(occurrenceFrequency, props.modelValue?.occurrenceFrequency ?? null);
         updateRefValue(structureType, props.modelValue?.structureType ?? "None");
+        updateRefValue(structureEntityId, props.modelValue?.structureEntityId);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -171,7 +175,8 @@
             enableAttendance: enableAttendance.value,
             firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
             occurrenceFrequency: occurrenceFrequency.value,
-            structureType: structureType.value
+            structureType: structureType.value,
+            structureEntityId: structureEntityId.value
         };
 
         emit("update:modelValue", newValue);

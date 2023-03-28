@@ -76,7 +76,7 @@ export type StreakTypeBag = {
      * Gets or sets the Id of the Entity associated with attendance for this streak type. If not set, this streak type
      * will account for any attendance record.
      */
-    structureEntityId?: number | null;
+    structureEntityId?: ListItemBag | null;
 
     /** Gets or sets the structure settings JSON. */
     structureSettingsJSON?: string | null;

@@ -22,6 +22,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StreakTypeDetail;
+using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -232,7 +233,6 @@ namespace Rock.Blocks.Engagement
                 Streaks = entity.Streaks.ToListItemBagList(),
                 StreakTypeExclusions = entity.StreakTypeExclusions.ToListItemBagList(),
                 FirstDayOfWeek = ( int ) ( entity.FirstDayOfWeek ?? 0 ),
-                StructureEntityId = entity.StructureEntityId,
                 StructureSettingsJSON = entity.StructureSettingsJSON
             };
         }
@@ -284,6 +284,7 @@ namespace Rock.Blocks.Engagement
             var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.StructureType = entity.StructureType.ToString();
+            bag.StructureEntityId = GroupTypeCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
@@ -346,7 +347,7 @@ namespace Rock.Blocks.Engagement
                       () => entity.StreakTypeExclusions = box.Entity.*//* TODO: Unknown property type 'ICollection<StreakTypeExclusion>' for conversion to bag. *//* );*/
 
             box.IfValidProperty( nameof( box.Entity.StructureEntityId ),
-                () => entity.StructureEntityId = box.Entity.StructureEntityId );
+                () => entity.StructureEntityId = GroupTypeCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() ) );
 
             box.IfValidProperty( nameof( box.Entity.StructureSettingsJSON ),
                 () => entity.StructureSettingsJSON = box.Entity.StructureSettingsJSON );
