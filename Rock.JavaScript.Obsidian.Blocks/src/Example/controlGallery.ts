@@ -209,6 +209,7 @@ import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
 import ContentChannelItemPicker from "@Obsidian/Controls/contentChannelItemPicker.obs";
 import PersonLink from "@Obsidian/Controls/personLink.obs";
 import PopOver from "@Obsidian/Controls/popOver.obs";
+import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
 
 // #region Gallery Support
 
@@ -7424,6 +7425,65 @@ const popOverGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates rockLiteral */
+const rockLiteralGallery = defineComponent({
+    name: "RockLiteralGallery",
+    components: {
+        GalleryAndResult,
+        RockLiteral,
+        TextBox,
+        CheckBox
+    },
+    setup() {
+        return {
+            label: ref("Romans 11:33"),
+            labelClass: ref(""),
+            content: ref("<p>Oh, the depth of the riches and the wisdom and the knowledge of God!<br> How unsearchable his judgments and untraceable his ways!"),
+            useLabelSlot: ref(false),
+            importCode: getSfcControlImportPath("rockLiteral"),
+            exampleCode: `// Simple Label
+<RockLiteral label="Label Text" labelCssClass="text-primary">
+    My content beneath the label.
+</RockLiteral>
+
+// Advanced Label with Slot
+<RockLiteral labelCssClass="text-primary">
+    <template #label><i class="fa fa-cross"></i> <strong>My Custom Label</strong></template>
+    My content beneath the label.
+</RockLiteral>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <RockLiteral :labelCssClass="labelClass" :label="label">
+        <template #label v-if="useLabelSlot"><span v-html="label"></span></template>
+        <div v-html="content"></div>
+    </RockLiteral>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="label" label="Label Text" textMode="multiline" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox v-model="useLabelSlot" label="Use Label Slot" help="Instead of using the prop. This allows you to pass in HTML or a component for the label instead of plain text." />
+            </div>
+            <div class="col-md-4">
+                <TextBox v-model="labelClass" label="Label Class" help="Try something like <code>text-primary</code> to change the color" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="content" label="Content HTML" textMode="multiline" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -7561,6 +7621,7 @@ const controlGalleryComponents: Record<string, Component> = [
     contentChannelItemPickerGallery,
     personLinkGallery,
     popOverGallery,
+    rockLiteralGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

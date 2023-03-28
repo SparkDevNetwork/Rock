@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import { nextTick, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
@@ -145,8 +145,6 @@
     function getPositionStyles(): Record<string, string> {
         const boxA = getElementBox(activatorEl.value);
         const boxP = getElementBox(popOverEl.value);
-
-
 
         if (props.placement == "top") {
             console.log("TOP", { boxA, boxP });
