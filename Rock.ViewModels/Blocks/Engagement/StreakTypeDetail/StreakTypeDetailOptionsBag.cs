@@ -15,11 +15,13 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
 using System;
 
 namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
 {
     public class StreakTypeDetailOptionsBag
     {
+        public ListItemBag[] streakOccurrenceFrequencies;
     }
 }

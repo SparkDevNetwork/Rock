@@ -15,11 +15,6 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -27,6 +22,10 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StreakTypeDetail;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 
 namespace Rock.Blocks.Engagement
 {
@@ -135,10 +134,11 @@ namespace Rock.Blocks.Engagement
         /// <returns>The options that provide additional details to the block.</returns>
         private StreakTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
-            var options = new StreakTypeDetailOptionsBag();
-
-            var streakOccurenceFrequency = ToListItemBag( typeof( StreakOccurrenceFrequency ) );
-                .Select()
+            var options = new StreakTypeDetailOptionsBag
+            {
+                streakOccurrenceFrequencies = typeof( StreakOccurrenceFrequency )
+                .ToListItemBag()
+            };
             return options;
         }
 
@@ -211,7 +211,7 @@ namespace Rock.Blocks.Engagement
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
         /// <returns>A <see cref="StreakTypeBag"/> that represents the entity.</returns>
-        private StreakTypeBag GetCommonEntityBag( StreakType entity, RockContext rockContext)
+        private StreakTypeBag GetCommonEntityBag( StreakType entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -219,9 +219,9 @@ namespace Rock.Blocks.Engagement
             }
 
             var structureTypeString = "";
-            if ( entity.StructureType.HasValue)
+            if ( entity.StructureType.HasValue )
             {
-                var structureName = (new StreakTypeService(rockContext)).GetStructureName( entity.StructureType, entity.StructureEntityId );
+                var structureName = ( new StreakTypeService( rockContext ) ).GetStructureName( entity.StructureType, entity.StructureEntityId );
                 structureTypeString = string.Format( "{0}{1}",
                         entity.StructureType.Value.GetDescription() ?? "",
                         string.Format( "{0}{1}",
@@ -243,7 +243,7 @@ namespace Rock.Blocks.Engagement
                 StartDate = entity.StartDate,
                 Streaks = entity.Streaks.ToListItemBagList(),
                 StreakTypeExclusions = entity.StreakTypeExclusions.ToListItemBagList(),
-                FirstDayOfWeek = (int) entity.FirstDayOfWeek,
+                FirstDayOfWeek = ( int ) ( entity.FirstDayOfWeek ?? 0 ),
                 StructureEntityId = entity.StructureEntityId,
                 StructureSettingsJSON = entity.StructureSettingsJSON
             };
@@ -280,7 +280,7 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity , rockContext );
+            var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
@@ -319,12 +319,21 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Entity.StartDate ),
                 () => entity.StartDate = box.Entity.StartDate );
 
-            box.IfValidProperty( nameof( box.Entity.FirstDayOfWeek ),
-                () => entity.FirstDayOfWeek = ( DayOfWeek? ) box.Entity.FirstDayOfWeek );
+            box.IfValidProperty( nameof( box.Entity.OccurrenceFrequency ),
+                () => {
+                Enum.TryParse( box.Entity.OccurrenceFrequency, out StreakOccurrenceFrequency streakOccurrenceFrequency ) ;
+                entity.OccurrenceFrequency = streakOccurrenceFrequency;
+                });
+
+            if( entity.OccurrenceFrequency == StreakOccurrenceFrequency.Weekly )
+            {
+                box.IfValidProperty( nameof( box.Entity.FirstDayOfWeek ),
+                    () => entity.FirstDayOfWeek = ( DayOfWeek? ) box.Entity.FirstDayOfWeek );
+            }
 
 
-      /*      box.IfValidProperty( nameof( box.Entity.StreakTypeExclusions ),
-                () => entity.StreakTypeExclusions = box.Entity.*//* TODO: Unknown property type 'ICollection<StreakTypeExclusion>' for conversion to bag. *//* );*/
+            /*      box.IfValidProperty( nameof( box.Entity.StreakTypeExclusions ),
+                      () => entity.StreakTypeExclusions = box.Entity.*//* TODO: Unknown property type 'ICollection<StreakTypeExclusion>' for conversion to bag. *//* );*/
 
             box.IfValidProperty( nameof( box.Entity.StructureEntityId ),
                 () => entity.StructureEntityId = box.Entity.StructureEntityId );
@@ -462,7 +471,7 @@ namespace Rock.Blocks.Engagement
 
                 var box = new DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity , rockContext )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 return ActionOk( box );
@@ -518,7 +527,7 @@ namespace Rock.Blocks.Engagement
                 entity = entityService.Get( entity.Id );
                 entity.LoadAttributes( rockContext );
 
-                return ActionOk( GetEntityBagForView( entity , rockContext ) );
+                return ActionOk( GetEntityBagForView( entity, rockContext ) );
             }
         }
 
@@ -578,7 +587,7 @@ namespace Rock.Blocks.Engagement
 
                 var refreshedBox = new DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity , rockContext )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();

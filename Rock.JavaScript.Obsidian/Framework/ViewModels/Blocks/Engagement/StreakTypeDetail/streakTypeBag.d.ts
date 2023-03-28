@@ -82,5 +82,5 @@ export type StreakTypeBag = {
     structureSettingsJSON?: string | null;
 
     /** Gets or sets the value of the first day of the week when the frequency is set to weekly */
-    firstDayOfWeek?: string | null
+    firstDayOfWeek?: number | null
 };

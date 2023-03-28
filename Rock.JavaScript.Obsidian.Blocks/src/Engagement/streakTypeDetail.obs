@@ -75,6 +75,7 @@
         "requiresEnrollment",
         "startDate",
         "streaks",
+        "firstDayOfWeek",
         "streakTypeExclusions",
         "structureEntityId",
         "structureSettingsJSON"

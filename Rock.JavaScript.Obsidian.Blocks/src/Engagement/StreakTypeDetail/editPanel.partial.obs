@@ -47,11 +47,17 @@
 
         <div class="row">
             <div class="col-md-6">
-
             </div>
             <div class="col-md-6">
-                <DayOfWeekPicker label="Day of the Week" v-model="firstDayOfWeek" help="Allows this weekly streak type to calculate streaks based off a custom first day of the week setting.
-                    Leave this blank to use the system setting." />
+                <DropDownList v-model="occurrenceFrequency"
+                    label="Frequency"
+                    :items="options?.streakOccurrenceFrequencies ?? []"
+                    :value="modelValue?.occurrenceFrequency"
+                    :disabled="!isAddMode"
+                    help="Daily measuring is great for something like Bible Reading where the ideal is daily engagement. Weekly measurements are better suited for activities
+                        such as a small group where the ideal is weekly engagement." />
+                <DayOfWeekPicker v-if="canUpdateDayOfWeekPicker" label="Day of the Week" v-model="firstDayOfWeek" :showBlankItem="false"
+                    help="Allows this weekly streak type to calculate streaks based off a custom first day of the week setting. Leave this blank to use the system setting." />
             </div>
         </div>
 
@@ -66,6 +72,7 @@
     import TextBox from "@Obsidian/Controls/textBox";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
@@ -98,14 +105,18 @@
     const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
     const requiresEnrollment = propertyRef(props.modelValue.requiresEnrollment ?? "", "RequiresEnrollment");
     const enableAttendance = propertyRef(props.modelValue.enableAttendance ?? "", "EnableAttendance");
-    const firstDayOfWeek = propertyRef(props.modelValue?.firstDayOfWeek ?? null, "FirstDayOfWeek");
+    const firstDayOfWeek = propertyRef(props.modelValue?.firstDayOfWeek?.toString() ?? null, "FirstDayOfWeek");
+    const occurrenceFrequency = propertyRef(props.modelValue?.occurrenceFrequency ?? null, "OccurrenceFrequency");
 
     const isAddMode = computed((): boolean => props.modelValue?.idKey == "");
-    alert(firstDayOfWeek.value);
+
+    // update Day of the Week picker only if the streak occurrence frequency is set to Weekly
+    const canUpdateDayOfWeekPicker = computed((): boolean => props.modelValue?.occurrenceFrequency == props.options?.streakOccurrenceFrequencies?.[1]?.value ?? "");
+
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek];
+    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek, occurrenceFrequency];
 
     // #endregion
 
@@ -123,7 +134,6 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        alert(firstDayOfWeek.value);
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(description, props.modelValue.description ?? "");
@@ -132,7 +142,8 @@
         updateRefValue(startDate, props.modelValue.startDate ?? "");
         updateRefValue(requiresEnrollment, props.modelValue.requiresEnrollment);
         updateRefValue(enableAttendance, props.modelValue.enableAttendance);
-        updateRefValue(firstDayOfWeek, props.modelValue?.firstDayOfWeek ?? null);
+        updateRefValue(firstDayOfWeek, props.modelValue?.firstDayOfWeek?.toString() ?? null);
+        updateRefValue(occurrenceFrequency, props.modelValue?.occurrenceFrequency ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -147,7 +158,8 @@
             startDate: startDate.value,
             requiresEnrollment: requiresEnrollment.value,
             enableAttendance: enableAttendance.value,
-            firstDayOfWeek: firstDayOfWeek.value
+            firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
+            occurrenceFrequency: occurrenceFrequency.value
         };
 
         emit("update:modelValue", newValue);

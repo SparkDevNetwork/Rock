@@ -21,5 +21,8 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 export type StreakTypeDetailOptionsBag = {
+    streakOccurrenceFrequencies?: ListItemBag[] | null;
 };
