@@ -1,16 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="config.isNotAuthorizedError" alertType="danger">
+    <NotificationBox v-if="config.isAuthorizedGroupNotFoundError" alertType="danger">
         <strong>Sorry</strong>
-        <p>You're not authorized to update the attendance for the selected group.</p>
+        <p>Group was not found or you're not authorized to update the attendance for the selected group.</p>
     </NotificationBox>
     <NotificationBox v-if="config.isNoAttendanceOccurrencesError" alertType="danger">
         <strong>No Occurrences</strong>
         <p>There are currently not any active occurrences for selected group for which to take attendance.</p>
-    </NotificationBox>
-    <NotificationBox v-if="config.isGroupNotFoundError" alertType="danger">
-        <strong>No Group</strong>
-        Group was not found.
     </NotificationBox>
     <NotificationBox v-if="config.errorMessage" alertType="danger">
         <strong>Sorry</strong>
@@ -60,23 +56,25 @@
                         </div>
 
                         <div class="col-sm-4">
-                            <template v-if="locationGuid">
+                            <template v-if="locationGuid || !config.isLocationRequired">
                                 <GroupLocationScheduleDatePicker v-if="config.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.ScheduledDatePicker"
                                                                  @update:modelValue="onGroupLocationScheduleDatePickerChanged"
+                                                                 :date="RockDateTime.parseISO(config.attendanceOccurrenceDate || '')"
                                                                  :groupGuid="config.groupGuid"
                                                                  label="Attendance For"
                                                                  :locationGuid="locationGuid"
                                                                  :numberOfPreviousDaysToShow="config.numberOfPreviousDaysToShow"
                                                                  :showBlankItem="true" />
-                                <GroupLocationSchedulePicker
-                                                             v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.GroupLocationSchedulePicker"
+
+                                <GroupLocationSchedulePicker v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.GroupLocationSchedulePicker && locationGuid"
                                                              @update:modelValue="onGroupLocationSchedulePickerChanged"
                                                              :groupGuid="config.groupGuid"
                                                              label="Schedule"
                                                              :locationGuid="locationGuid"
                                                              :isoDateString="attendanceForDateIsoString"
                                                              :showBlankItem="true" />
-                                <div v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.Specific">
+
+                                <div v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.Readonly">
                                     <RockLabel>Schedule</RockLabel>
                                     <div>{{ config.scheduleLabel }}</div>
                                 </div>
@@ -182,6 +180,9 @@
 
             <template #footerActions>
                 <RockButton v-if="!isBackButtonHidden" @click="onBackClicked()">Back</RockButton>
+                <RockButton
+                    v-if="!attendanceOccurrenceGuid && ((!config.isLocationRequired && !config.isScheduleRequired) || ((config.isScheduleRequired && scheduleGuid) && !config.isLocationRequired) || ((config.isLocationRequired && locationGuid) && !config.isScheduleRequired))"
+                    @click="getOrCreateAttendanceOccurrence">Take Attendance</RockButton>
             </template>
         </Panel>
     </div>
@@ -293,7 +294,7 @@
     const scheduleGuid = ref<Guid | undefined | null>(config.value.scheduleGuid);
     const didNotOccur = ref<boolean>(config.value.isDidNotMeetChecked);
     const isSavingDidNotOccur = ref<boolean>(false);
-    const campusGuid = ref<string | null | undefined>(config.value.campusGuid);
+    const campusGuid = ref<string | null | undefined>();
     const notes = ref<string>(config.value.notes ?? "");
     const topic = ref<GroupAttendanceTopic | null>();
     const isNotesShown = ref<boolean>(false);
@@ -304,7 +305,7 @@
     //#region Computed Values
 
     const isDidNotMeetShown = computed<boolean>(() => !config.value.isDidNotMeetDisabled || didNotOccur.value);
-    const dateFormat = computed(() => config.value.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.DatePicker ? "yyyy-MM-dd" : "MM/dd/yyyy");
+    const dateFormat = computed(() => config.value.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.DatePicker ? "yyyy-MM-dd" : "dddd, MMMM d, yyyy");
     const attendanceForDateIsoString = computed<string | null>(() => attendanceForDate.value?.toISOString());
     const attendanceForDateString = computed<string>(() => attendanceForDate.value.toASPString(dateFormat.value));
     const addPersonAsLabel = computed(() => {
@@ -634,7 +635,6 @@
             attendanceOccurrenceDate: attendanceForDateString.value,
             attendanceTypeGuid: attendanceOccurrenceTypeGuid.value,
             attendees: attendances.value,
-            campusGuid: campusGuid.value,
             locationGuid: locationGuid.value,
             notes: notes.value,
             scheduleGuid: scheduleGuid.value,
@@ -825,7 +825,6 @@
         attendanceOccurrenceGuid.value = config.value.attendanceOccurrenceGuid;
         attendanceOccurrenceTypeGuid.value = config.value.selectedAttendanceOccurrenceTypeValue ?? undefined;
         didNotOccur.value = config.value.isDidNotMeetChecked;
-        campusGuid.value = config.value.campusGuid;
         notes.value = config.value.notes ?? "";
     });
 
@@ -839,8 +838,6 @@
             // Do nothing if nothing changed.
             return;
         }
-
-        attendanceOccurrenceGuid.value = null;
 
         if (attendanceForDate.value && locationGuid.value && scheduleGuid.value) {
             await getOrCreateAttendanceOccurrence();

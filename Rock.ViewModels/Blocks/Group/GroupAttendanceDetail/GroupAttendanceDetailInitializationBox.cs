@@ -29,22 +29,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
     public class GroupAttendanceDetailInitializationBox : BlockBox
     {
         /// <summary>
-        /// Gets or sets the name of the campus.
-        /// </summary>
-        /// <value>
-        /// The name of the campus.
-        /// </value>
-        public string CampusName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the campus unique identifier.
-        /// </summary>
-        /// <value>
-        /// The campus unique identifier.
-        /// </value>
-        public Guid? CampusGuid { get; set; }
-
-        /// <summary>
         /// Gets or sets the group unique identifier.
         /// </summary>
         /// <value>
@@ -69,12 +53,9 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         public bool IsNewAttendanceDateAdditionRestricted { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is group not found error.
+        /// Gets or sets a value indicating whether an authorized group was not found.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is group not found error; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsGroupNotFoundError { get; set; }
+        public bool IsAuthorizedGroupNotFoundError { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is future occurrence date selection restricted.
@@ -83,14 +64,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         ///   <c>true</c> if this instance is future occurrence date selection restricted; otherwise, <c>false</c>.
         /// </value>
         public bool IsFutureOccurrenceDateSelectionRestricted { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is not authorized error.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is not authorized error; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsNotAuthorizedError { get;set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is campus filtering allowed.
@@ -162,7 +135,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         /// <value>
         /// The attendance occurrence date.
         /// </value>
-        public DateTimeOffset AttendanceOccurrenceDate { get; set; }
+        public DateTimeOffset? AttendanceOccurrenceDate { get; set; }
 
         /// <summary>
         /// Gets or sets the location unique identifier.
@@ -269,12 +242,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         public bool IsNoAttendanceOccurrencesError { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is configuration error.
+        /// Gets a value indicating whether there is a configuration error.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is configuration error; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsConfigError { get; set; }
+        public bool IsConfigError => !string.IsNullOrWhiteSpace( ErrorMessage )
+            || IsAuthorizedGroupNotFoundError
+            || IsNoAttendanceOccurrencesError;
 
         /// <summary>
         /// Gets or sets the schedule unique identifier.
@@ -336,5 +308,15 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         /// The number of days back appear in the schedule drop down list to choose from.
         /// </summary>
         public int NumberOfPreviousDaysToShow { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether location is required.
+        /// </summary>
+        public bool IsLocationRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether schedule is required.
+        /// </summary>
+        public bool IsScheduleRequired { get; set; }
     }
 }

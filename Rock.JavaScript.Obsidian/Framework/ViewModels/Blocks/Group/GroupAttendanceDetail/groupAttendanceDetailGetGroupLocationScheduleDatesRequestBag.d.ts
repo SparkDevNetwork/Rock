@@ -25,6 +25,8 @@ import { Guid } from "@Obsidian/Types";
 
 /** A bag that contains the get group location schedule dates request information. */
 export type GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag = {
+    date?: string | null;
+
     /** GUID of the group the schedules are part of. */
     groupGuid?: Guid | null;
 

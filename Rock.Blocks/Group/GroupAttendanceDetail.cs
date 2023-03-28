@@ -192,7 +192,7 @@ namespace Rock.Blocks.Group
     [EnumField(
         "Date Selection Mode",
         Category = AttributeCategory.None,
-        DefaultEnumValue = ( int )DateSelectionModeSpecifier.DatePicker,
+        DefaultEnumValue = ( int ) DateSelectionModeSpecifier.DatePicker,
         Description = "'Date Picker' individual can pick any date. 'Current Date' locked to the current date. 'Pick From Schedule' drop down of dates from the schedule. This will need to be updated based on the location.",
         EnumSourceType = typeof( DateSelectionModeSpecifier ),
         IsRequired = true,
@@ -514,7 +514,7 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// The Campus ID filter.
         /// </summary>
-        private int? CampusIdBlockUserPreference
+        private int? CampusGuidBlockUserPreference
         {
             get
             {
@@ -540,29 +540,34 @@ namespace Rock.Blocks.Group
         {
             using ( var rockContext = new RockContext() )
             {
-                var occurrenceDataClientService = GetOccurrenceDataClientService( rockContext );
-                var searchParameters = occurrenceDataClientService.GetAttendanceOccurrenceSearchParameters( campusIdOverride: this.CampusIdBlockUserPreference );
-                var occurrenceData = occurrenceDataClientService.GetOccurrenceData( searchParameters, asNoTracking: false );
-                var box = new GroupAttendanceDetailInitializationBox();
+                var clientService = GetOccurrenceDataClientService( rockContext );
+                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized() );
+                var occurrenceData = clientService.GetOccurrenceData( searchParameters, withTracking: true );
 
-                if ( !occurrenceData.IsValid )
+                // If the individual is loading a specific occurrence,
+                // and if the occurrence is new,
+                // then save it.
+                var hasOccurrenceQueryStringParameters = searchParameters.AttendanceOccurrenceDate.HasValue && ( searchParameters.LocationId.HasValue || searchParameters.ScheduleId.HasValue );
+                if ( occurrenceData.IsValid
+                     && occurrenceData.IsNewOccurrence
+                     && hasOccurrenceQueryStringParameters
+                     && occurrenceData.AttendanceOccurrence.IsValid )
                 {
-                    SetErrorData( occurrenceData, box );
-                    return box;
-                }
+                    if ( occurrenceData.AttendanceOccurrence.OccurrenceDate.IsFuture() && this.IsFutureOccurrenceDateSelectionRestricted )
+                    {
+                        return new GroupAttendanceDetailInitializationBox
+                        {
+                            ErrorMessage = "Future dates are not allowed."
+                        };
+                    }
 
-                if ( occurrenceData.IsValid && occurrenceData.IsNewOccurrence && occurrenceData.AttendanceOccurrence.IsValid && occurrenceData.AttendanceOccurrence.LocationId.HasValue && occurrenceData.AttendanceOccurrence.ScheduleId.HasValue )
-                {
                     var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                     attendanceOccurrenceService.Add( occurrenceData.AttendanceOccurrence );
 
-                    // Add the AttendanceOccurrence if it is new and valid.
                     rockContext.SaveChanges();
-                } 
+                }
 
-                SetInitializationBox( rockContext, occurrenceData, box );
-
-                return box;
+                return GetInitializationBox( rockContext, occurrenceData );
             }
         }
 
@@ -582,8 +587,8 @@ namespace Rock.Blocks.Group
             {
                 var attendanceInfo = new AttendanceService( rockContext )
                     .Queryable()
-                    .Where( a =>  a.Guid == bag.AttendanceGuid )
-                    .Select( a => new
+                    .Where( a => a.Guid == bag.AttendanceGuid )
+                    .Select( a => new AttendanceDto
                     {
                         GroupId = a.Occurrence.GroupId,
                         Person = a.PersonAlias.Person,
@@ -604,7 +609,7 @@ namespace Rock.Blocks.Group
 
                 var group = new GroupService( rockContext ).Get( attendanceInfo.GroupId.Value );
 
-                if (!group.IsAuthorized(Authorization.VIEW, GetCurrentPerson() ) )
+                if ( !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
                 {
                     return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
                 }
@@ -616,14 +621,14 @@ namespace Rock.Blocks.Group
                         m.GroupId == group.Id
                         && m.GroupId == group.Id
                         && m.PersonId == attendanceInfo.Person.Id )
-                    .Select( m => new
+                    .Select( m => new GroupMemberDto
                     {
                         GroupMember = m,
                         GroupRoleName = m.GroupRole != null ? m.GroupRole.Name : null,
                     } )
                     .FirstOrDefault();
 
-                var attendanceBag = GetAttendanceBag( new AttendanceData
+                var attendanceBag = GetAttendanceBag( new AttendanceBagDto
                 {
                     DidAttend = attendanceInfo.DidAttend ?? false,
                     GroupMember = groupMemberDto?.GroupMember,
@@ -638,6 +643,19 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Gets the current (read-only) occurrence data.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The current occurrence data.</returns>
+        private OccurrenceData GetOccurrenceData( RockContext rockContext )
+        {
+            var client = GetOccurrenceDataClientService( rockContext );
+            // Use the default search parameters so we only print the persisted AttendanceOccurrence.
+            var searchParameters = client.GetAttendanceOccurrenceSearchParameters( client.GetGroupIfAuthorized() );
+            return client.GetOccurrenceData( searchParameters );
+        }
+
+        /// <summary>
         /// Downloads the AttendanceOccurrence roster.
         /// </summary>
         [BlockAction( "PrintRoster" )]
@@ -645,11 +663,7 @@ namespace Rock.Blocks.Group
         {
             using ( var rockContext = new RockContext() )
             {
-                var clientService = GetOccurrenceDataClientService( rockContext );
-
-                // Use the default search parameters so we only print the persisted AttendanceOccurrence.
-                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters();
-                var occurrenceData = clientService.GetOccurrenceData( searchParameters, asNoTracking: true );
+                var occurrenceData = GetOccurrenceData( rockContext );
 
                 if ( !occurrenceData.IsValid )
                 {
@@ -707,7 +721,7 @@ namespace Rock.Blocks.Group
                 {
                     if ( mergeTemplateType.Exceptions.Count == 1 )
                     {
-                        RockLogger.Log.Error(RockLogDomains.Group, mergeTemplateType.Exceptions[0] );
+                        RockLogger.Log.Error( RockLogDomains.Group, mergeTemplateType.Exceptions[0] );
                     }
                     else if ( mergeTemplateType.Exceptions.Count > 50 )
                     {
@@ -738,12 +752,11 @@ namespace Rock.Blocks.Group
             using ( var rockContext = new RockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
-                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( attendanceOccurrenceGuidOverride: bag.AttendanceOccurrenceGuid );
-                var occurrenceData = new OccurrenceData();
+                var group = clientService.GetGroupIfAuthorized();
 
-                if ( !clientService.TrySetGroup( occurrenceData, searchParameters, asNoTracking: true ) )
+                if ( group == null )
                 {
-                    return ActionBadRequest( occurrenceData.ErrorMessage );
+                    return ActionBadRequest( "Group not found." );
                 }
 
                 var person = new PersonAliasService( rockContext ).GetPerson( bag.PersonAliasGuid );
@@ -759,7 +772,7 @@ namespace Rock.Blocks.Group
 
                 if ( !addPersonAs.IsNullOrWhiteSpace() && addPersonAs == "Group Member" )
                 {
-                    groupMember = AddPersonAsGroupMemberWithoutSaving( occurrenceData.Group, person, rockContext );
+                    groupMember = AddPersonAsGroupMember( group, person, rockContext );
                 }
 
                 var campusGuid = person.PrimaryCampusId.HasValue ? person.PrimaryCampus.Guid : ( Guid? ) null;
@@ -767,19 +780,18 @@ namespace Rock.Blocks.Group
                 MarkAttendance( new GroupAttendanceDetailMarkAttendanceRequestBag
                 {
                     AttendanceOccurrenceGuid = bag.AttendanceOccurrenceGuid,
-                    CampusGuid = campusGuid,
                     DidAttend = true,
                     PersonGuid = person.Guid,
                 } );
 
-                var attendanceBag = GetAttendanceBag( new AttendanceData
+                var attendanceBag = GetAttendanceBag( new AttendanceBagDto
                 {
                     DidAttend = true,
                     GroupMember = groupMember,
                     GroupRoleName = groupMember?.GroupRole != null ? groupMember.GroupRole.Name : null,
                     Person = person,
                     PersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasQuery().Where( a => a.PersonId == person.Id ).Select( a => a.Id ).FirstOrDefault(),
-                    PrimaryCampusGuid =  campusGuid
+                    PrimaryCampusGuid = campusGuid
                 } );
 
                 return ActionOk( new GroupAttendanceDetailAddPersonResponseBag
@@ -794,16 +806,36 @@ namespace Rock.Blocks.Group
         /// </summary>
         /// <param name="bag">The request bag.</param>
         /// <returns>The data needed to display the AttendanceOccurrence in the Group Attendance Detail block.</returns>
-        [BlockAction("GetOrCreate")]
+        [BlockAction( "GetOrCreate" )]
         public BlockActionResult GetOrCreate( GroupAttendanceDetailGetOrCreateRequestBag bag )
         {
             using ( var rockContext = new RockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
-                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( bag );
-                var occurrenceData = clientService.GetOccurrenceData( searchParameters );
+                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters(
+                    clientService.GetGroupIfAuthorized(),
+                    bag.AttendanceOccurrenceGuid,
+                    searchParameterOverrides: ( search ) =>
+                    {
+                        // Override specific search parameters if specific values were passed in.
+                        if (bag.AttendanceOccurrenceDate.HasValue)
+                        {
+                            search.AttendanceOccurrenceDate = bag.AttendanceOccurrenceDate.Value.Date;
+                        }
 
-                if ( !occurrenceData.IsValid )
+                        if ( bag.LocationGuid.HasValue )
+                        {
+                            search.LocationId = new LocationService( rockContext ).GetId( bag.LocationGuid.Value );
+                        }
+
+                        if ( bag.ScheduleGuid.HasValue )
+                        {
+                            search.ScheduleId = new ScheduleService( rockContext ).GetId( bag.ScheduleGuid.Value );
+                        }
+                    } );
+                var occurrenceData = clientService.GetOccurrenceData( searchParameters, withTracking: true );
+
+                if ( !occurrenceData.IsValid || !occurrenceData.AttendanceOccurrence.IsValid )
                 {
                     return ActionBadRequest( occurrenceData.ErrorMessage );
                 }
@@ -819,33 +851,8 @@ namespace Rock.Blocks.Group
 
                     rockContext.SaveChanges();
                 }
-                else
-                {
-                    // If this is an existing AttendanceOccurrence, and if Location and Schedule were passed in, and if Location and Schedule are different than the AttendanceOccurrence,
-                    // then update its Location and Schedule.
-                    var isUpdateNeeded = false;
 
-                    if ( searchParameters.LocationId.HasValue && occurrenceData.AttendanceOccurrence.LocationId != searchParameters.LocationId )
-                    {
-                        occurrenceData.AttendanceOccurrence.LocationId = searchParameters.LocationId;
-                        isUpdateNeeded = true;
-                    }
-
-                    if ( searchParameters.ScheduleId.HasValue && occurrenceData.AttendanceOccurrence.ScheduleId != searchParameters.ScheduleId )
-                    {
-                        occurrenceData.AttendanceOccurrence.ScheduleId = searchParameters.ScheduleId;
-                        isUpdateNeeded = true;
-                    }
-
-                    if ( isUpdateNeeded )
-                    {
-                        rockContext.SaveChanges();
-                    }
-                }
-
-                var box = new GroupAttendanceDetailInitializationBox();
-
-                SetInitializationBox( rockContext, occurrenceData, box );
+                var box = GetInitializationBox( rockContext, occurrenceData );
 
                 return ActionOk( box );
             }
@@ -893,8 +900,8 @@ namespace Rock.Blocks.Group
             using ( var rockContext = new RockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
-                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( attendanceOccurrenceGuidOverride: bag.AttendanceOccurrenceGuid );
-                var occurrenceData = clientService.GetOccurrenceData( searchParameters );
+                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), bag.AttendanceOccurrenceGuid );
+                var occurrenceData = clientService.GetOccurrenceData( searchParameters, withTracking: true );
 
                 if ( !occurrenceData.IsValid )
                 {
@@ -906,8 +913,6 @@ namespace Rock.Blocks.Group
                 if ( attendance == null )
                 {
                     var personAliasId = new PersonService( rockContext ).Get( bag.PersonGuid )?.PrimaryAliasId;
-                    var occurrenceLocationCampusId = new LocationService( rockContext ).GetCampusIdForLocation( occurrenceData.AttendanceOccurrence.LocationId );
-                    var campusId = GetAttendanceCampusId( occurrenceLocationCampusId, occurrenceData.Group.CampusId, bag.CampusGuid );
 
                     DateTime startDateTime;
 
@@ -922,7 +927,7 @@ namespace Rock.Blocks.Group
                         startDateTime = occurrenceData.AttendanceOccurrence.OccurrenceDate;
                     }
 
-                    occurrenceData.AttendanceOccurrence.Attendees.Add( CreateAttendanceInstance( personAliasId, campusId, startDateTime, bag.DidAttend ) );
+                    occurrenceData.AttendanceOccurrence.Attendees.Add( CreateAttendanceInstance( personAliasId, occurrenceData.Campus?.Id, startDateTime, bag.DidAttend ) );
                 }
                 else
                 {
@@ -945,8 +950,8 @@ namespace Rock.Blocks.Group
             using ( var rockContext = new RockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
-                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( attendanceOccurrenceGuidOverride: bag.AttendanceOccurrenceGuid );
-                var occurrenceData = clientService.GetOccurrenceData( searchParameters );
+                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), bag.AttendanceOccurrenceGuid );
+                var occurrenceData = clientService.GetOccurrenceData( searchParameters, withTracking: true );
 
                 if ( !occurrenceData.IsValid )
                 {
@@ -968,8 +973,7 @@ namespace Rock.Blocks.Group
                 }
                 else
                 {
-                    var occurrenceLocationCampusId = new LocationService( rockContext ).GetCampusIdForLocation( occurrenceData.AttendanceOccurrence.LocationId );
-                    var campusId = GetAttendanceCampusId( occurrenceLocationCampusId, occurrenceData.Group.CampusId, bag.CampusGuid );
+                    var campusId = occurrenceData.Campus?.Id;
 
                     foreach ( var attendee in GetAttendanceBags( rockContext, occurrenceData ).Where( a => a.PersonAliasId.HasValue ) )
                     {
@@ -987,7 +991,7 @@ namespace Rock.Blocks.Group
 
                         occurrenceData.AttendanceOccurrence.Attendees.Add( attendance );
                     }
-                } 
+                }
 
                 rockContext.SaveChanges();
 
@@ -1002,11 +1006,11 @@ namespace Rock.Blocks.Group
         [BlockAction( "UpdateNotes" )]
         public BlockActionResult UpdateNotes( GroupAttendanceDetailUpdateNotesRequestBag bag )
         {
-            using (  var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
-                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( attendanceOccurrenceGuidOverride: bag.AttendanceOccurrenceGuid );
-                var occurrenceData = clientService.GetOccurrenceData( searchParameters );
+                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), bag.AttendanceOccurrenceGuid );
+                var occurrenceData = clientService.GetOccurrenceData( searchParameters, withTracking: true );
 
                 if ( !occurrenceData.IsValid )
                 {
@@ -1030,8 +1034,8 @@ namespace Rock.Blocks.Group
             using ( var rockContext = new RockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
-                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( attendanceOccurrenceGuidOverride: bag.AttendanceOccurrenceGuid );
-                var occurrenceData = clientService.GetOccurrenceData( searchParameters );
+                var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), bag.AttendanceOccurrenceGuid );
+                var occurrenceData = clientService.GetOccurrenceData( searchParameters, withTracking: true );
 
                 if ( !occurrenceData.IsValid )
                 {
@@ -1050,7 +1054,7 @@ namespace Rock.Blocks.Group
                 return ActionOk();
             }
         }
-        
+
         /// <summary>
         /// Gets the group locations that can be displayed in the group location picker.
         /// </summary>
@@ -1065,15 +1069,23 @@ namespace Rock.Blocks.Group
             }
             using ( var rockContext = new RockContext() )
             {
-                var locations = new GroupService( rockContext )
+                var list = GetGroupLocations( rockContext, bag.GroupGuid.Value );
+
+                return ActionOk( list );
+            }
+        }
+
+        private List<ListItemBag> GetGroupLocations( RockContext rockContext, Guid groupGuid )
+        {
+            var locations = new GroupService( rockContext )
                     .Queryable()
                     .AsNoTracking()
-                    .Where( g => g.Guid == bag.GroupGuid.Value && g.GroupLocations.Any() )
+                    .Where( g => g.Guid == groupGuid && g.GroupLocations.Any() )
                     .SelectMany( g => g.GroupLocations )
                     .Where( gl => gl.Location != null )
                     .Select( gl => gl.Location )
                     .Where( l => l.Name != null && !string.IsNullOrEmpty( l.Name.Trim() ) )
-                    .Select( l => new
+                    .Select( l => new LocationDto
                     {
                         Id = l.Id,
                         Guid = l.Guid,
@@ -1083,46 +1095,43 @@ namespace Rock.Blocks.Group
                     } )
                     .ToList();
 
-                if ( !locations.Any() )
-                {
-                    return ActionNotFound();
-                }
-
-                var locationPaths = new Dictionary<Guid, string>();
-                var locationValues = new Dictionary<Guid, string>();
-
-                var locationService = new LocationService( rockContext );
-
-                foreach ( var location in locations )
-                {
-                    // Get location path
-                    var parentLocationPath = string.Empty;
-                    if ( location.ParentLocationId.HasValue && location.ParentLocationGuid.HasValue )
-                    {
-                        var parentLocationGuid = location.ParentLocationGuid.Value;
-
-                        if ( !locationPaths.ContainsKey( parentLocationGuid ) )
-                        {
-                            locationPaths.Add( parentLocationGuid, locationService.GetPath( location.ParentLocationId.Value ) );
-                        }
-
-                        parentLocationPath = locationPaths[parentLocationGuid];
-                    }
-
-                    if ( !locationValues.ContainsKey( location.Guid ) )
-                    {
-                        locationValues.Add( location.Guid, new List<string> { parentLocationPath, location.Name }.AsDelimited( " > " ) );
-                    }
-                }
-
-                var list = locationValues.Select( kvp => new ListItemBag
-                {
-                    Value = kvp.Key.ToString(),
-                    Text = kvp.Value
-                } );
-
-                return ActionOk( list );
+            if ( !locations.Any() )
+            {
+                return new List<ListItemBag>();
             }
+
+            var locationPaths = new Dictionary<Guid, string>();
+            var locationValues = new Dictionary<Guid, string>();
+
+            var locationService = new LocationService( rockContext );
+
+            foreach ( var location in locations )
+            {
+                // Get location path
+                var parentLocationPath = string.Empty;
+                if ( location.ParentLocationId.HasValue && location.ParentLocationGuid.HasValue )
+                {
+                    var parentLocationGuid = location.ParentLocationGuid.Value;
+
+                    if ( !locationPaths.ContainsKey( parentLocationGuid ) )
+                    {
+                        locationPaths.Add( parentLocationGuid, locationService.GetPath( location.ParentLocationId.Value ) );
+                    }
+
+                    parentLocationPath = locationPaths[parentLocationGuid];
+                }
+
+                if ( !locationValues.ContainsKey( location.Guid ) )
+                {
+                    locationValues.Add( location.Guid, new List<string> { parentLocationPath, location.Name }.AsDelimited( " > " ) );
+                }
+            }
+
+            return locationValues.Select( kvp => new ListItemBag
+            {
+                Value = kvp.Key.ToString(),
+                Text = kvp.Value
+            } ).ToList();
         }
 
         /// <summary>
@@ -1133,21 +1142,27 @@ namespace Rock.Blocks.Group
         [BlockAction( "GetGroupLocationSchedules" )]
         public BlockActionResult GetGroupLocationSchedules( GroupAttendanceDetailGetGroupLocationSchedulesRequestBag bag )
         {
-            if ( !bag.GroupGuid.HasValue || !bag.LocationGuid.HasValue )
+            if ( !bag.GroupGuid.HasValue )
             {
                 return ActionNotFound();
             }
 
             using ( var rockContext = new RockContext() )
             {
-                var groupLocationSchedulesQuery = new GroupLocationService( rockContext )
+                var groupLocationsQuery = new GroupLocationService( rockContext )
                     .Queryable()
                     .AsNoTracking()
                     .Include( gl => gl.Location )
                     .Include( gl => gl.Schedules )
                     .Where( gl => gl.Group.Guid == bag.GroupGuid.Value )
-                    .Where( gl => gl.Location.Guid == bag.LocationGuid.Value )
-                    .Where( gl => gl.Schedules.Any() )
+                    .Where( gl => gl.Schedules.Any() );
+
+                if ( bag.LocationGuid.HasValue )
+                {
+                    groupLocationsQuery = groupLocationsQuery.Where( gl => gl.Location.Guid == bag.LocationGuid.Value );
+                }
+
+                var groupLocationSchedulesQuery = groupLocationsQuery                    
                     .SelectMany( gl => gl.Schedules )
                     .OrderBy( s => s.Name )
                     .Distinct();
@@ -1170,7 +1185,7 @@ namespace Rock.Blocks.Group
                 else
                 {
                     var groupLocationSchedules = groupLocationSchedulesQuery
-                        .Select( s => new
+                        .Select( s => new ScheduleDto
                         {
                             ScheduleGuid = s.Guid,
                             ScheduleName = s.Name
@@ -1213,59 +1228,257 @@ namespace Rock.Blocks.Group
 
             using ( var rockContext = new RockContext() )
             {
-                var groupLocationSchedules = new GroupLocationService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( gl => gl.Group.Guid == bag.GroupGuid.Value )
-                    .Where( gl => gl.Location.Guid == bag.LocationGuid.Value )
-                    .Where( gl => gl.Schedules.Any() )
-                    .SelectMany( gl => gl.Schedules )
-                    .OrderBy( s => s.Name )
-                    .Distinct()
-                    .ToList();
+                var list = GetGroupLocationScheduleDateBags( rockContext, bag );
 
-                if ( !groupLocationSchedules.Any() )
+                if ( !list.Any() )
                 {
                     return ActionNotFound();
                 }
 
-                var scheduleDates = new List<(DateTime Date, Guid ScheduleGuid, string FormattedValue)>();
+                return ActionOk( list );
+            }
+        }
 
-                var now = RockDateTime.Now;
-                DateTime startDate;
+        /// <summary>
+        /// Gets the group location schedule dates that can be displayed in the group location schedule date picker.
+        /// </summary>
+        /// <param name="bag">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group location schedule dates.</returns>
+        private List<ListItemBag> GetGroupLocationScheduleDateBags( RockContext rockContext, GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag bag )
+        {
+            if ( !bag.GroupGuid.HasValue || !bag.LocationGuid.HasValue )
+            {
+                return new List<ListItemBag>();
+            }
 
-                if ( bag.NumberOfPreviousDaysToShow.HasValue )
+            var groupLocationSchedules = new GroupLocationService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( gl => gl.Group.Guid == bag.GroupGuid.Value )
+                .Where( gl => gl.Location.Guid == bag.LocationGuid.Value )
+                .Where( gl => gl.Schedules.Any() )
+                .SelectMany( gl => gl.Schedules )
+                .OrderBy( s => s.Name )
+                .Distinct()
+                .ToList();
+
+            if ( !groupLocationSchedules.Any() )
+            {
+                return new List<ListItemBag>();
+            }
+
+            var scheduleDates = new List<(DateTime Date, Guid ScheduleGuid, string FormattedValue)>();
+
+            var now = RockDateTime.Now;
+            DateTime startDate;
+            DateTime endDate;
+
+            if ( bag.Date.HasValue )
+            {
+                // Find schedules for the specific date that was supplied.
+                startDate = bag.Date.Value.Date;
+                endDate = bag.Date.Value.Date.AddDays( 1 );
+            }
+            else if ( bag.NumberOfPreviousDaysToShow.HasValue )
+            {
+                // Get schedules between N days ago and now.
+                startDate = now.AddDays( -bag.NumberOfPreviousDaysToShow.Value );
+                endDate = now;
+            }
+            else
+            {
+                // By default, get schedules between 1 month ago and now.
+                startDate = now.AddMonths( -1 );
+                endDate = now;
+            }
+
+            foreach ( var groupLocationSchedule in groupLocationSchedules )
+            {
+                var startTimes = groupLocationSchedule.GetScheduledStartTimes( startDate, endDate );
+
+                foreach ( var startTime in startTimes )
                 {
-                    // Start N days ago.
-                    startDate = now.AddDays( -bag.NumberOfPreviousDaysToShow.Value );
+                    scheduleDates.Add( (startTime, groupLocationSchedule.Guid, startTime.ToString( "dddd, MMMM d, yyyy - h:mmtt" )) );
+                }
+            }
+
+            return scheduleDates
+                .OrderByDescending( s => s.Date )
+                .Select( s => new ListItemBag
+                {
+                    Value = $"{s.Date:s}|{s.ScheduleGuid}",
+                    Text = s.FormattedValue
+                } )
+                .ToList();
+        }
+
+        private GroupAttendanceDetailInitializationBox GetInitializationBox( RockContext rockContext, OccurrenceData occurrenceData )
+        {
+            var occurrence = occurrenceData.AttendanceOccurrence;
+            var group = occurrenceData.Group;
+
+            if ( !occurrenceData.IsValid )
+            {
+                return SetErrorData( occurrenceData, new GroupAttendanceDetailInitializationBox() );
+            }
+
+            var box = new GroupAttendanceDetailInitializationBox
+            {
+                AddGroupMemberPageUrl = GetAddGroupMemberPageUrl( occurrenceData ),
+                AddPersonAs = this.AddPersonAs,
+                AttendanceOccurrenceGuid = occurrenceData.IsNewOccurrence ? ( Guid? ) null : occurrenceData.AttendanceOccurrence.Guid,
+                AttendanceOccurrenceId = occurrenceData.IsNewOccurrence ? ( int? ) null : occurrenceData.AttendanceOccurrence.Id,
+                BackPageUrl = !this.IsBackButtonHidden ? GetBackPageUrl( occurrenceData ) : null,
+                GroupGuid = occurrenceData.Group.Guid,
+                GroupMembersSectionLabel = group.GroupType.GroupMemberTerm.Pluralize(),
+                GroupName = occurrenceData.Group.Name,
+                IsBackButtonHidden = this.IsBackButtonHidden,
+                IsCampusFilteringAllowed = this.IsCampusFilteringAllowed,
+                IsDidNotMeetDisabled = this.IsDidNotMeetDisabled,
+                IsLocationRequired = occurrenceData.Group.GroupType.GroupAttendanceRequiresLocation,
+                IsScheduleRequired = occurrenceData.Group.GroupType.GroupAttendanceRequiresSchedule,
+
+                // Enforce this on the client if possible. Either way, it should be enforced on the server.
+                IsFutureOccurrenceDateSelectionRestricted = this.IsFutureOccurrenceDateSelectionRestricted,
+
+                IsLongListDisabled = this.IsLongListDisabled,
+                IsNewAttendanceDateAdditionRestricted = this.IsNewAttendanceDateAdditionRestricted,
+                IsNotesSectionHidden = this.IsNotesSectionHidden,
+                NotesSectionLabel = this.NotesSectionLabel,
+                NumberOfPreviousDaysToShow = this.NumberOfPreviousDaysToShow,
+            };
+
+            var groupGuid = group.Guid;
+            var groupLocations = new Lazy<List<ListItemBag>>( () => GetGroupLocations( new RockContext(), groupGuid ) );
+
+            // If an existing occurrence was found,
+            // then do not allow modifying the date, location, or schedule.
+            if ( !occurrenceData.IsNewOccurrence )
+            {
+                SetOccurrenceDateOptions( rockContext, occurrenceData, box );
+
+                if ( occurrence.Location != null )
+                {
+                    box.LocationGuid = occurrence.Location.Guid;
+                    box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.Readonly;
+                    box.LocationLabel = new LocationService( rockContext ).GetPath( occurrence.Location.Id );
+                    if ( box.LocationLabel.IsNullOrWhiteSpace() )
+                    {
+                        box.LocationLabel = occurrence.Location.ToString();
+                    }
                 }
                 else
                 {
-                    // Default to 1 month ago.
-                    startDate = now.AddMonths( -1 );
+                    box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.None;
                 }
-                var endDate = now;
 
-                foreach ( var groupLocationSchedule in groupLocationSchedules )
+                if ( occurrence.Schedule != null )
                 {
-                    var startTimes = groupLocationSchedule.GetScheduledStartTimes( startDate, endDate );
+                    box.ScheduleGuid = occurrence.Schedule.Guid;
+                    box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.Readonly;
+                    box.ScheduleLabel = occurrence.Schedule.ToString();
+                }
+                else
+                {
+                    box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.None;
+                }
+            }
+            // The occurrence is a new occurrence.
+            else
+            {
+                SetOccurrenceDateOptions( rockContext, occurrenceData, box );
 
-                    foreach ( var startTime in startTimes )
+                if ( occurrence.Location != null )
+                {
+                    box.LocationGuid = occurrence.Location.Guid;
+                    box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.Readonly;
+                    box.LocationLabel = new LocationService( rockContext ).GetPath( occurrence.Location.Id );
+                    if ( box.LocationLabel.IsNullOrWhiteSpace() )
                     {
-                        scheduleDates.Add( (startTime, groupLocationSchedule.Guid, startTime.ToString( "dddd MMMM d, yyyy - h:mmtt" )) );
+                        box.LocationLabel = occurrence.Location.ToString();
                     }
                 }
+                // No location for the occurrence yet.
+                else
+                {
+                    box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.GroupLocationPicker;
+                }
 
-                var list = scheduleDates
-                    .OrderByDescending( s => s.Date )
-                    .Select( s => new ListItemBag
-                    {
-                        Value = $"{s.Date.ToString( "s" )}|{s.ScheduleGuid}",
-                        Text = s.FormattedValue
-                    } );
-
-                return ActionOk( list );
+                if ( occurrence.Schedule != null )
+                {
+                    box.ScheduleGuid = occurrence.Schedule.Guid;
+                    box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.Readonly;
+                    box.ScheduleLabel = occurrence.Schedule.ToString();
+                }
+                else
+                {
+                    box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.GroupLocationSchedulePicker;
+                }
             }
+
+            // Set the allowed occurrence types.
+            var allowedAttendanceTypeValues = this.AttendanceOccurrenceTypeValues;
+
+            if ( allowedAttendanceTypeValues.Any() )
+            {
+                box.AttendanceOccurrenceTypes = allowedAttendanceTypeValues.ToListItemBagList();
+                box.AttendanceOccurrenceTypesSectionLabel = this.AttendanceOccurrenceTypesLabel;
+                box.IsAttendanceOccurrenceTypesSectionShown = box.AttendanceOccurrenceTypes.Count > 1;
+                if ( box.AttendanceOccurrenceTypes.Count == 1 )
+                {
+                    box.SelectedAttendanceOccurrenceTypeValue = box.AttendanceOccurrenceTypes.First().Value;
+                }
+                else
+                {
+                    var attendanceOccurrenceTypeValue = allowedAttendanceTypeValues.Where( a => a.Id == occurrenceData.AttendanceOccurrence?.AttendanceTypeValueId ).Select( a => a.Guid.ToString() ).FirstOrDefault();
+                    box.SelectedAttendanceOccurrenceTypeValue = box.AttendanceOccurrenceTypes
+                        .FirstOrDefault( attendanceOccurrenceType => attendanceOccurrenceType.Value == attendanceOccurrenceTypeValue )?.Value;
+                }
+            }
+
+            // Set the attendances for the occurrence.
+            box.Attendances = GetAttendanceBags( rockContext, occurrenceData );
+
+            var allowAddPerson = this.IsNewAttendeeAdditionAllowed;
+
+            if ( this.AddGroupMemberPage.IsNotNullOrWhiteSpace() )
+            {
+                box.IsNewAttendeeAdditionAllowed = allowAddPerson && box.AddPersonAs == "Attendee";
+            }
+            else
+            {
+                box.IsNewAttendeeAdditionAllowed = allowAddPerson;
+            }
+
+            box.IsAttendanceOccurrenceTypesSectionShown = allowedAttendanceTypeValues.Count > 1;
+            box.AttendanceOccurrenceTypesSectionLabel = this.AttendanceOccurrenceTypesLabel;
+            box.AttendanceOccurrenceTypes = allowedAttendanceTypeValues
+                .Select( attendenceOccurrenceType => new ListItemBag
+                {
+                    Text = attendenceOccurrenceType.Value,
+                    Value = attendenceOccurrenceType.Guid.ToString(),
+                } )
+                .ToList();
+            if ( box.AttendanceOccurrenceTypes.Count == 1 )
+            {
+                box.SelectedAttendanceOccurrenceTypeValue = box.AttendanceOccurrenceTypes.First().Value;
+            }
+            else
+            {
+                var attendanceOccurrenceTypeValue = allowedAttendanceTypeValues.Where( a => a.Id == occurrenceData.AttendanceOccurrence?.AttendanceTypeValueId ).Select( a => a.Guid.ToString() ).FirstOrDefault();
+                box.SelectedAttendanceOccurrenceTypeValue = box.AttendanceOccurrenceTypes
+                    .FirstOrDefault( attendanceOccurrenceType => attendanceOccurrenceType.Value == attendanceOccurrenceTypeValue )?.Value;
+            }
+
+            if ( occurrenceData.AttendanceOccurrence.Id > 0 )
+            {
+                box.Notes = occurrenceData.AttendanceOccurrence.Notes;
+                box.IsDidNotMeetChecked = occurrenceData.AttendanceOccurrence.DidNotOccur ?? false;
+            }
+
+            box.Attendances = GetAttendanceBags( rockContext, occurrenceData );
+
+            return box;
         }
 
         #endregion
@@ -1283,11 +1496,11 @@ namespace Rock.Blocks.Group
             }
 
             var queryParams = new Dictionary<string, string>
-                {
-                    { PageParameterKey.GroupId, occurrenceData.Group.Id.ToString() },
-                    { PageParameterKey.GroupName, occurrenceData.Group.Name },
-                    { PageParameterKey.ReturnUrl, this.RequestContext.RequestUri.AbsoluteUri }
-                };
+            {
+                { PageParameterKey.GroupId, occurrenceData.Group.Id.ToString() },
+                { PageParameterKey.GroupName, occurrenceData.Group.Name },
+                { PageParameterKey.ReturnUrl, this.RequestContext.RequestUri.AbsoluteUri }
+            };
 
             return this.GetLinkedPageUrl( AttributeKey.GroupMemberAddPage, queryParams );
         }
@@ -1297,21 +1510,21 @@ namespace Rock.Blocks.Group
         /// </summary>
         private string GetBackPageUrl( OccurrenceData occurrenceData )
         {
-            var returnUrl = this.PageParameter( PageParameterKey.ReturnUrl );
-
-            if ( returnUrl.IsNullOrWhiteSpace() )
-            {
-                returnUrl = this.RequestContext.RequestUri.AbsoluteUri;
-            }
-
             var queryParams = new Dictionary<string, string>
             {
-                { PageParameterKey.GroupId, occurrenceData.Group.Id.ToString() },
-                { PageParameterKey.ReturnUrl, returnUrl }
+                { PageParameterKey.GroupId, occurrenceData.Group.Id.ToString() }
             };
 
+            var returnUrl = this.PageParameter( PageParameterKey.ReturnUrl );
+
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                queryParams.Add( PageParameterKey.ReturnUrl, returnUrl );
+            }
+
             var groupTypeIds = this.GroupTypeIdsPageParameter;
-            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+
+            if ( groupTypeIds.IsNotNullOrWhiteSpace() )
             {
                 queryParams.Add( PageParameterKey.GroupTypeIds, groupTypeIds );
             }
@@ -1386,82 +1599,23 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Sets the error data on the box from the occurrence data.
         /// </summary>
-        private void SetErrorData( OccurrenceData occurrenceData, GroupAttendanceDetailInitializationBox box )
+        private GroupAttendanceDetailInitializationBox SetErrorData( OccurrenceData occurrenceData, GroupAttendanceDetailInitializationBox box )
         {
-            box.ErrorMessage = occurrenceData.ErrorMessage;
-            box.IsGroupNotFoundError = occurrenceData.IsGroupNotFoundError;
-            box.IsNotAuthorizedError = occurrenceData.IsNotAuthorizedError;
+            var errors = new List<string>();
+
+            if (occurrenceData.ErrorMessage.IsNotNullOrWhiteSpace())
+            {
+                errors.Add( occurrenceData.ErrorMessage );
+            }
+
+            if ( occurrenceData.AttendanceOccurrence.ValidationResults.Any() )
+            {
+                errors.AddRange( occurrenceData.AttendanceOccurrence.ValidationResults.Select( a => a.ErrorMessage ) );
+            }
+
+            box.ErrorMessage = string.Join( "<br>", errors );
+            box.IsAuthorizedGroupNotFoundError = occurrenceData.IsAuthorizedGroupNotFoundError;
             box.IsNoAttendanceOccurrencesError = occurrenceData.IsNoAttendanceOccurrencesError;
-
-            box.IsConfigError = box.ErrorMessage.IsNotNullOrWhiteSpace()
-                || box.IsGroupNotFoundError
-                || box.IsNotAuthorizedError
-                || box.IsNoAttendanceOccurrencesError;
-        }
-
-        /// <summary>
-        /// Gets the initialization box.
-        /// </summary>
-        private GroupAttendanceDetailInitializationBox SetInitializationBox( RockContext rockContext, OccurrenceData occurrenceData, GroupAttendanceDetailInitializationBox box )
-        {
-            box.CampusName = occurrenceData.Campus?.Name;
-            box.CampusGuid = occurrenceData.Campus?.Guid;
-            box.GroupGuid = occurrenceData.Group.Guid;
-            box.GroupName = occurrenceData.Group.Name;
-            box.IsCampusFilteringAllowed = this.IsCampusFilteringAllowed;
-            box.IsFutureOccurrenceDateSelectionRestricted = this.IsFutureOccurrenceDateSelectionRestricted;
-            box.IsNewAttendanceDateAdditionRestricted = this.IsNewAttendanceDateAdditionRestricted;
-            box.IsNewAttendeeAdditionAllowed = this.IsNewAttendeeAdditionAllowed;
-            box.IsNotesSectionHidden = this.IsNotesSectionHidden;
-            box.NotesSectionLabel = this.NotesSectionLabel;
-            box.AddPersonAs = this.AddPersonAs;
-            box.AttendanceOccurrenceId = occurrenceData.IsNewOccurrence ? ( int? ) null : occurrenceData.AttendanceOccurrence.Id;
-            box.AttendanceOccurrenceGuid = occurrenceData.IsNewOccurrence ? (Guid?)null : occurrenceData.AttendanceOccurrence.Guid;
-            box.IsLongListDisabled = this.IsLongListDisabled;
-            box.IsDidNotMeetDisabled = this.IsDidNotMeetDisabled;
-            box.IsBackButtonHidden = this.IsBackButtonHidden;
-            box.NumberOfPreviousDaysToShow = this.NumberOfPreviousDaysToShow;
-            box.Notes = occurrenceData.AttendanceOccurrence.Notes;
-
-            box.BackPageUrl = GetBackPageUrl( occurrenceData );
-            box.AddGroupMemberPageUrl = GetAddGroupMemberPageUrl( occurrenceData );
-            SetOccurrenceDateOptions( occurrenceData, box );
-            SetLocationOptions( rockContext, occurrenceData, box );
-            SetScheduleOptions( occurrenceData, box );
-            box.GroupMembersSectionLabel = occurrenceData.Group.GroupType.GroupMemberTerm.Pluralize();
-
-            var allowedAttendanceTypeValues = this.AttendanceOccurrenceTypeValues;
-
-            if ( allowedAttendanceTypeValues.Any() )
-            {
-                box.IsAttendanceOccurrenceTypesSectionShown = allowedAttendanceTypeValues.Count > 1;
-                box.AttendanceOccurrenceTypesSectionLabel = this.AttendanceOccurrenceTypesLabel;
-                box.AttendanceOccurrenceTypes = allowedAttendanceTypeValues
-                    .Select( attendenceOccurrenceType => new ListItemBag
-                    {
-                        Text = attendenceOccurrenceType.Value,
-                        Value = attendenceOccurrenceType.Guid.ToString(),
-                    } )
-                    .ToList();
-                if ( box.AttendanceOccurrenceTypes.Count == 1 )
-                {
-                    box.SelectedAttendanceOccurrenceTypeValue = box.AttendanceOccurrenceTypes.First().Value;
-                }
-                else
-                {
-                    var attendanceOccurrenceTypeValue = allowedAttendanceTypeValues.Where( a => a.Id == occurrenceData.AttendanceOccurrence?.AttendanceTypeValueId ).Select( a => a.Guid.ToString() ).FirstOrDefault();
-                    box.SelectedAttendanceOccurrenceTypeValue = box.AttendanceOccurrenceTypes
-                        .FirstOrDefault( attendanceOccurrenceType => attendanceOccurrenceType.Value == attendanceOccurrenceTypeValue )?.Value;
-                }
-            }
-
-            if ( occurrenceData.AttendanceOccurrence.Id > 0 )
-            {
-                box.Notes = occurrenceData.AttendanceOccurrence.Notes;
-                box.IsDidNotMeetChecked = occurrenceData.AttendanceOccurrence.DidNotOccur ?? false;
-            }
-
-            box.Attendances = GetAttendanceBags( rockContext, occurrenceData );
 
             return box;
         }
@@ -1485,7 +1639,7 @@ namespace Rock.Blocks.Group
             var primaryAliasQuery = new PersonAliasService( rockContext ).GetPrimaryAliasQuery();
 
             // Get the query for people who attended.
-            IQueryable<AttendanceData> attendedPeopleQuery = null;
+            IQueryable<AttendanceBagDto> attendedPeopleQuery = null;
             if ( occurrenceData.AttendanceOccurrence.Id > 0 )
             {
                 // These may or may not be group members.
@@ -1502,7 +1656,7 @@ namespace Rock.Blocks.Group
                         Attendance = a,
                         GroupMember = groupMembersQuery.FirstOrDefault( m => m.PersonId == a.PersonAlias.Person.Id )
                     } )
-                    .Select( a => new AttendanceData
+                    .Select( a => new AttendanceBagDto
                     {
                         DidAttend = true,
                         GroupMember = a.GroupMember,
@@ -1514,7 +1668,7 @@ namespace Rock.Blocks.Group
             }
 
             // Get the people who did not attend from a Person EntitySet (if specified) or from the unattended group members.
-            IQueryable<AttendanceData> unattendedPeopleQuery = null;
+            IQueryable<AttendanceBagDto> unattendedPeopleQuery = null;
             var entitySetId = this.EntitySetIdPageParameter;
             if ( entitySetId.HasValue )
             {
@@ -1528,7 +1682,7 @@ namespace Rock.Blocks.Group
                         Person = p,
                         GroupMember = groupMembersQuery.FirstOrDefault( m => m.PersonId == p.Id ),
                     } )
-                    .Select( p => new AttendanceData
+                    .Select( p => new AttendanceBagDto
                     {
                         DidAttend = false,
                         GroupMember = p.GroupMember,
@@ -1541,7 +1695,7 @@ namespace Rock.Blocks.Group
             else
             {
                 unattendedPeopleQuery = groupMembersQuery
-                    .Select( m => new AttendanceData
+                    .Select( m => new AttendanceBagDto
                     {
                         DidAttend = false,
                         GroupMember = m,
@@ -1561,7 +1715,7 @@ namespace Rock.Blocks.Group
                 return new List<GroupAttendanceDetailAttendanceBag>();
             }
 
-            IQueryable<AttendanceData> query;
+            IQueryable<AttendanceBagDto> query;
             if ( attendedPeopleQuery == null )
             {
                 query = unattendedPeopleQuery;
@@ -1586,7 +1740,7 @@ namespace Rock.Blocks.Group
         /// </summary>
         /// <param name="attendanceData">The Attendance record data.</param>
         /// <returns>The bag containing the information needed to display an Attendance record in the Group Attendance Detail block.</returns>
-        private GroupAttendanceDetailAttendanceBag GetAttendanceBag( AttendanceData attendanceData )
+        private GroupAttendanceDetailAttendanceBag GetAttendanceBag( AttendanceBagDto attendanceData )
         {
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( MergeFieldKeys.Person, attendanceData.Person );
@@ -1612,21 +1766,78 @@ namespace Rock.Blocks.Group
         /// </summary>
         /// <param name="occurrenceData">The occurrence data.</param>
         /// <param name="box">The initialization box.</param>
-        private void SetOccurrenceDateOptions( OccurrenceData occurrenceData, GroupAttendanceDetailInitializationBox box )
+        private void SetOccurrenceDateOptions( RockContext rockContext, OccurrenceData occurrenceData, GroupAttendanceDetailInitializationBox box )
         {
             // Set occurrence date options.
             box.AttendanceOccurrenceDate = occurrenceData.AttendanceOccurrence.OccurrenceDate.Date;
 
-            if ( occurrenceData.IsNewOccurrence && occurrenceData.AttendanceOccurrence.OccurrenceDate != this.DatePageParameter )
+            // The occurrence will only be new if an occurrence doesn't exist when the page loads
+            // for the provided date, location, and schedule page parameters.
+            if ( occurrenceData.IsNewOccurrence )
             {
                 switch ( this.DateSelectionMode )
                 {
                     case DateSelectionModeSpecifier.DatePicker:
-                        box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.DatePicker;
+                        // If there are no date query parameters then show a date picker.
+                        if ( ( this.DatePageParameter ?? this.OccurrencePageParameter ) == null )
+                        {
+                            box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.DatePicker;
+                        }
+                        else
+                        {
+                            if ( occurrenceData.AttendanceOccurrence.Location != null )
+                            {
+                                var schedules = GetGroupLocationScheduleDateBags( rockContext, new GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag
+                                {
+                                    GroupGuid = occurrenceData.Group.Guid,
+                                    LocationGuid = occurrenceData.AttendanceOccurrence.Location.Guid,
+                                    Date = occurrenceData.AttendanceOccurrence.OccurrenceDate
+                                } );
+
+                                if ( schedules.Any() )
+                                {
+                                    // There is a date query parameter and a location, and schedules for the group, location, and date,
+                                    // so show a scheduled date picker.
+                                    box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.ScheduledDatePicker;
+                                }
+                                else
+                                {
+                                    // There is a date query parameter so show a readonly date to prevent the person from changing it.
+                                    box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.Readonly;
+                                }
+                            }
+                            else
+                            {
+                                // There is a date query parameter so show a readonly date to prevent the person from changing it.
+                                box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.Readonly;
+                            }
+                        }
                         break;
                     case DateSelectionModeSpecifier.CurrentDate:
-                        box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.Readonly;
-                        box.AttendanceOccurrenceDate = RockDateTime.Today;
+                        if ( occurrenceData.AttendanceOccurrence.Location != null )
+                        {
+                            var schedules = GetGroupLocationScheduleDateBags( rockContext, new GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag
+                            {
+                                GroupGuid = occurrenceData.Group.Guid,
+                                LocationGuid = occurrenceData.AttendanceOccurrence.Location.Guid,
+                                Date = occurrenceData.AttendanceOccurrence.OccurrenceDate
+                            } );
+
+                            if ( schedules.Any() )
+                            {
+                                // There is a location, and schedules for the group, location, and current date,
+                                // so show a scheduled date picker.
+                                box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.ScheduledDatePicker;
+                            }
+                            else
+                            {
+                                box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.Readonly;
+                            }
+                        }
+                        else
+                        {
+                            box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.Readonly;
+                        }
                         break;
                     case DateSelectionModeSpecifier.PickFromSchedule:
                         box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.ScheduledDatePicker;
@@ -1640,55 +1851,11 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Sets the initialization options for the location picker.
-        /// </summary>
-        /// <param name="rockContext">The Rock context.</param>
-        /// <param name="occurrenceData">The occurrence data.</param>
-        /// <param name="box">The initialization box.</param>
-        private void SetLocationOptions( RockContext rockContext, OccurrenceData occurrenceData, GroupAttendanceDetailInitializationBox box )
-        {
-            // Set location options.
-            if ( occurrenceData.AttendanceOccurrence.LocationId.HasValue )
-            {
-                box.LocationGuid = occurrenceData.AttendanceOccurrence.Location.Guid;
-                box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.Readonly;
-                box.LocationLabel = new LocationService( rockContext ).GetPath( occurrenceData.AttendanceOccurrence.LocationId.Value );
-            }
-            else
-            {
-                box.LocationGuid = null;
-                box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.GroupLocationPicker;
-                box.LocationLabel = null;
-            }
-        }
-
-        /// <summary>
-        /// Sets the initialization options for the schedule picker.
-        /// </summary>
-        /// <param name="occurrenceData">The occurrence data.</param>
-        /// <param name="box">The initialization box.</param>
-        private void SetScheduleOptions( OccurrenceData occurrenceData, GroupAttendanceDetailInitializationBox box )
-        {
-            if ( occurrenceData.AttendanceOccurrence.Location != null && occurrenceData.AttendanceOccurrence.Schedule != null )
-            {
-                box.ScheduleGuid = occurrenceData.AttendanceOccurrence.Schedule.Guid;
-                box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.Specific;
-                box.ScheduleLabel = occurrenceData.AttendanceOccurrence.Schedule.Name;
-            }
-            else
-            {
-                box.ScheduleGuid = null;
-                box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.GroupLocationSchedulePicker;
-                box.ScheduleLabel = null;
-            }
-        }
-
-        /// <summary>
-        /// Adds the person as group member but does not save changes.
+        /// Adds the person as group member and saves changes.
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
-        private GroupMember AddPersonAsGroupMemberWithoutSaving( Rock.Model.Group group, Person person, RockContext rockContext )
+        private GroupMember AddPersonAsGroupMember( Model.Group group, Person person, RockContext rockContext )
         {
             var groupMemberService = new GroupMemberService( rockContext );
             var role = new GroupTypeRoleService( rockContext ).Get( group.GroupType.DefaultGroupRoleId ?? 0 );
@@ -1744,16 +1911,9 @@ namespace Rock.Blocks.Group
         /// <para>If not present, then try the Group's Campus.</para>
         /// <para>Finally, if not set there, get the Campus from the Campus filter, if present in the request.</para>
         /// </summary>
-        private int? GetAttendanceCampusId( int? occurrenceLocationCampusId, int? groupLocationCampusId, Guid? campusGuidOverride )
+        private int? GetAttendanceCampusId( int? occurrenceLocationCampusId, int? groupLocationCampusId )
         {
-            var campusId = occurrenceLocationCampusId ?? groupLocationCampusId;
-
-            if ( !campusId.HasValue && this.IsCampusFilteringAllowed && campusGuidOverride.HasValue )
-            {
-                campusId = CampusCache.GetId( campusGuidOverride.Value );
-            }
-
-            return campusId;
+            return occurrenceLocationCampusId ?? groupLocationCampusId;
         }
 
         #endregion
@@ -1763,7 +1923,7 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Used for gathering <see cref="Attendance"/> data to create an instance of <see cref="GroupAttendanceDetailAttendanceBag"/>.
         /// </summary>
-        private class AttendanceData
+        private class AttendanceBagDto
         {
             internal bool DidAttend { get; set; }
 
@@ -1800,92 +1960,61 @@ namespace Rock.Blocks.Group
                 _scheduleService = scheduleService ?? throw new ArgumentNullException( nameof( scheduleService ) );
             }
 
-            internal OccurrenceData GetOccurrenceData( AttendanceOccurrenceSearchParameters occurrenceDataSearchParameters = null, bool asNoTracking = false )
+            internal OccurrenceData GetOccurrenceData( AttendanceOccurrenceSearchParameters searchParameters, bool withTracking = false )
             {
-                var occurrenceData = new OccurrenceData();
-
-                if ( occurrenceDataSearchParameters == null )
+                var occurrenceData = new OccurrenceData()
                 {
-                    occurrenceDataSearchParameters = GetAttendanceOccurrenceSearchParameters();
-                }
+                    Group = searchParameters.Group
+                };
 
-                if ( !TrySetGroup( occurrenceData, occurrenceDataSearchParameters, asNoTracking ) )
+                if ( occurrenceData.IsAuthorizedGroupNotFoundError )
                 {
+                    // Short-circuit if the authorized Group was not found.
                     return occurrenceData;
                 }
 
-                if ( !TrySetAttendanceOccurrence( occurrenceData, occurrenceDataSearchParameters, asNoTracking ) )
+                // Set the AttendanceOccurrence.
+                occurrenceData.AttendanceOccurrence = GetAttendanceOccurrence( searchParameters, withTracking );
+
+                if ( occurrenceData.IsNoAttendanceOccurrencesError )
                 {
+                    // Short-circuit if the AttendanceOccurrence was not found.
                     return occurrenceData;
                 }
 
-                occurrenceData.Campus = GetCampus( occurrenceDataSearchParameters );
+                // Set the Campus.
+                occurrenceData.Campus = GetOccurrenceCampus( occurrenceData.Group, occurrenceData.AttendanceOccurrence );
 
                 return occurrenceData;
             }
 
-            internal AttendanceOccurrenceSearchParameters GetAttendanceOccurrenceSearchParameters( Guid? attendanceOccurrenceGuidOverride = null, DateTime? attendanceOccurrenceDateOverride = null, Guid? locationGuidOverride = null, Guid? scheduleGuidOverride = null, int? campusIdOverride = null )
+            /// <summary>
+            /// Gets the attendance occurrence search parameters.
+            /// </summary>
+            /// <param name="group">The group.</param>
+            /// <param name="searchParameterOverrides">The search parameter overrides. These are only applied if new attendance is allowed.</param>
+            /// <returns></returns>
+            internal AttendanceOccurrenceSearchParameters GetAttendanceOccurrenceSearchParameters( Model.Group group, Guid? attendanceOccurrenceGuid = null, Action<AttendanceOccurrenceSearchParameters> searchParameterOverrides = null )
             {
                 // Get defaults.
                 var occurrenceDataSearchParameters = new AttendanceOccurrenceSearchParameters
                 {
-                    AttendanceOccurrenceDate = _block.DatePageParameter ?? _block.OccurrencePageParameter,
+                    AttendanceOccurrenceDate = ( _block.DatePageParameter ?? _block.OccurrencePageParameter ),
+                    AttendanceOccurrenceGuid = attendanceOccurrenceGuid,
                     AttendanceOccurrenceId = _block.OccurrenceIdPageParameter,
-                    GroupId = _block.GroupIdPageParameter,
+                    Group = group,
                     LocationId = _block.LocationIdPageParameter,
-                    ScheduleId = _block.ScheduleIdPageParameter,
+                    ScheduleId = _block.ScheduleIdPageParameter ?? group?.ScheduleId,
                 };
 
-                // If AttendanceOccurrenceId is set, then assume a specific AttendanceOccurrence is being requested.
-                if ( attendanceOccurrenceGuidOverride.HasValue )
-                {
-                    occurrenceDataSearchParameters.AttendanceOccurrenceId = _attendanceOccurrenceService.GetId( attendanceOccurrenceGuidOverride.Value );
-                }
-
-                // If Group ID page parameter not found, then use the Group Schedule.
-                if ( !occurrenceDataSearchParameters.ScheduleId.HasValue && occurrenceDataSearchParameters.GroupId.HasValue )
-                {
-                    occurrenceDataSearchParameters.ScheduleId = GetGroup( occurrenceDataSearchParameters.GroupId.Value, asNoTracking: true )?.ScheduleId;
-                }
-
                 // If overrides are allowed, then use the overrides.
-                if ( !_block.IsNewAttendanceDateAdditionRestricted )
+                if ( searchParameterOverrides != null && !_block.IsNewAttendanceDateAdditionRestricted )
                 {
-                    if ( locationGuidOverride.HasValue )
-                    {
-                        occurrenceDataSearchParameters.LocationId = _locationService.GetId( locationGuidOverride.Value );
-                    }
-
-                    if ( attendanceOccurrenceDateOverride.HasValue )
-                    {
-                        occurrenceDataSearchParameters.AttendanceOccurrenceDate = attendanceOccurrenceDateOverride.Value.Date;
-                    }
-
-                    if ( scheduleGuidOverride.HasValue )
-                    {
-                        occurrenceDataSearchParameters.ScheduleId = _scheduleService.GetId( scheduleGuidOverride.Value );
-                    }
-
-                    if ( _block.IsCampusFilteringAllowed )
-                    {
-                        // Set the search parameter.
-                        occurrenceDataSearchParameters.CampusId = campusIdOverride;
-
-                        // Update the user preference.
-                        var campusIdUserPreference = _block.CampusIdBlockUserPreference;
-                        if ( campusIdUserPreference != campusIdOverride )
-                        {
-                            _block.CampusIdBlockUserPreference = campusIdOverride;
-                        }
-                    }
+                    // Apply search parameter overrides.
+                    searchParameterOverrides( occurrenceDataSearchParameters );
                 }
 
                 return occurrenceDataSearchParameters;
-            }
-
-            internal AttendanceOccurrenceSearchParameters GetAttendanceOccurrenceSearchParameters( GroupAttendanceDetailGetOrCreateRequestBag bag )
-            {
-                return GetAttendanceOccurrenceSearchParameters( bag.AttendanceOccurrenceGuid, bag.AttendanceOccurrenceDate?.Date, bag.LocationGuid, bag.ScheduleGuid, bag.CampusGuid.HasValue ? CampusCache.GetId( bag.CampusGuid.Value ) : null );
             }
 
             internal bool Save( OccurrenceData occurrenceData, GroupAttendanceDetailGetOrCreateRequestBag bag )
@@ -1905,6 +2034,12 @@ namespace Rock.Blocks.Group
 
                 if ( occurrenceData.IsNewOccurrence )
                 {
+                    if ( occurrenceData.AttendanceOccurrence.OccurrenceDate.IsFuture() && _block.IsFutureOccurrenceDateSelectionRestricted )
+                    {
+                        occurrenceData.ErrorMessage = "Future dates are not allowed";
+                        return false;
+                    }
+
                     _attendanceOccurrenceService.Add( occurrenceData.AttendanceOccurrence );
                 }
                 else
@@ -1929,7 +2064,7 @@ namespace Rock.Blocks.Group
                 var campusId = new Lazy<int?>( () =>
                 {
                     var occurrenceLocationCampusId = _locationService.GetCampusIdForLocation( occurrenceData.AttendanceOccurrence.LocationId );
-                    return _block.GetAttendanceCampusId( occurrenceLocationCampusId, occurrenceData.Group.CampusId, bag.CampusGuid );
+                    return _block.GetAttendanceCampusId( occurrenceLocationCampusId, occurrenceData.Group.CampusId );
                 } );
 
                 if ( bag.DidNotOccur )
@@ -2033,63 +2168,15 @@ namespace Rock.Blocks.Group
                 return true;
             }
 
-            internal bool TrySetGroup( OccurrenceData occurrenceData, AttendanceOccurrenceSearchParameters attendanceOccurrenceSearchParameters, bool asNoTracking )
+            /// <summary>
+            /// Gets the occurrence campus.
+            /// </summary>
+            /// <param name="group">The group.</param>
+            /// <param name="occurrence">The occurrence.</param>
+            /// <returns>The occurrence campus.</returns>
+            private CampusCache GetOccurrenceCampus( Model.Group group, AttendanceOccurrence occurrence )
             {
-                // Get Group.
-                if ( attendanceOccurrenceSearchParameters.GroupId.HasValue )
-                {
-                    occurrenceData.Group = GetGroup( attendanceOccurrenceSearchParameters.GroupId.Value, asNoTracking );
-                }
-                else
-                {
-                    occurrenceData.Group = null;
-                    occurrenceData.ErrorMessage = "Group ID was not provided.";
-                    return false;
-                }
-
-                if ( occurrenceData.Group == null )
-                {
-                    occurrenceData.IsGroupNotFoundError = true;
-                    return false;
-                }
-
-                // Authorize Group.
-                var currentPerson = _block.GetCurrentPerson();
-
-                if ( !occurrenceData.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
-                    && !occurrenceData.Group.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                {
-                    occurrenceData.IsNotAuthorizedError = true;
-                    return false;
-                }
-
-                return true;
-            }
-
-            internal bool TrySetAttendanceOccurrence( OccurrenceData occurrenceData, AttendanceOccurrenceSearchParameters occurrenceDataSearchParameters, bool asNoTracking = false )
-            {
-                (var isReadOnly, var attendanceOccurrence) = GetExistingAttendanceOccurrence( occurrenceDataSearchParameters, asNoTracking );
-
-                occurrenceData.IsReadOnly = isReadOnly;
-                occurrenceData.AttendanceOccurrence = attendanceOccurrence;
-
-                if ( occurrenceData.AttendanceOccurrence == null )
-                {
-                    if ( _block.IsNewAttendanceDateAdditionRestricted )
-                    {
-                        occurrenceData.IsNoAttendanceOccurrencesError = true;
-                        return false;
-                    }
-
-                    occurrenceData.AttendanceOccurrence = GetNewAttendanceOccurrence( occurrenceDataSearchParameters );
-                }
-
-                return occurrenceData.AttendanceOccurrence != null;
-            }
-
-            private CampusCache GetCampus( AttendanceOccurrenceSearchParameters occurrenceDataSearchParameters )
-            {
-                var campusId = occurrenceDataSearchParameters.CampusId;
+                var campusId = _locationService.GetCampusIdForLocation( occurrence.LocationId ) ?? group.CampusId;
 
                 if ( campusId.HasValue )
                 {
@@ -2099,79 +2186,172 @@ namespace Rock.Blocks.Group
                 return null;
             }
 
-            private Rock.Model.Group GetGroup( int groupId, bool asNoTracking )
+            /// <summary>
+            /// Gets the occurrence items.
+            /// </summary>
+            private AttendanceOccurrence GetAttendanceOccurrence( AttendanceOccurrenceSearchParameters attendanceOccurrenceSearchParameters, bool withTracking = false )
             {
-                // Get Group.
-                var query = _groupService
+                AttendanceOccurrence attendanceOccurrence = null;
+
+                var baseQuery = _attendanceOccurrenceService
                     .AsNoFilter()
-                    .Include( g => g.GroupType )
-                    .Include( g => g.Schedule )
-                    .Where( g => g.Id == groupId );
+                    .Include( a => a.Schedule )
+                    .Include( a => a.Location )
+                    .Include( a => a.Attendees );
 
-                if ( asNoTracking )
+                // Check if an occurrence guid was specified, and if so, query for it.
+                if ( attendanceOccurrenceSearchParameters.AttendanceOccurrenceGuid.HasValue )
                 {
-                    query = query.AsNoTracking();
-                }
+                    var query = baseQuery.Where( o => o.Guid == attendanceOccurrenceSearchParameters.AttendanceOccurrenceGuid );
 
-                return query.FirstOrDefault();
-            }
-
-            private (bool IsReadOnly, AttendanceOccurrence AttendanceOccurrence) GetExistingAttendanceOccurrence( AttendanceOccurrenceSearchParameters occurrenceDataSearchParameters, bool asNoTracking )
-            {
-                // Try to set the AttendanceOccurrence from Attendance Occurrence ID.
-                if ( occurrenceDataSearchParameters.AttendanceOccurrenceId.HasValue && occurrenceDataSearchParameters.AttendanceOccurrenceId.Value > 0 )
-                {
-                    var query = _attendanceOccurrenceService
-                        .AsNoFilter()
-                        .Include( a => a.Schedule )
-                        .Include( a => a.Location )
-                        .Include( a => a.Attendees )
-                        .Where( a => a.Id == occurrenceDataSearchParameters.AttendanceOccurrenceId.Value );
-
-                    if ( asNoTracking )
+                    if ( !withTracking )
                     {
                         query = query.AsNoTracking();
                     }
 
-                    var attendanceOccurrence = query.FirstOrDefault();
+                    attendanceOccurrence = query.FirstOrDefault();
 
+                    // If we have a valid occurrence return it now (the date, location, schedule cannot be changed for an existing occurrence).
                     if ( attendanceOccurrence != null )
                     {
-                        return (false, attendanceOccurrence);
+                        return attendanceOccurrence;
                     }
                 }
 
-                // If no specific Attendance Occurrence ID was specified, try to find a matching occurrence from Date, GroupId, Location, ScheduleId.
-                if ( occurrenceDataSearchParameters.AttendanceOccurrenceDate.HasValue )
+                // Check if an occurrence ID was specified on the query string, and if so, query for it.
+                if ( attendanceOccurrenceSearchParameters.AttendanceOccurrenceId.HasValue && attendanceOccurrenceSearchParameters.AttendanceOccurrenceId.Value > 0 )
                 {
-                    var attendanceOccurrence = _attendanceOccurrenceService.Get( occurrenceDataSearchParameters.AttendanceOccurrenceDate.Value.Date, occurrenceDataSearchParameters.GroupId, occurrenceDataSearchParameters.LocationId, occurrenceDataSearchParameters.ScheduleId, "Location,Schedule" );
-                    return ( attendanceOccurrence != null ? true : false, attendanceOccurrence );
+                    var query = baseQuery.Where( o => o.Id == attendanceOccurrenceSearchParameters.AttendanceOccurrenceId.Value );
+
+                    if ( !withTracking )
+                    {
+                        query = query.AsNoTracking();
+                    }
+
+                    attendanceOccurrence = query.FirstOrDefault();
+
+                    // If we have a valid occurrence return it now (the date, location, schedule cannot be changed for an existing occurrence).
+                    if ( attendanceOccurrence != null )
+                    {
+                        return attendanceOccurrence;
+                    }
                 }
 
-                return ( false, null );
+                var occurrenceDate = attendanceOccurrenceSearchParameters.AttendanceOccurrenceDate;
+                var locationId = attendanceOccurrenceSearchParameters.LocationId;
+                var scheduleId = attendanceOccurrenceSearchParameters.ScheduleId;
+                var group = attendanceOccurrenceSearchParameters.Group;
+
+                // If no specific occurrenceId was specified, try to find a matching occurrence from Date, GroupId, Location, ScheduleId.
+                if ( attendanceOccurrence == null && occurrenceDate.HasValue )
+                {
+                    var occurrenceQuery = baseQuery
+                        .Where( o => o.OccurrenceDate == occurrenceDate.Value )
+                        .Where( o => o.GroupId.HasValue && o.GroupId.Value == group.Id );
+
+                    occurrenceQuery = locationId.HasValue ?
+                        occurrenceQuery.Where( o => o.LocationId.HasValue && o.LocationId.Value == locationId.Value ) :
+                        occurrenceQuery.Where( o => !o.LocationId.HasValue );
+
+                    occurrenceQuery = scheduleId.HasValue ?
+                        occurrenceQuery.Where( o => o.ScheduleId.HasValue && o.ScheduleId.Value == scheduleId.Value ) :
+                        occurrenceQuery.Where( o => !o.ScheduleId.HasValue );
+
+                    if ( !withTracking )
+                    {
+                        occurrenceQuery = occurrenceQuery.AsNoTracking();
+                    }
+
+                    attendanceOccurrence = occurrenceQuery.FirstOrDefault();
+
+                    if ( attendanceOccurrence != null )
+                    {
+                        return attendanceOccurrence;
+                    }
+                }
+
+                // If an occurrence date was included, but no occurrence was found with that date, and new
+                // occurrences can be added, then create a new one.
+                if ( !this._block.IsNewAttendanceDateAdditionRestricted )
+                {
+                    var locationQuery = _locationService
+                        .AsNoFilter()
+                        .Where( l => l.Id == locationId );
+
+                    if ( !withTracking )
+                    {
+                        locationQuery = locationQuery.AsNoTracking();
+                    }
+
+                    var location = locationQuery.FirstOrDefault();
+
+                    var scheduleQuery = _scheduleService
+                        .AsNoFilter()
+                        .Where( s => s.Id == scheduleId );
+
+                    if ( !withTracking )
+                    {
+                        scheduleQuery = scheduleQuery.AsNoTracking();
+                    }
+
+                    var schedule = scheduleQuery.FirstOrDefault();
+
+                    // Create a new occurrence record and return it
+                    attendanceOccurrence = new AttendanceOccurrence
+                    {
+                        GroupId = group.Id,
+                        OccurrenceDate = occurrenceDate ?? RockDateTime.Today,
+                        LocationId = location?.Id,
+                        Location = location,
+                        ScheduleId = schedule?.Id,
+                        Schedule = schedule
+                    };
+
+                    if ( withTracking )
+                    {
+                        _attendanceOccurrenceService.Add( attendanceOccurrence );
+                    }
+
+                    return attendanceOccurrence;
+                }
+
+                return null;
             }
 
-            private AttendanceOccurrence GetNewAttendanceOccurrence( AttendanceOccurrenceSearchParameters attendanceOccurrenceSearchParameters )
+            /// <summary>
+            /// Gets the group by GroupId page parameter if the current person is authorized to manage group members or edit the group; otherwise, null is returned.
+            /// </summary>
+            /// <param name="rockContext">The rock context.</param>
+            /// <returns>The group associated with the GroupId page parameter if the current person is authorized; otherwise, <c>null</c>.</returns>
+            internal Model.Group GetGroupIfAuthorized( bool withTracking = false )
             {
-                var attendanceOccurrence = new AttendanceOccurrence
-                {
-                    GroupId = attendanceOccurrenceSearchParameters.GroupId,
-                    LocationId = attendanceOccurrenceSearchParameters.LocationId,
-                    OccurrenceDate = attendanceOccurrenceSearchParameters.AttendanceOccurrenceDate ?? RockDateTime.Today,
-                    ScheduleId = attendanceOccurrenceSearchParameters.ScheduleId
-                };
+                var groupId = this._block.GroupIdPageParameter;
 
-                if ( attendanceOccurrenceSearchParameters.LocationId.HasValue )
+                var query = _groupService.AsNoFilter()
+                    .Include( g => g.GroupType )
+                    .Include( g => g.Schedule )
+                    .Where( g => g.Id == groupId );
+
+                if ( !withTracking )
                 {
-                    attendanceOccurrence.Location = _locationService.Get( attendanceOccurrenceSearchParameters.LocationId.Value );
+                    query = query.AsNoTracking();
                 }
 
-                if ( attendanceOccurrenceSearchParameters.ScheduleId.HasValue )
+                var group = query.FirstOrDefault();
+
+                if ( group == null )
                 {
-                    attendanceOccurrence.Schedule = _scheduleService.Get( attendanceOccurrenceSearchParameters.ScheduleId.Value );
+                    return null;
                 }
 
-                return attendanceOccurrence;
+                var currentPerson = this._block.GetCurrentPerson();
+
+                if ( !group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson ) && !group.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                {
+                    return null;
+                }
+
+                return group;
             }
         }
 
@@ -2180,23 +2360,26 @@ namespace Rock.Blocks.Group
         /// </summary>
         private class OccurrenceData
         {
-            public bool IsValid => ErrorMessage.IsNullOrWhiteSpace() && !IsGroupNotFoundError && !IsNoAttendanceOccurrencesError && !IsNotAuthorizedError && Group != null && AttendanceOccurrence != null;
-
-            public bool IsNewOccurrence => AttendanceOccurrence?.Id == 0;
-
-            public string ErrorMessage { get; set; }
-
-            public Rock.Model.Group Group { get; internal set; }
-
             public AttendanceOccurrence AttendanceOccurrence { get; internal set; }
 
             public CampusCache Campus { get; internal set; }
+            
+            public string ErrorMessage { get; set; }
 
-            public bool IsGroupNotFoundError { get; internal set; }
+            public Model.Group Group { get; internal set; }
 
-            public bool IsNotAuthorizedError { get; internal set; }
+            public bool IsValid => ErrorMessage.IsNullOrWhiteSpace()
+                && !IsAuthorizedGroupNotFoundError
+                && !IsNoAttendanceOccurrencesError
+                && Group != null
+                && AttendanceOccurrence != null;
 
-            public bool IsNoAttendanceOccurrencesError { get; internal set; }
+            public bool IsAuthorizedGroupNotFoundError => Group == null;
+
+            public bool IsNewOccurrence => AttendanceOccurrence?.Id == 0;
+
+            public bool IsNoAttendanceOccurrencesError => !IsAuthorizedGroupNotFoundError && AttendanceOccurrence == null;
+
             public bool IsReadOnly { get; internal set; }
         }
 
@@ -2206,20 +2389,24 @@ namespace Rock.Blocks.Group
         private class AttendanceOccurrenceSearchParameters
         {
             /// <summary>
+            /// Gets or sets the attendance occurrence unique identifier.
+            /// <para>If set to an existing Attendance Occurrence Guid, then no other search parameters are necessary.</para>
+            /// </summary>
+            public Guid? AttendanceOccurrenceGuid { get; internal set; }
+
+            /// <summary>
             /// Gets or sets the attendance occurrence identifier.
             /// <para>If set to an existing Attendance Occurrence ID, then no other search parameters are necessary.</para>
             /// </summary>
             public int? AttendanceOccurrenceId { get; internal set; }
 
-            public int? GroupId { get; set; }
+            public Model.Group Group { get; set; }
 
             public DateTime? AttendanceOccurrenceDate { get; set; }
 
             public int? LocationId { get; set; }
 
             public int? ScheduleId { get; set; }
-
-            public int? CampusId { get; set; }
         }
 
         /// <summary>
@@ -2241,6 +2428,35 @@ namespace Rock.Blocks.Group
             /// Drop down of dates from the schedule. This will need to be updated based on the location.
             /// </summary>
             PickFromSchedule = 3
+        }
+
+        private class GroupMemberDto
+        {
+            public GroupMember GroupMember { get; internal set; }
+            public string GroupRoleName { get; internal set; }
+        }
+
+        private class AttendanceDto
+        {
+            public int? GroupId { get; internal set; }
+            public Person Person { get; internal set; }
+            public bool? DidAttend { get; internal set; }
+            public int? PersonAliasId { get; internal set; }
+        }
+
+        private class LocationDto
+        {
+            public int Id { get; internal set; }
+            public Guid Guid { get; internal set; }
+            public string Name { get; internal set; }
+            public int? ParentLocationId { get; internal set; }
+            public Guid? ParentLocationGuid { get; internal set; }
+        }
+
+        private class ScheduleDto
+        {
+            public Guid ScheduleGuid { get; internal set; }
+            public string ScheduleName { get; internal set; }
         }
 
         #endregion

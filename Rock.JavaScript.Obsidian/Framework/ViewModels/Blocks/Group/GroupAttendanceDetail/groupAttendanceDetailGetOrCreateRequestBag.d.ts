@@ -38,9 +38,6 @@ export type GroupAttendanceDetailGetOrCreateRequestBag = {
     /** Gets or sets the attendees. */
     attendees?: GroupAttendanceDetailAttendanceBag[] | null;
 
-    /** Gets or sets the campus unique identifier. */
-    campusGuid?: Guid | null;
-
     /** Gets or sets a value indicating whether the attendance occurrence occurred. */
     didNotOccur: boolean;
 

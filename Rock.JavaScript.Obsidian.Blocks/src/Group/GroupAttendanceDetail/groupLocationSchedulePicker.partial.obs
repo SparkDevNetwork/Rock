@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <BaseAsyncPicker v-model="internalValue"
+    <BaseAsyncPicker v-if="!isHidden"
+        v-model="internalValue"
         v-bind="standardProps"
         :items="actualItems" />
 </template>
@@ -25,6 +26,11 @@
         groupGuid: {
             type: String as PropType<Guid | null | undefined>,
             default: null
+        },
+
+        hideIfEmpty: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         locationGuid: {
@@ -71,6 +77,8 @@
     const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
         return loadedItems.value || loadOptions;
     });
+
+    const isHidden = computed(() => props.hideIfEmpty && (!actualItems.value || !actualItems.value.length));
 
     // #endregion
 

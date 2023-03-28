@@ -30,7 +30,7 @@ namespace Rock.Enums.Blocks.Group.GroupAttendanceDetail
         /// <summary>
         /// A read-only schedule will be presented to the individual.
         /// </summary>
-        Specific = 1,
+        Readonly = 1,
 
         /// <summary>
         /// A group location schedule picker will be presented to the individual.

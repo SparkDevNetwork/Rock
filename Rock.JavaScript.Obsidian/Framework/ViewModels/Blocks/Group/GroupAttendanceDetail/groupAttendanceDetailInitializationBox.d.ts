@@ -60,12 +60,6 @@ export type GroupAttendanceDetailInitializationBox = {
     /** Gets or sets the back page URL. */
     backPageUrl?: string | null;
 
-    /** Gets or sets the campus unique identifier. */
-    campusGuid?: Guid | null;
-
-    /** Gets or sets the name of the campus. */
-    campusName?: string | null;
-
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.
@@ -84,13 +78,16 @@ export type GroupAttendanceDetailInitializationBox = {
     /** Gets or sets a value indicating whether this instance is attendance occurrence types section shown. */
     isAttendanceOccurrenceTypesSectionShown: boolean;
 
+    /** Gets or sets a value indicating whether an authorized group was not found. */
+    isAuthorizedGroupNotFoundError: boolean;
+
     /** Gets or sets a value indicating whether this instance is back button hidden. */
     isBackButtonHidden: boolean;
 
     /** Gets or sets a value indicating whether this instance is campus filtering allowed. */
     isCampusFilteringAllowed: boolean;
 
-    /** Gets or sets a value indicating whether this instance is configuration error. */
+    /** Gets a value indicating whether there is a configuration error. */
     isConfigError: boolean;
 
     /** Gets or sets a value indicating whether this instance is did not meet checked. */
@@ -102,8 +99,8 @@ export type GroupAttendanceDetailInitializationBox = {
     /** Gets or sets a value indicating whether this instance is future occurrence date selection restricted. */
     isFutureOccurrenceDateSelectionRestricted: boolean;
 
-    /** Gets or sets a value indicating whether this instance is group not found error. */
-    isGroupNotFoundError: boolean;
+    /** Gets or sets a value indicating whether location is required. */
+    isLocationRequired: boolean;
 
     /** Gets or sets a value indicating whether this instance is long list disabled. */
     isLongListDisabled: boolean;
@@ -117,11 +114,11 @@ export type GroupAttendanceDetailInitializationBox = {
     /** Gets or sets a value indicating whether this instance is no attendance occurrences error. */
     isNoAttendanceOccurrencesError: boolean;
 
-    /** Gets or sets a value indicating whether this instance is not authorized error. */
-    isNotAuthorizedError: boolean;
-
     /** Gets or sets a value indicating whether this instance is notes section hidden. */
     isNotesSectionHidden: boolean;
+
+    /** Gets or sets a value indicating whether schedule is required. */
+    isScheduleRequired: boolean;
 
     /** Gets or sets the location unique identifier. */
     locationGuid?: Guid | null;

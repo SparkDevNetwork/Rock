@@ -11,6 +11,7 @@
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailGetGroupLocationScheduleDatesRequestBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -20,6 +21,11 @@
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
+        },
+
+        date: {
+            type: Object as PropType<RockDateTime | null | undefined>,
+            default: null
         },
 
         groupGuid: {
@@ -83,7 +89,8 @@
         const bag: GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag = {
             groupGuid: props.groupGuid,
             locationGuid: props.locationGuid,
-            numberOfPreviousDaysToShow: props.numberOfPreviousDaysToShow
+            numberOfPreviousDaysToShow: props.numberOfPreviousDaysToShow,
+            date: props.date?.toISOString()
         };
 
         if (!props.shouldLoadItemsWhetherValuesAreSet

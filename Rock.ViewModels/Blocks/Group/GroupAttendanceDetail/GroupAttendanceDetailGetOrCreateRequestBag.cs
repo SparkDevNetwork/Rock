@@ -61,11 +61,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         public Guid? AttendanceTypeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus unique identifier.
-        /// </summary>
-        public Guid? CampusGuid { get; set; }
-
-        /// <summary>
         /// Gets or sets the attendees.
         /// </summary>
         public List<GroupAttendanceDetailAttendanceBag> Attendees { get; set; }

@@ -27,7 +27,7 @@ export const GroupAttendanceDetailScheduleSelectionMode = {
     None: 0,
 
     /** A read-only schedule will be presented to the individual. */
-    Specific: 1,
+    Readonly: 1,
 
     /** A group location schedule picker will be presented to the individual. */
     GroupLocationSchedulePicker: 2
@@ -37,7 +37,7 @@ export const GroupAttendanceDetailScheduleSelectionMode = {
 export const GroupAttendanceDetailScheduleSelectionModeDescription: Record<number, string> = {
     0: "None",
 
-    1: "Specific",
+    1: "Readonly",
 
     2: "Group Location Schedule Picker"
 };
