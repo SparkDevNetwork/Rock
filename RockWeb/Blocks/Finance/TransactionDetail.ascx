@@ -245,6 +245,16 @@
                         return true;
                     }
 
+                    var isSingleAccountAmountMinusFeeCoverageAmountVisible = $('#<%= tbSingleAccountAmountMinusFeeCoverageAmount.ClientID %>').is(":visible");
+                    if (isSingleAccountAmountMinusFeeCoverageAmountVisible) {
+                        if ($('#<%= tbSingleAccountAmountMinusFeeCoverageAmount.ClientID %>').val() > 0) {
+                            var isSingleAccountFeeCoverageAmountVisible = $('#<%= tbSingleAccountFeeCoverageAmount.ClientID %>').is(":visible");
+                            if (!isSingleAccountFeeCoverageAmountVisible || $('#<%= tbSingleAccountFeeCoverageAmount.ClientID %>').val() > 0) {
+                                return true;
+                            }
+                        }
+                    }
+
                     e.preventDefault();
                     Rock.dialogs.confirm('This will create a financial transaction without an amount. Do you want to continue?', function (result) {
                         if (result) {
