@@ -21,13 +21,14 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /**
- * The options that can be passed to the GetAchievementTypes API action of
- * the AchievementTypePicker control.
+ * The options that can be passed to the ValidateAddress API action of
+ * the LocationAddressPicker control.
  */
-export type ReminderTypePickerGetReminderTypesOptionsBag = {
-    /** Gets or sets the Entity Type Guid */
-    entityTypeGuid?: Guid | null;
+export type PersonLinkGetPopupHtmlOptionsBag = {
+    /** Guid of the location the results should be children of */
+    personId: number;
+
+    /** The security grant token to use when performing authorization checks. */
+    securityGrantToken?: string | null;
 };

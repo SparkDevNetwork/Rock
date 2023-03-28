@@ -65,8 +65,11 @@
     <Content Include="Framework\Controls\monthDayPicker.obs" />
     <Content Include="Framework\Controls\monthYearPicker.obs" />
     <Content Include="Framework\Controls\pagePicker.obs" />
+    <Content Include="Framework\Controls\personLink.obs" />
     <Content Include="Framework\Controls\phoneNumberBox.obs" />
+    <Content Include="Framework\Controls\popOver.obs" />
     <Content Include="Framework\Controls\racePicker.obs" />
+    <Content Include="Framework\Controls\slidingDateRangePicker.obs" />
     <Content Include="Framework\Controls\reminderTypePicker.obs" />
     <Content Include="Framework\Controls\scheduleBuilder.obs" />
     <Content Include="Framework\Controls\timeIntervalPicker.obs" />
@@ -283,7 +286,6 @@
     <TypeScriptCompile Include="Framework\Controls\primaryBlock.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockAttributeFilter.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionHeader.ts" />
-    <TypeScriptCompile Include="Framework\Controls\slidingDateRangePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\tabbedContent.ts" />
     <TypeScriptCompile Include="Framework\Controls\entityTagList.ts" />
     <TypeScriptCompile Include="Framework\Controls\valueDetailList.ts" />
@@ -1048,6 +1050,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetPageRoutesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetSelectedPageHierarchyOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pageRouteValueBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personLinkGetPopupHtmlOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personPickerSearchOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberBoxGetConfigurationResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberCountryCodeRulesConfigurationBag.d.ts" />

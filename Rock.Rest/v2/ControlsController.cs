@@ -19,7 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Http;
 using Rock.Attribute;
 using Rock.Badge;
@@ -3999,6 +4001,88 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return Ok( routes );
+        }
+
+        #endregion
+
+        #region Person Link
+
+        /// <summary>
+        /// Gets the popup HTML for the selected person
+        /// </summary>
+        /// <param name="options">The data needed to get the person's popup HTML</param>
+        /// <returns>A string containing the popup markups</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PersonLinkGetPopupHtml" )]
+        [Rock.SystemGuid.RestActionGuid( "39f44203-9944-4dbd-87ca-d23657e0daa5" )]
+        public IHttpActionResult PersonLinkGetPopupHtml( [FromBody] PersonLinkGetPopupHtmlOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var result = "No Details Available";
+                var html = new StringBuilder();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // Create new service (need ProxyServiceEnabled)
+                var person = new PersonService( rockContext ).Queryable( "ConnectionStatusValue, PhoneNumbers" )
+                    .Where( p => p.Id == options.PersonId )
+                    .FirstOrDefault();
+
+                if ( person != null )
+                {
+                    // If the entity can be secured, ensure the person has access to it.
+                    if ( person is ISecured securedEntity )
+                    {
+                        var isAuthorized = securedEntity.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                            || grant?.IsAccessGranted( person, Authorization.VIEW ) == true;
+
+                        if ( !isAuthorized )
+                        {
+                            return Unauthorized();
+                        }
+                    }
+
+                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                    html.AppendFormat(
+                        "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
+                        Person.GetPersonPhotoImageTag( person, 65, 65 ),
+                        person.FullName,
+                        person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
+
+                    html.Append( "<div class='body'>" );
+
+                    var spouse = person.GetSpouse( rockContext );
+                    if ( spouse != null )
+                    {
+                        html.AppendFormat(
+                            "<div><strong>Spouse</strong> {0}</div>",
+                            spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                    }
+
+                    int? age = person.Age;
+                    if ( age.HasValue )
+                    {
+                        html.AppendFormat( "<div><strong>Age</strong> {0}</div>", age );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( VirtualPathUtility.ToAbsolute( "~/" ) ) );
+                    }
+
+                    foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false && n.NumberTypeValueId.HasValue ).OrderBy( n => n.NumberTypeValue.Order ) )
+                    {
+                        html.AppendFormat( "<div><strong>{0}</strong> {1}</div>", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
+                    }
+
+                    html.Append( "</div>" );
+
+                    result = html.ToString();
+                }
+
+                return Ok( result );
+            }
         }
 
         #endregion

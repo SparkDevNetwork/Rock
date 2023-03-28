@@ -187,6 +187,7 @@
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetContentChannelItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PersonLinkGetPopupHtmlOptionsBag.cs" />
     <Compile Include="Rest\Controls\ReminderTypePickerGetReminderTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupRolePickerGetAllForGroupRoleResultsBag.cs" />
     <Compile Include="Rest\Controls\GroupRolePickerGetAllForGroupRoleOptionsBag.cs" />

@@ -14,29 +14,25 @@
 // limitations under the License.
 // </copyright>
 //
-import LoadingIndicator from "./loadingIndicator";
-import { defineComponent, PropType } from "vue";
 
-export default defineComponent({
-    name: "Loading",
-    components: {
-        LoadingIndicator
-    },
-    props: {
-        isLoading: {
-            type: Boolean as PropType<boolean>,
-            required: true
-        },
+using System;
 
-        /** Whether or not to show a smaller version of the loading spinner */
-        isSmall: {
-            type: Boolean,
-            default: false
-        }
-    },
-    template: `
-<div>
-    <slot v-if="!isLoading" />
-    <LoadingIndicator v-else :isSmall="isSmall" />
-</div>`
-});
+namespace Rock.ViewModels.Rest.Controls
+{
+    /// <summary>
+    /// The options that can be passed to the ValidateAddress API action of
+    /// the LocationAddressPicker control.
+    /// </summary>
+    public class PersonLinkGetPopupHtmlOptionsBag
+    {
+        /// <summary>
+        /// Guid of the location the results should be children of
+        /// </summary>
+        public int PersonId { get; set; }
+
+        /// <summary>
+        /// The security grant token to use when performing authorization checks.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
+    }
+}

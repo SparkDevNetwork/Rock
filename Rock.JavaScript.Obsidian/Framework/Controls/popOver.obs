@@ -1,0 +1,199 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <slot name="activator" ref="activatorEl" />
+    <div :class="['popover fade', placement]" role="tooltip" ref="popOverEl" :id="popOverId" :style="popOverStyle">
+        <div class="arrow"></div>
+        <h3 class="popover-title" style="display: none;"></h3>
+        <div class="popover-content">
+            <slot name="popOverContent" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        /** A v-model indicating/controlling when to show the popover */
+        isVisible: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Which side should the popOver appear on? */
+        placement: {
+            type: String as PropType<"top" | "right" | "bottom" | "left">,
+            default: "right"
+        },
+
+        /**
+         * A v-model, that - when you set it to true - will trigger an update to re-align the popOver.
+         * This is useful if the content in the popOver is dynamic.
+         */
+        triggerUpdate: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible", v: boolean): void
+        (e: "update:triggerUpdate", v: boolean): void
+    }>();
+
+    const activatorEl = ref<HTMLElement | null>(null);
+    const popOverEl = ref<HTMLElement | null>(null);
+
+    const isPopOverVisible = ref(false);
+    const isHovering = ref(false);
+
+    const popOverStyle = ref<Record<string, string>>({ display: "none" });
+
+    const popOverId = "popover-" + newGuid();
+
+    watch(isHovering, (isHover) => {
+        if (isHover) {
+            // Show PopOver after a small delay
+            setTimeout(() => {
+                if (isHovering.value) {
+                    isPopOverVisible.value = true;
+                }
+            }, 50);
+        }
+        else {
+            // Hide Popover if unhovered for a small time
+            setTimeout(() => {
+                if (!isHovering.value) {
+                    isPopOverVisible.value = false;
+                }
+            }, 100);
+        }
+    });
+
+    watch(() => props.triggerUpdate, () => {
+        if (props.triggerUpdate) {
+            popOverStyle.value = { ...popOverStyle.value, ...getPositionStyles() };
+            emit("update:triggerUpdate", false);
+        }
+    });
+
+    watch(isPopOverVisible, isVisible => {
+        if (isVisible) {
+            showPopOver();
+        }
+        else {
+            hidePopOver();
+        }
+        emit("update:isVisible", isVisible);
+    });
+
+    watch(() => props.isVisible, (isVisible) => {
+        isPopOverVisible.value = isVisible;
+    }, { immediate: true });
+
+    watch(activatorEl, manageListeners);
+    watch(popOverEl, manageListeners);
+
+    function manageListeners(newEl, oldEl): void {
+        if (oldEl) {
+            // Remove old listeners if there's a previous element
+            oldEl.removeEventListener("mouseenter", onMouseEnter);
+            oldEl.removeEventListener("mouseleave", onMouseLeave);
+        }
+
+        if (newEl) {
+            // Remove old listeners if there's a previous element
+            newEl.addEventListener("mouseenter", onMouseEnter);
+            newEl.addEventListener("mouseleave", onMouseLeave);
+        }
+    }
+
+    function onMouseEnter(): void {
+        isHovering.value = true;
+    }
+
+    function onMouseLeave(): void {
+        isHovering.value = false;
+    }
+
+    async function showPopOver(): Promise<void> {
+        activatorEl.value?.setAttribute("aria-describedby", popOverId);
+        // Show it, but keep it invisible so we can measure it
+        popOverStyle.value = { display: "block", opacity: "0" };
+        // Wait until styles are rendered
+        await nextTick();
+        // Now we can measure and position it and make it visible
+        popOverStyle.value = { display: "block", opacity: "1", ...getPositionStyles() };
+    }
+
+    async function hidePopOver(): Promise<void> {
+        // Make it fade out
+        popOverStyle.value.opacity = "0";
+        // Wait until the styles are rendered
+        await nextTick();
+
+        // Once the opacity transition is done, finish hiding the popOver fully
+        setTimeout(() => {
+            if (!isHovering.value) {
+                activatorEl.value?.removeAttribute("aria-describedby");
+                popOverStyle.value = { display: "none" };
+            }
+        }, 150);
+    }
+
+    function getPositionStyles(): Record<string, string> {
+        const boxA = getElementBox(activatorEl.value);
+        const boxP = getElementBox(popOverEl.value);
+
+
+
+        if (props.placement == "top") {
+            console.log("TOP", { boxA, boxP });
+            return {
+                left: boxA.left + (boxA.width / 2) - (boxP.width / 2) + "px",
+                top: boxA.top - boxP.height + "px"
+            };
+        }
+
+        if (props.placement == "bottom") {
+            return {
+                left: boxA.left + boxA.width / 2 - boxP.width / 2 + "px",
+                top: boxA.top + boxA.height + "px"
+            };
+        }
+
+        if (props.placement == "left") {
+            return {
+                left: boxA.left - boxP.width + "px",
+                top: boxA.top + (boxA.height / 2) - (boxP.height / 2) + "px"
+            };
+        }
+
+        // Else "right"
+        return {
+            left: boxA.left + boxA.width + "px",
+            top: boxA.top + (boxA.height / 2) - (boxP.height / 2) + "px"
+        };
+    }
+
+    type BoxDimensions = {
+        left: number,
+        top: number,
+        height: number,
+        width: number
+    };
+
+    function getElementBox(el: HTMLElement | null): BoxDimensions {
+        if (!el) {
+            return { left: 0, top: 0, height: 0, width: 0 } as const;
+        }
+
+        return {
+            left: el.offsetLeft,
+            top: el.offsetTop,
+            height: el.offsetHeight,
+            width: el.offsetWidth
+        } as const;
+    }
+</script>
