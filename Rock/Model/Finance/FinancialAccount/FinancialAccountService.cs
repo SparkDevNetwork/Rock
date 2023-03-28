@@ -121,6 +121,7 @@ namespace Rock.Model
                 , [PublicName]
                 , [Description]
                 , [IsTaxDeductible]
+                , [ShowInGivingOverview]
                 , [GlCode]
                 , [Order]
                 , [IsActive]

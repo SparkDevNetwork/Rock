@@ -89,6 +89,7 @@
                             <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" Label="Start Date" />
                             <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" Label="End Date" />
                             <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />
+                            <Rock:RockCheckBox ID="cbShowInGivingOverview" runat="server" Label="Show in Giving Overview" />
                         </div>
                     </div>
 

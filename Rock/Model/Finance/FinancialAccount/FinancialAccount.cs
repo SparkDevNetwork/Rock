@@ -132,6 +132,15 @@ namespace Rock.Model
         public bool IsTaxDeductible { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if transactions posted to this FinancialAccount are shown in the giving overview.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if transactions posted to this FinancialAccount are shown in the giving overview; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowInGivingOverview { get; set; }
+
+        /// <summary>
         /// Gets or sets the General Ledger account code for this FinancialAccount.
         /// </summary>
         /// <value>
