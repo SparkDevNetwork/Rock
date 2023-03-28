@@ -328,4 +328,7 @@
   <data name="_202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_202303281828355_AddShowInGivingOverviewForFinancialAccount_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202303281828355_addshowingivingoverviewforfinancialaccount_spcrm_familyanalyticsgiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
 </root>
