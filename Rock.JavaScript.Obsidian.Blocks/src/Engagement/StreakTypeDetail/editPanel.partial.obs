@@ -55,7 +55,9 @@
                     help="This specifies what linked activity types this Streak Type may interface with.  Something very broad like “Attendance: Any” could
                         help measure general engagement with the church. Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
 
-                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == 'GroupType'" v-model="structureEntityId" />
+                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == 'GroupType'" v-model="structureEntityId" :isSortedByName="true"/>
+
+                <GroupPicker label="Group" v-if="modelValue.structureType == 'Group'" v-model="structureEntityId" />
             </div>
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
@@ -84,6 +86,7 @@
     import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";

@@ -284,7 +284,14 @@ namespace Rock.Blocks.Engagement
             var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.StructureType = entity.StructureType.ToString();
-            bag.StructureEntityId = GroupTypeCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
+            if ( entity.StructureType == StreakStructureType.GroupType )
+            {
+                bag.StructureEntityId = GroupTypeCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
+            }
+            if( entity.StructureType == StreakStructureType.Group )
+            {
+                bag.StructureEntityId = new GroupService(rockContext).Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
+            }
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
@@ -347,7 +354,17 @@ namespace Rock.Blocks.Engagement
                       () => entity.StreakTypeExclusions = box.Entity.*//* TODO: Unknown property type 'ICollection<StreakTypeExclusion>' for conversion to bag. *//* );*/
 
             box.IfValidProperty( nameof( box.Entity.StructureEntityId ),
-                () => entity.StructureEntityId = GroupTypeCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() ) );
+                () =>
+                {
+                    if ( entity.StructureType == StreakStructureType.GroupType )
+                    {
+                        entity.StructureEntityId = GroupTypeCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                    }
+                    if ( entity.StructureType == StreakStructureType.Group )
+                    {
+                        entity.StructureEntityId = new GroupService( rockContext ).GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                    }
+                } );
 
             box.IfValidProperty( nameof( box.Entity.StructureSettingsJSON ),
                 () => entity.StructureSettingsJSON = box.Entity.StructureSettingsJSON );
