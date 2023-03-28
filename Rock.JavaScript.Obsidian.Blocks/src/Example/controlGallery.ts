@@ -7314,7 +7314,7 @@ const personLinkGallery = defineComponent({
             personName: ref("Ted Decker"),
             role: ref("Member"),
             photoId: ref(""),
-            personId: ref("59"),
+            personId: ref("1"),
             importCode: getSfcControlImportPath("personLink"),
             exampleCode: `<PersonLink :personId="56" personName="Ted Decker" role="Member" popOverPlacement="right" />`
         };
