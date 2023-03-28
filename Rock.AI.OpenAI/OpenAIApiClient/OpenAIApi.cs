@@ -102,8 +102,10 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             {
                 return response.Data;
             }
-
-            return null;
+            else
+            {
+                return new OpenAIChatCompletionsResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
+            }
         }
 
         /// <summary>
@@ -124,8 +126,10 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             {
                 return response.Data;
             }
-
-            return null;
+            else
+            {
+                return new OpenAITextCompletionsResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
+            }
         }
 
         /// <summary>
@@ -146,8 +150,10 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             {
                 return response.Data;
             }
-
-            return null;
+            else
+            {
+                return new OpenAIModerationsResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
+            }
         }
 
         

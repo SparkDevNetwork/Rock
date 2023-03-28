@@ -84,5 +84,48 @@ namespace Rock.AI.Classes.Moderations
         /// Level of violence indicated in the text.
         /// </summary>
         public double ViolentScore { get; set; }
+
+        /// <summary>
+        /// Returns the moderation score.
+        /// </summary>
+        public Enums.AI.ModerationFlags ModerationFlags
+        {
+            get
+            {
+                var categories = Enums.AI.ModerationFlags.None;
+
+                if ( IsHate )
+                {
+                    categories |= Enums.AI.ModerationFlags.Hate;
+                }
+
+                if ( IsThreat )
+                {
+                    categories |= Enums.AI.ModerationFlags.Threat;
+                }
+
+                if ( IsSelfHarm )
+                {
+                    categories |= Enums.AI.ModerationFlags.SelfHarm;
+                }
+
+                if ( IsSexual )
+                {
+                    categories |= Enums.AI.ModerationFlags.Sexual;
+                }
+
+                if ( IsViolent )
+                {
+                    categories |= Enums.AI.ModerationFlags.Violent;
+                }
+
+                if ( IsSexualMinor )
+                {
+                    categories |= Enums.AI.ModerationFlags.SexualMinor;
+                }
+
+                return categories;
+            }
+        }
     }
 }

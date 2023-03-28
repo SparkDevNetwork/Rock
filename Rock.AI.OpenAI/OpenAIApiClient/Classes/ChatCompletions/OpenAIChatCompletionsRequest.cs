@@ -93,13 +93,19 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
                 }
 
                 // Get number of tokens in the messages content
-                var promptSize = OpenAIUtilities.TokenCount( string.Join( "", this.Messages.Select( m => m.Content ) ) );
+                var messagesContent = OpenAIUtilities.TokenCount( string.Join( " ", this.Messages.Select( m => m.Content ) ) );
+                var messagesRoles = OpenAIUtilities.TokenCount( string.Join( " ", this.Messages.Select( m => m.Role ) ) );
+
+                // Add a couple of extra tokens:
+                // When using the API, you should be aware that the total tokens count includes not only the tokens in your messages
+                // but also a few extra tokens for internal formatting purposes.
+                var messagesTokenCount = messagesContent + messagesRoles + ( 12 * this.Messages.Count);
 
                 // Get the max size that the model supports.
                 var modelProperties = ( OpenAIModelProperties ) System.Attribute.GetCustomAttribute( typeof( OpenAIModel ).GetField( OpenAIModel.ToString() ), typeof( OpenAIModelProperties ) );
 
                 // Return the difference
-                return modelProperties.MaxTokens - promptSize;
+                return modelProperties.MaxTokens - messagesTokenCount;
             }
             set
             {

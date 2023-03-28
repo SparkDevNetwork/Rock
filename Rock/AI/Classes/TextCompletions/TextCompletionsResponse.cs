@@ -44,5 +44,15 @@ namespace Rock.AI.Classes.TextCompletions
         /// The number of tokens used in the request.
         /// </summary>
         public int TokensUsed { get; set; }
+
+        /// <summary>
+        /// Determines if the request was successful.
+        /// </summary>
+        public bool IsSuccessful { get; set; }
+
+        /// <summary>
+        /// Error messages from the request.
+        /// </summary>
+        public string ErrorMessage { get; set; }
     }
 }

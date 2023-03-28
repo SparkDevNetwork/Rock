@@ -65,6 +65,16 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
         [JsonProperty( "usage" )]
         public OpenAITextCompletionsResponseUsage Usage { get; set; }
 
+        /// <summary>
+        /// Determines if the request was successful.
+        /// </summary>
+        public bool IsSuccessful { get; set; } = true;
+
+        /// <summary>
+        /// Error messages from the request.
+        /// </summary>
+        public string ErrorMessage { get; set; }
+
         #endregion
 
         #region Methods
@@ -76,13 +86,19 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
         {
             var response = new TextCompletionsResponse();
 
-            response.Id = this.Id;
-            response.TokensUsed = this.Usage.TotalTokens;
-            response.CompletionDateTime = DateTimeOffset.FromUnixTimeSeconds( this.Created ).UtcDateTime;
+            response.IsSuccessful = this.IsSuccessful;
+            response.ErrorMessage = this.ErrorMessage;
 
-            foreach( var choice in this.Choices )
+            if ( this.IsSuccessful )
             {
-                response.Choices.Add( choice.AsCompletionResponseChoice() );
+                response.Id = this.Id;
+                response.TokensUsed = this.Usage.TotalTokens;
+                response.CompletionDateTime = DateTimeOffset.FromUnixTimeSeconds( this.Created ).UtcDateTime;
+
+                foreach ( var choice in this.Choices )
+                {
+                    response.Choices.Add( choice.AsCompletionResponseChoice() );
+                }
             }
 
             return response;

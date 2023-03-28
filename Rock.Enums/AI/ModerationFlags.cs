@@ -15,37 +15,43 @@
 // </copyright>
 //
 
-namespace Rock.AI.Classes.Moderations
+using System;
+
+namespace Rock.Enums.AI
 {
     /// <summary>
-    /// The class for holding the response from a moderation.
+    /// Moderation categories
     /// </summary>
-    public class ModerationsResponse
+    [Flags]
+    public enum ModerationFlags
     {
         /// <summary>
-        /// A unique identifier for the completion.
+        /// No moderation categories set.
         /// </summary>
-        public string Id { get; set; }
-
+        None = 0,
         /// <summary>
-        /// Is the text flagged for moderation.
+        /// Moderation for hate.
         /// </summary>
-        public bool IsFlagged { get; set; }
-
+        Hate = 1,
         /// <summary>
-        /// Moderation data by category
+        /// Moderation for threats.
         /// </summary>
-        public ModerationsResponseCategories ModerationsResponseCategories { get; set; }
-
+        Threat = 2,
         /// <summary>
-        /// Determines if the request was successful.
+        /// Moderation for self harm.
         /// </summary>
-        public bool IsSuccessful { get; set; }
-
+        SelfHarm = 4,
         /// <summary>
-        /// Error messages from the request.
+        /// Moderation for sexual content.
         /// </summary>
-        public string ErrorMessage { get; set; }
-
+        Sexual = 8,
+        /// <summary>
+        /// Moderation for sexual content with minors.
+        /// </summary>
+        SexualMinor = 16,
+        /// <summary>
+        /// Moderation for violence.
+        /// </summary>
+        Violent = 32
     }
 }

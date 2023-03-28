@@ -47,18 +47,28 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// </summary>
         [JsonProperty( "created" )]
         public long Created { get; set; }
-                
+
         /// <summary>
         ///  Array of one or more completion candidates
         /// </summary>
         [JsonProperty( "choices" )]
-        public List<OpenAIChatCompletionsResponseChoice> Choices { get; set; }
+        public List<OpenAIChatCompletionsResponseChoice> Choices { get; set; } = new List<OpenAIChatCompletionsResponseChoice>();
 
         /// <summary>
         /// Information on the resource usage of the request.
         /// </summary>
         [JsonProperty( "usage" )]
         public OpenAIChatCompletionsResponseUsage Usage { get; set; }
+
+        /// <summary>
+        /// Determines if the request was successful.
+        /// </summary>
+        public bool IsSuccessful { get; set; } = true;
+
+        /// <summary>
+        /// Error messages from the request.
+        /// </summary>
+        public string ErrorMessage { get; set; }
 
         #endregion
 
@@ -71,14 +81,22 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         {
             var response = new ChatCompletionsResponse();
 
-            response.Id = this.Id;
-            response.TokensUsed = this.Usage.TotalTokens;
-            response.CompletionDateTime = DateTimeOffset.FromUnixTimeSeconds( this.Created ).UtcDateTime;
+            response.IsSuccessful = this.IsSuccessful;
+            response.ErrorMessage = this.ErrorMessage;
 
-            foreach( var choice in this.Choices )
+            if ( this.IsSuccessful )
             {
-                response.Choices.Add( choice.AsChatCompletionResponseChoice() );
+                response.Id = this.Id;
+                response.TokensUsed = this.Usage.TotalTokens;
+                response.CompletionDateTime = DateTimeOffset.FromUnixTimeSeconds( this.Created ).UtcDateTime;
+
+                foreach ( var choice in this.Choices )
+                {
+                    response.Choices.Add( choice.AsChatCompletionResponseChoice() );
+                }
             }
+
+            
 
             return response;
         }

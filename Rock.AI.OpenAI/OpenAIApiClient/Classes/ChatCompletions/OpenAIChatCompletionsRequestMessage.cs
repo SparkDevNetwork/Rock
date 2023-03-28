@@ -31,8 +31,27 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
     /// </summary>
     internal class OpenAIChatCompletionsRequestMessage
     {
+        /// <summary>
+        /// The role of the message. Don't send this to OpenAI they want the string version.
+        /// </summary>
+        [JsonIgnore]
         public OpenAIChatMessageRole Role { get; set; }
 
+        /// <summary>
+        /// The role that OpenAI is expecting.
+        /// </summary>
+        [JsonProperty( "role" )]
+        public string OpenAIRole {
+            get
+            {
+                return this.Role.ToString().ToLower();
+            }
+        }
+
+        /// <summary>
+        /// The content of the message.
+        /// </summary>
+        [JsonProperty( "content" )]
         public string Content { get; set; }
 
         /// <summary>
