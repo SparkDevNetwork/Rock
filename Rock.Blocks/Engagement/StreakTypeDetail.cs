@@ -137,7 +137,8 @@ namespace Rock.Blocks.Engagement
             var options = new StreakTypeDetailOptionsBag
             {
                 streakOccurrenceFrequencies = typeof( StreakOccurrenceFrequency )
-                .ToListItemBag()
+                .ToListItemBag(),
+                streakStructureTypes = typeof( StreakStructureType ).ToListItemBag( getDescriptionForText: true, blankText: "None" )
             };
             return options;
         }
@@ -218,18 +219,6 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            var structureTypeString = "";
-            if ( entity.StructureType.HasValue )
-            {
-                var structureName = ( new StreakTypeService( rockContext ) ).GetStructureName( entity.StructureType, entity.StructureEntityId );
-                structureTypeString = string.Format( "{0}{1}",
-                        entity.StructureType.Value.GetDescription() ?? "",
-                        string.Format( "{0}{1}",
-                            structureName.IsNullOrWhiteSpace() ? string.Empty : " - ",
-                            structureName
-                        ) );
-            }
-
             return new StreakTypeBag
             {
                 IdKey = entity.IdKey,
@@ -237,7 +226,6 @@ namespace Rock.Blocks.Engagement
                 EnableAttendance = entity.EnableAttendance,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
-                StructureType = structureTypeString,
                 OccurrenceFrequency = entity.OccurrenceFrequency.ToString(),
                 RequiresEnrollment = entity.RequiresEnrollment,
                 StartDate = entity.StartDate,
@@ -263,6 +251,19 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity, rockContext );
 
+            var structureTypeString = "";
+            if ( entity.StructureType.HasValue )
+            {
+                var structureName = ( new StreakTypeService( rockContext ) ).GetStructureName( entity.StructureType, entity.StructureEntityId );
+                structureTypeString = string.Format( "{0}{1}",
+                        entity.StructureType.Value.GetDescription() ?? "",
+                        string.Format( "{0}{1}",
+                            structureName.IsNullOrWhiteSpace() ? string.Empty : " - ",
+                            structureName
+                        ) );
+            }
+            bag.StructureType = structureTypeString;
+
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
@@ -281,6 +282,8 @@ namespace Rock.Blocks.Engagement
             }
 
             var bag = GetCommonEntityBag( entity, rockContext );
+
+            bag.StructureType = entity.StructureType.ToString();
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
@@ -320,17 +323,24 @@ namespace Rock.Blocks.Engagement
                 () => entity.StartDate = box.Entity.StartDate );
 
             box.IfValidProperty( nameof( box.Entity.OccurrenceFrequency ),
-                () => {
-                Enum.TryParse( box.Entity.OccurrenceFrequency, out StreakOccurrenceFrequency streakOccurrenceFrequency ) ;
-                entity.OccurrenceFrequency = streakOccurrenceFrequency;
-                });
+                () =>
+                {
+                    Enum.TryParse( box.Entity.OccurrenceFrequency, out StreakOccurrenceFrequency streakOccurrenceFrequency );
+                    entity.OccurrenceFrequency = streakOccurrenceFrequency;
+                } );
 
-            if( entity.OccurrenceFrequency == StreakOccurrenceFrequency.Weekly )
+            if ( entity.OccurrenceFrequency == StreakOccurrenceFrequency.Weekly )
             {
                 box.IfValidProperty( nameof( box.Entity.FirstDayOfWeek ),
                     () => entity.FirstDayOfWeek = ( DayOfWeek? ) box.Entity.FirstDayOfWeek );
             }
 
+            box.IfValidProperty( nameof( box.Entity.StructureType ),
+                () =>
+                {
+                    Enum.TryParse( box.Entity.StructureType, out StreakStructureType streakStructureType );
+                    entity.StructureType = streakStructureType;
+                } );
 
             /*      box.IfValidProperty( nameof( box.Entity.StreakTypeExclusions ),
                       () => entity.StreakTypeExclusions = box.Entity.*//* TODO: Unknown property type 'ICollection<StreakTypeExclusion>' for conversion to bag. *//* );*/

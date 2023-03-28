@@ -22,6 +22,14 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
 {
     public class StreakTypeDetailOptionsBag
     {
+        /// <summary>
+        /// Streak Occurrence Frequency list
+        /// </summary>
         public ListItemBag[] streakOccurrenceFrequencies;
+
+        /// <summary>
+        /// List of Represents of the attendance association of a StreakType.
+        /// </summary>
+        public ListItemBag[] streakStructureTypes;
     }
 }

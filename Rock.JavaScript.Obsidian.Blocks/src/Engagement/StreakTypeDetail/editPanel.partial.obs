@@ -9,6 +9,7 @@
             </div>
 
             <div class="col-md-6">
+                {{ props.modelValue.structureType ?? "None" }}
                 <CheckBox v-model="isActive"
                           label="Active" />
             </div>
@@ -47,6 +48,13 @@
 
         <div class="row">
             <div class="col-md-6">
+                <DropDownList v-model="structureType"
+                    label="Linked Activity"
+                    :items="options?.streakStructureTypes ?? []"
+                    :value="modelValue?.structureType"
+                    blankValue="None"
+                    help="This specifies what linked activity types this Streak Type may interface with.  Something very broad like “Attendance: Any” could
+                        help measure general engagement with the church. Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
             </div>
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
@@ -54,6 +62,7 @@
                     :items="options?.streakOccurrenceFrequencies ?? []"
                     :value="modelValue?.occurrenceFrequency"
                     :disabled="!isAddMode"
+                    :blankValue="options?.streakOccurrenceFrequencies?.[0].value ?? ''"
                     help="Daily measuring is great for something like Bible Reading where the ideal is daily engagement. Weekly measurements are better suited for activities
                         such as a small group where the ideal is weekly engagement." />
                 <DayOfWeekPicker v-if="canUpdateDayOfWeekPicker" label="Day of the Week" v-model="firstDayOfWeek" :showBlankItem="false"
@@ -107,6 +116,7 @@
     const enableAttendance = propertyRef(props.modelValue.enableAttendance ?? "", "EnableAttendance");
     const firstDayOfWeek = propertyRef(props.modelValue?.firstDayOfWeek?.toString() ?? null, "FirstDayOfWeek");
     const occurrenceFrequency = propertyRef(props.modelValue?.occurrenceFrequency ?? null, "OccurrenceFrequency");
+    const structureType = propertyRef(props.modelValue?.structureType ?? "", "StructureType");
 
     const isAddMode = computed((): boolean => props.modelValue?.idKey == "");
 
@@ -116,7 +126,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek, occurrenceFrequency];
+    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek, occurrenceFrequency, structureType];
 
     // #endregion
 
@@ -144,6 +154,7 @@
         updateRefValue(enableAttendance, props.modelValue.enableAttendance);
         updateRefValue(firstDayOfWeek, props.modelValue?.firstDayOfWeek?.toString() ?? null);
         updateRefValue(occurrenceFrequency, props.modelValue?.occurrenceFrequency ?? null);
+        updateRefValue(structureType, props.modelValue?.structureType ?? "None");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -159,7 +170,8 @@
             requiresEnrollment: requiresEnrollment.value,
             enableAttendance: enableAttendance.value,
             firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
-            occurrenceFrequency: occurrenceFrequency.value
+            occurrenceFrequency: occurrenceFrequency.value,
+            structureType: structureType.value
         };
 
         emit("update:modelValue", newValue);

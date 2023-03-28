@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Utility;
+using Rock.ViewModels.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Rock.Utility;
-using Rock.ViewModels.Utility;
 
 namespace Rock
 {
@@ -61,17 +61,26 @@ namespace Rock
             return enumerable == null || enumerable.Any() == false || enumerable.Contains( value );
         }
 
-        public static ListItemBag[] ToListItemBag( this Type enumType )
+        public static ListItemBag[] ToListItemBag( this Type enumType, bool getDescriptionForText = false, string blankText = null )
         {
             var itemValues = Enum.GetValues( enumType );
             var itemNames = Enum.GetNames( enumType );
             var listItemBag = new List<ListItemBag>();
 
+            if ( blankText != null )
+            {
+                listItemBag.Add( new ListItemBag
+                {
+                    Text = blankText,
+                    Value = string.Empty
+                } );
+            }
+
             for ( var i = 0; i < itemNames.Length; i++ )
             {
                 listItemBag.Add( new ListItemBag
                 {
-                    Text = itemNames[i].SplitCase(),
+                    Text = getDescriptionForText ? ( ( Enum ) itemValues.GetValue( i ) ).GetDescription() : itemNames[i].SplitCase(),
                     Value = itemValues.GetValue( i ).ToString()
                 } );
             }
