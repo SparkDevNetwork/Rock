@@ -22,6 +22,7 @@
     import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
@@ -70,6 +71,16 @@
         if (!props.modelValue) {
             return valueBuilder.build();
         }
+
+        valueBuilder.addTextValue("Frequency", props.modelValue?.occurrenceFrequency);
+
+        valueBuilder.addTextValue("Start Date", RockDateTime.parseISO(props.modelValue?.startDate ?? "")?.toASPString("d") ?? "");
+
+        valueBuilder.addTextValue("Requires Enrollment", props.modelValue?.requiresEnrollment ? "Yes": "No");
+
+        valueBuilder.addTextValue("Sync Linked Activity", props.modelValue?.enableAttendance ? "Yes": "No");
+
+        valueBuilder.addTextValue("Linked Activity", props.modelValue?.structureType ?? "None");
 
         return valueBuilder.build();
     });

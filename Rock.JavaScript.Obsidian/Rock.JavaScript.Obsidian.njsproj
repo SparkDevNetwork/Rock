@@ -111,6 +111,8 @@
     <Folder Include="Framework\Enums\Blocks\" />
     <Folder Include="Framework\Enums\Blocks\Cms\" />
     <Folder Include="Framework\Enums\Blocks\Cms\ContentCollectionView\" />
+    <Folder Include="Framework\Enums\Blocks\Groups\" />
+    <Folder Include="Framework\Enums\Blocks\Groups\GroupAttendanceDetail\" />
     <Folder Include="Framework\Enums\Blocks\Security\" />
     <Folder Include="Framework\Enums\Blocks\Security\ForgotUserName\" />
     <Folder Include="Framework\Enums\Blocks\Security\ConfirmAccount\" />

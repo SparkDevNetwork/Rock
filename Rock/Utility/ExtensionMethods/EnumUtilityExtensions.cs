@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 
 namespace Rock
 {
@@ -58,6 +59,23 @@ namespace Rock
         public static bool ContainsOrEmpty<T>( this IEnumerable<T> enumerable, T value )
         {
             return enumerable == null || enumerable.Any() == false || enumerable.Contains( value );
+        }
+
+        public static ListItemBag[] ToListItemBag( this Type enumType )
+        {
+            var itemValues = Enum.GetValues( enumType );
+            var itemNames = Enum.GetNames( enumType );
+            var listItemBag = new List<ListItemBag>();
+
+            for ( var i = 0; i < itemNames.Length; i++ )
+            {
+                listItemBag.Add( new ListItemBag
+                {
+                    Text = itemNames[i].SplitCase(),
+                    Value = itemValues.GetValue( i ).ToString()
+                } );
+            }
+            return listItemBag.ToArray();
         }
     }
 }

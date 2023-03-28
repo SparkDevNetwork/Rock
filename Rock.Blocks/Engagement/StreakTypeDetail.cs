@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StreakTypeDetail;
 
@@ -41,6 +42,27 @@ namespace Rock.Blocks.Engagement
 
     #region Block Attributes
 
+    [LinkedPage(
+        "Map Editor Page",
+        Description = "Page used for editing the streak type map.",
+        Key = AttributeKey.MapEditorPage,
+        IsRequired = false,
+        Order = 1 )]
+
+    [LinkedPage(
+        "Exclusions Page",
+        Description = "Page used for viewing a list of streak type exclusions.",
+        Key = AttributeKey.ExclusionsPage,
+        IsRequired = false,
+        Order = 2 )]
+
+    [LinkedPage(
+        "Achievements Page",
+        Description = "Page used for viewing a list of streak type achievement types.",
+        Key = AttributeKey.AchievementsPage,
+        IsRequired = false,
+        Order = 3 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "8a8c5bea-6293-4ac0-8c2e-d89f541043aa" )]
@@ -48,6 +70,28 @@ namespace Rock.Blocks.Engagement
     public class StreakTypeDetail : RockObsidianDetailBlockType
     {
         #region Keys
+
+        /// <summary>
+        /// Keys to use for Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// Key for the Map Editor Page
+            /// </summary>
+            public const string MapEditorPage = "MapEditorPage";
+
+            /// <summary>
+            /// Key for the Exclusions Page
+            /// </summary>
+            public const string ExclusionsPage = "ExclusionsPage";
+
+            /// <summary>
+            /// The achievements page
+            /// </summary>
+            public const string AchievementsPage = "AchievementsPage";
+        }
+
 
         private static class PageParameterKey
         {
@@ -93,6 +137,8 @@ namespace Rock.Blocks.Engagement
         {
             var options = new StreakTypeDetailOptionsBag();
 
+            var streakOccurenceFrequency = ToListItemBag( typeof( StreakOccurrenceFrequency ) );
+                .Select()
             return options;
         }
 
@@ -137,7 +183,7 @@ namespace Rock.Blocks.Engagement
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = GetEntityBagForView( entity );
+                    box.Entity = GetEntityBagForView( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -150,7 +196,7 @@ namespace Rock.Blocks.Engagement
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -165,11 +211,23 @@ namespace Rock.Blocks.Engagement
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
         /// <returns>A <see cref="StreakTypeBag"/> that represents the entity.</returns>
-        private StreakTypeBag GetCommonEntityBag( StreakType entity )
+        private StreakTypeBag GetCommonEntityBag( StreakType entity, RockContext rockContext)
         {
             if ( entity == null )
             {
                 return null;
+            }
+
+            var structureTypeString = "";
+            if ( entity.StructureType.HasValue)
+            {
+                var structureName = (new StreakTypeService(rockContext)).GetStructureName( entity.StructureType, entity.StructureEntityId );
+                structureTypeString = string.Format( "{0}{1}",
+                        entity.StructureType.Value.GetDescription() ?? "",
+                        string.Format( "{0}{1}",
+                            structureName.IsNullOrWhiteSpace() ? string.Empty : " - ",
+                            structureName
+                        ) );
             }
 
             return new StreakTypeBag
@@ -179,11 +237,13 @@ namespace Rock.Blocks.Engagement
                 EnableAttendance = entity.EnableAttendance,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
-                OccurrenceFrequency = entity./* TODO: Unknown property type 'StreakOccurrenceFrequency' for conversion to bag. */,
+                StructureType = structureTypeString,
+                OccurrenceFrequency = entity.OccurrenceFrequency.ToString(),
                 RequiresEnrollment = entity.RequiresEnrollment,
                 StartDate = entity.StartDate,
                 Streaks = entity.Streaks.ToListItemBagList(),
                 StreakTypeExclusions = entity.StreakTypeExclusions.ToListItemBagList(),
+                FirstDayOfWeek = (int) entity.FirstDayOfWeek,
                 StructureEntityId = entity.StructureEntityId,
                 StructureSettingsJSON = entity.StructureSettingsJSON
             };
@@ -194,14 +254,14 @@ namespace Rock.Blocks.Engagement
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
         /// <returns>A <see cref="StreakTypeBag"/> that represents the entity.</returns>
-        private StreakTypeBag GetEntityBagForView( StreakType entity )
+        private StreakTypeBag GetEntityBagForView( StreakType entity, RockContext rockContext )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity );
+            var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
@@ -213,14 +273,14 @@ namespace Rock.Blocks.Engagement
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="StreakTypeBag"/> that represents the entity.</returns>
-        private StreakTypeBag GetEntityBagForEdit( StreakType entity )
+        private StreakTypeBag GetEntityBagForEdit( StreakType entity, RockContext rockContext )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity );
+            var bag = GetCommonEntityBag( entity , rockContext );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
@@ -258,6 +318,9 @@ namespace Rock.Blocks.Engagement
 
             box.IfValidProperty( nameof( box.Entity.StartDate ),
                 () => entity.StartDate = box.Entity.StartDate );
+
+            box.IfValidProperty( nameof( box.Entity.FirstDayOfWeek ),
+                () => entity.FirstDayOfWeek = ( DayOfWeek? ) box.Entity.FirstDayOfWeek );
 
 
       /*      box.IfValidProperty( nameof( box.Entity.StreakTypeExclusions ),
@@ -399,7 +462,7 @@ namespace Rock.Blocks.Engagement
 
                 var box = new DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity , rockContext )
                 };
 
                 return ActionOk( box );
@@ -455,7 +518,7 @@ namespace Rock.Blocks.Engagement
                 entity = entityService.Get( entity.Id );
                 entity.LoadAttributes( rockContext );
 
-                return ActionOk( GetEntityBagForView( entity ) );
+                return ActionOk( GetEntityBagForView( entity , rockContext ) );
             }
         }
 
@@ -515,7 +578,7 @@ namespace Rock.Blocks.Engagement
 
                 var refreshedBox = new DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity , rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();

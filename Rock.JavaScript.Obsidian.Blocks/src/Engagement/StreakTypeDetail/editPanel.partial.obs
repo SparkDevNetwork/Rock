@@ -12,21 +12,60 @@
                 <CheckBox v-model="isActive"
                           label="Active" />
             </div>
+
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                    label="Description"
+                    textMode="multiline" />
+            </div>
+
+            <div class="col-md-6">
+                <DatePicker v-model="startDate"
+                    label="Start Date"
+                    rules="required"
+                    :disabled="!isAddMode"
+                    help="This defines the first day (or week) that a person could engage with this Streak Type and receive an affirmative mark towards their streak.
+                        The start date cannot be changed once the Streak Type is created except when rebuilding the entire Streak Type." />
+            </div>
+
+            <div class="col-sm-3 col-xs-6">
+                <CheckBox v-model="enableAttendance"
+                    text="Yes"
+                    label="Sync Linked Activity"
+                    help="If enabled, this streak type will create linked activity records (interaction or attendance) when the Mark Engagement API endpoints are used.
+                        Furthermore, when linked activity records are added, this streak type will mark the appropriate engagement bit." />
+            </div>
+
+            <div class="col-sm-3 col-xs-6">
+                <CheckBox v-model="requiresEnrollment"
+                    text="Yes"
+                    label="Require Enrollment"
+                    help="If enabled, this Streak Type will not allow new Streaks to be tracked unless the person has been explicitly enrolled. Implicit enrollment
+                        occurs when Sync Linked Activity is enabled, and a linked activity record is created." />
+            </div>
         </div>
 
-        <TextBox v-model="description"
-                 label="Description"
-                 textMode="multiline" />
+        <div class="row">
+            <div class="col-md-6">
+
+            </div>
+            <div class="col-md-6">
+                <DayOfWeekPicker label="Day of the Week" v-model="firstDayOfWeek" help="Allows this weekly streak type to calculate streaks based off a custom first day of the week setting.
+                    Leave this blank to use the system setting." />
+            </div>
+        </div>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, ref, watch, computed } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
@@ -56,10 +95,17 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const requiresEnrollment = propertyRef(props.modelValue.requiresEnrollment ?? "", "RequiresEnrollment");
+    const enableAttendance = propertyRef(props.modelValue.enableAttendance ?? "", "EnableAttendance");
+    const firstDayOfWeek = propertyRef(props.modelValue?.firstDayOfWeek ?? null, "FirstDayOfWeek");
+
+    const isAddMode = computed((): boolean => props.modelValue?.idKey == "");
+    alert(firstDayOfWeek.value);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name];
+    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek];
 
     // #endregion
 
@@ -77,11 +123,16 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
+        alert(firstDayOfWeek.value);
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(requiresEnrollment, props.modelValue.requiresEnrollment);
+        updateRefValue(enableAttendance, props.modelValue.enableAttendance);
+        updateRefValue(firstDayOfWeek, props.modelValue?.firstDayOfWeek ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -92,7 +143,11 @@
             attributeValues: attributeValues.value,
             description: description.value,
             isActive: isActive.value,
-            name: name.value
+            name: name.value,
+            startDate: startDate.value,
+            requiresEnrollment: requiresEnrollment.value,
+            enableAttendance: enableAttendance.value,
+            firstDayOfWeek: firstDayOfWeek.value
         };
 
         emit("update:modelValue", newValue);

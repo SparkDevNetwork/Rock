@@ -42,7 +42,7 @@
     import ViewPanel from "./StreakTypeDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./StreakTypeDetail/types";
+    import { NavigationUrlKey } from "./StreakTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
     import { StreakTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeDetailOptionsBag";
@@ -210,7 +210,7 @@
      * Event handler for when a value has changed that has an associated
      * C# property name. This is used to detect changes to values that
      * might cause qualified attributes to either show up or not show up.
-     * 
+     *
      * @param propertyName The name of the C# property that was changed.
      */
     function onPropertyChanged(propertyName: string): void {

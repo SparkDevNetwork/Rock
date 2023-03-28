@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,11 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance association
+        /// </summary>
+        public string StructureType { get; set; }
+
+        /// <summary>
         /// This determines whether the streak type will write attendance records when marking someone as present or
         /// if it will just update the enrolled individual’s map.
         /// </summary>
@@ -49,7 +54,7 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// <summary>
         /// Gets or sets the timespan that each map bit represents (Rock.Model.StreakOccurrenceFrequency).
         /// </summary>
-        public StreakOccurrenceFrequency OccurrenceFrequency { get; set; }
+        public string OccurrenceFrequency { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this streak type requires explicit enrollment. If not set, a person can be
@@ -83,5 +88,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// Gets or sets the structure settings JSON.
         /// </summary>
         public string StructureSettingsJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the first day of the week when the frequency is set to weekly
+        /// </summary>
+        public int FirstDayOfWeek { get; set; }
     }
 }
