@@ -575,13 +575,24 @@ namespace Rock.Model
         [DataMember]
         public int? BirthDateKey { get; set; }
 
+
         /// <summary>
-        /// Gets or sets the age range.
+        /// Gets the Person's age.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
+        /// </value>
+        [DataMember]
+        public int? Age { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age bracket.
         /// </summary>
         /// <value>
         /// The age range.
         /// </value>
-        public AgeBracket? AgeBracket { get; set; }
+        [DataMember]
+        public AgeBracket AgeBracket { get; set; }
 
         #endregion
 
