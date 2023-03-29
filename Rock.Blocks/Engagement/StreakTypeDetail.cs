@@ -22,6 +22,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StreakTypeDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
@@ -284,18 +285,26 @@ namespace Rock.Blocks.Engagement
             var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.StructureType = entity.StructureType.ToString();
-            if ( entity.StructureType == StreakStructureType.GroupType )
-            {
-                bag.StructureEntityId = GroupTypeCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
-            }
-            if( entity.StructureType == StreakStructureType.Group )
-            {
-                bag.StructureEntityId = new GroupService(rockContext).Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
-            }
+            bag.StructureEntityId = GetStructureEntityIdFromStreakBag( entity, rockContext, bag );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
             return bag;
+        }
+
+        private static ListItemBag GetStructureEntityIdFromStreakBag( StreakType entity, RockContext rockContext, StreakTypeBag bag )
+        {
+            switch ( entity.StructureType )
+            {
+
+                case StreakStructureType.GroupType:
+                    return GroupTypeCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
+                case StreakStructureType.Group:
+                    return new GroupService( rockContext ).Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
+                case StreakStructureType.GroupTypePurpose:
+                    return DefinedValueCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
+            }
+            return null;
         }
 
         /// <summary>
@@ -356,14 +365,7 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Entity.StructureEntityId ),
                 () =>
                 {
-                    if ( entity.StructureType == StreakStructureType.GroupType )
-                    {
-                        entity.StructureEntityId = GroupTypeCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
-                    }
-                    if ( entity.StructureType == StreakStructureType.Group )
-                    {
-                        entity.StructureEntityId = new GroupService( rockContext ).GetId( box.Entity.StructureEntityId.Value.AsGuid() );
-                    }
+                    entity.StructureEntityId = GetStructureEntityId( entity, box, rockContext ).ToIntSafe();
                 } );
 
             box.IfValidProperty( nameof( box.Entity.StructureSettingsJSON ),
@@ -378,6 +380,20 @@ namespace Rock.Blocks.Engagement
                 } );
 
             return true;
+        }
+
+        private static int? GetStructureEntityId( StreakType entity, DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag> box, RockContext rockContext )
+        {
+            switch ( entity.StructureType )
+            {
+                case StreakStructureType.GroupType:
+                    return GroupTypeCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                case StreakStructureType.Group:
+                    return new GroupService( rockContext ).GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                case StreakStructureType.GroupTypePurpose:
+                    return DefinedValueCache.Get( box.Entity.StructureEntityId.Value.AsGuid() ).Id;
+            }
+            return null;
         }
 
         /// <summary>

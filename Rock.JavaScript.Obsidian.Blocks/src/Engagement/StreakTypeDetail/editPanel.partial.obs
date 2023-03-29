@@ -58,6 +58,8 @@
                 <GroupTypePicker label="Group Type" v-if="modelValue.structureType == 'GroupType'" v-model="structureEntityId" :isSortedByName="true"/>
 
                 <GroupPicker label="Group" v-if="modelValue.structureType == 'Group'" v-model="structureEntityId" />
+
+                <DefinedValuePicker label="Group Type Purpose" v-if="modelValue.structureType == 'GroupTypePurpose'" v-model="structureEntityId" :definedTypeGuid="DefinedType.GrouptypePurpose" showBlankItem />
             </div>
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
@@ -84,9 +86,12 @@
     import TextBox from "@Obsidian/Controls/textBox";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker";
+    import { StreakStructureType } from "@Obsidian/Enums/Engagement/streakStructureType";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
