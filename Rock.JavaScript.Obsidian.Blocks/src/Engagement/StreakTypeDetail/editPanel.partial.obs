@@ -65,6 +65,10 @@
 
                 <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == 'InteractionChannel'" v-model="structureEntityId"  />
 
+                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == 'InteractionComponent'" v-model="interactionComponentInteractionChannel"  />
+
+                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == 'InteractionComponent'" v-model="structureEntityId" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" />
+
                 <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == 'InteractionMedium'" v-model="structureEntityId" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
             </div>
             <div class="col-md-6">
@@ -104,6 +108,7 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
     import { StreakTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeDetailOptionsBag";
+	import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -136,12 +141,12 @@
     const occurrenceFrequency = propertyRef(props.modelValue?.occurrenceFrequency ?? null, "OccurrenceFrequency");
     const structureType = propertyRef(props.modelValue?.structureType ?? "", "StructureType");
     const structureEntityId = propertyRef(props.modelValue?.structureEntityId, "StructureEntityId");
+    const interactionComponentInteractionChannel = ref(props.modelValue.interactionComponentInteractionChannel);
 
     const isAddMode = computed((): boolean => props.modelValue?.idKey == "");
 
     // update Day of the Week picker only if the streak occurrence frequency is set to Weekly
     const canUpdateDayOfWeekPicker = computed((): boolean => props.modelValue?.occurrenceFrequency == props.options?.streakOccurrenceFrequencies?.[1]?.value ?? "");
-
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().

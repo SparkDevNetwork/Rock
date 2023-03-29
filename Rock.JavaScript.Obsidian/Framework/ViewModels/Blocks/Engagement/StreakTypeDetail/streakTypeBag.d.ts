@@ -23,6 +23,7 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { Guid } from "Framework/Types";
 
 export type StreakTypeBag = {
     /** Gets or sets the attributes. */
@@ -83,4 +84,7 @@ export type StreakTypeBag = {
 
     /** Gets or sets the value of the first day of the week when the frequency is set to weekly */
     firstDayOfWeek?: number | null
+
+    /** The Guid of the interaction channel associated with the interaction component */
+    interactionComponentInteractionChannel?: ListItemBag
 };

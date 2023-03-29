@@ -93,5 +93,11 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// Gets or sets the first day of the week when the frequency is set to weekly
         /// </summary>
         public int FirstDayOfWeek { get; set; }
+
+        /// <summary>
+        /// The Guid for the Interaction Channel associated with the Interaction Component.
+        /// This is set only if the linked activity is Interaction Component
+        /// </summary>
+        public ListItemBag InteractionComponentInteractionChannel { get; set; }
     }
 }
