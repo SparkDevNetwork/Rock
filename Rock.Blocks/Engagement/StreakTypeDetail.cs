@@ -313,6 +313,8 @@ namespace Rock.Blocks.Engagement
                     return GroupTypeCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
                 case StreakStructureType.InteractionChannel:
                     return InteractionChannelCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
+                case StreakStructureType.InteractionMedium:
+                    return DefinedValueCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
             }
             return null;
         }
@@ -406,6 +408,8 @@ namespace Rock.Blocks.Engagement
                     return GroupTypeCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
                 case StreakStructureType.InteractionChannel:
                     return InteractionChannelCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                case StreakStructureType.InteractionMedium:
+                    return DefinedValueCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
             }
             return null;
         }

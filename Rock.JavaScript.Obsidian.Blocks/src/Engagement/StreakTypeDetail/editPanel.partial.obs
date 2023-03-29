@@ -64,6 +64,8 @@
                 <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == 'CheckInConfig'" v-model="structureEntityId" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids"/>
 
                 <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == 'InteractionChannel'" v-model="structureEntityId"  />
+
+                <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == 'InteractionMedium'" v-model="structureEntityId" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
             </div>
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
@@ -96,6 +98,7 @@
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker";
     import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
+    import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
     import { StreakStructureType } from "@Obsidian/Enums/Engagement/streakStructureType";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
