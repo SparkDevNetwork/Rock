@@ -122,6 +122,9 @@
     <Compile Include="Event\RegistrationFieldSource.cs" />
     <Compile Include="Event\RegistrationPersonFieldType.cs" />
     <Compile Include="Event\RSVP.cs" />
+    <Compile Include="Event\ScheduledAttendanceItemMachesPreference.cs" />
+    <Compile Include="Event\ScheduledAttendanceItemStatus.cs" />
+    <Compile Include="Event\SchedulerResourceGroupMemberFilterType.cs" />
     <Compile Include="Event\SessionStatus.cs" />
     <Compile Include="Event\SignatureDocumentAction.cs" />
     <Compile Include="Finance\AlertType.cs" />

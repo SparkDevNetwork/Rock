@@ -390,6 +390,9 @@
     <TypeScriptCompile Include="Framework\Enums\Event\registrationFieldSource.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\registrationPersonFieldType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\rsvp.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\scheduledAttendanceItemMatchesPreference.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\scheduledAttendanceItemStatus.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\schedulerResourceGroupMemberFilterType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\sessionStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\signatureDocumentAction.ts" />
     <TypeScriptCompile Include="Framework\Enums\Finance\alertType.ts" />
