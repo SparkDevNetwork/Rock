@@ -136,11 +136,18 @@ namespace Rock.Blocks.Engagement
         /// <returns>The options that provide additional details to the block.</returns>
         private StreakTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
+            var checkInPurposeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
             var options = new StreakTypeDetailOptionsBag
             {
                 streakOccurrenceFrequencies = typeof( StreakOccurrenceFrequency )
-                .ToListItemBag(),
-                streakStructureTypes = typeof( StreakStructureType ).ToListItemBag( getDescriptionForText: true, blankText: "None" )
+                    .ToListItemBag(),
+                streakStructureTypes = typeof( StreakStructureType )
+                    .ToListItemBag( getDescriptionForText: true, blankText: "None" ),
+                attendanceCheckInConfigGroupTypesGuids = GroupTypeCache.All()
+                    .Where( gt => gt.GroupTypePurposeValueId == checkInPurposeId )
+                    .OrderBy( gt => gt.Name )
+                    .Select( gt => gt.Guid )
+                    .ToList()
             };
             return options;
         }
@@ -285,24 +292,25 @@ namespace Rock.Blocks.Engagement
             var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.StructureType = entity.StructureType.ToString();
-            bag.StructureEntityId = GetStructureEntityIdFromStreakBag( entity, rockContext, bag );
+            bag.StructureEntityId = GetStructureEntityIdListItemBag( entity, rockContext, bag );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
             return bag;
         }
 
-        private static ListItemBag GetStructureEntityIdFromStreakBag( StreakType entity, RockContext rockContext, StreakTypeBag bag )
+        private static ListItemBag GetStructureEntityIdListItemBag( StreakType entity, RockContext rockContext, StreakTypeBag bag )
         {
             switch ( entity.StructureType )
             {
-
                 case StreakStructureType.GroupType:
                     return GroupTypeCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
                 case StreakStructureType.Group:
                     return new GroupService( rockContext ).Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
                 case StreakStructureType.GroupTypePurpose:
                     return DefinedValueCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
+                case StreakStructureType.CheckInConfig:
+                    return GroupTypeCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
             }
             return null;
         }
@@ -391,7 +399,9 @@ namespace Rock.Blocks.Engagement
                 case StreakStructureType.Group:
                     return new GroupService( rockContext ).GetId( box.Entity.StructureEntityId.Value.AsGuid() );
                 case StreakStructureType.GroupTypePurpose:
-                    return DefinedValueCache.Get( box.Entity.StructureEntityId.Value.AsGuid() ).Id;
+                    return DefinedValueCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                case StreakStructureType.CheckInConfig:
+                    return GroupTypeCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
             }
             return null;
         }

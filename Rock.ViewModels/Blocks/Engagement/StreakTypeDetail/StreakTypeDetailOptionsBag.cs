@@ -17,6 +17,7 @@
 
 using Rock.ViewModels.Utility;
 using System;
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
 {
@@ -31,5 +32,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// List of Represents of the attendance association of a StreakType.
         /// </summary>
         public ListItemBag[] streakStructureTypes;
+
+        /// <summary>
+        /// The List of guids of the group type for check in config linked type
+        /// </summary>
+        public List<Guid> attendanceCheckInConfigGroupTypesGuids;
     }
 }

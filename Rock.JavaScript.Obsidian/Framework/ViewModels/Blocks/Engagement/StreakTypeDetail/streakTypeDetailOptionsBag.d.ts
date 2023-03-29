@@ -22,8 +22,10 @@
 //
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { Guid } from "Framework/Types";
 
 export type StreakTypeDetailOptionsBag = {
     streakOccurrenceFrequencies?: ListItemBag[] | null;
     streakStructureTypes?: ListItemBag[] | null;
+    attendanceCheckInConfigGroupTypesGuids?: Guid[] | null;
 };

@@ -60,6 +60,8 @@
                 <GroupPicker label="Group" v-if="modelValue.structureType == 'Group'" v-model="structureEntityId" />
 
                 <DefinedValuePicker label="Group Type Purpose" v-if="modelValue.structureType == 'GroupTypePurpose'" v-model="structureEntityId" :definedTypeGuid="DefinedType.GrouptypePurpose" showBlankItem />
+
+                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == 'CheckInConfig'" v-model="structureEntityId" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids"/>
             </div>
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
