@@ -192,6 +192,8 @@ namespace RockWeb.Blocks.Steps
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Steps/Steps.css", true );
+
             ClearError();
             BlockUpdated += PersonProgramStepList_BlockUpdated;
 

@@ -1,0 +1,119 @@
+@import (reference) "../../../Themes/Rock/Styles/bootstrap.less";
+
+.disc-assessment {
+    th {
+      padding: 6px;
+  
+      &:last-child {
+        border-radius: 0 @border-radius-base 0 0;
+      }
+  
+      &.disc-question {
+        padding: 6px;
+        font-weight: 700;
+        border-radius: @border-radius-base 0 0 0;
+      }
+    }
+  
+    td {
+      vertical-align: middle;
+    }
+  
+    .disc-answer {
+      width: 20%;
+      min-width: (@custom-control-indicator-size + 30px);
+      text-align: center;
+    }
+  }
+  
+  .disc-heading {
+    text-align: center;
+  }
+  
+  .disc-row {
+    margin-bottom: @disc-question-spacing;
+  
+    &::after {
+      display: block;
+      width: 100%;
+      margin: @disc-question-spacing 0;
+      content: " ";
+      border-bottom: 1px solid @ui-4;
+    }
+  }
+  
+  
+  @disc-chart-height: 425px;
+  .discchart {
+    position: relative;
+    width: 80%;
+    max-width: 650px;
+    height: @disc-chart-height;
+    padding: 0;
+    margin: 36px auto;
+    clear: both;
+    font-size: 0;
+    background-image:
+      linear-gradient(
+        to bottom,
+        @ui-4 0%,
+        transparent 2%,
+        transparent 100%
+      );
+    background-size: 100% (@disc-chart-height/10);
+  
+    li {
+      position: relative;
+      display: inline-block;
+      width: 22.5%;
+      height: 425px;
+      padding: 0;
+      margin: 0 2% 0 0;
+      color: @btn-primary-color;
+      text-align: center;
+      vertical-align: bottom;
+      background-color: lighten(@brand-primary, 10%);
+  
+      &.discchart-midpoint {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 70%;
+        margin: 0;
+        background-color: transparent;
+        border-top: 2px solid @brand-danger;
+        border-radius: 0;
+      }
+    }
+  
+    .discbar-label {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      overflow: hidden;
+      font-size: 28px;
+      font-weight: @font-weight-bold;
+      text-shadow: 0 0 3px @brand-primary;
+    }
+  
+    .discbar {
+      &::before {
+        position: absolute;
+        top: -25px;
+        right: 0;
+        left: 0;
+        z-index: 1;
+        display: block;
+        font-size: 20px;
+        line-height: 1em;
+        color: @text-color;
+        text-align: center;
+        word-wrap: break-word;
+        content: attr(title);
+      }
+  
+      &.discbar-primary {
+        background: @brand-primary;
+      }
+    }
+  }

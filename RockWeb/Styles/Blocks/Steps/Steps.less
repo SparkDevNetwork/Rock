@@ -1,0 +1,228 @@
+@import (reference) "../../../Themes/Rock/Styles/bootstrap.less";
+
+// STEPS
+@steps-breakpoint: @screen-lg-min;
+
+.add-step-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 8px @panel-body-padding;
+  margin: -@panel-body-padding -@panel-body-padding 0;
+  background: @panel-drawer-bg;
+  border-bottom: 1px solid @panel-border;
+
+  .add-step-label {
+    margin: 0 4px 0 0;
+    font-size: @font-size-small;
+  }
+
+  .btn {
+    margin: 2px;
+  }
+}
+
+.col-steps {
+  position: relative;
+  float: left;
+  width: 25%;
+  width: ~"calc(100% / var(--stepsPerRowMobile))";
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-bottom: 15px;
+
+  @media (min-width: @steps-breakpoint) {
+    width: 100%;
+    width: ~"calc(100% / var(--stepsPerRow))";
+  }
+}
+
+.step-card {
+  position: relative;
+  height: 100%;
+  min-height: 260px;
+  overflow: hidden;
+  text-align: center;
+  border: 1px solid @panel-border;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+
+  .card-info {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -ms-flex-pack: center;
+    justify-content: center;
+    height: 100%;
+    padding: 12px;
+    text-align: center;
+    transition-duration: .25s;
+    will-change: transform;
+  }
+
+  .step-status {
+    margin: 0;
+  }
+
+  .step-name {
+    display: -webkit-box;
+    overflow: hidden;
+    line-height: 1.3;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  @media (min-width: @steps-breakpoint) {
+    .card-info {
+      padding: 0;
+    }
+
+    .card-top {
+      display: -ms-flexbox;
+      display: -webkit-box;
+      display: flex;
+      -ms-flex-align: center;
+      -ms-flex-pack: center;
+      align-items: center;
+      justify-content: center;
+      -webkit-box-align: center;
+      -webkit-box-pack: center;
+    }
+
+    .card-top,
+    .card-bottom {
+      -ms-flex: 1 1 50%;
+      flex: 1 1 50%;
+      margin: 16px 0;
+    }
+  }
+
+  &.no-steps .card-info {
+    opacity: .75;
+  }
+
+  &.has-prerequisite .step-card-hover {
+    background: @ui-2;
+  }
+
+
+  p:empty {
+    display: none;
+  }
+
+  .badge {
+    background-color: @brand-info;
+  }
+
+  > .step-card-hover {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    opacity: 0;
+    transition-duration: .25s;
+    -webkit-transform: translateY(100%);
+    transform: translateY(100%);
+    will-change: opacity, transform;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+  }
+
+  &:hover > .step-card-hover {
+    opacity: 1;
+    -webkit-transform: translateY(0%);
+    transform: translateY(0%);
+  }
+
+  .btn-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 49px;
+    color: inherit;
+
+    &:hover {
+      background-color: darken(@btn-default-bg, 10%);
+    }
+  }
+
+  .btn-delete:hover {
+    color: #fff;
+    background-color: @btn-danger-bg;
+  }
+}
+
+.has-overflow {
+  .step-records-table-container,
+  .card-add-step-button {
+    position: relative;
+    display: block;
+  }
+
+  .card-add-step-button {
+    height: 50%;
+  }
+}
+
+.step-records-table-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+}
+
+.step-records-table {
+  width: 100%;
+
+  td {
+    width: 50px;
+    vertical-align: middle;
+    border: 1px solid @panel-border;
+
+    &.steps-status {
+      width: auto;
+      height: 49px;
+      border-left: none;
+    }
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  td:last-of-type {
+    border-right: none;
+  }
+}
+
+.prereq-list-info {
+  padding: 20px 20px 0;
+}
+
+.card-add-step-button {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+  background: @ui-2;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+
+  > span {
+    position: relative;
+    top: 50%;
+    display: block;
+    transform: perspective(1px) translateY(-50%);
+  }
+}

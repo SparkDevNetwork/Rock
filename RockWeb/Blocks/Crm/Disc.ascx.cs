@@ -218,6 +218,9 @@ namespace Rockweb.Blocks.Crm
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            RockPage.AddCSSLink( "~/Styles/Blocks/Crm/Disc.css", true );
+
             SetPanelTitleAndIcon();
 
             _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();

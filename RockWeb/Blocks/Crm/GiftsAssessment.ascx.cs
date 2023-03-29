@@ -331,6 +331,7 @@ namespace Rockweb.Blocks.Crm
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            RockPage.AddCSSLink( "~/Styles/Blocks/Crm/Assessments.css", true );
 
             SetPanelTitleAndIcon();
 

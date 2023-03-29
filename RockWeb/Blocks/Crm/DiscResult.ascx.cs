@@ -67,6 +67,8 @@ namespace Rockweb.Blocks.Crm
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Crm/Disc.css", true );
+
             string personKey = PageParameter( "Person" );
             if ( !string.IsNullOrEmpty( personKey ) )
             {

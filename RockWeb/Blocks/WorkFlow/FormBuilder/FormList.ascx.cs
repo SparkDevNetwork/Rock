@@ -117,6 +117,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            RockPage.AddCSSLink( "~/Styles/Blocks/Workflow/FormBuilder.css", true );
         }
 
         /// <summary>

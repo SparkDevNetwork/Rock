@@ -565,10 +565,6 @@
   }
 }
 
-.note-editor.note-frame {
-  margin: 0;
-}
-
 // Fixes note-editor name conflict with Summernote and Timeline note
 .notes .note-editor {
   margin: 16px 24px;
@@ -641,148 +637,6 @@
   }
 }
 
-// 3. Workflow
-// -------------------------
-
-.workflow-section-activities {
-  margin-top: 64px;
-}
-
-.workflow-activities-readonly-header {
-  color: @text-color;
-
-  &:hover,
-  &:active,
-  &:focus {
-    color: inherit;
-    text-decoration: none;
-  }
-}
-
-.panel.workflow-activity {
-
-  &::before {
-    position: absolute;
-    top: -1px;
-    bottom: -1px;
-    left: 0;
-    width: 6px;
-    content: "";
-    background: @brand-info;
-    border-radius: @panel-border-radius 0 0 @panel-border-radius;
-  }
-
-  h3.panel-title {
-    display: flex;
-    align-items: center;
-    margin-bottom: 2px;
-    font-size: @font-size-h4;
-    font-weight: 600;
-    line-height: 1.5;
-  }
-
-  .panel-title::before {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    margin-right: 12px;
-    font-family: @fa-font-face;
-    font-size: @font-size-small;
-    font-weight: @fa-theme-weight;
-    color: @brand-info; // WAS TEXT-MUTED
-    content: @fa-var-cubes;
-    background: fade(@brand-info, 20%);
-    border-radius: 20px;
-  }
-
-  a.btn-link {
-    color: @text-color;
-  }
-
-  &.activated-with-workflow:not(.workflow-activity-inactive) {
-    &::before {
-      background-color: @brand-success;
-    }
-
-    .panel-title::before {
-      color: @brand-success;
-      background: fade(@brand-success, 20%);
-    }
-  }
-
-  &.workflow-activity-inactive {
-    &::before {
-      background-color: @brand-danger;
-    }
-
-    .panel-title::before {
-      color: @brand-danger;
-      background: fade(@brand-danger, 20%);
-    }
-  }
-
-  // TODO: Add class activity-type-description
-  > .panel-heading > .filter-toggle > span {
-    margin-left: 36px;
-    font-size: @font-size-small;
-    line-height: 1.5;
-    color: @text-muted;
-  }
-
-  @media (min-width: @screen-md-min) {
-    > .panel-body {
-      padding-left: (@panel-body-padding + 36px);
-    }
-  }
-}
-
-.workflow-action {
-  margin-bottom: 12px;
-  // TODO: Re-enable when
-  //overflow: hidden;
-
-  &:last-of-type {
-    margin-bottom: 0;
-  }
-
-  &.editable:hover {
-    border-color: @brand-primary;
-  }
-
-  > .panel-heading {
-    background: @gray-100 !important;
-  }
-
-  .workflow-action-name::before {
-    margin-right: 8px;
-    font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
-    content: @fa-var-cube;
-  }
-
-  .criteria-exists {
-    color: @btn-warning-color;
-    background-color: @btn-warning-bg;
-    border: 1px solid @btn-warning-border;
-  }
-
-  .conditional-run-criteria {
-    padding: 15px 0 10px;
-    margin: -15px -16px 15px;
-    border-style: solid;
-    border-width: 1px;
-  }
-
-  .form-action-rows .form-row {
-    margin-bottom: 15px;
-  }
-}
-
-.workflow-action.not-editable {
-  opacity: .5;
-}
 
 // panel for workflow entry/navigation
 .panel-group {
@@ -927,11 +781,6 @@
     width: auto;
     max-width: 100%;
   }
-}
-
-.rock-fullname {
-  display: none !important;
-  visibility: hidden !important;
 }
 
 // rockslide Vue transition

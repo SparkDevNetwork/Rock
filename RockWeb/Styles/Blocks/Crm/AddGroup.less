@@ -1,0 +1,210 @@
+@import (reference) "../../../Themes/Rock/Styles/bootstrap.less";
+
+.table-groupmembers .radio:first-child {
+    margin-top: 0 !important;
+  }
+  
+  @media (max-width: @screen-md) {
+    /* Force table to not be like tables anymore */
+    table.table-groupmembers,
+    .table-groupmembers thead,
+    .table-groupmembers tbody,
+    .table-groupmembers th,
+    .table-groupmembers td,
+    .table-groupmembers tr,
+    table.table-groupcontactinfo,
+    .table-groupcontactinfo thead,
+    .table-groupcontactinfo tbody,
+    .table-groupcontactinfo th,
+    .table-groupcontactinfo td,
+    .table-groupcontactinfo tr {
+      display: block;
+    }
+  
+    .table-groupmembers {
+      // Hide table headers (but not display: none;, for accessibility)
+      thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+  
+      > thead > tr > th,
+      > tbody > tr > th,
+      > tfoot > tr > th,
+      > thead > tr > td,
+      > tbody > tr > td,
+      > tfoot > tr > td {
+        border: 0;
+      }
+  
+      > tbody > tr > td {
+        position: relative;
+        padding-left: 35%;
+  
+        /* Behave  like a "row" */
+        border-bottom: 1px solid @gray-lighter;
+      }
+  
+      td::before {
+        /* Now like a table header */
+        position: absolute;
+  
+        /* Top/left values mimic padding */
+        top: 8px;
+        left: 6px;
+        width: 35%;
+        padding-right: 10px;
+        overflow: hidden;
+        font-weight: @grid-column-header-font-weight;
+        text-overflow: ellipsis;
+      }
+  
+      > tbody > tr {
+        counter-increment: rowNumber;
+  
+        &::before {
+          /* Now like a table header */
+          position: relative;
+          display: block;
+          width: 100%;
+          padding: 10px;
+  
+          /* Top/left values mimic padding */
+          font-size: @grid-column-header-font-size;
+          font-weight: @grid-column-header-font-weight;
+          color: @grid-column-header-text-color;
+          content: "Person #" counter(rowNumber);
+          background-color: @grid-column-header-bg;
+          border-bottom: 2px solid @grid-column-header-border-color;
+        }
+      }
+  
+      // Label the data
+      tbody {
+        td::before {
+          content: attr(data-label);
+        }
+  
+        td:empty {
+          display: none;
+        }
+      }
+  
+      > tfoot,
+      > tfoot > tr > td {
+        display: block;
+        width: 100%;
+        padding: 0;
+      }
+  
+      > tfoot > tr > td > .btn-action {
+        display: block;
+        width: 100%;
+        margin: 8px 0 16px;
+        .button-size(@padding-base-vertical; @padding-base-horizontal; @font-size-base; @line-height-base; @btn-border-radius-base);
+      }
+  
+      > tbody > tr > td > .form-group {
+        &:last-of-type,
+        .radio:last-of-type {
+          margin-bottom: 0;
+        }
+      }
+  
+      .pull-right {
+        float: none !important;
+      }
+    }
+  
+    .table-groupcontactinfo,
+    .table-groupmemberattributes {
+      margin-bottom: 12px;
+    }
+  
+    .table-groupcontactinfo {
+      // Hide table headers (but not display: none;, for accessibility)
+      thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+  
+      > thead > tr > th,
+      > tbody > tr > th,
+      > tfoot > tr > th,
+      > thead > tr > td,
+      > tbody > tr > td,
+      > tfoot > tr > td {
+        border: 0;
+      }
+  
+      > tbody > tr > td {
+        position: relative;
+  
+        /* Behave  like a "row" */
+        border: 0;
+        border-bottom: 1px solid @gray-lighter;
+      }
+  
+      // Label the data
+      tbody {
+        .person-name {
+          /* Now like a table header */
+          position: relative;
+          display: block;
+          width: 100%;
+          padding: 10px;
+  
+          /* Top/left values mimic padding */
+          font-size: @grid-column-header-font-size;
+          font-weight: @grid-column-header-font-weight;
+          color: @grid-column-header-text-color;
+          background-color: @grid-column-header-bg;
+          border-bottom: 2px solid @grid-column-header-border-color;
+  
+          &::before {
+            content: "Contact Info: ";
+          }
+        }
+  
+        .person-sms {
+          position: relative;
+          padding-left: 35%;
+  
+          /* Behave  like a "row" */
+          border: 0;
+          border-bottom: 1px solid @gray-lighter;
+  
+          &::before {
+            /* Now like a table header */
+            position: absolute;
+  
+            /* Top/left values mimic padding */
+            top: 14px;
+            left: 6px;
+            width: 35%;
+            padding-right: 10px;
+            font-weight: @grid-column-header-font-weight;
+            content: "Enable SMS";
+          }
+        }
+  
+        > tr > td > .form-group {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+  
+
+  
+.row-duplicate {
+    padding-top: 12px;
+    border-top: 1px solid @panel-border;
+  }
+  
+.row-duplicate:first-child {
+    padding-top: 0;
+    border-top: 0;
+}

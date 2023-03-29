@@ -223,6 +223,8 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Communication/CommunicationDetail.css", true );
+
             InitializeAnalyticsPanelControls();
 
             InitializeInteractionsList();

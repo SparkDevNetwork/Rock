@@ -166,6 +166,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Workflow/WorkflowTypeDetail.css", true );
+
             // assign attributes grid actions
             gAttributes.AddCssClass( "attribute-grid" );
             gAttributes.DataKeyNames = new string[] { "Guid" };

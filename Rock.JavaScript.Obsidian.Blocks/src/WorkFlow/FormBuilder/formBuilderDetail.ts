@@ -338,6 +338,10 @@ export default defineComponent({
     },
 
     template: `
+<v-style>
+    @import '/Styles/Blocks/Workflow/FormBuilder.css';
+</v-style>
+
 <NotificationBox v-if="blockError" alertType="warning">
     {{ blockError }}
 </NotificationBox>

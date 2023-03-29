@@ -3652,7 +3652,7 @@ Sys.Application.add_load(function () {
                 htmlLink.Attributes.Add( "media", mediaType );
             }
 
-            AddHtmlLink( page, htmlLink, "css" );
+            AddHtmlLink( page, htmlLink );
         }
 
         /// <summary>

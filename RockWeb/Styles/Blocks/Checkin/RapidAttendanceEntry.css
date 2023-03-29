@@ -1,0 +1,24 @@
+@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (min-width: 768px) {
+}.rapid-attendance-entry .mh-300 {
+  min-height: 300px;
+}
+.family-select-item {
+  margin-bottom: 12px;
+  color: #2d2e31;
+  border: 1px solid #eeeeee;
+}
+.family-select-item.active {
+  border-color: #ee7725;
+  border-color: var(--brand-primary, #ee7725);
+}
+.family-select-item a {
+  display: block;
+  padding: 15px 18px;
+  color: #2d2e31 !important;
+}

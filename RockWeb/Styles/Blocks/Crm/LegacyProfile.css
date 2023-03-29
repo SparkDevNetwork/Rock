@@ -1,0 +1,248 @@
+@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (min-width: 768px) {
+}.personprofilebar-bio,
+.personprofilebar-badge,
+.personprofilebar-family,
+.pagetabs,
+.person-content {
+  padding: 15px;
+}
+.personprofilebar-bio {
+  position: relative;
+  padding-top: 50px;
+  color: #2d2e31;
+  background-color: #fff;
+  border-bottom: 1px solid #e6e6e6;
+}
+.personprofilebar-bio .action-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 401;
+  display: flex;
+  height: 40px;
+}
+.personprofilebar-bio .action-wrapper .action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  color: #2d2e31;
+  border: 0 solid #e6e6e6;
+  border-width: 0 0 1px 1px;
+}
+.personprofilebar-bio .action-wrapper .action-extended {
+  width: auto;
+}
+.personprofilebar-bio .action-wrapper .action-extended .dropdown {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+.personprofilebar-bio .action-wrapper .action-extended .dropdown-menu {
+  right: -1px;
+}
+.personprofilebar-bio .name {
+  margin-top: 0;
+  margin-bottom: 4px;
+  text-align: center;
+}
+.personprofilebar-bio .name .full-name,
+.personprofilebar-bio .name .previous-names {
+  display: none;
+  font-size: 18px;
+}
+.personprofilebar-bio .name .firstname {
+  font-size: 0.6em;
+  font-weight: inherit;
+}
+.personprofilebar-bio .labels {
+  margin-bottom: 7.5px;
+  text-align: center;
+}
+.personprofilebar-bio .nav li .persondetails-actions {
+  padding: 2px 15px 0;
+  color: inherit;
+}
+.personprofilebar-bio .nav li .persondetails-actions:hover,
+.personprofilebar-bio .nav li .persondetails-actions:focus {
+  background-color: transparent;
+}
+.personprofilebar-bio .photo {
+  position: relative;
+  max-width: 200px;
+  padding: 5px;
+  margin: 0 auto;
+  background-color: #f5f5f5;
+}
+.personprofilebar-bio .photo .following-status {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 500;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border-top: 70px solid #2d2e31;
+  border-right: 70px solid transparent;
+  opacity: 0.4;
+  transition: 1s;
+}
+.personprofilebar-bio .photo .following-status i {
+  position: absolute;
+  top: -61px;
+  left: 8px;
+  font-size: 24px;
+  color: #fff;
+  opacity: 0;
+  transition: 1s;
+}
+.personprofilebar-bio .photo .following-status:hover i {
+  opacity: 0.5;
+}
+.personprofilebar-bio .photo .following-status.following {
+  opacity: 1;
+}
+.personprofilebar-bio .photo .following-status.following i {
+  opacity: 1;
+}
+.personprofilebar-bio .photo a.fluidbox-opened + .following-status {
+  opacity: 0 !important;
+}
+.personprofilebar-bio .photo img {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  max-height: 200px;
+}
+.personprofilebar-bio .photo .fluidbox-ghost {
+  cursor: -webkit-zoom-in;
+  cursor: -moz-zoom-in;
+}
+.personprofilebar-bio .photo .fluidbox-opened .fluidbox-ghost {
+  cursor: -webkit-zoom-out;
+  cursor: -moz-zoom-out;
+}
+.personprofilebar-bio .social-icons {
+  text-align: center;
+}
+.personprofilebar-bio .social-icons .btn {
+  font-size: 16px;
+  color: #fff;
+  background-color: #737475;
+  border: 0;
+  border-radius: 4px;
+}
+.personprofilebar-bio .social-icons .btn:hover {
+  opacity: 0.8;
+}
+.personprofilebar-bio .social-icons .btn:first-child {
+  margin-left: 0;
+}
+.personprofilebar-bio .taglist {
+  margin-top: 15px;
+}
+.personprofilebar-bio .demographics {
+  margin-top: 15px;
+  text-align: center;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .demographics {
+    float: left;
+    width: 50%;
+  }
+}
+.personprofilebar-bio .personcontact {
+  padding-bottom: 30px;
+  margin-top: 15px;
+  text-align: center;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .personcontact {
+    float: left;
+    width: 50%;
+  }
+}
+.personprofilebar-bio .personcontact .email .email-status i {
+  color: #2d2e31;
+}
+.personprofilebar-bio .personcontact .email .email-status.do-not-email i {
+  color: #d4442e;
+}
+.personprofilebar-bio .personcontact .email .email-status.not-active i {
+  color: #ffc870;
+}
+.personprofilebar-badge {
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0;
+  color: #eeeeee;
+  background-color: #fcfcfc;
+  border-bottom: 1px solid #e3e3e3;
+}
+.personprofilebar-badge .rockbadge-container {
+  margin: 7.5px 0;
+  text-align: center;
+}
+.personprofilebar-badge .rockbadge-container .badge-debug {
+  position: absolute;
+  right: 12px;
+  z-index: 9999;
+  width: 900px;
+  text-align: left;
+}
+.personprofilebar-badge .rockbadge-container .rockbadge-grid {
+  margin: -5px 0;
+}
+.personprofilebar-family {
+  min-height: 60px;
+  color: #2d2e31;
+  background: #fff;
+  border-bottom: 1px solid #e6e6e6;
+}
+.personprofilebar-family a {
+  color: #2d2e31;
+}
+/* Small devices (tablets, 768px and up) */
+@media (min-width: 768px), print {
+  .personprofilebar-bio {
+    padding: 15px;
+  }
+  .personprofilebar-bio .name {
+    text-align: left;
+  }
+  .personprofilebar-bio .name .full-name,
+  .personprofilebar-bio .name .previous-names {
+    display: inline;
+  }
+  .personprofilebar-bio .labels {
+    text-align: right;
+  }
+  .personprofilebar-bio .photo {
+    margin: 0;
+  }
+  .personprofilebar-bio .demographics {
+    text-align: left;
+  }
+  .personprofilebar-bio .personcontact {
+    padding-bottom: 0;
+    text-align: left;
+  }
+  .personprofilebar-bio .social-icons {
+    text-align: left;
+  }
+  .personprofilebar-bio .social-icons .icon {
+    float: left;
+  }
+  .personprofilebar-badge .rockbadge-container {
+    text-align: left;
+  }
+  .personprofilebar-badge .rockbadge-container:last-child {
+    text-align: right;
+  }
+}

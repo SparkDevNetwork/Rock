@@ -1,0 +1,54 @@
+@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (max-width: 767px) {
+}@media (min-width: 768px) {
+}@media (min-width: 768px) {
+}#emaileditor {
+  height: calc(100vh - var(--email-editor-offset, 360px));
+  min-height: 300px;
+  margin: -18px -18px 0 -18px;
+}
+.panel-actions-bordered {
+  padding: 18px 18px 0;
+  margin: 18px -18px 0;
+  border-top: 1px solid #eeeeee;
+}
+#emaileditor-properties {
+  width: 40%;
+  padding: 15px;
+  background-color: #f5f5f5;
+}
+#emaileditor-properties .actions {
+  margin-right: -15px;
+  margin-left: -15px;
+}
+#section-email {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+}
+#email-editor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  border-top: 1px solid #eeeeee;
+}
+#emaileditor-designer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  border-right: 1px solid #eeeeee;
+}
+.emaileditor-propertypanels .propertypanel-title {
+  margin-top: 0;
+  font-weight: 600;
+}

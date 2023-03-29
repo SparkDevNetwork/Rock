@@ -487,6 +487,8 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Checkin/RapidAttendanceEntry.css", true );
+
             base.BlockUpdated += RapidAttendanceEntry_BlockUpdated;
             lbAddFamily.Visible = GetAttributeValue( AttributeKey.AddFamilyPage ).IsNotNullOrWhiteSpace();
             dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;

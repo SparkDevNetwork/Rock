@@ -1,0 +1,75 @@
+@import (reference) "../../../Themes/Rock/Styles/bootstrap.less";
+
+.components-list {
+    margin: 6px;
+  
+    > li ol {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+  
+    .component {
+      display: block;
+      float: left;
+      width: 45%;
+      padding: 12px 0 4px;
+      margin: 6px 2.5%;
+      font-size: 12px;
+      color: @text-color;
+      text-align: center;
+      cursor: -webkit-grab;
+      cursor: -moz-grab;
+      cursor: grab;
+      zoom: 1;
+      background-color: @white;
+      border: 1px solid transparent;
+      border-radius: 2px;
+      box-shadow: 0 2px 2px rgba(0,0,0,.05);
+  
+      > i {
+        display: block;
+        width: 30px;
+        height: 30px;
+        margin: 0 auto 6px;
+        font-size: 28px;
+        color: @text-muted;
+        text-align: center;
+      }
+  
+      span {
+        display: flex;
+        flex-direction: column;
+        align-content: center;
+        justify-content: center;
+        height: 26px;
+        overflow: hidden;
+        line-height: 1.1;
+        text-overflow: ellipsis;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+  
+      &:hover {
+        border: 1px solid @brand-primary;
+        box-shadow: 0 0 0 1px @brand-primary inset;
+      }
+    }
+  }
+
+  .panel-palette {
+    margin: 0;
+    border: 0;
+    border-left: 1px solid @panel-border;
+    border-radius: 0;
+  
+    .panel-heading {
+      font-weight: 500;
+      text-align: center;
+      background: @panel-heading-bg;
+      border-bottom: 3px solid @brand-primary;
+      border-radius: 0;
+    }
+  }
