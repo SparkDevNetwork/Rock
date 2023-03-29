@@ -53,6 +53,11 @@
             default: null
         },
 
+        enabledTimeUnits: {
+            type: Array as PropType<TimeUnit[] | null>,
+            default: null
+        },
+
         previewLocation: {
             type: String as PropType<"Right" | "Top" | "None">,
             default: "Right"
@@ -92,12 +97,15 @@
 
     /** The time unit options that will be made available to the user. */
     const computedTimeUnitOptions = computed((): ListItemBag[] => {
+        const units = timeUnitOptions
+            .filter(tu => !props.enabledTimeUnits || props.enabledTimeUnits.includes(toNumber(tu.value) as TimeUnit));
+
         if (!isNumberVisible.value || toNumber(timeValue.value) === 1) {
-            return timeUnitOptions;
+            return units;
         }
 
         // Pluralize the time unit options if the time value isn't singular.
-        return timeUnitOptions.map(o => {
+        return units.map(o => {
             return {
                 value: o.value,
                 text: `${o.text}s`
