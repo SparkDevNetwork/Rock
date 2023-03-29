@@ -133,19 +133,18 @@ namespace RockWeb.Blocks.Reporting
             rockContext.Database.Log = strQry => Debug.WriteLine( strQry );
             var personService = new PersonService( rockContext );
 
-            var qry = personService.Queryable();
-            var total = qry.Count();
             var personRecordDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid();
             IEnumerable<Person> alivePersonsQry;
             IEnumerable<Person> activeAlivePersonsQry;
 
-            alivePersonsQry = qry.Where( p => p.RecordTypeValue.Guid == personRecordDefinedValueGuid && !p.IsDeceased );
+            alivePersonsQry = personService.Queryable().Where( p => p.RecordTypeValue.Guid == personRecordDefinedValueGuid && !p.IsDeceased );
             activeAlivePersonsQry = alivePersonsQry.Where( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            var total = activeAlivePersonsQry.Count();
 
             GetDemographics( activeAlivePersonsQry );
             GetInformationStatistics( activeAlivePersonsQry, rockContext, total );
             GetPercentOfActiveIndividualsWithAssessments( rockContext, total );
-            GetPercentOfActiveRecords( alivePersonsQry, total );
+            GetPercentOfActiveRecords( alivePersonsQry );
         }
 
         /// <summary>
@@ -276,7 +275,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void GetInformationStatistics( IEnumerable<Person> qry, RockContext rockContext, int total )
         {
-            const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' ]}";
+            const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' valueformat:'percentage' ]}";
 
             var dataItems = new List<DataItem>();
 
@@ -290,7 +289,11 @@ namespace RockWeb.Blocks.Reporting
             dataItems.Add( new DataItem( "Active Email", DataItem.GetPercentage( hasActiveEmailCount, total ) ) );
 
             var mobilePhoneTypeGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
-            var hasMobilePhoneCount = new PhoneNumberService( rockContext ).Queryable().Count( p => p.NumberTypeValue.Guid == mobilePhoneTypeGuid );
+            var personPhoneQry = new PhoneNumberService( rockContext ).Queryable().Where( pn => pn.NumberTypeValue.Guid == mobilePhoneTypeGuid );
+            var hasMobilePhoneCount = qry.Join( personPhoneQry, person => person.Id,
+                phoneNumber => phoneNumber.PersonId,
+                ( person, phoneNumber ) => new { person, phoneNumber } )
+                .Count();
             dataItems.Add( new DataItem( "Mobile Phone", DataItem.GetPercentage( hasMobilePhoneCount, total ) ) );
 
             var hasMaritalStatusCount = qry.Count( p => p.MaritalStatusValueId.HasValue && p.MaritalStatusValue.Value != "Unknown" );
@@ -337,7 +340,7 @@ namespace RockWeb.Blocks.Reporting
 
             var dataItems = groupedQuery.Select( a => new DataItem( a.Key, DataItem.GetPercentage( a.Count( m => m.Assessment != null ), total ) ) ).ToList();
 
-            const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' ]}";
+            const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' valueformat:'percentage' ]}";
             const string noItemsNotification = @"
 <div class=""alert alert-info"">
     <span class=""js-notification-text"">There is no data on active individuals with assessments.</span>
@@ -349,9 +352,10 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Gets the percent of active records.
         /// </summary>
-        private void GetPercentOfActiveRecords( IEnumerable<Person> alivePersonsQry, int total )
+        private void GetPercentOfActiveRecords( IEnumerable<Person> alivePersonsQry )
         {
             var dataItems = new List<DataItem>();
+            var total = alivePersonsQry.Count();
 
             var activeCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             dataItems.Add( new DataItem( "Active", DataItem.GetPercentage( activeCount, total ) ) );
@@ -359,7 +363,9 @@ namespace RockWeb.Blocks.Reporting
             var inActiveCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             dataItems.Add( new DataItem( "InActive", DataItem.GetPercentage( inActiveCount, total ) ) );
 
-            rlActiveRecords.Text = PopulateShortcodeDataItems( PieChartConfig, dataItems );
+            const string chartConfig = "{[ chart type:'pie' chartheight:'200px' legendshow:'true' legendposition:'right' valueformat:'percentage' ]}";
+
+            rlActiveRecords.Text = PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
         /// <summary>
@@ -480,7 +486,7 @@ namespace RockWeb.Blocks.Reporting
             internal static string GetPercentage( int count, int total )
             {
                 var asDecimal = decimal.Divide( count, total );
-                var percent = decimal.Round( asDecimal * 100 );
+                var percent = decimal.Round( asDecimal * 100, 1 );
                 return percent.ToString();
             }
         }
