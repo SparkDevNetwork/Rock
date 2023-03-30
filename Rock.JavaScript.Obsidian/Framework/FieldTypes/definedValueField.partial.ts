@@ -168,7 +168,7 @@ export class DefinedValueFieldType extends FieldTypeBase {
     }
 
     public override doesValueMatchFilter(value: string, filterValue: ComparisonValue, _configurationValues: Record<string, string>): boolean {
-        const clientValue = JSON.parse(value) as ClientValue;
+        const clientValue = JSON.parse(value || "{}") as ClientValue;
         const selectedValues = (filterValue.value ?? "").split(",").filter(v => v !== "").map(v => v.toLowerCase());
         let comparisonType = filterValue.comparisonType;
 
