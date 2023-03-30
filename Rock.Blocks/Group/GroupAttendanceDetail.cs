@@ -1600,7 +1600,7 @@ namespace Rock.Blocks.Group
                 errors.Add( occurrenceData.ErrorMessage );
             }
 
-            if ( occurrenceData.AttendanceOccurrence.ValidationResults.Any() )
+            if ( occurrenceData.AttendanceOccurrence?.ValidationResults?.Any() == true )
             {
                 errors.AddRange( occurrenceData.AttendanceOccurrence.ValidationResults.Select( a => a.ErrorMessage ) );
             }
