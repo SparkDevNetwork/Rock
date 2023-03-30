@@ -318,7 +318,7 @@
     });
     const panelTitle = computed(() => config.value.groupName ? `${config.value.groupName} Attendance` : "Group Attendance");
     const attendances = computed<GroupAttendanceDetailAttendanceBag[]>(() => config.value?.attendances ?? []);
-    const attendanceSortByDelegate = ref<AttendanceSortByDelegate>(createSortBy(sortByFirstName, sortByLastName));
+    const attendanceSortByDelegate = ref<AttendanceSortByDelegate>(createSortBy(sortByLastName, sortByFirstName));
     const attendanceFilterByDelegate = computed<AttendanceFilterByDelegate | null>(() => {
         const filtersToCheck = [campusFilter.value, searchFilter.value, rosterFilter.value];
         const filters = filtersToCheck.filter(filterToCheck => !filterToCheck.isFilter(NoFilter));

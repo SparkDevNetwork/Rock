@@ -1362,10 +1362,6 @@ namespace Rock.Blocks.Group
                     box.LocationGuid = occurrence.Location.Guid;
                     box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.Readonly;
                     box.LocationLabel = new LocationService( rockContext ).GetPath( occurrence.Location.Id );
-                    if ( box.LocationLabel.IsNullOrWhiteSpace() )
-                    {
-                        box.LocationLabel = occurrence.Location.ToString();
-                    }
                 }
                 else
                 {
@@ -1393,10 +1389,6 @@ namespace Rock.Blocks.Group
                     box.LocationGuid = occurrence.Location.Guid;
                     box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.Readonly;
                     box.LocationLabel = new LocationService( rockContext ).GetPath( occurrence.Location.Id );
-                    if ( box.LocationLabel.IsNullOrWhiteSpace() )
-                    {
-                        box.LocationLabel = occurrence.Location.ToString();
-                    }
                 }
                 // No location for the occurrence yet.
                 else
