@@ -46,19 +46,18 @@
                     <TextBox v-model="selectedLocationSort" :label="config.locationSortLabel" class="input-max-w-xl" />
                 </div>
                 <div v-if="config.displayLocationRangeFilter" :class="columnClass">
-                    <div class="d-flex flex-wrap">
-                        <NumberBox v-model="selectedLocationRange" label="Within" class="input-max-w-md" />
-                        <span class="align-self-center mt-1 ml-2 text-semibold">miles</span>
-                    </div>
+                    <NumberBox v-model="selectedLocationRange" label="Within" formGroupClasses="input-max-w-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">Miles</span>
+                        </template>
+                    </NumberBox>
                 </div>
                 <div v-if="config.displaySlotsAvailableFilter" :class="columnClass">
-                    <div class="form-group">
-                        <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" label="Spots Available">
-                            <template #inputGroupPrepend>
-                                <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
-                            </template>
-                        </NumberBox>
-                    </div>
+                    <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" label="Spots Available">
+                        <template #inputGroupPrepend>
+                            <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
+                        </template>
+                    </NumberBox>
                 </div>
             </div>
             <div class="actions">
