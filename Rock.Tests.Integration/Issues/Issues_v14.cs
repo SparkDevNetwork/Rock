@@ -15,11 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Data;
 using Rock.Lava;
+using Rock.Model;
 using Rock.Tests.Integration.Lava;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.BugFixes
@@ -36,6 +42,56 @@ namespace Rock.Tests.Integration.BugFixes
     [RockObsolete("1.14")]
     public class BugFixVerificationTests_v14 : LavaIntegrationTestBase
     {
+        [TestMethod]
+        public void Issue5324_CommunicationListTimeout_CreateTestData()
+        {
+            /* Creates several very large Communication Lists needed to test this issue.
+             * Requires an existing sample database with 50,000+ person records.
+             */
+
+            // Get Person identifiers for the list members.
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var personIdList = personService.Queryable().Take( 50000 ).Select( p => p.Id.ToString() ).ToList();
+
+            Assert.AreEqual( 50000, personIdList.Count, "There are insufficient Person records in the current database to create the Communication List." );
+
+            // Create List 1
+            CreateTestCommunicationList( "Test Communication List 1",
+                new Guid( "8AD585F0-6CA3-4C8D-9294-9217B06CD4AA" ),
+                personIdList );
+            CreateTestCommunicationList( "Test Communication List 2",
+                new Guid( "88B4DA2B-D0D4-4D91-A320-A6F6D0FBBBA8" ),
+                personIdList );
+            CreateTestCommunicationList( "Test Communication List 3",
+                new Guid( "93EF1A39-79F2-4F22-A102-FB6DF5DFD429" ),
+                personIdList );
+        }
+
+        private void CreateTestCommunicationList( string name, Guid guid, List<string> personIdList )
+        {
+            var listArgs = new TestDataHelper.Communications.CreateCommunicationListArgs
+            {
+                ExistingItemStrategy = CreateExistingItemStrategySpecifier.Replace,
+                Name = name,
+                ForeignKey = "IntegrationTest",
+                Guid = guid
+            };
+
+            var listGroup = TestDataHelper.Communications.CreateCommunicationList( listArgs );
+
+            var addPeopleArgs = new TestDataHelper.Communications.CommunicationListAddPeopleArgs
+            {
+                CommunicationListGroupIdentifier = listGroup.Id.ToString(),
+                ForeignKey = "IntegrationTest",
+                PersonIdentifiers = personIdList
+            };
+
+            var addCount = TestDataHelper.Communications.AddPeopleToCommunicationList( addPeopleArgs );
+
+            System.Diagnostics.Debug.WriteLine( $"Added {addCount} people to communication list \"{listGroup.Name}\"." );
+        }
+
         [TestMethod]
         public void Issue5173_LavaMergeFieldsConcurrencyBug()
         {
