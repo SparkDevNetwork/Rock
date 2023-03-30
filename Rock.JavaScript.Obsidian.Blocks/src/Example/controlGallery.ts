@@ -159,8 +159,8 @@ import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
 import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
-import InlineSlider from "@Obsidian/Controls/inlineSlider";
-import Slider from "@Obsidian/Controls/slider";
+import InlineRangeSlider from "@Obsidian/Controls/inlineRangeSlider.obs";
+import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
 import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
 import KeyValueList from "@Obsidian/Controls/keyValueList";
 import Loading from "@Obsidian/Controls/loading";
@@ -1049,7 +1049,7 @@ const dropDownListGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+    <DropDownList label="Select" v-model="value" :items="[]" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
 
     <template #settings>
         <div class="row">
@@ -5018,24 +5018,24 @@ const fieldTypeEditorGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates inline slider */
-const inlineSliderGallery = defineComponent({
-    name: "InlineSliderGallery",
+/** Demonstrates inline range slider */
+const inlineRangeSliderGallery = defineComponent({
+    name: "InlineRangeSliderGallery",
     components: {
         GalleryAndResult,
-        InlineSlider,
+        InlineRangeSlider,
         CheckBox,
         NumberBox
     },
     setup() {
         return {
             value: ref(10),
-            intOnly: ref(false),
+            step: ref(0),
             min: ref(0),
             max: ref(100),
             showValue: ref(false),
-            importCode: getControlImportPath("inlineSlider"),
-            exampleCode: `<InlineSlider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />`
+            importCode: getSfcControlImportPath("inlineRangeSlider"),
+            exampleCode: `<InlineRangeSlider v-model="value" :step="1" :min="min" :max="max" :showValueBar="showValue" />`
         };
     },
     template: `
@@ -5045,12 +5045,12 @@ const inlineSliderGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <InlineSlider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
+    <InlineRangeSlider v-model="value" :step="step" :min="min" :max="max" :showValueBar="showValue" />
 
     <template #settings>
         <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
             <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
+            <NumberBox formGroupClasses="col-md-3" label="Step Value" v-model="step" help="Leave blank or set to zero to have no step" />
             <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
             <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
         </div>
@@ -5281,7 +5281,7 @@ const progressBarGallery = defineComponent({
     components: {
         GalleryAndResult,
         ProgressBar,
-        InlineSlider
+        RangeSlider
     },
     setup() {
         return {
@@ -5301,8 +5301,9 @@ const progressBarGallery = defineComponent({
 
     <template #settings>
         <div class="row">
-            <label>Percent Done</label>
-            <InlineSlider formGroupClasses="col-md-6" label="Integer Only" v-model="value" showValueBar isIntegerOnly />
+            <div class="col-md-4">
+                <RangeSlider label="Percent Done" v-model="value" showValueBar :step="1" />
+            </div>
         </div>
     </template>
 </GalleryAndResult>`
@@ -5442,24 +5443,24 @@ const rockValidationGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates slider */
-const sliderGallery = defineComponent({
-    name: "SliderGallery",
+/** Demonstrates range slider */
+const rangeSliderGallery = defineComponent({
+    name: "RangeSliderGallery",
     components: {
         GalleryAndResult,
-        Slider,
+        RangeSlider,
         CheckBox,
         NumberBox
     },
     setup() {
         return {
             value: ref(10),
-            intOnly: ref(false),
+            step: ref(null),
             min: ref(0),
             max: ref(100),
             showValue: ref(false),
-            importCode: getControlImportPath("slider"),
-            exampleCode: `<Slider v-model="value" label="Slider Value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />`
+            importCode: getSfcControlImportPath("slider"),
+            exampleCode: `<RangeSlider label="Range Slider" v-model="value" :step="1" :min="min" :max="max" :showValueBar="showValue" />`
         };
     },
     template: `
@@ -5469,12 +5470,12 @@ const sliderGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <Slider v-model="value" label="Slider Value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
+    <RangeSlider v-model="value" label="Range Slider Value" :step="step" :min="min" :max="max" :showValueBar="showValue" />
 
     <template #settings>
         <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
             <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
+            <NumberBox formGroupClasses="col-md-3" label="Step Value" v-model="step" help="Leave blank or set to zero to have no step" />
             <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
             <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
         </div>
@@ -7570,7 +7571,7 @@ const controlGalleryComponents: Record<string, Component> = [
     countdownTimerGallery,
     electronicSignatureGallery,
     fieldTypeEditorGallery,
-    inlineSliderGallery,
+    inlineRangeSliderGallery,
     javaScriptAnchorGallery,
     keyValueListGallery,
     loadingGallery,
@@ -7581,7 +7582,7 @@ const controlGalleryComponents: Record<string, Component> = [
     rockButtonGallery,
     rockLabelGallery,
     rockValidationGallery,
-    sliderGallery,
+    rangeSliderGallery,
     tabbedContentGallery,
     transitionVerticalCollapseGallery,
     valueDetailListGallery,

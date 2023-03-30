@@ -298,10 +298,10 @@
     <TypeScriptCompile Include="Framework\Controls\fullscreen.ts" />
     <TypeScriptCompile Include="Framework\Controls\imageUploader.ts" />
     <TypeScriptCompile Include="Framework\Controls\inlineCheckBox.ts" />
-    <TypeScriptCompile Include="Framework\Controls\inlineSlider.ts" />
+    <TypeScriptCompile Include="Framework\Controls\inlineRangeSlider.obs" />
     <TypeScriptCompile Include="Framework\Controls\inlineSwitch.ts" />
     <TypeScriptCompile Include="Framework\Controls\panel.ts" />
-    <TypeScriptCompile Include="Framework\Controls\slider.ts" />
+    <TypeScriptCompile Include="Framework\Controls\rangeSlider.obs" />
     <TypeScriptCompile Include="Framework\Controls\switch.ts" />
     <TypeScriptCompile Include="Framework\Controls\treeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
