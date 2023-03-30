@@ -53,11 +53,11 @@
                 </div>
                 <div v-if="config.displaySlotsAvailableFilter" :class="columnClass">
                     <div class="form-group">
-                        <RockLabel>Spots Available</RockLabel>
-                        <div class="input-group">
-                            <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
-                            <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" />
-                        </div>
+                        <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" label="Spots Available">
+                            <template #inputGroupPrepend>
+                                <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
+                            </template>
+                        </NumberBox>
                     </div>
                 </div>
             </div>
