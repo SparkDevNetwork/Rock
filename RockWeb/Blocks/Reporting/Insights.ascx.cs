@@ -16,13 +16,13 @@
 //
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
@@ -33,66 +33,66 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Shows high-level statistics of the Rock database." )]
 
+    #region Block Attributes
+
+    [BooleanField(
+        "Show Ethnicity",
+        Key = AttributeKey.ShowEthnicity,
+        Description = "When enabled the Ethnicity chart will be displayed.",
+        DefaultValue = "false",
+        Order = 0 )]
+
+    [BooleanField(
+        "Show Race",
+        Key = AttributeKey.ShowRace,
+        Description = "When enabled the Race chart will be displayed.",
+        DefaultValue = "false",
+        Order = 1 )]
+
+    #endregion
+
     [Rock.SystemGuid.BlockTypeGuid( "B215F5FA-410C-4674-8C47-43DC40AF9F67" )]
     public partial class Insights : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string ShowEthnicity = "ShowEthnicity";
+            public const string ShowRace = "ShowRace";
+        }
+
+        #endregion
+
         #region Fields
 
-        private readonly Dictionary<string, string> LabelColorMap = new Dictionary<string, string>()
+        /// <summary>
+        /// The available colors for the charts
+        /// </summary>
+        private readonly List<string> _availableColors = new List<string>()
         {
-            { "Male", "#FB7185" },
-            { "Female", "#818CF8" },
-            { "Unknown", "#CCCCCC" },
-
-            { "Attendee", "#818CF8" },
-            { "Visitor", "#4ADE80" },
-            { "Member", "#FBBF24" },
-            { "Participant", "#FB7185" },
-            { "Prospect", "#22D3EE" },
-
-            { "Married", "#EEAAAA" },
-            { "Single", "#818CF8" },
-            { "Divorced", "#FBBF24" },
-
-            { "Non Hispanic or Latino", "#4ADE80" },
-            { "Hispanic or Latino", "#FB7185" },
-
-            { "White", "#818CF8" },
-            { "American Indian or Alaskan Native", "#FBBF24" },
-            { "Black or African American", "#4ADE80" },
-            { "Native Hawaiian or Pacific Islander", "#E879F9" },
-            { "Other", "#E879F9" },
-            { "Asian", "#38BDF8" },
-
-            { "Age", "#818CF8" },
-            { "Gender", "#38BDF8" },
-            { "Active Email", "#22D3EE" },
-            { "Mobile Phone", "#2DD4BF" },
-            { "Marital Status", "#4ADE80" },
-            { "Photo", "#FBBE24" },
-            { "Date of Birth", "#FB923C" },
-            { "Home Address", "#F87171" },
-
-            { "Disc", "#818CF8" },
-            { "Motivators", "#38BDF8" },
-            { "EQ", "#22D3EE" },
-            { "Spiritual Gifts", "#2DD4BF" },
-            { "Conflict Profile", "#4ADE80" },
-
-            { "Active", "#4ADE80" },
-            { "Inactive", "#CCCCCC" },
-
-            { "0-12", "#FB7185" },
-            { "13-17", "#A78BFA" },
-            { "18-24", "#22D3EE" },
-            { "25-34", "#FBBF24" },
-            { "35-44", "#F87171" },
-            { "45-54", "#38BDF8" },
-            { "55-64", "#F472B6" },
-            { "65+", "#4ADE80" },
+            "#3b82f6",
+            "#ef4444",
+            "#06b6d4",
+            "#f97316",
+            "#22c55e",
+            "#eab308",
+            "#8b5cf6",
+            "#EC4899",
         };
 
+        /// <summary>
+        /// Lava short code pie chart configuration
+        /// </summary>
         const string PieChartConfig = "{[ chart type:'pie' chartheight:'200px' legendshow:'true' legendposition:'right' ]}";
+
+        /// <summary>
+        /// Keeps track of the number of colors to skip when selecting the fill color for the charts
+        /// </summary>
+        private int skipCount = 0;
 
         #endregion
 
@@ -130,7 +130,6 @@ namespace RockWeb.Blocks.Reporting
         private void InitializeBlock()
         {
             var rockContext = new RockContext();
-            rockContext.Database.Log = strQry => Debug.WriteLine( strQry );
             var personService = new PersonService( rockContext );
 
             var personRecordDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid();
@@ -158,9 +157,17 @@ namespace RockWeb.Blocks.Reporting
                 new DemographicItem( "Connection Status", GetConnectionStatusLava( persons ) ),
                 new DemographicItem( "Marital Status", GetMaritalStatusLava( persons ) ),
                 new DemographicItem( "Age", GetAgeLava( persons ) ),
-                new DemographicItem( "Race", GetRaceLava( persons ) ),
-                new DemographicItem( "Ethnicity", GetEthnicityLava( persons ) ),
             };
+
+            if ( GetAttributeValue( AttributeKey.ShowRace ).AsBoolean() )
+            {
+                demographics.Add( new DemographicItem( "Race", GetRaceLava( persons ) ) );
+            }
+
+            if ( GetAttributeValue( AttributeKey.ShowEthnicity ).AsBoolean() )
+            {
+                demographics.Add( new DemographicItem( "Ethnicity", GetEthnicityLava( persons ) ) );
+            }
 
             rptDemographics.DataSource = demographics;
             rptDemographics.DataBind();
@@ -382,7 +389,8 @@ namespace RockWeb.Blocks.Reporting
 
             foreach ( var dataItem in dataItems )
             {
-                sb.AppendFormat( dataItemFormat, dataItem.Label, dataItem.Value, GetFillColor( dataItem.Label ) ).AppendLine();
+                sb.AppendFormat( dataItemFormat, dataItem.Label, dataItem.Value, GetFillColor( skipCount, dataItem.Label ) ).AppendLine();
+                skipCount ++;
             }
 
             sb.AppendLine( "{[ endchart ]}" );
@@ -390,15 +398,36 @@ namespace RockWeb.Blocks.Reporting
             return sb.ToString().ResolveMergeFields( new Dictionary<string, object>() );
         }
 
-        private string GetFillColor( string label )
+        /// <summary>
+        /// Gets the fill color of the charts.
+        /// </summary>
+        /// <param name="skip">The number of colors to skip.</param>
+        /// <param name="label">The label of the chart.</param>
+        /// <returns></returns>
+        private string GetFillColor( int skip, string label )
         {
-            if ( LabelColorMap.ContainsKey( label ) )
+            if ( label == "Unknown" )
             {
-                return LabelColorMap[label];
+                return "#737373";
             }
             else
             {
-                return "#818CF8";
+                return FillColorSource().Skip(skip).FirstOrDefault();
+            }
+        }
+
+        /// <summary>
+        /// Perpetually yields a color from the available colors source so we can skip and take in a loop.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<string> FillColorSource()
+        {
+            while ( true )
+            {
+                foreach ( var color in _availableColors )
+                {
+                    yield return color;
+                }
             }
         }
 
