@@ -1,10 +1,10 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField formGroupClasses="date-picker" #default="{ uniqueId }" name="datepicker" v-model.lazy="internalValue">
+    <RockFormField v-bind="fieldProps" :formGroupClasses="'date-picker ' + fieldProps.formGroupClasses" #default="{ uniqueId, field }" name="datepicker" v-model.lazy="internalValue">
         <div class="control-wrapper">
             <div v-if="displayCurrentOption" class="form-control-group">
                 <div class="form-row">
-                    <DatePickerBase v-model.lazy="internalValue" :id="uniqueId" :disabled="isCurrent" />
+                    <DatePickerBase v-model.lazy="internalValue" :id="uniqueId" v-bind="field" :disabled="isCurrent || field.disabled" />
                     <div v-if="displayCurrentOption || isCurrent" class="input-group">
                         <div class="checkbox">
                             <label title="">
@@ -17,7 +17,7 @@
                     <TextBox label="+- Days" v-model="currentDiff" inputClasses="input-width-md" help="Enter the number of days after the current date to use as the date. Use a negative number to specify days before." />
                 </div>
             </div>
-            <DatePickerBase v-else v-model.lazy="internalValue" :id="uniqueId" :disabled="isCurrent" v-bind="basePickerProps" />
+            <DatePickerBase v-else v-model.lazy="internalValue" :id="uniqueId" v-bind="{ ...field, ...basePickerProps }" :disabled="isCurrent || field.disabled" />
         </div>
     </RockFormField>
 </template>
@@ -27,6 +27,7 @@
 
     import { computed, PropType, ref, watch } from "vue";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import RockFormField from "./rockFormField";
     import TextBox from "./textBox";
     import DatePickerBase from "./datePickerBase.obs";
@@ -81,7 +82,9 @@
         startView: {
             type: Number as PropType<0 | 1 | 2>,
             default: 0
-        }
+        },
+
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
@@ -93,6 +96,8 @@
     const internalValue = ref<string | null>(null);
     const isCurrent = ref<boolean>(false);
     const currentDiff = ref<string>("0");
+
+    const fieldProps = useStandardRockFormFieldProps(props);
 
     // #endregion
 
@@ -177,7 +182,7 @@
         }
     });
 
-    // #endregion
+            // #endregion
 
 
 </script>
