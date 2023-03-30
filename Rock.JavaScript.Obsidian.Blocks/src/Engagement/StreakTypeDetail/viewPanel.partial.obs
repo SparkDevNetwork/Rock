@@ -2,6 +2,12 @@
 <template>
     <fieldset>
 
+        <div v-if="rebuildActionSuccessMessage" class="row">
+            <div class="col-md-12">
+                <Alert alertType="success">{{ rebuildActionSuccessMessage }}</Alert>
+            </div>
+        </div>
+
         <ValueDetailList :modelValue="topValues" />
 
         <div class="row">
@@ -37,7 +43,9 @@
         options: {
             type: Object as PropType<StreakTypeDetailOptionsBag>,
             required: true
-        }
+        },
+
+        rebuildActionSuccessMessage: String
     });
 
     // #region Values

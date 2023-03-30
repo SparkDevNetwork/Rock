@@ -16,5 +16,8 @@
 //
 
 export const enum NavigationUrlKey {
-    ParentPage = "ParentPage"
+    ParentPage = "ParentPage",
+    MapEditorPage = "MapEditorPage",
+    ExclusionsPage = "ExclusionsPage",
+    AchievementsPage = "AchievementsPage"
 }

@@ -20,6 +20,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StreakTypeDetail;
 using Rock.ViewModels.Utility;
@@ -102,6 +103,9 @@ namespace Rock.Blocks.Engagement
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
+            public const string AchievementsPage = "AchievementsPage";
+            public const string MapEditorPage = "MapEditorPage";
+            public const string ExclusionsPage = "ExclusionsPage";
         }
 
         #endregion Keys
@@ -119,7 +123,7 @@ namespace Rock.Blocks.Engagement
 
                 SetBoxInitialEntityState( box, rockContext );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
+                box.NavigationUrls = GetBoxNavigationUrls( box.Entity.IdKey );
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
                 box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<StreakType>();
 
@@ -315,10 +319,10 @@ namespace Rock.Blocks.Engagement
                     return InteractionChannelCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
                 case StreakStructureType.InteractionComponent:
                     InteractionComponentCache interactionComponent = InteractionComponentCache.Get( entity.StructureEntityId ?? 0 );
-                    if( interactionComponent != null)
+                    if ( interactionComponent != null )
                     {
-                    	bag.InteractionComponentInteractionChannel = InteractionChannelCache.Get( interactionComponent.InteractionChannelId )
-                    		.ToListItemBag();
+                        bag.InteractionComponentInteractionChannel = InteractionChannelCache.Get( interactionComponent.InteractionChannelId )
+                            .ToListItemBag();
                     }
                     else
                     {
@@ -421,7 +425,7 @@ namespace Rock.Blocks.Engagement
                 case StreakStructureType.InteractionChannel:
                     return InteractionChannelCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
                 case StreakStructureType.InteractionComponent:
-                    if( box.Entity.StructureEntityId == null )
+                    if ( box.Entity.StructureEntityId == null )
                     {
                         return 0;
                     }
@@ -447,11 +451,18 @@ namespace Rock.Blocks.Engagement
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
+        private Dictionary<string, string> GetBoxNavigationUrls( string idKey )
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.StreakTypeId] = idKey
+            };
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
+                [NavigationUrlKey.AchievementsPage] = this.GetLinkedPageUrl( AttributeKey.AchievementsPage, queryParams ),
+                [NavigationUrlKey.ExclusionsPage] = this.GetLinkedPageUrl( AttributeKey.ExclusionsPage, queryParams ),
+                [NavigationUrlKey.MapEditorPage] = this.GetLinkedPageUrl( AttributeKey.MapEditorPage, queryParams ),
             };
         }
 
@@ -695,5 +706,27 @@ namespace Rock.Blocks.Engagement
         }
 
         #endregion
+
+
+        /// <summary>
+        /// Rebuild the streak type and enrollment data
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult Rebuild( string key )
+        {
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return ActionNotFound();
+            }
+            var streakType = StreakTypeCache.Get( key, false );
+
+            if ( !streakType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionUnauthorized( "You are not authorized to rebuild this item." );
+            }
+
+            new ProcessRebuildStreakType.Message { StreakTypeId = streakType.Id }.Send();
+            return ActionOk( "The streak type rebuild has been started." );
+        }
     }
 }
