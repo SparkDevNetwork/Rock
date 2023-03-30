@@ -129,7 +129,7 @@ export default defineComponent({
     template: `
 <TreeItemPicker v-model="internalValue"
     formGroupClasses="group-item-picker"
-    iconCssClass="fa fa-home"
+    iconCssClass="fa fa-users"
     :provider="itemProvider"
     :multiple="multiple">
 

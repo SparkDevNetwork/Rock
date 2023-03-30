@@ -1,5 +1,4 @@
-﻿// <copyright>
-// Copyright by the Spark Development Network
+﻿// Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -211,6 +210,8 @@ namespace Rock.Blocks.Engagement
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity, rockContext );
+                    // this will set the sync linked activity checkbox to true by default in the frontend
+                    box.Entity.EnableAttendance = true;
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -383,8 +384,15 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Entity.StructureType ),
                 () =>
                 {
-                    Enum.TryParse( box.Entity.StructureType, out StreakStructureType streakStructureType );
-                    entity.StructureType = streakStructureType;
+                    if ( box.Entity.StructureType.IsNullOrWhiteSpace() )
+                    {
+                        entity.StructureType = null;
+                    }
+                    else
+                    {
+                        Enum.TryParse( box.Entity.StructureType, out StreakStructureType streakStructureType );
+                        entity.StructureType = streakStructureType;
+                    }
                 } );
 
             /*      box.IfValidProperty( nameof( box.Entity.StreakTypeExclusions ),

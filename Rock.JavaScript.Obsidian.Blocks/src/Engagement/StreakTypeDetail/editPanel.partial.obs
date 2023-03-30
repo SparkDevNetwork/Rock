@@ -30,7 +30,6 @@
 
             <div class="col-sm-3 col-xs-6">
                 <CheckBox v-model="enableAttendance"
-                    text="Yes"
                     label="Sync Linked Activity"
                     help="If enabled, this streak type will create linked activity records (interaction or attendance) when the Mark Engagement API endpoints are used.
                         Furthermore, when linked activity records are added, this streak type will mark the appropriate engagement bit." />
@@ -38,7 +37,6 @@
 
             <div class="col-sm-3 col-xs-6">
                 <CheckBox v-model="requiresEnrollment"
-                    text="Yes"
                     label="Require Enrollment"
                     help="If enabled, this Streak Type will not allow new Streaks to be tracked unless the person has been explicitly enrolled. Implicit enrollment
                         occurs when Sync Linked Activity is enabled, and a linked activity record is created." />
@@ -136,10 +134,10 @@
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
     const requiresEnrollment = propertyRef(props.modelValue.requiresEnrollment ?? "", "RequiresEnrollment");
-    const enableAttendance = propertyRef(props.modelValue.enableAttendance ?? "", "EnableAttendance");
+    const enableAttendance = propertyRef(props.modelValue.enableAttendance, "EnableAttendance");
     const firstDayOfWeek = propertyRef(props.modelValue?.firstDayOfWeek?.toString() ?? null, "FirstDayOfWeek");
     const occurrenceFrequency = propertyRef(props.modelValue?.occurrenceFrequency ?? null, "OccurrenceFrequency");
-    const structureType = propertyRef(props.modelValue?.structureType ?? "", "StructureType");
+    const structureType = propertyRef(props.modelValue?.structureType ?? "None", "StructureType");
     const structureEntityId = propertyRef(props.modelValue?.structureEntityId, "StructureEntityId");
     const interactionComponentInteractionChannel = ref(props.modelValue.interactionComponentInteractionChannel);
 
@@ -185,6 +183,11 @@
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
+        // set the value of structure entity id to null if the structure type changes
+        if(props.modelValue?.structureType != structureType.value){
+            structureEntityId.value = null;
+        }
+
         const newValue: StreakTypeBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
