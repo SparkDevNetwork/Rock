@@ -1328,6 +1328,7 @@ const datePickerGallery = defineComponent({
             disableHighlightToday: ref(false),
             disallowFutureDateSelection: ref(false),
             disallowPastDateSelection: ref(false),
+            isDisabled: ref(false),
             startView: ref(0),
             viewOptions: [{ value: 0, text: "Month" }, { value: 1, text: "Year" }, { value: 2, text: "Decade" }],
             importCode: getControlImportPath("datePicker"),
@@ -1349,7 +1350,7 @@ const datePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <DatePicker label="Date" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" />
+    <DatePicker label="Date" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" :disabled="isDisabled" />
 
     <template #settings>
         <div class="row">
@@ -1358,6 +1359,9 @@ const datePickerGallery = defineComponent({
             </div>
             <div class="col-sm-4">
                 <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
+            </div>
+            <div class="col-sm-4">
+                <InlineCheckBox v-model="isDisabled" label="Disable" />
             </div>
         </div>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
