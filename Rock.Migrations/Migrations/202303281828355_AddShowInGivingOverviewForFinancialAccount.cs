@@ -36,7 +36,7 @@ namespace Rock.Migrations
 
          private void UpdateJobs()
         {
-             Sql( @"UPDATE dbo.FinancialAccount SET ShowInGivingOverview=IsTaxDeductible" );
+             Sql( @"UPDATE dbo.[FinancialAccount] SET [ShowInGivingOverview]=[IsTaxDeductible] WHERE [isTaxDeductible]=1" );
         }
 
         private void UpdateFamilyAnalyticsGivingProcedure()
