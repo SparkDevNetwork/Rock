@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -908,16 +909,26 @@ $(document).ready(function() {
             lFilters.Text = descriptionListFilters.Html;
 
             DescriptionList descriptionListPersisted = new DescriptionList();
-
-            if ( dataView.PersistedLastRefreshDateTime.HasValue && dataView.PersistedScheduleIntervalMinutes.HasValue )
+            hlblPersisted.Visible = dataView.PersistedLastRefreshDateTime.HasValue
+                && ( dataView.PersistedScheduleIntervalMinutes.HasValue || dataView.PersistedScheduleId.HasValue );
+            if ( hlblPersisted.Visible )
             {
-                hlblPersisted.Visible = true;
                 hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedLastRefreshDateTime.ToElapsedString() );
             }
-            else if ( dataView.PersistedLastRefreshDateTime.HasValue && dataView.PersistedScheduleId.HasValue )
+
+            // If the dataview has a persisted schedule or interval, include the details in the description.
+            if ( dataView.PersistedScheduleId.HasValue )
             {
-                hlblPersisted.Visible = true;
-                hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedSchedule.FriendlyScheduleText );
+                descriptionListPersisted.Add(
+                    "Persisted Schedule",
+                    dataView.PersistedSchedule.FriendlyScheduleText );
+            }
+
+            if ( dataView.PersistedScheduleIntervalMinutes.HasValue )
+            {
+                descriptionListPersisted.Add(
+                    "Persisted Schedule",
+                    string.Format( "Every {0}", new TimeIntervalSetting( dataView.PersistedScheduleIntervalMinutes, null ).ToString() ) );
             }
 
             lPersisted.Text = descriptionListPersisted.Html;
