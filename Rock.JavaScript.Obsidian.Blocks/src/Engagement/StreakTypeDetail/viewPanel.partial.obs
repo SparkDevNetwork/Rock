@@ -33,6 +33,7 @@
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
     import { StreakTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeDetailOptionsBag";
+    import { StreakOccurrenceFrequencyDescription } from "@Obsidian/Enums/Engagement/streakOccurrenceFrequency";
 
     const props = defineProps({
         modelValue: {
@@ -80,7 +81,7 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addTextValue("Frequency", props.modelValue?.occurrenceFrequency);
+        valueBuilder.addTextValue("Frequency", StreakOccurrenceFrequencyDescription[props.modelValue?.occurrenceFrequency]);
 
         valueBuilder.addTextValue("Start Date", RockDateTime.parseISO(props.modelValue?.startDate ?? "")?.toASPString("d") ?? "");
 
@@ -88,12 +89,7 @@
 
         valueBuilder.addTextValue("Sync Linked Activity", props.modelValue?.enableAttendance ? "Yes": "No");
 
-        if(props.modelValue.structureType) {
-            valueBuilder.addTextValue("Linked Activity", props.modelValue?.structureType);
-        }
-        else {
-            valueBuilder.addTextValue("Linked Activity", "None");
-        }
+        valueBuilder.addTextValue("Linked Activity", props.modelValue?.structureTypeDisplay ?? "None");
 
         return valueBuilder.build();
     });

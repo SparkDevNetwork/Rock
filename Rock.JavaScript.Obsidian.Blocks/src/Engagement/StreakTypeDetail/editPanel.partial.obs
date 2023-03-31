@@ -23,7 +23,6 @@
                 <DatePicker v-model="startDate"
                     label="Start Date"
                     rules="required"
-                    :disabled="!isAddMode"
                     help="This defines the first day (or week) that a person could engage with this Streak Type and receive an affirmative mark towards their streak.
                         The start date cannot be changed once the Streak Type is created except when rebuilding the entire Streak Type." />
             </div>
@@ -47,27 +46,26 @@
             <div class="col-md-6">
                 <DropDownList v-model="structureType"
                     label="Linked Activity"
-                    :items="options?.streakStructureTypes ?? []"
-                    :value="modelValue?.structureType"
+                    :items="streakStructureTypes"
                     blankValue="None"
                     help="This specifies what linked activity types this Streak Type may interface with.  Something very broad like “Attendance: Any” could
                         help measure general engagement with the church. Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
 
-                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == 'GroupType'" v-model="structureEntityId" :isSortedByName="true"/>
+                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == StreakStructureType.GroupType" v-model="structureEntityId" :isSortedByName="true"/>
 
-                <GroupPicker label="Group" v-if="modelValue.structureType == 'Group'" v-model="structureEntityId" />
+                <GroupPicker label="Group" v-if="modelValue.structureType == StreakStructureType.Group" v-model="structureEntityId" />
 
-                <DefinedValuePicker label="Group Type Purpose" v-if="modelValue.structureType == 'GroupTypePurpose'" v-model="structureEntityId" :definedTypeGuid="DefinedType.GrouptypePurpose" showBlankItem />
+                <DefinedValuePicker label="Group Type Purpose" v-if="modelValue.structureType == StreakStructureType.GroupTypePurpose" v-model="structureEntityId" :definedTypeGuid="DefinedType.GrouptypePurpose" showBlankItem />
 
-                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == 'CheckInConfig'" v-model="structureEntityId" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids"/>
+                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == StreakStructureType.CheckInConfig" v-model="structureEntityId" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids"/>
 
-                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == 'InteractionChannel'" v-model="structureEntityId"  />
+                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionChannel" v-model="structureEntityId"  />
 
-                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == 'InteractionComponent'" v-model="interactionComponentInteractionChannel"  />
+                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="interactionComponentInteractionChannel"  />
 
-                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == 'InteractionComponent'" v-model="structureEntityId" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" />
+                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntityId" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" />
 
-                <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == 'InteractionMedium'" v-model="structureEntityId" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
+                <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == StreakStructureType.InteractionMedium" v-model="structureEntityId" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
             </div>
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
@@ -101,7 +99,8 @@
     import GroupPicker from "@Obsidian/Controls/groupPicker";
     import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
     import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
-    import { StreakStructureType } from "@Obsidian/Enums/Engagement/streakStructureType";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { StreakStructureType, StreakStructureTypeDescription } from "@Obsidian/Enums/Engagement/streakStructureType";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
@@ -132,19 +131,19 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const startDate = propertyRef(props.modelValue.startDate, "StartDate");
     const requiresEnrollment = propertyRef(props.modelValue.requiresEnrollment ?? "", "RequiresEnrollment");
     const enableAttendance = propertyRef(props.modelValue.enableAttendance, "EnableAttendance");
     const firstDayOfWeek = propertyRef(props.modelValue?.firstDayOfWeek?.toString() ?? null, "FirstDayOfWeek");
-    const occurrenceFrequency = propertyRef(props.modelValue?.occurrenceFrequency ?? null, "OccurrenceFrequency");
-    const structureType = propertyRef(props.modelValue?.structureType ?? "None", "StructureType");
+    const occurrenceFrequency = propertyRef(props.modelValue?.occurrenceFrequency?.toString() ?? null, "OccurrenceFrequency");
+    const structureType = propertyRef(props.modelValue?.structureType?.toString() ?? "None", "StructureType");
     const structureEntityId = propertyRef(props.modelValue?.structureEntityId, "StructureEntityId");
     const interactionComponentInteractionChannel = ref(props.modelValue.interactionComponentInteractionChannel);
 
     const isAddMode = computed((): boolean => props.modelValue?.idKey == "");
 
     // update Day of the Week picker only if the streak occurrence frequency is set to Weekly
-    const canUpdateDayOfWeekPicker = computed((): boolean => props.modelValue?.occurrenceFrequency == props.options?.streakOccurrenceFrequencies?.[1]?.value ?? "");
+    const canUpdateDayOfWeekPicker = computed((): boolean => props.modelValue?.occurrenceFrequency == 1);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -175,8 +174,8 @@
         updateRefValue(requiresEnrollment, props.modelValue.requiresEnrollment);
         updateRefValue(enableAttendance, props.modelValue.enableAttendance);
         updateRefValue(firstDayOfWeek, props.modelValue?.firstDayOfWeek?.toString() ?? null);
-        updateRefValue(occurrenceFrequency, props.modelValue?.occurrenceFrequency ?? null);
-        updateRefValue(structureType, props.modelValue?.structureType ?? "None");
+        updateRefValue(occurrenceFrequency, props.modelValue?.occurrenceFrequency.toString() ?? null);
+        updateRefValue(structureType, props.modelValue?.structureType?.toString() ?? "");
         updateRefValue(structureEntityId, props.modelValue?.structureEntityId);
     });
 
@@ -184,7 +183,7 @@
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
         // set the value of structure entity id to null if the structure type changes
-        if(props.modelValue?.structureType != structureType.value){
+        if(props.modelValue?.structureType?.toString() != structureType.value){
             structureEntityId.value = null;
         }
 
@@ -198,8 +197,8 @@
             requiresEnrollment: requiresEnrollment.value,
             enableAttendance: enableAttendance.value,
             firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
-            occurrenceFrequency: occurrenceFrequency.value,
-            structureType: structureType.value,
+            occurrenceFrequency: toNumber(occurrenceFrequency.value),
+            structureType: toNumber(structureType.value),
             structureEntityId: structureEntityId.value
         };
 
@@ -209,4 +208,17 @@
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
     watchPropertyChanges(propRefs, emit);
+
+    const enumToListItemBag = function (description: Record<number, string>): ListItemBag[] {
+        const listItemBagList: ListItemBag[] = [];
+        for(const property in description) {
+            listItemBagList.push({
+                text: description[property].toString(),
+                value: property.toString()
+            });
+        }
+        return listItemBagList;
+    };
+
+    const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
 </script>

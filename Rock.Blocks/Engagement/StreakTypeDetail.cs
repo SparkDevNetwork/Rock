@@ -145,7 +145,7 @@ namespace Rock.Blocks.Engagement
                 streakOccurrenceFrequencies = typeof( StreakOccurrenceFrequency )
                     .ToListItemBag(),
                 streakStructureTypes = typeof( StreakStructureType )
-                    .ToListItemBag( getDescriptionForText: true, blankText: "None" ),
+                    .ToListItemBag(),
                 attendanceCheckInConfigGroupTypesGuids = GroupTypeCache.All()
                     .Where( gt => gt.GroupTypePurposeValueId == checkInPurposeId )
                     .OrderBy( gt => gt.Name )
@@ -240,13 +240,10 @@ namespace Rock.Blocks.Engagement
                 EnableAttendance = entity.EnableAttendance,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
-                OccurrenceFrequency = entity.OccurrenceFrequency.ToString(),
+                OccurrenceFrequency = entity.OccurrenceFrequency,
                 RequiresEnrollment = entity.RequiresEnrollment,
                 StartDate = entity.StartDate,
-                Streaks = entity.Streaks.ToListItemBagList(),
-                StreakTypeExclusions = entity.StreakTypeExclusions.ToListItemBagList(),
-                FirstDayOfWeek = ( int ) ( entity.FirstDayOfWeek ?? 0 ),
-                StructureSettingsJSON = entity.StructureSettingsJSON
+                FirstDayOfWeek = ( int ) ( entity.FirstDayOfWeek ?? 0 )
             };
         }
 
@@ -275,7 +272,7 @@ namespace Rock.Blocks.Engagement
                             structureName
                         ) );
             }
-            bag.StructureType = structureTypeString;
+            bag.StructureTypeDisplay = structureTypeString;
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
@@ -296,7 +293,7 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity, rockContext );
 
-            bag.StructureType = entity.StructureType.ToString();
+            bag.StructureType = entity.StructureType;
             bag.StructureEntityId = GetStructureEntityIdListItemBag( entity, rockContext, bag );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
@@ -369,11 +366,7 @@ namespace Rock.Blocks.Engagement
                 () => entity.StartDate = box.Entity.StartDate );
 
             box.IfValidProperty( nameof( box.Entity.OccurrenceFrequency ),
-                () =>
-                {
-                    Enum.TryParse( box.Entity.OccurrenceFrequency, out StreakOccurrenceFrequency streakOccurrenceFrequency );
-                    entity.OccurrenceFrequency = streakOccurrenceFrequency;
-                } );
+                () => entity.OccurrenceFrequency = box.Entity.OccurrenceFrequency );
 
             if ( entity.OccurrenceFrequency == StreakOccurrenceFrequency.Weekly )
             {
@@ -382,21 +375,7 @@ namespace Rock.Blocks.Engagement
             }
 
             box.IfValidProperty( nameof( box.Entity.StructureType ),
-                () =>
-                {
-                    if ( box.Entity.StructureType.IsNullOrWhiteSpace() )
-                    {
-                        entity.StructureType = null;
-                    }
-                    else
-                    {
-                        Enum.TryParse( box.Entity.StructureType, out StreakStructureType streakStructureType );
-                        entity.StructureType = streakStructureType;
-                    }
-                } );
-
-            /*      box.IfValidProperty( nameof( box.Entity.StreakTypeExclusions ),
-                      () => entity.StreakTypeExclusions = box.Entity.*//* TODO: Unknown property type 'ICollection<StreakTypeExclusion>' for conversion to bag. *//* );*/
+                () => entity.StructureType = box.Entity.StructureType );
 
             box.IfValidProperty( nameof( box.Entity.StructureEntityId ),
                 () =>
@@ -420,6 +399,10 @@ namespace Rock.Blocks.Engagement
 
         private static int? GetStructureEntityId( StreakType entity, DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag> box, RockContext rockContext )
         {
+            if( box.Entity.StructureEntityId == null )
+            {
+                return null;
+            }
             switch ( entity.StructureType )
             {
                 case StreakStructureType.GroupType:

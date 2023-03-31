@@ -33,7 +33,7 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// <summary>
         /// Gets or sets the attendance association
         /// </summary>
-        public string StructureType { get; set; }
+        public StreakStructureType? StructureType { get; set; }
 
         /// <summary>
         /// This determines whether the streak type will write attendance records when marking someone as present or
@@ -54,7 +54,7 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// <summary>
         /// Gets or sets the timespan that each map bit represents (Rock.Model.StreakOccurrenceFrequency).
         /// </summary>
-        public string OccurrenceFrequency { get; set; }
+        public StreakOccurrenceFrequency OccurrenceFrequency { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this streak type requires explicit enrollment. If not set, a person can be
@@ -99,5 +99,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// This is set only if the linked activity is Interaction Component
         /// </summary>
         public ListItemBag InteractionComponentInteractionChannel { get; set; }
+
+        /// <summary>
+        /// The text display of structure type in view mode in the frontend
+        /// </summary>
+        public string StructureTypeDisplay { get; set; }
     }
 }

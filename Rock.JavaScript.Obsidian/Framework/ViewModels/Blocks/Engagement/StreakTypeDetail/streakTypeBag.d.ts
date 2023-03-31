@@ -35,7 +35,7 @@ export type StreakTypeBag = {
     /** Gets or sets a description of the Streak Type. */
     description?: string | null;
 
-    structureType?: string | null;
+    structureType?: number | null;
 
     /**
      * This determines whether the streak type will write attendance records when marking someone as present or
@@ -53,7 +53,7 @@ export type StreakTypeBag = {
     name?: string | null;
 
     /** Gets or sets the timespan that each map bit represents (Rock.Model.StreakOccurrenceFrequency). */
-    occurrenceFrequency: string;
+    occurrenceFrequency: number;
 
     /**
      * Gets or sets a flag indicating if this streak type requires explicit enrollment. If not set, a person can be
@@ -62,16 +62,7 @@ export type StreakTypeBag = {
     requiresEnrollment: boolean;
 
     /** Gets or sets the System.DateTime associated with the least significant bit of all maps in this streak type. */
-    startDate?: string | null;
-
-    /** Gets or sets a collection containing the Streaks that are of this streak type. */
-    streaks?: ListItemBag[] | null;
-
-    /**
-     * Gets or sets a collection containing the StreakTypeExclusions
-     * that are of this streak type.
-     */
-    streakTypeExclusions?: ListItemBag[] | null;
+    startDate?: string | null
 
     /**
      * Gets or sets the Id of the Entity associated with attendance for this streak type. If not set, this streak type
@@ -79,12 +70,12 @@ export type StreakTypeBag = {
      */
     structureEntityId?: ListItemBag | null;
 
-    /** Gets or sets the structure settings JSON. */
-    structureSettingsJSON?: string | null;
-
     /** Gets or sets the value of the first day of the week when the frequency is set to weekly */
     firstDayOfWeek?: number | null
 
     /** The Guid of the interaction channel associated with the interaction component */
     interactionComponentInteractionChannel?: ListItemBag
+
+    /** The linked type text to be displayed in the frontend in view mode */
+    structureTypeDisplay?: string
 };
