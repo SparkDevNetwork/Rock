@@ -23,6 +23,7 @@
                 <DatePicker v-model="startDate"
                     label="Start Date"
                     rules="required"
+                    :disabled="!isAddMode"
                     help="This defines the first day (or week) that a person could engage with this Streak Type and receive an affirmative mark towards their streak.
                         The start date cannot be changed once the Streak Type is created except when rebuilding the entire Streak Type." />
             </div>
@@ -70,10 +71,9 @@
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
                     label="Frequency"
-                    :items="options?.streakOccurrenceFrequencies ?? []"
-                    :value="modelValue?.occurrenceFrequency"
+                    :items="streakOccurrenceFrequencies ?? []"
                     :disabled="!isAddMode"
-                    :blankValue="options?.streakOccurrenceFrequencies?.[0].value ?? ''"
+                    :blankValue="streakOccurrenceFrequencies?.[0].value ?? ''"
                     help="Daily measuring is great for something like Bible Reading where the ideal is daily engagement. Weekly measurements are better suited for activities
                         such as a small group where the ideal is weekly engagement." />
                 <DayOfWeekPicker v-if="canUpdateDayOfWeekPicker" label="Day of the Week" v-model="firstDayOfWeek" :showBlankItem="false"
@@ -106,6 +106,8 @@
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
     import { StreakTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeDetailOptionsBag";
 	import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { StreakOccurrenceFrequencyDescription } from "@Obsidian/Enums/Engagement/streakOccurrenceFrequency";
 
     const props = defineProps({
         modelValue: {
@@ -209,16 +211,6 @@
     // automatically emit which property changed.
     watchPropertyChanges(propRefs, emit);
 
-    const enumToListItemBag = function (description: Record<number, string>): ListItemBag[] {
-        const listItemBagList: ListItemBag[] = [];
-        for(const property in description) {
-            listItemBagList.push({
-                text: description[property].toString(),
-                value: property.toString()
-            });
-        }
-        return listItemBagList;
-    };
-
     const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
+    const streakOccurrenceFrequencies = ref<ListItemBag[]>(enumToListItemBag(StreakOccurrenceFrequencyDescription));
 </script>
