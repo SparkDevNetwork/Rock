@@ -61,29 +61,16 @@ namespace Rock
             return enumerable == null || enumerable.Any() == false || enumerable.Contains( value );
         }
 
-        public static ListItemBag[] ToListItemBag( this Type enumType, bool getDescriptionForText = false, string blankText = null )
+        public static ListItemBag[] ToListItemBag( this Type enumType )
         {
-            var itemValues = Enum.GetValues( enumType );
-            var itemNames = Enum.GetNames( enumType );
             var listItemBag = new List<ListItemBag>();
-
-            if ( blankText != null )
+            foreach ( Enum enumValue in Enum.GetValues(enumType))
             {
-                listItemBag.Add( new ListItemBag
-                {
-                    Text = blankText,
-                    Value = string.Empty
-                } );
+                var text = enumValue.GetDescription() ?? enumValue.ToString().SplitCase();
+                var value = enumValue.ConvertToInt().ToString();
+                listItemBag.Add( new ListItemBag { Text = text, Value = value } );
             }
 
-            for ( var i = 0; i < itemNames.Length; i++ )
-            {
-                listItemBag.Add( new ListItemBag
-                {
-                    Text = getDescriptionForText ? ( ( Enum ) itemValues.GetValue( i ) ).GetDescription() : itemNames[i].SplitCase(),
-                    Value = itemValues.GetValue( i ).ToString()
-                } );
-            }
             return listItemBag.ToArray();
         }
     }
