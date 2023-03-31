@@ -878,7 +878,12 @@ namespace RockWeb.Blocks.Connection
                         requestsOfStatus.Last().Order = previousValue + 1;
                     }
 
-                    rockContext.SaveChanges();
+                    /*
+                     SK - 03/29/2023
+                     Presave Changes is disabled in case of reordering as it updates Modified DateTime of many other connection requests
+                     where slight adjustment is done.
+                     */
+                    rockContext.SaveChanges( true );
                 }
                 else
                 {
