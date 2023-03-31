@@ -67,7 +67,7 @@ export default defineComponent({
          */
         hasZoom: {
             type: Boolean as PropType<boolean>,
-            default: true
+            default: false
         },
 
         /** True if the panel can go into full screen mode. */
