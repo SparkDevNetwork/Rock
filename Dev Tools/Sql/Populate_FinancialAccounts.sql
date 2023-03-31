@@ -17,7 +17,6 @@ DECLARE @campusId INT = NULL
     , @financialAccountGuid UNIQUEIDENTIFIER = newid()
     , @rootAccountCount INT = 0
     , @isTaxDeductible BIT = 1
-    , @showInGivingOverview BIT = 1
     , @isActive BIT = 1
     , @glCode NVARCHAR(50) = NULL
     , @accountTypeValueId INT = NULL
@@ -72,7 +71,6 @@ BEGIN
             , [PublicName]
             , [Description]
             , [IsTaxDeductible]
-            , [ShowInGivingOverview]
             , [GlCode]
             , [Order]
             , [IsActive]
@@ -91,7 +89,6 @@ BEGIN
             , @financialAccountName
             , @financialAccountDescription
             , @isTaxDeductible
-            , @showInGivingOverview
             , @glCode
             , @accountOrder
             , @isActive

@@ -170,7 +170,6 @@ namespace RockWeb.Blocks.Finance
             account.StartDate = dtpStartDate.SelectedDate;
             account.EndDate = dtpEndDate.SelectedDate;
             account.IsTaxDeductible = cbIsTaxDeductible.Checked;
-            account.ShowInGivingOverview = cbShowInGivingOverview.Checked;
 
             account.ModifiedDateTime = RockDateTime.Now;
             account.ModifiedByPersonAliasId = CurrentPersonAliasId;
@@ -413,7 +412,6 @@ namespace RockWeb.Blocks.Finance
 
             tbGLCode.Text = account.GlCode;
             cbIsTaxDeductible.Checked = account.IsTaxDeductible;
-            cbShowInGivingOverview.Checked = account.ShowInGivingOverview;
             dtpStartDate.SelectedDate = account.StartDate;
             dtpEndDate.SelectedDate = account.EndDate;
 
@@ -440,7 +438,6 @@ namespace RockWeb.Blocks.Finance
             leftDescription.Add( "Campus", account.Campus != null ? account.Campus.Name : string.Empty );
             leftDescription.Add( "GLCode", account.GlCode );
             leftDescription.Add( "Is Tax Deductible", account.IsTaxDeductible );
-            leftDescription.Add( "Show in Giving Overview", account.ShowInGivingOverview );
             lLeftDetails.Text = leftDescription.Html;
 
             var followingsFromDatabase = GetAccountParticipantStateFromDatabase().OrderBy( a => a.PersonFullName ).ToList();

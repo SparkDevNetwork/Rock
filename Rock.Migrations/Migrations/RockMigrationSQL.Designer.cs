@@ -1405,7 +1405,9 @@ namespace Rock.Migrations.Migrations {
         ///        &quot;top&quot;: 0,
         ///        &quot;right&quot;: 0,
         ///        &quot;bottom&quot;: 1,
-        ///        &quot;left&quot; [rest of string was truncated]&quot;;.
+        ///        &quot;left&quot;: 1
+        ///      },
+        ///      &quot;Bo [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202303231713546_Rollup_20230323_ChartColorUpdate {
             get {
@@ -1421,45 +1423,11 @@ namespace Rock.Migrations.Migrations {
         ///&lt;h1 style=&quot;margin:0;&quot;&gt;Your Reminders&lt;/h1&gt;
         ///
         ///&lt;p&gt;
-        ///    Below are {{ MaxRemindersPerEntityType }} of the most recent reminders for each feature as of {{ currentDate }}. &lt;a href=&quot;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicAp [rest of string was truncated]&quot;;.
+        ///    Below are {{ MaxRemindersPerEntityType }} of the most recent reminders for each feature as of {{ currentDate }}. &lt;a href=&quot;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicApplicati [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars {
             get {
                 return ResourceManager.GetString("_202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to /*
-        ///&lt;doc&gt;
-        ///	&lt;summary&gt;
-        /// 		This stored procedure updates several attributes related to a person&apos;s
-        ///		giving.
-        ///	&lt;/summary&gt;
-        ///	
-        ///	&lt;remarks&gt;	
-        ///		For eRA we only consider adults for the critieria.
-        ///	&lt;/remarks&gt;
-        ///	&lt;code&gt;
-        ///		EXEC [dbo].[spCrm_FamilyAnalyticsGiving] 
-        ///	&lt;/code&gt;
-        ///&lt;/doc&gt;
-        ///*/
-        ///ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
-        ///	
-        ///AS
-        ///BEGIN
-        ///	
-        ///	-- configuration of the duration in weeks
-        ///	DECLARE @GivingDurationLongWeeks int = 52
-        ///	DECLARE @GivingDurationShortWeeks int = 6
-        ///	
-        ///	DECLARE @cACTIVE_RECORD_S [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string _202303281828355_AddShowInGivingOverviewForFinancialAccount_spCrm_FamilyAnalyticsGiving {
-            get {
-                return ResourceManager.GetString("_202303281828355_AddShowInGivingOverviewForFinancialAccount_spCrm_FamilyAnalytics" +
-                        "Giving", resourceCulture);
             }
         }
     }

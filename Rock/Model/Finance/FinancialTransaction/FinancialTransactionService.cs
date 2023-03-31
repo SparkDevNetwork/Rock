@@ -360,18 +360,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the giving overview source transaction query by giving identifier.
-        /// </summary>
-        /// <param name="givingId">The giving identifier.</param>
-        /// <returns>IQueryable&lt;FinancialTransaction&gt;.</returns>
-        public IQueryable<FinancialTransaction> GetGivingOverviewSourceTransactionQueryByGivingId( string givingId )
-        {
-            var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
-
-            return GetGivingOverviewSourceTransactionQuery().Where( a => a.AuthorizedPersonAliasId.HasValue && givingIdPersonAliasIdQuery.Contains( a.AuthorizedPersonAliasId.Value ) );
-        }
-
-        /// <summary>
         /// Gets the giving automation source transaction query.
         /// This is used by <see cref="Rock.Jobs.GivingAutomation"/>.
         /// </summary>
@@ -484,110 +472,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the giving overview source transaction query based on ShowInGivingOverview condition.
-        /// This is used by <see cref="Rock.Jobs.GivingAutomation"/>.
-        /// </summary>
-        /// <returns></returns>
-        public IQueryable<FinancialTransaction> GetGivingOverviewSourceTransactionQuery()
-        {
-            var query = Queryable().AsNoTracking();
-
-            var giverAnonymousPersonGuid = SystemGuid.Person.GIVER_ANONYMOUS.AsGuid();
-            var giverAnonymousPersonAliasIds = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.Person.Guid == giverAnonymousPersonGuid ).Select( a => a.Id );
-            query = query.Where( a => a.AuthorizedPersonAliasId.HasValue && !giverAnonymousPersonAliasIds.Contains( a.AuthorizedPersonAliasId.Value ) );
-
-            var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
-
-            // Filter by transaction type (defaults to contributions only)
-            var transactionTypeIds = settings.TransactionTypeGuids.Select( DefinedValueCache.Get ).Select( dv => dv.Id ).ToList();
-
-            if ( transactionTypeIds.Count() == 1 )
-            {
-                var transactionTypeId = transactionTypeIds[0];
-                query = query.Where( t => t.TransactionTypeValueId == transactionTypeId );
-            }
-            else
-            {
-                query = query.Where( t => transactionTypeIds.Contains( t.TransactionTypeValueId ) );
-            }
-
-            List<int> accountIds;
-            if ( settings.FinancialAccountGuids?.Any() == true )
-            {
-                accountIds = FinancialAccountCache.GetByGuids( settings.FinancialAccountGuids ).Select( a => a.Id ).ToList();
-            }
-            else
-            {
-                accountIds = new List<int>();
-            }
-
-            // Filter accounts, defaults to ShowInGivingOverview only
-            if ( !accountIds.Any() )
-            {
-                query = query.Where( t => t.TransactionDetails.Any( td => td.Account.ShowInGivingOverview ) );
-            }
-            else if ( settings.AreChildAccountsIncluded == true )
-            {
-                var selectedAccountIds = accountIds.ToList();
-                var childAccountsIds = FinancialAccountCache.GetByIds( accountIds ).SelectMany( a => a.GetDescendentFinancialAccountIds() ).ToList();
-                selectedAccountIds.AddRange( childAccountsIds );
-                selectedAccountIds = selectedAccountIds.Distinct().ToList();
-
-                if ( selectedAccountIds.Count() == 1 )
-                {
-                    var accountId = selectedAccountIds[0];
-                    query = query.Where( t => t.TransactionDetails.Any( td => td.AccountId == accountId ) );
-
-                }
-                else
-                {
-                    query = query.Where( t => t.TransactionDetails.Any( td => selectedAccountIds.Contains( td.AccountId ) ) );
-                }
-            }
-            else
-            {
-                if ( accountIds.Count() == 1 )
-                {
-                    var accountId = accountIds[0];
-                    query = query.Where( t => t.TransactionDetails.Any( td => accountId == td.AccountId ) );
-                }
-                else
-                {
-                    query = query.Where( t => t.TransactionDetails.Any( td => accountIds.Contains( td.AccountId ) ) );
-                }
-            }
-
-            var listFromAccounts = query.ToList();
-
-            // We'll need to factor in partial amount refunds...
-            // Exclude transactions that have full refunds.
-            // If it does have a refund, include the transaction if it is just a partial refund
-            query = query.Where( t =>
-                    // Limit to ones that don't have refunds, or has a partial refund
-                    !t.Refunds.Any()
-                    ||
-                    // If it does have refunds, we can exclude the transaction if the refund amount is the same amount (full refund)
-                    // Otherwise, we'll have to include the transaction and figure out the partial amount left after the refund.
-                    (
-                        (
-                        // total original amount
-                        t.TransactionDetails.Sum( xx => xx.Amount )
-
-                           // total amount of any refund(s) for this transaction
-                           + t.Refunds.Sum( r => r.FinancialTransaction.TransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.00M )
-                        )
-
-                        != 0.00M
-                    )
-                );
-
-            // Remove transactions with $0 or negative amounts. If those are refunds, those will factored in above
-            query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
-
-            return query;
-        }
-
-        /// <summary>
         /// Gets the giving automation monthly account giving history. This is used for the Giving Overview block's monthly
         /// bar chart and also yearly summary.
         /// </summary>
@@ -611,7 +495,7 @@ namespace Rock.Model
                 .Where( a => a.Person.GivingId == givingId )
                 .Select( a => a.Id );
 
-            var qry = GetGivingOverviewSourceTransactionQuery()
+            var qry = GetGivingAutomationSourceTransactionQuery()
                 .AsNoTracking()
                 .Where( t =>
                     t.TransactionDateTime.HasValue &&
@@ -624,7 +508,7 @@ namespace Rock.Model
             }
 
             var views = qry
-                .SelectMany( t => t.TransactionDetails.Where(td => td.Account.ShowInGivingOverview).Select( td => new
+                .SelectMany( t => t.TransactionDetails.Select( td => new
                 {
                     TransactionDateTime = t.TransactionDateTime.Value,
                     td.AccountId,
