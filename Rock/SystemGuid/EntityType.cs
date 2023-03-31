@@ -616,6 +616,11 @@ namespace Rock.SystemGuid
         public const string PERSON_PRAYER_REQUEST = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B";
 
         /// <summary>
+        /// The GUID for the Rock.Model.PersonPreference entity
+        /// </summary>
+        public const string PERSON_PREFERENCE = "FDCF766C-F36B-403B-89F3-7030DA65507E";
+
+        /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity
         /// </summary>
         public const string PERSON_SIGNAL = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F";

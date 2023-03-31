@@ -1679,6 +1679,14 @@ namespace Rock.Data
         public DbSet<PersonAlias> PersonAliases { get; set; }
 
         /// <summary>
+        /// Gets or sets the Person Preferences.
+        /// </summary>
+        /// <value>
+        /// The Person Preferences.
+        /// </value>
+        public DbSet<PersonPreference> PersonPreferences { get; set; }
+
+        /// <summary>
         /// Gets or sets the badges.
         /// </summary>
         /// <value>
