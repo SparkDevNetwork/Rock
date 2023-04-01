@@ -476,10 +476,12 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            if ( MergeDataIncludesAnonymousGiver() )
+            // Check if we are attempting to merge a system account.
+            var systemAccount = GetFirstNonPrimaryReservedAccount();
+            if ( systemAccount != null )
             {
                 nbError.Heading = "Merge Error";
-                nbError.Text = string.Format( "<p>You can't merge the Anonymous Giver unless it is the primary selected person.</p>" );
+                nbError.Text = string.Format( $"<p>You can't merge the {systemAccount.FullName} record unless it is the primary selected person.</p>" );
                 nbError.Visible = true;
                 return;
             }
@@ -793,11 +795,11 @@ namespace RockWeb.Blocks.Crm
                             }
                         }
 
-                        // If merging records into the Anonymous Giver record, remove any UserLogins.
-                        bool mergingWithAnonymousGiver = primaryPerson.Guid == Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid();
-                        if ( mergingWithAnonymousGiver )
+                        // If merging into a reserved system record, remove any UserLogins.
+                        var mergingWithReservedRecord = MergeData.ReservedPersonGuidList.Contains( primaryPerson.Guid );
+                        if ( mergingWithReservedRecord )
                         {
-                            RemoveAnonymousGiverUserLogins( userLoginService, rockContext );
+                            RemoveUserLogins( userLoginService, rockContext );
                         }
 
                         // now that the Merge is complete, the EntitySet can be marked to be deleted by the RockCleanup job
@@ -1619,10 +1621,10 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// Removes any UserLogin records associated with the Anonymous Giver.
+        /// Removes any UserLogin records associated with the Person records participating in the merge.
         /// </summary>
         /// <param name="userLoginService">The <see cref="UserLoginService"/>.</param>
-        private void RemoveAnonymousGiverUserLogins( UserLoginService userLoginService, RockContext rockContext )
+        private void RemoveUserLogins( UserLoginService userLoginService, RockContext rockContext )
         {
             var personIds = MergeData.People.Select( a => a.Id ).ToList();
 
@@ -1635,12 +1637,16 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// Checks to see if one of the records being merged (other than the primary record) is the Anonymous Giver account.
+        /// Checks to see if one of the records being merged (other than the primary record) is one of the special
+        /// accounts reserved for Rock internal use - for example, the Anonymous Giver or Anonymous Visitor accounts.
         /// </summary>
-        private bool MergeDataIncludesAnonymousGiver()
+        private MergePerson GetFirstNonPrimaryReservedAccount()
         {
-            var mergePersonGuids = MergeData.People.Where( p => p.Id != MergeData.PrimaryPersonId ).Select( p => p.Guid );
-            return mergePersonGuids.Contains( Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+            var nonPrimarySystemAccount = MergeData.People
+                .Where( p => p.Id != MergeData.PrimaryPersonId
+                    && MergeData.ReservedPersonGuidList.Contains( p.Guid ) )
+                .FirstOrDefault();
+            return nonPrimarySystemAccount;
         }
 
         #endregion
@@ -1675,6 +1681,15 @@ namespace RockWeb.Blocks.Crm
         private const string CAMPUS = "Campus";
 
         #endregion
+
+        /// <summary>
+        /// A set of Guid identifiers for Person records that are reserved for Rock internal use.
+        /// </summary>
+        public static List<Guid> ReservedPersonGuidList = new List<Guid>
+        {
+            Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid(),
+            Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid()
+        };
 
         #region Properties
 
@@ -1955,12 +1970,14 @@ namespace RockWeb.Blocks.Crm
         {
             PrimaryPersonId = primaryPersonId;
 
+            var isReservedPerson = MergeData.ReservedPersonGuidList.Contains( primaryPersonGuid );
+
             foreach ( var personProperty in Properties )
             {
                 PersonPropertyValue value = null;
 
-                // If the Primary Person Guid is the anonymous giver, always set that record value as default.
-                if ( primaryPersonGuid == Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() )
+                // If the Primary Person Guid is a reserved record, always set that record value as default.
+                if ( isReservedPerson )
                 {
                     value = personProperty.Values.Where( v => v.PersonId == primaryPersonId ).FirstOrDefault();
                 }
