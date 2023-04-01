@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="attendance-roster mb-3">
+    <div class="attendance-roster">
         <template v-for="(groupedAttendances, groupLabel, index) in attendanceGroups" :key="groupLabel">
             <template v-if="groupedAttendances.length">
-                <hr v-if="index !== 0" />
+                <hr v-if="hasMultipleGroups" />
                 <h2 v-if="groupLabel && hasMultipleGroups">{{ groupLabel }}</h2>
-                <div class="attendance-group row mr-0">
+                <div class="attendance-grid">
                     <template v-for="attendance in groupedAttendances" :key="attendance.personGuid">
                         <CardCheckBox v-if="attendance.itemTemplate" :controlWrapperClasses="'card-check-box ' + controlWrapperClasses" :cardCheckBoxClasses="cardCheckBoxClasses" :modelValue="attendance.didAttend" @update:modelValue="onInternalAttendanceChanged($event, attendance)" :html="attendance.itemTemplate" />
                         <CardCheckBox v-else :controlWrapperClasses="'card-check-box ' + controlWrapperClasses" :cardCheckBoxClasses="cardCheckBoxClasses" :modelValue="attendance.didAttend" @update:modelValue="onInternalAttendanceChanged($event, attendance)">
@@ -20,9 +20,17 @@
     </div>
 </template>
 
-<style scoped>
+<style>
+    .attendance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-gap: 12px;
+    }
+
     .attendance-roster hr {
-        border-top-width: 5px;
+        border-top: 5px solid #c8c8c8;
+        border-radius: 5px;
+        margin: 32px 0;
     }
 </style>
 
@@ -74,8 +82,8 @@
         (e: "attendanceChanged", value: GroupAttendanceDetailAttendanceBag): void
     }>();
 
-    const controlWrapperClasses = "col-xs-12 col-sm-6 col-md-4 col-lg-3 m-0 p-0";
-    const cardCheckBoxClasses = "mt-3 ml-3";
+    const controlWrapperClasses = "";
+    const cardCheckBoxClasses = "";
 
     //#region Computed Values
 

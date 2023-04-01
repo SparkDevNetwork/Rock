@@ -216,12 +216,15 @@ namespace Rock.Blocks.Group
     {
         #region Attribute Values
 
-        private const string DefaultListItemDetailsTemplate = @"<div style=""display: flex; align-items: center; gap: 8px; padding: 12px;"">
-    <img width=""80px"" height=""80px"" src=""{{ Person.PhotoUrl }}"" style=""border-radius: 80px; width: 80px; height: 80px"" />
-    <div>
+        private const string DefaultListItemDetailsTemplate = @"<div class=""d-flex align-items-center h-100"" style=""gap: 8px;"">
+    <img src=""{{ Person.PhotoUrl }}"" style=""border-radius: 48px; width: 48px; height: 48px"" />
+    <div class=""checkbox-card-data"">
+        {% if GroupMember.GroupMemberStatus and GroupMember.GroupMemberStatus != 'Active' %}<span class=""label label-info align-self-end"">{{ GroupMember.GroupMemberStatus }}</span>{% endif %}
+        <div>
         <strong>{{ Person.LastName }}, {{ Person.NickName }}</strong>
-        {% if GroupRoleName %}<div>{{ GroupRoleName }}</div>{% endif %}
-        {% if GroupMember.GroupMemberStatus and GroupMember.GroupMemberStatus != 'Active' %}<span class=""label label-info"" style=""position: absolute; right: 10px; top: 10px;"">{{ GroupMember.GroupMemberStatus }}</span>{% endif %}
+        {% if GroupRoleName %}<div class=""text-sm text-muted"">{{ GroupRoleName }}</div>{% endif %}
+        </div>
+        {% if GroupMember.GroupMemberStatus and GroupMember.GroupMemberStatus != 'Active' %}<span class=""label label-info invisible"">&nbsp;</span>{% endif %}
     </div>
 </div>";
 

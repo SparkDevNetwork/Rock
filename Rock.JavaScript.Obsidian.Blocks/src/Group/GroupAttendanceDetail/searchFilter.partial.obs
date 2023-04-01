@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TextBox v-model="searchText" placeholder="Search" />
+    <div class="form-group">
+        <TextBox v-model="searchText" placeholder="Search" />
+    </div>
 </template>
 
 <script setup lang="ts">
