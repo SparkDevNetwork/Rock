@@ -66,6 +66,7 @@
     <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
     <Compile Include="Groups\GroupAttendanceDetail.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
+    <Compile Include="Groups\GroupRegistration.cs" />
     <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
     <Compile Include="Cms\ContentCollectionView.cs" />
