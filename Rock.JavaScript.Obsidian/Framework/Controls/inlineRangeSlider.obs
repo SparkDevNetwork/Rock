@@ -34,7 +34,7 @@
 
         step: {
             type: Number,
-            default: 0
+            default: 1
         },
 
         min: {
@@ -119,7 +119,7 @@
      * @returns The value after any constraints have been applied.
      */
     function constrainValue(value: number): number {
-        if (props.step) {
+        if (props.step != 0) {
             value = Math.round(value / props.step) * props.step;
 
             // If the step has a decimal in it, we need to round to the same number of decimal places

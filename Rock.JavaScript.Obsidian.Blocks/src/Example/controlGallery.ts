@@ -5479,7 +5479,7 @@ const rangeSliderGallery = defineComponent({
     <template #settings>
         <div class="row">
             <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
-            <NumberBox formGroupClasses="col-md-3" label="Step Value" v-model="step" help="Leave blank or set to zero to have no step" />
+            <NumberBox formGroupClasses="col-md-3" label="Step Value" v-model="step" help="Set to zero to have no step" />
             <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
             <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
         </div>
