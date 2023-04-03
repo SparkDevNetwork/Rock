@@ -35,24 +35,6 @@ namespace Rock.Web.UI
     /// <summary>
     /// RockBlock is the base abstract class that all Blocks should inherit from
     /// </summary>
-    [BooleanField( "Enable Rate Limiter",
-        Description = "If enable the number of calls that can be made to this block will be limited per the settings below.",
-        DefaultValue = "false",
-        Order = 0,
-        Key = "EnableRateLimiter",
-        Category = "Advanced" )]
-    [IntegerField( "Total Number of Request",
-        Description = "The maximum number of request that can occur in the specified time frame",
-        IsRequired = false,
-        Category = "Advanced",
-        Order = 0,
-        Key = "TotalNumberOfRequest" )]
-    [IntegerField( "Rate Limit Period in Seconds",
-        Description = "The time frame that the request can occur in.",
-        IsRequired = false,
-        Category = "Advanced",
-        Order = 0,
-        Key = "RateLimitTimeFrame" )]
     public abstract class RockBlock : UserControl
     {
         #region Public Properties
