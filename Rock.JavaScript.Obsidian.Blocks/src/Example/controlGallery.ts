@@ -210,6 +210,7 @@ import ContentChannelItemPicker from "@Obsidian/Controls/contentChannelItemPicke
 import PersonLink from "@Obsidian/Controls/personLink.obs";
 import PopOver from "@Obsidian/Controls/popOver.obs";
 import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
 
 // #region Gallery Support
 
@@ -5459,7 +5460,7 @@ const rangeSliderGallery = defineComponent({
     setup() {
         return {
             value: ref(10),
-            step: ref(null),
+            step: ref(1),
             min: ref(0),
             max: ref(100),
             showValue: ref(false),
@@ -7489,6 +7490,48 @@ const rockLiteralGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates a registry entry */
+const registryEntryGallery = defineComponent({
+    name: "RegistryEntryGallery",
+    components: {
+        GalleryAndResult,
+        RegistryEntry,
+        RockForm,
+        RockButton,
+        CheckBox
+    },
+    setup() {
+        return {
+            entry: ref(null),
+            submit: ref(false),
+            isRequired: ref(false),
+            importCode: getSfcControlImportPath("registryEntry"),
+            exampleCode: `<RegistryEntry label="Registry Entry" v-model="phoneNumber" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="entry"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <RockForm v-model:submit="submit">
+        <RegistryEntry label="Registry Entry" v-model="entry" :rules="isRequired ? 'required' : ''" class="text-primary" />
+        <RockButton @click="submit=true">Validate</RockButton>
+    </RockForm>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox v-model="isRequired" label="Required" />
+            </div>
+        </div>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -7627,6 +7670,7 @@ const controlGalleryComponents: Record<string, Component> = [
     personLinkGallery,
     popOverGallery,
     rockLiteralGallery,
+    registryEntryGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
