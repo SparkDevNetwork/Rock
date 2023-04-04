@@ -40,6 +40,8 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
+            TestDatabaseHelper.ResetDatabase();
+
             TestDataHelper.AddTestDataSet( TestDataHelper.DataSetIdentifiers.PrayerSampleData );
         }
 
