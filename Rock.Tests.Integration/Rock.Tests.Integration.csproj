@@ -176,6 +176,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
     <Compile Include="Modules\Core\Model\AttendanceCodeTests.cs" />
     <Compile Include="Modules\Core\Rock.Security\RockSigningCredentialsTests.cs" />
     <Compile Include="Modules\Crm\Following\FollowingTests.cs" />
@@ -201,6 +202,7 @@
     <Compile Include="Modules\Reporting\DataFilter\DataViewTests.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
     <Compile Include="TestData\Crm\HistoryDataFactory.cs" />
+    <Compile Include="TestData\Engagement\InteractionFeatureDataHelper.cs" />
     <Compile Include="TestData\Engagement\PrayerFeatureDataHelper.cs" />
     <Compile Include="TestData\Core\RandomizedDataHelper.cs" />
     <Compile Include="TestData\Engagement\StepsFeatureDataHelper.cs" />
