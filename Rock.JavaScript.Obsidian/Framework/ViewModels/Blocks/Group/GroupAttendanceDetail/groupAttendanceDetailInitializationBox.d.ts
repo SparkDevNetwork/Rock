@@ -90,6 +90,9 @@ export type GroupAttendanceDetailInitializationBox = {
     /** Gets a value indicating whether there is a configuration error. */
     isConfigError: boolean;
 
+    /** Gets or sets a value indicating if date is included in the pick from schedule picker. */
+    isDateIncludedInPickFromSchedule: boolean;
+
     /** Gets or sets a value indicating whether this instance is did not meet checked. */
     isDidNotMeetChecked: boolean;
 
@@ -116,6 +119,9 @@ export type GroupAttendanceDetailInitializationBox = {
 
     /** Gets or sets a value indicating whether this instance is notes section hidden. */
     isNotesSectionHidden: boolean;
+
+    /** Gets or sets a value indicating whether roster download is shown. */
+    isRosterDownloadShown: boolean;
 
     /** Gets or sets a value indicating whether schedule is required. */
     isScheduleRequired: boolean;

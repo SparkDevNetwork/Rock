@@ -7,7 +7,13 @@
         <template #default="{uniqueId, field}">
             <div :class="'control-wrapper ' + controlWrapperClasses">
                 <div :class="internalCardCheckBoxClasses">
-                    <input type="checkbox" v-bind="field" v-model="internalValue" :id="uniqueId" style="display: none" />
+                    <input
+                           v-bind="field"
+                           v-model="internalValue"
+                           :disabled="disabled"
+                           :id="uniqueId"
+                           style="display: none"
+                           type="checkbox" />
                     <label v-if="html" class="checkbox-card-label" :for="uniqueId" v-html="html"></label>
                     <label v-else class="checkbox-card-label" :for="uniqueId">
                         <slot></slot>
@@ -62,6 +68,11 @@
         modelValue: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         html: {

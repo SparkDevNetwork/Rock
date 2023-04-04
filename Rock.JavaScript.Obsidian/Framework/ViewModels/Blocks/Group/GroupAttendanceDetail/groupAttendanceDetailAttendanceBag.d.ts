@@ -25,14 +25,14 @@ import { Guid } from "@Obsidian/Types";
 
 /** A bag that contains the attendance information. */
 export type GroupAttendanceDetailAttendanceBag = {
-    /** Gets or sets the campus ids that a person's families belong to. */
+    /**
+     * Gets or sets the Campus that a Person's family belongs to.
+     * Enables filtering attendees by Campus.
+     */
     campusGuid?: Guid | null;
 
     /** Indicates whether the Person has attended. */
     didAttend: boolean;
-
-    /** Gets or sets the Person's full name. */
-    fullName?: string | null;
 
     /** Gets or sets the item template used for rendering the Attendance in the Group Attendance Detail block. */
     itemTemplate?: string | null;
@@ -44,7 +44,7 @@ export type GroupAttendanceDetailAttendanceBag = {
     nickName?: string | null;
 
     /** Gets or sets the person alias identifier. */
-    personAliasId?: number | null;
+    personAliasId: number;
 
     /** Gets or sets the Person's unique identifier. */
     personGuid?: Guid | null;

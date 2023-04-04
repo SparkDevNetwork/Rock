@@ -367,4 +367,11 @@ export function createModalOptions<T extends Partial<ModalOptionsBag> & { onCanc
     };
 }
 
+/**
+ * Gets the full name for an attendee.
+ */
+export function getAttendanceFullName(attendance: GroupAttendanceDetailAttendanceBag): string {
+    return `${attendance.nickName} ${attendance.lastName}`;
+}
+
 //#endregion

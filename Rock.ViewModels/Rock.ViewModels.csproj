@@ -51,6 +51,7 @@
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailAddPersonResponseBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailAddPersonRequestBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailGetAttendanceRequestBag.cs" />
+    <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailPrintRosterRequestBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailPrintRosterResponseBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailGetOrCreateRequestBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag.cs" />

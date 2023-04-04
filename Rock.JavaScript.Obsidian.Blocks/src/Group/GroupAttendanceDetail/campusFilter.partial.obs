@@ -13,6 +13,7 @@
     import { createFilter, IAttendanceFilter, NoFilter } from "./utils.partial";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -46,7 +47,7 @@
         const campusGuid = campusPickerValue.value?.value;
 
         if (campusGuid) {
-            filter = createFilter((attendee) => {
+            filter = createFilter((attendee: GroupAttendanceDetailAttendanceBag): boolean => {
                 return areEqual(attendee.campusGuid, campusGuid);
             });
         }

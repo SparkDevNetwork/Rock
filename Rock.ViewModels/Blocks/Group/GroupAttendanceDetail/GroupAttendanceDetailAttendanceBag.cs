@@ -32,7 +32,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         /// <summary>
         /// Gets or sets the person alias identifier.
         /// </summary>
-        public int? PersonAliasId { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the Person's nick name.
@@ -45,24 +45,14 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         public string LastName { get; set; }
 
         /// <summary>
-        /// Gets or sets the Person's full name.
-        /// </summary>
-        public string FullName
-        {
-            get { return NickName + " " + LastName; }
-        }
-
-        /// <summary>
         /// Indicates whether the Person has attended.
         /// </summary>
         public bool DidAttend { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus ids that a person's families belong to.
+        /// Gets or sets the Campus that a Person's family belongs to.
+        /// <para>Enables filtering attendees by Campus.</para>
         /// </summary>
-        /// <value>
-        /// The campus ids.
-        /// </value>
         public Guid? CampusGuid { get; set; }
 
         /// <summary>

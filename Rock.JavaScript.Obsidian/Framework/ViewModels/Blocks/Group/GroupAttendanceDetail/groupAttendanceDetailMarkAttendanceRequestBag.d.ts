@@ -31,6 +31,6 @@ export type GroupAttendanceDetailMarkAttendanceRequestBag = {
     /** Gets or sets a value indicating whether the Person attended. */
     didAttend: boolean;
 
-    /** Gets or sets the person unique identifier. */
-    personGuid?: Guid | null;
+    /** Gets or sets the person alias identifier. */
+    personAliasId: number;
 };

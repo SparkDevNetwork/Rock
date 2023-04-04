@@ -90,7 +90,7 @@
             groupGuid: props.groupGuid,
             locationGuid: props.locationGuid,
             numberOfPreviousDaysToShow: props.numberOfPreviousDaysToShow,
-            date: props.date?.toISOString()
+            occurrenceDate: props.date?.toISOString()
         };
 
         if (!props.shouldLoadItemsWhetherValuesAreSet

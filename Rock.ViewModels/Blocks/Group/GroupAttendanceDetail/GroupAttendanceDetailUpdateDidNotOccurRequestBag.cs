@@ -33,10 +33,5 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         /// Gets or sets a value indicating whether the attendance occurrence occurred.
         /// </summary>
         public bool DidNotOccur { get; set; }
-
-        /// <summary>
-        /// Gets or sets the campus unique identifier.
-        /// </summary>
-        public Guid? CampusGuid { get; set; }
     }
 }

@@ -28,6 +28,7 @@
                                         v-if="config.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.DatePicker"
                                         :modelValue="attendanceForDateString"
                                         @update:modelValue="onAttendanceForDateUpdated"
+                                        :disabled="!isAutoSaveOn"
                                         :displayCurrentOption="false"
                                         :isCurrentDateOffset="false"
                                         :disableForceParse="false"
@@ -45,6 +46,7 @@
                         <div class="col-xs-12 col-sm-4">
                             <GroupLocationPicker
                                                  v-if="config.locationSelectionMode === GroupAttendanceDetailLocationSelectionMode.GroupLocationPicker"
+                                                :disabled="!isAutoSaveOn"
                                                  :groupGuid="config.groupGuid"
                                                  label="Location"
                                                  :showBlankItem="true"
@@ -59,7 +61,8 @@
                             <template v-if="locationGuid || !config.isLocationRequired">
                                 <GroupLocationScheduleDatePicker v-if="config.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.ScheduledDatePicker"
                                                                  @update:modelValue="onGroupLocationScheduleDatePickerChanged"
-                                                                 :date="RockDateTime.parseISO(config.attendanceOccurrenceDate || '')"
+                                                                 :date="config.isDateIncludedInPickFromSchedule ? RockDateTime.parseISO(config.attendanceOccurrenceDate || '') : null"
+                                                                 :disabled="!isAutoSaveOn"
                                                                  :groupGuid="config.groupGuid"
                                                                  label="Attendance For"
                                                                  :locationGuid="locationGuid"
@@ -67,7 +70,8 @@
                                                                  :showBlankItem="true" />
 
                                 <GroupLocationSchedulePicker v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.GroupLocationSchedulePicker && locationGuid"
-                                                             @update:modelValue="onGroupLocationSchedulePickerChanged"
+                                                             @update:modelVa-lue="onGroupLocationSchedulePickerChanged"
+                                                             :disabled="!isAutoSaveOn"
                                                              :groupGuid="config.groupGuid"
                                                              label="Schedule"
                                                              :locationGuid="locationGuid"
@@ -83,28 +87,39 @@
                     </div>
 
                     <TransitionVerticalCollapse speed="fast">
-                        <div v-show="attendanceOccurrenceGuid" class="mt-5">
+                        <div class="mt-5">
                             <div class="d-flex align-items-end">
                                 <InlineCheckBox
                                                 v-if="isDidNotMeetShown"
                                                 class="mb-0"
                                                 :modelValue="didNotOccur"
-                                                :disabled="isSavingDidNotOccur || config.isDidNotMeetDisabled"
+                                                :disabled="isSavingDidNotOccur || config.isDidNotMeetDisabled || !isAutoSaveOn"
                                                 label="We Did Not Meet"
                                                 @update:modelValue="onDidNotOccurChanged" />
 
                                 <RadioButtonList
                                                  v-if="config.attendanceOccurrenceTypes && config.isAttendanceOccurrenceTypesSectionShown"
+                                                 :disabled="!isAutoSaveOn"
                                                  :formGroupClasses="'mb-0' + (isDidNotMeetShown ? ' ml-3' : '')"
-                                                 :modelValue="attendanceOccurrenceTypeGuid"
-                                                 :label="config.attendanceOccurrenceTypesSectionLabel"
                                                  :horizontal="true"
                                                  :items="config.attendanceOccurrenceTypes"
+                                                 :label="config.attendanceOccurrenceTypesSectionLabel"
+                                                 :modelValue="attendanceOccurrenceTypeGuid"
                                                  @update:modelValue="onAttendanceOccurrenceTypeChanged" />
 
                                 <div class="ml-auto d-flex align-items-end">
-                                    <PersonPicker v-if="config.isNewAttendeeAdditionAllowed" formGroupClasses="mb-0" :label="addPersonAsLabel" @update:modelValue="onAddPerson($event)" :modelValue="addPersonSelection" />
-                                    <RockButton v-if="config.addGroupMemberPageUrl" btnType="default" @click="onAddGroupMemberClicked">Add Group Member</RockButton>
+                                    <PersonPicker
+                                                  v-if="config.isNewAttendeeAdditionAllowed"
+                                                  :disabled="!isAutoSaveOn"
+                                                  formGroupClasses="mb-0"
+                                                  :label="addPersonAsLabel"
+                                                  :modelValue="addPersonSelection"
+                                                  @update:modelValue="onAddPerson($event)" />
+                                    <RockButton
+                                                v-if="config.addGroupMemberPageUrl"
+                                                btnType="default"
+                                                :disabled="!isAutoSaveOn"
+                                                @click="onAddGroupMemberClicked">Add Group Member</RockButton>
                                 </div>
                             </div>
                         </div>
@@ -117,27 +132,30 @@
                 <NotificationBox v-if="!isPrintingRoster && printRosterWarning" alertType="warning">{{ printRosterWarning }}</NotificationBox>
 
                 <TransitionVerticalCollapse speed="fast">
-                    <div v-show="attendanceOccurrenceGuid">
+                    <div>
                         <TransitionVerticalCollapse speed="fast">
                             <div v-show="!didNotOccur">
                                 <div class="row">
-                                    <div class="col-xs-12 col-sm-6">
-                                        <SearchFilter v-model="searchFilter" />
+                                    <div class="col-xs-12 col-sm-8 d-sm-flex">
+                                        <DidAttendFilter v-model="didAttendFilter" :attendances="attendances" />
+                                        <SearchFilter v-model="searchFilter" class="flex-grow-1 mt-2 mt-sm-0 ml-sm-2 mb-sm-0" />
                                     </div>
-                                    <div class="col-xs-12 col-sm-6 d-flex justify-content-end">
-                                        <div class="form-group">
+                                    <div class="col-xs-12 col-sm-4 d-flex justify-content-end">
+                                        <div class="form-group mb-sm-0">
                                             <RockButton v-if="!config.isNotesSectionHidden"
-                                                        CssClass="btn btn-default btn-sm"
+                                                        btnSize="sm"
                                                         :btnType="isNotesShown ? 'primary' : 'default'"
+                                                        :disabled="!isAutoSaveOn"
                                                         @click="onShowNotesClicked()"><i class="fa fa-pencil-alt"></i> Add Note</RockButton>
                                         </div>
                                     </div>
                                 </div>
 
                                 <TransitionVerticalCollapse speed="fast" v-if="!config.isNotesSectionHidden">
-                                    <div v-show="isNotesShown">
+                                    <div v-show="isNotesShown" class="mt-2">
                                         <TextBox
                                                  v-model="notes"
+                                                :disabled="!isAutoSaveOn"
                                                  :label="config.notesSectionLabel || 'Notes'"
                                                  :rows="3"
                                                  textMode="multiline"
@@ -145,23 +163,22 @@
                                     </div>
                                 </TransitionVerticalCollapse>
 
-                                <RosterFilterPicker
-                                                    v-model="rosterFilter"
-                                                    :attendances="attendances"
-                                                    :isFilterByFirstNameInitial="false"
-                                                    :isMultiselect="true">
-                                </RosterFilterPicker>
-                                
-                                
+                                <InitialsFilter
+                                                v-model="rosterFilter"
+                                                :attendances="attendances"
+                                                :isFilterByFirstNameInitial="false"
+                                                :isMultiselect="false" />
+
                                 <AttendanceRoster
-                                                    class="form-group"
-                                                    :attendances="attendances"
-                                                    :filterBy="attendanceFilterByDelegate"
-                                                    :groupBy="attendanceGroupByDelegate"
-                                                    :groupWhenFilteredAttendanceCountExceeds="50"
-                                                    :sortBy="attendanceSortByDelegate"
-                                                    @attendanceChanged="onAttendanceChanged($event)" />
-                                                        
+                                                  class="form-group"
+                                                  :attendances="attendances"
+                                                  :disabled="!isAutoSaveOn"
+                                                  :filterBy="attendanceFilterByDelegate"
+                                                  :groupBy="attendanceGroupByDelegate"
+                                                  :groupWhenFilteredAttendanceCountExceeds="50"
+                                                  :sortBy="attendanceSortByDelegate"
+                                                  @attendanceChanged="onAttendanceChanged($event)" />
+
                             </div>
                         </TransitionVerticalCollapse>
                     </div>
@@ -170,12 +187,14 @@
 
             <template #footerActions>
                 <RockButton v-if="!isBackButtonHidden" @click="onBackClicked()">Back</RockButton>
-                <RockButton btnType="primary"
-                    v-if="!attendanceOccurrenceGuid && ((!config.isLocationRequired && !config.isScheduleRequired) || ((config.isScheduleRequired && scheduleGuid) && !config.isLocationRequired) || ((config.isLocationRequired && locationGuid) && !config.isScheduleRequired))"
-                    @click="getOrCreateAttendanceOccurrence">Take Attendance</RockButton>
             </template>
             <template #footerSecondaryActions>
-                <RockButton CssClass="btn btn-default btn-sm" @click="onPrintAttendanceRosterClicked()"><i class="fa fa-file-download"></i> Roster</RockButton>
+                <RockButton
+                            v-if="config.isRosterDownloadShown"
+                            btnType="default"
+                            btnSize="sm"
+                            :disabled="!isAutoSaveOn"
+                            @click="onPrintAttendanceRosterClicked()"><i class="fa fa-file-download"></i> Roster</RockButton>
             </template>
         </Panel>
     </div>
@@ -201,11 +220,12 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, ref, watch } from "vue";
-    import RosterFilterPicker from "./GroupAttendanceDetail/attendanceFilter.partial.obs";
+    import { computed, nextTick, ref } from "vue";
+    import DidAttendFilter from "./GroupAttendanceDetail/didAttendFilter.partial.obs";
+    import InitialsFilter from "./GroupAttendanceDetail/initialsFilter.partial.obs";
     import AttendanceRoster from "./GroupAttendanceDetail/attendanceRoster.partial.obs";
     import CampusFilter from "./GroupAttendanceDetail/campusFilter.partial.obs";
-    import { sortByFirstName, sortByLastName, createEveryFilter as every, createSortBy, createSwitch, IAttendanceFilter, NoFilter, DidAttendFilter, createModalOptions } from "./GroupAttendanceDetail/utils.partial";
+    import { sortByFirstName, sortByLastName, createEveryFilter as every, createSortBy, createSwitch, IAttendanceFilter, NoFilter, DidAttendFilter as DidAttend, createModalOptions } from "./GroupAttendanceDetail/utils.partial";
     import GroupLocationPicker from "./GroupAttendanceDetail/groupLocationPicker.partial.obs";
     import GroupLocationScheduleDatePicker from "./GroupAttendanceDetail/groupLocationScheduleDatePicker.partial.obs";
     import GroupLocationSchedulePicker from "./GroupAttendanceDetail/groupLocationSchedulePicker.partial.obs";
@@ -236,6 +256,7 @@
     import { GroupAttendanceDetailGetOrCreateRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailGetOrCreateRequestBag";
     import { GroupAttendanceDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailInitializationBox";
     import { GroupAttendanceDetailMarkAttendanceRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailMarkAttendanceRequestBag";
+    import { GroupAttendanceDetailPrintRosterRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailPrintRosterRequestBag";
     import { GroupAttendanceDetailPrintRosterResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailPrintRosterResponseBag";
     import { GroupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag";
     import { GroupAttendanceDetailUpdateDidNotOccurRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailUpdateDidNotOccurRequestBag";
@@ -246,7 +267,6 @@
     import { getTopic, ITopic, ServerFunctions } from "@Obsidian/Utility/realTime";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
-    import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
     import { debounce } from "@Obsidian/Utility/util";
 
     const config = ref(useConfigurationValues<GroupAttendanceDetailInitializationBox>());
@@ -273,6 +293,7 @@
 
     //#region Values
 
+    const isAutoSaveOn = ref<boolean>(true);
     const modalOptions = ref<ModalOptionsBag | null>(null);
     const isPrintingRoster = ref<boolean>(false);
     const printRosterWarning = ref<string>("");
@@ -280,8 +301,13 @@
     const searchFilter = ref<IAttendanceFilter>(NoFilter);
     const campusFilter = ref<IAttendanceFilter>(NoFilter);
     const rosterFilter = ref<IAttendanceFilter>(NoFilter);
+    const didAttendFilter = ref<IAttendanceFilter>(NoFilter);
     const attendanceOccurrenceGuid = ref<string | null | undefined>(config.value.attendanceOccurrenceGuid);
-    const attendanceForDate = ref<RockDateTime>((config.value.attendanceOccurrenceDate ? RockDateTime.parseISO(config.value.attendanceOccurrenceDate) : null) ?? RockDateTime.now());
+    const attendanceForDate = ref<RockDateTime>(
+        (config.value.attendanceOccurrenceDate
+         ? RockDateTime.parseISO(config.value.attendanceOccurrenceDate)
+         : null) ?? RockDateTime.now()
+    );
     const attendanceOccurrenceTypeGuid = ref<Guid | undefined>(config.value.selectedAttendanceOccurrenceTypeValue ?? undefined);
     const locationGuid = ref<Guid | undefined | null>(config.value.locationGuid);
     const scheduleGuid = ref<Guid | undefined | null>(config.value.scheduleGuid);
@@ -313,7 +339,7 @@
     const attendances = computed<GroupAttendanceDetailAttendanceBag[]>(() => config.value?.attendances ?? []);
     const attendanceSortByDelegate = ref<AttendanceSortByDelegate>(createSortBy(sortByLastName, sortByFirstName));
     const attendanceFilterByDelegate = computed<AttendanceFilterByDelegate | null>(() => {
-        const filtersToCheck = [campusFilter.value, searchFilter.value, rosterFilter.value];
+        const filtersToCheck = [campusFilter.value, searchFilter.value, rosterFilter.value, didAttendFilter.value];
         const filters = filtersToCheck.filter(filterToCheck => !filterToCheck.isFilter(NoFilter));
 
         if (filters.length === 0) {
@@ -357,11 +383,24 @@
             personAliasGuid: personAliasGuid
         };
 
-        var result = await invokeBlockAction<GroupAttendanceDetailAddPersonResponseBag>("AddPerson", { bag });
+        if (!attendanceOccurrenceGuid.value) {
+            // Create a new occurrence if it hasn't been saved yet.
+            await getOrCreateAttendanceOccurrence({
+                attendanceOccurrenceDate: attendanceForDateIsoString.value,
+                locationGuid: locationGuid.value,
+                scheduleGuid: scheduleGuid.value,
 
-        if (result?.data?.attendance) {
-            // Add the attendance to the array so it can be seen in the attendances list.
-            addToAttendancesArray(result?.data?.attendance);
+                // This will ensure the expected attendance is updated on the existing or newly created occurrence.
+                addedPersonAliasGuid: bag.personAliasGuid,
+            });
+        }
+        else {
+            var result = await invokeBlockAction<GroupAttendanceDetailAddPersonResponseBag>("AddPerson", { bag });
+
+            if (result?.data?.attendance) {
+                // Add the attendance to the array so it can be seen in the attendances list.
+                addToAttendancesArray(result?.data?.attendance);
+            }
         }
 
         // Clear person picker.
@@ -385,7 +424,7 @@
     async function onAttendanceChanged(attendance: GroupAttendanceDetailAttendanceBag): Promise<void> {
         await autoMarkAttendance({
             attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
-            personGuid: attendance.personGuid,
+            personAliasId: attendance.personAliasId,
             didAttend: attendance.didAttend
         });
     }
@@ -393,8 +432,14 @@
     /**
      * Event handler for the "Attendance For" date being updated.
      */
-    function onAttendanceForDateUpdated(dateString: string | null): void {
+    async function onAttendanceForDateUpdated(dateString: string | null): Promise<void> {
         attendanceForDate.value = (dateString ? RockDateTime.parseISO(dateString) : null) ?? RockDateTime.now();
+
+        await getAttendanceOccurrence({
+            attendanceOccurrenceDate: attendanceForDateIsoString.value,
+            locationGuid: locationGuid.value,
+            scheduleGuid: scheduleGuid.value
+        });
     }
 
     /**
@@ -433,7 +478,7 @@
 
         // If there are attendances marked as DidAttend and the individual is checking "We Did Not Meet",
         // then confirm with the individual before saving.
-        if (newDidNotOccur && attendances.value.some(DidAttendFilter.filter)) {
+        if (newDidNotOccur && attendances.value.some(DidAttend.filter)) {
             modalOptions.value = createModalOptions({
                 saveText: "Yes",
                 cancelText: "No",
@@ -461,16 +506,46 @@
     }
 
     /**
+     * Event handler for the config being changed.
+     */
+    function onConfigChanged(): void {
+        attendanceForDate.value = config.value.attendanceOccurrenceDate && RockDateTime.parseISO(config.value.attendanceOccurrenceDate) || RockDateTime.now();
+        locationGuid.value = config.value.locationGuid;
+        scheduleGuid.value = config.value.scheduleGuid;
+        attendanceOccurrenceGuid.value = config.value.attendanceOccurrenceGuid;
+        attendanceOccurrenceTypeGuid.value = config.value.selectedAttendanceOccurrenceTypeValue ?? undefined;
+        didNotOccur.value = config.value.isDidNotMeetChecked;
+        notes.value = config.value.notes ?? "";
+
+        // Start watching real-time events whenever the config (occurrence) changes.
+        startRealTime();
+    }
+
+    /**
      * Event handler for the location picker being changed.
      */
-    function onGroupLocationPickerChanged(locationPickerSelection: NullableListItemBags): void {
+    async function onGroupLocationPickerChanged(locationPickerSelection: NullableListItemBags): Promise<void> {
         locationGuid.value = (locationPickerSelection as ListItemBag)?.value;
+
+        // Clear the selected schedule whenever the location changes.
+        scheduleGuid.value = null;
+
+        // Reset the attendance occurrence date if we are showing the scheduled date picker.
+        if (config.value.attendanceOccurrenceDateSelectionMode === GroupAttendanceDetailDateSelectionMode.ScheduledDatePicker) {
+            attendanceForDate.value = RockDateTime.now();
+        }
+
+        await getAttendanceOccurrence({
+            attendanceOccurrenceDate: attendanceForDateIsoString.value,
+            locationGuid: locationGuid.value,
+            scheduleGuid: scheduleGuid.value
+        });
     }
 
     /**
      * Event handler for the schedule+date picker being changed.
      */
-    function onGroupLocationScheduleDatePickerChanged(scheduleDatePickerSelection: NullableListItemBags): void {
+    async function onGroupLocationScheduleDatePickerChanged(scheduleDatePickerSelection: NullableListItemBags): Promise<void> {
         const selectedValue = (scheduleDatePickerSelection as ListItemBag)?.value;
 
         if (selectedValue) {
@@ -478,13 +553,25 @@
             attendanceForDate.value = RockDateTime.parseISO(date) ?? RockDateTime.now();
             scheduleGuid.value = guid;
         }
+
+        await getAttendanceOccurrence({
+            attendanceOccurrenceDate: attendanceForDateIsoString.value,
+            locationGuid: locationGuid.value,
+            scheduleGuid: scheduleGuid.value
+        });
     }
 
     /**
      * Event handler for the schedule picker being changed.
      */
-    function onGroupLocationSchedulePickerChanged(schedulePickerSelection: NullableListItemBags): void {
+    async function onGroupLocationSchedulePickerChanged(schedulePickerSelection: NullableListItemBags): Promise<void> {
         scheduleGuid.value = (schedulePickerSelection as ListItemBag)?.value;
+
+        await getAttendanceOccurrence({
+            attendanceOccurrenceDate: attendanceForDateIsoString.value,
+            locationGuid: locationGuid.value,
+            scheduleGuid: scheduleGuid.value
+        });
     }
 
     async function onModalSave(): Promise<void> {
@@ -620,19 +707,34 @@
     }
 
     /**
+     * Gets the AttendanceOccurrence based on the currently selected date, location, and schedule.
+     * Note that the returned occurrence may not have been saved yet.
+     */
+    async function getAttendanceOccurrence(bag: GroupAttendanceDetailGetOrCreateRequestBag): Promise<void> {
+        autoSaveOff();
+
+        // Clear the error before calling get/create.
+        errorMessage.value = "";
+
+        const response = await invokeBlockAction<GroupAttendanceDetailInitializationBox>("Get", { bag });
+
+        if (response?.data) {
+            config.value = response.data;
+            onConfigChanged();
+        }
+        else if (config) {
+            config.value.errorMessage = response?.errorMessage || "An unexpected error occurred.";
+        }
+
+        // Wait until the next tick to give the UI a chance to update values from the new config.
+        nextTick(() => autoSaveOn());
+    }
+
+    /**
      * Gets or creates the AttendanceOccurrence based on the currently selected date, location, and schedule.
      */
-    async function getOrCreateAttendanceOccurrence(): Promise<void> {
-        const bag: GroupAttendanceDetailGetOrCreateRequestBag = {
-            didNotOccur: didNotOccur.value,
-            attendanceOccurrenceDate: attendanceForDateString.value,
-            attendanceTypeGuid: attendanceOccurrenceTypeGuid.value,
-            attendees: attendances.value,
-            locationGuid: locationGuid.value,
-            notes: notes.value,
-            scheduleGuid: scheduleGuid.value,
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value
-        };
+    async function getOrCreateAttendanceOccurrence(bag: GroupAttendanceDetailGetOrCreateRequestBag): Promise<void> {
+        autoSaveOff();
 
         // Clear the error before calling get/create.
         errorMessage.value = "";
@@ -641,17 +743,34 @@
 
         if (response?.data) {
             config.value = response.data;
+            onConfigChanged();
         }
         else if (config) {
             config.value.errorMessage = response?.errorMessage || "An unexpected error occurred.";
         }
+
+        // Wait until the next tick to give the UI a chance to update values from the new config.
+        nextTick(() => autoSaveOn());
     }
 
     /**
      * Updates the DidAttend value of a single Attendance.
      */
     async function markAttendance(bag: GroupAttendanceDetailMarkAttendanceRequestBag): Promise<void> {
-        await invokeBlockAction("MarkAttendance", { bag });
+        if (!attendanceOccurrenceGuid.value) {
+            // Create a new occurrence if it hasn't been saved yet.
+            await getOrCreateAttendanceOccurrence({
+                attendanceOccurrenceDate: attendanceForDateIsoString.value,
+                locationGuid: locationGuid.value,
+                scheduleGuid: scheduleGuid.value,
+
+                // This will ensure the expected attendance is updated on the existing or newly created occurrence.
+                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId),
+            });
+        }
+        else {
+            await invokeBlockAction("MarkAttendance", { bag });
+        }
     }
 
     /**
@@ -661,7 +780,26 @@
         try {
             isPrintingRoster.value = true;
 
-            var result = await invokeBlockAction<GroupAttendanceDetailPrintRosterResponseBag>("PrintRoster");
+            if (!attendanceOccurrenceGuid.value) {
+                // The attendance occurrence hasn't been created yet for the selected date, location, and schedule.
+                // Create it before printing the roster.
+
+                await getOrCreateAttendanceOccurrence({
+                    attendanceOccurrenceDate: attendanceForDateIsoString.value,
+                    attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+                    locationGuid: locationGuid.value,
+                    scheduleGuid: scheduleGuid.value
+                });
+            }
+
+            const bag: GroupAttendanceDetailPrintRosterRequestBag = {
+                attendanceOccurrenceDate: attendanceForDateIsoString.value,
+                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+                locationGuid: locationGuid.value,
+                scheduleGuid: scheduleGuid.value
+            };
+
+            var result = await invokeBlockAction<GroupAttendanceDetailPrintRosterResponseBag>("PrintRoster", { bag });
 
             if (result?.errorMessage) {
                 printRosterWarning.value = result.errorMessage;
@@ -679,7 +817,20 @@
      * Updates the type of the current AttendanceOccurrence.
      */
     async function updateAttendanceOccurrenceType(bag: GroupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag): Promise<void> {
-        await invokeBlockAction("UpdateAttendanceOccurrenceType", { bag });
+        if (!attendanceOccurrenceGuid.value) {
+            // Create a new occurrence if it hasn't been saved yet.
+            await getOrCreateAttendanceOccurrence({
+                attendanceOccurrenceDate: attendanceForDateIsoString.value,
+                locationGuid: locationGuid.value,
+                scheduleGuid: scheduleGuid.value,
+
+                // This will ensure the updated attendance occurrence type is set on the existing or newly created occurrence.
+                updatedAttendanceOccurrenceTypeGuid: bag.attendanceOccurrenceTypeGuid,
+            });
+        }
+        else {
+            await invokeBlockAction("UpdateAttendanceOccurrenceType", { bag });
+        }
     }
 
     /**
@@ -699,7 +850,20 @@
         try {
             isSavingDidNotOccur.value = true;
 
-            await invokeBlockAction<void>("UpdateDidNotOccur", { bag });
+            if (!attendanceOccurrenceGuid.value) {
+                // Create a new occurrence if it hasn't been saved yet.
+                await getOrCreateAttendanceOccurrence({
+                    attendanceOccurrenceDate: attendanceForDateIsoString.value,
+                    locationGuid: locationGuid.value,
+                    scheduleGuid: scheduleGuid.value,
+
+                    // This will ensure the updated did not occur flag is set on the existing or newly created occurrence.
+                    updatedDidNotOccur: bag.didNotOccur,
+                });
+            }
+            else {
+                await invokeBlockAction<void>("UpdateDidNotOccur", { bag });
+            }
         }
         finally {
             isSavingDidNotOccur.value = false;
@@ -720,7 +884,20 @@
             notes: notes.value
         };
 
-        await invokeBlockAction<void>("UpdateNotes", { bag });
+        if (!attendanceOccurrenceGuid.value) {
+            // Create a new occurrence if it hasn't been saved yet.
+            await getOrCreateAttendanceOccurrence({
+                attendanceOccurrenceDate: attendanceForDateIsoString.value,
+                locationGuid: locationGuid.value,
+                scheduleGuid: scheduleGuid.value,
+
+                // This will ensure the updated notes are set on the existing or newly created occurrence.
+                updatedNotes: bag.notes,
+            });
+        }
+        else {
+            await invokeBlockAction<void>("UpdateNotes", { bag });
+        }
     }
 
     /**
@@ -759,6 +936,7 @@
         autoUpdateDidNotOccurSwitch.off();
         autoUpdateAttendanceOccurrenceTypeSwitch.off();
         autoUpdateNotesSwitch.off();
+        isAutoSaveOn.value = false;
     }
 
     /**
@@ -769,24 +947,7 @@
         autoUpdateDidNotOccurSwitch.on();
         autoUpdateAttendanceOccurrenceTypeSwitch.on();
         autoUpdateNotesSwitch.on();
-    }
-
-    /**
-     * Sets query parameters on the current URL.
-     *
-     * Replaces the current state in history.
-     */
-    function setUrlParameters(...params: [name: string, value: string][]): void {
-        if (!params || !params.length) {
-            return;
-        }
-
-        const url = new URL(window.location.href);
-        const queryParams = url.searchParams;
-
-        params.forEach(([name, value]) => queryParams.set(name, value));
-
-        window.history.replaceState(null, "", url);
+        isAutoSaveOn.value = true;
     }
 
     /**
@@ -805,71 +966,19 @@
 
     //#endregion
 
-    //#region Watchers
-
-    /**
-     * Keeps the reactive values up-to-date when the config changes.
-     * Config changes occur when the AttendanceOccurrence changes.
-     */
-    watch(config, () => {
-        attendanceForDate.value = config.value.attendanceOccurrenceDate && RockDateTime.parseISO(config.value.attendanceOccurrenceDate) || RockDateTime.now();
-        locationGuid.value = config.value.locationGuid;
-        scheduleGuid.value = config.value.scheduleGuid;
-        attendanceOccurrenceGuid.value = config.value.attendanceOccurrenceGuid;
-        attendanceOccurrenceTypeGuid.value = config.value.selectedAttendanceOccurrenceTypeValue ?? undefined;
-        didNotOccur.value = config.value.isDidNotMeetChecked;
-        notes.value = config.value.notes ?? "";
-    });
-
-    /**
-     * Gets an existing or creates a new AttendanceOccurrence when the date, location, or schedule changes.
-     */
-    watch([attendanceForDate, locationGuid, scheduleGuid], async ([newAttendanceForDate, newLocationGuid, newScheduleGuid], [oldAttendanceForDate, oldLocationGuid, oldScheduleGuid]) => {
-        if (newAttendanceForDate.millisecond === oldAttendanceForDate.millisecond
-            && areEqual(newLocationGuid, oldLocationGuid)
-            && areEqual(newScheduleGuid, oldScheduleGuid)) {
-            // Do nothing if nothing changed.
-            return;
-        }
-
-        if (attendanceForDate.value && locationGuid.value && scheduleGuid.value) {
-            await getOrCreateAttendanceOccurrence();
-        }
-    });
-
-    /**
-     * Restarts auto-save and real-time updates when the AttendanceOccurrence is changed.
-     */
-    watch([attendanceOccurrenceGuid], async () => {
-        autoSaveOff();
-
-        // Set the occurrend id url param.
-        if (config.value.attendanceOccurrenceId) {
-            setUrlParameters(["OccurrenceId", config.value.attendanceOccurrenceId.toString()]);
-        }
-        else {
-            removeCurrentUrlQueryParams("OccurrenceId");
-        }
-
-        if (attendanceOccurrenceGuid.value) {
-            autoSaveOn();
-            await startRealTime();
-        }
-    });
-
-    //#endregion
-
     // Auto-save can be disabled by disabling all auto-save switches.
     // autoMarkAttendanceSwitch.disable();
     // autoUpdateAttendanceOccurrenceTypeSwitch.disable();
     // autoUpdateDidNotOccurSwitch.disable();
     // autoUpdateNotesSwitch.disable();
 
+    // Turn on auto-save right away.
+    autoSaveOn();
+
     if (config.value.attendanceOccurrenceGuid) {
-        // Turn on auto-save right away if the initialization box returned an existing AttendanceOccurrence.
-        autoSaveOn();
         startRealTime();
     }
 
     onConfigurationValuesChanged(useReloadBlock());
+
 </script>

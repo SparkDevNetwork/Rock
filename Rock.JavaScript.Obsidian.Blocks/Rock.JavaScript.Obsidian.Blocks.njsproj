@@ -72,15 +72,16 @@
     <Content Include="src\Event\InteractiveExperiences\liveExperienceOccurrences.obs" />
     <Content Include="src\Event\InteractiveExperiences\LiveExperience\actionPoll.partial.obs" />
     <Content Include="src\Event\InteractiveExperiences\LiveExperience\actionShortAnswer.partial.obs" />
-    <Content Include="src\Groups\groupAttendanceDetail.obs" />
-    <Content Include="src\Groups\GroupAttendanceDetail\attendanceFilter.partial.obs" />
-    <Content Include="src\Groups\GroupAttendanceDetail\attendanceRoster.partial.obs" />
-    <Content Include="src\Groups\GroupAttendanceDetail\campusFilter.partial.obs" />
-    <Content Include="src\Groups\GroupAttendanceDetail\cardCheckBox.partial.obs" />
-    <Content Include="src\Groups\GroupAttendanceDetail\groupLocationPicker.partial.obs" />
-    <Content Include="src\Groups\GroupAttendanceDetail\groupLocationScheduleDatePicker.partial.obs" />
-    <Content Include="src\Groups\GroupAttendanceDetail\groupLocationSchedulePicker.partial.obs" />
-    <Content Include="src\Groups\GroupAttendanceDetail\searchFilter.partial.obs" />
+    <Content Include="src\Group\groupAttendanceDetail.obs" />
+    <Content Include="src\Group\GroupAttendanceDetail\attendanceRoster.partial.obs" />
+    <Content Include="src\Group\GroupAttendanceDetail\campusFilter.partial.obs" />
+    <Content Include="src\Group\GroupAttendanceDetail\cardCheckBox.partial.obs" />
+    <Content Include="src\Group\GroupAttendanceDetail\didAttendFilter.partial.obs" />
+    <Content Include="src\Group\GroupAttendanceDetail\groupLocationPicker.partial.obs" />
+    <Content Include="src\Group\GroupAttendanceDetail\groupLocationScheduleDatePicker.partial.obs" />
+    <Content Include="src\Group\GroupAttendanceDetail\groupLocationSchedulePicker.partial.obs" />
+    <Content Include="src\Group\GroupAttendanceDetail\initialsFilter.partial.obs" />
+    <Content Include="src\Group\GroupAttendanceDetail\searchFilter.partial.obs" />
     <Content Include="src\Security\accountEntry.obs" />
     <Content Include="src\Security\AccountEntry\completedStep.partial.obs" />
     <Content Include="src\Security\AccountEntry\confirmationSentStep.partial.obs" />
@@ -142,8 +143,8 @@
     <Folder Include="src\Event\RegistrationEntry\" />
     <Folder Include="src\Example\" />
     <Folder Include="src\Finance\" />
-    <Folder Include="src\Groups\" />
-    <Folder Include="src\Groups\GroupAttendanceDetail\" />
+    <Folder Include="src\Group\" />
+    <Folder Include="src\Group\GroupAttendanceDetail\" />
     <Folder Include="src\Security\" />
     <Folder Include="src\Security\AccountEntry\" />
     <Folder Include="src\Security\Login\" />
@@ -235,8 +236,8 @@
     <TypeScriptCompile Include="src\Example\personDetail.ts" />
     <TypeScriptCompile Include="src\Example\personSecondary.ts" />
     <TypeScriptCompile Include="src\Finance\transactionEntry.ts" />
-    <TypeScriptCompile Include="src\Groups\GroupAttendanceDetail\types.partial.ts" />
-    <TypeScriptCompile Include="src\Groups\GroupAttendanceDetail\utils.partial.ts" />
+    <TypeScriptCompile Include="src\Group\GroupAttendanceDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\GroupAttendanceDetail\utils.partial.ts" />
     <TypeScriptCompile Include="src\Security\Login\passwordlessCommunicationType.partial.ts" />
     <TypeScriptCompile Include="src\shims-vue.d.ts">
       <SubType>Code</SubType>

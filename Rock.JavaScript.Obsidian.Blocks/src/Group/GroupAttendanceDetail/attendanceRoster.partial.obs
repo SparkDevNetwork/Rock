@@ -7,10 +7,23 @@
                 <h2 v-if="groupLabel && hasMultipleGroups">{{ groupLabel }}</h2>
                 <div class="attendance-grid">
                     <template v-for="attendance in groupedAttendances" :key="attendance.personGuid">
-                        <CardCheckBox v-if="attendance.itemTemplate" :controlWrapperClasses="'card-check-box ' + controlWrapperClasses" :cardCheckBoxClasses="cardCheckBoxClasses" :modelValue="attendance.didAttend" @update:modelValue="onInternalAttendanceChanged($event, attendance)" :html="attendance.itemTemplate" />
-                        <CardCheckBox v-else :controlWrapperClasses="'card-check-box ' + controlWrapperClasses" :cardCheckBoxClasses="cardCheckBoxClasses" :modelValue="attendance.didAttend" @update:modelValue="onInternalAttendanceChanged($event, attendance)">
+                        <CardCheckBox
+                                      v-if="attendance.itemTemplate"
+                                      :controlWrapperClasses="'card-check-box ' + controlWrapperClasses"
+                                      :cardCheckBoxClasses="cardCheckBoxClasses"
+                                      :disabled="disabled"
+                                      :html="attendance.itemTemplate"
+                                      :modelValue="attendance.didAttend"
+                                      @update:modelValue="onInternalAttendanceChanged($event, attendance)" />
+                        <CardCheckBox
+                                      v-else
+                                      :controlWrapperClasses="'card-check-box ' + controlWrapperClasses"
+                                      :cardCheckBoxClasses="cardCheckBoxClasses"
+                                      :disabled="disabled"
+                                      :modelValue="attendance.didAttend"
+                                      @update:modelValue="onInternalAttendanceChanged($event, attendance)">
                             <div>
-                                {{ attendance.fullName }}
+                                {{ getAttendanceFullName(attendance) }}
                             </div>
                         </CardCheckBox>
                     </template>
@@ -38,12 +51,18 @@
     import { computed, PropType } from "vue";
     import CardCheckBox from "./cardCheckBox.partial.obs";
     import { AttendanceFilterByDelegate, AttendanceGroupByDelegate, AttendanceSortByDelegate } from "./types.partial";
+    import { getAttendanceFullName } from "./utils.partial";
     import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
 
     const props = defineProps({
         attendances: {
             type: Object as PropType<GroupAttendanceDetailAttendanceBag[]>,
             required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         filterBy: {

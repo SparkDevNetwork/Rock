@@ -1,13 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="attendance-filter">
-        <RockFormField v-bind="standardFieldProps" name="attendanceFilter" :modelValue="allFilters">
-            <div class="attendance-filter-control-wrapper d-flex flex-row flex-nowrap">
-                <div class="btn-group status-buttons">
-                    <RockButton :btnType="getBtnType(didAttendFilterOrDefault.hasFilter(defaultFilter))" @click="setDefaultOrDidAttendFilter(defaultFilter)">All</RockButton>
-                    <RockButton :btnType="getBtnType(didAttendFilterOrDefault.hasFilter(DidAttendFilter))" @click="setDefaultOrDidAttendFilter(DidAttendFilter)">Present <span class="badge badge-primary">{{ didAttendCount }}</span></RockButton>
-                </div>
-                <div :class="`initial-buttons btn-group ml-2 d-flex ${isScrollSupported ? 'overflow-hidden' : 'flex-wrap'}`" ref="initialButtonsContainerElement" @scroll="debouncedScrollCheck">
+    <div class="initials-filter">
+        <RockFormField v-bind="standardFieldProps" name="initialsFilter" :modelValue="allFilters">
+            <div class="control-wrapper">
+                <div :class="`initial-buttons btn-group d-flex ${isScrollSupported ? 'overflow-hidden' : 'flex-wrap'}`" ref="initialButtonsContainerElement" @scroll="debouncedScrollCheck">
                     <button v-if="isScrollSupported && (isAnyInitialFilterOverflowingToLeft || isAnyInitialFilterOverflowingToRight)"
                         :class="`align-self-start left-scroll-button btn btn-lg btn-${getBtnType(isAnyActiveInitialFilterOverflowingToLeft)}`"
                         ref="leftScrollButtonElement"
@@ -32,7 +28,6 @@
 
 <style scoped>
 
-    .status-buttons,
     .initial-buttons {
         padding: 8px 0; /* Bootstrap button box shadows are hidden from overflow:hidden so adding padding to this container. */
     }
@@ -64,7 +59,6 @@
 <script setup lang="ts">
     import { ComponentPublicInstance, computed, nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import { createEveryFilter, createSomeFilter, DidAttendFilter, getOrCreateFirstNameStartsWithFilter, getOrCreateLastNameStartsWithFilter, IAggregateAttendanceFilter, IAttendanceFilter, NoFilter } from "./utils.partial";
-    import RockButton from "@Obsidian/Controls/rockButton";
     import RockFormField from "@Obsidian/Controls/rockFormField";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LiteralUnion } from "@Obsidian/Types/Utility/support";
@@ -179,8 +173,6 @@
         }
     });
 
-    const didAttendCount = computed<number>(() => props.attendances.filter(attendance => attendance.didAttend).length);
-
     const initials = computed<string[]>(() =>
         props.isFilterByFirstNameInitial
             ? props.attendances.filter(a => !!a.nickName)
@@ -265,15 +257,6 @@
         else {
             return props.unselectedBtnType;
         }
-    }
-
-    /**
-     * Sets the "default or did attend" filter.
-     */
-    function setDefaultOrDidAttendFilter(attendanceFilter: IAttendanceFilter): void {
-        didAttendFilterOrDefault.value = attendanceFilter;
-
-        notifyFiltersUpdated();
     }
 
     /**

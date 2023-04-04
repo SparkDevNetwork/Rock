@@ -21,9 +21,9 @@ using System.Collections.Generic;
 namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
 {
     /// <summary>
-    /// A bag that contains the get or create request information.
+    /// A bag that contains the print roster request information.
     /// </summary>
-    public class GroupAttendanceDetailGetOrCreateRequestBag
+    public class GroupAttendanceDetailPrintRosterRequestBag
     {
         /// <summary>
         /// Gets or sets the attendance occurrence date (time ignored).
@@ -44,30 +44,5 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         /// Gets or sets the schedule unique identifier.
         /// </summary>
         public Guid? ScheduleGuid { get; set; }
-
-        /// <summary>
-        /// If set, the attendance occurrence type will be updated for the existing or newly created occurrence.
-        /// </summary>
-        public Guid? UpdatedAttendanceOccurrenceTypeGuid { get; set; }
-
-        /// <summary>
-        /// If set, the "did not occur" flag will be updated for the existing or newly created occurrence.
-        /// </summary>
-        public bool? UpdatedDidNotOccur { get; set; }
-
-        /// <summary>
-        /// If set (not null), the notes will be updated for the existing or newly created occurrence.
-        /// </summary>
-        public string UpdatedNotes { get; set; }
-
-        /// <summary>
-        /// If set, the attendances will be updated for each item in the list.
-        /// </summary>
-        public List<GroupAttendanceDetailMarkAttendanceRequestBag> UpdatedAttendances { get; set; }
-
-        /// <summary>
-        /// If set, the person will be added to the existing or newly created occurrence (and potentially as a group member depending on block settings).
-        /// </summary>
-        public Guid? AddedPersonAliasGuid { get; set; }
     }
 }

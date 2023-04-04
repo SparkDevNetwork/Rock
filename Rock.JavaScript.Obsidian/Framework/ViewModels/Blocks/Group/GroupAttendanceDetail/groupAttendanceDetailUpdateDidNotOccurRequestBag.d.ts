@@ -28,9 +28,6 @@ export type GroupAttendanceDetailUpdateDidNotOccurRequestBag = {
     /** Gets or sets the attendance occurrence unique identifier. */
     attendanceOccurrenceGuid?: Guid | null;
 
-    /** Gets or sets the campus unique identifier. */
-    campusGuid?: Guid | null;
-
     /** Gets or sets a value indicating whether the attendance occurrence occurred. */
     didNotOccur: boolean;
 };

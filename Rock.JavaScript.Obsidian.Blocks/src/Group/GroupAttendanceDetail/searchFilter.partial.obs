@@ -1,13 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="form-group">
+    <div class="form-group search-filter">
         <TextBox v-model="searchText" placeholder="Search" />
     </div>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { createFilter, IAttendanceFilter, NoFilter } from "./utils.partial";
+    import { createFilter, getAttendanceFullName, IAttendanceFilter, NoFilter } from "./utils.partial";
     import TextBox from "@Obsidian/Controls/textBox";
     import { debounce } from "@Obsidian/Utility/util";
     import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
@@ -53,7 +53,7 @@
      */
     function createNameContainsFilter(text: string): IAttendanceFilter {
         return createFilter((attendance: GroupAttendanceDetailAttendanceBag) => {
-            return !!attendance.fullName && attendance.fullName.toLocaleLowerCase().indexOf(text.toLocaleLowerCase()) >= 0;
+            return getAttendanceFullName(attendance).toLocaleLowerCase().indexOf(text.toLocaleLowerCase()) >= 0;
         });
     }
 
@@ -62,7 +62,7 @@
      */
     function createNameMatchesRegexFilter(regex: RegExp): IAttendanceFilter {
         return createFilter((attendance: GroupAttendanceDetailAttendanceBag) => {
-            return !!attendance.fullName && regex.test(attendance.fullName);
+            return regex.test(getAttendanceFullName(attendance));
         });
     }
 

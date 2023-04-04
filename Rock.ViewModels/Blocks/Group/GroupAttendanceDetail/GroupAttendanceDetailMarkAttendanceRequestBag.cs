@@ -30,9 +30,9 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         public Guid AttendanceOccurrenceGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the person unique identifier.
+        /// Gets or sets the person alias identifier.
         /// </summary>
-        public Guid PersonGuid { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the Person attended.
