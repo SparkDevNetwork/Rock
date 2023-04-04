@@ -1405,9 +1405,7 @@ namespace Rock.Migrations.Migrations {
         ///        &quot;top&quot;: 0,
         ///        &quot;right&quot;: 0,
         ///        &quot;bottom&quot;: 1,
-        ///        &quot;left&quot;: 1
-        ///      },
-        ///      &quot;Bo [rest of string was truncated]&quot;;.
+        ///        &quot;left&quot; [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202303231713546_Rollup_20230323_ChartColorUpdate {
             get {
@@ -1423,11 +1421,25 @@ namespace Rock.Migrations.Migrations {
         ///&lt;h1 style=&quot;margin:0;&quot;&gt;Your Reminders&lt;/h1&gt;
         ///
         ///&lt;p&gt;
-        ///    Below are {{ MaxRemindersPerEntityType }} of the most recent reminders for each feature as of {{ currentDate }}. &lt;a href=&quot;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicApplicati [rest of string was truncated]&quot;;.
+        ///    Below are {{ MaxRemindersPerEntityType }} of the most recent reminders for each feature as of {{ currentDate }}. &lt;a href=&quot;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicAp [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars {
             get {
                 return ResourceManager.GetString("_202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look at each opt [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202304042314453_Rollup_20230404_updatechartjs {
+            get {
+                return ResourceManager.GetString("_202304042314453_Rollup_20230404_updatechartjs", resourceCulture);
             }
         }
     }

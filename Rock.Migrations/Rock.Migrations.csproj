@@ -188,6 +188,10 @@
     <Compile Include="Migrations\202304032256559_FixSecurityCodeRandomizedFieldType.designer.cs">
       <DependentUpon>202304032256559_FixSecurityCodeRandomizedFieldType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202304042314453_Rollup_20230404.cs" />
+    <Compile Include="Migrations\202304042314453_Rollup_20230404.designer.cs">
+      <DependentUpon>202304042314453_Rollup_20230404.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1703,6 +1707,9 @@
     <EmbeddedResource Include="Migrations\202304032256559_FixSecurityCodeRandomizedFieldType.resx">
       <DependentUpon>202304032256559_FixSecurityCodeRandomizedFieldType.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202304042314453_Rollup_20230404.resx">
+      <DependentUpon>202304042314453_Rollup_20230404.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
     </EmbeddedResource>
@@ -2791,6 +2798,7 @@
     <Content Include="Migrations\202303231713546_Rollup_20230323_ChartColorUpdate.sql" />
     <Content Include="Migrations\202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars.sql" />
     <None Include="Migrations\202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
+    <Content Include="Migrations\202304042314453_Rollup_20230404_updatechartjs.sql" />
     <Content Include="Migrations\Version 14.0\Version 1.14.1\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql">
       <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
     </Content>
