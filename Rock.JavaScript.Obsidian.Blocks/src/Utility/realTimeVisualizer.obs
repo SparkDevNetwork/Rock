@@ -86,12 +86,7 @@
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
-
-    type Message = {
-        topic: string;
-        message: string;
-        arguments?: string;
-    };
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
     type Configuration = {
         hasItemTemplate: boolean;
@@ -112,10 +107,11 @@
     const isAutoConnecting = ref(false);
     const isDisconnected = ref(false);
     const contentTemplate = ref(config.pageTemplate);
-    const showMessageFunctionName = `showMessage${newGuid().replace(/-/g, "")}`;
+    const wrappedScriptName = `wrappedScript${newGuid().replace(/-/g, "")}`;
     const visualizerContainer = ref<HTMLElement | null>(null);
     const visualizerId = `visualizer-${newGuid()}`;
     const containerStyles: Record<string, string> = {};
+    let wrappedSetupComplete: boolean = false;
 
     // #endregion
 
@@ -188,9 +184,9 @@
     function injectScriptTag(): void {
         // This creates a unique function name we can use. It is constructed
         // by nesting the custom JavaScript from the block settings and then
-        // returning the showMessage function if it is defined. This ensures
-        // that we don't pollute the global namespace.
-        const script = `window["${showMessageFunctionName}"] = (function() { ${config.script}; return typeof showMessage !== "undefined" ? showMessage : function () {}; })();`;
+        // returning an object that gives us access to the showItem and setup
+        // functions. This ensures that we don't pollute the global namespace.
+        const script = `window["${wrappedScriptName}"] = (function() { ${config.script}; return { showItem: typeof showItem !== "undefined" ? showItem : function () {}, setup: typeof setup !== "undefined" ? setup : function() {} }; })();`;
 
         const scriptNode = document.createElement("script");
         scriptNode.type = "text/javascript";
@@ -206,13 +202,23 @@
     }
 
     /**
-     * Shows the message that was received.
+     * Shows the item that was received.
      *
      * @param content The content to be shown.
      */
-    function showMessage(content: unknown): void {
+    async function showItem(content: unknown): Promise<void> {
         if (visualizerContainer.value) {
-            window[showMessageFunctionName](content,
+            if (!wrappedSetupComplete) {
+                const setupResult = window[wrappedScriptName].setup(visualizerContainer.value, unref(config.settings));
+
+                if (isPromise(setupResult)) {
+                    await setupResult;
+                }
+
+                wrappedSetupComplete = true;
+            }
+
+            window[wrappedScriptName].showItem(content,
                 visualizerContainer.value,
                 unref(config.settings));
         }
@@ -281,11 +287,11 @@
             });
 
             if (result.data) {
-                showMessage(result.data);
+                showItem(result.data);
             }
         }
         else {
-            showMessage({
+            showItem({
                 topic: topicIdentifier,
                 message,
                 arguments: args

@@ -27,6 +27,12 @@ namespace Rock.ViewModels.Blocks.Utility.RealTimeVisualizer
     public class ThemeListItemBag : ListItemBag
     {
         /// <summary>
+        /// Gets or sets the HTML that describes how this theme works.
+        /// </summary>
+        /// <value>The HTML that describes how this theme works.</value>
+        public string HelpContent { get; set; }
+
+        /// <summary>
         /// Gets or sets the setting keys for this theme.
         /// </summary>
         /// <value>The setting keys for this theme.</value>

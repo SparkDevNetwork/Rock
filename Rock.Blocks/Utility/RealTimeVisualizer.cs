@@ -27,11 +27,10 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.RealTime;
-using Rock.ViewModels.Blocks.Utility.RealTimeVisualizer;
 using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Utility.RealTimeVisualizer;
 using Rock.ViewModels.Cms;
 using Rock.Web.Cache;
-using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Utility
 {
@@ -159,7 +158,7 @@ namespace Rock.Blocks.Utility
                 var key = keyAndValue[0];
                 var value = keyAndValue[1];
 
-                if ( key.IsNullOrWhiteSpace() || value.IsNullOrWhiteSpace() )
+                if ( key.IsNullOrWhiteSpace() )
                 {
                     continue;
                 }
@@ -242,6 +241,7 @@ namespace Rock.Blocks.Utility
                 {
                     Value = dv.Guid.ToString(),
                     Text = dv.Value,
+                    HelpContent = dv.GetAttributeValue( "HelpContent" ),
                     Settings = GetKeyValueList( dv.GetAttributeValue( "Settings" ) )
                         .Select( kvp => kvp.Key )
                         .ToList()
@@ -471,5 +471,310 @@ namespace Rock.Blocks.Utility
         }
 
         #endregion
+
+        const string ToastPageTemplate = @"<div class=""visualizer-container"">
+</div>";
+        const string ToastStyle = @".visualizer-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    position: relative;
+    background-color: black;
+{% if Settings.fullscreen == ""true"" %}
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+{% endif %}
+}
+
+.visualizer-container > canvas {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+
+.visualizer-container > .realtime-visualizer-item {
+    height: 0px;
+}
+
+/* IN transition initial states. */
+.visualizer-container > .realtime-visualizer-item.left-in {
+    transform: translateX(calc(var(--slideAmount) * -1));
+}
+
+.visualizer-container > .realtime-visualizer-item.top-in {
+    transform: translateY(calc(var(--slideAmount) * -1));
+}
+
+.visualizer-container > .realtime-visualizer-item.right-in {
+    transform: translateX(var(--slideAmount));
+}
+
+.visualizer-container > .realtime-visualizer-item.bottom-in {
+    transform: translateY(var(--slideAmount));
+}
+
+.visualizer-container > .realtime-visualizer-item.fade-in {
+    opacity: 0;
+}
+
+/* IN transition final states. */
+.visualizer-container > .realtime-visualizer-item.left-in.in,
+.visualizer-container > .realtime-visualizer-item.top-in.in,
+.visualizer-container > .realtime-visualizer-item.right-in.in,
+.visualizer-container > .realtime-visualizer-item.bottom-in.in {
+    transform: initial;
+}
+
+.visualizer-container > .realtime-visualizer-item.fade-in.in {
+    opacity: 1;
+}
+
+/* OUT transition final states. */
+.visualizer-container > .realtime-visualizer-item.left-out.out {
+    transform: translateX(calc(var(--slideAmount) * -1));
+}
+
+.visualizer-container > .realtime-visualizer-item.top-out.out {
+    transform: translateY(calc(var(--slideAmount) * -1));
+}
+
+.visualizer-container > .realtime-visualizer-item.right-out.out {
+    transform: translateX(var(--slideAmount));
+}
+
+.visualizer-container > .realtime-visualizer-item.bottom-out.out {
+    transform: translateY(var(--slideAmount));
+}
+
+.visualizer-container > .realtime-visualizer-item.fade-out.out {
+    opacity: 0;
+    overflow-y: initial;
+}
+
+/* Transition Timings. */
+.visualizer-container > .realtime-visualizer-item.in {
+    transition: height var(--animationDuration) ease-out, transform var(--animationDuration) ease-out, opacity var(--animationDuration) ease-out;
+}
+
+.visualizer-container > .realtime-visualizer-item.out {
+    transition: opacity var(--animationDuration) ease-in, transform var(--animationDuration) ease-in, height var(--animationDuration) ease-in;
+}
+";
+        const string ToastScript = @"let confetti;
+let Fireworks;
+let fireworks;
+let activeCount = 0;
+
+// Called one time to initialize everything before any
+// calls to showItem() are made.
+async function setup(container, settings) {
+    const itemContainer = container.getElementsByClassName(""visualizer-container"")[0];
+
+    if (settings.fireworks === ""true"") {
+        const Fireworks = (await import(""https://cdn.jsdelivr.net/npm/fireworks-js/+esm"")).Fireworks;
+        fireworks = new Fireworks(itemContainer);
+    }
+    
+    if (settings.confetti === ""true"") {
+        const confettiFactory = (await import(""https://cdn.jsdelivr.net/npm/canvas-confetti/+esm"")).create;
+        const confettiCanvas = document.createElement(""canvas"");
+        confettiCanvas.setAttribute(""width"", itemContainer.clientWidth.toString());
+        confettiCanvas.setAttribute(""height"", itemContainer.clientHeight.toString());
+        itemContainer.append(confettiCanvas);
+        confetti = confettiFactory(confettiCanvas);
+    }
+}
+
+// Shows a single visual item from the RealTime system.
+async function showItem(content, container, settings) {
+    if (!content) {
+        return;
+    }
+    
+    const itemContainer = container.getElementsByClassName(""visualizer-container"")[0];
+    
+    // Configure the item and it's content.
+    const item = document.createElement(""div"");
+    item.classList.add(""realtime-visualizer-item"");
+    item.innerHTML = content;
+    itemContainer.prepend(item);
+
+    // Configure all the animation classes.
+    if (settings.fade === ""true"") {
+        item.classList.add(""fade-in"", ""fade-out"");
+    }
+
+    if (settings.slideInDirection) {
+        item.classList.add(`${settings.slideInDirection}-in`);
+    }
+
+    if (settings.slideOutDirection) {
+        item.classList.add(`${settings.slideOutDirection}-out`);
+    }
+
+    // Show the item.
+    setItemHeight(item);
+    item.classList.add(""in"");
+    activeCount++;
+
+    // Start up all the extras.
+    playAudio(item, settings);
+    showConfetti();
+    startFireworks();
+    
+    // Wait until this item should be removed and then start
+    // the removal process.
+    setTimeout(() => {
+        item.classList.add(""out"");
+        item.style.height = ""0px"";
+
+        item.addEventListener(""transitionend"", () => {
+            if (item.parentElement) {
+                item.remove();
+            }
+
+            activeCount--;
+
+            if (activeCount === 0) {
+                stopFireworks();
+            }
+        });
+    }, parseInt(settings.duration) || 5000);
+}
+
+// Sets the height of the item. This calculates the height required
+// to display the entire item, including any margins on the first
+// and last child. This allows items to gently slide down to make
+// room for the new item.
+function setItemHeight(item) {
+    let topMargin = 0;
+    let bottomMargin = 0;
+    
+    if (item.children.length > 0) {
+        let computedStyle = window.getComputedStyle(item.children[0]);
+        topMargin = Number(computedStyle.marginTop.replace(""px"", """") || ""0"");
+        
+        computedStyle = window.getComputedStyle(item.children[item.children.length - 1]);
+        bottomMargin = Number(computedStyle.marginBottom.replace(""px"", """") || ""0"");
+    }
+
+    item.style.height = `${item.scrollHeight + topMargin + bottomMargin}px`;
+}
+
+// If we are configured to play audio then this will search the item
+// for a data-audio-url tag somewhere in the content. If found it will
+// be used as the audio source, otherwise the default URL will be used.
+function playAudio(item, settings) {
+    if (!settings.playAudio) {
+        return;
+    }
+
+    try
+    {
+        let audioUrl = settings.defaultAudioUrl || """";
+        const urlElement = item.querySelector(""[data-audio-url]"");
+        
+        if (urlElement) {
+            audioUrl = urlElement.dataset.audioUrl;
+        }
+        
+        if (audioUrl) {
+            new Audio(audioUrl).play();
+        }
+    }
+    catch (error) {
+        console.error(error);
+    }
+}
+
+// Shows a burst of confetti for a single item.
+function showConfetti() {
+    if (!confetti) {
+        return;
+    }
+
+    confetti({
+        particleCount: 100,
+        startVelocity: 75,
+        decay: 0.92,
+        spread: 90,
+        angle: 35,
+        origin: { x: 0, y: 0.75 }
+    });
+
+    confetti({
+        particleCount: 100,
+        startVelocity: 75,
+        decay: 0.92,
+        spread: 90,
+        angle: 125,
+        origin: { x: 1, y: 0.75 }
+    });
+}
+
+// Starts showing fireworks if they have not been started.
+function startFireworks() {
+    if (activeCount > 0 && fireworks && !fireworks.isRunning) {
+        fireworks.start();
+    }
+}
+
+// Stops the fireworks from running.
+function stopFireworks() {
+    if (!fireworks) {
+        return;
+    }
+
+    fireworks.waitStop().then(() => {
+        // If we showed an item before the fireworks completely
+        // stopped then start them up again.
+        if (activeCount > 0) {
+            fireworks.start();
+        }
+    });
+}
+";
+
+        const string ToastHelpContent = @"<p>
+    The Toast theme displays the item at the top of the area for a short period of time
+    and then removes it. If additional items are displayed before previous ones are
+    removed then they are inserted at the top.
+</p>
+
+<div><strong>Presentation Settings</strong></div>
+
+<p>
+    There are a few properties that define how an item is presented that can be
+    set to customize how this theme looks and behaves.
+</p>
+
+<ul>
+    <li><strong>animationDuration:</strong> The number of seconds the item will spend transitioning onto or off of the screen. (Default: <strong>0.5s</strong>)</li>
+    <li><strong>duration:</strong> The number of milliseconds the item will stay on screen, this does not include the animationDuration. (Default: <strong>5000</strong>)</li>
+    <li><strong>fade:</strong> Determines if the item should fade in and out. Valid values are ""true"" and ""false"". (Default: <strong>true</strong>)</li>
+    <li><strong>fullscreen:</strong> Determines if the theme should render itself full-screen. You can turn this off to use CSS to customize what part of the screen to fill. (Default: <strong>true</strong>)</li>
+    <li><strong>slideAmount:</strong> The number of pixels to slide the item when slideInDirection or slideOutDirection are specified. (Default: <strong>15px</strong>)</li>
+    <li><strong>slideInDirection:</strong> If set to a value this will determine what direction the item will slide in from. Valid values are ""left"", ""top"", ""right"" and ""bottom"". (No default)</li>
+    <li><strong>slideOutDirection: </strong>If set to a value this will determine what direction the item will slide out towards. Valid values are ""left"", ""top"", ""right"" and ""bottom"". <strong>(No default)</strong></li>
+</ul>
+
+<div><strong>Advanced Settings</strong></div>
+
+<p>
+    There are some other settings you can use to customize the behavior of the theme.
+</p>
+
+<ul>
+    <li><strong>confetti:</strong> If turned on, a burst of confetti will appear from both sides of the screen when an item is displayed. Valid values are ""true"" and ""false"". (Default: <strong>false</strong>)</li>
+    <li><strong>fireworks:</strong> If turned on, fireworks will be displayed during the entire duration that any item is displayed. Valid values are ""true"" and ""false"". (Default: <strong>false</strong>)</li>
+    <li><strong>defaultAudioUrl:</strong> When playAudio is enabled, this provides the default audio file to use if none is specified in the item template. (No default)</li>
+    <li><strong>playAudio:</strong> If turned on, an audio file will be played when an item appears on screen. If the item includes a ""data-audio-url"" attribute then it will be used as the URL of the audio file to play. Otherwise any value in defaultAudioUrl will be used. (Default: <strong>false</strong>)</li>
+</ul>
+";
     }
 }

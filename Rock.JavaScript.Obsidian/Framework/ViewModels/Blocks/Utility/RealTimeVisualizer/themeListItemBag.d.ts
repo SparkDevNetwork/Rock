@@ -26,6 +26,9 @@ export type ThemeListItemBag = {
     /** Gets or sets the category for this item. */
     category?: string | null;
 
+    /** Gets or sets the HTML that describes how this theme works. */
+    helpContent?: string | null;
+
     /** Gets or sets the setting keys for this theme. */
     settings?: string[] | null;
 
