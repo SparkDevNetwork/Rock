@@ -243,6 +243,8 @@ namespace Rock.Tests.Integration.Engagement.Steps
         /// </summary>
         private static void CreateTestData()
         {
+            DeleteTestData();
+
             CreateTestPeople();
             CreateTestDataView();
             CreateTestStepProgram();
@@ -297,8 +299,8 @@ namespace Rock.Tests.Integration.Engagement.Steps
         [TestInitialize]
         public void TestInitialize()
         {
-            // Reset the data before each test so each test does not affect another
-            DeleteTestData();
+            TestDatabaseHelper.ResetDatabase();
+
             CreateTestData();
         }
 
@@ -311,12 +313,11 @@ namespace Rock.Tests.Integration.Engagement.Steps
         [TestMethod]
         public void Execute_AddsNewStep()
         {
-            var jobContext = new TestJobContext();
             var testAttributeValues = new Dictionary<string, string>();
             testAttributeValues.AddOrReplace( StepsAutomation.AttributeKey.DuplicatePreventionDayRange, 7.ToString() );
 
             var job = new StepsAutomation();
-            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
+            job.ExecuteInternal( testAttributeValues );
 
             var rockContext = new RockContext();
             var stepProgramService = new StepProgramService( rockContext );
@@ -380,13 +381,11 @@ namespace Rock.Tests.Integration.Engagement.Steps
             }
 
             // Run the job
-            var jobContext = new TestJobContext();
-
             var testAttributeValues = new Dictionary<string, string>();
             testAttributeValues.AddOrReplace( StepsAutomation.AttributeKey.DuplicatePreventionDayRange, 7.ToString() );
 
             var job = new StepsAutomation();
-            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
+            job.ExecuteInternal( testAttributeValues );
 
             // Refresh the data from the database
             using ( var rockContext = new RockContext() )
@@ -461,14 +460,13 @@ namespace Rock.Tests.Integration.Engagement.Steps
                 rockContext.SaveChanges();
             }
 
-            var jobContext = new TestJobContext();
             var testAttributeValues = new Dictionary<string, string>();
             testAttributeValues.AddOrReplace( StepsAutomation.AttributeKey.DuplicatePreventionDayRange, 7.ToString() );
 
             var job = new StepsAutomation();
 
             // Run the job
-            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
+            job.ExecuteInternal( testAttributeValues );
 
             // Refresh the data from the database
             using ( var rockContext = new RockContext() )
@@ -547,14 +545,13 @@ namespace Rock.Tests.Integration.Engagement.Steps
                 rockContext.SaveChanges();
             }
 
-            var jobContext = new TestJobContext();
             var testAttributeValues = new Dictionary<string, string>();
             testAttributeValues.AddOrReplace( StepsAutomation.AttributeKey.DuplicatePreventionDayRange, 7.ToString() );
 
             var job = new StepsAutomation();
 
             // Run the job
-            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
+            job.ExecuteInternal( testAttributeValues );
 
             // Refresh the data from the database
             using ( var rockContext = new RockContext() )
