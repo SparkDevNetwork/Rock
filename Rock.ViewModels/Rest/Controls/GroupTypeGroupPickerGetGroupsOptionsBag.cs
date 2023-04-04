@@ -23,21 +23,11 @@ namespace Rock.ViewModels.Rest.Controls
     /// The options that can be passed to the GetGroupTypes API action of
     /// the GroupTypePicker control.
     /// </summary>
-    public class GroupTypePickerGetGroupTypesOptionsBag
+    public class GroupTypeGroupPickerGetGroupsOptionsBag
     {
         /// <summary>
-        /// List of GUIDs for the group types we want to retrieve
+        /// GUID of the group type we want to filter groups by
         /// </summary>
-        public List<Guid> GroupTypes { get; set; }
-
-        /// <summary>
-        /// Whether or not to filter out the group types that aren't flagged to be on the group list
-        /// </summary>
-        public bool OnlyGroupListItems { get; set; } = false;
-
-        /// <summary>
-        /// Whether the results are sorted by name or order
-        /// </summary>
-        public bool IsSortedByName { get; set; } = false;
+        public Guid GroupTypeGuid { get; set; } = Guid.Empty;
     }
 }

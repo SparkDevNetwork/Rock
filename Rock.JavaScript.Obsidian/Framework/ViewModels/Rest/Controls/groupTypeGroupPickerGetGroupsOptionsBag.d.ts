@@ -27,13 +27,7 @@ import { Guid } from "@Obsidian/Types";
  * The options that can be passed to the GetGroupTypes API action of
  * the GroupTypePicker control.
  */
-export type GroupTypePickerGetGroupTypesOptionsBag = {
-    /** List of GUIDs for the group types we want to retrieve */
-    groupTypes?: Guid[] | null;
-
-    /** Whether the results are sorted by name or order */
-    isSortedByName: boolean;
-
-    /** Whether or not to filter out the group types that aren't flagged to be on the group list */
-    onlyGroupListItems: boolean;
+export type GroupTypeGroupPickerGetGroupsOptionsBag = {
+    /** GUID of the group type we want to filter groups by */
+    groupTypeGuid?: Guid | null;
 };

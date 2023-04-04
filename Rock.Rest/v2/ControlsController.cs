@@ -2195,7 +2195,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "GroupMemberPickerGetGroupMembers" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
-        public IHttpActionResult GroupMemberPickerGetGroupMembers( GroupMemberPickerGetGroupMembersOptionsBag options )
+        public IHttpActionResult GroupMemberPickerGetGroupMembers( [FromBody] GroupMemberPickerGetGroupMembersOptionsBag options )
         {
             Rock.Model.Group group;
 
@@ -2228,6 +2228,63 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Type Group Picker
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group type group picker for the specified group type.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypeGroupPickerGetGroups" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "f07ac6f8-128c-4881-a4ec-c245b8f10f9e" )]
+        public IHttpActionResult GroupTypeGroupPickerGetGroups( [FromBody] GroupTypeGroupPickerGetGroupsOptionsBag options )
+        {
+            var groups = new List<ListItemBag>();
+            if ( options.GroupTypeGuid != Guid.Empty )
+            {
+                var groupService = new Rock.Model.GroupService( new RockContext() );
+                groups = groupService.Queryable()
+                    .Where( g => g.GroupType.Guid == options.GroupTypeGuid )
+                    .OrderBy( g => g.Name )
+                    .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                    .ToList();
+            }
+
+            return Ok( groups );
+        }
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group type group picker for the specified group type.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypeGroupPickerGetGroupTypeOfGroup" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "984ce064-6073-4b8d-b670-338a3049e13b" )]
+        public IHttpActionResult GroupTypeGroupPickerGetGroupTypeOfGroup( [FromBody] GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag options )
+        {
+            if ( options.GroupGuid != Guid.Empty )
+            {
+                var groupService = new Rock.Model.GroupService( new RockContext() );
+                var group = groupService.Get( options.GroupGuid );
+
+                if (group == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = group.GroupType.Name, Value = group.GroupType.Guid.ToString() } );
+            }
+
+            return NotFound();
+
+        }
+
+        #endregion
+
         #region Group Type Picker
 
         /// <summary>
@@ -2239,7 +2296,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "GroupTypePickerGetGroupTypes" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "b0e07419-0e3c-4235-b5d4-4262fd63e050" )]
-        public IHttpActionResult GroupTypePickerGetGroupTypes( GroupTypePickerGetGroupTypesOptionsBag options )
+        public IHttpActionResult GroupTypePickerGetGroupTypes( [FromBody] GroupTypePickerGetGroupTypesOptionsBag options )
         {
             var groupTypes = new List<GroupTypeCache>();
             var results = new List<ListItemBag>();
@@ -2255,6 +2312,12 @@ namespace Rock.Rest.v2
                     var groupType = GroupTypeCache.Get( groupTypeGuid );
                     groupTypes.Add( groupType );
                 }
+            }
+
+            if (options.OnlyGroupListItems)
+            {
+                // get all group types that have the ShowInGroupList flag set
+                groupTypes = groupTypes.Where( a => a.ShowInGroupList ).ToList();
             }
 
             if ( options.IsSortedByName )

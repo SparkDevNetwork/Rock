@@ -34,6 +34,7 @@
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\addressControl.obs" />
+    <Content Include="Framework\Controls\groupTypeGroupPicker.obs" />
     <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
     <Content Include="Framework\Controls\cacheabilityPicker.obs" />
@@ -69,6 +70,8 @@
     <Content Include="Framework\Controls\phoneNumberBox.obs" />
     <Content Include="Framework\Controls\popOver.obs" />
     <Content Include="Framework\Controls\racePicker.obs" />
+    <Content Include="Framework\Controls\registryEntry.obs" />
+    <Content Include="Framework\Controls\rockLiteral.obs" />
     <Content Include="Framework\Controls\slidingDateRangePicker.obs" />
     <Content Include="Framework\Controls\reminderTypePicker.obs" />
     <Content Include="Framework\Controls\scheduleBuilder.obs" />
@@ -1034,6 +1037,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetAllForGroupRoleOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetAllForGroupRoleResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetGroupRolesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupTypeGroupPickerGetGroupsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupTypeGroupPickerGetGroupTypeOfGroupOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupTypePickerGetGroupTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionComponentPickerGetInteractionComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationItemPickerGetActiveChildrenOptionsBag.d.ts" />

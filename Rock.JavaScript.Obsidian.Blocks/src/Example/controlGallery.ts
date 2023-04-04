@@ -211,6 +211,7 @@ import PersonLink from "@Obsidian/Controls/personLink.obs";
 import PopOver from "@Obsidian/Controls/popOver.obs";
 import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
 import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
+import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
 
 // #region Gallery Support
 
@@ -7532,6 +7533,51 @@ const registryEntryGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates group type group picker */
+const groupTypeGroupPickerGallery = defineComponent({
+    name: "GroupTypeGroupPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        GroupTypeGroupPicker,
+        TextBox,
+        RockButton
+    },
+    setup() {
+        return {
+            value: ref(null),
+            groupType: ref(null),
+            required: ref(false),
+            glabel: ref("Group"),
+            importCode: getSfcControlImportPath("groupTypeGroupPicker"),
+            exampleCode: `<GroupTypeGroupPicker label="Group Type and TypeGroup" groupLabel="Group" v-model="value"v-model:groupType="groupType" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{value, groupType}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+    <GroupTypeGroupPicker label="Group Type and TypeGroup" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Group Label" v-model="glabel" help="The label for the 2nd dropdown. The label for the first dropdown is not customizable" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -7671,6 +7717,7 @@ const controlGalleryComponents: Record<string, Component> = [
     popOverGallery,
     rockLiteralGallery,
     registryEntryGallery,
+    groupTypeGroupPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
