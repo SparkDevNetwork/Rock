@@ -1114,13 +1114,37 @@ $(document).ready(function() {
         {
             hlTimeToRun.Text = string.Empty;
             hlTimeToRun.LabelType = LabelType.Default;
-
-            if ( dataView == null || dataView.TimeToRunDurationMilliseconds == null )
+            bool isPersisted = false;
+            if ( dataView == null )
             {
                 return;
             }
+            else if ( dataView.PersistedScheduleId != null || dataView.PersistedScheduleIntervalMinutes != null  )
+            {
+                // This is a persisted data view...
+                if ( ! dataView.PersistedLastRunDurationMilliseconds.HasValue )
+                {
+                    return;
+                }
 
-            var labelValue = dataView.TimeToRunDurationMilliseconds.Value;
+                isPersisted = true;
+            }
+            else if ( ! dataView.TimeToRunDurationMilliseconds.HasValue )
+            {
+                // Otherwise it is not persisted data view, but there is no 'time to run duration' to show.
+                return;
+            }
+
+            double labelValue;
+            if ( isPersisted )
+            {
+                labelValue = dataView.PersistedLastRunDurationMilliseconds.Value;
+            }
+            else
+            {
+                labelValue = dataView.TimeToRunDurationMilliseconds.Value;
+            }
+
             var labelUnit = "ms";
             var labelType = LabelType.Success;
             if ( labelValue > 1000 )
