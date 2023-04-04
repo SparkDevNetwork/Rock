@@ -51,7 +51,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return privateValue.ConvertMarkdownToHtml()?.Trim().StripHtml().Truncate( 100 ) ?? string.Empty;
+            return privateValue.ConvertMarkdownToHtml()?.Trim().StripHtml().Truncate( CondensedTruncateLength ) ?? string.Empty;
         }
 
         /// <inheritdoc/>
@@ -74,7 +74,7 @@ namespace Rock.Field.Types
                 result = result.Substring( 3, result.Length - 7 );
             }
 
-            return result.Truncate( 100 );
+            return result.Truncate( CondensedTruncateLength );
         }
 
         #endregion

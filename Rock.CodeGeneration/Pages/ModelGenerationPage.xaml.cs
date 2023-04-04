@@ -1732,6 +1732,11 @@ namespace Rock.ViewModels.Entities
             var restControllerType = Type.GetType( $"{fullClassName}, {typeof( Rock.Rest.ApiControllerBase ).Assembly.FullName}" );
             var restControllerGuid = restControllerType?.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
 
+            if ( type.GetCustomAttribute<Rock.Data.ExcludeDefaultRestControllerAttribute>() != null )
+            {
+                return;
+            }
+
             if ( restControllerGuid == null )
             {
                 restControllerGuid = _restControllerGuidLookupFromDatabase.GetValueOrNull( fullClassName );

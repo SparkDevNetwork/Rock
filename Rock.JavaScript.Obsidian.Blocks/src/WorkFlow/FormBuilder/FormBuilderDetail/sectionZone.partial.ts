@@ -23,7 +23,7 @@ import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import ConfigurableZone from "./configurableZone.partial";
-import { FormField, FormSection } from "../Shared/types";
+import { FormField, FormSection } from "../Shared/types.partial";
 
 function getAttributeFromField(field: FormField): PublicAttributeBag {
     return {

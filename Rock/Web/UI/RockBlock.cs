@@ -23,7 +23,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -35,6 +35,24 @@ namespace Rock.Web.UI
     /// <summary>
     /// RockBlock is the base abstract class that all Blocks should inherit from
     /// </summary>
+    [BooleanField( "Enable Rate Limiter",
+        Description = "If enable the number of calls that can be made to this block will be limited per the settings below.",
+        DefaultValue = "false",
+        Order = 0,
+        Key = "EnableRateLimiter",
+        Category = "Advanced" )]
+    [IntegerField( "Total Number of Request",
+        Description = "The maximum number of request that can occur in the specified time frame",
+        IsRequired = false,
+        Category = "Advanced",
+        Order = 0,
+        Key = "TotalNumberOfRequest" )]
+    [IntegerField( "Rate Limit Period in Seconds",
+        Description = "The time frame that the request can occur in.",
+        IsRequired = false,
+        Category = "Advanced",
+        Order = 0,
+        Key = "RateLimitTimeFrame" )]
     public abstract class RockBlock : UserControl
     {
         #region Public Properties
@@ -546,7 +564,7 @@ namespace Rock.Web.UI
             }
 
             base.OnLoad( e );
-
+            
             if ( this.BlockCache == null ||
                 this.BlockCache.Page == null ||
                 this.BlockCache.Page.Layout == null ||

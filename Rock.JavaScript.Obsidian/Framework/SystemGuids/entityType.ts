@@ -409,6 +409,8 @@ export const EntityType = {
     MobileCmsHeroBlockType: "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.StructuredContentView */
     MobileCmsStructuredcontentviewBlockType: "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationEntry */
+    MobileCommunicationCommunicationentryBlockType: "9A952F9F-F619-4063-B1BB-CFB2E6983C01",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView */
     MobileCommunicationCommunicationviewBlockType: "4AF5FCEF-CBF6-486B-A04D-920E31356B7F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList. */
@@ -541,6 +543,8 @@ export const EntityType = {
     PersonNoteAdded: "C4AB0F1B-E036-4D14-BFB7-30BAF12D648A",
     /** The GUID for the Rock.Follow.Event.PersonPrayerRequest entity */
     PersonPrayerRequest: "DAE05FAE-A26F-465A-836C-BAA0EFA1267B",
+    /** The GUID for the Rock.Model.PersonPreference entity */
+    PersonPreference: "FDCF766C-F36B-403B-89F3-7030DA65507E",
     /** The EntityType Guid for Rock.Model.PersonPreviousName  */
     PersonPreviousName: "80AC80E1-F769-4E34-9937-E2FEEF2B60EE",
     /** The EntityType Guid for Rock.Model.PersonScheduleExclusion  */

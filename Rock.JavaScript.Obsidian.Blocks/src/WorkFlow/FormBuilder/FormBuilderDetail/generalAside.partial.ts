@@ -18,16 +18,16 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "@Obsidian/Controls/rockField";
 import { DragSource, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import RockLabel from "@Obsidian/Controls/rockLabel";
 import Switch from "@Obsidian/Controls/switch";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
-import { CampusSetFrom, FormFieldType } from "../Shared/types";
+import { CampusSetFrom, FormFieldType } from "../Shared/types.partial";
 import ConfigurableZone from "./configurableZone.partial";
-import { GeneralAsideSettings } from "./types";
+import { GeneralAsideSettings } from "./types.partial";
 import { useFormSources } from "./utils.partial";
 
 const campusSetFromOptions: ListItemBag[] = [
@@ -48,7 +48,7 @@ const campusSetFromOptions: ListItemBag[] = [
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.GeneralAside",
     components: {
-        Alert,
+        NotificationBox,
         ConfigurableZone,
         DropDownList,
         RockField,
@@ -207,9 +207,9 @@ export default defineComponent({
             <div class="mt-3">
                 <Switch v-if="!isPersonEntryForced" v-model="hasPersonEntry" text="Enable Person Entry" />
 
-                <Alert v-else alertType="info">
+                <NotificationBox v-else alertType="info">
                     Person entry is enabled on the template and cannot be changed.
-                </Alert>
+                </NotificationBox>
 
                 <DropDownList v-model="campusSetFrom" label="Campus Set From" :items="campusSetFromOptions" />
             </div>

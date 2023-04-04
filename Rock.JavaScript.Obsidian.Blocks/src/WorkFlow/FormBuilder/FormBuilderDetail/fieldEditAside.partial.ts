@@ -18,14 +18,14 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import Modal from "@Obsidian/Controls/modal";
 import Panel from "@Obsidian/Controls/panel";
 import RockForm from "@Obsidian/Controls/rockForm";
 import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import RockButton from "@Obsidian/Controls/rockButton";
-import Slider from "@Obsidian/Controls/slider";
+import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
 import InlineSwitch from "@Obsidian/Controls/switch";
 import TextBox from "@Obsidian/Controls/textBox";
 import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
@@ -37,7 +37,7 @@ import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
-import { FormField, FormFieldType } from "../Shared/types";
+import { FormField, FormFieldType } from "../Shared/types.partial";
 import { getFilterGroupTitle, getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils.partial";
 
 /**
@@ -85,9 +85,9 @@ export default defineComponent({
         NumberBox,
         RockButton,
         RockForm,
-        Slider,
+        RangeSlider,
         TextBox,
-        Alert
+        NotificationBox
     },
 
     props: {
@@ -458,7 +458,7 @@ export default defineComponent({
                 <LoadingIndicator v-if="isConditionalsLoading" />
 
                 <div v-else-if="conditionalSources.length < 1">
-                    <Alert alertType="warning">No source fields available.</Alert>
+                    <NotificationBox alertType="warning">No source fields available.</NotificationBox>
 
                     <div class="d-flex justify-content-end">
                         <RockButton btnType="default" btnSize="sm" disabled><i class="fa fa-pencil"></i></RockButton>
@@ -480,7 +480,7 @@ export default defineComponent({
             </Panel>
 
             <Panel title="Format" :hasCollapse="true">
-                <Slider v-model="fieldSize" label="Column Span" :min="1" :max="12" isIntegerOnly showValueBar/>
+                <RangeSlider v-model="fieldSize" label="Column Span" :min="1" :max="12" :step="1" showValueBar/>
                 <InlineSwitch v-model="isFieldRequired" text="Required" />
                 <InlineSwitch v-model="isFieldLabelHidden" text="Hide Label" />
             </Panel>

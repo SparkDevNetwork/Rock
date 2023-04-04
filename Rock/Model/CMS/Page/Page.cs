@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -426,6 +426,40 @@ namespace Rock.Model
         private RockCacheability _cacheControlHeader;
 
         private int? _originalParentPageId = null;
+
+        /// <summary>
+        /// Gets or sets the rate limit request per period.
+        /// </summary>
+        /// <value>
+        /// The rate limit request per period.
+        /// </value>
+        [DataMember]
+        public int? RateLimitRequestPerPeriod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rate limit period.
+        /// </summary>
+        /// <value>
+        /// The rate limit period.
+        /// </value>
+        [DataMember]
+        public int? RateLimitPeriod { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is rate limited.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is rate limited; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public bool IsRateLimited
+        {
+            get
+            {
+                return RateLimitPeriod != null && RateLimitRequestPerPeriod != null;
+            }
+        }
 
         #endregion Entity Properties
 

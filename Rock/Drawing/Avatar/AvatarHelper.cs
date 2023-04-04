@@ -181,7 +181,11 @@ namespace Rock.Drawing.Avatar
             }
 
             // Cache the image to the file system
-            avatar.SaveAsPng( $"{settings.CachePath}{settings.CacheKey}.png" );
+            try
+            {
+                avatar.SaveAsPng( $"{settings.CachePath}{settings.CacheKey}.png" );
+            }
+            catch (Exception) { }
 
             var outputStream = new MemoryStream();
             avatar.SaveAsPng( outputStream );

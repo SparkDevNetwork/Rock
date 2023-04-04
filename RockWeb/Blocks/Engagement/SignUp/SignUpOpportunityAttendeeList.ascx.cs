@@ -910,13 +910,6 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
         private class Opportunity
         {
-            private class BadgeType
-            {
-                public const string Danger = "danger";
-                public const string Success = "success";
-                public const string Warning = "warning";
-            }
-
             private int? SlotsMin => Config?.MinimumCapacity;
             private int? SlotsDesired => Config?.DesiredCapacity;
             private int? SlotsMax => Config?.MaximumCapacity;
@@ -971,28 +964,43 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
             }
 
+            private class ProgressState
+            {
+                public const string Success = "success";
+                public const string Warning = "warning";
+                public const string Critical = "critical";
+                public const string Danger = "danger";
+            }
+
             public string SlotsFilledBadgeType
             {
                 get
                 {
-                    if ( SlotsMax.GetValueOrDefault() > 0 )
+                    var min = this.SlotsMin.GetValueOrDefault();
+                    var desired = this.SlotsDesired.GetValueOrDefault();
+                    var max = this.SlotsMax.GetValueOrDefault();
+                    var filled = this.SlotsFilled;
+
+                    var progressState = ProgressState.Danger;
+                    if ( filled > 0 )
                     {
-                        return SlotsFilled == 0 || SlotsFilled < SlotsMin.GetValueOrDefault()
-                            ? BadgeType.Warning
-                            : SlotsFilled < SlotsMax.Value
-                                ? BadgeType.Success
-                                : BadgeType.Danger;
-                    }
-                    else if ( SlotsMin.GetValueOrDefault() > 0 )
-                    {
-                        return SlotsFilled < SlotsMin.Value
-                            ? BadgeType.Warning
-                            : BadgeType.Success;
+                        progressState = ProgressState.Success;
+
+                        if ( max > 0 && filled > max )
+                        {
+                            progressState = ProgressState.Critical;
+                        }
+                        else if ( filled < min )
+                        {
+                            progressState = ProgressState.Danger;
+                        }
+                        else if ( filled < desired )
+                        {
+                            progressState = ProgressState.Warning;
+                        }
                     }
 
-                    return SlotsFilled > 0
-                        ? BadgeType.Success
-                        : BadgeType.Warning;
+                    return progressState;
                 }
             }
         }

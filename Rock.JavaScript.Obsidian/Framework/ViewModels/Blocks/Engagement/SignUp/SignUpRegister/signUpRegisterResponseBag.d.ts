@@ -31,4 +31,7 @@ export type SignUpRegisterResponseBag = {
 
     /** Gets or sets the full names of individuals who were unable to be registered for a sign-up project. */
     unsuccessfulRegistrantNames?: string[] | null;
+
+    /** Gets or sets the warning message for this registration attempt. */
+    warningMessage?: string | null;
 };

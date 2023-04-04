@@ -203,7 +203,7 @@ export default defineComponent({
 
         /** Determines if the clear icon should be visible. */
         const isClearable = computed((): boolean => {
-            return computedShowBlankItem.value && !computedLoading.value && hasValue.value;
+            return computedShowBlankItem.value && !computedLoading.value && hasValue.value && internalValue.value !== props.blankValue;
         });
 
         /** Determines if the control should be in a disabled state. */
@@ -394,6 +394,10 @@ export default defineComponent({
                     <template #suffixIcon>
                         <i v-if="!computedLoading" class="fa fa-caret-down"></i>
                         <i v-else class="fa fa-spinner fa-spin"></i>
+                    </template>
+
+                    <template #notFoundContent>
+                        <div style="color:#999"><slot name="empty">No Data</slot></div>
                     </template>
 
                     <template #dropdownRender="{ menuNode: menu }">

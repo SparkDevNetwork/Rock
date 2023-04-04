@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Engagement.SignUp
 {
     [DisplayName( "Sign-Up Detail" )]
-    [Category( "Engagement > Sign-Up" )]
+    [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Block used to show the details of a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
 
@@ -87,36 +87,36 @@ namespace Rock.Blocks.Engagement.SignUp
             public const string LavaTemplate = @"{% if Project != null %}
     <div class=""panel panel-block"">
         <div class=""panel-heading"">
-            <h1 class=""panel-title pull-left"">{{ Project.Name }}</h1>
+            <h1 class=""panel-title"">{{ Project.Name }}</h1>
         </div>
         <div class=""panel-body"">
             <div class=""row"">
-                <div class=""col-md-6 mb-3"">
-                    <div class=""d-flex justify-content-between"">
+                <div class=""col-md-6"">
+                    <div class=""d-flex justify-content-between align-items-center"">
                         <h4>{{ Project.Name }}</h4>
                         {% if Project.CampusName and Project.CampusName != empty %}
-                            <div class=""panel-labels"">
-                                <span class=""label label-default"">{{ Project.CampusName }}</span>
-                            </div>
+                            <span class=""label label-default"">{{ Project.CampusName }}</span>
                         {% endif %}
                     </div>
                     {% if Project.ScheduleName and Project.ScheduleName != empty %}
-                        <p class=""text-muted mb-3"">{{ Project.ScheduleName }}</p>
+                        <p class=""text-muted"">{{ Project.ScheduleName }}</p>
                     {% endif %}
                     {% if Project.Description and Project.Description != empty %}
                         <p>{{ Project.Description }}</p>
                     {% endif %}
                     {% if Project.AvailableSpots != null %}
-                        <span class=""badge badge-info"">Available Spots: {{ Project.AvailableSpots }}</span>
+                        <p>
+                            <span class=""badge badge-info"">Available Spots: {{ Project.AvailableSpots }}</span>
+                        </p>
                     {% endif %}
-                    {% if Project.ScheduleHasFutureStartDateTime %}
-                        <div class=""mt-4"">
-                            <a href=""{{ Project.RegisterPageUrl }}"" class=""btn btn-warning"">Register</a>
+                    {% if Project.ShowRegisterButton %}
+                        <div class=""actions"">
+                            <a href=""{{ Project.RegisterPageUrl }}"" class=""btn btn-primary"">Register</a>
                         </div>
                     {% endif %}
                 </div>
                 {% if Project.MapCenter and Project.MapCenter != empty %}
-                    <div class=""col-md-6 mb-3"">
+                    <div class=""col-md-6 mt-3 mt-md-0"">
                         {[ googlestaticmap center:'{{ Project.MapCenter }}' zoom:'15' ]}
                         {[ endgooglestaticmap ]}
                     </div>
@@ -274,16 +274,14 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Gets the participant count for this <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> occurrence.
+        /// Gets the participant count for this <see cref="Group"/>, <see cref="Location"/> and <see cref="Schedule"/> occurrence,
+        /// and sets it on the <see cref="OccurrenceData"/> instance.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="occurrenceData">The occurrence data.</param>
         private void GetParticipantCount( RockContext rockContext, OccurrenceData occurrenceData )
         {
-            /*
-             * Get the participant count for this opportunity.
-             * This should be incorporated into the above query (for performance reasons) when we have more time to do so.
-             */
+            // This should be incorporated into the above [TryGetGroupLocationSchedule] query (for performance reasons) when we have more time to do so.
             var participantCount = new GroupMemberAssignmentService( rockContext )
                 .Queryable()
                 .Where( gma =>
@@ -356,7 +354,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             public string ErrorMessage { get; set; }
 
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             public Location Location { get; set; }
 
@@ -490,6 +488,13 @@ namespace Rock.Blocks.Engagement.SignUp
                     availableSpots = this.SlotsAvailable;
                 }
 
+                var showRegisterButton = this.ScheduleHasFutureStartDateTime
+                    &&
+                    (
+                        !availableSpots.HasValue
+                        || availableSpots.Value > 0
+                    );
+
                 string mapCenter = null;
                 if ( this.Location.Latitude.HasValue && this.Location.Longitude.HasValue )
                 {
@@ -510,7 +515,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     Description = this.Description,
                     ScheduleName = this.ScheduleName,
                     FriendlySchedule = this.FriendlySchedule,
-                    ScheduleHasFutureStartDateTime = this.ScheduleHasFutureStartDateTime,
+                    ShowRegisterButton = showRegisterButton,
                     CampusName = this.Project.Campus?.Name,
                     AvailableSpots = availableSpots,
                     MapCenter = mapCenter,
@@ -536,7 +541,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
             public string FriendlySchedule { get; set; }
 
-            public bool ScheduleHasFutureStartDateTime { get; set; }
+            public bool ShowRegisterButton { get; set; }
 
             public string CampusName { get; set; }
 

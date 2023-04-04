@@ -1,0 +1,211 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BaseAsyncPicker v-if="!groupTypeGuid"
+                     v-model="internalTypeValue"
+                     v-bind="standardProps"
+                     :label="label"
+                     :displayStyle="displayStyle"
+                     :items="actualTypeItems"
+                     showBlankItem
+                     :multiple="false" />
+    <BaseAsyncPicker v-model="internalRoleValue"
+                     v-bind="standardProps"
+                     :label="roleLabel"
+                     :displayStyle="displayStyle"
+                     :items="actualRoleItems"
+                     showBlankItem
+                     :multiple="false" />
+</template>
+
+<script setup lang="ts">
+    import { standardAsyncPickerProps, updateRefValue, useStandardAsyncPickerProps } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, computed, nextTick, ref, watch } from "vue";
+    import BaseAsyncPicker from "./baseAsyncPicker";
+    import { Guid } from "@Obsidian/Types";
+    import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
+    import { GroupRolePickerGetAllForGroupRoleOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleOptionsBag";
+    import { GroupRolePickerGetAllForGroupRoleResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleResultsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: true
+        },
+
+        excludeGroupRoles: {
+            type: Array as PropType<Guid[]>
+        },
+
+        /** If you specify the group type, the group type picker will be hidden and we'll just show roles for this type */
+        groupTypeGuid: {
+            type: String as PropType<Guid>,
+            default: null
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void
+    }>();
+
+    // #region Values
+
+    const standardProps = useStandardAsyncPickerProps(props);
+    const http = useHttp();
+
+    const internalTypeValue = ref<ListItemBag | null>(null);
+    const loadedTypeItems = ref<ListItemBag[] | null>(null);
+
+    const internalRoleValue = ref(props.modelValue);
+    const loadedRoleItems = ref<ListItemBag[] | null>(null);
+
+    // #endregion
+
+    // #region Computed
+
+    const groupTypeGuidValue = computed(() => {
+        return props.groupTypeGuid || internalTypeValue.value?.value || null;
+    });
+    const roleLabel = computed(() => {
+        // If group type is given, use the label prop
+        if (props.groupTypeGuid) {
+            return props.label;
+        }
+
+        // Otherwise we label it based off the selected group type if there is one
+        return internalTypeValue.value?.text ? internalTypeValue.value?.text + " Role" : "Role";
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualTypeItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedTypeItems.value || loadTypeOptions;
+    });
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualRoleItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedRoleItems.value || loadRoleOptions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the group type items from the server.
+     */
+    async function loadTypeOptions(): Promise<ListItemBag[]> {
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupRolePickerGetGroupTypes");
+
+        if (result.isSuccess && result.data) {
+            loadedTypeItems.value = result.data ?? null;
+
+            return loadedTypeItems.value ?? [];
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedTypeItems.value = [];
+            return [];
+        }
+    }
+
+    /**
+     * Loads the group role items from the server.
+     */
+    async function loadRoleOptions(): Promise<ListItemBag[]> {
+        if (!groupTypeGuidValue.value) {
+            return [];
+        }
+
+        const options: GroupRolePickerGetGroupRolesOptionsBag = {
+            groupTypeGuid: groupTypeGuidValue.value,
+            excludeGroupRoles: props.excludeGroupRoles
+        };
+
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupRolePickerGetGroupRoles", null, options);
+
+        if (result.isSuccess && result.data) {
+            loadedRoleItems.value = result.data ?? null;
+
+            return loadedRoleItems.value ?? [];
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedRoleItems.value = [];
+            return [];
+        }
+    }
+
+    /**
+     * Gets all the data needed to fill in the pickers when we're given a value to start
+     */
+    async function loadRoleOptionsFromValue(): Promise<void> {
+        const options: GroupRolePickerGetAllForGroupRoleOptionsBag = {
+            groupRoleGuid: props.modelValue?.value,
+            excludeGroupRoles: props.excludeGroupRoles
+        };
+
+        const result = await http.post<GroupRolePickerGetAllForGroupRoleResultsBag>("/api/v2/Controls/GroupRolePickerGetAllForGroupRole", null, options);
+
+        if (result.isSuccess && result.data) {
+            loadedRoleItems.value = result.data.groupRoles ?? null;
+            internalTypeValue.value = result.data.selectedGroupType ?? null;
+
+            // Wait for watchers of the group type to fire so we don't undo the next line
+            await nextTick();
+
+            internalRoleValue.value = result.data.selectedGroupRole ?? null;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedRoleItems.value = [];
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    /** If the value is changed from the outside, fill in all the required data */
+    watch(() => props.modelValue, () => {
+        if (updateRefValue(internalRoleValue, props.modelValue)) {
+            loadRoleOptionsFromValue();
+        }
+    });
+
+    watch(internalRoleValue, () => emit("update:modelValue", internalRoleValue.value));
+
+    /** Reload Roles if the type or excluded roles list change */
+    watch([groupTypeGuidValue, () => props.excludeGroupRoles], () => {
+        internalRoleValue.value = null;
+
+        loadedRoleItems.value = null;
+        loadRoleOptions();
+    });
+
+    // #endregion
+
+    // #region Initialization
+
+    if (props.modelValue) {
+        // Load the type and list of items based on the selected value
+        loadRoleOptionsFromValue();
+    }
+    else if (props.groupTypeGuid) {
+        loadRoleOptions();
+    }
+
+        // #endregion
+</script>

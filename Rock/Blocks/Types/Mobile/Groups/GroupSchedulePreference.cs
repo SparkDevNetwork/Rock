@@ -24,8 +24,8 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.Blocks.Groups;
-using Rock.ViewModels.Blocks.Groups.GroupSchedulePreference;
+using Rock.ViewModels.Blocks.Group;
+using Rock.ViewModels.Blocks.Group.GroupSchedulePreference;
 using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Groups

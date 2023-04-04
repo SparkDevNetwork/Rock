@@ -43,7 +43,7 @@
     const props = defineProps({
         /** The URL of the attachment to be displayed. */
         attachment: {
-            type: Object as PropType<IAttachment>,
+            type: Object as PropType<Record<string, string>>,
             required: true
         }
     });
@@ -56,7 +56,7 @@
     // #region Computed Values
 
     const isImage = computed((): boolean => {
-        return props.attachment.url.includes("GetImage.ashx");
+        return (props.attachment as unknown as IAttachment).url.includes("GetImage.ashx");
     });
 
     // #endregion

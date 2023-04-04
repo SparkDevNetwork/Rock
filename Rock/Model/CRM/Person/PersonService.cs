@@ -168,6 +168,24 @@ namespace Rock.Model
             ///   <c>true</c> if [include anonymous visitor]; otherwise, <c>false</c>.
             /// </value>
             public bool IncludeAnonymousVisitor { get; set; } = false;
+
+            /// <summary>
+            /// Gets a new query options instance that will include all records
+            /// in the database.
+            /// </summary>
+            /// <returns>A new instance of <see cref="PersonQueryOptions"/>.</returns>
+            public static PersonQueryOptions AllRecords()
+            {
+                return new PersonQueryOptions
+                {
+                    IncludeDeceased = true,
+                    IncludePersons = true,
+                    IncludeBusinesses = true,
+                    IncludeNameless = true,
+                    IncludeRestUsers = true,
+                    IncludeAnonymousVisitor = true
+                };
+            }
         }
 
         /// <summary>
@@ -4398,7 +4416,7 @@ namespace Rock.Model
             var adultBasedOnBirthdateOrFamilyRole = personQuery
                 .Where( p => !unknownBasedOnBirthdateOrFamilyRole.Any( a => a.Id == p.Id )
                     &&
-                    ( ( p.BirthDate.HasValue && p.BirthDate.Value <= birthDateEighteen )
+                    ( ( p.Age.HasValue && p.Age.Value <= 18 )
                         || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any( f => f.GroupRoleId == groupRoleAdultId )
                     ) );
 
@@ -4407,7 +4425,7 @@ namespace Rock.Model
             var childBasedOnBirthdateOrFamilyRole = personQuery
                 .Where( p => !alreadyClassified.Any( a => a.Id == p.Id )
                     &&
-                    ( ( p.BirthDate.HasValue && p.BirthDate.Value > birthDateEighteen )
+                    ( ( p.Age.HasValue && p.Age.Value > 18 )
                         ||
                         familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleChildId )
                     ) );

@@ -900,6 +900,7 @@
     <Compile Include="Core\NotificationMessageTypeComponent.cs" />
     <Compile Include="Core\NotificationMessageTypeContainer.cs" />
     <Compile Include="Core\NotificationMessageTypes\SmsConversation.cs" />
+    <Compile Include="Data\ExcludeDefaultRestControllerAttribute.cs" />
     <Compile Include="Data\IncludeForModelMapAttribute.cs" />
     <Compile Include="Data\EntityContextState.cs" />
     <Compile Include="Data\EntitySaveHook.cs" />
@@ -940,6 +941,7 @@
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsMobileRestUserGroup.cs" />
+    <Compile Include="Jobs\PostV15DataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsSystemPhoneNumbers.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
@@ -951,6 +953,7 @@
     <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
+    <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
@@ -1004,6 +1007,8 @@
     <Compile Include="Model\Core\NotificationMessage\NotificationMessage.cs" />
     <Compile Include="Model\Core\NotificationMessage\NotificationMessage.SaveHook.cs" />
     <Compile Include="Model\Core\NotificationMessage\NotificationMessageService.cs" />
+    <Compile Include="Model\Core\PersonPreference\PersonPreference.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.SaveHook.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceActionService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.cs" />
@@ -1053,6 +1058,8 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\169_UpdateFutureWeeksAttributeForGroupSchedulingToolboxV2.cs" />
+    <Compile Include="Plugin\HotFixes\168_MigrationRollupsForV14_2_1.cs" />
     <Compile Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid.cs" />
     <Compile Include="Plugin\HotFixes\166_MigrationRollupsForV14_2_0.cs" />
     <Compile Include="Plugin\HotFixes\165_EnableTextToGiveMultiAcct.cs" />
@@ -1685,6 +1692,7 @@
     <Compile Include="Transactions\IAsyncTransaction.cs" />
     <Compile Include="Transactions\IQueuedTransaction.cs" />
     <Compile Include="Transactions\SendAchievementCompletedRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\SendAttendanceOccurrenceRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendAttendanceRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\UpdateNotificationMessageBadgeCountTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
@@ -1975,6 +1983,7 @@
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\Cache\NonEntities\DeepLinkCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityTypeAttributesCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\RateLimiterCache.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />

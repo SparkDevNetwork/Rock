@@ -266,7 +266,7 @@ namespace Rock.Field.Types
             }
 
             var textValue = GetTextValueFromConfiguredValues( privateValue, configuredValues ) ?? string.Empty;
-            var condensedTextValue = textValue.Truncate( 100 );
+            var condensedTextValue = textValue.Truncate( CondensedTruncateLength );
 
             return new PersistedValues
             {

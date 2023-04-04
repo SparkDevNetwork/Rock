@@ -557,7 +557,6 @@ namespace Rock.Web.UI
         /// </value>
         public int ViewStateSize { get; private set; }
 
-
         /// <summary>
         /// Gets the view state size compressed.
         /// </summary>

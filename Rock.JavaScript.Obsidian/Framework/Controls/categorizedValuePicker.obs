@@ -1,9 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField v-if="error" v-bind="formFieldProps" :modelValue="internalValue" name="cat-val-picker">
-        <Alert :alertType="AlertType.Danger">
+        <NotificationBox :alertType="AlertType.Danger">
             An error occurred while fetching category tree.&nbsp;<RockButton @click="loadTree">Retry</RockButton>
-        </Alert>
+        </NotificationBox>
     </RockFormField>
     <RockFormField v-else-if="loadedItems" v-bind="formFieldProps" :modelValue="internalValue" name="cat-val-picker">
         <CategorizedValuePickerDropDownLevel v-bind="formFieldProps" :root="loadedItems" v-model="internalValue" :definedTypeName="definedTypeName" key="root-cat-val-picker" />
@@ -22,7 +22,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useVModelPassthrough, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import Alert from "./alert.obs";
+    import NotificationBox from "./notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import RockButton from "./rockButton";
     import DropDownList from "./dropDownList";

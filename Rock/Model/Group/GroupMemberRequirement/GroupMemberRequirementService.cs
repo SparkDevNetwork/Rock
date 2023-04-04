@@ -14,12 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using Rock.Data;
-using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -30,14 +25,14 @@ namespace Rock.Model
     public partial class GroupMemberRequirementService
     {
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who are members of a specific group.
+        /// Returns a nullable <see cref="Rock.Model.GroupMemberRequirement"/> <see cref="int"/> identifier that belongs to the specified person, group requirement, group and role.
         /// </summary>
         /// <param name="personId"></param>
         /// <param name="groupRequirementId"></param>
         /// <param name="groupId"></param>
         /// <param name="groupRoleId"></param>
         /// <returns>
-        /// A queryable collection of <see cref="Rock.Model.GroupMemberRequirement">GroupMemberRequirements</see> that belong to the specified person, group and role.
+        /// A nullable <see cref="Rock.Model.GroupMemberRequirement"/> <see cref="int"/> identifier that belongs to the specified person, group requirement, group and role.
         /// </returns>
         public int? GetIdByPersonIdRequirementIdGroupIdGroupRoleId( int personId, int groupRequirementId, int groupId, int? groupRoleId )
         {
@@ -53,14 +48,14 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who are members of a specific group.
+        /// Returns a nullable <see cref="Rock.Model.GroupMemberRequirement"/> for a group member based on person, group requirement, group and role.
         /// </summary>
         /// <param name="personId"></param>
         /// <param name="groupRequirementId"></param>
         /// <param name="groupId"></param>
         /// <param name="groupRoleId"></param>
         /// <returns>
-        /// A queryable collection of <see cref="Rock.Model.GroupMemberRequirement">GroupMemberRequirements</see> that belong to the specified person, group and role.
+        /// <see cref="Rock.Model.GroupMemberRequirement"/> for a group member based on person, group requirement, group and role.  Returns null if one is not found.
         /// </returns>
         public GroupMemberRequirement GetByPersonIdRequirementIdGroupIdGroupRoleId( int personId, int groupRequirementId, int groupId, int? groupRoleId )
         {
@@ -72,14 +67,8 @@ namespace Rock.Model
             }
 
             groupMemberRequirements = groupMemberRequirements.OrderBy( r => r.GroupMember.GroupRole.Order );
-            if ( groupMemberRequirements.Any() )
-            {
-                return groupMemberRequirements.First();
-            }
-            else
-            {
-                return null;
-            }
+
+            return groupMemberRequirements.FirstOrDefault();
         }
     }
 }

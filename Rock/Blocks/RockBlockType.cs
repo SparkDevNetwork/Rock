@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Net;
@@ -88,6 +89,16 @@ namespace Rock.Blocks
         public string GetAttributeValue( string key )
         {
             return BlockCache.GetAttributeValue( key );
+        }
+
+        /// <summary>
+        /// Gets the block attribute values given an attribute key - splitting that delimited value into a list of strings.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>A list of attribute value strings or an empty list if no attribute values exist.</returns>
+        internal List<string> GetAttributeValues( string key )
+        {
+            return BlockCache.GetAttributeValues( key );
         }
 
         /// <summary>

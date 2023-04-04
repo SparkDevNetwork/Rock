@@ -129,6 +129,8 @@ namespace Rock.WebStartup
                 ShowDebugTimingMessage( "Initialize RockContext" );
             }
 
+            RockInstanceConfig.SetDatabaseIsAvailable( true );
+
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
             LogStartupMessage( "Configuring Date Settings" );

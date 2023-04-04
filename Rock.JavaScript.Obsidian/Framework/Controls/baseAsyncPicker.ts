@@ -288,6 +288,7 @@ export default defineComponent({
     :items="actualItems"
     :multiple="multiple"
     :showBlankItem="showBlankItem"
+    :blankValue="blankValue"
     :enhanceForLongLists="enhanceForLongLists"
     :lazyMode="lazyMode"
     displayStyle="auto"

@@ -140,11 +140,11 @@ namespace Rock.Drawing.Avatar
                     // prevents redundant files
                     if ( PhotoId.HasValue )
                     {
-                        _cacheKey = $"{Size}-{Text}-{AvatarColors.ForegroundColor.Replace( "#", "" )}_{AvatarColors.BackgroundColor.Replace( "#", "" )}-{CornerRadius}-no_style-{AgeClassification}-{Gender}-{IsBold.ToString().Truncate( 1, false )}-{PhotoId}-{PrefersLight.ToString().Truncate( 1, false )}-{RecordTypeId}";
+                        _cacheKey = $"{Size}-{Text}-{AvatarColors.ForegroundColor.Replace( "#", "" )}_{AvatarColors.BackgroundColor.Replace( "#", "" )}-{CornerRadius}{IsCircle}-no_style-{AgeClassification}-{Gender}-{IsBold.ToString().Truncate( 1, false )}-{PhotoId}-{PrefersLight.ToString().Truncate( 1, false )}-{RecordTypeId}";
                     }
                     else
                     {
-                        _cacheKey = $"{Size}-{Text}-{AvatarColors.ForegroundColor.Replace( "#", "" )}_{AvatarColors.BackgroundColor.Replace( "#", "" )}-{CornerRadius}-{AvatarStyle}-{AgeClassification}-{Gender}-{IsBold.ToString().Truncate( 1, false )}-{PhotoId}-{PrefersLight.ToString().Truncate( 1, false )}-{RecordTypeId}";
+                        _cacheKey = $"{Size}-{Text}-{AvatarColors.ForegroundColor.Replace( "#", "" )}_{AvatarColors.BackgroundColor.Replace( "#", "" )}-{CornerRadius}{IsCircle}-{AvatarStyle}-{AgeClassification}-{Gender}-{IsBold.ToString().Truncate( 1, false )}-{PhotoId}-{PrefersLight.ToString().Truncate( 1, false )}-{RecordTypeId}";
                     }
                 }
 

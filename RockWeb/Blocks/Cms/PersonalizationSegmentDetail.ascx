@@ -57,7 +57,7 @@
                 <%-- Session Filters --%>
                 <asp:Panel ID="pnlSessionCountFilters" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <h1 class="panel-title pull-left">Session Filters</h1>
+                        <h1 class="panel-title">Session Filters</h1>
                         <div class="panel-labels">
                             <Rock:Toggle ID="tglSessionCountFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
                         </div>
@@ -78,7 +78,7 @@
                 <%-- Page View Filters --%>
                 <asp:Panel ID="pnlPageViewFilters" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <h1 class="panel-title pull-left">Page View Filters</h1>
+                        <h1 class="panel-title">Page View Filters</h1>
                         <Rock:Toggle ID="tglPageViewFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
                     </div>
                     <div class="panel-body">
@@ -98,7 +98,7 @@
                 <%-- Interaction Filters --%>
                 <asp:Panel ID="pnlInteractionFilters" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <h1 class="panel-title pull-left">Interaction Filters</h1>
+                        <h1 class="panel-title">Interaction Filters</h1>
                         <Rock:Toggle ID="tglInteractionFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
                     </div>
                     <div class="panel-body">

@@ -11,9 +11,9 @@
             </div>
         </div>
 
-        <Alert v-if="errorMessage" alertType="warning">
+        <NotificationBox v-if="errorMessage" alertType="warning">
             {{ errorMessage }}
-        </Alert>
+        </NotificationBox>
 
         <div class="submit">
             <RockButton :btnType="BtnType.Primary"
@@ -48,7 +48,7 @@
 </style>
 
 <script setup lang="ts">
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { computed, ref, watch } from "vue";

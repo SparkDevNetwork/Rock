@@ -47,5 +47,13 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
         /// The full names of individuals who were unable to be registered for a sign-up project.
         /// </value>
         public List<string> UnsuccessfulRegistrantNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning message for this registration attempt.
+        /// </summary>
+        /// <value>
+        /// The warning message for this registration attempt.
+        /// </value>
+        public string WarningMessage { get; set; }
     }
 }

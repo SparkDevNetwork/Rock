@@ -71,6 +71,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public ILavaService GetService( Type serviceType, object configuration = null )
         {
+            // Get a registered factory function to create an instance of the specified service type.
             var factoryFunc = _services.GetValueOrNull( serviceType );
 
             if ( factoryFunc == null )
@@ -78,6 +79,7 @@ namespace Rock.Lava
                 throw new LavaException( $"GetService failed. The service type \"{ serviceType.FullName }\" is not registered." );
             }
 
+            // Create a new instance of the service using the provided configuration object.
             var service = factoryFunc( serviceType, configuration );
 
             if ( service == null )

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="options.caption" alertType="warning">{{ options.caption }}</Alert>
+    <NotificationBox v-if="options.caption" alertType="warning">{{ options.caption }}</NotificationBox>
 
     <SimpleGrid :items="options.duplicatePeople">
         <template #header>
@@ -9,7 +9,7 @@
                 <th>Name</th>
             </tr>
         </template>
-        <template #row="{item}: {item: AccountEntryDuplicatePersonItemBag}">
+        <template #row="{ item }: { item: AccountEntryDuplicatePersonItemBag }">
             <tr>
                 <td><input v-model="internalModelValue" :disabled="disabled" name="DuplicatePerson" type="radio" :value="item" /></td>
                 <td>{{ item.fullName }}</td>
@@ -33,7 +33,7 @@
 <script setup lang="ts">
     import { PropType } from "vue";
     import SimpleGrid from "./simpleGrid.partial.obs";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { formatAspDate } from "@Obsidian/Utility/aspDateFormat";
@@ -92,10 +92,6 @@
     function onPreviousClicked(): void {
         emit("movePrevious");
     }
-
-    //#endregion
-
-    //#region Functions
 
     //#endregion
 </script>

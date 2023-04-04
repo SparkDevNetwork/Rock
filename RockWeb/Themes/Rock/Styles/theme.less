@@ -1713,6 +1713,33 @@ td.grid-actions {
   }
 }
 
+@media (max-width: @grid-float-breakpoint-max) {
+  .main-content {
+    padding-left: 0;
+    padding-right: 0;
+
+    .page-header {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+  
+
+  #page-content {
+    overflow-x: hidden;
+    > .row {
+      margin-left: 0;
+      margin-right: 0;
+
+      > .col,
+      > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
+}
+
 /* #endregion */
 @import "_newprofile.less";
 @import "_print.less";

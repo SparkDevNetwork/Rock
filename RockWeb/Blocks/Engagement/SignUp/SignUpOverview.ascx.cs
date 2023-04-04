@@ -662,35 +662,43 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         private class Opportunity
         {
-            private class BadgeType
+            private class ProgressState
             {
-                public const string Danger = "danger";
                 public const string Success = "success";
                 public const string Warning = "warning";
+                public const string Critical = "critical";
+                public const string Danger = "danger";
             }
 
             private string ParticipantCountBadgeType
             {
                 get
                 {
-                    if ( SlotsMax.GetValueOrDefault() > 0 )
+                    var min = this.SlotsMin.GetValueOrDefault();
+                    var desired = this.SlotsDesired.GetValueOrDefault();
+                    var max = this.SlotsMax.GetValueOrDefault();
+                    var filled = this.ParticipantCount;
+
+                    var progressState = ProgressState.Danger;
+                    if ( filled > 0 )
                     {
-                        return this.ParticipantCount == 0 || this.ParticipantCount < this.SlotsMin.GetValueOrDefault()
-                            ? BadgeType.Warning
-                            : this.ParticipantCount < this.SlotsMax.Value
-                                ? BadgeType.Success
-                                : BadgeType.Danger;
-                    }
-                    else if ( this.SlotsMin.GetValueOrDefault() > 0 )
-                    {
-                        return this.ParticipantCount < this.SlotsMin.Value
-                            ? BadgeType.Warning
-                            : BadgeType.Success;
+                        progressState = ProgressState.Success;
+
+                        if ( max > 0 && filled > max )
+                        {
+                            progressState = ProgressState.Critical;
+                        }
+                        else if ( filled < min )
+                        {
+                            progressState = ProgressState.Danger;
+                        }
+                        else if ( filled < desired )
+                        {
+                            progressState = ProgressState.Warning;
+                        }
                     }
 
-                    return this.ParticipantCount > 0
-                        ? BadgeType.Success
-                        : BadgeType.Warning;
+                    return progressState;
                 }
             }
 

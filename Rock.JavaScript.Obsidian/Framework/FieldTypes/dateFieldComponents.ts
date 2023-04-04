@@ -21,7 +21,7 @@ import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationValueKey } from "./dateField.partial";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
+import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DatePartsPicker, { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
 import DropDownList from "@Obsidian/Controls/dropDownList";

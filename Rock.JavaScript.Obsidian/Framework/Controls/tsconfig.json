@@ -5,6 +5,11 @@
     "jsx": "preserve",
     "module": "ESNext"
   },
+  "vueCompilerOptions": {
+    "extensions": [
+      ".obs"
+    ]
+  },
   "include": [
     "./*.ts",
     "./*.obs"

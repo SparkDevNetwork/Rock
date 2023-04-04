@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
+using Rock.Enums.Crm;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -488,27 +489,6 @@ namespace Rock.Model
                 BirthMonth = null;
                 BirthDay = null;
                 BirthYear = null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the Person's age.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
-        /// </value>
-        [DataMember]
-        [NotMapped]
-        public virtual int? Age
-        {
-            get
-            {
-                return Person.GetAge( this.BirthDate, this.DeceasedDate );
-            }
-
-            private set
-            {
-                // intentionally blank
             }
         }
 
@@ -1818,6 +1798,52 @@ namespace Rock.Model
             }
 
             return personHomeAddresses;
+        }
+
+        /// <summary>
+        /// Gets the age bracket.
+        /// </summary>
+        /// <param name="age">The age.</param>
+        /// <returns></returns>
+        public static AgeBracket GetAgeBracket( int? age )
+        {
+            if ( age == null )
+            {
+                return AgeBracket.Unknown;
+            }
+
+            if ( age >= 0 && age <= 12 )
+            {
+                return Enums.Crm.AgeBracket.ZeroToTwelve;
+            }
+            else if ( age >= 13 && age <= 17 )
+            {
+                return Enums.Crm.AgeBracket.ThirteenToSeventeen;
+            }
+            else if ( age >= 18 && age <= 24 )
+            {
+                return Enums.Crm.AgeBracket.EighteenToTwentyFour;
+            }
+            else if ( age >= 25 && age <= 34 )
+            {
+                return Enums.Crm.AgeBracket.TwentyFiveToThirtyFour;
+            }
+            else if ( age >= 35 && age <= 44 )
+            {
+                return Enums.Crm.AgeBracket.ThirtyFiveToFortyFour;
+            }
+            else if ( age >= 45 && age <= 54 )
+            {
+                return Enums.Crm.AgeBracket.FortyFiveToFiftyFour;
+            }
+            else if ( age >= 55 && age <= 64 )
+            {
+                return Enums.Crm.AgeBracket.FiftyFiveToSixtyFour;
+            }
+            else
+            {
+                return Enums.Crm.AgeBracket.SixtyFiveOrOlder;
+            }
         }
 
         #endregion

@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
@@ -24,7 +24,7 @@ import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import EditPanel from "./AssessmentTypeDetail/editPanel.partial";
 import ViewPanel from "./AssessmentTypeDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { NavigationUrlKey } from "./AssessmentTypeDetail/types";
+import { NavigationUrlKey } from "./AssessmentTypeDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { AssessmentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeDetail/assessmentTypeBag";
 import { AssessmentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeDetail/assessmentTypeDetailOptionsBag";
@@ -34,7 +34,7 @@ export default defineComponent({
     name: "Crm.AssessmentTypeDetail",
 
     components: {
-        Alert,
+        NotificationBox,
         EditPanel,
         DetailBlock,
         ViewPanel
@@ -282,9 +282,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+<NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
 
-<Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+<NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
 <DetailBlock v-if="!blockError"
     v-model:mode="panelMode"

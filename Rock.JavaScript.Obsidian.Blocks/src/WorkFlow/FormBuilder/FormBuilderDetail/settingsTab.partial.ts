@@ -17,19 +17,19 @@
 
 import { computed, defineComponent, ref, PropType, watch } from "vue";
 import RockForm from "@Obsidian/Controls/rockForm";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import CompletionSettings from "../Shared/completionSettings";
 import GeneralSettings from "./generalSettings.partial";
-import { FormCompletionAction, FormGeneral } from "../Shared/types";
-import { FormTemplateListItem } from "./types";
+import { FormCompletionAction, FormGeneral } from "../Shared/types.partial";
+import { FormTemplateListItem } from "./types.partial";
 import { FormError } from "@Obsidian/Utility/form";
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.SettingsTab",
 
     components: {
-        Alert,
+        NotificationBox,
         GeneralSettings,
         CompletionSettings,
         RockForm
@@ -102,12 +102,12 @@ export default defineComponent({
             <GeneralSettings v-model="generalSettings" :templateOverrides="templateOverrides" />
 
             <CompletionSettings v-if="!isConfirmationForced" v-model="completionSettings" />
-            <Alert v-else alertType="info">
+            <NotificationBox v-else alertType="info">
                 <h4 class="alert-heading">Confirmation Email</h4>
                 <p>
                     The completion action is defined on the template and cannot be changed.
                 </p>
-            </Alert>
+            </NotificationBox>
         </RockForm>
     </div>
 </div>

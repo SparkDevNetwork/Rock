@@ -625,6 +625,14 @@ namespace Rock.Web.UI.Controls
 
             // Begin the workflow.
             var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value );
+
+            // If a workflow type is not persisted, let the user know that it did not work.
+            if ( !workflowType.IsPersisted )
+            {
+                _modalAlert.Show( $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started.", ModalAlertType.Warning );
+                return;
+            }
+
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var rockContext = new RockContext();
@@ -709,6 +717,14 @@ namespace Rock.Web.UI.Controls
 
             // Begin the workflow.
             var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.WarningWorkflowTypeId.Value );
+
+            // If a workflow type is not persisted, let the user know that it did not work.
+            if ( !workflowType.IsPersisted )
+            {
+                _modalAlert.Show( $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started.", ModalAlertType.Warning );
+                return;
+            }
+
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var rockContext = new RockContext();

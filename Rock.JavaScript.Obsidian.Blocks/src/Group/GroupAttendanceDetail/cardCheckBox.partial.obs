@@ -1,0 +1,91 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+        :modelValue="modelValue"
+        :formGroupClasses="'rock-check-box ' + formGroupClasses"
+        name="checkbox">
+        <template #default="{uniqueId, field}">
+            <div :class="'control-wrapper ' + controlWrapperClasses">
+                <div :class="internalCardCheckBoxClasses">
+                    <input type="checkbox" v-bind="field" v-model="internalValue" :id="uniqueId" style="display: none" />
+                    <label v-if="html" class="w-100" :for="uniqueId" v-html="html"></label>
+                    <label v-else class="w-100" :for="uniqueId">
+                        <slot></slot>
+                    </label>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<style scoped>
+.card-checkbox {
+    padding: 2px;
+    margin: 0;
+    border: 2px solid #D6D6D6;
+    border-radius: 5px;
+}
+
+.card-checkbox.checked {
+    --checked-border-color: var(--focus-state-border-color, #EE7525);
+    --checked-background-color: #FFF3EB;
+
+    border: 2px solid var(--checked-border-color);
+    background-color: var(--checked-background-color);
+}
+
+.card-checkbox > label {
+    padding: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        html: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        formGroupClasses: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        cardCheckBoxClasses: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        controlWrapperClasses: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", newValue: boolean): void
+    }>();
+
+    //#region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const internalCardCheckBoxClasses = computed<string>(() =>
+        `checkbox card-checkbox ${internalValue.value ? "checked " : ""} ${props.cardCheckBoxClasses || ""}`
+    );
+
+    //#endregion
+
+</script>

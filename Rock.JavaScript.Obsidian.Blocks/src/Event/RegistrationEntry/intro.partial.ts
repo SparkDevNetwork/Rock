@@ -16,13 +16,13 @@
 //
 
 import { defineComponent, inject } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { toTitleCase, pluralConditional } from "@Obsidian/Utility/stringUtils";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { getDefaultRegistrantInfo, getForcedFamilyGuid } from "./utils.partial";
-import { RegistrationEntryBlockViewModel, RegistrationEntryState } from "./types";
+import { RegistrationEntryBlockViewModel, RegistrationEntryState } from "./types.partial";
 import { useStore } from "@Obsidian/PageState";
 import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 
@@ -33,9 +33,9 @@ export default defineComponent({
     components: {
         NumberUpDown,
         RockButton,
-        Alert
+        NotificationBox
     },
-    data () {
+    data() {
         const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
 
         return {
@@ -51,17 +51,17 @@ export default defineComponent({
     },
     computed: {
         /** The currently authenticated person */
-        currentPerson (): PersonBag | null {
+        currentPerson(): PersonBag | null {
             return store.state.currentPerson;
         },
 
         /** The view model sent by the C# code behind. This is just a convenient shortcut to the shared object. */
-        viewModel (): RegistrationEntryBlockViewModel {
+        viewModel(): RegistrationEntryBlockViewModel {
             return this.registrationEntryState.viewModel;
         },
 
         /** The number of these registrants that will be placed on a waitlist because of capacity rules */
-        numberToAddToWaitlist (): number {
+        numberToAddToWaitlist(): number {
             if (this.viewModel.spotsRemaining === null || !this.viewModel.waitListEnabled) {
                 // There is no waitlist or no cap on number of attendees
                 return 0;
@@ -77,7 +77,7 @@ export default defineComponent({
         },
 
         /** The capacity left phrase: Ex: 1 more camper */
-        remainingCapacityPhrase (): string {
+        remainingCapacityPhrase(): string {
             const spots = this.viewModel.spotsRemaining;
 
             if (spots === null) {
@@ -88,7 +88,7 @@ export default defineComponent({
         },
 
         /** Is this instance full and no one else can register? */
-        isFull (): boolean {
+        isFull(): boolean {
             if (this.viewModel.spotsRemaining === null) {
                 return false;
             }
@@ -101,20 +101,20 @@ export default defineComponent({
             return !(this.isFull && this.numberToAddToWaitlist !== this.numberOfRegistrants);
         },
 
-        registrantTerm (): string {
+        registrantTerm(): string {
             this.viewModel.instanceName;
             return (this.viewModel.registrantTerm || "registrant").toLowerCase();
         },
-        registrantTermPlural (): string {
+        registrantTermPlural(): string {
             return (this.viewModel.pluralRegistrantTerm || "registrants").toLowerCase();
         },
-        registrationTerm (): string {
+        registrationTerm(): string {
             return (this.viewModel.registrationTerm || "registration").toLowerCase();
         },
-        registrationTermPlural (): string {
+        registrationTermPlural(): string {
             return (this.viewModel.pluralRegistrationTerm || "registrations").toLowerCase();
         },
-        registrationTermTitleCase (): string {
+        registrationTermTitleCase(): string {
             return toTitleCase(this.registrationTerm);
         }
     },
@@ -165,37 +165,37 @@ export default defineComponent({
     },
     template: `
 <div class="registrationentry-intro">
-    <Alert v-if="isFull && numberToAddToWaitlist !== numberOfRegistrants" class="text-left" alertType="warning">
+    <NotificationBox v-if="isFull && numberToAddToWaitlist !== numberOfRegistrants" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
             There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}.
         </p>
-    </Alert>
-    <Alert v-if="showRemainingCapacity" class="text-left" alertType="warning">
+    </NotificationBox>
+    <NotificationBox v-if="showRemainingCapacity" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
             This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
         </p>
-    </Alert>
+    </NotificationBox>
     <div class="text-left" v-html="viewModel.instructionsHtml">
     </div>
     <div v-if="viewModel.maxRegistrants > 1" class="registrationentry-intro">
         <h1>How many {{viewModel.pluralRegistrantTerm}} will you be registering?</h1>
         <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.maxRegistrants" />
     </div>
-    <Alert v-if="viewModel.timeoutMinutes" alertType="info" class="text-left">
+    <NotificationBox v-if="viewModel.timeoutMinutes" alertType="info" class="text-left">
         Due to a high-volume of expected interest, your {{registrationTerm}} session will expire after
         {{pluralConditional(viewModel.timeoutMinutes, 'a minute', viewModel.timeoutMinutes + ' minutes')}}
         of inactivity.
-    </Alert>
-    <Alert v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
+    </NotificationBox>
+    <NotificationBox v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
         This {{registrationTerm}} has reached its capacity. Complete the registration to be added to the waitlist.
-    </Alert>
-    <Alert v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
+    </NotificationBox>
+    <NotificationBox v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
         This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
         The first {{pluralConditional(viewModel.spotsRemaining, registrantTerm, viewModel.spotsRemaining + ' ' + registrantTermPlural)}} you add will be registered for {{viewModel.instanceName}}.
         The remaining {{pluralConditional(numberToAddToWaitlist, registrantTerm, numberToAddToWaitlist + ' ' + registrantTermPlural)}} will be added to the waitlist.
-    </Alert>
+    </NotificationBox>
 
     <div v-if="canContinue" class="actions text-right">
         <RockButton btnType="primary" @click="onNext">

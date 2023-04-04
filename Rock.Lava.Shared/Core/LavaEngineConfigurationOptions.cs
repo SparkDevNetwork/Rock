@@ -55,5 +55,10 @@ namespace Rock.Lava
         /// Gets or sets the strategy for handling exceptions encountered during the rendering process.
         /// </summary>
         public ExceptionHandlingStrategySpecifier? ExceptionHandlingStrategy { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if dynamic shortcodes should be imported from the target database.
+        /// </summary>
+        public bool InitializeDynamicShortcodes { get; set; }
     }
 }

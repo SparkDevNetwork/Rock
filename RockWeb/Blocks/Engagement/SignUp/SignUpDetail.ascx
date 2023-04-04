@@ -51,15 +51,11 @@
                                 <Rock:RockTextBox ID="tbName" runat="server" Label="Project Name" Required="true" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Is Active" />
+                                <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="4" />
-                            </div>
-                        </div>
+                        <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="4" />
 
                         <div class="row">
                             <div class="col-md-6">
@@ -131,11 +127,7 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:HtmlEditor ID="htmlConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
-                            </div>
-                        </div>
+                        <Rock:HtmlEditor ID="htmlConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
 
                         <div class="actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -179,17 +171,17 @@
 
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="sign-up-opportunities-grid-header-title mt-4">
-                                    Opportunities
-                                </div>
-                                <div class="sign-up-opportunities-grid-header-description mb-4 pb-3">
-                                    <span>
+                                <h3>Opportunities</h3>
+                                <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom border-panel">
+                                    <p>
                                         <asp:Literal ID="lOpportunitiesDescription" runat="server">Below are opportunities for the sign-up based on location and schedule.</asp:Literal>
-                                    </span>
-                                    <Rock:ButtonGroup ID="bgOpportunitiesTimeframe" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-xs btn-primary active" UnselectedItemClass="btn btn-xs btn-default" AutoPostBack="true" OnSelectedIndexChanged="bgOpportunitiesTimeframe_SelectedIndexChanged">
-                                        <asp:ListItem Text="Upcoming" Value="1" Selected="True" />
-                                        <asp:ListItem Text="Past" Value="2" />
-                                    </Rock:ButtonGroup>
+                                    </p>
+                                    <div class="form-group">
+                                        <Rock:ButtonGroup ID="bgOpportunitiesTimeframe" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-xs btn-primary active" UnselectedItemClass="btn btn-xs btn-default" AutoPostBack="true" OnSelectedIndexChanged="bgOpportunitiesTimeframe_SelectedIndexChanged">
+                                            <asp:ListItem Text="Upcoming" Value="1" Selected="True" />
+                                            <asp:ListItem Text="Past" Value="2" />
+                                        </Rock:ButtonGroup>
+                                    </div>
                                 </div>
 
                                 <Rock:NotificationBox ID="nbNoAllowedScheduleTypes" runat="server" Visible="false" NotificationBoxType="Warning" />
@@ -201,7 +193,7 @@
                                             <Rock:RockBoundField DataField="Name" HeaderText="Opportunity Name" />
                                             <Rock:RockBoundField DataField="FriendlyDateTime" HeaderText="Date/Time" />
                                             <Rock:RockBoundField DataField="FriendlyLocation" HeaderText="Location" />
-                                            <Rock:RockBoundField DataField="SlotsBadge" HeaderText="Slots Available" HtmlEncode="false" ItemStyle-VerticalAlign="Middle" ItemStyle-CssClass="sign-up-opportunities-grid-slots-badge" />
+                                            <Rock:RockBoundField DataField="ProgressBar" HeaderText="Sign-Ups" ItemStyle-CssClass="progress-sign-ups-cell align-middle" HtmlEncode="false" />
                                             <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='fa fa-users'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                             <Rock:EditField ID="efOpportunities" OnClick="gOpportunities_Edit" />
                                             <Rock:DeleteField ID="dfOpportunities" OnClick="gOpportunities_Delete" />
@@ -267,15 +259,11 @@
                 <Rock:NotificationBox ID="nbScheduleTypeNotAllowed" runat="server" NotificationBoxType="Warning" />
                 <Rock:NotificationBox ID="nbLocationModeNotAllowed" runat="server" NotificationBoxType="Warning" />
 
-                <div class="row">
-                    <div class="col-md-11">
-                        <Rock:RockTextBox ID="tbOpportunityName" runat="server" Label="Opportunity Name" CssClass="mb-4" Help="Optional name for the opportunity. This is helpful to provide if your project will have several opportunities configured." />
-                    </div>
-                </div>
+                <Rock:RockTextBox ID="tbOpportunityName" runat="server" Label="Opportunity Name" Help="Optional name for the opportunity. This is helpful to provide if your project will have several opportunities configured." />
 
                 <div class="row">
                     <div class="col-md-8">
-                        <div id="pnlScheduleTypeButtonGroup" runat="server" class="mb-3">
+                        <div id="pnlScheduleTypeButtonGroup" runat="server" class="form-group">
                             <Rock:ButtonGroup ID="bgScheduleType" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-xs btn-primary active" UnselectedItemClass="btn btn-xs btn-default" AutoPostBack="true" OnSelectedIndexChanged="bgScheduleType_SelectedIndexChanged">
                                 <asp:ListItem Text="Custom Schedule" Value="2" Selected="True" />
                                 <asp:ListItem Text="Named Schedule" Value="4" />
@@ -290,19 +278,17 @@
                         <Rock:LocationPicker ID="lpLocation" runat="server" Label="Location" Required="true" OnSelectLocation="lpLocation_SelectLocation" ValidationGroup="vg_AddOpportunity_Custom" />
 
                     </div>
-                    <div class="col-md-3 well">
-                        <Rock:RockTextBox ID="tbMinimumAttendance" runat="server" Label="Minimum Attendance" />
-                        <Rock:RockTextBox ID="tbDesiredAttendance" runat="server" Label="Desired Attendance" />
-                        <Rock:RockTextBox ID="tbMaximumAttendance" runat="server" Label="Maximum Attendance" />
+                    <div class="col-md-4">
+                        <div class="well">
+                            <Rock:RockTextBox ID="tbMinimumAttendance" runat="server" Label="Minimum Attendance" />
+                            <Rock:RockTextBox ID="tbDesiredAttendance" runat="server" Label="Desired Attendance" />
+                            <Rock:RockTextBox ID="tbMaximumAttendance" runat="server" Label="Maximum Attendance" />
+                        </div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <Rock:HtmlEditor ID="htmlOpportunityReminderAddlDetails" runat="server" Label="Reminder Details" Height="90" Help="Optional additional project details that will be appended to the reminder communication." />
-                        <Rock:HtmlEditor ID="htmlOpportunityConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
-                    </div>
-                </div>
+                <Rock:HtmlEditor ID="htmlOpportunityReminderAddlDetails" runat="server" Label="Reminder Details" Height="90" Help="Optional additional project details that will be appended to the reminder communication." />
+                <Rock:HtmlEditor ID="htmlOpportunityConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
             </Content>
         </Rock:ModalDialog>
 
@@ -327,16 +313,12 @@
                     }
                 }
 
-                function initializeSlotsBadgeTooltips() {
-                    $thisBlock.find('.sign-up-slots-badge').each(function () {
-                        var $badge = $(this);
-                        var tooltip = $('#' + $badge.data('tip')).html();
-                        $badge.tooltip({
-                            html: true,
-                            title: tooltip
-                        });
+                $thisBlock.find('.js-progress-sign-ups').each(function () {
+                    var $progress = $(this);
+                    $progress.tooltip({
+                        html: true
                     });
-                }
+                });
 
                 $thisBlock.find('.js-project-type .rockradiobuttonlist > label').on('click', function () {
                     var projectTypeGuid = $(this).find('input').first().val();
@@ -347,7 +329,6 @@
                 });
 
                 toggleReminderControlsVisibility();
-                initializeSlotsBadgeTooltips();
 
                 var participantLabel;
 

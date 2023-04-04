@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
@@ -25,7 +25,7 @@ import EditPanel from "./MediaFolderDetail/editPanel.partial";
 import ViewPanel from "./MediaFolderDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { debounce } from "@Obsidian/Utility/util";
-import { NavigationUrlKey } from "./MediaFolderDetail/types";
+import { NavigationUrlKey } from "./MediaFolderDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { MediaFolderBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderDetail/mediaFolderBag";
 import { MediaFolderDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderDetail/mediaFolderDetailOptionsBag";
@@ -34,7 +34,7 @@ export default defineComponent({
     name: "Cms.MediaFolderDetail",
 
     components: {
-        Alert,
+        NotificationBox,
         EditPanel,
         DetailBlock,
         ViewPanel
@@ -276,9 +276,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+<NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
 
-<Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+<NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
 <DetailBlock v-if="!blockError"
     v-model:mode="panelMode"

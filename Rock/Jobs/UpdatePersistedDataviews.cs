@@ -51,7 +51,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-                        int sqlCommandTimeout = GetAttributeValue( TIMEOUT_KEY ).AsIntegerOrNull() ?? 300;
+            int sqlCommandTimeout = GetAttributeValue( TIMEOUT_KEY ).AsIntegerOrNull() ?? 300;
             StringBuilder results = new StringBuilder();
             int updatedDataViewCount = 0;
             var errors = new List<string>();
@@ -66,11 +66,30 @@ namespace Rock.Jobs
                     .Where( a => a.PersistedScheduleIntervalMinutes.HasValue )
                         .Where( a =>
                             ( a.PersistedLastRefreshDateTime == null )
-                            || ( System.Data.Entity.SqlServer.SqlFunctions.DateAdd( "mi", a.PersistedScheduleIntervalMinutes.Value, a.PersistedLastRefreshDateTime.Value ) < currentDateTime )
-                            )
+                            || ( System.Data.Entity.SqlServer.SqlFunctions.DateAdd( "mi", a.PersistedScheduleIntervalMinutes.Value, a.PersistedLastRefreshDateTime.Value ) < currentDateTime ) )
                         .Select( a => a.Id );
 
                 var expiredPersistedDataViewsIdsList = expiredPersistedDataViewIds.ToList();
+
+                // Collect the DataViews with persisted schedules that do not have a last refresh date or need to be refreshed. 
+                var persistedScheduleDataViewIds = new DataViewService( rockContextList ).Queryable()
+                    .Where( a => a.PersistedScheduleId.HasValue && ( a.PersistedLastRefreshDateTime == null || a.PersistedLastRefreshDateTime.Value <= currentDateTime ) );
+
+                // For DataViews with schedules that have not been persisted,
+                // check to see if they are due to be persisted, and add them to the expired dataview list if they are.
+                foreach ( var dataview in persistedScheduleDataViewIds )
+                {
+                    var nextDates = dataview.PersistedSchedule
+                        .GetScheduledStartTimes( dataview.PersistedLastRefreshDateTime ?? dataview.PersistedSchedule.GetFirstStartDateTime().Value, currentDateTime );
+                    if ( nextDates.Count > 0 )
+                    {
+                        if ( nextDates.First() < currentDateTime )
+                        {
+                            expiredPersistedDataViewsIdsList.Add( dataview.Id );
+                        }
+                    }
+                }
+
                 foreach ( var dataViewId in expiredPersistedDataViewsIdsList )
                 {
                     using ( var persistContext = new RockContext() )
@@ -99,7 +118,6 @@ namespace Rock.Jobs
                         }
                     }
                 }
-
             }
 
             // Format the result message
@@ -114,6 +132,7 @@ namespace Rock.Jobs
                 errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                 string errorMessage = sb.ToString();
                 this.Result += errorMessage;
+
                 // We're not going to throw an aggregate exception unless there were no successes.
                 // Otherwise the status message does not show any of the success messages in
                 // the last status message.

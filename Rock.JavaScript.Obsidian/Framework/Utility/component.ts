@@ -253,6 +253,12 @@ type StandardAsyncPickerProps = StandardRockFormFieldProps & {
         default: false
     },
 
+    /** The optional value to show when `showBlankItem` is `true`. */
+    blankValue: {
+        type: PropType<string>,
+        default: ""
+    },
+
     /** The visual style to use when displaying the picker. */
     displayStyle: {
         type: PropType<PickerDisplayStyle>,
@@ -290,6 +296,11 @@ export const standardAsyncPickerProps: StandardAsyncPickerProps = {
         default: false
     },
 
+    blankValue: {
+        type: String as PropType<string>,
+        default: ""
+    },
+
     displayStyle: {
         type: String as PropType<PickerDisplayStyle>,
         default: PickerDisplayStyle.Auto
@@ -315,6 +326,7 @@ function copyStandardAsyncPickerProps(source: ExtractPropTypes<StandardAsyncPick
     destination.lazyMode = source.lazyMode;
     destination.multiple = source.multiple;
     destination.showBlankItem = source.showBlankItem;
+    destination.blankValue = source.blankValue;
     destination.displayStyle = source.displayStyle;
     destination.columnCount = source.columnCount;
 }
@@ -337,6 +349,7 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
         lazyMode: props.lazyMode,
         multiple: props.multiple,
         showBlankItem: props.showBlankItem,
+        blankValue: props.blankValue,
         displayStyle: props.displayStyle,
         columnCount: props.columnCount
     });

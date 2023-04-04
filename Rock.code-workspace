@@ -1,4 +1,25 @@
 {
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Debug Framework",
+				"request": "launch",
+				"port": 9222,
+				"type": "chrome",
+				"url": "http://localhost:6229",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+			},
+			{
+				"name": "Debug Blocks",
+				"request": "launch",
+				"port": 9222,
+				"type": "chrome",
+				"url": "http://localhost:6229",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+			}
+		]
+	},
 	"extensions": {
 		"recommendations": [
 			"dbaeumer.vscode-eslint",
@@ -117,8 +138,8 @@
 				"problemMatcher": {
 					"base": "$tsc-watch",
 					"background": {
-						"beginsPattern": "^\\[    0.000s\\]",
-						"endsPattern": "(Build completed.|Build failed.)$"
+						"beginsPattern": "^rollup v",
+						"endsPattern": "waiting for changes\\.\\.\\.$"
 					}
 				}
 			},
@@ -139,8 +160,8 @@
 				"problemMatcher": {
 					"base": "$tsc-watch",
 					"background": {
-						"beginsPattern": "^\\[    0.000s\\]",
-						"endsPattern": "(Build completed.|Build failed.)$"
+						"beginsPattern": "^rollup v",
+						"endsPattern": "waiting for changes\\.\\.\\.$"
 					}
 				}
 			},

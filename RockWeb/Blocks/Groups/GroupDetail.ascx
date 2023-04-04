@@ -251,6 +251,7 @@
                                     <Rock:Grid ID="gGroupTypeGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Group Requirements for Group Type">
                                         <Columns>
                                             <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
+                                            <Rock:RockBoundField DataField="GroupRole.Name" HeaderText="Role" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>

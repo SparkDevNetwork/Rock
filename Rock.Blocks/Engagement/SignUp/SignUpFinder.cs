@@ -45,7 +45,7 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <seealso cref="Rock.Blocks.IHasCustomActions" />
 
     [DisplayName( "Sign-Up Finder" )]
-    [Category( "Engagement > Sign-Up" )]
+    [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Block used for finding a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
 
@@ -322,7 +322,7 @@ namespace Rock.Blocks.Engagement.SignUp
 {% if projectCount > 0 %}
     <div class=""row d-flex flex-wrap"">
         {% for project in Projects %}
-            <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">
+            <div class=""col-xs-12 col-sm-6 col-md-4 mb-4"">
                 <div class=""card h-100"">
                     <div class=""card-body"">
                         <h3 class=""card-title mt-0"">{{ project.Name }}</h3>
@@ -354,12 +354,12 @@ namespace Rock.Blocks.Engagement.SignUp
                             </p>
                         {% endif %}
                     </div>
-                    {% if project.ScheduleHasFutureStartDateTime %}
-                        <div class=""card-footer bg-white border-0"">
-                            <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs pl-0 text-muted"">Details</a>
-                            <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-warning btn-xs pull-right"">Register</a>
-                        </div>
-                    {% endif %}
+                    <div class=""card-footer bg-white border-0"">
+                        {% if project.ShowRegisterButton %}
+                            <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-primary btn-xs"">Register</a>
+                        {% endif %}
+                        <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs"">Details</a>
+                    </div>
                 </div>
             </div>
         {% endfor %}
@@ -372,7 +372,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
             public const string ResultsHeaderLavaTemplate = @"<h3>Results</h3>
 <p>Below is a listing of the projects that match your search results.</p>
-<hr class=""mb-5"" />";
+<hr>";
         }
 
         private static class FilterDisplayType
@@ -688,7 +688,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     continue;
                 }
 
-                var group = new Group { GroupTypeId = projectTypeId.Value };
+                var group = new Rock.Model.Group { GroupTypeId = projectTypeId.Value };
                 group.LoadAttributes( rockContext );
 
                 // Note that we're not enforcing security here, as the public-facing individual performing the search would most likely be restricted.
@@ -1276,7 +1276,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         continue;
                     }
 
-                    var group = new Group { GroupTypeId = groupTypeCache.Id };
+                    var group = new Rock.Model.Group { GroupTypeId = groupTypeCache.Id };
                     group.LoadAttributes();
 
                     foreach ( var attribute in group.Attributes.Select( a => a.Value ) )
@@ -1649,7 +1649,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// </summary>
         private class Opportunity
         {
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             public Location Location { get; set; }
 
@@ -1770,6 +1770,13 @@ namespace Rock.Blocks.Engagement.SignUp
                     availableSpots = this.SlotsAvailable;
                 }
 
+                var showRegisterButton = this.ScheduleHasFutureStartDateTime
+                    &&
+                    (
+                        !availableSpots.HasValue
+                        || availableSpots.Value > 0
+                    );
+
                 string mapCenter = null;
                 if ( this.Location.Latitude.HasValue && this.Location.Longitude.HasValue )
                 {
@@ -1790,8 +1797,8 @@ namespace Rock.Blocks.Engagement.SignUp
                     Description = this.Description,
                     ScheduleName = this.ScheduleName,
                     FriendlySchedule = this.FriendlySchedule,
-                    ScheduleHasFutureStartDateTime = this.ScheduleHasFutureStartDateTime,
                     AvailableSpots = availableSpots,
+                    ShowRegisterButton = showRegisterButton,
                     DistanceInMiles = this.DistanceInMiles,
                     MapCenter = mapCenter,
                     ProjectDetailPageUrl = projectDetailPageUrl,
@@ -1817,9 +1824,9 @@ namespace Rock.Blocks.Engagement.SignUp
 
             public string FriendlySchedule { get; set; }
 
-            public bool ScheduleHasFutureStartDateTime { get; set; }
-
             public int? AvailableSpots { get; set; }
+
+            public bool ShowRegisterButton { get; set; }
 
             public double? DistanceInMiles { get; set; }
 

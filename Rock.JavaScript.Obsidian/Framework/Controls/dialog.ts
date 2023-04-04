@@ -37,6 +37,10 @@ export default defineComponent({
         }
     },
 
+    emits: {
+        "update:modelValue": (_v: boolean) => true
+    },
+
     setup(props, { emit, slots }) {
         const doShake = ref(false);
         const modalDiv = ref<HTMLElement | null>(null);
@@ -72,6 +76,9 @@ export default defineComponent({
 
         watch(() => props.modelValue, () => {
             trackModalState(props.modelValue);
+            if (props.modelValue) {
+                centerOnScreen();
+            }
         });
 
         return {
@@ -86,7 +93,6 @@ export default defineComponent({
 
     template: `
 <teleport to="body" v-if="modelValue">
-    <div>
         <div class="modal-backdrop fade in" style="z-index: 1060;"></div>
 
         <div @click="shake" class="modal-scrollable" style="z-index: 1060;">
@@ -108,7 +114,6 @@ export default defineComponent({
                 </div>
             </div>
         </div>
-    </div>
 </teleport>
 `
 });

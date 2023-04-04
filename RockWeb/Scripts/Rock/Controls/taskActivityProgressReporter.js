@@ -58,10 +58,10 @@
 
             $results.removeClass("alert-danger").removeClass("alert-warning").removeClass("alert-success");
 
-            if (status.errors && this.errors.length > 0) {
+            if (status.errors && status.errors.length > 0) {
                 $results.addClass("alert-danger");
             }
-            else if (status.warnings && this.warnings.length > 0) {
+            else if (status.warnings && status.warnings.length > 0) {
                 $results.addClass("alert-warning");
             }
             else {
