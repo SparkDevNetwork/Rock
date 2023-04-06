@@ -280,7 +280,7 @@ namespace Rock.Blocks.Communication
                 () => entity.MobileApplicationSiteId = box.Entity.MobileApplicationSite.GetEntityId<Site>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.SmsNotificationGroup ),
-                () => entity.SmsNotificationGroupId = box.Entity.SmsNotificationGroup.GetEntityId<Group>( rockContext ) );
+                () => entity.SmsNotificationGroupId = box.Entity.SmsNotificationGroup.GetEntityId<Rock.Model.Group>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.SmsReceivedWorkflowType ),
                 () => entity.SmsReceivedWorkflowTypeId = box.Entity.SmsReceivedWorkflowType.GetEntityId<WorkflowType>( rockContext ) );

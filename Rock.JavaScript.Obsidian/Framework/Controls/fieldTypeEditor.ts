@@ -309,7 +309,7 @@ export default defineComponent({
 <div>
     <template v-if="isFieldTypesReady">
         <StaticFormControl v-if="isFieldTypeReadOnly" label="Field Type" v-model="fieldTypeName" />
-        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" />
+        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" enhanceForLongLists />
     </template>
     <NotificationBox v-if="fieldErrorMessage" alertType="warning">
         {{ fieldErrorMessage }}

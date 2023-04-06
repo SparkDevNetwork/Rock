@@ -118,6 +118,58 @@ namespace Rock.Tests.Integration.Core.Lava
                 template );
         }
 
+        [TestMethod]
+        public void PersonChildren_ForParent_ReturnsAllChildren()
+        {
+            // Ted Decker has two children, Alex and Noah.
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            var template = @"{% assign children = CurrentPerson | Children | Sort:'NickName' %}{% for child in children %}{{ child.NickName }}|{% endfor %}";
+            var outputExpected = @"Alex|Noah|";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                new LavaTestRenderOptions { MergeFields = values } );
+        }
+
+        [TestMethod]
+        public void PersonChildren_ForChild_ReturnsEmptySet()
+        {
+            // Alex Decker is a child in the Decker family, and has a brother Noah.
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlexDecker.AsGuid() );
+            var template = @"{% assign children = CurrentPerson | Children | Sort:'NickName' %}{% for child in children %}{{ child.FullName }}|{% endfor %}";
+            var outputExpected = @"";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                new LavaTestRenderOptions { MergeFields = values } );
+        }
+
+        [TestMethod]
+        public void PersonParent_ForChild_ReturnsAllParents()
+        {
+            // Alex Decker has two parents, Ted and Cindy.
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlexDecker.AsGuid() );
+            var template = @"{% assign parents = CurrentPerson | Parents | Sort:'NickName' %}{% for parent in parents %}{{ parent.NickName }}|{% endfor %}";
+            var outputExpected = @"Cindy|Ted|";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                new LavaTestRenderOptions { MergeFields = values } );
+        }
+
+        [TestMethod]
+        public void PersonParent_ForSpouse_ReturnsEmptySet()
+        {
+            // Cindy Decker is a parent of two children with Ted Decker.
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.CindyDecker.AsGuid() );
+            var template = @"{% assign parents = CurrentPerson | Parents | Sort:'NickName' %}{% for parent in parents %}{{ parent.NickName }}|{% endfor %}";
+            var outputExpected = @"";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                new LavaTestRenderOptions { MergeFields = values } );
+        }
+
         /// <summary>
         /// Verify Fix for Issue #4988.
         /// </summary>

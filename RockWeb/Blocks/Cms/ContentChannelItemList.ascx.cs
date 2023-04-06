@@ -330,9 +330,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( "Date Range", drpDateRange.DelimitedValues );
-            gfFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
-            gfFilter.SaveUserPreference( "Title", tbTitle.Text );
+            gfFilter.SetFilterPreference( "Date Range", drpDateRange.DelimitedValues );
+            gfFilter.SetFilterPreference( "Status", ddlStatus.SelectedValue );
+            gfFilter.SetFilterPreference( "Title", tbTitle.Text );
 
             BindGrid();
         }
@@ -498,15 +498,15 @@ namespace RockWeb.Blocks.Cms
 
         private void BindFilter()
         {
-            drpDateRange.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
+            drpDateRange.DelimitedValues = gfFilter.GetFilterPreference( "Date Range" );
             ddlStatus.BindToEnum<ContentChannelItemStatus>( true );
-            int? statusID = gfFilter.GetUserPreference( "Status" ).AsIntegerOrNull();
+            int? statusID = gfFilter.GetFilterPreference( "Status" ).AsIntegerOrNull();
             if ( statusID.HasValue )
             {
                 ddlStatus.SetValue( statusID.Value.ToString() );
             }
 
-            tbTitle.Text = gfFilter.GetUserPreference( "Title" );
+            tbTitle.Text = gfFilter.GetFilterPreference( "Title" );
         }
 
         /// <summary>
@@ -591,7 +591,7 @@ namespace RockWeb.Blocks.Cms
                     .Where( c => c.ContentChannelId == _channelId.Value );
 
                 var drp = new DateRangePicker();
-                drp.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
+                drp.DelimitedValues = gfFilter.GetFilterPreference( "Date Range" );
                 if ( drp.LowerValue.HasValue )
                 {
                     isFiltered = true;
@@ -607,14 +607,14 @@ namespace RockWeb.Blocks.Cms
                     contentItems = contentItems.Where( i => i.StartDateTime <= upperDate );
                 }
 
-                var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();
+                var status = gfFilter.GetFilterPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();
                 if ( status.HasValue )
                 {
                     isFiltered = true;
                     contentItems = contentItems.Where( i => i.Status == status );
                 }
 
-                string title = gfFilter.GetUserPreference( "Title" );
+                string title = gfFilter.GetFilterPreference( "Title" );
                 if ( !string.IsNullOrWhiteSpace( title ) )
                 {
                     isFiltered = true;

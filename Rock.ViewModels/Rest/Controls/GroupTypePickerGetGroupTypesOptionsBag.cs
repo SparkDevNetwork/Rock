@@ -31,6 +31,11 @@ namespace Rock.ViewModels.Rest.Controls
         public List<Guid> GroupTypes { get; set; }
 
         /// <summary>
+        /// Whether or not to filter out the group types that aren't flagged to be on the group list
+        /// </summary>
+        public bool OnlyGroupListItems { get; set; } = false;
+
+        /// <summary>
         /// Whether the results are sorted by name or order
         /// </summary>
         public bool IsSortedByName { get; set; } = false;

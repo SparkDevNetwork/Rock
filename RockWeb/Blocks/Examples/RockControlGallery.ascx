@@ -51,8 +51,6 @@
 
                     <h1 runat="server">General Information</h1>
 
-                    <Rock:NotificationBox ID="notification" runat="server" Title="Title" Heading="Heading" Dismissable="true" Text="This the main text" Details="These are the details" NotificationBoxType="Danger" />
-
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">
@@ -342,7 +340,7 @@
                     <a id="RangeSlider"></a>
                     <h2>Range Slider</h2>
                     <div runat="server" class="r-example">
-                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" StepValue="5" SelectedValue="200" />
+                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" StepValue="0" SelectedValue="200" />
                         <br />
                     </div>
 

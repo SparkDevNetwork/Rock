@@ -26,6 +26,8 @@
                 <asp:Panel runat="server" ID="pnlEdit">
                     <Rock:PersonPicker ID="ppAdd" runat="server" Label="Add Another Person" OnSelectPerson="ppAdd_SelectPerson" />
 
+                    <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
+
                     <Rock:NotificationBox
                         runat="server"
                         ID="nbAccountProtectProfile"
@@ -50,7 +52,7 @@
                     <Rock:NotificationBox ID="nbPermissionNotice" runat="server" NotificationBoxType="Warning" Visible="false"
                         Heading="Conflicting Attribute Values:"
                         Text="You do not have permission to view an attribute that has a conflicting value. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please contact someone with rights to view all attributes." />
-                    <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
+
                     <Rock:NotificationBox ID="nbGroupMemberAttributeConflict" Heading="Conflicting Group Member Attribute Values:" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                     <div class="grid">

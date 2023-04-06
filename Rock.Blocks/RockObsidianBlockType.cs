@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Cms;
 using Rock.Web.Cache;
 
@@ -160,13 +161,21 @@ Obsidian.onReady(() => {{
                 configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
             }
 
+            var blockPreferences = new ObsidianBlockPreferencesBag
+            {
+                EntityTypeKey = EntityTypeCache.Get<Rock.Model.Block>().IdKey,
+                EntityKey = BlockCache.IdKey,
+                Values = GetBlockPersonPreferences().GetAllValueBags().ToList()
+            };
+
             return new ObsidianBlockConfigBag
             {
                 BlockFileUrl = BlockFileUrl,
                 RootElementId = rootElementId,
                 BlockGuid = BlockCache.Guid,
                 ConfigurationValues = GetBlockInitialization( RockClientType.Web ),
-                CustomConfigurationActions = configActions
+                CustomConfigurationActions = configActions,
+                Preferences = blockPreferences
             };
 
         }

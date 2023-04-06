@@ -980,14 +980,16 @@ Guid - ContentChannelItem Guid";
 
             if ( alreadyLaunchedKey != null )
             {
-                var alreadyLaunched = this.GetBlockUserPreference( alreadyLaunchedKey ).AsBooleanOrNull();
+                var preferences = GetBlockPersonPreferences();
+                var alreadyLaunched = preferences.GetValue( alreadyLaunchedKey ).AsBooleanOrNull();
                 if ( alreadyLaunched == true )
                 {
                     return;
                 }
                 else
                 {
-                    this.SetBlockUserPreference( alreadyLaunchedKey, true.ToString(), true );
+                    preferences.SetValue( alreadyLaunchedKey, true.ToString() );
+                    preferences.Save();
                 }
             }
 

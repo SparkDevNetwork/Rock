@@ -396,6 +396,10 @@ export default defineComponent({
                         <i v-else class="fa fa-spinner fa-spin"></i>
                     </template>
 
+                    <template #notFoundContent>
+                        <div style="color:#999"><slot name="empty">No Data</slot></div>
+                    </template>
+
                     <template #dropdownRender="{ menuNode: menu }">
                         <div v-if="computedLoading" class="text-center"><i class="fa fa-spinner fa-spin"></i> Data is loading...</div>
                         <v-nodes v-else :vnodes="menu" />

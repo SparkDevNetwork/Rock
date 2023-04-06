@@ -1,0 +1,133 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="did-attend-filter">
+        <RockFormField v-bind="standardFieldProps" name="didAttendFilter" :modelValue="allFilters">
+            <div class="control-wrapper">
+                <div class="btn-group">
+                    <RockButton :btnType="getBtnType(didAttendFilterOrDefault.hasFilter(defaultFilter))" @click="setDefaultOrDidAttendFilter(defaultFilter)">All</RockButton>
+                    <RockButton :btnType="getBtnType(didAttendFilterOrDefault.hasFilter(DidAttendFilter))" @click="setDefaultOrDidAttendFilter(DidAttendFilter)">Present <span class="badge badge-primary">{{ didAttendCount }}</span></RockButton>
+                </div>
+            </div>
+        </RockFormField>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { DidAttendFilter, IAttendanceFilter, NoFilter } from "./utils.partial";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
+
+    const props = defineProps({
+
+        modelValue: {
+            type: Object as PropType<IAttendanceFilter>,
+            required: true
+        },
+
+        attendances: {
+            type: Object as PropType<GroupAttendanceDetailAttendanceBag[]>,
+            required: true
+        },
+
+
+        defaultFilter: {
+            type: Object as PropType<IAttendanceFilter>,
+            default: NoFilter
+        },
+
+        /**
+         * The BtnType when a filter button is unselected.
+         */
+        unselectedBtnType: {
+            type: String as PropType<LiteralUnion<BtnType>>,
+            default: BtnType.Default
+        },
+
+        /**
+         * The BtnType when a filter button is selected.
+         */
+        selectedBtnType: {
+            type: String as PropType<LiteralUnion<BtnType>>,
+            default: BtnType.Primary
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: IAttendanceFilter): void
+    }>();
+
+    //#region Values
+
+    // Initialize the "default or has attended filter" based on the initial filter(s).
+    const didAttendFilterOrDefault = ref<typeof DidAttendFilter | typeof props.defaultFilter>(props.modelValue.hasFilter(DidAttendFilter) ? DidAttendFilter : props.defaultFilter);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const allFilters = computed({
+        get(): IAttendanceFilter {
+            return props.modelValue;
+        },
+        set(newValue: IAttendanceFilter) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    const didAttendCount = computed<number>(() => props.attendances.filter(attendance => attendance.didAttend).length);
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Gets the BtnType based on whether or not a button is in a "selected" state.
+     */
+    function getBtnType(isSelected: boolean): LiteralUnion<BtnType> {
+        if (isSelected) {
+            return props.selectedBtnType;
+        }
+        else {
+            return props.unselectedBtnType;
+        }
+    }
+
+    /**
+     * Sets the "default or did attend" filter.
+     */
+    function setDefaultOrDidAttendFilter(attendanceFilter: IAttendanceFilter): void {
+        didAttendFilterOrDefault.value = attendanceFilter;
+
+        notifyFiltersUpdated();
+    }
+
+    /**
+     * Builds and emits the aggregate filter.
+     */
+    function notifyFiltersUpdated(): void {
+        allFilters.value = didAttendFilterOrDefault.value;
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    // Clear all filters if the modelValue changes to NoFilter.
+    watch(() => props.modelValue, () => {
+        if (props.modelValue.isFilter(NoFilter)) {
+            didAttendFilterOrDefault.value = NoFilter;
+            notifyFiltersUpdated();
+        }
+    });
+
+    //#endregion
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+</script>

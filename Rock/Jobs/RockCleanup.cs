@@ -210,6 +210,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "temporary binary file", () => CleanupTemporaryBinaryFiles() );
 
+            RunCleanupTask( "person age / age bracket", () => UpdateAgeAndAgeBracketOnPerson() );
+
             // updates missing person aliases, metaphones, etc (doesn't delete any records)
             RunCleanupTask( "person", () => PersonCleanup() );
 
@@ -287,9 +289,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update person viewed count", () => UpdatePersonViewedCount() );
 
-            RunCleanupTask( "update analytics source date age and age bracket", () => CalculateAgeAndAgeBracketOnAnalyticsSourceDate() );
-
-            RunCleanupTask( "update person age and age range", () => UpdateAgeAndAgeBracketOnPerson() );
+            RunCleanupTask( "unused person preference", () => RemoveUnusedPersonPreferences() );
 
             /*
              * 21-APR-2022 DMV
@@ -1439,7 +1439,6 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleanups the orphaned attributes.
         /// </summary>
-
         /// <returns></returns>
         private int CleanupOrphanedAttributes()
         {
@@ -2784,6 +2783,8 @@ END
         /// <returns></returns>
         private int UpdateAgeAndAgeBracketOnPerson()
         {
+            CalculateAgeAndAgeBracketOnAnalyticsSourceDate();
+
             const string UpdateAgeAndAgeRangeSql = @"
 BEGIN
 	UPDATE Person
@@ -2800,7 +2801,10 @@ BEGIN
 		WHEN p.[BirthDate] IS NULL THEN NULL
 		ELSE A.[Age] 
 		END,
-	P.[AgeBracket] = A.[AgeBracket]
+	P.[AgeBracket] = CASE
+        WHEN A.[AgeBracket] IS NULL THEN 0
+        ELSE A.[AgeBracket]
+        END        
 	FROM Person P
 	LEFT JOIN AnalyticsSourceDate A
 	ON A.[DateKey] = P.[BirthDateKey]
@@ -2812,6 +2816,123 @@ END
                 return result;
             }
         }
+
+        #region Person Preferences
+
+        /// <summary>
+        /// Removes the old person preferences that are either expired or scoped
+        /// to an entity that no longer exists.
+        /// </summary>
+        /// <returns>The number of records that were deleted.</returns>
+        private int RemoveUnusedPersonPreferences()
+        {
+            int recordsDeleted = 0;
+
+            recordsDeleted += CleanupOrphanedPersonPreferences();
+            recordsDeleted += RemoveExpiredPersonPreferences();
+
+            if ( recordsDeleted > 0 )
+            {
+                // This isn't ideal, but we are direct-SQL deleting rows, so if
+                // anything was deleted, clear the entire preference cache.
+                // Preferences are only kept in cache for a short period of
+                // time anyway, so this shouldn't be as bad as it sounds.
+                PersonPreferenceCache.Clear();
+            }
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Cleanups the orphaned person preferences.
+        /// </summary>
+        /// <returns>The number of records that were deleted.</returns>
+        private int CleanupOrphanedPersonPreferences()
+        {
+            int recordsDeleted = 0;
+
+            // clean up other orphaned entity attributes
+            Type rockContextType = typeof( Rock.Data.RockContext );
+            foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity ) )
+            {
+                Type entityType = cachedType.GetEntityType();
+                var isValidType = entityType != null
+                    && typeof( IEntity ).IsAssignableFrom( entityType )
+                    && !entityType.Namespace.Equals( "Rock.Rest.Controllers" );
+
+                if ( !isValidType )
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic ).First( m => m.Name == nameof( CleanupOrphanedPersonPreferencesForEntityType ) );
+
+                    var genericMethod = classMethod.MakeGenericMethod( entityType );
+                    recordsDeleted += ( int ) genericMethod.Invoke( this, null );
+                }
+                catch
+                {
+                    // intentionally ignore
+                }
+            }
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Cleanups the orphaned person preferences for entity type.
+        /// </summary>
+        /// <typeparam name="T">The type of entity to be cleaned up.</typeparam>
+        /// <returns>The number of records that were deleted.</returns>
+        private int CleanupOrphanedPersonPreferencesForEntityType<T>()
+            where T : Rock.Data.Entity<T>, Attribute.IHasAttributes, new()
+        {
+            int recordsDeleted = 0;
+
+            using ( RockContext rockContext = CreateRockContext() )
+            {
+                var personPreferenceService = new PersonPreferenceService( rockContext );
+                var entityTypeId = EntityTypeCache.GetId<T>();
+                var entityIdsQuery = new Service<T>( rockContext ).AsNoFilter().Select( a => a.Id );
+
+                var orphanedPersonPreferencesQuery = personPreferenceService.Queryable()
+                    .Where( a => a.EntityId.HasValue
+                        && a.EntityTypeId == entityTypeId.Value
+                        && !entityIdsQuery.Contains( a.EntityId.Value ) );
+
+                recordsDeleted += BulkDeleteInChunks( orphanedPersonPreferencesQuery, batchAmount, commandTimeout );
+            }
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Removes the expired person preferences from the database.
+        /// </summary>
+        /// <returns>The number of records deleted.</returns>
+        private int RemoveExpiredPersonPreferences()
+        {
+            int recordsDeleted = 0;
+            var nonEnduringExpiredDate = RockDateTime.Now.Date.AddMonths( -2 );
+            var enduringExpiredDate = RockDateTime.Now.Date.AddMonths( -18 );
+
+            using ( RockContext rockContext = CreateRockContext() )
+            {
+                var personPreferenceService = new PersonPreferenceService( rockContext );
+
+                var expiredPersonPreferencesQuery = personPreferenceService.Queryable()
+                    .Where( a => ( !a.IsEnduring && a.LastAccessedDateTime < nonEnduringExpiredDate )
+                        || ( a.IsEnduring && a.LastAccessedDateTime < enduringExpiredDate ) );
+
+                recordsDeleted += BulkDeleteInChunks( expiredPersonPreferencesQuery, batchAmount, commandTimeout );
+            }
+
+            return recordsDeleted;
+        }
+
+        #endregion
 
         /// <summary>
         /// Creates a new <see cref="RockContext"/> that is properly configured

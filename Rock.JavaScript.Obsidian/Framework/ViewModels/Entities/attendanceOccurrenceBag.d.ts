@@ -31,6 +31,9 @@ export type AttendanceOccurrenceBag = {
     /** Gets or sets the number anonymous attendance. */
     anonymousAttendanceCount?: number | null;
 
+    /** Gets or sets the attendance reminder last sent date time. */
+    attendanceReminderLastSentDateTime?: string | null;
+
     /** Gets or sets the attendance type value identifier. */
     attendanceTypeValueId?: number | null;
 

@@ -152,7 +152,8 @@ namespace RockWeb.Blocks.Core
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upCategoryTree );
 
-            bool? hideInactiveItems = this.GetUserPreference( "HideInactiveItems" ).AsBooleanOrNull();
+            var preferences = GetBlockPersonPreferences();
+            bool? hideInactiveItems = preferences.GetValue( "hide-inactive-items" ).AsBooleanOrNull();
             if ( !hideInactiveItems.HasValue )
             {
                 hideInactiveItems = false;
@@ -413,7 +414,10 @@ namespace RockWeb.Blocks.Core
 
         protected void tglHideInactiveItems_CheckedChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "HideInactiveItems", tglHideInactiveItems.Checked.ToTrueFalse() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "hide-inactive-items", tglHideInactiveItems.Checked.ToTrueFalse() );
+            preferences.Save();
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );

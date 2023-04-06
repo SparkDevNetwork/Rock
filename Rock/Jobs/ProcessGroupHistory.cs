@@ -278,16 +278,13 @@ namespace Rock.Jobs
             int groupLocationsLoggedToHistory = 0;
             int groupLocationsSaveToHistoryCurrent = 0;
 
-            if ( groupLocationHistoricalNoLongerCurrentQuery.Any() )
-            {
-                var groupLocationHistoricalNoLongerCurrent = groupLocationHistoricalNoLongerCurrentQuery.Select( a => a.GroupLocationHistorical ).AsNoTracking();
+            var groupLocationHistoricalNoLongerCurrent = groupLocationHistoricalNoLongerCurrentQuery.Select( a => a.GroupLocationHistorical ).AsNoTracking();
 
-                groupLocationsLoggedToHistory = rockContext.BulkUpdate( groupLocationHistoricalNoLongerCurrent, glh => new GroupLocationHistorical
-                {
-                    CurrentRowIndicator = false,
-                    ExpireDateTime = effectiveExpireDateTime
-                } );
-            }
+            groupLocationsLoggedToHistory = rockContext.BulkUpdate( groupLocationHistoricalNoLongerCurrent, glh => new GroupLocationHistorical
+            {
+                CurrentRowIndicator = false,
+                ExpireDateTime = effectiveExpireDateTime
+            } );
 
             // Insert Group Locations (that have a group with GroupType.EnableGroupHistory) that don't have a CurrentRowIndicator row yet ( or don't have a CurrentRowIndicator because it was stamped with CurrentRowIndicator=false )
             var groupLocationsToAddToHistoricalCurrentsQuery = groupLocationsWithHistoryEnabledQuery.Where( gl => !groupLocationsHistoricalCurrentQuery.Any( glh => glh.GroupLocationId == gl.Id ) );

@@ -106,9 +106,9 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void fBinaryFile_ApplyFilterClick( object sender, EventArgs e )
         {
-            fBinaryFile.SaveUserPreference( "File Name", tbName.Text );
-            fBinaryFile.SaveUserPreference( "Mime Type", tbType.Text );
-            fBinaryFile.SaveUserPreference( "Include Temporary", dbIncludeTemporary.Checked.ToString() );
+            fBinaryFile.SetFilterPreference( "File Name", tbName.Text );
+            fBinaryFile.SetFilterPreference( "Mime Type", tbType.Text );
+            fBinaryFile.SetFilterPreference( "Include Temporary", dbIncludeTemporary.Checked.ToString() );
 
             BindGrid();
         }
@@ -190,10 +190,10 @@ namespace RockWeb.Blocks.Core
         {
             if ( !Page.IsPostBack )
             {
-                tbName.Text = fBinaryFile.GetUserPreference( "File Name" );
-                tbType.Text = fBinaryFile.GetUserPreference( "Mime Type" );
+                tbName.Text = fBinaryFile.GetFilterPreference( "File Name" );
+                tbType.Text = fBinaryFile.GetFilterPreference( "Mime Type" );
                 bool includeTemp = false;
-                dbIncludeTemporary.Checked = bool.TryParse( fBinaryFile.GetUserPreference( "Include Temporary" ), out includeTemp ) && includeTemp;
+                dbIncludeTemporary.Checked = bool.TryParse( fBinaryFile.GetFilterPreference( "Include Temporary" ), out includeTemp ) && includeTemp;
             }
         }
 
@@ -207,19 +207,19 @@ namespace RockWeb.Blocks.Core
             var queryable = binaryFileService.Queryable().Where( f => f.BinaryFileType.Guid == binaryFileTypeGuid );
 
             bool includeTemp = false;
-            if ( !bool.TryParse( fBinaryFile.GetUserPreference( "Include Temporary" ), out includeTemp ) || !includeTemp )
+            if ( !bool.TryParse( fBinaryFile.GetFilterPreference( "Include Temporary" ), out includeTemp ) || !includeTemp )
             {
                 queryable = queryable.Where( f => f.IsTemporary == false );
             }
 
             var sortProperty = gBinaryFile.SortProperty;
-            string name = fBinaryFile.GetUserPreference( "File Name" );
+            string name = fBinaryFile.GetFilterPreference( "File Name" );
             if ( !string.IsNullOrWhiteSpace( name ) )
             {
                 queryable = queryable.Where( f => f.FileName.Contains( name ) );
             }
 
-            string type = fBinaryFile.GetUserPreference( "Mime Type" );
+            string type = fBinaryFile.GetFilterPreference( "Mime Type" );
             if ( !string.IsNullOrWhiteSpace( type ) )
             {
 

@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -323,7 +324,7 @@ $(document).ready(function() {
                     Schedule schedule = null;
                     if ( HasNamedSchedule() )
                     {
-                        schedule = scheduleService.Get( spNamedSchedule.SelectedValueAsId() ?? 0 );
+                        schedule = scheduleService.Get( ddlNamedSchedule.SelectedValueAsId() ?? 0 );
                     }
                     else if ( HasUniqueSchedule() )
                     {
@@ -600,6 +601,21 @@ $(document).ready(function() {
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
                 .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
+
+            // Set the schedules available to only those with the schedule "Persisted DataViews" category.
+            var persistedDataViewsScheduleCategoryId = CategoryCache.GetId( Rock.SystemGuid.Category.SCHEDULE_PERSISTED_DATAVIEWS.AsGuid() ).Value;
+
+            var persistedNamedSchedules = new ScheduleService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( s => s.CategoryId == persistedDataViewsScheduleCategoryId && s.Name != string.Empty )
+                        .OrderBy( s => s.Name )
+                        .ToList();
+
+            ddlNamedSchedule.Items.Clear();
+            foreach ( var schedule in persistedNamedSchedules )
+            {
+                ddlNamedSchedule.Items.Add( new ListItem( schedule.Name, schedule.Id.ToString() ) );
+            }
         }
 
         /// <summary>
@@ -803,14 +819,14 @@ $(document).ready(function() {
                 if ( dataView.PersistedSchedule.Name.IsNotNullOrWhiteSpace() )
                 {
                     rblPersistenceSchedule.SelectedValue = PersistedScheduleType.NamedSchedule.ConvertToInt().ToString();
-                    spNamedSchedule.SetValue( dataView.PersistedSchedule );
+                    ddlNamedSchedule.SetValue( dataView.PersistedScheduleId );
                     sbUniqueSchedule.Visible = false;
                 }
                 else if ( dataView.PersistedSchedule.iCalendarContent.Length > 0 )
                 {
                     rblPersistenceSchedule.SelectedValue = PersistedScheduleType.Unique.ConvertToInt().ToString();
                     sbUniqueSchedule.iCalendarContent = dataView.PersistedSchedule.iCalendarContent;
-                    spNamedSchedule.Visible = false;
+                    ddlNamedSchedule.Visible = false;
                 }
             }
 
@@ -893,16 +909,26 @@ $(document).ready(function() {
             lFilters.Text = descriptionListFilters.Html;
 
             DescriptionList descriptionListPersisted = new DescriptionList();
-
-            if ( dataView.PersistedLastRefreshDateTime.HasValue && dataView.PersistedScheduleIntervalMinutes.HasValue )
+            hlblPersisted.Visible = dataView.PersistedLastRefreshDateTime.HasValue
+                && ( dataView.PersistedScheduleIntervalMinutes.HasValue || dataView.PersistedScheduleId.HasValue );
+            if ( hlblPersisted.Visible )
             {
-                hlblPersisted.Visible = true;
                 hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedLastRefreshDateTime.ToElapsedString() );
             }
-            else if ( dataView.PersistedLastRefreshDateTime.HasValue && dataView.PersistedScheduleId.HasValue )
+
+            // If the dataview has a persisted schedule or interval, include the details in the description.
+            if ( dataView.PersistedScheduleId.HasValue )
             {
-                hlblPersisted.Visible = true;
-                hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedSchedule.FriendlyScheduleText );
+                descriptionListPersisted.Add(
+                    "Persisted Schedule",
+                    dataView.PersistedSchedule.FriendlyScheduleText );
+            }
+
+            if ( dataView.PersistedScheduleIntervalMinutes.HasValue )
+            {
+                descriptionListPersisted.Add(
+                    "Persisted Schedule",
+                    string.Format( "Every {0}", new TimeIntervalSetting( dataView.PersistedScheduleIntervalMinutes, null ).ToString() ) );
             }
 
             lPersisted.Text = descriptionListPersisted.Html;
@@ -1088,13 +1114,37 @@ $(document).ready(function() {
         {
             hlTimeToRun.Text = string.Empty;
             hlTimeToRun.LabelType = LabelType.Default;
-
-            if ( dataView == null || dataView.TimeToRunDurationMilliseconds == null )
+            bool isPersisted = false;
+            if ( dataView == null )
             {
                 return;
             }
+            else if ( dataView.PersistedScheduleId != null || dataView.PersistedScheduleIntervalMinutes != null  )
+            {
+                // This is a persisted data view...
+                if ( ! dataView.PersistedLastRunDurationMilliseconds.HasValue )
+                {
+                    return;
+                }
 
-            var labelValue = dataView.TimeToRunDurationMilliseconds.Value;
+                isPersisted = true;
+            }
+            else if ( ! dataView.TimeToRunDurationMilliseconds.HasValue )
+            {
+                // Otherwise it is not persisted data view, but there is no 'time to run duration' to show.
+                return;
+            }
+
+            double labelValue;
+            if ( isPersisted )
+            {
+                labelValue = dataView.PersistedLastRunDurationMilliseconds.Value;
+            }
+            else
+            {
+                labelValue = dataView.TimeToRunDurationMilliseconds.Value;
+            }
+
             var labelUnit = "ms";
             var labelType = LabelType.Success;
             if ( labelValue > 1000 )
@@ -1572,7 +1622,7 @@ $(document).ready(function() {
         {
             rblPersistenceSchedule.Visible = isEnabled;
             sbUniqueSchedule.Visible = isEnabled;
-            spNamedSchedule.Visible = isEnabled;
+            ddlNamedSchedule.Visible = isEnabled;
         }
 
         protected void rblPersistenceType_SelectedIndexChanged( object sender, EventArgs e )
@@ -1607,7 +1657,7 @@ $(document).ready(function() {
             }
 
             var isPersistedNamedScheduleSelected = rblPersistenceSchedule.SelectedValue.ConvertToEnumOrNull<PersistedScheduleType>() == PersistedScheduleType.NamedSchedule;
-            return swPersistDataView.Checked && isPersistedScheduleTypeSelected && isPersistedNamedScheduleSelected && spNamedSchedule.SelectedValue.IsNotNullOrWhiteSpace();
+            return swPersistDataView.Checked && isPersistedScheduleTypeSelected && isPersistedNamedScheduleSelected && ddlNamedSchedule.SelectedValue.IsNotNullOrWhiteSpace();
         }
 
         private bool HasUniqueSchedule()
@@ -1625,7 +1675,7 @@ $(document).ready(function() {
         private void SetPersistenceScheduleTypeVisibility( bool isEnabled )
         {
             sbUniqueSchedule.Visible = isEnabled;
-            spNamedSchedule.Visible = isEnabled;
+            ddlNamedSchedule.Visible = isEnabled;
         }
 
         protected void rblPersistenceSchedule_SelectedIndexChanged( object sender, EventArgs e )
@@ -1637,18 +1687,17 @@ $(document).ready(function() {
         {
             if ( rblPersistenceSchedule.SelectedValueAsEnumOrNull<PersistedScheduleType>() == PersistedScheduleType.Unique )
             {
-                spNamedSchedule.Visible = false;
+                ddlNamedSchedule.Visible = false;
                 sbUniqueSchedule.Visible = true;
-            }
-            else if ( rblPersistenceSchedule.SelectedValueAsEnumOrNull<PersistedScheduleType>() == PersistedScheduleType.NamedSchedule )
-            {
-                sbUniqueSchedule.Visible = false;
-                spNamedSchedule.Visible = true;
+                ddlNamedSchedule.Required = false;
             }
             else
             {
+                // When the Persisted Schedule Type is 'Named' or it was not selected.
                 sbUniqueSchedule.Visible = false;
-                spNamedSchedule.Visible = false;
+                ddlNamedSchedule.Visible = true;
+                ddlNamedSchedule.Required = true;
+                rblPersistenceSchedule.SetValue( PersistedScheduleType.NamedSchedule.ConvertToInt() );
             }
         }
 

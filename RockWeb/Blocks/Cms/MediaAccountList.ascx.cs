@@ -164,9 +164,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gfAccounts_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfAccounts.SaveUserPreference( UserPreferenceKey.AccountType, cpMediaAccountComponent.SelectedValue );
-            gfAccounts.SaveUserPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked ? cbShowInactive.Checked.ToString() : string.Empty );
-            gfAccounts.SaveUserPreference( UserPreferenceKey.Name, txtAccountName.Text );
+            gfAccounts.SetFilterPreference( UserPreferenceKey.AccountType, cpMediaAccountComponent.SelectedValue );
+            gfAccounts.SetFilterPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked ? cbShowInactive.Checked.ToString() : string.Empty );
+            gfAccounts.SetFilterPreference( UserPreferenceKey.Name, txtAccountName.Text );
 
             BindGrid();
         }
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfAccounts_ClearFilterClick( object sender, EventArgs e )
         {
-            gfAccounts.DeleteUserPreferences();
+            gfAccounts.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -287,9 +287,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            txtAccountName.Text = gfAccounts.GetUserPreference( UserPreferenceKey.Name );
-            cpMediaAccountComponent.SetValue( gfAccounts.GetUserPreference( UserPreferenceKey.AccountType ) );
-            cbShowInactive.Checked = gfAccounts.GetUserPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
+            txtAccountName.Text = gfAccounts.GetFilterPreference( UserPreferenceKey.Name );
+            cpMediaAccountComponent.SetValue( gfAccounts.GetFilterPreference( UserPreferenceKey.AccountType ) );
+            cbShowInactive.Checked = gfAccounts.GetFilterPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
         }
 
         /// <summary>
@@ -304,19 +304,19 @@ namespace RockWeb.Blocks.Cms
             var qry = mediaAccountService.Queryable().AsNoTracking();
 
             // name filter
-            string nameFilter = gfAccounts.GetUserPreference( UserPreferenceKey.Name );
+            string nameFilter = gfAccounts.GetFilterPreference( UserPreferenceKey.Name );
             if ( !string.IsNullOrEmpty( nameFilter ) )
             {
                 qry = qry.Where( account => account.Name.Contains( nameFilter ) );
             }
 
-            Guid? accountTypeGuid = gfAccounts.GetUserPreference( UserPreferenceKey.AccountType ).AsGuidOrNull();
+            Guid? accountTypeGuid = gfAccounts.GetFilterPreference( UserPreferenceKey.AccountType ).AsGuidOrNull();
             if ( accountTypeGuid.HasValue )
             {
                 qry = qry.Where( l => l.ComponentEntityType.Guid.Equals( accountTypeGuid.Value ) );
             }
 
-            bool showInactiveAccounts = gfAccounts.GetUserPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
+            bool showInactiveAccounts = gfAccounts.GetFilterPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
 
             if ( !showInactiveAccounts )
             {

@@ -70,8 +70,8 @@
                                                         </Rock:RockRadioButtonList>
                                                     </div>
                                                     <div class="col-md-6">
-                                                        <Rock:SchedulePicker ID="spNamedSchedule" runat="server" Label="Named" CssClass="picker-lg picker-schedule" AllowInactiveSelection="true" Visible="false" />
-                                                        <Rock:ScheduleBuilder ID="sbUniqueSchedule" runat="server" Label="Unique" Visible="false" />
+                                                        <Rock:RockDropDownList ID="ddlNamedSchedule" runat="server" Label="Named" Required="true" RequiredErrorMessage="A Named Schedule is required when Persistence is 'Named Schedule'" Visible="false" />
+                                                        <Rock:ScheduleBuilder ID="sbUniqueSchedule" runat="server" Label="Unique" ShowScheduleFriendlyTextAsToolTip="true" Visible="false" />
                                                     </div>
                                                 </asp:Panel>
                                                 <asp:Panel runat="server" ID="pnlScheduleIntervalControls" class="col-md-9">

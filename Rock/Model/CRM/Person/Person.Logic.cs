@@ -493,28 +493,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Person's age.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
-        /// </value>
-        [DataMember]
-        public virtual int? Age
-        {
-            get
-            {
-                return _age ?? Person.GetAge( this.BirthDate, this.DeceasedDate );
-            }
-
-            set
-            {
-                _age = value;
-            }
-        }
-
-        private int? _age;
-
-        /// <summary>
         /// Gets the age of the person in years. For infants under the age of 1, the value returned would be 0.
         /// To print the age as a string use <see cref="FormatAge(bool)"/> 
         /// </summary>
@@ -1827,11 +1805,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="age">The age.</param>
         /// <returns></returns>
-        public static AgeBracket? GetAgeBracket( int? age )
+        public static AgeBracket GetAgeBracket( int? age )
         {
             if ( age == null )
             {
-                return null;
+                return AgeBracket.Unknown;
             }
 
             if ( age >= 0 && age <= 12 )

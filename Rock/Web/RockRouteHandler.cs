@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Web
 {
@@ -299,6 +300,16 @@ namespace Rock.Web
                     {
                         // no 404 page found for the site, return the default 404 error page
                         return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Http404Error.aspx", typeof( System.Web.UI.Page ) );
+                    }
+                }
+
+                if ( page.IsRateLimited )
+                {
+                    
+                    var canProcess = RateLimiterCache.CanProcessPage( page.Id, RockPage.GetClientIpAddress(), TimeSpan.FromSeconds( page.RateLimitPeriod.Value ), page.RateLimitRequestPerPeriod.Value );
+                    if ( !canProcess )
+                    {
+                        return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Http429Error.aspx", typeof( System.Web.UI.Page ) );
                     }
                 }
 

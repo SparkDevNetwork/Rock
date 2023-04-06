@@ -3410,53 +3410,6 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public enum ScheduledAttendanceItemMatchesPreference
-    {
-        /// <summary>
-        /// Person (group member) has a scheduling preference for the scheduled schedule and location
-        /// </summary>
-        MatchesPreference,
-
-        /// <summary>
-        /// Person (group member) has a scheduling preference for a different schedule (or the selected schedule but different location)
-        /// </summary>
-        NotMatchesPreference,
-
-        /// <summary>
-        /// Person (group member) has no scheduling preferences for the group (or the person isn't a member of the group )
-        /// </summary>
-        NoPreference
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum ScheduledAttendanceItemStatus
-    {
-        /// <summary>
-        /// pending
-        /// </summary>
-        Pending,
-
-        /// <summary>
-        /// confirmed
-        /// </summary>
-        Confirmed,
-
-        /// <summary>
-        /// declined
-        /// </summary>
-        Declined,
-
-        /// <summary>
-        /// Person isn't Scheduled (they would be in the list of Unscheduled resources)
-        /// </summary>
-        Unscheduled,
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     [RockObsolete( "1.12" )]
     [Obsolete( "Use GroupSchedulerResourceListSourceType instead" )]
     public enum SchedulerResourceListSourceType
@@ -3524,22 +3477,6 @@ namespace Rock.Model
         [Description( "Group Members - Matching Assignment" )]
         [EnumOrder( 3 )]
         GroupMatchingAssignment,
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum SchedulerResourceGroupMemberFilterType
-    {
-        /// <summary>
-        /// The show matching preference
-        /// </summary>
-        ShowMatchingPreference,
-
-        /// <summary>
-        /// The show all group members
-        /// </summary>
-        ShowAllGroupMembers
     }
 
     /// <summary>

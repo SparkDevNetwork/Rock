@@ -16,16 +16,19 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { PersonPreferenceCollection } from "@Obsidian/Core/Core/personPreferences";
 import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
 import { Component, computed, defineComponent, nextTick, onErrorCaptured, onMounted, PropType, provide, ref, watch } from "vue";
 import { useStore } from "@Obsidian/PageState";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { InvokeBlockActionFunc } from "@Obsidian/Types/Utility/block";
-import { provideBlockGuid, provideConfigurationValuesChanged, provideReloadBlock } from "@Obsidian/Utility/block";
+import { provideBlockGuid, provideConfigurationValuesChanged, providePersonPreferences, provideReloadBlock } from "@Obsidian/Utility/block";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
+import { IBlockPersonPreferencesProvider, IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
+import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
 
 const store = useStore();
 
@@ -36,7 +39,7 @@ declare const Sys: any;
 /**
  * Handles the logic to detect when the standard block settings modal has closed
  * via a Save click for the specified block.
- * 
+ *
  * @param blockId The unique identifier of the block to be watched.
  * @param callback The callback to be invoked when the block settings have been saved.
  */
@@ -64,7 +67,7 @@ function addBlockChangedEventListener(blockId: Guid, callback: (() => void)): vo
 
 /**
  * Update the custom actions in the configuration bar to match those provided.
- * 
+ *
  * @param blockContainerElement The element that contains the block component.
  * @param actions The array of actions to put in the configuration bar.
  */
@@ -222,6 +225,57 @@ export default defineComponent({
             }
         };
 
+        /**
+         * Gets the person preference provider for this block.
+         *
+         * @returns A block person preference provider.
+         */
+        function getPreferenceProvider(): IBlockPersonPreferencesProvider {
+            const entityTypeKey = props.config.preferences?.entityTypeKey ?? undefined;
+            const entityKey = props.config.preferences?.entityKey ?? undefined;
+            const values = props.config.preferences?.values ?? [];
+            const anonymous = !store.state.isAnonymousVisitor && !store.state.currentPerson;
+
+            const preferenceProvider: IBlockPersonPreferencesProvider = {
+                blockPreferences: new PersonPreferenceCollection(entityTypeKey, entityKey, "", anonymous, values),
+                async getGlobalPreferences(): Promise<IPersonPreferenceCollection> {
+                    try {
+                        const response = await get<PersonPreferenceValueBag[]>("/api/v2/Utilities/PersonPreferences");
+
+                        if (!response.isSuccess || !response.data) {
+                            console.error(response.errorMessage || "Unable to retrieve person preferences.");
+                            return new PersonPreferenceCollection();
+                        }
+
+                        return new PersonPreferenceCollection(undefined, undefined, "", anonymous, response.data);
+                    }
+                    catch (error) {
+                        console.error(error);
+                        return new PersonPreferenceCollection();
+                    }
+                },
+
+                async getEntityPreferences(entityTypeKey, entityKey): Promise<IPersonPreferenceCollection> {
+                    try {
+                        const response = await get<PersonPreferenceValueBag[]>(`/api/v2/Utilities/PersonPreferences/${entityTypeKey}/${entityKey}`);
+
+                        if (!response.isSuccess || !response.data) {
+                            console.error(response.errorMessage || "Unable to retrieve person preferences.");
+                            return new PersonPreferenceCollection();
+                        }
+
+                        return new PersonPreferenceCollection(entityTypeKey, entityKey, "", anonymous, response.data);
+                    }
+                    catch (error) {
+                        console.error(error);
+                        return new PersonPreferenceCollection();
+                    }
+                },
+            };
+
+            return preferenceProvider;
+        }
+
         // #endregion
 
         // #region Event Handlers
@@ -296,6 +350,7 @@ export default defineComponent({
         provide("invokeBlockAction", invokeBlockAction);
         provide("configurationValues", configurationValues);
         provideReloadBlock(reloadBlock);
+        providePersonPreferences(getPreferenceProvider());
         const configurationValuesChanged = provideConfigurationValuesChanged();
 
         if (props.config.blockGuid) {

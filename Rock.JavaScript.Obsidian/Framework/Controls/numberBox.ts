@@ -74,7 +74,7 @@ export default defineComponent({
         });
 
         const isInputGroup = computed((): boolean => {
-            return !!ctx.slots.prepend || !!ctx.slots.append;
+            return !!ctx.slots.inputGroupPrepend || !!ctx.slots.inputGroupAppend;
         });
 
         const controlContainerClass = computed((): string => {
@@ -121,8 +121,9 @@ export default defineComponent({
     :rules="computedRules">
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">
+            <slot name="prepend" />
             <div :class="controlContainerClass">
-                <slot name="prepend" />
+                <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                 <input
                     v-model="internalValue"
                     :id="uniqueId"
@@ -134,8 +135,9 @@ export default defineComponent({
                     :step="internalStep"
                     :min="minimumValue"
                     :max="maximumValue" />
-                <slot name="append" />
+                <slot name="inputGroupAppend" :isInputGroupSupported="true" />
             </div>
+            <slot name="append" />
         </div>
     </template>
 </RockFormField>`

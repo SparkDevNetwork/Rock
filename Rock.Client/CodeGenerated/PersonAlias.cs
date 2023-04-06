@@ -50,6 +50,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public string InternalMessage { get; set; }
+
+        /// <summary />
         public DateTime? LastVisitDateTime { get; set; }
 
         /// <summary />
@@ -76,6 +79,7 @@ namespace Rock.Client
             this.AliasPersonId = source.AliasPersonId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.InternalMessage = source.InternalMessage;
             this.LastVisitDateTime = source.LastVisitDateTime;
             this.Name = source.Name;
             this.PersonId = source.PersonId;

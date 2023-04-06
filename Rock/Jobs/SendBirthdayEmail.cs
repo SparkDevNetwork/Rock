@@ -60,7 +60,7 @@ namespace Rock.Jobs
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
 
-                        Guid? systemEmailGuid = GetAttributeValue( "BirthdayEmail" ).AsGuidOrNull();
+            Guid? systemEmailGuid = GetAttributeValue( "BirthdayEmail" ).AsGuidOrNull();
 
             var emailService = new SystemCommunicationService( rockContext );
 

@@ -423,7 +423,7 @@ export default defineComponent({
             <DropDownList v-model="entityTypeGuid"
                 label="Entity Type"
                 grouped
-                :enhanceForLongLists="false"
+                enhanceForLongLists
                 :items="entityTypeOptions" />
         </div>
     </template>

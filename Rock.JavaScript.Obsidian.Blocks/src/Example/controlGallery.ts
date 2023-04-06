@@ -159,8 +159,8 @@ import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
 import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
-import InlineSlider from "@Obsidian/Controls/inlineSlider";
-import Slider from "@Obsidian/Controls/slider";
+import InlineRangeSlider from "@Obsidian/Controls/inlineRangeSlider.obs";
+import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
 import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
 import KeyValueList from "@Obsidian/Controls/keyValueList";
 import Loading from "@Obsidian/Controls/loading";
@@ -207,6 +207,11 @@ import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
 import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
 import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
 import ContentChannelItemPicker from "@Obsidian/Controls/contentChannelItemPicker.obs";
+import PersonLink from "@Obsidian/Controls/personLink.obs";
+import PopOver from "@Obsidian/Controls/popOver.obs";
+import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
+import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
 
 // #region Gallery Support
 
@@ -466,11 +471,13 @@ export const GalleryAndResult = defineComponent({
     <h4 class="mt-0 mb-3">Usage Notes</h4>
     <slot name="usage">
         <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
+        <slot name="importNotes" />
         <div v-if="importCode" class="galleryContent-codeSampleWrapper">
             <pre class="galleryContent-codeSample"><code v-html="styledImportCode"></code></pre>
             <CopyButton :value="importCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
         </div>
         <h5 v-if="exampleCode" class="mt-3 mb-2">Template Syntax</h5>
+        <slot name="syntaxNotes" />
         <div v-if="exampleCode" class="galleryContent-codeSampleWrapper">
             <pre class="galleryContent-codeSample"><code v-html="styledExampleCode"></code></pre>
             <CopyButton :value="exampleCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
@@ -1044,7 +1051,7 @@ const dropDownListGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+    <DropDownList label="Select" v-model="value" :items="[]" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
 
     <template #settings>
         <div class="row">
@@ -1323,6 +1330,7 @@ const datePickerGallery = defineComponent({
             disableHighlightToday: ref(false),
             disallowFutureDateSelection: ref(false),
             disallowPastDateSelection: ref(false),
+            isDisabled: ref(false),
             startView: ref(0),
             viewOptions: [{ value: 0, text: "Month" }, { value: 1, text: "Year" }, { value: 2, text: "Decade" }],
             importCode: getControlImportPath("datePicker"),
@@ -1344,7 +1352,7 @@ const datePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <DatePicker label="Date" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" />
+    <DatePicker label="Date" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" :disabled="isDisabled" />
 
     <template #settings>
         <div class="row">
@@ -1353,6 +1361,9 @@ const datePickerGallery = defineComponent({
             </div>
             <div class="col-sm-4">
                 <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
+            </div>
+            <div class="col-sm-4">
+                <InlineCheckBox v-model="isDisabled" label="Disable" />
             </div>
         </div>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
@@ -5013,24 +5024,24 @@ const fieldTypeEditorGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates inline slider */
-const inlineSliderGallery = defineComponent({
-    name: "InlineSliderGallery",
+/** Demonstrates inline range slider */
+const inlineRangeSliderGallery = defineComponent({
+    name: "InlineRangeSliderGallery",
     components: {
         GalleryAndResult,
-        InlineSlider,
+        InlineRangeSlider,
         CheckBox,
         NumberBox
     },
     setup() {
         return {
             value: ref(10),
-            intOnly: ref(false),
+            step: ref(0),
             min: ref(0),
             max: ref(100),
             showValue: ref(false),
-            importCode: getControlImportPath("inlineSlider"),
-            exampleCode: `<InlineSlider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />`
+            importCode: getSfcControlImportPath("inlineRangeSlider"),
+            exampleCode: `<InlineRangeSlider v-model="value" :step="1" :min="min" :max="max" :showValueBar="showValue" />`
         };
     },
     template: `
@@ -5040,12 +5051,12 @@ const inlineSliderGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <InlineSlider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
+    <InlineRangeSlider v-model="value" :step="step" :min="min" :max="max" :showValueBar="showValue" />
 
     <template #settings>
         <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
             <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
+            <NumberBox formGroupClasses="col-md-3" label="Step Value" v-model="step" help="Leave blank or set to zero to have no step" />
             <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
             <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
         </div>
@@ -5276,7 +5287,7 @@ const progressBarGallery = defineComponent({
     components: {
         GalleryAndResult,
         ProgressBar,
-        InlineSlider
+        RangeSlider
     },
     setup() {
         return {
@@ -5296,8 +5307,9 @@ const progressBarGallery = defineComponent({
 
     <template #settings>
         <div class="row">
-            <label>Percent Done</label>
-            <InlineSlider formGroupClasses="col-md-6" label="Integer Only" v-model="value" showValueBar isIntegerOnly />
+            <div class="col-md-4">
+                <RangeSlider label="Percent Done" v-model="value" showValueBar :step="1" />
+            </div>
         </div>
     </template>
 </GalleryAndResult>`
@@ -5437,24 +5449,24 @@ const rockValidationGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates slider */
-const sliderGallery = defineComponent({
-    name: "SliderGallery",
+/** Demonstrates range slider */
+const rangeSliderGallery = defineComponent({
+    name: "RangeSliderGallery",
     components: {
         GalleryAndResult,
-        Slider,
+        RangeSlider,
         CheckBox,
         NumberBox
     },
     setup() {
         return {
             value: ref(10),
-            intOnly: ref(false),
+            step: ref(1),
             min: ref(0),
             max: ref(100),
             showValue: ref(false),
-            importCode: getControlImportPath("slider"),
-            exampleCode: `<Slider v-model="value" label="Slider Value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />`
+            importCode: getSfcControlImportPath("slider"),
+            exampleCode: `<RangeSlider label="Range Slider" v-model="value" :step="1" :min="min" :max="max" :showValueBar="showValue" />`
         };
     },
     template: `
@@ -5464,12 +5476,12 @@ const sliderGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <Slider v-model="value" label="Slider Value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
+    <RangeSlider v-model="value" label="Range Slider Value" :step="step" :min="min" :max="max" :showValueBar="showValue" />
 
     <template #settings>
         <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
             <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
+            <NumberBox formGroupClasses="col-md-3" label="Step Value" v-model="step" help="Set to zero to have no step" />
             <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
             <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
         </div>
@@ -7275,6 +7287,297 @@ const contentChannelItemPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates person link */
+const personLinkGallery = defineComponent({
+    name: "PersonLinkGallery",
+    components: {
+        GalleryAndResult,
+        PersonLink,
+        DropDownList,
+        TextBox
+    },
+    setup() {
+        const placement = ref("right");
+        const textAlign = computed(() => {
+            if (placement.value == "right") {
+                return "left";
+            }
+
+            if (placement.value == "left") {
+                return "right";
+            }
+
+            return "center";
+        });
+
+        return {
+            placementOptions: [
+                { text: "Top", value: "top" },
+                { text: "Right (Default)", value: "right" },
+                { text: "Bottom", value: "bottom" },
+                { text: "Left", value: "left" },
+            ],
+            placement,
+            textAlign,
+            personName: ref("Ted Decker"),
+            role: ref("Member"),
+            photoId: ref(""),
+            personId: ref("1"),
+            importCode: getSfcControlImportPath("personLink"),
+            exampleCode: `<PersonLink :personId="56" personName="Ted Decker" role="Member" popOverPlacement="right" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <div :style="{textAlign, 'margin-top': placement == 'top' ? '150px' : '0'}">
+        <PersonLink :personId="personId" :personName="personName" :photoId="photoId" :role="role" :popOverPlacement="placement" />
+    </div>
+    <div class="mt-5 text-center" v-if="textAlign != 'left'"><strong>Note:</strong> The link has been moved to demonstrate the placement position of the pop over better. Changing the pop over placement does not normally move PersonLink around, just the position of the pop over.</div>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="personName" label="Person Name" />
+            </div>
+            <div class="col-md-4">
+                <TextBox v-model="role" label="Role" />
+            </div>
+            <div class="col-md-4">
+                <TextBox v-model="photoId" label="Photo ID" help="NOTE: Providing a photo ID only adds a dot. Currently, this does nothing else and the value does not matter, as long as a value is provided." />
+            </div>
+            <div class="col-md-4">
+                <TextBox v-model="personId" label="Person ID" />
+            </div>
+            <div class="col-md-4">
+                <DropDownList v-model="placement" :items="placementOptions" label="Pop Over Placement" :showBlankItem="false" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates popOver */
+const popOverGallery = defineComponent({
+    name: "PopOverGallery",
+    components: {
+        GalleryAndResult,
+        PopOver,
+        DropDownList,
+        CheckBox
+    },
+    setup() {
+        const placement = ref("right");
+        const triggerUpdate = ref(false);
+
+        watch(placement, () => {
+            triggerUpdate.value = true;
+        });
+
+        return {
+            placementOptions: [
+                { text: "Top", value: "top" },
+                { text: "Right (Default)", value: "right" },
+                { text: "Bottom", value: "bottom" },
+                { text: "Left", value: "left" },
+            ],
+            placement,
+            triggerUpdate,
+            show: ref(false),
+            importCode: getSfcControlImportPath("popOver"),
+            exampleCode: `<PopOver v-model:isVisible="isVisible" placement="right">
+    <template #activator="props">
+        <strong v-bind="props">Hover Me</strong>
+    </template>
+    <template #popOverContent>
+        This is the content that shows up in the popOver
+    </template>
+</PopOver>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <div class="text-center">
+        <PopOver v-model:isVisible="show" :placement="placement" v-model:triggerUpdate="triggerUpdate">
+            <template #activator="props">
+                <strong v-bind="props">Hover Me</strong>
+            </template>
+            <template #popOverContent>
+                This is the content that shows up in the popOver
+            </template>
+        </PopOver>
+    </div>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox v-model="show" label="Show PopOver" />
+            </div>
+            <div class="col-md-4">
+                <DropDownList v-model="placement" :items="placementOptions" label="Pop Over Placement" :showBlankItem="false" />
+            </div>
+        </div>
+    </template>
+
+    <template #syntaxNotes>
+        <p class="font-italic"><strong>Important Notes:</strong> The <code>activator</code> slot's contents must be an HTML element. Putting a component there will not work. Also,
+        you must bind the activator slot's props to that element. This allows the popOver to attach the event listeners so it can detect if
+        it is being hovered.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates rockLiteral */
+const rockLiteralGallery = defineComponent({
+    name: "RockLiteralGallery",
+    components: {
+        GalleryAndResult,
+        RockLiteral,
+        TextBox,
+        CheckBox
+    },
+    setup() {
+        return {
+            label: ref("Romans 11:33"),
+            labelClass: ref(""),
+            content: ref("<p>Oh, the depth of the riches and the wisdom and the knowledge of God!<br> How unsearchable his judgments and untraceable his ways!"),
+            useLabelSlot: ref(false),
+            importCode: getSfcControlImportPath("rockLiteral"),
+            exampleCode: `// Simple Label
+<RockLiteral label="Label Text" labelCssClass="text-primary">
+    My content beneath the label.
+</RockLiteral>
+
+// Advanced Label with Slot
+<RockLiteral labelCssClass="text-primary">
+    <template #label><i class="fa fa-cross"></i> <strong>My Custom Label</strong></template>
+    My content beneath the label.
+</RockLiteral>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <RockLiteral :labelCssClass="labelClass" :label="label">
+        <template #label v-if="useLabelSlot"><span v-html="label"></span></template>
+        <div v-html="content"></div>
+    </RockLiteral>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="label" label="Label Text" textMode="multiline" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox v-model="useLabelSlot" label="Use Label Slot" help="Instead of using the prop. This allows you to pass in HTML or a component for the label instead of plain text." />
+            </div>
+            <div class="col-md-4">
+                <TextBox v-model="labelClass" label="Label Class" help="Try something like <code>text-primary</code> to change the color" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="content" label="Content HTML" textMode="multiline" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a registry entry */
+const registryEntryGallery = defineComponent({
+    name: "RegistryEntryGallery",
+    components: {
+        GalleryAndResult,
+        RegistryEntry,
+        RockForm,
+        RockButton,
+        CheckBox
+    },
+    setup() {
+        return {
+            entry: ref(null),
+            submit: ref(false),
+            isRequired: ref(false),
+            importCode: getSfcControlImportPath("registryEntry"),
+            exampleCode: `<RegistryEntry label="Registry Entry" v-model="phoneNumber" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="entry"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <RockForm v-model:submit="submit">
+        <RegistryEntry label="Registry Entry" v-model="entry" :rules="isRequired ? 'required' : ''" class="text-primary" />
+        <RockButton @click="submit=true">Validate</RockButton>
+    </RockForm>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox v-model="isRequired" label="Required" />
+            </div>
+        </div>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates group type group picker */
+const groupTypeGroupPickerGallery = defineComponent({
+    name: "GroupTypeGroupPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        GroupTypeGroupPicker,
+        TextBox,
+        RockButton
+    },
+    setup() {
+        return {
+            value: ref(null),
+            groupType: ref(null),
+            required: ref(false),
+            glabel: ref("Group"),
+            importCode: getSfcControlImportPath("groupTypeGroupPicker"),
+            exampleCode: `<GroupTypeGroupPicker label="Group Type and TypeGroup" groupLabel="Group" v-model="value"v-model:groupType="groupType" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{value, groupType}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+    <GroupTypeGroupPicker label="Group Type and TypeGroup" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Group Label" v-model="glabel" help="The label for the 2nd dropdown. The label for the first dropdown is not customizable" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -7361,7 +7664,7 @@ const controlGalleryComponents: Record<string, Component> = [
     countdownTimerGallery,
     electronicSignatureGallery,
     fieldTypeEditorGallery,
-    inlineSliderGallery,
+    inlineRangeSliderGallery,
     javaScriptAnchorGallery,
     keyValueListGallery,
     loadingGallery,
@@ -7372,7 +7675,7 @@ const controlGalleryComponents: Record<string, Component> = [
     rockButtonGallery,
     rockLabelGallery,
     rockValidationGallery,
-    sliderGallery,
+    rangeSliderGallery,
     tabbedContentGallery,
     transitionVerticalCollapseGallery,
     valueDetailListGallery,
@@ -7410,6 +7713,11 @@ const controlGalleryComponents: Record<string, Component> = [
     groupRolePickerGallery,
     modalAlertGallery,
     contentChannelItemPickerGallery,
+    personLinkGallery,
+    popOverGallery,
+    rockLiteralGallery,
+    registryEntryGallery,
+    groupTypeGroupPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

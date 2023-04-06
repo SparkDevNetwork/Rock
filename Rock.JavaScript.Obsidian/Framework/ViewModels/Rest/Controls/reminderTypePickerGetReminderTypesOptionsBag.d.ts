@@ -28,5 +28,6 @@ import { Guid } from "@Obsidian/Types";
  * the AchievementTypePicker control.
  */
 export type ReminderTypePickerGetReminderTypesOptionsBag = {
+    /** Gets or sets the Entity Type Guid */
     entityTypeGuid?: Guid | null;
 };

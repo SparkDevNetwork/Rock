@@ -543,6 +543,8 @@ export const EntityType = {
     PersonNoteAdded: "C4AB0F1B-E036-4D14-BFB7-30BAF12D648A",
     /** The GUID for the Rock.Follow.Event.PersonPrayerRequest entity */
     PersonPrayerRequest: "DAE05FAE-A26F-465A-836C-BAA0EFA1267B",
+    /** The GUID for the Rock.Model.PersonPreference entity */
+    PersonPreference: "FDCF766C-F36B-403B-89F3-7030DA65507E",
     /** The EntityType Guid for Rock.Model.PersonPreviousName  */
     PersonPreviousName: "80AC80E1-F769-4E34-9937-E2FEEF2B60EE",
     /** The EntityType Guid for Rock.Model.PersonScheduleExclusion  */

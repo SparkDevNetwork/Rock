@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -22,6 +23,7 @@ using Rock;
 using Rock.Data;
 using Rock.Drawing.Avatar;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -72,6 +74,12 @@ namespace RockWeb
         {
             // Read query string parms
             var settings = ReadSettingsFromRequest( context.Request );
+
+            if( settings.PhotoId.HasValue && !IsAuthorized( settings.PhotoId.Value ) )
+            {
+                SendNotAuthorized( context );
+                return;
+            }
 
             string cacheFolder = context.Request.MapPath( $"~/App_Data/Avatar/Cache/" );
             string cachedFilePath = $"{cacheFolder}{settings.CacheKey}.png";
@@ -393,6 +401,66 @@ namespace RockWeb
                 // if it fails, return null, which will result in fetching it from the database instead
                 return null;
             }
+        }
+
+
+        /// <summary>
+        /// Determines whether the current user is authorized to view the file
+        /// </summary>
+        /// <param name="photoId"></param>
+        /// <returns>
+        ///   <c>true</c> if the current user is authorized; otherwise, <c>false</c>.</returns>
+        private Boolean IsAuthorized( int photoId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+
+                bool? requiresViewSecurity = binaryFileService
+                    .Queryable()
+                    .Where( b => b.Id == photoId )
+                    .Select( a => a.BinaryFileType.RequiresViewSecurity )
+                    .FirstOrDefault();
+
+                if ( requiresViewSecurity == null )
+                {
+                    return false;
+                }
+
+                if( requiresViewSecurity == false )
+                {
+                    return true;
+                }
+
+                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                Person currentPerson = currentUser?.Person;
+
+                BinaryFile binaryFileAuth = binaryFileService.Queryable( "BinaryFileType" ).AsNoTracking().First( a => a.Id == photoId );
+                var parentEntityAllowsView = binaryFileAuth.ParentEntityAllowsView( currentPerson );
+
+                // If no parent entity is specified then check if there is scecurity on the BinaryFileType
+                if ( parentEntityAllowsView == null )
+                {
+                    if ( !binaryFileAuth.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        return false;
+                    }
+                }
+
+                // Check if there is parent security and use it if it exists, otherwise return true.
+                return parentEntityAllowsView ?? true;
+            }
+        }
+
+        /// <summary>
+        /// Sends a 403 (forbidden)
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void SendNotAuthorized( HttpContext context )
+        {
+            context.Response.StatusCode = System.Net.HttpStatusCode.Forbidden.ConvertToInt();
+            context.Response.StatusDescription = "Not authorized to view image";
+            context.ApplicationInstance.CompleteRequest();
         }
 
         #endregion

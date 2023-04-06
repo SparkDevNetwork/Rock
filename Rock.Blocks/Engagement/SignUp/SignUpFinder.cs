@@ -45,7 +45,7 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <seealso cref="Rock.Blocks.IHasCustomActions" />
 
     [DisplayName( "Sign-Up Finder" )]
-    [Category( "Engagement > Sign-Up" )]
+    [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Block used for finding a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
 
@@ -336,9 +336,10 @@ namespace Rock.Blocks.Engagement.SignUp
                             {% else %}
                                 &nbsp;
                             {% endif %}
-                            {% endif %}
                             {% if project.DistanceInMiles != null %}
                                 <span class=""badge"">{{ project.DistanceInMiles | Format:'0.0' }} miles<span>
+                            {% else %}
+                                &nbsp;
                             {% endif %}
                         </div>
                         {% if project.MapCenter and project.MapCenter != empty %}
@@ -687,7 +688,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     continue;
                 }
 
-                var group = new Group { GroupTypeId = projectTypeId.Value };
+                var group = new Rock.Model.Group { GroupTypeId = projectTypeId.Value };
                 group.LoadAttributes( rockContext );
 
                 // Note that we're not enforcing security here, as the public-facing individual performing the search would most likely be restricted.
@@ -1275,7 +1276,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         continue;
                     }
 
-                    var group = new Group { GroupTypeId = groupTypeCache.Id };
+                    var group = new Rock.Model.Group { GroupTypeId = groupTypeCache.Id };
                     group.LoadAttributes();
 
                     foreach ( var attribute in group.Attributes.Select( a => a.Value ) )
@@ -1648,7 +1649,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// </summary>
         private class Opportunity
         {
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             public Location Location { get; set; }
 

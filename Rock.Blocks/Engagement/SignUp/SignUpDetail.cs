@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Engagement.SignUp
 {
     [DisplayName( "Sign-Up Detail" )]
-    [Category( "Engagement > Sign-Up" )]
+    [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Block used to show the details of a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
 
@@ -354,7 +354,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             public string ErrorMessage { get; set; }
 
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             public Location Location { get; set; }
 

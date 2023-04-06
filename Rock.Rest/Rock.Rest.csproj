@@ -507,6 +507,8 @@
     <Compile Include="Utility\ValueProviders\RockQueryStringValueProviderFactory.cs" />
     <Compile Include="Utility\ValueProviders\RockRouteDataValueProvider.cs" />
     <Compile Include="Utility\ValueProviders\RockRouteDataValueProviderFactory.cs" />
+    <Compile Include="v2\UtilitiesController.PersonPreferences.cs" />
+    <Compile Include="v2\UtilitiesController.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

@@ -3416,6 +3416,7 @@ namespace Rock.Model
             target.AliasPersonId = source.AliasPersonId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InternalMessage = source.InternalMessage;
             target.LastVisitDateTime = source.LastVisitDateTime;
             target.Name = source.Name;
             target.PersonId = source.PersonId;

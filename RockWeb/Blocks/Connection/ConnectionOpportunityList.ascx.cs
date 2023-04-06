@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( MakeKeyUniqueToConnectionType( "Status" ), "Status", cbActive.Checked.ToTrueFalse() );
+            rFilter.SetFilterPreference( MakeKeyUniqueToConnectionType( "Status" ), "Status", cbActive.Checked.ToTrueFalse() );
 
             if ( AvailableAttributes != null )
             {
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Connection
                         try
                         {
                             var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            rFilter.SaveUserPreference( MakeKeyUniqueToConnectionType( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                            rFilter.SetFilterPreference( MakeKeyUniqueToConnectionType( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch
                         {
@@ -391,7 +391,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void SetFilter()
         {
-            string statusValue = rFilter.GetUserPreference( MakeKeyUniqueToConnectionType( "Status" ) );
+            string statusValue = rFilter.GetFilterPreference( MakeKeyUniqueToConnectionType( "Status" ) );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
             {
                 cbActive.Checked = statusValue.AsBoolean();
@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.Connection
                             phAttributeFilters.Controls.Add( wrapper );
                         }
 
-                        string savedValue = rFilter.GetUserPreference( MakeKeyUniqueToConnectionType( attribute.Key ) );
+                        string savedValue = rFilter.GetFilterPreference( MakeKeyUniqueToConnectionType( attribute.Key ) );
                         if ( !string.IsNullOrWhiteSpace( savedValue ) )
                         {
                             try

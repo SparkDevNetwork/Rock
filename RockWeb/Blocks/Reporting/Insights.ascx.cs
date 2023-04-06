@@ -16,13 +16,13 @@
 //
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
@@ -33,66 +33,66 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Shows high-level statistics of the Rock database." )]
 
+    #region Block Attributes
+
+    [BooleanField(
+        "Show Ethnicity",
+        Key = AttributeKey.ShowEthnicity,
+        Description = "When enabled the Ethnicity chart will be displayed.",
+        DefaultValue = "false",
+        Order = 0 )]
+
+    [BooleanField(
+        "Show Race",
+        Key = AttributeKey.ShowRace,
+        Description = "When enabled the Race chart will be displayed.",
+        DefaultValue = "false",
+        Order = 1 )]
+
+    #endregion
+
     [Rock.SystemGuid.BlockTypeGuid( "B215F5FA-410C-4674-8C47-43DC40AF9F67" )]
     public partial class Insights : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string ShowEthnicity = "ShowEthnicity";
+            public const string ShowRace = "ShowRace";
+        }
+
+        #endregion
+
         #region Fields
 
-        private readonly Dictionary<string, string> LabelColorMap = new Dictionary<string, string>()
+        /// <summary>
+        /// The available colors for the charts
+        /// </summary>
+        private readonly List<string> _availableColors = new List<string>()
         {
-            { "Male", "#FB7185" },
-            { "Female", "#818CF8" },
-            { "Unknown", "#CCCCCC" },
-
-            { "Attendee", "#818CF8" },
-            { "Visitor", "#4ADE80" },
-            { "Member", "#FBBF24" },
-            { "Participant", "#FB7185" },
-            { "Prospect", "#22D3EE" },
-
-            { "Married", "#EEAAAA" },
-            { "Single", "#818CF8" },
-            { "Divorced", "#FBBF24" },
-
-            { "Non Hispanic or Latino", "#4ADE80" },
-            { "Hispanic or Latino", "#FB7185" },
-
-            { "White", "#818CF8" },
-            { "American Indian or Alaskan Native", "#FBBF24" },
-            { "Black or African American", "#4ADE80" },
-            { "Native Hawaiian or Pacific Islander", "#E879F9" },
-            { "Other", "#E879F9" },
-            { "Asian", "#38BDF8" },
-
-            { "Age", "#818CF8" },
-            { "Gender", "#38BDF8" },
-            { "Active Email", "#22D3EE" },
-            { "Mobile Phone", "#2DD4BF" },
-            { "Marital Status", "#4ADE80" },
-            { "Photo", "#FBBE24" },
-            { "Date of Birth", "#FB923C" },
-            { "Home Address", "#F87171" },
-
-            { "Disc", "#818CF8" },
-            { "Motivators", "#38BDF8" },
-            { "EQ", "#22D3EE" },
-            { "Spiritual Gifts", "#2DD4BF" },
-            { "Conflict Profile", "#4ADE80" },
-
-            { "Active", "#4ADE80" },
-            { "Inactive", "#CCCCCC" },
-
-            { "0-12", "#FB7185" },
-            { "13-17", "#A78BFA" },
-            { "18-24", "#22D3EE" },
-            { "25-34", "#FBBF24" },
-            { "35-44", "#F87171" },
-            { "45-54", "#38BDF8" },
-            { "55-64", "#F472B6" },
-            { "65+", "#4ADE80" },
+            "#3b82f6",
+            "#ef4444",
+            "#06b6d4",
+            "#f97316",
+            "#22c55e",
+            "#eab308",
+            "#8b5cf6",
+            "#EC4899",
         };
 
+        /// <summary>
+        /// Lava short code pie chart configuration
+        /// </summary>
         const string PieChartConfig = "{[ chart type:'pie' chartheight:'200px' legendshow:'true' legendposition:'right' ]}";
+
+        /// <summary>
+        /// Keeps track of the number of colors to skip when selecting the fill color for the charts
+        /// </summary>
+        private int skipCount = 0;
 
         #endregion
 
@@ -130,22 +130,20 @@ namespace RockWeb.Blocks.Reporting
         private void InitializeBlock()
         {
             var rockContext = new RockContext();
-            rockContext.Database.Log = strQry => Debug.WriteLine( strQry );
             var personService = new PersonService( rockContext );
 
-            var qry = personService.Queryable();
-            var total = qry.Count();
             var personRecordDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid();
             IEnumerable<Person> alivePersonsQry;
             IEnumerable<Person> activeAlivePersonsQry;
 
-            alivePersonsQry = qry.Where( p => p.RecordTypeValue.Guid == personRecordDefinedValueGuid && !p.IsDeceased );
+            alivePersonsQry = personService.Queryable().Where( p => p.RecordTypeValue.Guid == personRecordDefinedValueGuid && !p.IsDeceased );
             activeAlivePersonsQry = alivePersonsQry.Where( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            var total = activeAlivePersonsQry.Count();
 
             GetDemographics( activeAlivePersonsQry );
             GetInformationStatistics( activeAlivePersonsQry, rockContext, total );
             GetPercentOfActiveIndividualsWithAssessments( rockContext, total );
-            GetPercentOfActiveRecords( alivePersonsQry, total );
+            GetPercentOfActiveRecords( alivePersonsQry );
         }
 
         /// <summary>
@@ -159,9 +157,17 @@ namespace RockWeb.Blocks.Reporting
                 new DemographicItem( "Connection Status", GetConnectionStatusLava( persons ) ),
                 new DemographicItem( "Marital Status", GetMaritalStatusLava( persons ) ),
                 new DemographicItem( "Age", GetAgeLava( persons ) ),
-                new DemographicItem( "Race", GetRaceLava( persons ) ),
-                new DemographicItem( "Ethnicity", GetEthnicityLava( persons ) ),
             };
+
+            if ( GetAttributeValue( AttributeKey.ShowRace ).AsBoolean() )
+            {
+                demographics.Add( new DemographicItem( "Race", GetRaceLava( persons ) ) );
+            }
+
+            if ( GetAttributeValue( AttributeKey.ShowEthnicity ).AsBoolean() )
+            {
+                demographics.Add( new DemographicItem( "Ethnicity", GetEthnicityLava( persons ) ) );
+            }
 
             rptDemographics.DataSource = demographics;
             rptDemographics.DataBind();
@@ -276,7 +282,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void GetInformationStatistics( IEnumerable<Person> qry, RockContext rockContext, int total )
         {
-            const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' ]}";
+            const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' valueformat:'percentage' ]}";
 
             var dataItems = new List<DataItem>();
 
@@ -290,7 +296,11 @@ namespace RockWeb.Blocks.Reporting
             dataItems.Add( new DataItem( "Active Email", DataItem.GetPercentage( hasActiveEmailCount, total ) ) );
 
             var mobilePhoneTypeGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
-            var hasMobilePhoneCount = new PhoneNumberService( rockContext ).Queryable().Count( p => p.NumberTypeValue.Guid == mobilePhoneTypeGuid );
+            var personPhoneQry = new PhoneNumberService( rockContext ).Queryable().Where( pn => pn.NumberTypeValue.Guid == mobilePhoneTypeGuid );
+            var hasMobilePhoneCount = qry.Join( personPhoneQry, person => person.Id,
+                phoneNumber => phoneNumber.PersonId,
+                ( person, phoneNumber ) => new { person, phoneNumber } )
+                .Count();
             dataItems.Add( new DataItem( "Mobile Phone", DataItem.GetPercentage( hasMobilePhoneCount, total ) ) );
 
             var hasMaritalStatusCount = qry.Count( p => p.MaritalStatusValueId.HasValue && p.MaritalStatusValue.Value != "Unknown" );
@@ -337,7 +347,7 @@ namespace RockWeb.Blocks.Reporting
 
             var dataItems = groupedQuery.Select( a => new DataItem( a.Key, DataItem.GetPercentage( a.Count( m => m.Assessment != null ), total ) ) ).ToList();
 
-            const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' ]}";
+            const string chartConfig = "{[ chart type:'bar' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' valueformat:'percentage' ]}";
             const string noItemsNotification = @"
 <div class=""alert alert-info"">
     <span class=""js-notification-text"">There is no data on active individuals with assessments.</span>
@@ -349,9 +359,10 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Gets the percent of active records.
         /// </summary>
-        private void GetPercentOfActiveRecords( IEnumerable<Person> alivePersonsQry, int total )
+        private void GetPercentOfActiveRecords( IEnumerable<Person> alivePersonsQry )
         {
             var dataItems = new List<DataItem>();
+            var total = alivePersonsQry.Count();
 
             var activeCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             dataItems.Add( new DataItem( "Active", DataItem.GetPercentage( activeCount, total ) ) );
@@ -359,7 +370,9 @@ namespace RockWeb.Blocks.Reporting
             var inActiveCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             dataItems.Add( new DataItem( "InActive", DataItem.GetPercentage( inActiveCount, total ) ) );
 
-            rlActiveRecords.Text = PopulateShortcodeDataItems( PieChartConfig, dataItems );
+            const string chartConfig = "{[ chart type:'pie' chartheight:'200px' legendshow:'true' legendposition:'right' valueformat:'percentage' ]}";
+
+            rlActiveRecords.Text = PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
         /// <summary>
@@ -376,7 +389,8 @@ namespace RockWeb.Blocks.Reporting
 
             foreach ( var dataItem in dataItems )
             {
-                sb.AppendFormat( dataItemFormat, dataItem.Label, dataItem.Value, GetFillColor( dataItem.Label ) ).AppendLine();
+                sb.AppendFormat( dataItemFormat, dataItem.Label, dataItem.Value, GetFillColor( skipCount, dataItem.Label ) ).AppendLine();
+                skipCount ++;
             }
 
             sb.AppendLine( "{[ endchart ]}" );
@@ -384,15 +398,36 @@ namespace RockWeb.Blocks.Reporting
             return sb.ToString().ResolveMergeFields( new Dictionary<string, object>() );
         }
 
-        private string GetFillColor( string label )
+        /// <summary>
+        /// Gets the fill color of the charts.
+        /// </summary>
+        /// <param name="skip">The number of colors to skip.</param>
+        /// <param name="label">The label of the chart.</param>
+        /// <returns></returns>
+        private string GetFillColor( int skip, string label )
         {
-            if ( LabelColorMap.ContainsKey( label ) )
+            if ( label == "Unknown" )
             {
-                return LabelColorMap[label];
+                return "#737373";
             }
             else
             {
-                return "#818CF8";
+                return FillColorSource().Skip(skip).FirstOrDefault();
+            }
+        }
+
+        /// <summary>
+        /// Perpetually yields a color from the available colors source so we can skip and take in a loop.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<string> FillColorSource()
+        {
+            while ( true )
+            {
+                foreach ( var color in _availableColors )
+                {
+                    yield return color;
+                }
             }
         }
 
@@ -480,7 +515,7 @@ namespace RockWeb.Blocks.Reporting
             internal static string GetPercentage( int count, int total )
             {
                 var asDecimal = decimal.Divide( count, total );
-                var percent = decimal.Round( asDecimal * 100 );
+                var percent = decimal.Round( asDecimal * 100, 1 );
                 return percent.ToString();
             }
         }

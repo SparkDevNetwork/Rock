@@ -401,13 +401,6 @@ namespace RockWeb.Blocks.WorkFlow
             */
             var formUserActions = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
             var formUserAction = formUserActions.FirstOrDefault( x => x.ActionName == eventArgument );
-            var hasActivateActivity = formUserAction != null && formUserAction.ActivateActivityTypeGuid != string.Empty;
-
-            if ( formUserAction != null && !formUserAction.CausesValidation && !hasActivateActivity )
-            {
-                // Out if the action does not cause validation and does not have an Activate Activity.
-                return;
-            }
 
             if ( formUserAction != null && formUserAction.CausesValidation )
             {

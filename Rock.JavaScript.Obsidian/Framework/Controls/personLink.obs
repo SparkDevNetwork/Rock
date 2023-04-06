@@ -1,0 +1,97 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PopOver v-model:isVisible="isVisible" :placement="popOverPlacement" v-model:triggerUpdate="triggerUpdate">
+        <template #activator="props">
+            <a v-bind="props" :href="'/Person/' + personId"><i v-if="photoId != 0" class="fa fa-circle"></i> <strong>{{ personName }}</strong></a>
+        </template>
+        <template #popOverContent>
+            <Loading :isLoading="!popOverContent" isSmall>
+                <div v-html="popOverContent"></div>
+            </Loading>
+        </template>
+    </PopOver>
+    <small v-if="role"> ({{ role }})</small>
+</template>
+
+<script setup lang="ts">
+    import { nextTick, ref, PropType, watch } from "vue";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import PopOver from "./popOver.obs";
+    import { PersonLinkGetPopupHtmlOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personLinkGetPopupHtmlOptionsBag";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import Loading from "./loading";
+
+    const props = defineProps({
+        /** ID is used to create the link and fetch person data */
+        personId: {
+            type: Number,
+            required: true
+        },
+
+        /** The name to show and link */
+        personName: {
+            type: String,
+            default: ""
+        },
+
+        /** If provided, will be shown after the name in parenthesis */
+        role: {
+            type: String,
+            default: ""
+        },
+
+        /** If provided, a dot will appear to the left of the name */
+        photoId: {
+            type: Number,
+            default: 0
+        },
+
+        /** Which side should the popOver appear on? */
+        popOverPlacement: {
+            type: String as PropType<"top" | "right" | "bottom" | "left">,
+            default: "right"
+        },
+    });
+
+    const http = useHttp();
+    const isVisible = ref(false);
+    const popOverContent = ref("");
+    const triggerUpdate = ref(false);
+    const securityGrantToken = useSecurityGrantToken();
+
+    watch(isVisible, () => {
+        if (isVisible.value && !popOverContent.value) {
+            getPopOverContent();
+        }
+    });
+
+    watch(popOverContent, async () => {
+        if (isVisible.value) {
+            await nextTick();
+            triggerUpdate.value = true;
+        }
+    });
+
+    watch(() => props.personId, () => {
+        popOverContent.value = "";
+    });
+
+    /**
+     * Loads the content from the server.
+     */
+    async function getPopOverContent(): Promise<void> {
+        const options: PersonLinkGetPopupHtmlOptionsBag = {
+            personId: props.personId,
+            securityGrantToken: securityGrantToken.value
+        };
+        const result = await http.post<string>("/api/v2/Controls/PersonLinkGetPopupHtml", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            popOverContent.value = result.data;
+        }
+        else {
+            popOverContent.value = "Unknown error while loading this person's data.";
+        }
+    }
+
+</script>

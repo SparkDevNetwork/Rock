@@ -330,6 +330,7 @@
     <Compile Include="TestFramework\PersonLookup.cs" />
     <Compile Include="Modules\Core\Utility\Settings\RockInstanceConfigurationTests.cs" />
     <Compile Include="TestFramework\TestDatabaseHelper.cs" />
+    <Compile Include="Modules\Web\Cache\RateLimiterCacheTests.cs" />
     <Compile Include="Modules\Web\Utilities\RockUpdateHelperTests.cs" />
     <Compile Include="Modules\Core\Workflow\Action\BackgroundCheckRequestTests.cs" />
   </ItemGroup>
