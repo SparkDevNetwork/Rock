@@ -778,6 +778,16 @@ namespace RockWeb.Blocks.Groups
             var qryGroups = groupService.Queryable()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
 
+            var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
+            if ( rootGroupGuid.HasValue )
+            {
+                var parentGroup = groupService.Get( rootGroupGuid.Value );
+                if ( parentGroup != null )
+                {
+                    qryGroups = qryGroups.Where( g => g.ParentGroupId == parentGroup.Id );
+                }
+            }
+
             string limitToActiveStatus = GetAttributeValue( "LimittoActiveStatus" );
 
             bool showActive = true;
