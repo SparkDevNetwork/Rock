@@ -66,6 +66,29 @@ namespace Rock.Utility
         }
 
         /// <summary>
+        /// Attempts to get the identifier from the hashed key. The hashed key
+        /// must contain one and only one identifier.
+        /// </summary>
+        /// <param name="hashedKey">The hashed key.</param>
+        /// <param name="id">On return contains the integer identifier found in the hash, or <c>0</c> if not valid.</param>
+        /// <returns><c>true</c> if an integer identifer was found, <c>false</c> otherwise.</returns>
+        public bool TryGetId( string hashedKey, out int id )
+        {
+            var unhashedId = GetId( hashedKey );
+
+            if ( unhashedId.HasValue )
+            {
+                id = unhashedId.Value;
+                return true;
+            }
+            else
+            {
+                id = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets the hash key for the single identifier value.
         /// </summary>
         /// <param name="id">The identifier to be encoded as a hashed key.</param>

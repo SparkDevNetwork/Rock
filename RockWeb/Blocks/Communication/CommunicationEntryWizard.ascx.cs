@@ -1552,7 +1552,9 @@ function onTaskCompleted( resultData )
         /// </summary>
         private void ShowTemplateSelection()
         {
-            cpCommunicationTemplate.SetValue( GetBlockUserPreference( CATEGORY_COMMUNICATION_TEMPLATE ).AsIntegerOrNull() );
+            var preferences = GetBlockPersonPreferences();
+
+            cpCommunicationTemplate.SetValue( preferences.GetValue( CATEGORY_COMMUNICATION_TEMPLATE ).AsIntegerOrNull() );
             pnlTemplateSelection.Visible = true;
             nbTemplateSelectionWarning.Visible = false;
             SetNavigationHistory( pnlTemplateSelection );
@@ -1821,7 +1823,11 @@ function onTaskCompleted( resultData )
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCommunicationTemplate_SelectItem( object sender, EventArgs e )
         {
-            SetBlockUserPreference( CATEGORY_COMMUNICATION_TEMPLATE, cpCommunicationTemplate.SelectedValue );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( CATEGORY_COMMUNICATION_TEMPLATE, cpCommunicationTemplate.SelectedValue );
+            preferences.Save();
+
             BindTemplatePicker();
         }
 

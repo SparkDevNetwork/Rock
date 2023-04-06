@@ -95,9 +95,9 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Purpose", dvpPurpose.SelectedValue );
-            rFilter.SaveUserPreference( "System Group Types", ddlIsSystem.SelectedValue );
-            rFilter.SaveUserPreference( "Shown in Navigation", ddlShowInNavigation.SelectedValue );
+            rFilter.SetFilterPreference( "Purpose", dvpPurpose.SelectedValue );
+            rFilter.SetFilterPreference( "System Group Types", ddlIsSystem.SelectedValue );
+            rFilter.SetFilterPreference( "Shown in Navigation", ddlShowInNavigation.SelectedValue );
             BindGrid();
         }
 
@@ -223,9 +223,9 @@ namespace RockWeb.Blocks.Groups
         private void BindFilter()
         {
             dvpPurpose.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).Id;
-            dvpPurpose.SelectedValue = rFilter.GetUserPreference( "Purpose" );
-            ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "System Group Types" );
-            ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "Shown in Navigation" );
+            dvpPurpose.SelectedValue = rFilter.GetFilterPreference( "Purpose" );
+            ddlIsSystem.SelectedValue = rFilter.GetFilterPreference( "System Group Types" );
+            ddlIsSystem.SelectedValue = rFilter.GetFilterPreference( "Shown in Navigation" );
         }
 
         /// <summary>
@@ -259,13 +259,13 @@ namespace RockWeb.Blocks.Groups
             var qry = new GroupTypeService( rockContext ).Queryable();
 
 
-            int? purposeId = rFilter.GetUserPreference( "Purpose" ).AsIntegerOrNull();
+            int? purposeId = rFilter.GetFilterPreference( "Purpose" ).AsIntegerOrNull();
             if ( purposeId.HasValue )
             {
                 qry = qry.Where( t => t.GroupTypePurposeValueId == purposeId.Value );
             }
 
-            var isSystem = rFilter.GetUserPreference( "System Group Types" );
+            var isSystem = rFilter.GetFilterPreference( "System Group Types" );
             if ( isSystem == "Yes" )
             {
                 qry = qry.Where( t => t.IsSystem );
@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.Groups
                 qry = qry.Where( t => !t.IsSystem );
             }
 
-            var isShownInNavigation = rFilter.GetUserPreference( "Shown in Navigation" ).AsBooleanOrNull();
+            var isShownInNavigation = rFilter.GetFilterPreference( "Shown in Navigation" ).AsBooleanOrNull();
             if ( isShownInNavigation.HasValue )
             {
                 if ( isShownInNavigation.Value )

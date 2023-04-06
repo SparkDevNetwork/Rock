@@ -61,7 +61,8 @@ namespace RockWeb.Blocks.Examples
 
             if ( !Page.IsPostBack )
             {
-                cbLimitToSessionId.Checked = GetBlockUserPreference( "LimitToSessionId" ).AsBoolean();
+                var preferences = GetBlockPersonPreferences();
+                cbLimitToSessionId.Checked = preferences.GetValue( "LimitToSessionId" ).AsBoolean();
 
                 var rockContext = new RockContext();
                 lDatabaseName.Text = string.Format(
@@ -116,7 +117,11 @@ Path: {2}",
         {
             DebugHelper.LimitToSessionId( cbLimitToSessionId.Checked );
 
-            SetBlockUserPreference( "LimitToSessionId", cbLimitToSessionId.Checked.ToTrueFalse() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "LimitToSessionId", cbLimitToSessionId.Checked.ToTrueFalse() );
+            preferences.Save();
+
             DebugHelper.SQLLoggingStart();
             ShowDebugSqlStatus();
         }

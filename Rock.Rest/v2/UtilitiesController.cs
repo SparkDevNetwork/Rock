@@ -14,21 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 
-using Rock.Attribute;
-
-namespace Rock.Data
+namespace Rock.Rest.v2
 {
     /// <summary>
-    /// Excludes any default REST controller implementations for the specified model.
+    /// API controller for the /api/v2/Utilities endpoints.
     /// </summary>
-    /// <remarks>
-    /// This is used by the code generator tool.
-    /// </remarks>
-    [AttributeUsage( AttributeTargets.Class )]
-    [RockInternal( "1.16", true )]
-    internal class ExcludeDefaultRestControllerAttribute : System.Attribute
+    /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [Rock.SystemGuid.RestControllerGuid( "AE3ABE89-D40C-4EB6-BAAE-C477DAAD71AD" )]
+    public partial class UtilitiesController : ApiControllerBase
     {
     }
 }

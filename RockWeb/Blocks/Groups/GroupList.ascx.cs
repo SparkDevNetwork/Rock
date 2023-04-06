@@ -376,18 +376,18 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( "Group Type", gtpGroupType.SelectedValue );
+            gfSettings.SetFilterPreference( "Group Type", gtpGroupType.SelectedValue );
 
             if ( ddlActiveFilter.SelectedValue == "all" )
             {
-                gfSettings.SaveUserPreference( "Active Status", string.Empty );
+                gfSettings.SetFilterPreference( "Active Status", string.Empty );
             }
             else
             {
-                gfSettings.SaveUserPreference( "Active Status", ddlActiveFilter.SelectedValue );
+                gfSettings.SetFilterPreference( "Active Status", ddlActiveFilter.SelectedValue );
             }
 
-            gfSettings.SaveUserPreference( "Group Type Purpose", dvpGroupTypePurpose.SelectedValue );
+            gfSettings.SetFilterPreference( "Group Type Purpose", dvpGroupTypePurpose.SelectedValue );
 
             BindGrid();
         }
@@ -716,14 +716,14 @@ namespace RockWeb.Blocks.Groups
                 gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable()
                     .Where( g => groupTypeIds.Contains( g.Id ) ).ToList();
 
-                gtpGroupType.SelectedValue = gfSettings.GetUserPreference( "Group Type" );
+                gtpGroupType.SelectedValue = gfSettings.GetFilterPreference( "Group Type" );
             }
 
             dvpGroupTypePurpose.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ).Id;
-            dvpGroupTypePurpose.SetValue( gfSettings.GetUserPreference( "Group Type Purpose" ) );
+            dvpGroupTypePurpose.SetValue( gfSettings.GetFilterPreference( "Group Type Purpose" ) );
 
             // Set the Active Status
-            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetUserPreference( "Active Status" ) );
+            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetFilterPreference( "Active Status" ) );
             if ( itemActiveStatus != null )
             {
                 itemActiveStatus.Selected = true;
@@ -740,7 +740,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( GetAttributeValue( "DisplayFilter" ).AsBooleanOrNull() ?? false )
             {
-                int? groupTypeFilter = gfSettings.GetUserPreference( "Group Type" ).AsIntegerOrNull();
+                int? groupTypeFilter = gfSettings.GetFilterPreference( "Group Type" ).AsIntegerOrNull();
                 if ( groupTypeFilter.HasValue )
                 {
                     groupTypeIds = groupTypeIds.Where( g => g == groupTypeFilter.Value ).ToList();
@@ -808,7 +808,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            var groupTypePurposeValue = gfSettings.GetUserPreference( "Group Type Purpose" ).AsIntegerOrNull();
+            var groupTypePurposeValue = gfSettings.GetFilterPreference( "Group Type Purpose" ).AsIntegerOrNull();
 
             var groupList = new List<GroupListRowInfo>();
 

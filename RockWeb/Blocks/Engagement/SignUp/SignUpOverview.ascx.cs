@@ -320,9 +320,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         protected void gfOpportunities_ApplyFilterClick( object sender, System.EventArgs e )
         {
-            gfOpportunities.SaveUserPreference( GridFilterKey.DateRange, "Date Range", sdrpDateRange.DelimitedValues );
-            gfOpportunities.SaveUserPreference( GridFilterKey.ParentGroup, "Parent Group", gpParentGroup.SelectedValue );
-            gfOpportunities.SaveUserPreference( GridFilterKey.SlotsAvailable, "Slots Available", NumberComparisonFilter.SelectedValueAsDelimited(
+            gfOpportunities.SetFilterPreference( GridFilterKey.DateRange, "Date Range", sdrpDateRange.DelimitedValues );
+            gfOpportunities.SetFilterPreference( GridFilterKey.ParentGroup, "Parent Group", gpParentGroup.SelectedValue );
+            gfOpportunities.SetFilterPreference( GridFilterKey.SlotsAvailable, "Slots Available", NumberComparisonFilter.SelectedValueAsDelimited(
                 ddlSlotsAvailableComparisonType,
                 nbSlotsAvailableFilterCompareValue
             ) );
@@ -337,7 +337,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         protected void gfOpportunities_ClearFilterClick( object sender, System.EventArgs e )
         {
-            gfOpportunities.DeleteUserPreferences();
+            gfOpportunities.DeleteFilterPreferences();
 
             SetGridFilters();
         }
@@ -614,7 +614,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             gOpportunities.Actions.AddCustomActionControl( _ddlAction );
 
-            gfOpportunities.UserPreferenceKeyPrefix = $"{this.SignUpGroupTypeId}-";
+            gfOpportunities.PreferenceKeyPrefix = $"{this.SignUpGroupTypeId}-";
         }
 
         /// <summary>
@@ -622,7 +622,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         private void SetGridFilters()
         {
-            sdrpDateRange.DelimitedValues = gfOpportunities.GetUserPreference( GridFilterKey.DateRange );
+            sdrpDateRange.DelimitedValues = gfOpportunities.GetFilterPreference( GridFilterKey.DateRange );
 
             var signUpGroupTypeIds = GroupTypeCache
                 .All()
@@ -632,7 +632,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             gpParentGroup.IncludedGroupTypeIds = signUpGroupTypeIds;
 
-            var parentGroupId = gfOpportunities.GetUserPreference( GridFilterKey.ParentGroup ).AsIntegerOrNull();
+            var parentGroupId = gfOpportunities.GetFilterPreference( GridFilterKey.ParentGroup ).AsIntegerOrNull();
             Group group = null;
             if ( parentGroupId.HasValue )
             {
@@ -651,7 +651,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             gpParentGroup.SetValue( group );
 
             NumberComparisonFilter.SetValue(
-                gfOpportunities.GetUserPreference( GridFilterKey.SlotsAvailable ),
+                gfOpportunities.GetFilterPreference( GridFilterKey.SlotsAvailable ),
                 ddlSlotsAvailableComparisonType,
                 nbSlotsAvailableFilterCompareValue
             );

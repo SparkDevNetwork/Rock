@@ -149,6 +149,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_150_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS = "EA00D1D4-709A-4102-863D-08471AA2C345";
 
         /// <summary>
+        /// The Job to run Post v16.0 Move Person Preferences.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_MOVE_PERSON_PREFERENCES = "C8591D15-9D37-49D3-8DF8-1DB72EE42D29";
+
+        /// <summary>
         /// The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields.
         /// </summary>
         public const string DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12";

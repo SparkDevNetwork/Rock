@@ -208,6 +208,7 @@
     <Folder Include="Framework\ViewModels\Reporting\" />
     <Folder Include="Framework\ViewModels\Rest\" />
     <Folder Include="Framework\ViewModels\Rest\Controls\" />
+    <Folder Include="Framework\ViewModels\Rest\Utilities\" />
     <Folder Include="Framework\ViewModels\Utility\" />
     <Folder Include="System\" />
     <Folder Include="Tests\" />
@@ -715,6 +716,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionSourceAdditionalSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\obsidianBlockConfigBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Cms\obsidianBlockPreferencesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Communication\conversationAttachmentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Communication\conversationMessageBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Connection\connectionRequestCountsBag.d.ts" />
@@ -731,6 +733,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\notificationMessageActionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\personPreferenceValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Crm\renderedBadgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Engagement\achievementCompletedMessageBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementAttemptBag.d.ts" />
@@ -1074,6 +1077,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepTypePickerGetStepTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowActionTypePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowTypePickerGetWorkflowTypesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesAccessedOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\debugTiming.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\entityAuditBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\listItemBag.d.ts" />

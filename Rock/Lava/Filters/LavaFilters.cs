@@ -2275,8 +2275,12 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                PersonService.SaveUserPreference( person, settingKey, settingValue );
-                rockContext.QueryCount++; // The service method above won't allow passing in a RockContext so we'll just increment a query manually.
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                preferences.SetValue( settingKey, settingValue );
+                preferences.Save();
+
+                rockContext.QueryCount++; // The method above won't allow passing in a RockContext so we'll just increment a query manually.
                 if ( rockContext.QueryMetricDetailLevel == QueryMetricDetailLevel.Full )
                 {
                     rockContext.QueryMetricDetails.Add( new QueryMetricDetail
@@ -2312,7 +2316,9 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                rockContext.QueryCount++; // The service method above won't allow passing in a RockContext so we'll just increment a query manually.
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                rockContext.QueryCount++; // The method above won't allow passing in a RockContext so we'll just increment a query manually.
                 if ( rockContext.QueryMetricDetailLevel == QueryMetricDetailLevel.Full )
                 {
                     rockContext.QueryMetricDetails.Add( new QueryMetricDetail
@@ -2320,7 +2326,8 @@ namespace Rock.Lava
                         Sql = "Query metrics are not available for GetUserPreference."
                     } );
                 }
-                return PersonService.GetUserPreference( person, settingKey );
+
+                return preferences.GetValue( settingKey );
             }
 
             return string.Empty;
@@ -2349,8 +2356,12 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                PersonService.DeleteUserPreference( person, settingKey );
-                rockContext.QueryCount++; // The service method above won't allow passing in a RockContext so we'll just increment a query manually.
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                preferences.SetValue( settingKey, string.Empty );
+                preferences.Save();
+
+                rockContext.QueryCount++; // The method above won't allow passing in a RockContext so we'll just increment a query manually.
                 if ( rockContext.QueryMetricDetailLevel == QueryMetricDetailLevel.Full )
                 {
                     rockContext.QueryMetricDetails.Add( new QueryMetricDetail

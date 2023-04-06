@@ -119,8 +119,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( "Person", ppPersonFilter.PersonId.HasValue ? ppPersonFilter.PersonId.ToString() : string.Empty );
-            gfSettings.SaveUserPreference( "Show Global Merge Templates", cbShowGlobalMergeTemplates.Checked.ToTrueFalse() );
+            gfSettings.SetFilterPreference( "Person", ppPersonFilter.PersonId.HasValue ? ppPersonFilter.PersonId.ToString() : string.Empty );
+            gfSettings.SetFilterPreference( "Show Global Merge Templates", cbShowGlobalMergeTemplates.Checked.ToTrueFalse() );
             BindGrid();
         }
 
@@ -215,8 +215,8 @@ namespace RockWeb.Blocks.Core
                     // show all merge templates regardless of block settings
                     personColumn.Visible = true;
 
-                    int? personIdFilter = gfSettings.GetUserPreference( "Person" ).AsIntegerOrNull();
-                    bool showGlobalMergeTemplates = gfSettings.GetUserPreference( "Show Global Merge Templates" ).AsBooleanOrNull() ?? true;
+                    int? personIdFilter = gfSettings.GetFilterPreference( "Person" ).AsIntegerOrNull();
+                    bool showGlobalMergeTemplates = gfSettings.GetFilterPreference( "Show Global Merge Templates" ).AsBooleanOrNull() ?? true;
 
                     if ( personIdFilter.HasValue )
                     {

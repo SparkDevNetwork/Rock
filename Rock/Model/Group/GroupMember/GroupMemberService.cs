@@ -894,11 +894,12 @@ namespace Rock.Model
             if ( registrationInstanceGroupPlacementBlock != null && currentPerson != null )
             {
                 var registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( options.RegistrationTemplatePlacementId );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( currentPerson, registrationInstanceGroupPlacementBlock );
 
                 const string groupMemberAttributeFilter_GroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}";
-                string userPreferenceKey = PersonService.GetBlockUserPreferenceKeyPrefix( options.BlockId ) + string.Format( groupMemberAttributeFilter_GroupTypeId, registrationTemplatePlacement.GroupTypeId );
+                string userPreferenceKey = string.Format( groupMemberAttributeFilter_GroupTypeId, registrationTemplatePlacement.GroupTypeId );
 
-                var attributeFilters = PersonService.GetUserPreference( currentPerson, userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
+                var attributeFilters = preferences.GetValue( userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
                 var parameterExpression = groupMemberService.ParameterExpression;
                 Expression groupMemberWhereExpression = null;
                 foreach ( var attributeFilter in attributeFilters )

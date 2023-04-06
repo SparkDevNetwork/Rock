@@ -185,8 +185,9 @@ namespace RockWeb.Blocks.Connection
             if ( !Page.IsPostBack )
             {
                 lTitle.Text = $"<h2>{GetConnectionTypeTitle()}</h2>";
+                var preferences = GetBlockPersonPreferences();
                 bool onlyShowOpportunitiesWithRequestsForUserPref;
-                bool.TryParse( GetBlockUserPreference( UserPreferenceKey.OnlyShowOpportunitiesWithRequestsForUser ), out onlyShowOpportunitiesWithRequestsForUserPref );
+                bool.TryParse( preferences.GetValue( UserPreferenceKey.OnlyShowOpportunitiesWithRequestsForUser ), out onlyShowOpportunitiesWithRequestsForUserPref );
                 swOnlyShowOpportunitiesWithRequestsForUser.Checked = onlyShowOpportunitiesWithRequestsForUserPref;
                 _onlyShowOpportunitiesWithRequestsForUser = onlyShowOpportunitiesWithRequestsForUserPref;
 
@@ -209,7 +210,11 @@ namespace RockWeb.Blocks.Connection
 
         protected void mdOptions_SaveClick( object sender, EventArgs e )
         {
-            SetBlockUserPreference( UserPreferenceKey.OnlyShowOpportunitiesWithRequestsForUser, swOnlyShowOpportunitiesWithRequestsForUser.Checked.ToString(), true );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreferenceKey.OnlyShowOpportunitiesWithRequestsForUser, swOnlyShowOpportunitiesWithRequestsForUser.Checked.ToString() );
+            preferences.Save();
+
             _onlyShowOpportunitiesWithRequestsForUser = swOnlyShowOpportunitiesWithRequestsForUser.Checked;
 
             GetConnectionOpportunities();

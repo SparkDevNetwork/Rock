@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ApplyFilterClick( object sender, EventArgs e )
         {
-            GridFilter.DeleteUserPreferences();
+            GridFilter.DeleteFilterPreferences();
 
             foreach ( Control control in GridFilter.Controls )
             {
@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.Reporting
                     name = key.Remove( 0, 2 ).SplitCase();
                 }
 
-                GridFilter.SaveUserPreference( key, name, value );
+                GridFilter.SetFilterPreference( key, name, value );
             }
 
             gReport_GridRebind( sender, e );
@@ -1096,7 +1096,7 @@ namespace RockWeb.Blocks.Reporting
                         filterControl.Items.Add( BoolToString( false ) );
                         GridFilter.Controls.Add( filterControl );
 
-                        var value = GridFilter.GetUserPreference( id );
+                        var value = GridFilter.GetFilterPreference( id );
 
                         if ( value != null )
                         {
@@ -1136,7 +1136,7 @@ namespace RockWeb.Blocks.Reporting
 
                         GridFilter.Controls.Add( filterControl );
 
-                        var value = GridFilter.GetUserPreference( id );
+                        var value = GridFilter.GetFilterPreference( id );
 
                         if ( value != null )
                         {
@@ -1173,7 +1173,7 @@ namespace RockWeb.Blocks.Reporting
 
                         GridFilter.Controls.Add( filterControl );
                         var key = filterControl.ID;
-                        var value = GridFilter.GetUserPreference( key );
+                        var value = GridFilter.GetFilterPreference( key );
 
                         if ( value != null )
                         {

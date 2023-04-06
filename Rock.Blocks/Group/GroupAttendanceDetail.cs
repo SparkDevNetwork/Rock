@@ -292,10 +292,9 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Keys for user preferences.
         /// </summary>
-        private static class UserPreferenceKeys
+        private static class PersonPreferenceKeys
         {
-            public const string AreGroupAttendanceAttendeesSortedByFirstName = "Attendance_List_Sorting_Toggle";
-            public const string Campus = "Campus";
+            public const string Campus = "campus";
         }
 
         /// <summary>
@@ -321,8 +320,6 @@ namespace Rock.Blocks.Group
         }
 
         #endregion
-
-        #region Properties
 
         #region Block Settings
 
@@ -466,6 +463,7 @@ namespace Rock.Blocks.Group
         /// When the 'Pick From Schedule' option is used, this setting will control how many days back appear in the drop down list to choose from.
         /// </summary>
         private int NumberOfPreviousDaysToShow => GetAttributeValue( AttributeKey.NumberOfPreviousDaysToShow ).AsInteger();
+
         #endregion
 
         #region Page Parameters
@@ -509,27 +507,6 @@ namespace Rock.Blocks.Group
         /// Gets the entity set identifier page parameter.
         /// </summary>
         private int? EntitySetIdPageParameter => PageParameter( PageParameterKey.EntitySetId ).AsIntegerOrNull();
-
-        #endregion
-
-        #region User Preferences
-
-        /// <summary>
-        /// The Campus ID filter.
-        /// </summary>
-        private int? CampusGuidBlockUserPreference
-        {
-            get
-            {
-                return GetCurrentUserPreferenceForBlock( UserPreferenceKeys.Campus ).AsIntegerOrNull();
-            }
-            set
-            {
-                SetCurrentUserPreferenceForBlock( UserPreferenceKeys.Campus, value.ToString() );
-            }
-        }
-
-        #endregion
 
         #endregion
 
@@ -1670,61 +1647,11 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Gets a user preference for the current user.
-        /// </summary>
-        /// <param name="key">The user preference key.</param>
-        /// <returns>The user preference.</returns>
-        private string GetCurrentUserPreference( string key )
-        {
-            return PersonService.GetUserPreference( this.GetCurrentPerson(), key );
-        }
-
-        /// <summary>
-        /// Gets a user preference for the current user and block instance.
-        /// </summary>
-        /// <param name="key">The user preference key that will be converted to a block user preference key.</param>
-        /// <returns>The user preference.</returns>
-        private string GetCurrentUserPreferenceForBlock( string key )
-        {
-            return GetCurrentUserPreference( GetUserPreferenceKeyForBlock( key ) );
-        }
-
-        /// <summary>
         /// Gets the client service for reading the occurrence data.
         /// </summary>
         private OccurrenceDataClientService GetOccurrenceDataClientService( RockContext rockContext )
         {
             return new OccurrenceDataClientService( this, rockContext );
-        }
-
-        /// <summary>
-        /// Gets the user preference key for this block instance.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns>The block user preference key.</returns>
-        private string GetUserPreferenceKeyForBlock( string key )
-        {
-            return $"{PersonService.GetBlockUserPreferenceKeyPrefix( this.BlockId )}{key}";
-        }
-
-        /// <summary>
-        /// Sets a user preference for the current user.
-        /// </summary>
-        /// <param name="key">The user preference key.</param>
-        /// <param name="value">The user preference value.</param>
-        private void SetCurrentUserPreference( string key, string value )
-        {
-            PersonService.SaveUserPreference( this.GetCurrentPerson(), key, value );
-        }
-
-        /// <summary>
-        /// Sets a user preference for the current user and block instance.
-        /// </summary>
-        /// <param name="key">The user preference key that will be converted to a block user preference key.</param>
-        /// <param name="value">The user preference value.</param>
-        private void SetCurrentUserPreferenceForBlock( string key, string value )
-        {
-            SetCurrentUserPreference( GetUserPreferenceKeyForBlock( key ), value );
         }
 
         /// <summary>

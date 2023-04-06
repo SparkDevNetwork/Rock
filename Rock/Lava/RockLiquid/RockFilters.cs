@@ -2466,7 +2466,10 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                PersonService.SaveUserPreference( person, settingKey, settingValue );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                preferences.SetValue( settingKey, settingValue );
+                preferences.Save();
             }
         }
 
@@ -2492,7 +2495,9 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                return PersonService.GetUserPreference( person, settingKey );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                return preferences.GetValue( settingKey );
             }
 
             return string.Empty;
@@ -2519,7 +2524,10 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                PersonService.DeleteUserPreference( person, settingKey );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                preferences.SetValue( settingKey, string.Empty );
+                preferences.Save();
             }
         }
 

@@ -165,9 +165,11 @@
     <Compile Include="Blocks\Mobile\Communication\SmsConversation\ConversationDetailBag.cs" />
     <Compile Include="Cms\ContentCollectionCustomFieldBag.cs" />
     <Compile Include="Cms\ContentCollectionCustomFieldFilterSettingsBag.cs" />
+    <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
     <Compile Include="Core\NotificationMessageActionBag.cs" />
+    <Compile Include="Core\PersonPreferenceValueBag.cs" />
     <Compile Include="Entities\NotificationMessageTypeBag.cs" />
     <Compile Include="Engagement\AchievementCompletedMessageBag.cs" />
     <Compile Include="Event\AttendanceOccurrenceUpdatedMessageBag.cs" />
@@ -214,6 +216,8 @@
     <Compile Include="Rest\Controls\GroupTypePickerGetGroupTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListGetLocationsOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListSaveNewLocationOptionsBag.cs" />
+    <Compile Include="Rest\Utilities\UpdatePersonPreferencesAccessedOptionsBag.cs" />
+    <Compile Include="Rest\Utilities\UpdatePersonPreferencesOptionsBag.cs" />
     <Compile Include="Utility\IValidPropertiesBox.cs" />
     <Compile Include="Blocks\Security\Login\CredentialLoginRequestBag.cs" />
     <Compile Include="Blocks\Security\Login\CredentialLoginResponseBag.cs" />

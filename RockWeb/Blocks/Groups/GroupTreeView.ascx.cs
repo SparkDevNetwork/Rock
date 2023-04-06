@@ -81,6 +81,8 @@ namespace RockWeb.Blocks.Groups
 
             _groupId = PageParameter( "GroupId" );
 
+            var preferences = GetBlockPersonPreferences();
+            var typePreferences = GetBlockTypePersonPreferences();
             var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
 
             // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavior)
@@ -125,7 +127,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( pnlConfigPanel.Visible )
             {
-                var hideInactiveGroups = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull();
+                var hideInactiveGroups = preferences.GetValue( "hide-inactive-groups" ).AsBooleanOrNull();
                 if ( !hideInactiveGroups.HasValue )
                 {
                     hideInactiveGroups = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
@@ -133,7 +135,7 @@ namespace RockWeb.Blocks.Groups
 
                 tglHideInactiveGroups.Checked = hideInactiveGroups ?? true;
 
-                tglLimitPublicGroups.Checked = this.GetUserPreference( "LimitPublicGroups" ).AsBooleanOrNull() ?? false;
+                tglLimitPublicGroups.Checked = preferences.GetValue( "limit-to-public" ).AsBooleanOrNull() ?? false;
             }
             else
             {
@@ -146,7 +148,7 @@ namespace RockWeb.Blocks.Groups
             ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.ChildGroups.ConvertToString(), TreeViewItem.GetCountsType.ChildGroups.ConvertToInt().ToString() ) );
             ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.GroupMembers.ConvertToString(), TreeViewItem.GetCountsType.GroupMembers.ConvertToInt().ToString() ) );
 
-            var countsType = this.GetUserPreference( "CountsType" );
+            var countsType = preferences.GetValue( "counts-type" );
             if ( string.IsNullOrEmpty( countsType ) )
             {
                 countsType = this.GetAttributeValue( "InitialCountSetting" );
@@ -169,7 +171,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampuses.Campuses = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
 
-            var campusFilter = this.GetUserPreference( "CampusFilter" );
+            var campusFilter = typePreferences.GetValue( "campus-filter" );
             if ( pnlConfigPanel.Visible )
             {
                 ddlCampuses.SetValue( campusFilter );
@@ -182,7 +184,7 @@ namespace RockWeb.Blocks.Groups
             if ( pnlConfigPanel.Visible )
             {
                 tglIncludeNoCampus.Visible = ddlCampuses.Visible;
-                tglIncludeNoCampus.Checked = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
+                tglIncludeNoCampus.Checked = typePreferences.GetValue( "include-no-campus" ).AsBoolean();
             }
 
 
@@ -506,7 +508,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglHideInactiveGroups_CheckedChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "HideInactiveGroups", tglHideInactiveGroups.Checked.ToTrueFalse() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "hide-inactive-groups", tglHideInactiveGroups.Checked.ToTrueFalse() );
+            preferences.Save();
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
@@ -519,7 +524,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglLimitPublicGroups_CheckedChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "LimitPublicGroups", tglLimitPublicGroups.Checked.ToTrueFalse() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "limit-to-public", tglLimitPublicGroups.Checked.ToTrueFalse() );
+            preferences.Save();
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
@@ -532,7 +540,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlCountsType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "CountsType", ddlCountsType.SelectedValue );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "counts-type", ddlCountsType.SelectedValue );
+            preferences.Save();
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
@@ -545,7 +556,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlCampuses_SelectedIndexChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "CampusFilter", ddlCampuses.SelectedValue );
+            var typePreferences = GetBlockTypePersonPreferences();
+
+            typePreferences.SetValue( "campus-filter", ddlCampuses.SelectedValue );
+            typePreferences.Save();
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
@@ -558,7 +572,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglIncludeNoCampus_CheckedChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "IncludeNoCampus", tglIncludeNoCampus.Checked.ToTrueFalse() );
+            var typePreferences = GetBlockTypePersonPreferences();
+
+            typePreferences.SetValue( "include-no-campus", tglIncludeNoCampus.Checked.ToTrueFalse() );
+            typePreferences.Save();
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );

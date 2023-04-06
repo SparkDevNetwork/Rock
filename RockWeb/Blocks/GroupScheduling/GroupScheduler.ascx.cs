@@ -448,6 +448,7 @@ btnCopyToClipboard.ClientID );
             int? selectedGroupId = null;
             List<int> pickerGroupIds = new List<int>();
             bool showChildGroups;
+            var preferences = GetBlockPersonPreferences();
 
             if ( this.PageParameter( PageParameterKey.GroupIds ).IsNotNullOrWhiteSpace() || this.PageParameter( PageParameterKey.GroupId ).IsNotNullOrWhiteSpace() )
             {
@@ -475,11 +476,11 @@ btnCopyToClipboard.ClientID );
             }
             else
             {
-                selectedGroupId = this.GetBlockUserPreference( UserPreferenceKey.SelectedGroupId ).AsIntegerOrNull();
-                showChildGroups = this.GetBlockUserPreference( UserPreferenceKey.ShowChildGroups ).AsBoolean();
+                selectedGroupId = preferences.GetValue( UserPreferenceKey.SelectedGroupId ).AsIntegerOrNull();
+                showChildGroups = preferences.GetValue( UserPreferenceKey.ShowChildGroups ).AsBoolean();
             }
 
-            var userPreferenceGroupIds = ( this.GetBlockUserPreference( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
+            var userPreferenceGroupIds = ( preferences.GetValue( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
             if ( pickerGroupIds.Any() )
             {
                 var pickerSelectedGroupIds = userPreferenceGroupIds.Where( a => pickerGroupIds.Contains( a ) ).ToList();
@@ -524,8 +525,8 @@ btnCopyToClipboard.ClientID );
             }
             else
             {
-                selectAllSchedules = this.GetBlockUserPreference( UserPreferenceKey.SelectAllSchedules ).AsBoolean();
-                selectedIndividualScheduleId = this.GetBlockUserPreference( UserPreferenceKey.SelectedIndividualScheduleId ).AsIntegerOrNull();
+                selectAllSchedules = preferences.GetValue( UserPreferenceKey.SelectAllSchedules ).AsBoolean();
+                selectedIndividualScheduleId = preferences.GetValue( UserPreferenceKey.SelectedIndividualScheduleId ).AsIntegerOrNull();
             }
 
             if ( selectAllSchedules )
@@ -647,7 +648,9 @@ btnCopyToClipboard.ClientID );
                 return setting;
             }
 
-            return this.GetBlockUserPreference( userPreferenceKey );
+            var preferences = GetBlockPersonPreferences();
+
+            return preferences.GetValue( userPreferenceKey );
         }
 
         /// <summary>
@@ -680,18 +683,19 @@ btnCopyToClipboard.ClientID );
 
             lWeekFilterText.Text = string.Format( "<i class='fa fa-calendar-alt'></i> Week: {0}", endOfWeekDate.ToShortDateString() );
 
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupId, selectedGroupId.ToString(), false );
-            this.SetBlockUserPreference( UserPreferenceKey.PickerGroupIds, gpPickedGroups.SelectedIds.ToList().AsDelimited( "," ), false );
-            this.SetBlockUserPreference( UserPreferenceKey.ShowChildGroups, btnShowChildGroups.Attributes["show-child-groups"], false );
+            var preferences = GetBlockPersonPreferences();
 
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedDate, endOfWeekDate.ToISO8601DateString(), false );
+            preferences.SetValue( UserPreferenceKey.SelectedGroupId, selectedGroupId.ToString() );
+            preferences.SetValue( UserPreferenceKey.PickerGroupIds, gpPickedGroups.SelectedIds.ToList().AsDelimited( "," ) );
+            preferences.SetValue( UserPreferenceKey.ShowChildGroups, btnShowChildGroups.Attributes["show-child-groups"] );
 
-            this.SetBlockUserPreference( UserPreferenceKey.PickedLocationIds, hfPickedLocationIds.Value, false );
+            preferences.SetValue( UserPreferenceKey.SelectedDate, endOfWeekDate.ToISO8601DateString() );
+
+            preferences.SetValue( UserPreferenceKey.PickedLocationIds, hfPickedLocationIds.Value );
             bool selectAllSchedules = hfSelectedScheduleId.Value.AsIntegerOrNull() == null;
             int? selectedScheduleId = hfSelectedScheduleId.Value.AsIntegerOrNull();
-            this.SetBlockUserPreference( UserPreferenceKey.SelectAllSchedules, selectAllSchedules.ToString(), false );
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedIndividualScheduleId, selectedScheduleId.ToString(), false );
-            this.SaveBlockUserPreferences();
+            preferences.SetValue( UserPreferenceKey.SelectAllSchedules, selectAllSchedules.ToString() );
+            preferences.SetValue( UserPreferenceKey.SelectedIndividualScheduleId, selectedScheduleId.ToString() );
 
             var rockContext = new RockContext();
 
@@ -770,11 +774,12 @@ btnCopyToClipboard.ClientID );
             rptSchedulerResourceListSourceType.DataSource = schedulerResourceListSourceTypes;
             rptSchedulerResourceListSourceType.DataBind();
 
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedResourceListSourceType, resourceListSourceType.ToString(), false );
-            this.SetBlockUserPreference( UserPreferenceKey.GroupMemberFilterType, groupMemberFilterType.ToString(), false );
-            this.SetBlockUserPreference( UserPreferenceKey.AlternateGroupId, gpResourceListAlternateGroup.SelectedValue, false );
-            this.SetBlockUserPreference( UserPreferenceKey.DataViewId, dvpResourceListDataView.SelectedValue, false );
-            this.SaveBlockUserPreferences();
+            preferences.SetValue( UserPreferenceKey.SelectedResourceListSourceType, resourceListSourceType.ToString() );
+            preferences.SetValue( UserPreferenceKey.GroupMemberFilterType, groupMemberFilterType.ToString() );
+            preferences.SetValue( UserPreferenceKey.AlternateGroupId, gpResourceListAlternateGroup.SelectedValue );
+            preferences.SetValue( UserPreferenceKey.DataViewId, dvpResourceListDataView.SelectedValue );
+
+            preferences.Save();
 
             pnlResourceFilterAlternateGroup.Visible = resourceListSourceType == GroupSchedulerResourceListSourceType.AlternateGroup;
             pnlResourceFilterDataView.Visible = resourceListSourceType == GroupSchedulerResourceListSourceType.DataView;
@@ -884,7 +889,7 @@ btnCopyToClipboard.ClientID );
 
             foreach ( var pagePageParameterKey in pagePageParameterKeys )
             {
-                pageReference.Parameters.AddOrReplace( pagePageParameterKey, this.GetBlockUserPreference( pagePageParameterKey ) );
+                pageReference.Parameters.AddOrReplace( pagePageParameterKey, preferences.GetValue( pagePageParameterKey ) );
             }
 
             Uri requestUri = new Uri( Request.UrlProxySafe().ToString() );

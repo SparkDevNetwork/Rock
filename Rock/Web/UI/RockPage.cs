@@ -285,6 +285,15 @@ namespace Rock.Web.UI
         public int[] PersonalizationRequestFilterIds { get; private set; }
 
         /// <summary>
+        /// Gets or sets the request context. This contains all the details
+        /// about the network request.
+        /// </summary>
+        /// <value>
+        /// The request context.
+        /// </value>
+        public RockRequestContext RequestContext { get; private set; }
+
+        /// <summary>
         /// Publicly gets and privately sets the currently logged in user.
         /// </summary>
         /// <value>
@@ -724,6 +733,15 @@ namespace Rock.Web.UI
         /// <param name="e"></param>
         protected override void OnInit( EventArgs e )
         {
+            var stopwatchInitEvents = Stopwatch.StartNew();
+
+            RequestContext = new RockRequestContext( Request );
+
+            if ( _pageCache != null )
+            {
+                RequestContext.PrepareRequestForPage( _pageCache );
+            }
+
             _showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
 
             if ( _showDebugTimings )
@@ -732,8 +750,6 @@ namespace Rock.Web.UI
                 _previousTiming = _tsDuration.TotalMilliseconds;
                 _pageNeedsObsidian = true;
             }
-
-            var stopwatchInitEvents = Stopwatch.StartNew();
 
             bool canAdministratePage = false;
             bool canEditPage = false;
@@ -1235,8 +1251,7 @@ Rock.settings.initialize({{
 
                                         if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
-                                            rockBlockEntity.RequestContext = new RockRequestContext( Request );
-                                            rockBlockEntity.RequestContext.PrepareRequestForPage( _pageCache );
+                                            rockBlockEntity.RequestContext = RequestContext;
 
                                             var wrapper = new RockBlockTypeWrapper
                                             {
@@ -1346,6 +1361,18 @@ Rock.settings.initialize({{
 
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
+                            var currentPersonJson = "null";
+                            var isAnonymousVisitor = false;
+
+                            if ( CurrentPerson != null && CurrentPerson.Guid != new Guid( SystemGuid.Person.GIVER_ANONYMOUS ) )
+                            {
+                                currentPersonJson = CurrentPerson.ToViewModel( CurrentPerson ).ToCamelCaseJson( false, false );
+                            }
+                            else if ( CurrentPerson != null )
+                            {
+                                isAnonymousVisitor = true;
+                            }
+
                             var script = $@"
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
@@ -1354,7 +1381,8 @@ Obsidian.onReady(() => {{
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {PageParameters().ToJson()},
-            currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel( CurrentPerson ).ToCamelCaseJson( false, false ) )},
+            currentPerson: {currentPersonJson},
+            isAnonymousVisitor: {(isAnonymousVisitor ? "true" : "false")},
             contextEntities: {GetContextViewModels().ToCamelCaseJson( false, false )},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
         }});
@@ -3491,7 +3519,7 @@ Sys.Application.add_load(function () {
 
         #endregion
 
-        #region Static Helper Methods
+        #region Page Parameters
 
         /// <summary>
         /// Checks the page's RouteData values and then the query string for a
@@ -3612,6 +3640,10 @@ Sys.Application.add_load(function () {
 
             return parameters;
         }
+
+        #endregion
+
+        #region Static Helper Methods
 
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
@@ -4110,6 +4142,10 @@ Sys.Application.add_load(function () {
             return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
         }
 
+        #endregion
+
+        #region Obsidian Fingerprinting
+
         /// <summary>
         /// Initializes the obsidian file fingerprint. This sets the initial
         /// fingerprint value and then if we are in Debug mode it monitors for
@@ -4233,22 +4269,55 @@ Sys.Application.add_load(function () {
             }
         }
 
-        #region User Preferences
+        #endregion
+
+        #region Person Preferences
+
+        /// <summary>
+        /// Gets the global person preferences. These are unique to the person
+        /// but global across the entire system. Global preferences should be
+        /// used with extreme caution and care.
+        /// </summary>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetGlobalPersonPreferences()
+        {
+            return RequestContext.GetGlobalPersonPreferences();
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntity scopedEntity )
+        {
+            return RequestContext.GetScopedPersonPreferences( scopedEntity );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntityCache scopedEntity )
+        {
+            return RequestContext.GetScopedPersonPreferences( scopedEntity );
+        }
+
+        #endregion
+
+        #region User Preferences (Obsolete)
 
         /// <summary>
         /// Returns a user preference for the current user and given key.
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
         /// <returns>A <see cref="System.String" /> representing the specified user preference value, if a match is not found an empty string will be returned.</returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public string GetUserPreference( string key )
         {
-            var values = SessionUserPreferences();
-            if ( values.ContainsKey( key ) )
-            {
-                return values[key];
-            }
-
-            return string.Empty;
+            return GetGlobalPersonPreferences().GetValue( key );
         }
 
         /// <summary>
@@ -4259,14 +4328,16 @@ Sys.Application.add_load(function () {
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> contains a key that represents the user preference key and a value that contains the user preference value associated
         /// with that key.
         /// </returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public Dictionary<string, string> GetUserPreferences( string keyPrefix )
         {
             var selectedValues = new Dictionary<string, string>();
+            var preferences = GetGlobalPersonPreferences();
 
-            var values = SessionUserPreferences();
-            foreach ( var key in values.Where( v => v.Key.StartsWith( keyPrefix ) ) )
+            foreach ( var key in preferences.GetKeys().Where( k => k.StartsWith( keyPrefix ) ) )
             {
-                selectedValues.Add( key.Key, key.Value );
+                selectedValues.AddOrIgnore( key, preferences.GetValue( key ) );
             }
 
             return selectedValues;
@@ -4279,21 +4350,17 @@ Sys.Application.add_load(function () {
         /// <param name="key">A <see cref="System.String" /> representing the name of the key.</param>
         /// <param name="value">A <see cref="System.String" /> representing the preference value.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void SetUserPreference( string key, string value, bool saveValue = true )
         {
-            var sessionValues = SessionUserPreferences();
-            if ( sessionValues.ContainsKey( key ) )
-            {
-                sessionValues[key] = value;
-            }
-            else
-            {
-                sessionValues.Add( key, value );
-            }
+            var preferences = GetGlobalPersonPreferences();
 
-            if ( saveValue && CurrentPerson != null )
+            preferences.SetValue( key, value );
+
+            if ( saveValue )
             {
-                PersonService.SaveUserPreference( CurrentPerson, key, value );
+                preferences.Save();
             }
         }
 
@@ -4301,36 +4368,22 @@ Sys.Application.add_load(function () {
         /// Saves the user preferences.
         /// </summary>
         /// <param name="keyPrefix">The key prefix.</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void SaveUserPreferences( string keyPrefix )
         {
-            if ( CurrentPerson != null )
-            {
-                var values = new Dictionary<string, string>();
-                SessionUserPreferences()
-                    .Where( p => p.Key.StartsWith( keyPrefix ) )
-                    .ToList()
-                    .ForEach( kv => values.Add( kv.Key, kv.Value ) );
-
-                PersonService.SaveUserPreferences( CurrentPerson, values );
-            }
+            GetGlobalPersonPreferences().Save();
         }
 
         /// <summary>
         /// Deletes a user preference value for the specified key
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void DeleteUserPreference( string key )
         {
-            var sessionValues = SessionUserPreferences();
-            if ( sessionValues.ContainsKey( key ) )
-            {
-                sessionValues.Remove( key );
-            }
-
-            if ( CurrentPerson != null )
-            {
-                PersonService.DeleteUserPreference( CurrentPerson, key );
-            }
+            GetGlobalPersonPreferences().SetValue( key, string.Empty );
         }
 
         /// <summary>
@@ -4340,29 +4393,20 @@ Sys.Application.add_load(function () {
         /// </summary>
         /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, List}"/> containing the user preferences
         /// for the current user. If the current user is anonymous or unknown an empty dictionary will be returned.</returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public Dictionary<string, string> SessionUserPreferences()
         {
-            string sessionKey = string.Format( "{0}_{1}",
-                Person.USER_VALUE_ENTITY, CurrentPerson != null ? CurrentPerson.Id : 0 );
+            var preferences = GetGlobalPersonPreferences();
+            var userPreferences = new Dictionary<string, string>();
 
-            var userPreferences = Session[sessionKey] as Dictionary<string, string>;
-            if ( userPreferences == null )
+            foreach ( var key in preferences.GetKeys() )
             {
-                if ( CurrentPerson != null )
-                {
-                    userPreferences = PersonService.GetUserPreferences( CurrentPerson );
-                }
-                else
-                {
-                    userPreferences = new Dictionary<string, string>();
-                }
-                Session[sessionKey] = userPreferences;
+                userPreferences.AddOrIgnore( key, preferences.GetValue( key ) );
             }
 
             return userPreferences;
         }
-
-        #endregion
 
         #endregion
 
