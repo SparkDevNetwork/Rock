@@ -661,7 +661,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var litGroupAttributes = e.Item.FindControl( "litGroupAttributes" ) as Literal;
             var litMoreGroupAttributes = e.Item.FindControl( "litMoreGroupAttributes" ) as Literal;
             var lblShowGroupAttributeTitle = e.Item.FindControl( "lblShowGroupAttributeTitle" ) as Label;
-            var pnlShowExpandChevorn = e.Item.FindControl( "pnlShowExpandChevorn" ) as Panel;
 
             if ( pnlGroupAttributes == null || litGroupAttributes == null || litMoreGroupAttributes == null )
             {
@@ -708,12 +707,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if( litGroupAttributes.Text.IsNullOrWhiteSpace() && litMoreGroupAttributes.Text.IsNotNullOrWhiteSpace() )
             {
-                lblShowGroupAttributeTitle.Visible = true;
-                lblShowGroupAttributeTitle.Text = group.GroupType.Name + " Attributes";
+                lblShowGroupAttributeTitle.Text = group.GroupType.Name + " Attributes <a class='js-show-more-family-attributes stretched-link' href='#' title='Show More " + group.GroupType.Name +" Attributes'><i class='fa fa-chevron-down'></i></a>";
+                lblShowGroupAttributeTitle.AddCssClass( "d-flex justify-content-between position-relative" );
             }
-            if( litMoreGroupAttributes.Text.IsNullOrWhiteSpace() ) {
-                
-                pnlShowExpandChevorn.Visible = false;
+            else 
+            {
+                lblShowGroupAttributeTitle.Text = "<a class='js-show-more-family-attributes' href='#' title='Show More " + group.GroupType.Name +" Attributes'><i class='fa fa-chevron-down'></i></a>";
+                lblShowGroupAttributeTitle.AddCssClass( "pull-right" );
+            }
+
+            if( litMoreGroupAttributes.Text.IsNotNullOrWhiteSpace() ) 
+            {
+                litMoreGroupAttributes.Text = $"<div class='js-more-group-attributes mt-2' style='display:none'><dl class='m-0'>{litMoreGroupAttributes.Text}</dl></div>";
+            }
+
+            if( litGroupAttributes.Text.IsNotNullOrWhiteSpace()) 
+            {
+                litGroupAttributes.Text = $"<dl class='m-0'>{litGroupAttributes.Text}</dl>";
             }
         }
 
