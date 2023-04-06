@@ -1,0 +1,192 @@
+/- {% include '~~/Assets/Lava/page/landingpage-template.lava' %} -/
+
+<section class="page-header has-image full-page" role="banner">
+    {% assign heroImage = Item | Attribute:'HeaderImage','Object' %}
+    {% assign heroVideo = Item | Attribute:'HeaderVideo','RawValue' %}
+    {% assign heroTemplate = Item | Attribute:'HeroTemplate','RawValue' %}
+
+    {% if heroVideo != '' %}
+        <video id="hero-video" autoplay loop muted playsinline class="hero-video" preload="auto">
+            <source src="{{ heroVideo }}" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+    {% else %}
+        {% if heroImage != empty %}
+            {% assign photoUrl = heroImage.Guid | Prepend:'/GetImage.ashx?Guid=' %}
+            {% assign width = heroImage.Width %}
+            <img
+                src="{{ photoUrl | TriumphImgCdn:'w=1100&h=550&fit=crop&auto=compress' }}"
+                srcset="{%- if width >= 550 -%}{{ photoUrl | TriumphImgCdn:'w=350&h=175&fit=crop&auto=format,compress' }} 350w{%- endif -%}
+                        {%- if width >= 1100 -%},{{ photoUrl | TriumphImgCdn:'w=750&h=375&fit=crop&auto=format,compress' }} 750w{%- endif -%}
+                        {%- if width >= 1445 -%},{{ photoUrl | TriumphImgCdn:'w=1100&h=550&fit=crop&auto=format,compress' }} 1100w{%- endif -%}
+                        {%- if width >= 1680 -%},{{ photoUrl | TriumphImgCdn:'w=1500&h=750&fit=crop&auto=format,compress' }} 1500w{%- endif -%}
+                        {%- if width >= 2048 -%},{{ photoUrl | TriumphImgCdn:'w=2200&h=1100&fit=crop&auto=format,compress' }} 2200w{%- endif -%}
+                        {%- if width >= 3000 -%},{{ photoUrl | TriumphImgCdn:'w=3000&h=1500&fit=crop&auto=format,compress' }} 3000w{%- endif -%}"
+                sizes="100vw"
+                class="hero-image"
+                alt=""
+                width="1100"
+                height="550"
+                itemprop="image">
+            <div class="hero-overlay"></div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Start Hero Template -->
+    {{ heroTemplate | RunLava }}
+    <!-- End Hero Template -->
+</section>
+
+
+<section class="page-section">
+    <div class="container text-center">
+        <h1 class="display-2">Flexible Content</h1>
+        <p>This will be a flexible section </p>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-xs-12">
+                <h4>Page Header</h4>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</p>
+            </div>
+            <div class="col-md-6 col-xs-12">
+                <h4>Page Header</h4>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% assign timesLocations = Item | Attribute:'TimesLocations','Object' %}
+
+{% if timesLocations != null %}
+
+
+    <section class="page-section bg-gray">
+        <div class="container text-center">
+            <h1 class="display-2">Times &amp; Locations</h1>
+            <p>This section will be driven by a matrix template.</p>
+            <div>
+                <a href="#" class="btn btn-primary">Get Tickets</a>
+                <a href="#" class="btn btn-outline-primary">Find a Location</a>
+            </div>
+            <div>
+                <a href="#" class="btn btn-link">Watch Online</a>
+            </div>
+
+            <hr>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <h5>Our Times</h5>
+                <div class="input-md"><input type="text" class="form-control js-filter-items-search"></div>
+            </div>
+
+            <div class="js-filter-items col3 text-left">
+                {[ accordion paneltype:'primary' ]}
+                {% for item in timesLocations.AttributeMatrixItems %}
+                    {% assign title = item | Attribute:'Title' %}
+                    [[ item title:'{{ title }}' ]]
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+                    tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+                    [[ enditem ]]
+                {% endfor %}
+                {[ endaccordion ]}
+            </div>
+            <div class="js-filter-items-empty" style="display: none;">
+                <div class="alert alert-default">Nothing matches your search.</div>
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+<section class="page-section">
+    <div class="container text-center">
+        <h1 class="display-2">Church Online</h1>
+        <p>This section will be driven by matrix template.</p>
+        <a href="#" class="btn btn-primary">Watch Online</a>
+    </div>
+</section>
+
+<section class="page-section bg-gray">
+    <div class="container text-center">
+        <h1 class="display-2">Invite Someone</h1>
+        <p>This section will be auto generated</p>
+        <a href="#" class="btn btn-primary d-block d-sm-inline-block">Digital Invite</a>
+
+        <div class="mt-5">
+            <strong>Other Ways to Invite</strong>
+            <div class="d-block mt-2">
+                <a href="#" class="btn btn-muted d-block d-sm-inline-block"><i class="fa fa-facebook text-facebook"></i> Facebook</a>
+                <a href="#" class="btn btn-muted d-block d-sm-inline-block"><i class="fa fa-twitter text-twitter"></i> Twitter</a>
+                <a href="#" class="btn btn-muted d-block d-sm-inline-block"><i class="fa fa-clipboard text-curlean o-70"></i> Copy URL</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="page-section">
+    <div class="container text-center">
+        <h1 class="display-2">Share</h1>
+        <div class="row d-flex flex-wrap justify-content-center">
+            <div class="col-md-7">
+                <p>Use these shareable invites on social media to invite others to join you for Christmas at LCBC this year! Download the following images and personalize them to make them your own.</p>
+                <p>Desktop instructions: <strong>Right click</strong> on the image, and select <strong>Save Image</strong>. <br>
+                Mobile/Tablet Instructions: Tap and hold on an image, tap <strong>Add to Photos</strong> or <strong>Save Image</strong>.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row d-flex flex-wrap">
+            {% for i in (1..6) %}
+                <div class="col-xs-4 mb-4">
+                    <img src="https://via.placeholder.com/600" alt="" class="img-responsive">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="page-section bg-gray">
+    <div class="container text-center">
+        <h1 class="display-2">FAQS</h1>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-xs-12">
+                {[ accordion ]}
+                    [[ item title:'Lorem Ipsum' ]]
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+                        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+                    [[ enditem ]]
+                    [[ item title:'In Commodo Dolor' ]]
+                        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+                        elementum diam ullamcorper et.
+                    [[ enditem ]]
+                    [[ item title:'Vivamus Sollicitudin' ]]
+                        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+                        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+                    [[ enditem ]]
+                {[ endaccordion ]}
+            </div>
+            <div class="col-md-6 col-xs-12">
+                {[ accordion ]}
+                    [[ item title:'Lorem Ipsum' ]]
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium tortor et orci ornare
+                        tincidunt. In hac habitasse platea dictumst. Aliquam blandit dictum fringilla.
+                    [[ enditem ]]
+                    [[ item title:'In Commodo Dolor' ]]
+                        In commodo dolor vel ante porttitor tempor. Ut ac convallis mauris. Sed viverra magna nulla, quis
+                        elementum diam ullamcorper et.
+                    [[ enditem ]]
+                    [[ item title:'Vivamus Sollicitudin' ]]
+                        Vivamus sollicitudin, leo quis pulvinar venenatis, lorem sem aliquet nibh, sit amet condimentum
+                        ligula ex a risus. Curabitur condimentum enim elit, nec auctor massa interdum in.
+                    [[ enditem ]]
+                {[ endaccordion ]}
+            </div>
+        </div>
+    </div>
+</section>

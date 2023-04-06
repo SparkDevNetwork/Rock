@@ -1,0 +1,48 @@
+/- {% include '~~/Assets/Lava/components/discover-content.lava' %} -/
+
+<section>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4>Series</h4>
+            <a href="#">See All Series</a>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row g gx-3 gy-4">
+            <div class="col-xs-12 col-md-6">
+                <div class="card card-transparent">
+                    <div class="card-img-top">
+                        <span class="latest">Latest Series</span>
+                        <img src="https://storage.googleapis.com/lcbc-assets/images/LivingWithLions_600x290-Horizontal.jpg" class="img-responsive" alt="">
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title"><a href="#" class="stretched-link">Living with Lions</a></h6>
+                        <span class="card-subtitle d-block text-sm">Matt Parks  |  August 28, 2022</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <div class="card card-transparent">
+                    <img src="https://storage.googleapis.com/lcbc-assets/images/LivingWithLions_600x290-Horizontal.jpg" class="card-img-top" alt="">
+                    <div class="card-body">
+                        <h6 class="card-title">Living with Lions</h6>
+                        <span class="card-subtitle d-block text-sm">Matt Parks  |  August 28, 2022</span>
+                    </div>
+                </div>
+            </div>
+
+            {% for i in (1..4) %}
+                <div class="col-xs-12 col-sm-6 col-md-3">
+                    <div class="card card-transparent">
+                        <img src="https://storage.googleapis.com/lcbc-assets/images/LivingWithLions_600x290-Horizontal.jpg" class="card-img-top" alt="">
+                        <div class="card-body">
+                            <h6 class="card-title"><a href="#" class="stretched-link">Living with Lions</a></h6>
+                            <span class="card-subtitle d-block text-sm">Matt Parks  |  August 28, 2022</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</section>

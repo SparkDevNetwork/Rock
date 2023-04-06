@@ -1,0 +1,96 @@
+.alertbar {
+  position: relative;
+  z-index: 998; // Should be below the navbar
+  overflow: hidden;
+  background: @brand-primary;
+  transition: 300ms linear ease-out;
+
+  + .alertbar {
+    border-top: 1px solid #fff;
+  }
+}
+
+.alertbar-service {
+  height: 0;
+  transition: height .5s ease 0s;
+
+  &.live {
+    height: 64px;
+  }
+}
+
+.alertbar-content {
+  display: block;
+  padding: 18px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff !important;
+  text-align: center;
+  text-decoration: none !important;
+}
+
+.fullscreen-nav-open .alertbar {
+  display: none;
+}
+
+.alertbar.js-active {
+  opacity: 1;
+}
+
+.alertbar .close {
+  text-shadow: none;
+}
+
+.alertbar-link {
+  position: relative;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.alertbar-text {
+  font-size: 18px;
+
+  i {
+    opacity: .5;
+  }
+}
+
+.alertbar-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 15px;
+  font-size: 20px;
+  color: #fff;
+  text-shadow: none;
+  cursor: pointer;
+  opacity: .5;
+
+  &:hover {
+    color: rgba(255,255,255,.75);
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .alertbar-content {
+    width: 90%;
+    margin: 0 auto;
+    font-size: 16px;
+  }
+
+  .alertbar-close {
+    padding: 15px 5px;
+  }
+}
+
+@media screen and (max-width: 375px) {
+  .alertbar-content {
+    font-size: 14px;
+  }
+}

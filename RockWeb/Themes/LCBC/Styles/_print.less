@@ -1,0 +1,17 @@
+@media print {
+  @page {
+    margin: .5in;
+  }
+
+  /* stylelint-disable */
+  .back-to-top,
+  #cms-admin-footer {
+    display: none;
+  }
+  
+  // don't show URLs after links
+  a[href]::after {
+    content: "" !important;
+  }
+  /* stylelint-enable */
+}

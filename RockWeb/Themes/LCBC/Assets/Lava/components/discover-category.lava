@@ -1,0 +1,25 @@
+/- {% include '~~/Assets/Lava/components/discover-category.lava' %} -/
+
+<div class="discover-category mb-4">
+    <div>
+        <h3 class="text-white">Discover by Category</h3>
+        <p>Browse content and topics around a specific category.</p>
+    </div>
+
+    <div class="btn-group btn-group-rounded mt-4 mt-lg-0" role="group">
+        <div class="btn-group">
+            <button type="button" class="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Category <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="#">Faith</a></li>
+              <li><a href="#">Relationships</a></li>
+              <li><a href="#">Wellness</a></li>
+              <li><a href="#">Personal Growth</a></li>
+              <li><a href="#">Finances</a></li>
+              <li><a href="#">Community</a></li>
+            </ul>
+          </div>
+        <button type="button" class="btn btn-success btn-lg">Discover</button>
+    </div>
+</div>

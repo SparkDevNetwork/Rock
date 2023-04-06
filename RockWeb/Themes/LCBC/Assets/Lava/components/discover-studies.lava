@@ -1,0 +1,23 @@
+/- {% include '~~/Assets/Lava/components/discover-studies.lava' %} -/
+
+<section class="mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <h4>Studies</h4>
+
+        <a href="#">See All Articles</a>
+    </div>
+    <div class="row g g-3">
+        {% for i in (1..4) %}
+            <div class="col-xs-12 col-md-6 col-lg-3">
+                <div class="card card-transparent">
+                    <img src="https://storage.googleapis.com/lcbc-assets/images/LivingWithLions_600x290-Horizontal.jpg" class="card-img-top" alt="">
+                    <div class="card-body">
+                        <h6 class="card-title"><a href="#" class="stretched-link">Living with Lions</a></h6>
+                        <span class="d-block card-subtitle text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor...</span>
+                        <span class="label label-primary">Faith</span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>

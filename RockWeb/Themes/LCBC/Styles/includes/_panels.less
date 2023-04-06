@@ -1,0 +1,142 @@
+// .panel-heading {
+//   font-size: 18px;
+//   font-weight: 700;
+//   line-height: 1;
+
+//   .panel-title i {
+//     margin-right: 4px;
+//     color: red;
+//   }
+// }
+
+.panel-group {
+  .panel {
+    border-radius: 0;
+    box-shadow: none;
+
+    + .panel {
+      margin-top: 20px;
+    }
+
+    // overflow: hidden;
+
+    // + .panel {
+    //   margin-top: 0;
+    // }
+
+    // &:not(:first-of-type) {
+    //   border-top: 0;
+    // }
+
+    // &:first-of-type {
+    //   border-top-left-radius: @border-radius-base;
+    //   border-top-right-radius: @border-radius-base;
+    // }
+
+    // &:last-of-type {
+    //   border-bottom-right-radius: @border-radius-base;
+    //   border-bottom-left-radius: @border-radius-base;
+    // }
+  }
+
+  .panel,
+  .panel-heading {
+    border-radius: 0;
+  }
+
+  .panel-heading {
+    padding: 0;
+  }
+
+  .panel-title {
+    font-size: @font-size-h6;
+
+    a {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      color: @text-color;
+      text-decoration: none;
+
+      &:hover,
+      &:focus {
+        color: @text-color;
+        text-decoration: none;
+      }
+
+      &::after {
+        font-family: @fa-font-face;
+        font-size: 18px;
+        font-weight: 700;
+        color: #000;
+        content: @fa-var-minus;
+      }
+
+      &::before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: -1;
+        width: 100%;
+        content: '';
+        // background: #f0f2f8;
+      }
+
+      &[aria-expanded="false"] {
+        &::before {
+          background: transparent;
+        }
+
+        &::after {
+          content: @fa-var-plus;
+        }
+      }
+    }
+  }
+
+  .panel-body {
+    color: @text-color;
+  }
+
+  .panel-default {
+    border-radius: 0;
+  }
+
+  .panel-primary {
+    border-width: 0;
+
+    .panel-title {
+      a {
+        padding: 21px 20px;
+        color: #fff;
+        text-transform: uppercase;
+
+        &::after {
+          font-size: 20px;
+          color: #fff;
+          content: @fa-var-caret-up;
+        }
+
+        &[aria-expanded="false"] {
+          &::before {
+            background: transparent;
+          }
+
+          &::after {
+            content: @fa-var-caret-down;
+          }
+        }
+      }
+    }
+
+    .panel-title a::before,
+    > .panel-heading {
+      background-color: @brand-primary;
+    }
+  }
+}

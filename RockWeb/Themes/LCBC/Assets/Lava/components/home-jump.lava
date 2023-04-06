@@ -1,0 +1,42 @@
+/- {% include '~~/Assets/Lava/components/home-jump.lava' %} -/
+
+<section class="page-section jump-in">
+    <div class="container">
+        <h4 class="rule-head">
+            <span>Jump Into Your Community</span>
+        </h4>
+        <div class="row">
+            <div class="col-xs-12 col-lg-4 mb-3">
+                <div class="card text-white">
+                    <img src="https://storage.googleapis.com/lcbc-assets/images/home-calloutbg-1.png" class="card-img" alt="LCBC Newsletter Sign Up">
+                    <div class="card-img-overlay card-img-overlay-center">
+                        <h5>Stay Connected</h5>
+                        <a class="btn btn-default stretched-link" href="https://my.lcbcchurch.com/page/1187">Subscribe to LCBC Emails</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-lg-4 mb-3">
+                <div class="card text-white">
+                    <img src="https://storage.googleapis.com/lcbc-assets/images/home-calloutbg-2.png" class="card-img" alt="LCBC Social Media Feed">
+                    <div class="card-img-overlay card-img-overlay-center">
+                        <h5>Join the Conversation</h5>
+                        <ul class="list-unstyled list-socials">
+                            <li><a href="https://www.facebook.com/lcbcchurch"><img src="https://lcbcchurch.com/assets/stylesheets/css/air20/img/icon-facebook.png" alt=""></a></li>
+                            <li><a href="https://www.instagram.com/lcbcchurch"><img src="https://lcbcchurch.com/assets/stylesheets/css/air20/img/icon-instagram.png" alt=""></a></li>
+                            <li><a href="https://www.youtube.com/lcbcchurch"><img src="https://lcbcchurch.com/assets/stylesheets/css/air20/img/icon-youtube.png" alt=""></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-lg-4 mb-3">
+                <div class="card text-white">
+                    <img src="https://storage.googleapis.com/lcbc-assets/images/home-calloutbg-5.jpg?mtime=20210519091711&amp;focal=none" class="card-img" alt="The LCBC App">
+                    <div class="card-img-overlay card-img-overlay-center">
+                        <h5>Grow in Your Faith Each Day</h5>
+                        <a class="btn btn-default stretched-link" href="/app">Get the LCBC App</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,254 @@
+/- {% include '~~/Assets/Lava/page/location-finder.lava' %} -/
+{% assign data = 'GatheringsSource' | PersistedDataset %}
+
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"
+  />
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+
+{% include '~~/Assets/Images/campus-symbols.svg' %}
+
+//- The Help text has to be reused many times. Updating it here will update for the need help section as well as the help text underlines.
+{% capture aslHelp %}ASL translation available{% endcapture %}
+{% capture esHelp %}Traducción en español disponible{% endcapture %}
+
+{% capture campusGatheringHelp %}
+<p><strong>Campus Gatherings</strong> focus on worship, building relationships, and making a positive impact on their local region. These gatherings consist of a group of people (200 or more) who meet together at our Church grounds to watch and participate in the LCBC worship experience and build relationships throughout the week.</p>
+{% endcapture %}
+
+{% capture communityGatheringHelp %}
+<p><strong>Community Gatherings</strong> focus on worship, building relationships, and making a positive impact on their local region. These gatherings consist of a group of people (anywhere from 30 to 200) who meet together in a public setting to watch and participate in the LCBC worship experience and build relationships throughout the week.</p>
+{% endcapture %}
+
+{% capture homeGatheringHelp %}
+<p><strong>Home Gatherings</strong> focus on worship, building relationships, and creating meaningful community in their neighborhoods. These gatherings consist of a small group (usually up to 30) of family, friends, and neighbors who meet together in a home weekly to watch and participate in the LCBC worship experience and build relationships throughout the week.</p>
+{% endcapture %}
+
+{% capture gatheringHelpText %}
+<p><strong>Select to filter by a specific Gathering type:</strong></p>
+
+{{ campusGatheringHelp }}
+{{ communityGatheringHelp }}
+{{ homeGatheringHelp }}
+{% endcapture %}
+
+{% capture communityGatheringTooltip %}
+<span class="abbr" data-toggle="tooltip" data-trigger="click" data-placement="bottom" title="{{ communityGatheringHelp }}" data-html="true" data-container=".location-list-items">Community Gathering</span>
+{% endcapture %}
+
+
+<main class="finder-container">
+    <section class="location-finder">
+        <div class="locations">
+            <div class="location-filter d-none">
+                <div class="filter-section filter-header d-flex justify-content-between">
+                    <h4 class="my-0">Filters</h4>
+                    <a href="#" class="close close-filters"><i class="fa fa-times"></i></a>
+                </div>
+                <div class="filter-section">
+                    <strong>Ways to Gather</strong>
+                    <p class="text-sm">Filter results by a Gathering Type:</p>
+                    <ul class="nav nav-pills nav-pills-circular">
+                        <li role="presentation" class="active"><a href="#">Campus</a></li>
+                        <li role="presentation"><a href="#">Community</a></li>
+                    </ul>
+                </div>
+
+                <div class="filter-section">
+                    <strong>Ways to Gather</strong>
+                    <div class="d-flex mb-4">
+                        <div>
+                            <svg class="icon fa-4x o-80"><use xlink:href="#campusNew" /></svg>
+                        </div>
+                        <div class="ml-3 text-sm">{{ campusGatheringHelp }}</div>
+                    </div>
+
+                    <div class="d-flex">
+                        <div>
+                            <svg class="icon fa-4x o-80"><use xlink:href="#communityNew" /></svg>
+                        </div>
+                        <div class="ml-3 text-sm">{{ communityGatheringHelp }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="location-header">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="md-form">
+                        <i class="fa fa-search suffix"></i>
+                        <input type="text" id="zip-input" class="form-control input-width-xl" placeholder="Search by Zip...">
+                    </div>
+                    <a href="#" class="btn btn-sm btn-default btn-square open-filters">
+                        <svg class="icon"><use xlink:href="#filter" /></svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="location-list">
+
+                <div class="bg-white p-3">
+                    <div class="d-flex align-items-center flex-wrap justify-content-between">
+                        <div>
+                            <h4 class="my-0">LCBC Online</h4>
+                            <span class="d-block text-primary">No Matter Where You Are</span>
+                        </div>
+                        <div>
+                            <a href="#" class="btn btn-primary"><svg class="icon icon-left"><use xlink:href="#playcircle" /></svg> Watch Online</a>
+                            <a href="#" class="btn btn-primary"><svg class="icon icon-left"><use xlink:href="#monitor" /></svg> On-Demand</a>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="w-25  mr-3"><img src="https://swiperjs.com/demos/images/nature-1.jpg" class="img-responsive rounded overflow-hidden" /></div>
+                        <div class="text-sm">
+                            <span class="d-block text-primary">Watch Live at these times (EST):</span>
+                            <span class="o-80">
+                                Saturdays: 4pm, & 6pm<br>
+                                Sundays: 9am, 10:45am, 1pm, 3pm, 5pm, 7pm, 9pm, & 11pm<br>
+                                Mondays: 6:30pm, 9pm, & 11pm
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="location-list-items">
+                    <div class="location-list-item-header">
+                        <span>{{ data | Size }} Locations</span>
+                        <span class="o-50">*All Times in EST</span>
+                    </div>
+                    {% for campus in data %}
+                        {% assign schedules = campus.Schedules | Where:'CategoryId',50 | OrderBy:'NextDayOfWeekNumber' %}
+                        <div class="card card-campus mb-3">
+                            <div class="card-img-header">
+                                <div class="swiper campus-swiper">
+                                    <div class="swiper-wrapper">
+                                        <div class="swiper-slide">
+                                            <img src="https://swiperjs.com/demos/images/nature-1.jpg" loading="lazy" />
+                                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <img src="https://swiperjs.com/demos/images/nature-2.jpg" loading="lazy" />
+                                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <img src="https://swiperjs.com/demos/images/nature-3.jpg" loading="lazy" />
+                                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <img src="https://swiperjs.com/demos/images/nature-4.jpg" loading="lazy" />
+                                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <img src="https://swiperjs.com/demos/images/nature-5.jpg" loading="lazy" />
+                                            <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                                        </div>
+                                    </div>
+                                    <div class="swiper-button-next"></div>
+                                    <div class="swiper-button-prev"></div>
+                                    <div class="swiper-pagination"></div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h4 class="card-title my-0">{{ campus.CampusName }} {{ campus.CampusType | Replace:'Community Gathering',communityGatheringTooltip }}</h4>
+
+                                <div class="card-text">
+                                    {% assign hasASL = false | AsBoolean %}
+                                    {% assign hasES = false | AsBoolean %}
+                                    {% assign prevDay = '' %}
+                                    {% for schedule in schedules %}
+                                        {% if schedule.NextDayOfWeek != prevDay %}
+                                            {% if prevDay != '' %}</span></div>{% endif %}
+                                            <div>
+                                            <span>{{ schedule.NextDayOfWeek | Pluralize }}:</span>
+                                            <span>
+                                        {% endif %}
+
+                                        {% comment %}
+                                        {{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}{% if schedule.ASL == 'true' and schedule.Espanol == 'true' %}<sup>ES/ASL</sup>{% assign hasASL = true %}{% assign hasES = true %}{% elseif schedule.ASL == 'True' %}<sup>ASL</sup>{% assign hasASL = true %}{% elseif schedule.Espanol == 'true' %}<sup>ES</sup>{% assign hasES = true %}{% endif %}
+                                        /-Commas-/ {% if forloop.last %}</div>{% else %}{% assign nextItemI = forloop.index0 | Plus:1 %}{% assign nextItem = schedules[nextItemI].NextDayOfWeek %}{% if nextItem == schedule.NextDayOfWeek %},{% endif %}{% endif %}
+                                        {% endcomment %}
+
+                                        {%- if schedule.ASL == 'true' and schedule.Espanol == 'true' -%}
+                                            <span class="abbr" data-toggle="tooltip" data-trigger="click" title="{{ aslHelp }}<br>{{ esHelp }}" data-container=".location-list-items">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
+                                            {%- assign hasASL = true -%}
+                                            {%- assign hasES = true -%}
+                                        {%- elseif schedule.ASL == 'True' -%}
+                                            <span class="abbr" data-toggle="tooltip" data-trigger="click" title="{{ aslHelp }}" data-container=".location-list-items">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
+                                            {%- assign hasASL = true -%}
+                                        {%- elseif schedule.Espanol == 'true' -%}
+                                            <span class="abbr" data-toggle="tooltip" data-trigger="click" title="{{ esHelp }}" data-container=".location-list-items">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
+                                            {%- assign hasES = true -%}
+                                        {%- else -%}
+                                            {{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}{%- endif -%}/-Commas-/{%- if forloop.last -%}</div>{%- else -%}{%- assign nextItemI = forloop.index0 | Plus:1 -%}{%- assign nextItem = schedules[nextItemI].NextDayOfWeek -%}{%- if nextItem == schedule.NextDayOfWeek -%},{%- endif -%}
+                                        {%- endif -%}
+
+                                        {% assign prevDay = schedule.NextDayOfWeek %}
+                                    {% endfor %}
+                                </div>
+
+                                <div class="card-details">
+                                    <span class="map-distance">40.4 miles away</span>
+                                    {% if hasES or hasASL %}
+                                        ·
+                                        {% if hasASL %}
+                                        <svg class="icon" data-toggle="tooltip" title="{{ aslHelp }}" data-container=".location-list-items"><use xlink:href="#asl" /></svg>
+                                        {% endif %}
+                                        {% if hasES %}
+                                        <svg class="icon" data-toggle="tooltip" title="{{ esHelp }}" data-container=".location-list-items"><use xlink:href="#es" /></svg>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a href="#" class="btn btn-sm btn-action btn-square">
+                                    <svg class="icon"><use xlink:href="#info" /></svg>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-action btn-square">
+                                    {% case campus.CampusType %}
+                                        {% when 'Community Gathering' %}
+                                            <svg class="icon fa-2x"><use xlink:href="#communityNew" /></svg>
+                                        {% else %}
+                                            <svg class="icon fa-2x"><use xlink:href="#campusNew" /></svg>
+                                    {% endcase %}
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+        <div class="map bg-blue-500">
+
+        </div>
+    </section>
+</main>
+
+
+<script>
+    var swiper = new Swiper(".campus-swiper", {
+      lazy: true,
+      loop: true,
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true
+      },
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+    });
+
+    $(function() {
+        $('.close-filters').click(function() {
+            $('.location-filter').addClass('d-none');
+        });
+
+        $('.open-filters').click(function() {
+            $('.location-filter').removeClass('d-none');
+        });
+    });
+  </script>

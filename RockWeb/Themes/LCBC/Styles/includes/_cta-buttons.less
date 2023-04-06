@@ -1,0 +1,142 @@
+.btn-cta {
+  --underline-color: @brand-primary;
+  --mc-color: inherit;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 48px;
+  font-size: 32px;
+  line-height: 120%;
+  text-align: center;
+
+  .microcopy {
+    margin-top: 10px;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--mc-color);
+  }
+
+  @media (min-width: @screen-md) {
+    padding: 48px 64px 74px 48px;
+  }
+
+  &::after {
+    position: absolute;
+    right: 0;
+    bottom: 18px;
+    left: 0;
+    font-family: @fa-font-face;
+    font-size: 38px;
+    color: @white;
+    text-align: center;
+    content: @fa-var-long-arrow-alt-right;
+  }
+
+  &.btn-gray {
+    color: @white;
+
+    --mc-color: #d0d3d4;
+  }
+
+  &.btn-callout {
+    padding: 38px 19px;
+    font-style: italic;
+    color: #fff;
+    text-transform: uppercase;
+    background: #a4312a url("https://storage.googleapis.com/lcbc-assets/images/OnlineStudentsBackground.jpg?mtime=20200804140018&focal=none");
+
+    .microcopy {
+      order: -1;
+      margin: 0;
+      font-style: normal;
+      text-transform: none;
+    }
+
+    &::after {
+      display: none;
+    }
+  }
+
+  &.btn-primary {
+    --underline-color: @brand-info;
+  }
+
+  &.btn-img {
+    position: relative;
+    justify-content: center;
+    min-height: 320px;
+    padding: 0;
+    overflow: hidden;
+    color: @white;
+    background-color: @brand-primary;
+    background-repeat: none;
+    background-position: center;
+    background-size: cover;
+    border: 0;
+    //box-shadow: @shadow-sm;
+    &::after {
+      bottom: 24px;
+      left: 24px;
+      text-align: center;
+    }
+
+    .title {
+      z-index: 10;
+      max-width: 100%;
+      margin: 0 auto;
+      @media screen and (min-width: @screen-md) {
+        max-width: 80%;
+      }
+    }
+    .title-byline{
+      font-size: 18px;
+      letter-spacing: 2px;
+    }
+
+    .bg {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: scale(1);
+      object-fit: cover;
+    }
+
+    &:hover {
+      .bg {
+        opacity: 0;
+      }
+    }
+  }
+
+  &.btn-outline-primary {
+    border-width: 2px;
+  }
+}
+
+.btn-cta-center {
+  justify-content: center;
+  padding: 48px !important;
+}
+
+
+.followicon {
+  .save-icon {
+    font-weight: 300;
+    color: @text-muted;
+  }
+
+  &.isfollowed {
+    .save-icon {
+      font-weight: 900;
+      color: @brand-primary;
+    }
+  }
+}

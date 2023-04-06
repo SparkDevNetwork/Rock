@@ -1,0 +1,30 @@
+{%- capture codeOutput -%}
+<i class="fa fa-twitter color"></i>
+<i class="fa fa-twitter-square color"></i>
+
+<i class="fa fa-youtube color"></i>
+<i class="fa fa-youtube-square color"></i>
+<i class="fa fa-instagram color"></i>
+<i class="fab fa-instagram-square color"></i>
+<i class="fa fa-twitch color"></i>
+<i class="fa fa-discord color"></i>
+
+<i class="fab fa-facebook-square color"></i>
+<i class="fa fa-facebook color"></i>
+<i class="fab fa-vimeo-square color"></i>
+<i class="fa fa-vimeo color"></i>
+{%- endcapture -%}
+
+<h1>Icons</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="m-0">Font Awesome Color Class</h4>
+        </div>
+        <div class="card-body">
+        <div class="alert alert-default">To add color to social media icons, add the class <code>color</code> to the Font Awesome icon as shown in the examples below.</div>
+        <div class="bg-gray-800 p-4 example-gap" style="font-size:50px">{{ codeOutput }}</div>
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>

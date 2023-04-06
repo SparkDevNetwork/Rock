@@ -1,0 +1,21 @@
+
+{%- capture codeOutput -%}
+<!-- Material input -->
+<div class="md-form">
+    <i class="fa fa-search suffix"></i>
+    <input type="text" id="inputIconEx2" class="form-control" placeholder="Search by Zip...">
+  </div>
+{%- endcapture -%}
+
+<h1>Forms</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="m-0">Material Design Style Input</h4>
+        </div>
+        <div class="card-body">
+        <div class="bg-gray-200 p-4">{{ codeOutput }}</div>
+        </div>
+        <div class="card-footer">
+            <pre><code>{{ codeOutput | Escape }}</code></pre>
+        </div>
+    </div>

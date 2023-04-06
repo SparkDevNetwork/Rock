@@ -1,0 +1,351 @@
+.btn {
+  white-space: normal;
+  &:active,
+  &.active {
+    box-shadow: none;
+  }
+
+  &,
+  &:active,
+  &.active {
+    &:focus,
+    &.focus {
+      outline: 0;
+    }
+  }
+
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    opacity: .4;
+  }
+
+  // // Button Spacing
+  // + .btn {
+  //   margin-left: 12px;
+  // }
+
+  .icon {
+    width: 1.3em;
+    height: 1.3em;
+  }
+
+  // Icon Offsets
+  .icon-right {
+    margin-left: 6px;
+  }
+
+  .icon-left {
+    margin-right: 6px;
+  }
+
+  .icon-fade {
+    opacity: .55;
+  }
+
+  .label {
+    top: -3px;
+  }
+}
+
+.btn-square {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+
+  &.btn-lg {
+    width: 52px;
+    height: 52px;
+  }
+
+  &.btn-sm {
+    width: 40px;
+    height: 40px;
+  }
+
+  &.btn-xs {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+.color {
+  &.fa-facebook,
+  &.fa-facebook-square {
+    color: #0084f8;
+  }
+
+  &.fa-youtube,
+  &.fa-youtube-square {
+    color: #e0302f;
+  }
+
+  &.fa-instagram,
+  &.fa-instagram-square {
+    background: linear-gradient(90deg, #f58529 0%, #dd2a7b 46.87%, #8134af 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  &.fa-twitch {
+    color: #7e57c2;
+  }
+
+  &.fa-discord {
+    color: #536dfe;
+  }
+
+  &.fa-vimeo-square,
+  &.fa-vimeo {
+    color: #4bf;
+  }
+
+  &.fa-twitter,
+  &.fa-twitter-square {
+    color: #1da1f2;
+  }
+}
+
+
+.dropdown-toggle {
+  &.btn-primary {
+    background-color: darken(@btn-primary-bg, 10%);
+  }
+
+  &.btn-action {
+    background-color: darken(@btn-action-bg, 10%);
+  }
+
+  &.btn-success {
+    background-color: darken(@btn-success-bg, 10%);
+  }
+
+  &.btn-info {
+    background-color: darken(@btn-info-bg, 10%);
+  }
+
+  &.btn-warning {
+    background-color: darken(@btn-warning-bg, 10%);
+  }
+}
+
+.btn-group.d-flex {
+  width: 100%;
+
+  .btn {
+    display: inline-flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dropdown-toggle {
+    flex: 0 0 auto;
+  }
+}
+
+
+.btn-outline-white {
+  .button-variant(@white; transparent; @white);
+}
+
+.btn-gray {
+  .button-variant(@white; #313131; #313131);
+}
+
+.btn-muted {
+  color: @text-color;
+  background-color: @color-alice-blue;
+  border-color: @color-alice-blue;
+
+  &:hover {
+    background-color: darken(@color-alice-blue, 10%);
+  }
+}
+
+.btn-link-white {
+  padding: 0;
+  color: @white;
+
+  &:hover {
+    color: fade(@white, 80%);
+  }
+}
+
+// .btn-tag override is found in bootstrap.less
+
+// Prevent Button Toggles and Button Groups from being dull when active
+// Exclude btn-default
+.btn-group {
+  .active {
+    &.btn-primary {
+      background-color: @btn-primary-bg;
+      border-color: @btn-primary-bg;
+    }
+    
+    &.btn-action {
+      background-color: @btn-action-bg;
+      border-color: @btn-action-bg;
+    }
+
+    &.btn-success {
+      background-color: @btn-success-bg;
+      border-color: @btn-success-bg;
+    }
+
+    &.btn-info {
+      background-color: @btn-info-bg;
+      border-color: @btn-info-bg;
+    }
+
+    &.btn-warning {
+      background-color: @btn-warning-bg;
+      border-color: @btn-warning-bg;
+    }
+
+    &.btn-danger {
+      background-color: @btn-danger-bg;
+      border-color: @btn-danger-bg;
+    }
+  }
+}
+
+.btn-group-rounded {
+  display: flex;
+  flex-direction: column;
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 21px 61px;
+    font-weight: 400;
+    //border-radius: 100px;
+  }
+
+  .dropdown-toggle {
+    border-radius: 4px 4px 0 0 !important;
+  }
+
+  .btn-success {
+    margin-left: 0 !important;
+    border-radius: 0 0 4px 4px !important;
+  }
+
+  .dropdown-menu {
+    right: 0;
+  }
+
+  @media (min-width: @screen-lg) {
+    display: inline-block;
+    .btn {
+      display: inline-block;
+      width: auto;
+    }
+
+    .dropdown-toggle {
+      border-radius: 100px 0 0 100px !important;
+    }
+
+    .btn-success {
+      margin-left: -1px !important;
+      border-radius: 0 100px 100px 0 !important;
+    }
+
+  }
+}
+
+
+.btn-prayer-cta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  font-size: 12px;
+  color: #fff;
+  text-align: center;
+  background: @color-dark-cerulean;
+  border: 2px solid #fff;
+  border-radius: 100px;
+  transition: transform 167ms cubic-bezier(.33, 0, 0, 1) 0s;
+
+  &:hover,
+  &:focus {
+    color: #fff;
+  }
+
+  &:hover {
+    transition: transform 250ms cubic-bezier(.33, 0, 0, 1) 0s;
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transition: transform 134ms cubic-bezier(.45, 0, .2, 1) 0s;
+    transform: scale(.85);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  @media (min-width: @screen-sm) {
+    width: 94px;
+    height: 94px;
+    font-size: 14px;
+    border-width: 4px;
+    svg {
+      width: 40px;
+      height: 40px;
+    }
+  }
+}
+
+.prayer-cta-launcher {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: @zindex-navbar-fixed - 50;
+  opacity: 0;
+
+  // wait 1s and then show the prayer cta
+  animation: fadeIn 1s ease-in-out forwards;
+  animation-delay: 1s;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.icon-alignment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .icon {
+    display: inline-flex;
+    margin: 0 4px 2px 0;
+  }
+}
+
+// Rock:HtmlEditor Override
+.note-btn {
+  font-size: 14px;
+  font-weight: 400;
+  padding: 4px 8px !important;
+  height: 32px !important;
+
+  &.dropdown-toggle {
+    padding: 0 5px;
+  }
+}

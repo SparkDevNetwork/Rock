@@ -1,0 +1,4 @@
+{% comment %} {% include '~~/Assets/Lava/_js.lava' %} {% endcomment %}
+<script>
+{% include '~~/Assets/Scripts/js.js' %}
+</script>
