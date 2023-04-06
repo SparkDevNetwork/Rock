@@ -210,6 +210,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "temporary binary file", () => CleanupTemporaryBinaryFiles() );
 
+            RunCleanupTask( "person age / age bracket", () => UpdateAgeAndAgeBracketOnPerson() );
+
             // updates missing person aliases, metaphones, etc (doesn't delete any records)
             RunCleanupTask( "person", () => PersonCleanup() );
 
@@ -286,10 +288,6 @@ namespace Rock.Jobs
             RunCleanupTask( "remove old notification message types", () => RemoveOldNotificationMessageTypes() );
 
             RunCleanupTask( "update person viewed count", () => UpdatePersonViewedCount() );
-
-            RunCleanupTask( "update analytics source date age and age bracket", () => CalculateAgeAndAgeBracketOnAnalyticsSourceDate() );
-
-            RunCleanupTask( "update person age and age range", () => UpdateAgeAndAgeBracketOnPerson() );
 
             /*
              * 21-APR-2022 DMV
@@ -2784,6 +2782,8 @@ END
         /// <returns></returns>
         private int UpdateAgeAndAgeBracketOnPerson()
         {
+            CalculateAgeAndAgeBracketOnAnalyticsSourceDate();
+
             const string UpdateAgeAndAgeRangeSql = @"
 BEGIN
 	UPDATE Person
@@ -2800,7 +2800,10 @@ BEGIN
 		WHEN p.[BirthDate] IS NULL THEN NULL
 		ELSE A.[Age] 
 		END,
-	P.[AgeBracket] = A.[AgeBracket]
+	P.[AgeBracket] = CASE
+        WHEN A.[AgeBracket] IS NULL THEN 0
+        ELSE A.[AgeBracket]
+        END        
 	FROM Person P
 	LEFT JOIN AnalyticsSourceDate A
 	ON A.[DateKey] = P.[BirthDateKey]
