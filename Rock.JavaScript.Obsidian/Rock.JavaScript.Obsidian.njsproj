@@ -111,6 +111,8 @@
     <Folder Include="Framework\Enums\Blocks\" />
     <Folder Include="Framework\Enums\Blocks\Cms\" />
     <Folder Include="Framework\Enums\Blocks\Cms\ContentCollectionView\" />
+    <Folder Include="Framework\Enums\Blocks\Groups\" />
+    <Folder Include="Framework\Enums\Blocks\Groups\GroupAttendanceDetail\" />
     <Folder Include="Framework\Enums\Blocks\Security\" />
     <Folder Include="Framework\Enums\Blocks\Security\ForgotUserName\" />
     <Folder Include="Framework\Enums\Blocks\Security\ConfirmAccount\" />
@@ -202,6 +204,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\" />
+    <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
@@ -744,6 +747,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\landingPageContentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntryInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />

@@ -57,6 +57,9 @@
     <Content Include="src\Finance\financialBatchDetail.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\editPanel.partial.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\viewPanel.partial.vue" />
+    <Content Include="src\Prayer\prayerRequestDetail.obs" />
+    <Content Include="src\Prayer\PrayerRequestDetail\editPanel.partial.obs" />
+    <Content Include="src\Prayer\PrayerRequestDetail\viewPanel.partial.obs" />
     <Content Include="src\Finance\financialPledgeDetail.obs" />
     <Content Include="src\Finance\FinancialPledgeDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialPledgeDetail\viewPanel.partial.obs" />
@@ -201,6 +204,8 @@
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
+    <Folder Include="src\Prayer\" />
+    <Folder Include="src\Prayer\PrayerRequestDetail\" />
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
     <Folder Include="src\Group\" />
     <Folder Include="src\Group\GroupRegistration\" />
@@ -327,6 +332,7 @@
     <TypeScriptCompile Include="src\Crm\AssessmentTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
+    <TypeScriptCompile Include="src\Prayer\PrayerRequestDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.d.ts" />

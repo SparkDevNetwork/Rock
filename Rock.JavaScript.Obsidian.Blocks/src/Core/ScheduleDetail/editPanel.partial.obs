@@ -89,6 +89,7 @@
     import RockButton from "@Obsidian/Controls/rockButton";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleBag";
@@ -185,10 +186,9 @@
     });
 
     // enable tooltip on the preview
-    const jquery = window["$"];
     const previewRef = ref<InstanceType<typeof RockButton>>();
     onMounted(() => {
-        jquery(previewRef?.value?.$el).tooltip();
+        tooltip(previewRef?.value?.$el);
     });
 
     // Watch for any changes to props that represent properties and then
