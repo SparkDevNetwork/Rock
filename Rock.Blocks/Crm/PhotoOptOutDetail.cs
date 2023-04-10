@@ -63,7 +63,7 @@ namespace Rock.Blocks.Crm
         {
             using ( var rockContext = new RockContext() )
             {
-                return GetPhotoOptOutBag(rockContext );
+                return GetPhotoOptOutBag( rockContext );
             }
         }
 

@@ -21,9 +21,9 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** PrayerRequest View Model */
 export type PrayerRequestBag = {
     /** Gets or sets a flag indicating  whether or not comments can be made against the request. */
     allowComments?: boolean | null;
@@ -31,35 +31,20 @@ export type PrayerRequestBag = {
     /** Gets or sets a description of the way that God has answered the prayer. */
     answer?: string | null;
 
-    /** Gets or sets the PersonId of the Rock.Model.Person who approved this prayer request. */
-    approvedByPersonAliasId?: number | null;
-
-    /** Gets or sets the date this prayer request was approved. */
-    approvedOnDateTime?: string | null;
-
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
-    /** Gets or sets the campus identifier. */
-    campusId?: number | null;
+    /** Gets or sets the campus. */
+    campus?: ListItemBag | null;
 
-    /** Gets or sets the CategoryId of the Rock.Model.Category that the PrayerRequest belongs to. */
-    categoryId?: number | null;
-
-    /** Gets or sets the created by person alias identifier. */
-    createdByPersonAliasId?: number | null;
-
-    /** Gets or sets the created date time. */
-    createdDateTime?: string | null;
+    /** Gets or sets the Rock.Model.Category that this prayer request belongs to. */
+    category?: ListItemBag | null;
 
     /** Gets or sets the email address of the person requesting prayer. */
     email?: string | null;
-
-    /** Gets or sets the date that this prayer request was entered. */
-    enteredDateTime?: string | null;
 
     /** Gets or sets the date that the prayer request expires.  */
     expirationDate?: string | null;
@@ -71,10 +56,9 @@ export type PrayerRequestBag = {
     flagCount?: number | null;
 
     /**
-     * TODO: GET CLARIFICATION AND DOCUMENT
-     * Gets or sets the group id.
+     * Gets or sets the group.
      */
-    groupId?: number | null;
+    group?: ListItemBag | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
@@ -91,23 +75,14 @@ export type PrayerRequestBag = {
     /** Gets or sets a flag indicating if this is an urgent prayer request. */
     isUrgent?: boolean | null;
 
-    /** Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the Language for this prayer request. */
-    languageValueId?: number | null;
-
     /** Gets or sets the Last Name of the person that this prayer request is about. This property is required. */
     lastName?: string | null;
-
-    /** Gets or sets the modified by person alias identifier. */
-    modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the modified date time. */
-    modifiedDateTime?: string | null;
 
     /** Gets or sets the number of times that this prayer request has been prayed for. */
     prayerCount?: number | null;
 
-    /** Gets or sets the PersonId of the Rock.Model.Person who is submitting the PrayerRequest */
-    requestedByPersonAliasId?: number | null;
+    /** Gets or sets the requested by person alias. */
+    requestedByPersonAlias?: ListItemBag | null;
 
     /** Gets or sets the text/content of the request. */
     text?: string | null;

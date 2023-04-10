@@ -45,6 +45,16 @@ export default defineComponent({
         btnSize: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        onButtonActiveCssClass: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        offButtonActiveCssClass: {
+            type: String as PropType<string>,
+            default: ""
         }
     },
 
@@ -65,10 +75,15 @@ export default defineComponent({
             }
         };
 
+        const selectedClasses = "active btn btn-primary";
+        const onButtonSelectedClasses = `${selectedClasses} ${props.onButtonActiveCssClass}`;
+        const offButtonSelectedClasses = `${selectedClasses} ${props.offButtonActiveCssClass}`;
+
         return {
             getButtonGroupClass,
             onClick,
-            selectedClasses: "active btn btn-primary",
+            onButtonSelectedClasses,
+            offButtonSelectedClasses,
             unselectedClasses: "btn btn-default"
         };
     },
@@ -82,10 +97,10 @@ export default defineComponent({
         <div class="control-wrapper">
             <div class="toggle-container">
                 <div :class="getButtonGroupClass">
-                    <JavaScriptAnchor :class="modelValue ? unselectedClasses : selectedClasses" @click="onClick(false)">
+                    <JavaScriptAnchor :class="modelValue ? unselectedClasses : offButtonSelectedClasses" @click="onClick(false)">
                         <slot name="off">{{falseText}}</slot>
                     </JavaScriptAnchor>
-                    <JavaScriptAnchor :class="modelValue ? selectedClasses : unselectedClasses" @click="onClick(true)">
+                    <JavaScriptAnchor :class="modelValue ? onButtonSelectedClasses : unselectedClasses" @click="onClick(true)">
                         <slot name="on">{{trueText}}</slot>
                     </JavaScriptAnchor>
                 </div>
