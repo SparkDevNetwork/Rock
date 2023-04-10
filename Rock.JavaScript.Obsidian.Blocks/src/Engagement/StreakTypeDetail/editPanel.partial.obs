@@ -141,6 +141,8 @@
     const structureType = propertyRef(props.modelValue?.structureType?.toString() ?? "None", "StructureType");
     const structureEntityId = propertyRef(props.modelValue?.structureEntityId, "StructureEntityId");
     const interactionComponentInteractionChannel = ref(props.modelValue.interactionComponentInteractionChannel);
+    const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
+    const streakOccurrenceFrequencies = ref<ListItemBag[]>(enumToListItemBag(StreakOccurrenceFrequencyDescription));
 
     const isAddMode = computed((): boolean => props.modelValue?.idKey == "");
 
@@ -210,7 +212,4 @@
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
     watchPropertyChanges(propRefs, emit);
-
-    const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
-    const streakOccurrenceFrequencies = ref<ListItemBag[]>(enumToListItemBag(StreakOccurrenceFrequencyDescription));
 </script>

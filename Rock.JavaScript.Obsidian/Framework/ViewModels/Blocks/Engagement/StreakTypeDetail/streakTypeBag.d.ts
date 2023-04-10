@@ -23,7 +23,6 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { Guid } from "Framework/Types";
 
 export type StreakTypeBag = {
     /** Gets or sets the attributes. */

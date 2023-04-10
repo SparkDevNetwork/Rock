@@ -142,11 +142,11 @@ namespace Rock.Blocks.Engagement
             var checkInPurposeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
             var options = new StreakTypeDetailOptionsBag
             {
-                streakOccurrenceFrequencies = typeof( StreakOccurrenceFrequency )
+                StreakOccurrenceFrequencies = typeof( StreakOccurrenceFrequency )
                     .ToListItemBag(),
-                streakStructureTypes = typeof( StreakStructureType )
+                StreakStructureTypes = typeof( StreakStructureType )
                     .ToListItemBag(),
-                attendanceCheckInConfigGroupTypesGuids = GroupTypeCache.All()
+                AttendanceCheckInConfigGroupTypesGuids = GroupTypeCache.All()
                     .Where( gt => gt.GroupTypePurposeValueId == checkInPurposeId )
                     .OrderBy( gt => gt.Name )
                     .Select( gt => gt.Guid )
@@ -294,7 +294,7 @@ namespace Rock.Blocks.Engagement
             var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.StructureType = entity.StructureType;
-            bag.StructureEntityId = GetStructureEntityIdListItemBag( entity, rockContext, bag );
+            bag.StructureEntity = GetStructureEntityIdListItemBag( entity, rockContext, bag );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
@@ -377,7 +377,7 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Entity.StructureType ),
                 () => entity.StructureType = box.Entity.StructureType );
 
-            box.IfValidProperty( nameof( box.Entity.StructureEntityId ),
+            box.IfValidProperty( nameof( box.Entity.StructureEntity ),
                 () =>
                 {
                     entity.StructureEntityId = GetStructureEntityId( entity, box, rockContext ).ToIntSafe();
@@ -399,30 +399,30 @@ namespace Rock.Blocks.Engagement
 
         private static int? GetStructureEntityId( StreakType entity, DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag> box, RockContext rockContext )
         {
-            if( box.Entity.StructureEntityId == null )
+            if( box.Entity.StructureEntity == null )
             {
                 return null;
             }
             switch ( entity.StructureType )
             {
                 case StreakStructureType.GroupType:
-                    return GroupTypeCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                    return GroupTypeCache.GetId( box.Entity.StructureEntity.Value.AsGuid() );
                 case StreakStructureType.Group:
-                    return new GroupService( rockContext ).GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                    return new GroupService( rockContext ).GetId( box.Entity.StructureEntity.Value.AsGuid() );
                 case StreakStructureType.GroupTypePurpose:
-                    return DefinedValueCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                    return DefinedValueCache.GetId( box.Entity.StructureEntity.Value.AsGuid() );
                 case StreakStructureType.CheckInConfig:
-                    return GroupTypeCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                    return GroupTypeCache.GetId( box.Entity.StructureEntity.Value.AsGuid() );
                 case StreakStructureType.InteractionChannel:
-                    return InteractionChannelCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                    return InteractionChannelCache.GetId( box.Entity.StructureEntity.Value.AsGuid() );
                 case StreakStructureType.InteractionComponent:
-                    if ( box.Entity.StructureEntityId == null )
+                    if ( box.Entity.StructureEntity == null )
                     {
                         return 0;
                     }
-                    return InteractionComponentCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                    return InteractionComponentCache.GetId( box.Entity.StructureEntity.Value.AsGuid() );
                 case StreakStructureType.InteractionMedium:
-                    return DefinedValueCache.GetId( box.Entity.StructureEntityId.Value.AsGuid() );
+                    return DefinedValueCache.GetId( box.Entity.StructureEntity.Value.AsGuid() );
             }
             return null;
         }

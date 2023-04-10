@@ -61,6 +61,11 @@ namespace Rock
             return enumerable == null || enumerable.Any() == false || enumerable.Contains( value );
         }
 
+        /// <summary>
+        /// An extension function to get a ListItemBag array from an enum.
+        /// </summary>
+        /// <param name="enumType">The type of the enum to be converted to ListItemBag</param>
+        /// <returns>An array of ListItemBag</returns>
         public static ListItemBag[] ToListItemBag( this Type enumType )
         {
             var listItemBag = new List<ListItemBag>();

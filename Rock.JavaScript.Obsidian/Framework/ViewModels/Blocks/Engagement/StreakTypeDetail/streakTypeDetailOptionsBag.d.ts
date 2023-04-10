@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { Guid } from "Framework/Types";
 
 export type StreakTypeDetailOptionsBag = {

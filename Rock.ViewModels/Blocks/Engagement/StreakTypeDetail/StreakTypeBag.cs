@@ -82,7 +82,7 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// Gets or sets the Id of the Entity associated with attendance for this streak type. If not set, this streak type
         /// will account for any attendance record.
         /// </summary>
-        public ListItemBag StructureEntityId { get; set; }
+        public ListItemBag StructureEntity { get; set; }
 
         /// <summary>
         /// Gets or sets the structure settings JSON.
