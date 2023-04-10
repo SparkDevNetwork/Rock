@@ -60,6 +60,7 @@
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Cms\BlockTypeDetail.cs" />
+    <Compile Include="Engagement\StreakTypeDetail.cs" />
     <Compile Include="Prayer\PrayerRequestDetail.cs" />
     <Compile Include="Core\ScheduleDetail.cs" />
     <Compile Include="Crm\PhotoOptOutDetail.cs" />
