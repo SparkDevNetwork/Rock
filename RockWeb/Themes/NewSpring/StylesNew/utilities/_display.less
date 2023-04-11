@@ -1,0 +1,27 @@
+//
+// Utilities for common `display` values
+//
+
+.ns-util-mix-display(@breakpoint:"base") {
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .display-breakpoints(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .display-breakpoints(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+.display-breakpoints(@infix) {
+  .d@{infix}-grid {
+    display: grid !important;
+  }
+  .d@{infix}-inline-grid {
+    display: inline-grid !important;
+  }
+}

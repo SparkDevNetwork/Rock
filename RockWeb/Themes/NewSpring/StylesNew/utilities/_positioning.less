@@ -1,0 +1,115 @@
+//
+// Utilities for common positioning values
+//
+
+.ns-util-mix-positioning(@breakpoint:"base") {
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .positioning-breakpoints(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .positioning-breakpoints(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+.positioning-breakpoints(@infix) {
+  .ltr@{infix} {
+    direction: ltr;
+  }
+  .rtl@{infix} {
+    direction: rtl;
+  }
+
+  .text@{infix}-left {
+    text-align: left;
+  }
+  .text@{infix}-center {
+    text-align: center;
+  }
+  .text@{infix}-right {
+    text-align: right;
+  }
+
+  .top@{infix}-0 {
+    top: 0%;
+  }
+  .right@{infix}-0 {
+    right: 0%;
+  }
+  .bottom@{infix}-0 {
+    bottom: 0%;
+  }
+  .left@{infix}-0 {
+    left: 0%;
+  }
+
+  .top@{infix}-25 {
+    top: 25%;
+  }
+  .right@{infix}-25 {
+    right: 25%;
+  }
+  .bottom@{infix}-25 {
+    bottom: 25%;
+  }
+  .left@{infix}-25 {
+    left: 25%;
+  }
+
+  .top@{infix}-40 {
+    top: 40%;
+  }
+  .right@{infix}-40 {
+    right: 40%;
+  }
+  .bottom@{infix}-40 {
+    bottom: 40%;
+  }
+  .left@{infix}-40 {
+    left: 40%;
+  }
+
+  .top@{infix}-50 {
+    top: 50%;
+  }
+  .right@{infix}-50 {
+    right: 50%;
+  }
+  .bottom@{infix}-50 {
+    bottom: 50%;
+  }
+  .left@{infix}-50 {
+    left: 50%;
+  }
+
+  .top@{infix}-60 {
+    top: 60%;
+  }
+  .right@{infix}-60 {
+    right: 60%;
+  }
+  .bottom@{infix}-60 {
+    bottom: 60%;
+  }
+  .left@{infix}-60 {
+    left: 60%;
+  }
+
+  .top@{infix}-75 {
+    top: 75%;
+  }
+  .right@{infix}-75 {
+    right: 75%;
+  }
+  .bottom@{infix}-75 {
+    bottom: 75%;
+  }
+  .left@{infix}-75 {
+    left: 75%;
+  }
+}
