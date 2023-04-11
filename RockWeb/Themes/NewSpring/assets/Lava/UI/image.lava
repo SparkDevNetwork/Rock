@@ -1,0 +1,65 @@
+{%- assign id = id | Default:uniqueid -%}
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+
+{% assign gradientamount = gradientamount | DividedBy:100 %}
+
+{% if linkurl != empty or linkedpageid != empty %}
+    {% capture url %}
+        {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
+            /{{ linkedpageroute }}
+        {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
+            /page/{{ linkedpageid }}
+        {% else %}
+            {{ linkurl }}
+        {% endif %}
+    {% endcapture %}
+{% endif %}
+
+{% assign url = url | Trim %}
+
+    <section data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="position-relative push-bottom xs-push-half-bottom rounded-lg overflow-hidden {{ foregroundcolor | Replace:' ','-' | Downcase | Prepend:'text-' }}">
+
+        {% if url != empty and hideforegroundelements == 'Yes' %}<a href="{{ url }}" data-scroll>{% endif %}
+
+        <div class="position-relative ratio-{% if ratio != empty %}{{ ratio }}{% else %}square{% endif %} sm-ratio-square xs-ratio-{{ mobileratio | Downcase }} overflow-hidden" style="{% if backgroundcolor %}background-color: {{ backgroundcolor }};{% endif %}">
+            <div class="position-absolute top-zero right-zero bottom-zero left-zero background-center background-cover {% if grayscale == 'Yes' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur != 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
+
+            <div class="ratio-item d-flex justify-content-center align-items-{{ contentalignment }} soft-double xs-soft {% if hideforegroundelements == 'Yes' %}hidden{% endif %}">
+                <div class="soft-ends sm-soft-half-ends text-center text-constrained">
+                    <h2 class="{{ titlesize }}">{{ title }}</h2>
+                    {{ content }}
+
+                    {% if url != empty %}
+                        <a href="{{ url }}" class="btn btn-primary flush" role="button" data-scroll>{% if linktext != null and linktext != '' %}{{ linktext }}{% else %}Learn More{% endif %}</a>
+                    {% endif %}
+
+                    {% if lava and lava != empty %}
+                        {{ lava | HtmlDecode }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if url != empty and hideforegroundelements == 'Yes' %}</a>{% endif %}
+
+    </section>
+
+{[ endscripturize ]}
+
+{% if gradientamount > 0 and contentalignment == 'start' or contentalignment == 'end' and backgroundcolor != '' %}
+    {% assign gradientorientation = contentalignment |  Replace:'start','0' | Replace:'end','180' %}
+    <style>
+        #{{ id }} .background-cover:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgb(0,0,0);
+            background: linear-gradient({{ gradientorientation | Append:'deg' }}, transparent 0%, {{ backgroundcolor }} 100%);
+            opacity: {{ gradientamount }};
+        }
+    </style>
+{% endif %}

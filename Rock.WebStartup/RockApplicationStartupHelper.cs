@@ -375,7 +375,7 @@ namespace Rock.WebStartup
             }
             catch ( Exception ex )
             {
-                // Just catch any exceptions, log it, and keep moving... 
+                // Just catch any exceptions, log it, and keep moving...
                 try
                 {
                     var startupException = new RockStartupException( "Error sending version update notifications", ex );
@@ -405,12 +405,9 @@ namespace Rock.WebStartup
              * and eliminates the need for a Run.Migration file. Now migrations will run as needed in both dev and prod environments.
              */
 
-            // First see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database.
-            var _migrationHistoryTableExists = false;
-            try
-            {
-                _migrationHistoryTableExists = DbService.ExecuteScaler(
-                    @"SELECT convert(bit, 1) [Exists] 
+            // first see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database
+            bool _migrationHistoryTableExists = DbService.ExecuteScaler(
+                @"SELECT convert(bit, 1) [Exists]
                     FROM INFORMATION_SCHEMA.TABLES
                     WHERE TABLE_SCHEMA = 'dbo'
                     AND TABLE_NAME = '__MigrationHistory'" ) as bool? ?? false;
@@ -450,7 +447,7 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// If EF migrations need to be done, does MF Migrations on the database 
+        /// If EF migrations need to be done, does MF Migrations on the database
         /// </summary>
         /// <returns>True if at least one migration was run</returns>
         public static bool MigrateDatabase( bool hasPendingEFMigrations )
@@ -607,7 +604,7 @@ namespace Rock.WebStartup
                 .Where( a => !installedMigrationNumbers.Contains( a.Key ) )
                 .ToDictionary( k => k.Key, v => v.Value );
 
-            // Iterate each migration in the assembly in MigrationNumber order 
+            // Iterate each migration in the assembly in MigrationNumber order
             var migrationTypesToRun = migrationTypesByNumber.OrderBy( a => a.Key ).Select( a => a.Value ).ToList();
 
             if ( !migrationTypesToRun.Any() )

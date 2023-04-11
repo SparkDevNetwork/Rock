@@ -517,7 +517,6 @@ namespace Rock.Tests.Integration.Core.Lava
 
             return result.Text;
         }
-
         /// <summary>
         /// Process the specified input template and return the result.
         /// </summary>
