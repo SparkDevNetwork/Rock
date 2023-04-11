@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { Guid } from "Framework/Types";
+import { Guid } from "@Obsidian/Types";
 
 export type StreakTypeDetailOptionsBag = {
     attendanceCheckInConfigGroupTypesGuids?: Guid[] | null;
