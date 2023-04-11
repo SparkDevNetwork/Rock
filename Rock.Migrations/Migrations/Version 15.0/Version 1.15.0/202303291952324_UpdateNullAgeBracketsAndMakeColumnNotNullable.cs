@@ -29,12 +29,12 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-UPDATE Person
-SET AgeBracket = 0
-WHERE AgeBracket IS NULL
-" );
-            AlterColumn("dbo.Person", "AgeBracket", c => c.Int(nullable: false));
+//            Sql( @"
+//UPDATE Person
+//SET AgeBracket = 0
+//WHERE AgeBracket IS NULL
+//" );
+//            AlterColumn("dbo.Person", "AgeBracket", c => c.Int(nullable: false));
         }
         
         /// <summary>
@@ -42,7 +42,7 @@ WHERE AgeBracket IS NULL
         /// </summary>
         public override void Down()
         {
-            AlterColumn("dbo.Person", "AgeBracket", c => c.Int());
+            // AlterColumn("dbo.Person", "AgeBracket", c => c.Int());
         }
     }
 }
