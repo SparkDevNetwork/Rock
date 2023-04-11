@@ -42,6 +42,7 @@
     <Content Include="src\Core\scheduleDetail.obs" />
     <Content Include="src\Core\ScheduleDetail\editPanel.partial.obs" />
     <Content Include="src\Core\ScheduleDetail\viewPanel.partial.obs" />
+    <Content Include="src\Crm\assessmentList.obs" />
     <Content Include="src\Crm\photoOptOutDetail.obs" />
     <Content Include="src\Crm\documentTypeDetail.vue" />
     <Content Include="src\Crm\DocumentTypeDetail\editPanel.partial.vue" />

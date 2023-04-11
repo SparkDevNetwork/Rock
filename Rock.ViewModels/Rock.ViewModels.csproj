@@ -50,6 +50,7 @@
     <Compile Include="Blocks\Prayer\PrayerRequestDetail\PrayerRequestDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\AssessmentList\AssessmentListBag.cs" />
     <Compile Include="Blocks\Crm\PhotoOptOut\PhotoOptOutBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\CustomFieldFilterBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpDetail\SignUpDetailInitializationBox.cs" />
