@@ -30,6 +30,8 @@ namespace Rock.Tests.Integration.Reporting
         [TestInitialize]
         public void TestInitialize()
         {
+            TestDatabaseHelper.ResetDatabase();
+
             interactionForeignKey = $"Test {Guid.NewGuid()}";
         }
 

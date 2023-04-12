@@ -22,7 +22,14 @@ namespace Rock.Tests.Integration.Communications
         private static byte[] _testTextFileBytes = File.ReadAllBytes( @"TestData\TextDoc.txt" );
         private static byte[] _testJpgFileBytes = File.ReadAllBytes( @"TestData\test.jpg" );
 
+        [ClassInitialize]
+        public static void TestInitialize( TestContext context )
+        {
+            TestDatabaseHelper.ResetDatabase();
+        }
+
         #region Rock Email Message Test
+
         [TestMethod]
         public void SendRockMessageShouldReplaceUnsafeFromWithOrganizationEmail()
         {

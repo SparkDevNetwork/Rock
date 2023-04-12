@@ -15,6 +15,12 @@ namespace Rock.Tests.Integration.Core.Jobs
     [TestClass]
     public class SendFollowingEventNotificationTests
     {
+        [ClassInitialize]
+        public static void TestInitialize( TestContext context )
+        {
+            TestDatabaseHelper.ResetDatabase();
+        }
+
         #region Tests
 
         /// <summary>

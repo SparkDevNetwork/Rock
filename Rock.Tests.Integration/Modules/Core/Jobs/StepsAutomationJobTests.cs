@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -6,7 +22,6 @@ using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Reporting.DataFilter;
-using Rock.Tests.Integration.Core.Jobs;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Engagement.Steps
@@ -26,6 +41,27 @@ namespace Rock.Tests.Integration.Engagement.Steps
         private const string SimonSandsPersonGuidString = "D2D57C31-89C4-4A92-8917-894B49A42CAE";
 
         #region Setup Methods
+
+        /// <summary>
+        /// Test Cleanup.
+        /// </summary>
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            DeleteTestData();
+        }
+
+        ///// <summary>
+        ///// Initialize Tests.
+        ///// </summary>
+        ///// <param name="testContext">The test context.</param>
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            TestDatabaseHelper.ResetDatabase();
+
+            CreateTestData();
+        }
 
         /// <summary>
         /// Creates the test people.
@@ -281,27 +317,6 @@ namespace Rock.Tests.Integration.Engagement.Steps
             var dvQuery = dataViewService.Queryable().Where( dv => dv.ForeignKey == ForeignKey );
             dataViewService.DeleteRange( dvQuery );
             rockContext.SaveChanges();
-        }
-
-        /// <summary>
-        /// Test Cleanup.
-        /// </summary>
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            DeleteTestData();
-        }
-
-        /// <summary>
-        /// Initialize Tests.
-        /// </summary>
-        /// <param name="testContext">The test context.</param>
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            TestDatabaseHelper.ResetDatabase();
-
-            CreateTestData();
         }
 
         #endregion Setup Methods
