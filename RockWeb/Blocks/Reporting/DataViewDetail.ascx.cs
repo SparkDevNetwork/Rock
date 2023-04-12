@@ -1615,14 +1615,15 @@ $(document).ready(function() {
 
         private void SetIntervalVisibility( bool isEnabled )
         {
-            ipPersistedScheduleInterval.Visible = isEnabled;
+            pnlScheduleIntervalControls.Visible = isEnabled;
         }
 
         private void SetScheduleVisibility( bool isEnabled )
         {
-            rblPersistenceSchedule.Visible = isEnabled;
-            sbUniqueSchedule.Visible = isEnabled;
+            divPersistenceSchedule.Visible = isEnabled;
+            divScheduleSelect.Visible = isEnabled;
             ddlNamedSchedule.Visible = isEnabled;
+            sbUniqueSchedule.Visible = isEnabled;
         }
 
         protected void rblPersistenceType_SelectedIndexChanged( object sender, EventArgs e )

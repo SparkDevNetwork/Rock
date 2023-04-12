@@ -1,14 +1,14 @@
 UPDATE [AttributeValue] SET [Value]=N'{
     "SeriesColors": [
-      "#3b82f6",
-      "#f97316",
-      "#ef4444",
-      "#06b6d4",
-      "#22c55e",
-      "#eab308",
-      "#8b5cf6",
-      "#EC4899",
-      "#737373"
+      "#38BDF8",
+      "#A3E635",
+      "#34D399",
+      "#FB7185",
+      "#818CF8",
+      "#FB923C",
+      "#C084FC",
+      "#FBBF24",
+      "#A8A29E"
     ],
     "GoalSeriesColor": "red",
     "Grid": {

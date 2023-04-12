@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -74,14 +74,15 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private readonly List<string> _availableColors = new List<string>()
         {
-            "#3b82f6",
-            "#ef4444",
-            "#06b6d4",
-            "#f97316",
-            "#22c55e",
-            "#eab308",
-            "#8b5cf6",
-            "#EC4899",
+             "#38BDF8",  // Sky
+             "#34D399",  // Emerald
+             "#FB7185",  // Rose
+             "#A3E635",  // Lime
+             "#818CF8",  // Indigo
+             "#FB923C",  // Orange
+             "#C084FC",  // Purple
+             "#FBBF24",  // Amber
+             "#A8A29E",  // Stone
         };
 
         /// <summary>
@@ -387,10 +388,19 @@ namespace RockWeb.Blocks.Reporting
 
             var sb = new StringBuilder( chartConfig );
 
+            // Reset the skip count
+            skipCount = 0;
+            
             foreach ( var dataItem in dataItems )
             {
                 sb.AppendFormat( dataItemFormat, dataItem.Label, dataItem.Value, GetFillColor( skipCount, dataItem.Label ) ).AppendLine();
-                skipCount ++;
+                
+                // Only skip if a color was used
+                if ( dataItem.Label != "Unknown" )
+                {
+                    skipCount ++;
+                }
+                
             }
 
             sb.AppendLine( "{[ endchart ]}" );
@@ -408,7 +418,7 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( label == "Unknown" )
             {
-                return "#737373";
+                return "#E7E5E4";
             }
             else
             {
