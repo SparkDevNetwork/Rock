@@ -177,7 +177,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
-    <Compile Include="Modules\Core\Model\AttendanceCodeTests.cs" />
     <Compile Include="Modules\Core\Rock.Security\RockSigningCredentialsTests.cs" />
     <Compile Include="Modules\Crm\Following\FollowingTests.cs" />
     <Compile Include="Modules\Crm\PersonBulkUpdateProcessorTests.cs" />
