@@ -260,7 +260,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             TestHelper.Log( $"Running Job: CalculateFamilyAnalytics..." );
 
-            // Calculate Family Aanalytics
+            // Calculate Family Analytics
             var jobFamilyAnalytics = new Rock.Jobs.CalculateFamilyAnalytics();
 
             jobFamilyAnalytics.ExecuteInternal( new Dictionary<string, string>() );
@@ -276,6 +276,10 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             biAnalyticsSettings.AddOrReplace( Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessAttendanceBIAnalytics, "true" );
 
             jobBIAnalytics.ExecuteInternal( biAnalyticsSettings );
+
+            // Calculate Attribute "ValueAs..." columns.
+            var jobUpdateAttributeValueAs = new Rock.Jobs.PostV141UpdateValueAsColumns();
+            jobUpdateAttributeValueAs.ExecuteInternal( new Dictionary<string, string>() );
 
             // Set the sample data identifiers.
             SystemSettings.SetValue( SystemKey.SystemSetting.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
@@ -398,26 +402,18 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// <summary>
         /// Resets the database by using the default data source.
         /// </summary>
-        private static bool InitializeSqlServerDatabaseForLocal( bool replaceExistingDatabase )
+        private static bool InitializeSqlServerDatabaseForLocal( bool recreateArchive )
         {
-            bool removeArchive = false;
-            if ( DatabaseExists( ConnectionString ) )
+            if ( recreateArchive )
             {
-                if ( replaceExistingDatabase )
+                TestHelper.Log( $"Removing existing database archive..." );
+
+                if ( DatabaseExists( ConnectionString ) )
                 {
                     // Remove the database from the local server, and delete the associated archive file.
                     DeleteDatabase( ConnectionString );
-                    removeArchive = true;
                 }
-            }
-            else
-            {
-                // If the database has been manually deleted, make sure that the archive is recreated.
-                removeArchive = true;
-            }
 
-            if ( removeArchive )
-            {
                 var fileName = GetCurrentArchiveFileName();
                 DeleteArchiveFile( new FileInfo( fileName ) );
             }
@@ -453,8 +449,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                     throw new Exception( "ResetDatabase failed. No database image is available to perform the reset. Use the InitializeTestDatabase() method to create a new local database image." );
                 }
 
-                var forceReplaceExisting = ( DatabaseRefreshStrategy == DatabaseRefreshStrategySpecifier.Force );
-                InitializeSqlServerDatabaseForLocal( forceReplaceExisting );
+                // Reset the database from the archive image.
+                InitializeSqlServerDatabaseForLocal( recreateArchive: false );
             }
             else
             {
@@ -468,14 +464,14 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// <param name="archivePath">The archive path that contains the MDF and LDF files.</param>
         private static void RestoreLocalDatabaseFromArchive( string connectionString, string archivePath )
         {
-            var csb = new SqlConnectionStringBuilder( connectionString );
-            var dbName = csb.InitialCatalog;
+            var csbTarget = new SqlConnectionStringBuilder( connectionString );
+            var targetDbName = csbTarget.InitialCatalog;
+
+            var csbMaster = new SqlConnectionStringBuilder( connectionString );
+            csbMaster.InitialCatalog = "master";
 
             TestHelper.Log( $"Restoring local database from archive..." );
-            TestHelper.Log( $"Target database is \"{dbName}\"." );
-            TestHelper.Log( $"Archive source is \"{archivePath}\"." );
-
-            csb.InitialCatalog = "master";
+            TestHelper.Log( $"Target database is \"{targetDbName}\"." );
 
             // If this is a URL, download it.
             if ( archivePath.ToUpper().StartsWith( "HTTP" ) )
@@ -492,8 +488,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             // Extract database files from archive.
             TestHelper.Log( $"Reading archive \"{archivePath}\"." );
 
-            var dataFile = Path.Combine( GetDataPath(), $"{dbName}_Data.mdf" );
-            var logFile = Path.Combine( GetDataPath(), $"{dbName}_Log.ldf" );
+            var dataFile = Path.Combine( GetDataPath(), $"{targetDbName}_Data.mdf" );
+            var logFile = Path.Combine( GetDataPath(), $"{targetDbName}_Log.ldf" );
 
             using ( var archive = new ZipArchive( File.Open( archivePath, FileMode.Open ) ) )
             {
@@ -501,7 +497,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 var ldf = archive.Entries.Where( e => e.Name.EndsWith( ".ldf" ) ).First();
 
                 // Extract the MDF file from the archive.
-                using ( var writer = File.Create( Path.Combine( GetDataPath(), $"{dbName}_Data.mdf" ) ) )
+                using ( var writer = File.Create( Path.Combine( GetDataPath(), $"{targetDbName}_Data.mdf" ) ) )
                 {
                     using ( var reader = mdf.Open() )
                     {
@@ -510,7 +506,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 }
 
                 // Extract the LDF file from the archive.
-                using ( var writer = File.Create( Path.Combine( GetDataPath(), $"{dbName}_Log.ldf" ) ) )
+                using ( var writer = File.Create( Path.Combine( GetDataPath(), $"{targetDbName}_Log.ldf" ) ) )
                 {
                     using ( var reader = ldf.Open() )
                     {
@@ -519,7 +515,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 }
             }
 
-            using ( var connection = new SqlConnection( csb.ConnectionString ) )
+            using ( var connection = new SqlConnection( csbMaster.ConnectionString ) )
             {
                 connection.Open();
 
@@ -527,14 +523,48 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 using ( var cmd = connection.CreateCommand() )
                 {
                     cmd.CommandText = $@"
-CREATE DATABASE [{dbName}]   
+CREATE DATABASE [{targetDbName}]   
     ON (FILENAME = '{dataFile}'),  
     (FILENAME = '{logFile}')  
-    FOR ATTACH;";
-                    cmd.ExecuteNonQuery();
+    FOR ATTACH;
+ALTER DATABASE [{targetDbName}] SET RECOVERY SIMPLE;";
+
+                    try
+                    {
+                        var result = cmd.ExecuteNonQuery();
+                    }
+                    catch
+                    {
+                        throw;
+                    }
                 }
+
+                connection.Close();
             }
 
+            // Execute a test query on another connection to ensure the target database is ready.
+            using ( var connection = new SqlConnection( csbTarget.ConnectionString ) )
+            {
+                connection.Open();
+
+                using ( var cmd = connection.CreateCommand() )
+                {
+                    cmd.CommandText = "SELECT COUNT(*) FROM [__MigrationHistory]";
+
+                    try
+                    {
+                        var result = cmd.ExecuteScalar();
+                    }
+                    catch ( Exception ex )
+                    {
+                        throw new Exception( "Could not access the target database.", ex );
+                    }
+                }
+
+                connection.Close();
+            }
+
+            TestHelper.Log( $"Clearing Rock cache..." );
             RockCache.ClearAllCachedItems();
 
             TestHelper.Log( $"Database restored." );
@@ -721,6 +751,8 @@ DROP DATABASE [{name}];";
                 File.Delete( logFile );
             }
 
+            TestHelper.Log( $"Creating new test database \"{dbName}\"..." );
+
             var sqlCreate = $@"
 CREATE DATABASE [{dbName}]
     ON (NAME = '{dbName}', FILENAME = '{dataFile}')
@@ -756,9 +788,11 @@ SELECT DB_ID('{dbName}') AS [DatabaseId]
             MigrateDatabase( csbTarget.ConnectionString );
 
             // Load the sample data.
-             AddSampleDataForActiveDatabase( sampleDataUrl );
+            AddSampleDataForActiveDatabase( sampleDataUrl );
 
             // Shrink the database and log files.
+            TestHelper.Log( $"Creating test database archive..." );
+
             var sqlShrink = $@"USE [{dbName}];
 DBCC SHRINKFILE ([{dbName}], 1);
 DBCC SHRINKFILE ([{dbName}_Log], 1);
@@ -802,6 +836,8 @@ EXEC sp_detach_db '{dbName}', 'true';";
 
             File.Delete( dataFile );
             File.Delete( logFile );
+
+            TestHelper.Log( $"Test database archive created. [{archivePath}]" );
 
             return archivePath;
         }
