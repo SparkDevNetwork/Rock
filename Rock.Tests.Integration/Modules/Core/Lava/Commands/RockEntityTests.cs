@@ -157,7 +157,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         public void EntityCommandBlock_WhereFilterByCoreAttribute_ReturnsMatchedEntitiesOnly()
         {
             var template = @"
-{% person where:'core_CurrentlyAnEra == 1' iterator:'items' %}
+{% person where:'core_CurrentlyAnEra == true' iterator:'items' %}
 <ul>
   {% for item in items %}
     <li>{{ item.NickName }} {{ item.LastName }}</li>
@@ -172,8 +172,8 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
-                Assert.That.Contains( output, "Cindy Decker" );
-                Assert.That.DoesNotContain( output, "Ted Decker" );
+                Assert.That.Contains( output, "Ted Decker" );
+                Assert.That.DoesNotContain( output, "Pete Foster" );
             } );
         }
 

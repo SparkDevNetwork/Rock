@@ -686,6 +686,8 @@ namespace Rock.Tests.Integration.Engagement.Connections
         [ClassInitialize]
         public static void ClassInitialize( TestContext _ )
         {
+            TestDatabaseHelper.ResetDatabase();
+
             DeleteTestData();
             CreateTestData();
         }
