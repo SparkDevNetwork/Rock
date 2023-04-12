@@ -33,7 +33,7 @@ namespace Rock.Tests.Integration.Core.Lava
         /// Tests the EventsCalendarItem to make sure that an item's EventItem and EventItem.Summary are returned.
         /// </summary>
         [TestMethod]
-        [Ignore( "This test requires specific test data that does not exist in the sample database." )]
+        [Ignore( "Fix required. This test requires specific test data that does not exist in the sample database." )]
         public void EventCalendarItemAllowsEventItemSummary()
         {
             RockEntityBlock.RegisterEntityCommands( LavaService.GetCurrentEngine() );

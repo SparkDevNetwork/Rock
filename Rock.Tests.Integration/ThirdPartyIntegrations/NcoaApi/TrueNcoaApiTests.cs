@@ -10,6 +10,7 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
     /// <summary>
     /// Test if TrueNCOA columns changed.
     /// </summary>
+    [Ignore( "Needs seeded data in TrueNcoa" )]
     [TestClass]
     public class TrueNcoaApiTests
     {
@@ -75,7 +76,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         #endregion
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_individual_id()
         {
             bool output = _ResponseColumns.Contains( "individual_id" );
@@ -83,7 +83,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_individual_first_name()
         {
             bool output = _ResponseColumns.Contains( "individual_first_name" );
@@ -91,7 +90,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_individual_last_name()
         {
             bool output = _ResponseColumns.Contains( "individual_last_name" );
@@ -99,7 +97,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_address_line_1()
         {
             bool output = _ResponseColumns.Contains( "address_line_1" );
@@ -107,7 +104,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_address_line_2()
         {
             bool output = _ResponseColumns.Contains( "address_line_2" );
@@ -115,7 +111,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_address_city_name()
         {
             bool output = _ResponseColumns.Contains( "address_city_name" );
@@ -123,7 +118,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_address_state_code()
         {
             bool output = _ResponseColumns.Contains( "address_state_code" );
@@ -131,7 +125,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_address_postal_code()
         {
             bool output = _ResponseColumns.Contains( "address_postal_code" );
@@ -139,7 +132,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_address_country_code()
         {
             bool output = _ResponseColumns.Contains( "address_country_code" );
@@ -147,7 +139,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Household_Position()
         {
             bool output = _ResponseColumns.Contains( "Household Position" );
@@ -155,7 +146,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Name_ID()
         {
             bool output = _ResponseColumns.Contains( "Name ID" );
@@ -163,7 +153,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Street_Suffix()
         {
             bool output = _ResponseColumns.Contains( "Street Suffix" );
@@ -171,7 +160,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Unit_Type()
         {
             bool output = _ResponseColumns.Contains( "Unit Type" );
@@ -179,7 +167,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Unit_Number()
         {
             bool output = _ResponseColumns.Contains( "Unit Number" );
@@ -187,7 +174,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Box_Number()
         {
             bool output = _ResponseColumns.Contains( "Box Number" );
@@ -195,7 +181,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_City_Name()
         {
             bool output = _ResponseColumns.Contains( "City Name" );
@@ -203,7 +188,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_State_Code()
         {
             bool output = _ResponseColumns.Contains( "State Code" );
@@ -211,7 +195,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Postal_Code()
         {
             bool output = _ResponseColumns.Contains( "Postal Code" );
@@ -219,7 +202,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Postal_Code_Extension()
         {
             bool output = _ResponseColumns.Contains( "Postal Code Extension" );
@@ -227,7 +209,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Carrier_Route()
         {
             bool output = _ResponseColumns.Contains( "Carrier Route" );
@@ -235,7 +216,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Address_Status()
         {
             bool output = _ResponseColumns.Contains( "Address Status" );
@@ -243,7 +223,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Individual_Record_ID()
         {
             bool output = _ResponseColumns.Contains( "Individual Record ID" );
@@ -251,7 +230,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Error_Number()
         {
             bool output = _ResponseColumns.Contains( "Error Number" );
@@ -259,7 +237,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Address_Type()
         {
             bool output = _ResponseColumns.Contains( "Address Type" );
@@ -267,7 +244,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Delivery_Point()
         {
             bool output = _ResponseColumns.Contains( "Delivery Point" );
@@ -275,7 +251,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Check_Digit()
         {
             bool output = _ResponseColumns.Contains( "Check Digit" );
@@ -283,7 +258,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Delivery_Point_Verification()
         {
             bool output = _ResponseColumns.Contains( "Delivery Point Verification" );
@@ -291,7 +265,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Delivery_Point_Verification_Notes()
         {
             bool output = _ResponseColumns.Contains( "Delivery Point Verification Notes" );
@@ -299,7 +272,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Vacant()
         {
             bool output = _ResponseColumns.Contains( "Vacant" );
@@ -307,7 +279,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Congressional_District_Code()
         {
             bool output = _ResponseColumns.Contains( "Congressional District Code" );
@@ -315,7 +286,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Area_Code()
         {
             bool output = _ResponseColumns.Contains( "Area Code" );
@@ -323,7 +293,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Latitude()
         {
             bool output = _ResponseColumns.Contains( "Latitude" );
@@ -331,7 +300,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_First_Name()
         {
             bool output = _ResponseColumns.Contains( "First Name" );
@@ -339,7 +307,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Longitude()
         {
             bool output = _ResponseColumns.Contains( "Longitude" );
@@ -347,7 +314,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Time_Zone()
         {
             bool output = _ResponseColumns.Contains( "Time Zone" );
@@ -355,7 +321,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_County_Name()
         {
             bool output = _ResponseColumns.Contains( "County Name" );
@@ -363,7 +328,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_County_FIPS()
         {
             bool output = _ResponseColumns.Contains( "County FIPS" );
@@ -371,7 +335,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_State_FIPS()
         {
             bool output = _ResponseColumns.Contains( "State FIPS" );
@@ -379,7 +342,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Barcode()
         {
             bool output = _ResponseColumns.Contains( "Barcode" );
@@ -387,7 +349,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Locatable_Address_Conversion_System()
         {
             bool output = _ResponseColumns.Contains( "Locatable Address Conversion System" );
@@ -395,7 +356,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Line_of_Travel()
         {
             bool output = _ResponseColumns.Contains( "Line of Travel" );
@@ -403,7 +363,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Ascending_Descending()
         {
             bool output = _ResponseColumns.Contains( "Ascending/Descending" );
@@ -411,7 +370,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Move_Applied()
         {
             bool output = _ResponseColumns.Contains( "Move Applied" );
@@ -419,7 +377,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Last_Name()
         {
             bool output = _ResponseColumns.Contains( "Last Name" );
@@ -427,7 +384,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Move_Type()
         {
             bool output = _ResponseColumns.Contains( "Move Type" );
@@ -435,7 +391,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Move_Date()
         {
             bool output = _ResponseColumns.Contains( "Move Date" );
@@ -443,7 +398,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Move_Distance()
         {
             bool output = _ResponseColumns.Contains( "Move Distance" );
@@ -451,7 +405,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Match_Flag()
         {
             bool output = _ResponseColumns.Contains( "Match Flag" );
@@ -459,7 +412,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_NXI()
         {
             bool output = _ResponseColumns.Contains( "NXI" );
@@ -467,7 +419,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_ANK()
         {
             bool output = _ResponseColumns.Contains( "ANK" );
@@ -475,7 +426,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Residential_Delivery_Indicator()
         {
             bool output = _ResponseColumns.Contains( "Residential Delivery Indicator" );
@@ -483,7 +433,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Record_Type()
         {
             bool output = _ResponseColumns.Contains( "Record Type" );
@@ -491,7 +440,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Country_Code()
         {
             bool output = _ResponseColumns.Contains( "Country Code" );
@@ -499,7 +447,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Company_Name()
         {
             bool output = _ResponseColumns.Contains( "Company Name" );
@@ -507,7 +454,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Address_Line_1()
         {
             bool output = _ResponseColumns.Contains( "Address Line 1" );
@@ -515,7 +461,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Address_Line_2()
         {
             bool output = _ResponseColumns.Contains( "Address Line 2" );
@@ -523,7 +468,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Address_Id()
         {
             bool output = _ResponseColumns.Contains( "Address Id" );
@@ -531,7 +475,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Household_Id()
         {
             bool output = _ResponseColumns.Contains( "Household Id" );
@@ -539,7 +482,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Individual_space_Id()
         {
             bool output = _ResponseColumns.Contains( "Individual Id" );
@@ -547,7 +489,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Street_Number()
         {
             bool output = _ResponseColumns.Contains( "Street Number" );
@@ -555,7 +496,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Street_Pre_Direction()
         {
             bool output = _ResponseColumns.Contains( "Street Pre Direction" );
@@ -563,7 +503,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Street_Name()
         {
             bool output = _ResponseColumns.Contains( "Street Name" );
@@ -571,7 +510,6 @@ namespace Rock.Tests.Integration.Crm.NcoaApi
         }
 
         [TestMethod]
-        [Ignore( "Needs seeded data in TrueNcoa" )]
         public void Records_Contains_Street_Post_Direction()
         {
             bool output = _ResponseColumns.Contains( "Street Post Direction" );

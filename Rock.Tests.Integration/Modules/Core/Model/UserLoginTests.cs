@@ -28,7 +28,7 @@ namespace Rock.Tests.Integration.Core.Security
     public class UserLoginTests
     {
         [TestMethod]
-        [Ignore( "Fix needed. This test returns an unexpected result. [MP]" )]
+        [Ignore( "Fix required. This test returns an unexpected result. [Last Modified by MP]" )]
         public void PostSave_ShouldUpdatePersonAccountProtectionProfileToMedium()
         {
             var personGuid = Guid.NewGuid();

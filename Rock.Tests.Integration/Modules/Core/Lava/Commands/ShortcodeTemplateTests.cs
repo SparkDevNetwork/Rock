@@ -577,7 +577,7 @@ var chart = new Chart(ctx, {
         #region Easy Pie Chart
 
         [TestMethod]
-        [Ignore( "Fluid produces a decimal result for '{%- assign itemtrackwidth = chartwidth | DividedBy:8.5,0 -%}' rather than int,  which causes this test to fail for Fluid." )]
+        [Ignore( "Fix required. Fluid produces a decimal result for '{%- assign itemtrackwidth = chartwidth | DividedBy:8.5,0 -%}' rather than int,  which causes this test to fail for Fluid." )]
         public void EasyPieChartShortcodeTag_SmallChart_EmitsCorrectHtml()
         {
             var input = @"

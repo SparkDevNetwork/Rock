@@ -25,10 +25,10 @@ using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Jobs
 {
-    [Ignore("Fix required. Tests related to the Account Protection Profile are not returning expected results. [MP]")]
     [TestClass]
     public class RockCleanupJobTests
     {
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithLoginsToAccountProtectionProfileMedium()
         {
@@ -44,6 +44,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleInSecurityGroupsWithElevatedSecurityLevelToCorrectAccountProtectionProfile()
         {
@@ -65,6 +66,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithFinancialPersonBankAccountToAccountProtectionProfileHigh()
         {
@@ -106,6 +108,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithFinancialPersonSavedAccountToAccountProtectionProfileHigh()
         {
@@ -159,6 +162,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithFinancialScheduledTransactionToAccountProtectionProfileHigh()
         {
@@ -200,6 +204,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithFinancialTransactionToAccountProtectionProfileHigh()
         {
