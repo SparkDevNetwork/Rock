@@ -200,6 +200,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public Dictionary<Guid, object> FieldValues { get; set; }
 
         /// <summary>
+        /// The registration cost for the registrant at the time of the registration.
+        /// </summary>
+        /// <value>
+        /// The cost.
+        /// </value>
+        public decimal Cost { get; set; }
+
+        /// <summary>
         /// Gets or sets the fee item quantities.
         /// </summary>
         /// <value>

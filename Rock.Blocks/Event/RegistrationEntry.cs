@@ -3403,7 +3403,8 @@ namespace Rock.Blocks.Event
                     PersonGuid = person?.Guid,
                     FieldValues = GetCurrentValueFieldValues( rockContext, person, registrant, settings.Forms ),
                     FeeItemQuantities = new Dictionary<Guid, int>(),
-                    IsOnWaitList = registrant.OnWaitList
+                    IsOnWaitList = registrant.OnWaitList,
+                    Cost = registrant.Cost
                 };
 
                 // Person fields and person attribute fields are already loaded via GetCurrentValueFieldValues, but we still need

@@ -4267,7 +4267,7 @@ namespace Rock.Model
             var adultBasedOnBirthdateOrFamilyRole = personQuery
                 .Where( p => !unknownBasedOnBirthdateOrFamilyRole.Any( a => a.Id == p.Id )
                     &&
-                    ( ( p.Age.HasValue && p.Age.Value <= 18 )
+                    ( ( p.Age.HasValue && p.Age.Value >= 18 )
                         || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any( f => f.GroupRoleId == groupRoleAdultId )
                     ) );
 
@@ -4276,7 +4276,7 @@ namespace Rock.Model
             var childBasedOnBirthdateOrFamilyRole = personQuery
                 .Where( p => !alreadyClassified.Any( a => a.Id == p.Id )
                     &&
-                    ( ( p.Age.HasValue && p.Age.Value > 18 )
+                    ( ( p.Age.HasValue && p.Age.Value < 18 )
                         ||
                         familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleChildId )
                     ) );

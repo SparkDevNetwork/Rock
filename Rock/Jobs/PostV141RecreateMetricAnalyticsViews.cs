@@ -44,7 +44,7 @@ namespace Rock.Jobs
             var metricService = new MetricService( new RockContext() );
             metricService.EnsureMetricAnalyticsViews();
             // Log how long it took us to run.
-            var logMessage = $"[{stopWatch.Elapsed.TotalMilliseconds,5:N0} ms] {this.GetType().FullName}";
+            var logMessage = $"{RockDateTime.Now:MM/dd/yyyy HH:mm:ss.fff},[{stopWatch.Elapsed.TotalMilliseconds,5:#} ms],{this.GetType().FullName}";
             WriteToLog( logMessage );
 
             ServiceJobService.DeleteJob( GetJobId() );
