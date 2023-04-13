@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-import { TimeIntervalUnit } from "../../Enums/Utility/timeIntervalUnit";
+import { TimeIntervalUnit } from "../../Enums/Core/timeIntervalUnit";
 
 /**
  * Represents an amount of time, denoted by a number of a unit of time

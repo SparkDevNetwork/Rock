@@ -107,5 +107,10 @@ namespace Rock.SystemGuid
         /// Campus Team group type guid
         /// </summary>
         public const string GROUPTYPE_CAMPUS_TEAM = "BADD7A6C-1FB3-4E11-A721-6D1377C6958C";
+
+        /// <summary>
+        /// Sign-up Group group type guid
+        /// </summary>
+        public const string GROUPTYPE_SIGNUP_GROUP = "499B1367-06B3-4538-9D56-56D53F55DCB1";
     }
 }

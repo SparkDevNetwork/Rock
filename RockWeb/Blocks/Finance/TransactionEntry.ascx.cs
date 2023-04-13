@@ -893,7 +893,7 @@ namespace RockWeb.Blocks.Finance
             if ( !gatewaySupportsUnhostedPayment )
             {
                 SetPage( 0 );
-                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unsupported Gateway. This block does only supports Gateways that have a un-hosted payment interface." );
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Unsupported Gateway. This block only supports Gateways that have a un-hosted payment interface." );
                 return;
             }
 
@@ -2519,7 +2519,7 @@ namespace RockWeb.Blocks.Finance
                         familyGroup,
                         Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK,
                         acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country,
-                        false );
+                        true);
                 }
 
                 return business;

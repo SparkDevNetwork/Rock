@@ -92,6 +92,28 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( "Job Posting For Groundskeeper", "{{ 'Job posting for groundskeeper' | TitleCase }}" );
         }
 
+        #region Filter Tests: TruncateWords
+
+        [TestMethod]
+        public void TruncateWords_WithLongerText_AddsEllipis()
+        {
+            TestHelper.AssertTemplateOutput( "one two three...", "{{ 'one two three four five' | TruncateWords:3 }}" );
+        }
+
+        [TestMethod]
+        public void TruncateWords_WithShorterText_DoesNotTruncate()
+        {
+            TestHelper.AssertTemplateOutput( "one two three four five", "{{ 'one two three four five' | TruncateWords:6 }}" );
+        }
+
+        [TestMethod]
+        public void TruncateWords_WithEmptyString_HasNoEffect()
+        {
+            TestHelper.AssertTemplateOutput( "", "{{ '' | TruncateWords:1 }}" );
+        }
+
+        #endregion
+
         /// <summary>
         /// A lower-case string should be formatted with the first letter of each word capitalized and all whitespace removed.
         /// </summary>

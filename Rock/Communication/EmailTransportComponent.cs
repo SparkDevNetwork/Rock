@@ -1103,7 +1103,7 @@ namespace Rock.Communication
 
                 transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
                 transaction.RecipientStatus = result.Status;
-                RockQueue.TransactionQueue.Enqueue( transaction );
+                transaction.Enqueue();
             }
 
             return sendResult;

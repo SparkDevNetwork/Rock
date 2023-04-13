@@ -1,0 +1,179 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="input-group input-width-md js-date-picker date">
+        <input ref="inputEl" type="text" :id="computedId" class="form-control" v-model.lazy="internalValue" :disabled="disabled" />
+        <span class="input-group-addon">
+            <i class="fa fa-calendar"></i>
+        </span>
+    </div>
+</template>
+
+<script lang="ts">
+    declare global {
+        /* eslint-disable @typescript-eslint/naming-convention */
+        interface Window {
+            Rock: {
+                controls: {
+                    datePicker: {
+                        initialize: (args: Record<string, unknown>) => void
+                    }
+                }
+            }
+        }
+        /* eslint-enable @typescript-eslint/naming-convention */
+    }
+
+    export enum StartViewOption {
+        Month = 0,
+        Year = 1,
+        Decade = 2
+    }
+</script>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, watch, ref } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        id: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether to parse the entered value and reformat it to match the set format */
+        disableForceParse: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** If set to true, only clicking on the calendar icon will open the calendar widget */
+        disableShowOnFocus: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether or not to highlight the current day on the calendar */
+        disableHighlightToday: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether or not the user should be able to select dates in the future */
+        disallowFutureDateSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether or not the user should be able to select dates in the past */
+        disallowPastDateSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Which view do we open the calendar widget on? 0 = Month, 1 = Year, 2 = Decade */
+        startView: {
+            type: Number as PropType<0 | 1 | 2>,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", val: string | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref<string | null>(null);
+    const defaultId = `datepicker-${newGuid()}`;
+    const inputEl = ref<HTMLInputElement | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const computedId = computed(() => {
+        return props.id || defaultId;
+    });
+
+    const asRockDateOrNull = computed(() => {
+        const match = /^(\d+)\/(\d+)\/(\d+)/.exec(internalValue.value ?? "");
+
+        if (match !== null) {
+            return `${match[3]}-${match[1]}-${match[2]}`;
+        }
+        else {
+            return null;
+        }
+    });
+
+    const dateLimiterOptions = computed(() => {
+        const options: Record<string, Date> = {};
+        if (props.disallowFutureDateSelection) {
+            options.endDate = new Date();
+        }
+        if (props.disallowPastDateSelection) {
+            options.startDate = new Date();
+        }
+
+        return options;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        if (!props.modelValue) {
+            internalValue.value = null;
+
+            return;
+        }
+
+        const match = /^(\d+)-(\d+)-(\d+)/.exec(props.modelValue);
+
+        if (match !== null) {
+            internalValue.value = `${match[2]}/${match[3]}/${match[1]}`;
+        }
+        else {
+            internalValue.value = null;
+        }
+    }, { immediate: true });
+
+    watch(asRockDateOrNull, () => {
+        emit("update:modelValue", asRockDateOrNull.value);
+    });
+
+    // #endregion
+
+    // #region Lifecycle
+
+    onMounted(() => {
+        const input = inputEl.value as HTMLInputElement;
+
+        window.Rock.controls.datePicker.initialize({
+            ...(dateLimiterOptions.value),
+            id: input.id,
+            startView: props.startView,
+            showOnFocus: !props.disableShowOnFocus,
+            format: "mm/dd/yyyy",
+            todayHighlight: !props.disableHighlightToday,
+            forceParse: !props.disableForceParse,
+            onChangeScript: () => {
+                internalValue.value = input.value;
+            }
+        });
+    });
+
+    // #endregion
+
+</script>

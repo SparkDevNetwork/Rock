@@ -39,7 +39,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\" />
-    <Folder Include="src\%40types\" />
     <Folder Include="src\realtime\" />
   </ItemGroup>
   <ItemGroup>
@@ -47,6 +46,7 @@
     <TypeScriptCompile Include="src\realtime\engine.ts" />
     <TypeScriptCompile Include="src\realtime\index.ts" />
     <TypeScriptCompile Include="src\realtime\netCoreEngine.ts" />
+    <TypeScriptCompile Include="src\realtime\retryPolicy.ts" />
     <TypeScriptCompile Include="src\realtime\topic.ts" />
     <TypeScriptCompile Include="src\realtime\types.ts" />
   </ItemGroup>

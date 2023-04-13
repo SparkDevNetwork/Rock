@@ -5,7 +5,7 @@
 {% sql return:'businessIds' %}
     SELECT gm2.PersonId
     FROM GroupMember gm2
-    WHERE gm2.GroupId = (
+    WHERE gm2.GroupId IN (
         SELECT g.Id
         FROM GroupMember gm
         JOIN [Group] g

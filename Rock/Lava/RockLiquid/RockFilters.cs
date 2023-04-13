@@ -53,6 +53,7 @@ using Ical.Net;
 using Rock.Web.UI.Controls;
 using System.Web.UI;
 using Rock.Lava.DotLiquid;
+using Rock.Cms.StructuredContent;
 
 namespace Rock.Lava
 {
@@ -2691,16 +2692,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( Context context, object input )
         {
-            Person person = GetPerson( input );
-
-            if ( person != null )
-            {
-                Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-                var parents = new PersonService( new RockContext() ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == adultGuid ).Select( a => a.Person );
-                return parents.ToList();
-            }
-
-            return new List<Person>();
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.Parents( lavaContext, input );
         }
 
         /// <summary>
@@ -2711,16 +2704,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( Context context, object input )
         {
-            Person person = GetPerson( input );
-
-            if ( person != null )
-            {
-                Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                var children = new PersonService( new RockContext() ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == childGuid ).Select( a => a.Person );
-                return children.ToList();
-            }
-
-            return new List<Person>();
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.Children( lavaContext, input );
         }
 
         /// <summary>
@@ -5438,7 +5423,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            var template = Template.Parse( input.ToString() );
+            var template = LavaHelper.CreateDotLiquidTemplate( input.ToString() );
 
             //
             // Copy over any Registers, which often contain "internal" context information.
@@ -5502,6 +5487,21 @@ namespace Rock.Lava
                     RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
                 }
             }
+        }
+
+        /// <summary>
+        /// Converts structured blocks designed with the <see cref="StructureContentEditor"/> control from JSON to HTML.
+        /// <para>
+        /// Note that this only works with JSON produced by the <see cref="StructureContentEditor"/> control as it
+        /// contains metadata used in converting the JSON content to HTML.
+        /// </para>
+        /// </summary>
+        /// <param name="content">JSON formatted string produced by the <see cref="StructureContentEditor"/> control.</param>
+        /// <returns></returns>
+        public static string RenderStructuredContentAsHtml( string content )
+        {
+            var helper = new StructuredContentHelper( content );
+            return helper.Render();
         }
 
         #endregion Misc Filters
@@ -5982,72 +5982,9 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Note> Notes( Context context, object input, object noteType, string sortOrder = "desc", int? count = null )
         {
-            int? entityId = null;
-
-            if ( input is int )
-            {
-                entityId = Convert.ToInt32( input );
-            }
-            if ( input is IEntity )
-            {
-                IEntity entity = input as IEntity;
-                entityId = entity.Id;
-            }
-            if ( !entityId.HasValue )
-            {
-                return null;
-            }
-
-            List<int> noteTypeIds = new List<int>();
-
-            if ( noteType is int )
-            {
-                noteTypeIds.Add( (int)noteType );
-            }
-
-            if ( noteType is string )
-            {
-                noteTypeIds = ( (string)noteType ).Split( ',' ).Select( Int32.Parse ).ToList();
-            }
-
-            var notes = new NoteService( new RockContext() ).Queryable().AsNoTracking().Where( n => n.EntityId == entityId );
-
-            if ( noteTypeIds.Count > 0 )
-            {
-                notes = notes.Where( n => noteTypeIds.Contains( n.NoteTypeId ) );
-            }
-            else
-            {
-                return null;
-            }
-
-            // add sort order
-            if ( sortOrder == "desc" )
-            {
-                notes = notes.OrderByDescending( n => n.CreatedDateTime );
-            }
-            else
-            {
-                notes = notes.OrderBy( n => n.CreatedDateTime );
-            }
-
-            var filterNotes = new List<Note>();
-            foreach ( var note in notes )
-            {
-                if ( note.IsAuthorized( Authorization.VIEW, GetCurrentPerson( context ) ) )
-                {
-                    filterNotes.Add( note );
-                }
-            }
-
-            if ( !count.HasValue )
-            {
-                return filterNotes;
-            }
-            else
-            {
-                return filterNotes.Take( count.Value ).ToList();
-            }
+            // Create a compatible context and call the newer Lava Filter implementation.
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.Notes( lavaContext, input, noteType, sortOrder, count );
         }
 
         /// <summary>

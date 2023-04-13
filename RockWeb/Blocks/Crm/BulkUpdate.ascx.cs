@@ -42,6 +42,7 @@ using Rock.Tasks;
 using Rock.Utility;
 using Rock.RealTime.Topics;
 using Rock.RealTime;
+using Rock.Logging;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -279,6 +280,19 @@ namespace RockWeb.Blocks.Crm
         var checkboxes = formGroup.find(':checkbox');
         if ( checkboxes.length ) {{
             $(checkboxes).each(function() {{
+                if (this.nodeName === 'INPUT' ) {{
+                    $(this).toggleClass('aspNetDisabled', !enabled);
+                    $(this).prop('disabled', !enabled);
+                    $(this).closest('label').toggleClass('text-muted', !enabled);
+                    $(this).closest('.form-group').toggleClass('bulk-item-selected', enabled);
+                }}
+            }});
+        }}
+
+        // Radiobuttons needs special handling
+        var radioButtons = formGroup.find(':radio');
+        if ( radioButtons.length ) {{
+            $(radioButtons).each(function() {{
                 if (this.nodeName === 'INPUT' ) {{
                     $(this).toggleClass('aspNetDisabled', !enabled);
                     $(this).prop('disabled', !enabled);
@@ -637,8 +651,13 @@ namespace RockWeb.Blocks.Crm
             }
 
             var processor = this.GetProcessorForCurrentConfiguration( HttpContext.Current.Request );
-            var progress = new TaskActivityProgress( RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Clients.Client( tapReporter.ConnectionId ) );
-            tapReporter.TaskId = progress.TaskId;
+            TaskActivityProgress progress = null;
+            
+            if ( tapReporter.ConnectionId.IsNotNullOrWhiteSpace() )
+            {
+                progress = new TaskActivityProgress( RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Clients.Client( tapReporter.ConnectionId ) );
+                tapReporter.TaskId = progress.TaskId;
+            }
 
             // Define a background task for the bulk update process, because it may take considerable time.
             var task = new Task( () =>
@@ -646,6 +665,11 @@ namespace RockWeb.Blocks.Crm
                 // Handle status notifications from the bulk processor.
                 processor.StatusUpdated += ( s, args ) =>
                 {
+                    if ( progress == null )
+                    {
+                        return;
+                    }
+
                     if ( args.UpdateType == PersonBulkUpdateProcessor.ProcessorStatusUpdateTypeSpecifier.Progress )
                     {
                         // Progress Update
@@ -675,7 +699,8 @@ namespace RockWeb.Blocks.Crm
             } );
 
             pnlConfirm.Visible = false;
-            tapReporter.Visible = true;
+            tapReporter.Visible = progress != null;
+            nbTapReportFailed.Visible = progress == null;
 
             // Start the background processing task and complete this request.
             // The task will continue to run until complete, delivering client
@@ -1406,7 +1431,7 @@ namespace RockWeb.Blocks.Crm
             public int TaskCount { get; set; }
 
             /// <summary>
-            /// The maximum size of a processing batch size formaximum number work items assigned to each task.
+            /// The maximum size of a processing batch size for maximum number work items assigned to each task.
             /// </summary>
             public int BatchSize { get; set; }
 
@@ -1435,7 +1460,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             /// <summary>
-            /// Gets a unique identifier for this instance of the processer that can be used for trace and diagnostic purposes.
+            /// Gets a unique identifier for this instance of the processor that can be used for trace and diagnostic purposes.
             /// </summary>
             public string InstanceId { get; set; }
 
@@ -1849,7 +1874,7 @@ namespace RockWeb.Blocks.Crm
                         }
                         else
                         {
-                            finalStatus = string.Format( "{0} {1} updated with {2} error(s). Please look in the exception log for more details. ({3:0.0}s)",
+                            finalStatus = string.Format( "{0} {1} updated with {2} error(s). ({3:0.0}s)",
                                 PersonIdList.Count().ToString( "N0" ), ( PersonIdList.Count() > 1 ? "people were" : "person was" ),
                                 _errorCount,
                                 elapsedTime.TotalSeconds );
@@ -2336,12 +2361,11 @@ namespace RockWeb.Blocks.Crm
                                             }
                                             else
                                             {
-                                                // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
+                                                // Validation errors will get added to the ValidationResults collection.
+                                                // Add those results to the log and then move on to the next person.
                                                 var validationMessage = string.Join( ",", groupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() );
-                                                var person = new PersonService( rockContext ).GetNoTracking( groupMember.PersonId );
-                                                var ex = new GroupMemberValidationException( string.Format( "Unable to add {0} to group: {1}", person, validationMessage ) );
                                                 Interlocked.Increment( ref _errorCount );
-                                                ExceptionLogService.LogException( ex );
+                                                RockLogger.Log.Information( RockLogDomains.Group, validationMessage );
                                             }
                                         }
 
@@ -2474,7 +2498,7 @@ namespace RockWeb.Blocks.Crm
                             var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                             var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( intValue.Value, workflowDetails );
                             launchWorkflowsTxn.InitiatorPersonAliasId = _currentPersonAliasId;
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+                            launchWorkflowsTxn.Enqueue();
                         }
                     }
                 }

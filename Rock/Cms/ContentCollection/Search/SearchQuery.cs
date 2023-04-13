@@ -19,6 +19,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection.Search
 {
     /// <summary>
@@ -26,6 +28,7 @@ namespace Rock.Cms.ContentCollection.Search
     /// Implements the <see cref="System.Collections.IEnumerable" />
     /// </summary>
     /// <seealso cref="System.Collections.IEnumerable" />
+    [RockInternal( "1.14" )]
     internal class SearchQuery : ISearchItem, IEnumerable
     {
         private readonly List<ISearchItem> _queryItems = new List<ISearchItem>();

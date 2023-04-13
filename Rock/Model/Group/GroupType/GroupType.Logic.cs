@@ -22,12 +22,46 @@ using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 using Rock.Tasks;
+using Rock.Transactions;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     public partial class GroupType
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the attendance reminder followup days list.  This is the logical representation of <see cref="AttendanceReminderFollowupDays"/>.
+        /// </summary>
+        /// <value>The attendance reminder followup days list.</value>
+        [CodeGenExclude(CodeGenFeature.ViewModelFile)]
+        public List<int> AttendanceReminderFollowupDaysList
+        {
+            get
+            {
+                var intValues = new List<int>();
+
+                var values = this.AttendanceReminderFollowupDays.SplitDelimitedValues( "," );
+                foreach ( var value in values )
+                {
+                    if ( int.TryParse( value, out var intValue ) )
+                    {
+                        intValues.Add( intValue );
+                    }
+                }
+
+                return intValues;
+            }
+            set
+            {
+                this.AttendanceReminderFollowupDays = value.AsDelimited( "," );
+            }
+        }
+
+        #endregion Properties
+
         #region Methods
 
         /// <summary>
@@ -280,13 +314,8 @@ namespace Rock.Model
 
             foreach ( var groupId in groupIds )
             {
-                var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
-                {
-                    EntityTypeId = groupEntityTypeId,
-                    EntityId = groupId
-                };
-
-                processEntityTypeIndexMsg.Send();
+                var indexEntityTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = groupEntityTypeId, EntityId = groupId } );
+                indexEntityTransaction.Enqueue();
             }
         }
 

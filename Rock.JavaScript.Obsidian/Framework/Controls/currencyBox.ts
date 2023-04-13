@@ -71,7 +71,7 @@ export default defineComponent({
     :maximum-value="maximumValue"
     :decimal-count="2"
     rules="decimal">
-    <template v-slot:prepend>
+    <template v-slot:inputGroupPrepend>
         <span class="input-group-addon">$</span>
     </template>
 </NumberBox>

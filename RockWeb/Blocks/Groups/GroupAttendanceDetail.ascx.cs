@@ -36,7 +36,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Groups
 {
     #region Block Attributes
-    [DisplayName( "Group Attendance Detail" )]
+    [DisplayName( "Group Attendance Detail (Legacy)" )]
     [Category( "Groups" )]
     [Description( "Lists the group members for a specific occurrence date time and allows selecting if they attended or not." )]
 
@@ -468,11 +468,9 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            var uri = new UriBuilder( outputBinaryFileDoc.Url );
-            var qry = System.Web.HttpUtility.ParseQueryString( uri.Query );
-            qry["attachment"] = true.ToTrueFalse();
-            uri.Query = qry.ToString();
-            Response.Redirect( uri.ToString(), false );
+            var baseUrl = ResolveRockUrl( "~/GetFile.ashx" );
+            var getFileUrl = $"{baseUrl}?Guid={outputBinaryFileDoc.Guid}&attachment=true";
+            Response.Redirect( getFileUrl, false );
             Context.ApplicationInstance.CompleteRequest();
         }
 

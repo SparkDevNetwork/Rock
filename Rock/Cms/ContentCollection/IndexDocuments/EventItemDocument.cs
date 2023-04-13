@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Model;
 using Rock.Utility;
@@ -31,6 +32,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
     /// The indexed details of a content channel item.
     /// </summary>
     /// <seealso cref="IndexDocumentBase" />
+    [RockInternal( "1.14" )]
     internal class EventItemDocument : IndexDocumentBase
     {
         #region Properties
@@ -95,9 +97,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                 document.EventItemOccurrences = new List<DateTime>();
             }
 
-            document.AddPersonalizationData( eventItem, source );
-            document.AddIndexableAttributes( eventItem, source );
-            await document.AddExistingTrendingDataAsync( source );
+            await document.AddStandardFieldsAsync( eventItem, source );
 
             return document;
         }

@@ -20,7 +20,7 @@ import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
 import { RegistrationTemplateTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
-import TreeItemPicker from "./treeItemPicker";
+import TreeItemPicker from "./treeItemPicker.obs";
 
 export default defineComponent({
     name: "RegistrationTemplatePicker",

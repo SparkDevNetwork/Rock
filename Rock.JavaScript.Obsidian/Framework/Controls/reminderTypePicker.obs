@@ -1,0 +1,100 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BaseAsyncPicker v-model="internalValue"
+                     v-bind="standardProps"
+                     :displayStyle="displayStyle"
+                     :items="actualItems" />
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ReminderTypePickerGetReminderTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/reminderTypePickerGetReminderTypesOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, computed, ref, watch } from "vue";
+    import BaseAsyncPicker from "./baseAsyncPicker";
+
+    const props = defineProps({
+        /** The currently selected value(s). */
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        /** Filter the resulting reminder types to only be of the given entity type */
+        entityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: false
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const standardProps = useStandardAsyncPickerProps(props);
+    const http = useHttp();
+    const loadedItems = ref<ListItemBag[] | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedItems.value || loadOptions;
+    });
+
+    const displayStyle = computed((): PickerDisplayStyle => {
+        if (standardProps.displayStyle !== PickerDisplayStyle.Auto) {
+            return standardProps.displayStyle;
+        }
+
+        return standardProps.multiple ? PickerDisplayStyle.List : PickerDisplayStyle.Auto;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the items from the server.
+     */
+    async function loadOptions(): Promise<ListItemBag[]> {
+        const options: Partial<ReminderTypePickerGetReminderTypesOptionsBag> = {
+            entityTypeGuid: props.entityTypeGuid
+        };
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/ReminderTypePickerGetReminderTypes", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            loadedItems.value = result.data;
+
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedItems.value = [];
+            return [];
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    // Refetch options when entity type guid changes
+    watch(() => props.entityTypeGuid, () => loadedItems.value = null);
+
+            // #endregion
+
+</script>

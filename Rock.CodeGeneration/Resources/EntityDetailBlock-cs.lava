@@ -23,7 +23,8 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Model;
+using Rock.Model;{% if UseEntitySecurity == false %}
+using Rock.Security;{% endif %}
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.{{ DomainNamespace }}.{{ EntityName }}Detail;
 
@@ -61,7 +62,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.vue";
+        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 
@@ -127,8 +128,8 @@ namespace Rock.Blocks.{{ DomainNamespace }}
                 return;
             }
 
-            var isViewable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );{% if UseAttributeValues == true %}
+            var isViewable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );{% if UseAttributeValues == true %}
 
             entity.LoadAttributes( rockContext );{% endif %}
 
@@ -229,7 +230,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
             if ( box.ValidProperties == null )
             {
                 return false;
-            }{% for property in Properties %}
+            }{% for property in Properties %}{% if property.Name == "IsSystem" %}{% continue %}{% endif %}
 
             box.IfValidProperty( nameof( box.Entity.{{ property.Name }} ),
                 () => entity.{{ property.Name }}{% if property.IsEntity == true %}Id{% endif %} = box.Entity.{{ property.ConvertFromBagCode }} );{% endfor %}
@@ -337,7 +338,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
                 return false;
             }
 
-            if ( !{% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !{% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${{'{'}}{{ EntityName }}.FriendlyTypeName}." );
                 return false;

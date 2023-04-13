@@ -361,12 +361,10 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp.Serializers.Newtonsoft.Json, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.Newtonsoft.Json.1.3.0\lib\netstandard2.0\RestSharp.Serializers.Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="Rock.Common.Mobile, Version=0.3.13.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Rock.Common.Tv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -383,6 +381,15 @@
     </Reference>
     <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.File.4.1.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
+      <HintPath>..\packages\SixLabors.Fonts.1.0.0-beta18\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.ImageSharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
+      <HintPath>..\packages\SixLabors.ImageSharp.2.1.3\lib\net472\SixLabors.ImageSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.ImageSharp.Drawing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
+      <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-beta15\lib\net472\SixLabors.ImageSharp.Drawing.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -407,13 +414,27 @@
     <Reference Include="System.Interactive.Async, Version=3.2.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Interactive.Async.3.2.0\lib\net46\System.Interactive.Async.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.IO.Packaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenXMLSDK-MOT.2.6.0.0\lib\System.IO.Packaging.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Pipelines, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.Pipelines.4.5.0\lib\netstandard2.0\System.IO.Pipelines.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.UnmanagedMemoryStream, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.UnmanagedMemoryStream.4.3.0\lib\net46\System.IO.UnmanagedMemoryStream.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Linq.Dynamic.Core, Version=1.2.9.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Linq.Dynamic.Core.1.2.9\lib\net46\System.Linq.Dynamic.Core.dll</HintPath>
@@ -441,6 +462,11 @@
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
@@ -481,6 +507,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="TimeZoneConverter, Version=6.0.1.0, Culture=neutral, PublicKeyToken=e20ab7d0d9479841, processorArchitecture=MSIL">
+      <HintPath>..\packages\TimeZoneConverter.6.0.1\lib\net462\TimeZoneConverter.dll</HintPath>
+    </Reference>
     <Reference Include="Twilio, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Twilio.5.1.0\lib\net451\Twilio.dll</HintPath>
     </Reference>
@@ -541,6 +570,8 @@
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\ReminderTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\ReminderTypesFieldAttribute.cs" />
+    <Compile Include="Attribute\SecondaryAuthsFieldAttribute.cs" />
     <Compile Include="Attribute\RockInternalAttribute.cs" />
     <Compile Include="Attribute\SignatureDocumentTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\RockPlatformSupportAttribute.cs" />
@@ -569,6 +600,7 @@
     <Compile Include="Attribute\PersistedDatasetFieldAttribute.cs" />
     <Compile Include="Attribute\StructureContentEditorFieldAttribute.cs" />
     <Compile Include="Attribute\SystemCommunicationFieldAttribute.cs" />
+    <Compile Include="Attribute\SystemPhoneNumberFieldAttribute.cs" />
     <Compile Include="Attribute\TextValueFilterFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
     <Compile Include="Attribute\FileFieldAttribute.cs" />
@@ -669,12 +701,17 @@
     <Compile Include="Blocks\IRockObsidianBlockType.cs" />
     <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\CommunicationEntry.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\SmsConversation.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\SmsConversationList.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionOpportunityList.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionRequestDetail.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionRequestList.cs" />
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionTypeList.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Search.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\LiveExperienceOccurrences.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\LiveExperience.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupSchedulePreference.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleSignUp.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.cs" />
@@ -698,9 +735,11 @@
     <Compile Include="Chart\ChartJs\ChartJsConstants.cs" />
     <Compile Include="Chart\ChartJs\ChartJsDataFactory.cs" />
     <Compile Include="Chart\ChartJs\ChartJsDataset.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsPieChartDataFactory.cs" />
     <Compile Include="Chart\ChartJs\ChartJsTimeSeriesDataPoint.cs" />
     <Compile Include="Chart\ChartJs\IChartJsCategorySeriesDataPoint.cs" />
     <Compile Include="Chart\ChartJs\IChartJsTimeSeriesDataPoint.cs" />
+    <Compile Include="Chart\ChartDataFactory.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="ClientService\ClientServiceBase.cs" />
     <Compile Include="ClientService\Connection\ConnectionOpportunity\ConnectionOpportunityClientService.cs" />
@@ -789,6 +828,7 @@
     <Compile Include="Bus\Queue\GivingEventQueue.cs" />
     <Compile Include="Bus\Queue\TransactionAlertQueue.cs" />
     <Compile Include="CheckIn\RosterAttendeeAttendance.cs" />
+    <Compile Include="Communication\Transport\SmsTest.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
     <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
@@ -857,6 +897,10 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Core\NotificationMessageTypeComponent.cs" />
+    <Compile Include="Core\NotificationMessageTypeContainer.cs" />
+    <Compile Include="Core\NotificationMessageTypes\SmsConversation.cs" />
+    <Compile Include="Data\ExcludeDefaultRestControllerAttribute.cs" />
     <Compile Include="Data\IncludeForModelMapAttribute.cs" />
     <Compile Include="Data\EntityContextState.cs" />
     <Compile Include="Data\EntitySaveHook.cs" />
@@ -865,22 +909,52 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
+    <Compile Include="Drawing\Avatar\AvatarColors.cs" />
+    <Compile Include="Drawing\Avatar\AvatarFormat.cs" />
+    <Compile Include="Drawing\Avatar\AvatarHelper.cs" />
+    <Compile Include="Drawing\Avatar\AvatarSettings.cs" />
+    <Compile Include="Drawing\Avatar\AvatarStyle.cs" />
+    <Compile Include="Drawing\RockImage.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\Poll.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\ShortAnswer.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeContainer.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceToken.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExtensionMethods.cs" />
+    <Compile Include="Event\InteractiveExperiences\RecordActionResponseStatus.cs" />
+    <Compile Include="Event\InteractiveExperiences\ValidOccurrencesResult.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponent.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\BarChart.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\WordCloud.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeContainer.cs" />
     <Compile Include="Field\IEntityReferenceFieldType.cs" />
+    <Compile Include="Field\ISplitMultiValueFieldType.cs" />
     <Compile Include="Field\PersistedValues.cs" />
     <Compile Include="Field\ReferencedEntity.cs" />
     <Compile Include="Field\ReferencedProperty.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="Field\Types\ReminderTypeFieldType.cs" />
+    <Compile Include="Field\Types\ReminderTypesFieldType.cs" />
+    <Compile Include="Field\Types\SecondaryAuthsFieldType.cs" />
+    <Compile Include="Field\Types\SystemPhoneNumberFieldType.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
+    <Compile Include="Jobs\PostV15DataMigrationsMobileRestUserGroup.cs" />
+    <Compile Include="Jobs\PostV15DataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
+    <Compile Include="Jobs\PostV15DataMigrationsSystemPhoneNumbers.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV141AddMissingIndexes.cs" />
+    <Compile Include="Jobs\PostV141DataMigrationsUpdateSlidingDateRangeFormat.cs" />
+    <Compile Include="Jobs\PostV141RecreateMetricAnalyticsViews.cs" />
     <Compile Include="Jobs\PostV141UpdateValueAsColumns.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsCreateFKIndexes.cs" />
     <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
+    <Compile Include="Jobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
+    <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
+    <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
     <Compile Include="Logging\RockLoggerMemoryBuffer.cs" />
@@ -909,21 +983,52 @@
     <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleCampusService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceScheduleService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\NotificationMessageService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\NotificationMessageTypeService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\ReminderService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\SnippetService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\SnippetTypeService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\SystemPhoneNumberService.CodeGenerated.cs" />
+    <Compile Include="Model\Communication\SnippetType\SnippetType.cs" />
+    <Compile Include="Model\Communication\Snippet\Snippet.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
+    <Compile Include="Model\Communication\Snippet\SnippetService.cs" />
+    <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.cs" />
+    <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.Logic.cs" />
+    <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumberService.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.cs" />
+    <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.Logic.cs" />
+    <Compile Include="Model\Core\NotificationMessage\NotificationMessage.cs" />
+    <Compile Include="Model\Core\NotificationMessage\NotificationMessage.SaveHook.cs" />
+    <Compile Include="Model\Core\NotificationMessage\NotificationMessageService.cs" />
+    <Compile Include="Model\Core\PersonPreference\PersonPreference.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.SaveHook.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceActionService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswerService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceOccurrence\InteractiveExperienceOccurrence.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceOccurrence\InteractiveExperienceOccurrence.Logic.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceOccurrence\InteractiveExperienceOccurrenceService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceSchedule\InteractiveExperienceSchedule.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceSchedule\InteractiveExperienceSchedule.Logic.cs" />
+    <Compile Include="Model\Event\InteractiveExperienceSchedule\InteractiveExperienceScheduleService.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.cs" />
+    <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.Logic.cs" />
+    <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
+    <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
+    <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />
+    <Compile Include="Net\IRequest.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
     <Compile Include="Personalization\PersonalizationSegmentAdditionalFilterConfiguration.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilters\InteractionSegmentFilter.cs" />
@@ -939,15 +1044,13 @@
     <Compile Include="Personalization\PersonalizationRequestFilters\PreviousActivityRequestFilter.cs" />
     <Compile Include="Personalization\RequestCookies.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsUpdateCurrentSessions.cs" />
-    <Compile Include="Model\CodeGenerated\ReminderService.CodeGenerated.cs" />
-    <Compile Include="Model\CodeGenerated\ReminderTypeService.CodeGenerated.cs" />
     <Compile Include="Model\Core\ReminderType\NotificationType.cs" />
     <Compile Include="Model\Core\ReminderType\ReminderType.cs" />
     <Compile Include="Model\Core\ReminderType\ReminderTypeService.cs" />
     <Compile Include="Model\Core\InteractionChannel\InteractionChannelService.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.SaveHook.cs" />
     <Compile Include="Model\Core\Reminder\Reminder.cs" />
-    <Compile Include="Model\Core\Reminder\ReminderDTO.cs" />
+    <Compile Include="Model\Core\Reminder\ReminderViewModel.cs" />
     <Compile Include="Model\Core\Reminder\ReminderService.cs" />
     <Compile Include="Model\Core\Reminder\Reminder.SaveHook.cs" />
     <Compile Include="Model\Core\Reminder\Reminder.Logic.cs" />
@@ -955,7 +1058,14 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\169_UpdateFutureWeeksAttributeForGroupSchedulingToolboxV2.cs" />
+    <Compile Include="Plugin\HotFixes\168_MigrationRollupsForV14_2_1.cs" />
+    <Compile Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid.cs" />
+    <Compile Include="Plugin\HotFixes\166_MigrationRollupsForV14_2_0.cs" />
+    <Compile Include="Plugin\HotFixes\165_EnableTextToGiveMultiAcct.cs" />
     <Compile Include="Plugin\HotFixes\159_AddStaffFormsWorkflowCategory.cs" />
+    <Compile Include="Plugin\HotFixes\164_UpdateRemindersSystemCommunication.cs" />
+    <Compile Include="Plugin\HotFixes\163_UpdateRemindersNotification.cs" />
     <Compile Include="Plugin\HotFixes\162_RemoveUnusedRoute.cs" />
     <Compile Include="Plugin\HotFixes\161_RemindersUpdates.cs" />
     <Compile Include="Plugin\HotFixes\160_SetupReminders.cs" />
@@ -965,11 +1075,24 @@
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
     <Compile Include="RealTime\AspNet\AspNetEngineStartup.cs" />
+    <Compile Include="RealTime\AspNet\SignalRRequestWrapper.cs" />
+    <Compile Include="RealTime\ConcurrentTopicChannels.cs" />
+    <Compile Include="RealTime\ConcurrentUsageCounter.cs" />
     <Compile Include="RealTime\EngineConnectionState.cs" />
     <Compile Include="RealTime\IContextExtensions.cs" />
     <Compile Include="RealTime\IContextInternal.cs" />
     <Compile Include="RealTime\ITopicExtensions.cs" />
     <Compile Include="RealTime\RealTimeException.cs" />
+    <Compile Include="RealTime\Topics\EntityUpdatedTopic.cs" />
+    <Compile Include="RealTime\Topics\ConversationParticipantTopic.cs" />
+    <Compile Include="RealTime\Topics\IEntityUpdated.cs" />
+    <Compile Include="RealTime\Topics\IConversationParticipant.cs" />
+    <Compile Include="RealTime\Topics\IInteractiveExperienceParticipant.cs" />
+    <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
+    <Compile Include="RealTime\Topics\ITestCommunicationTransport.cs" />
+    <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
+    <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoAttendanceFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoMembersFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
     <Compile Include="RealTime\Context.cs" />
     <Compile Include="RealTime\Engine.cs" />
@@ -997,9 +1120,27 @@
     <Compile Include="RealTime\ITopicClients.cs" />
     <Compile Include="RealTime\AspNet\RealTimeHub.cs" />
     <Compile Include="RealTime\TopicProxyFactory.cs" />
+    <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GroupFirstAttendanceFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GroupTypeFirstAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
+    <Compile Include="Security\Authentication\Credential\CredentialAuthenticationOptions.cs" />
+    <Compile Include="Security\Authentication\ExternalRedirect\ExternalRedirectAuthenticationResult.cs" />
+    <Compile Include="Security\Authentication\ExternalRedirect\ExternalRedirectAuthenticationOptions.cs" />
+    <Compile Include="Security\Authentication\ICredentialAuthentication.cs" />
+    <Compile Include="Security\Authentication\IExternalRedirectAuthentication.cs" />
+    <Compile Include="Security\Authentication\IOneTimePasscodeAuthentication.cs" />
+    <Compile Include="Security\Authentication\OneTimePasscode\MatchingPersonResult.cs" />
+    <Compile Include="Security\Authentication\OneTimePasscode\SendOneTimePasscodeOptions.cs" />
+    <Compile Include="Security\Authentication\OneTimePasscode\SendOneTimePasscodeResult.cs" />
+    <Compile Include="Security\Authentication\OneTimePasscode\OneTimePasscodeAuthenticationOptions.cs" />
+    <Compile Include="Security\Authentication\OneTimePasscode\OneTimePasscodeAuthenticationResult.cs" />
+    <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
+    <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
     <Compile Include="SystemGuid\EntityTypeGuidAttribute.cs" />
@@ -1528,6 +1669,7 @@
     <Compile Include="Tasks\ProcessSendDigitalSignatureRequest.cs" />
     <Compile Include="Tasks\ProcessSendPaymentReceiptEmails.cs" />
     <Compile Include="Tasks\ProcessSendRegistrationConfirmation.cs" />
+    <Compile Include="Tasks\ProcessSendSignUpRegistrationConfirmation.cs" />
     <Compile Include="Tasks\ProcessStreakTypeExclusionChange.cs" />
     <Compile Include="Tasks\ProcessWorkflowTrigger.cs" />
     <Compile Include="Tasks\RegisterRestControllers.cs" />
@@ -1544,8 +1686,15 @@
     <Compile Include="Tasks\UpdatePersonAliasLastVisitDateTime.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="Transactions\AggregateAsyncTransaction.cs" />
+    <Compile Include="Transactions\AggregateTransaction.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
-    <Compile Include="Transactions\GroupIndexTransaction.cs" />
+    <Compile Include="Transactions\IAsyncTransaction.cs" />
+    <Compile Include="Transactions\IQueuedTransaction.cs" />
+    <Compile Include="Transactions\SendAchievementCompletedRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\SendAttendanceOccurrenceRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\SendAttendanceRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\UpdateNotificationMessageBadgeCountTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
     <Compile Include="Tv\Classes\ApplicationSettings.cs" />
     <Compile Include="Tv\TvHelper.cs" />
@@ -1562,6 +1711,7 @@
     <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
     <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
+    <Compile Include="Utility\ExtensionMethods\CommunicationRecipientResponseExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
@@ -1575,6 +1725,7 @@
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Image.cs" />
     <Compile Include="Utility\IdHasher.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
@@ -1786,7 +1937,6 @@
     <Compile Include="SystemKey\CampaignConnectionKey.cs" />
     <Compile Include="Utility\CampaignConnectionHelper.cs" />
     <Compile Include="Utility\Enums\RockCacheablityType.cs" />
-    <Compile Include="Utility\Enums\TimeIntervalUnit.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
     <Compile Include="Utility\Enums\IntervalTimeUnit.cs" />
@@ -1810,14 +1960,18 @@
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
+    <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
+    <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
+    <Compile Include="Web\Cache\Entities\NotificationMessageTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\RequestFilterCache.cs" />
     <Compile Include="Web\Cache\Entities\PersonalizationSegmentCache.cs" />
     <Compile Include="Web\Cache\Entities\SharedPersonalLinksCache.cs" />
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
     <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\SystemPhoneNumberCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowFormBuilderTemplateCache.cs" />
     <Compile Include="Web\Cache\Entities\WorkflowActionFormSectionCache.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
@@ -1829,6 +1983,7 @@
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\Cache\NonEntities\DeepLinkCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityTypeAttributesCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\RateLimiterCache.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
@@ -1837,6 +1992,7 @@
     <Compile Include="Web\UI\Controls\Chart\Flot\LineChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\Flot\PieChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\IRockChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\RockPieChart.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\ElectronicSignatureControl.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
@@ -1861,6 +2017,9 @@
     <Compile Include="Web\UI\Controls\GroupMemberRequirementCard.cs" />
     <Compile Include="Web\UI\Controls\GroupMemberRequirementsContainer.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RacePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\SecondaryAuthsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumberPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumbersPicker.cs" />
     <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategorizedValuePicker.cs" />
     <Compile Include="Web\UI\Controls\TaskActivityProgressReporter.cs" />
@@ -2000,6 +2159,7 @@
     <Compile Include="Chart\TimeSeriesChartDataPoint.cs" />
     <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
     <Compile Include="Communication\SmsActions\SmsActionContainer.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionGive.cs" />
     <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs" />
     <Compile Include="Communication\SmsActions\SmsActionReply.cs" />
     <Compile Include="Communication\SmsActions\SmsActionConversations.cs" />
@@ -3186,7 +3346,7 @@
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs">
+    <Compile Include="Reporting\Dashboard\MetricChartDashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Reporting\DataComponentSettingsHelper.cs" />
@@ -3813,6 +3973,7 @@
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
     <Compile Include="Web\Utilities\Enums\DotNetVersionCheckResult.cs" />
+    <Compile Include="Web\Utilities\WebDebugHelper.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Web\BrowserClient.cs" />
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />
@@ -4097,6 +4258,8 @@
     <Content Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix.sql">
       <DependentUpon>157_MigrationRollupsFor13_7_0.cs</DependentUpon>
     </Content>
+    <None Include="Resources\updateGoogleStaticMap.sql" />
+    <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">

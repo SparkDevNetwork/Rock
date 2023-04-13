@@ -17,7 +17,7 @@
 import { Guid } from "@Obsidian/Types";
 import { useHttp } from "@Obsidian/Utility/http";
 import { useSuspense } from "@Obsidian/Utility/suspense";
-import { ControlLazyMode, ControlLazyModeType } from "@Obsidian/Types/Controls/controlLazyMode";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { EntityTagListAddEntityTagOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListAddEntityTagOptionsBag";
 import { EntityTagListCreatePersonalTagOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListCreatePersonalTagOptionsBag";
 import { EntityTagListGetEntityTagsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListGetEntityTagsOptionsBag";
@@ -160,7 +160,7 @@ export default defineComponent({
 
         /** Determines if this control should delay page rendering until the initial tag data is loaded. */
         lazyMode: {
-            type: String as PropType<ControlLazyModeType>,
+            type: String as PropType<ControlLazyMode>,
             default: ControlLazyMode.Lazy
         },
 
@@ -490,7 +490,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="taglist clearfix">
+<div class="taglist">
     <v-style>
 .taglist .ant-select-auto-complete.ant-select {
     width: 125px;
@@ -541,21 +541,21 @@ export default defineComponent({
                 :modelValue="tag"
                 :disabled="disabled"
                 @removeTag="onRemoveTag" />
-
-            <template v-if="!disabled">
-                <AutoComplete v-if="isNewTagVisible"
-                    v-model:value="searchValue"
-                    :options="searchOptions"
-                    placeholder="tag name"
-                    @select="onSelect"
-                    @search="onSearch"
-                    @inputKeyDown="onInputKeyDown" />
-
-                <span v-else class="text-muted add-new-tags clickable" @click="onAddNewTagsClick">
-                    <i class="fa fa-plus"></i>
-                </span>
-            </template>
         </div>
+
+        <template v-if="!disabled">
+            <AutoComplete v-if="isNewTagVisible"
+                v-model:value="searchValue"
+                :options="searchOptions"
+                placeholder="tag name"
+                @select="onSelect"
+                @search="onSearch"
+                @inputKeyDown="onInputKeyDown" />
+
+            <span v-else class="text-muted add-new-tags clickable" @click="onAddNewTagsClick">
+                <i class="fa fa-plus"></i>
+            </span>
+        </template>
     </div>
 </div>
 `

@@ -3482,6 +3482,15 @@ END" );
                 )", workflowActionGuid ) );
         }
 
+        /// <summary>
+        /// Deletes the attribute qualifier
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public void DeleteAttributeQualifier( string guid )
+        {
+            Migration.Sql( $@"DELETE [AttributeQualifier] WHERE [Guid] = '{guid}'" );
+        }
+
         #endregion
 
         #region Block Attribute Value Methods
@@ -5688,6 +5697,32 @@ END
         }
 
         /// <summary>
+        /// Adds a GroupTypeAssociation if it doesn't already exist.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="childGroupTypeGuid">The child group type unique identifier.</param>
+        public void AddGroupTypeAssociation( string groupTypeGuid, string childGroupTypeGuid )
+        {
+            Migration.Sql( $@"
+                DECLARE @GroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '{groupTypeGuid}' )
+                DECLARE @ChildGroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '{childGroupTypeGuid}' )
+
+                IF NOT EXISTS (
+                    SELECT [GroupTypeId]
+                    FROM [GroupTypeAssociation]
+                    WHERE [GroupTypeId] = @GroupTypeId
+                    AND [childGroupTypeId] = @ChildGroupTypeId )
+                BEGIN
+                    INSERT INTO [GroupTypeAssociation] (
+                        [GroupTypeId]
+                        , [ChildGroupTypeId] )
+                    VALUES (
+                        @GroupTypeId
+                        , @ChildGroupTypeId )
+                END" );
+        }
+
+        /// <summary>
         /// Deletes the GroupType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -5697,7 +5732,7 @@ END
 
                 -- Delete the group type and any dangling bits
                 DECLARE @GroupTypeId int = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{0}')
-                UPDATE [GroupType] SET [InheritedGroupTypeId] = NULL, [DefaultGroupRoleId] = NULL WHERE [InheritedGroupTypeId] = @GroupTypeId
+                UPDATE [GroupType] SET [InheritedGroupTypeId] = NULL, [DefaultGroupRoleId] = NULL WHERE [InheritedGroupTypeId] = @GroupTypeId OR [Id] = @GroupTypeId
                 DELETE [GroupTypeAssociation] WHERE [ChildGroupTypeId] = @GroupTypeId OR [GroupTypeId] = @GroupTypeId
                 DELETE [GroupTypeRole] WHERE [GroupTypeId] = @GroupTypeId
                 DELETE [GroupType] WHERE [Guid] = '{0}'
@@ -8140,6 +8175,34 @@ END
         }
 
         #endregion Index Helpers
+
+        #region ServiceJob
+
+        /// <summary>
+        /// Adds/Overwrites the ServiceJob attribute value.
+        /// </summary>
+        /// <param name="serviceJobGuid">The service job unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        public void AddServiceJobAttributeValue( string serviceJobGuid, string attributeGuid, string value )
+        {
+            Migration.Sql( $@"
+                DECLARE @ServiceJobId int
+                SET @ServiceJobId = (SELECT [Id] FROM [ServiceJob] WHERE [Guid] = '{serviceJobGuid}')
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @ServiceJobId
+                INSERT INTO [AttributeValue]
+                    ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+                VALUES
+                    (1, @AttributeId, @ServiceJobId, N'{value.Replace( "'", "''" )}', NEWID())"
+            );
+        }
+
+        #endregion
 
         /// <summary>
         /// Checks if a table column exists.

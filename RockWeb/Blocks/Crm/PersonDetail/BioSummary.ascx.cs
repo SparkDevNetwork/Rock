@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void ShowPersonImage()
         {
-            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-profile"">";
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400 )}&Style=icon"" alt class=""img-profile"">";
         }
 
         private string GetPersonName()
@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void ShowPersonName()
         {
             var groupTypeId = GroupTypeCache.GetId( RockPage.GetSharedItem( SharedItemKey.GroupType )?.ToString()?.AsGuid() ?? Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-            var showOnlyPrimaryGroupMembers = RockPage.GetSharedItem( SharedItemKey.ShowOnlyPrimaryGroupMembers ).ToString().AsBoolean();
+            var showOnlyPrimaryGroupMembers = RockPage.GetSharedItem( SharedItemKey.ShowOnlyPrimaryGroupMembers )?.ToString()?.AsBoolean() ?? false;
 
             var groupMemberService = new GroupMemberService( new RockContext() );
             var orderedGroupMemberList = groupMemberService.GetSortedGroupMemberListForPerson( this.Person.Id, groupTypeId.Value, showOnlyPrimaryGroupMembers ).ToList();
@@ -279,7 +279,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var groupMemberListItem = $@"
                 <li>
                     <a href=""{personLink}"">
-                        <img src=""{Person.GetPersonPhotoUrl( groupMember.PersonId )}"" alt="""" class=""avatar"">
+                        <img src=""{Person.GetPersonPhotoUrl( groupMember.Person.Initials, groupMember.Person.PhotoId, groupMember.Person.Age, groupMember.Person.Gender, groupMember.Person.RecordTypeValueId, groupMember.Person.AgeClassification )}&Style=icon"" alt="""" class=""avatar"">
                         <span class=""name"">
                             {groupMember.Person.FullName}
                         </span>

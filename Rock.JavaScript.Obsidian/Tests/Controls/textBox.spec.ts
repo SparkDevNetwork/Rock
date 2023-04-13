@@ -14,34 +14,31 @@
 // limitations under the License.
 // </copyright>
 //
-import { mockEnums } from "../mockEnums";
-mockEnums(jest.mock);
-
 import { mount } from "@vue/test-utils";
 import assert = require("assert");
-//import TextBox from "../../Framework/Controls/textBox";
+import TextBox from "../../Framework/Controls/textBox";
 import { formFieldTests } from "./rockFormFieldHelper";
 
 
-describe.skip("TextBox", () => {
-    //formFieldTests(TextBox);
+describe("TextBox", () => {
+    formFieldTests(TextBox);
 
     it("Shows a countdown", () => {
         const text = "This is some text";
         const maxLength = 20;
         const charsRemaining = maxLength - text.length;
 
-        // const wrapper = mount(TextBox, {
-        //     props: {
-        //         modelValue: text,
-        //         label: "",
-        //         showCountDown: true,
-        //         maxLength
-        //     }
-        // });
+        const wrapper = mount(TextBox, {
+            props: {
+                modelValue: text,
+                label: "",
+                showCountDown: true,
+                maxLength
+            }
+        });
 
-        // const countdownElements = wrapper.findAll("em.badge");
-        // assert.strictEqual(countdownElements.length, 1);
-        // assert.strictEqual(countdownElements[0].text(), charsRemaining.toString());
+        const countdownElements = wrapper.findAll("em.badge");
+        assert.strictEqual(countdownElements.length, 1);
+        assert.strictEqual(countdownElements[0].text(), charsRemaining.toString());
     });
 });

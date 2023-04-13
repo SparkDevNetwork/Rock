@@ -118,7 +118,7 @@ namespace Rock.Model
                 Segments = model.Segments,
                 SendDateTime = model.SendDateTime,
                 SenderPersonAliasId = model.SenderPersonAliasId,
-                SMSFromDefinedValueId = model.SMSFromDefinedValueId,
+                SmsFromSystemPhoneNumberId = model.SmsFromSystemPhoneNumberId,
                 SMSMessage = model.SMSMessage,
                 Status = ( int ) model.Status,
                 Subject = model.Subject,
@@ -225,7 +225,10 @@ namespace Rock.Model
             target.Segments = source.Segments;
             target.SendDateTime = source.SendDateTime;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
+            #pragma warning disable 612, 618
             target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
+            #pragma warning restore 612, 618
+            target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             target.SMSMessage = source.SMSMessage;
             target.Status = source.Status;
             target.Subject = source.Subject;

@@ -38,6 +38,7 @@ using Ical.Net;
 using ImageResizer;
 using Rock;
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -2523,13 +2524,21 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input, context );
-
+            var person = GetPerson( input, context );
             if ( person != null )
             {
-                Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-                var parents = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == adultGuid ).Select( a => a.Person );
-                return parents.ToList();
+                var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                var parents = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) )
+                    .GetFamilyMembers( person.Id, includeSelf: true )
+                    .Where( m => m.GroupRole.Guid == adultGuid )
+                    .Select( a => a.Person )
+                    .ToList();
+
+                // If the list includes the target Person, they are a parent themselves.
+                if ( !parents.Any( c => c.Id == person.Id ) )
+                {
+                    return parents.ToList();
+                }
             }
 
             return new List<Person>();
@@ -2543,13 +2552,22 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input, context );
-
+            var person = GetPerson( input, context );
             if ( person != null )
             {
-                Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                var children = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == childGuid ).Select( a => a.Person );
-                return children.ToList();
+                var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+
+                var children = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) )
+                    .GetFamilyMembers( person.Id, includeSelf: true )
+                    .Where( m => m.GroupRole.Guid == childGuid )
+                    .Select( a => a.Person )
+                    .ToList();
+
+                // If the list includes the target Person, they are a child themselves.
+                if ( !children.Any( c => c.Id == person.Id ) )
+                {
+                    return children.ToList();
+                }
             }
 
             return new List<Person>();
@@ -5363,6 +5381,21 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Converts structured blocks designed with the <see cref="StructureContentEditor"/> control from JSON to HTML.
+        /// <para>
+        /// Note that this only works with JSON produced by the <see cref="StructureContentEditor"/> control as it
+        /// contains metadata used in converting the JSON content to HTML.
+        /// </para>
+        /// </summary>
+        /// <param name="content">JSON formatted string produced by the <see cref="StructureContentEditor"/> control.</param>
+        /// <returns></returns>
+        public static string RenderStructuredContentAsHtml( string content )
+        {
+            var helper = new StructuredContentHelper( content );
+            return helper.Render();
+        }
+
         #endregion Misc Filters
 
         #region Array Filters
@@ -5910,7 +5943,10 @@ namespace Rock.Lava
                 noteTypeIds = ( ( string ) noteType ).Split( ',' ).Select( Int32.Parse ).ToList();
             }
 
-            var notes = new NoteService( LavaHelper.GetRockContextFromLavaContext( context ) ).Queryable().AsNoTracking().Where( n => n.EntityId == entityId );
+            var notes = new NoteService( LavaHelper.GetRockContextFromLavaContext( context ) )
+                .Queryable().AsNoTracking()
+                .Include( n => n.CreatedByPersonAlias )
+                .Where( n => n.EntityId == entityId );
 
             if ( noteTypeIds.Count > 0 )
             {
@@ -6492,6 +6528,61 @@ namespace Rock.Lava
             }
 
             return color.ToRGBA();
+        }
+
+        /// <summary>Gets the hue from the provided color.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Hue( string input )
+        {
+            var color = new RockColor( input );
+            
+            return Convert.ToInt32( color.Hue );
+        }
+
+        /// <summary>Saturations the specified input.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Saturation( string input )
+        {
+            var color = new RockColor( input );
+
+            return Convert.ToInt32( color.Saturation * 100 );
+        }
+
+        /// <summary>Luminosities the specified input.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Luminosity( string input )
+        {
+            var color = new RockColor( input );
+
+            return Convert.ToInt32( color.Luminosity * 100 );
+        }
+
+        /// <summary>Calculates the contrast ratio.</summary>
+        /// <param name="inputColor1">The input color1.</param>
+        /// <param name="inputColor2">The input color2.</param>
+        /// <returns>System.Double.</returns>
+        public static double CalculateContrastRatio( string inputColor1, string inputColor2 )
+        {
+            if ( inputColor2.IsNullOrWhiteSpace() )
+            {
+                inputColor2 = "#ffffff";
+            }
+
+            var color1 = new RockColor( inputColor1 );
+            var color2 = new RockColor( inputColor2 );
+
+            return RockColor.CalculateContrastRatio( color1, color2 );
+        }
+
+        /// <summary>Ases the color.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>RockColor.</returns>
+        public static RockColor AsColor( string input )
+        {
+            return new RockColor( input );
         }
 
         #endregion Color Filters

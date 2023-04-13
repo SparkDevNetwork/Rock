@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -32,7 +34,7 @@ namespace Rock.Model
     [Table( "InteractiveExperienceSchedule" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "D23B4DCF-545A-490F-AEAD-BA78A8FB4028" )]
-    public partial class InteractiveExperienceSchedule : Model<InteractiveExperienceSchedule>
+    public partial class InteractiveExperienceSchedule : Model<InteractiveExperienceSchedule>, ICacheable
     {
         #region Entity Properties
 
@@ -49,6 +51,11 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Schedule"/> that is associated with this Interactive Experience. This property is required.
         /// </summary>
+        /// <remarks>
+        /// The schedule content is cached, so if the schedule changes then
+        /// <see cref="Model{T}.ModifiedDateTime"/> should be updated to force the
+        /// cache to reload.
+        /// </remarks>
         /// <value>
         /// An <see cref="System.Int32"/> referencing the Id of the <see cref="Rock.Model.Schedule"/> that is associated with this Interactive Experience. 
         /// </value>
@@ -150,6 +157,21 @@ namespace Rock.Model
             set { _interactiveExperienceOccurrences = value; }
         }
         private ICollection<InteractiveExperienceOccurrence> _interactiveExperienceOccurrences;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a <see cref="string" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return $"{InteractiveExperience.Name} ({Schedule.ToFriendlyScheduleText( true )})";
+        }
 
         #endregion
     }

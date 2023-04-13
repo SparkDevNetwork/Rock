@@ -141,6 +141,9 @@ namespace Rock.Model
                 AllowSpecificGroupMemberWorkflows = model.AllowSpecificGroupMemberWorkflows,
                 AttendanceCountsAsWeekendService = model.AttendanceCountsAsWeekendService,
                 AttendancePrintTo = ( int ) model.AttendancePrintTo,
+                AttendanceReminderFollowupDays = model.AttendanceReminderFollowupDays,
+                AttendanceReminderSendStartOffsetMinutes = model.AttendanceReminderSendStartOffsetMinutes,
+                AttendanceReminderSystemCommunicationId = model.AttendanceReminderSystemCommunicationId,
                 AttendanceRule = ( int ) model.AttendanceRule,
                 DefaultGroupRoleId = model.DefaultGroupRoleId,
                 Description = model.Description,
@@ -176,6 +179,7 @@ namespace Rock.Model
                 RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
                 ScheduleCancellationWorkflowTypeId = model.ScheduleCancellationWorkflowTypeId,
                 ScheduleConfirmationEmailOffsetDays = model.ScheduleConfirmationEmailOffsetDays,
+                ScheduleConfirmationLogic = ( int ) model.ScheduleConfirmationLogic,
                 ScheduleConfirmationSystemCommunicationId = model.ScheduleConfirmationSystemCommunicationId,
                 ScheduleReminderEmailOffsetDays = model.ScheduleReminderEmailOffsetDays,
                 ScheduleReminderSystemCommunicationId = model.ScheduleReminderSystemCommunicationId,
@@ -264,6 +268,10 @@ namespace Rock.Model
             target.AllowSpecificGroupMemberWorkflows = source.AllowSpecificGroupMemberWorkflows;
             target.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             target.AttendancePrintTo = source.AttendancePrintTo;
+            target.AttendanceReminderFollowupDays = source.AttendanceReminderFollowupDays;
+            target.AttendanceReminderFollowupDaysList = source.AttendanceReminderFollowupDaysList;
+            target.AttendanceReminderSendStartOffsetMinutes = source.AttendanceReminderSendStartOffsetMinutes;
+            target.AttendanceReminderSystemCommunicationId = source.AttendanceReminderSystemCommunicationId;
             target.AttendanceRule = source.AttendanceRule;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
             target.Description = source.Description;
@@ -301,6 +309,7 @@ namespace Rock.Model
             target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
+            target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             target.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
             target.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
             target.ScheduleReminderSystemCommunicationId = source.ScheduleReminderSystemCommunicationId;

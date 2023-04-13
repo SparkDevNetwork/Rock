@@ -27,6 +27,8 @@ namespace Rock.Tasks
     /// <summary>
     /// Calls <see cref="IRockIndexable.IndexDocument(int)"/> for the specified <see cref="IEntity"/>
     /// </summary>
+    [RockObsolete( "1.15" )]
+    [Obsolete( "Use the Rock.Transactions.IndexEntityTransaction EntityIndexing. That class will use the RockQueue instead of the Bus and will dedupe the index operations before running.")]
     public sealed class ProcessEntityTypeIndex : BusStartedTask<ProcessEntityTypeIndex.Message>
     {
         /// <summary>

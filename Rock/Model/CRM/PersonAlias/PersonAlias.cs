@@ -102,6 +102,15 @@ namespace Rock.Model
         [DataMember]
         public DateTime? LastVisitDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the internal message. This is used by core Rock to
+        /// track internal state messages of the record.
+        /// </summary>
+        /// <value>The internal message.</value>
+        [MaxLength( 250 )]
+        [DataMember]
+        public string InternalMessage { get; set; }
+
         #endregion
 
         #region Navigation Properties

@@ -124,7 +124,7 @@ namespace Rock.Model
         /// </returns>
         public bool HasSMSTemplate()
         {
-            return !string.IsNullOrWhiteSpace( this.SMSMessage ) || this.SMSFromDefinedValueId.HasValue;
+            return !string.IsNullOrWhiteSpace( this.SMSMessage ) || this.SmsFromSystemPhoneNumberId.HasValue;
         }
 
         /// <summary>

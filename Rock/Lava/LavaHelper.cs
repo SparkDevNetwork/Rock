@@ -27,6 +27,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 
 using Context = DotLiquid.Context;
+using Template = DotLiquid.Template;
 
 using UAParser;
 
@@ -960,6 +961,20 @@ namespace Rock.Lava
             {
                 return new LavaException( "Lava Processing Error.", ex );
             }
+        }
+
+        /// <summary>
+        /// Create a DotLiquid Template object from a string.
+        /// </summary>
+        /// <param name="templateString"></param>
+        /// <returns></returns>
+        public static Template CreateDotLiquidTemplate( string templateString )
+        {
+            // Strip out Lava comments before parsing the template because they are not recognized by standard Liquid syntax.
+            templateString = LavaHelper.RemoveLavaComments( templateString );
+
+            var template = Template.Parse( templateString );
+            return template;
         }
 
         #endregion

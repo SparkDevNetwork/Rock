@@ -195,8 +195,6 @@
                                             Help="Check this option if groups of this type should support taking and tracking attendance." />
                                         <Rock:RockCheckBox ID="cbWeekendService" runat="server" Label="Weekend Service" Text="Yes"
                                             Help="Check this option if attendance in groups of this type should be counted towards attending a weekend service." />
-                                        <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
-                                            Help="Check this option if a notification should be sent to the group leaders of these group types reminding them to enter attendance information." />
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBoxList ID="cblScheduleTypes" runat="server" Label="Group Schedule Options" Help="The schedule option types to allow when editing groups of this type." />
@@ -213,6 +211,8 @@
                                             Help="This option will require that all attendance occurrences have a schedule." />
                                     </div>
                                 </div>
+
+
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcScheduleExclusions" runat="server" Label="Schedule Exclusions"
@@ -240,6 +240,32 @@
                                     <asp:ListItem Text="Location Printer" Value="2" />
                                 </Rock:RockDropDownList>
                             </div>
+
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
+                                    AutoPostBack="true" OnCheckedChanged="cbSendAttendanceReminder_CheckedChanged"
+                                    Help="Will enable the sending of automatic attendance reminders for all groups of this type." />
+
+                                <Rock:RockDropDownList ID="ddlAttendanceReminderCommunication" runat="server" Label="Attendance Reminder Communication Template"
+                                    Help="The communication template to use for sending attendance reminders." />
+
+                                <Rock:NumberBox ID="nbAttendanceReminderOffsetMinutes" runat="server" Label="Attendance Reminder Start Offset Minutes"
+                                    AppendText="minutes"
+                                    Help="The number of minutes before the group starts that the reminder should be sent if &quot;Send Attendance Reminder&quot; is checked.  By default, the &quot;Send Group Attendance Reminders&quot; job runs every 15 minutes and will only send reminders after this time has past for a given group." />
+                            </div>
+
+                            <div class="col-md-6">
+                                <Rock:RockCheckBoxList ID="cblAttendanceReminderFollowupDays" runat="server" Label="Attendance Reminder Follow-up Days" RepeatDirection="Horizontal" RepeatColumns="4"
+                                    Help="A list of days after the occurrence that a reminder should be sent if attendance has not been entered. The reminder will be sent at the same time as the original reminder.">
+                                    <asp:ListItem Text="1" Value="1" />
+                                    <asp:ListItem Text="2" Value="2" />
+                                    <asp:ListItem Text="3" Value="3" />
+                                    <asp:ListItem Text="4" Value="4" />
+                                    <asp:ListItem Text="5" Value="5" />
+                                    <asp:ListItem Text="6" Value="6" />
+                                    <asp:ListItem Text="7" Value="7" />
+                                </Rock:RockCheckBoxList>
+                            </div>
                         </div>
                     </Rock:PanelWidget>
 
@@ -256,6 +282,7 @@
                                 <Rock:RockDropDownList ID="ddlScheduleConfirmationSystemCommunication" runat="server" Label="Schedule Confirmation Communication" Help="The system communication to use when a person is scheduled or when the schedule has been updated." />
                                 <Rock:RockCheckBox ID="cbRequiresReasonIfDeclineSchedule" runat="server" Label="Requires Reason If Schedule Declined" Help="Indicates whether a person must specify a reason when declining/cancelling." />
                                 <Rock:NumberBox ID="nbScheduleConfirmationOffsetDays" runat="server" NumberType="Integer" Label="Schedule Confirmation Offset Days" Help="The number of days prior to the schedule to send a confirmation notification." />
+                                <Rock:RockDropDownList ID="ddlScheduleConfirmationLogic" runat="server" Label="Schedule Confirmation Logic" Help="Determines if the individual will be asked to Accept or Decline, or if their request will be auto accepted. This setting will be the default for all groups of this type." />
                             </div>
                             <div class="col-md-6">
                                 <Rock:WorkflowTypePicker ID="wtpScheduleCancellationWorkflowType" runat="server" Label="Schedule Cancellation Workflow" Help="The workflow type to execute when a person indicates they won't be able to attend at their scheduled time." />

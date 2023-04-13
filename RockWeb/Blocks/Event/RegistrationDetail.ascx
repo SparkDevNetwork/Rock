@@ -190,6 +190,9 @@
                                                 <Rock:DefinedValuePicker ID="dvpCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="dvpCurrencyType_SelectedIndexChanged" />
                                                 <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
                                                 <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
+                                                <div class="actions">
+                                                    <asp:LinkButton ID="lbSubmitPayment" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="lbSubmitPayment_Click" CausesValidation="true" ValidationGroup="Payment" />
+                                                </div>
                                             </asp:PlaceHolder>
 
                                               <%-- IHostedGateway Control goes here. - Collect Payment Info --%>
@@ -284,6 +287,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockLiteral ID="lCurrentRegistrationInstance" runat="server" Label="Current Registration Instance" />
+                        <Rock:RockTextBox ID="tbComment" runat="server" Label="Comment" Help="Optional comment that will be added to the audit history." TextMode="MultiLine" Rows="2" />
                     </div>
                     <div class="col-md-6">
                         <div class="row">

@@ -75,22 +75,28 @@ BEGIN
 	)
 	AND ( @ScheduleIds IS NULL OR [S].[Id] IS NOT NULL  )
 
-    -- Get the first 5 times they attended any of the selected group types (any group or campus)
-	SELECT 
-		P.[PersonId],
-		D.[TimeAttending],
-		D.[StartDate]
-	FROM @PersonIdTbl P
-	CROSS APPLY ( 
-		SELECT TOP 5 
-			ROW_NUMBER() OVER (ORDER BY [StartDate]) AS [TimeAttending],
-			[StartDate]
-        FROM (
-            SELECT DISTINCT [StartDate]
-		    FROM [vCheckin_GroupTypeAttendance] A
-			INNER JOIN @GroupTypeTbl [G] ON [G].[id] = [A].[GroupTypeId]
-		    AND A.[PersonId] = P.[PersonId]
-        ) S
-	) D
+	-- Get the first 5 occasions on which each person attended any of the selected group types regardless of group or campus.
+	-- Multiple attendances on the same date are considered as a single occasion.
+	SELECT DISTINCT
+	    [PersonId]
+	    , [TimeAttending]
+	    , [StartDate]
+	FROM (
+	    SELECT 
+	        [P].[Id] AS [PersonId]
+	        , DENSE_RANK() OVER ( PARTITION BY [P].[Id] ORDER BY [AO].[OccurrenceDate] ) AS [TimeAttending]
+	        , [AO].[OccurrenceDate] AS [StartDate]
+	    FROM
+	        [Attendance] [A]
+	        INNER JOIN [AttendanceOccurrence] [AO] ON [AO].[Id] = [A].[OccurrenceId]
+	        INNER JOIN [Group] [G] ON [G].[Id] = [AO].[GroupId]
+	        INNER JOIN [PersonAlias] [PA] ON [PA].[Id] = [A].[PersonAliasId] 
+	        INNER JOIN [Person] [P] ON [P].[Id] = [PA].[PersonId]
+	        INNER JOIN @GroupTypeTbl [GT] ON [GT].[id] = [G].[GroupTypeId]
+	    WHERE 
+	        [P].[Id] IN ( SELECT [PersonId] FROM @PersonIdTbl )
+	        AND [DidAttend] = 1
+	) [X]
+    WHERE [X].[TimeAttending] <= 5
 
 END

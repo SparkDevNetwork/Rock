@@ -106,6 +106,30 @@ namespace Rock.ViewModels.Entities
         public int AttendancePrintTo { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance reminder followup days.  This is a comma-delimited list of integer values.  See Rock.Model.GroupType.AttendanceReminderFollowupDaysList
+        /// </summary>
+        /// <value>
+        /// The attendance reminder followup days.
+        /// </value>
+        public string AttendanceReminderFollowupDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance reminder send start offset minutes.
+        /// </summary>
+        /// <value>
+        /// The attendance reminder send start offset minutes.
+        /// </value>
+        public int? AttendanceReminderSendStartOffsetMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance reminder system communication identifier.
+        /// </summary>
+        /// <value>
+        /// The attendance reminder system communication identifier.
+        /// </value>
+        public int? AttendanceReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Rock.Model.AttendanceRule that indicates how attendance is managed a Rock.Model.Group of this GroupType
         /// </summary>
         /// <value>
@@ -389,6 +413,14 @@ namespace Rock.ViewModels.Entities
         /// The schedule confirmation email offset days.
         /// </value>
         public int? ScheduleConfirmationEmailOffsetDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule confirmation logic.
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation logic.
+        /// </value>
+        public int ScheduleConfirmationLogic { get; set; }
 
         /// <summary>
         /// Gets or sets the system communication to use when a person is scheduled or when the schedule has been updated.

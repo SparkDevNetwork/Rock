@@ -21,7 +21,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { FormError } from "@Obsidian/Utility/form";
 import PersonEntrySettings from "../Shared/personEntrySettings";
-import { FormPersonEntry } from "../Shared/types";
+import { FormPersonEntry } from "../Shared/types.partial";
 import { useFormSources } from "./utils.partial";
 
 export default defineComponent({

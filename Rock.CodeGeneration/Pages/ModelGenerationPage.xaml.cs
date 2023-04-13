@@ -1732,6 +1732,11 @@ namespace Rock.ViewModels.Entities
             var restControllerType = Type.GetType( $"{fullClassName}, {typeof( Rock.Rest.ApiControllerBase ).Assembly.FullName}" );
             var restControllerGuid = restControllerType?.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
 
+            if ( type.GetCustomAttribute<Rock.Data.ExcludeDefaultRestControllerAttribute>() != null )
+            {
+                return;
+            }
+
             if ( restControllerGuid == null )
             {
                 restControllerGuid = _restControllerGuidLookupFromDatabase.GetValueOrNull( fullClassName );
@@ -2589,6 +2594,7 @@ namespace Rock.ViewModels.Entities
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
 
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.ViewModels\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
         }

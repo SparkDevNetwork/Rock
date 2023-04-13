@@ -15,10 +15,10 @@
 // </copyright>
 //
 
+using Rock.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Data;
 
 namespace Rock.Model
 {
@@ -80,7 +80,7 @@ namespace Rock.Model
                 var result = personQry.Select( p => p.Id ).ToList().Select( a =>
                      new PersonGroupRequirementStatus
                      {
-                         PersonId = Id,
+                         PersonId = a,
                          GroupRequirement = this,
                          MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
                      } );
@@ -108,7 +108,7 @@ namespace Rock.Model
                     var result = personQry.Select( p => p.Id ).ToList().Select( a =>
                           new PersonGroupRequirementStatus
                           {
-                              PersonId = Id,
+                              PersonId = a,
                               GroupRequirement = this,
                               MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
                           } );
@@ -116,6 +116,7 @@ namespace Rock.Model
                     return result;
                 }
             }
+
             var attributeValueService = new AttributeValueService( rockContext );
 
             if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
@@ -145,11 +146,14 @@ namespace Rock.Model
                         var result = personWithRequirementsList.Select( a =>
                         {
                             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                            
+                            // Get the nullable group member requirement ID based on the PersonId, GroupRequirementId, GroupId, and GroupRoleId.
+                            int? groupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( a.PersonId, this.Id, groupId, groupRoleId );
                             var personGroupRequirementStatus = new PersonGroupRequirementStatus
                             {
                                 PersonId = a.PersonId,
                                 GroupRequirement = this,
-                                GroupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( a.PersonId, this.Id, groupId, groupRoleId ),
+                                GroupMemberRequirementId = groupMemberRequirementId,
                             };
 
                             var hasWarning = warningDataViewPersonIdList?.Contains( a.PersonId ) == true;
@@ -186,9 +190,6 @@ namespace Rock.Model
                                     personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
                                 }
                             }
-
-                            // Get the nullable group member requirement ID based on the PersonId, GroupRequirementId, GroupId, and GroupRoleId.
-                            personGroupRequirementStatus.GroupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( personGroupRequirementStatus.PersonId, this.Id, groupId, groupRoleId );
 
                             return personGroupRequirementStatus;
                         } );

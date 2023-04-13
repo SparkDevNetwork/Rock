@@ -7,7 +7,6 @@ IF EXISTS (
     DROP PROCEDURE [dbo].spAnalytics_ETL_Family
 GO
 
--- EXECUTE [dbo].[spAnalytics_ETL_Family] 
 CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
 AS
 BEGIN
@@ -121,8 +120,8 @@ BEGIN
         ,hhpc.Id [HeadOfHouseholdPersonKey]
         ,(
             SELECT CASE max(convert(INT, CASE 
- WHEN av.ValueAsBoolean IS NULL
-                                    THEN 0
+     WHEN av.ValueAsBoolean IS NULL
+                         THEN 0
                                 ELSE av.ValueAsBoolean
                                 END))
                     WHEN 1
@@ -170,16 +169,16 @@ BEGIN
     JOIN #AnalyticsSourceFamily t ON t.FamilyId = fh.FamilyId
         AND fh.CurrentRowIndicator = 1
     WHERE 
-        fh.[FamilyTitle] != t.FamilyTitle
-        OR fh.[CampusId] != t.CampusId
-        OR fh.[ConnectionStatus] != t.ConnectionStatus
+        ISNULL(fh.[FamilyTitle], '') != ISNULL(t.FamilyTitle, '')
+        OR ISNULL(fh.[CampusId], 0) != ISNULL(t.CampusId, 0)
+        OR ISNULL(fh.[ConnectionStatus], '') != ISNULL(t.ConnectionStatus, '')
         OR fh.[IsFamilyActive] != t.IsFamilyActive
         OR fh.[AdultCount] != t.AdultCount
         OR fh.[ChildCount] != t.ChildCount
-        OR fh.[HeadOfHouseholdPersonKey] != t.HeadOfHouseholdPersonKey
+        OR ISNULL(fh.[HeadOfHouseholdPersonKey], 0) != ISNULL(t.HeadOfHouseholdPersonKey, 0)
         OR fh.[IsEra] != t.IsEra
-        OR fh.[MailingAddressLocationId] != t.MailingAddressLocationId
-        OR fh.[MappedAddressLocationId] != t.MappedAddressLocationId
+        OR ISNULL(fh.[MailingAddressLocationId], 0) != ISNULL(t.MailingAddressLocationId, 0)
+        OR ISNULL(fh.[MappedAddressLocationId], 0) != ISNULL(t.MappedAddressLocationId, 0)
 AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for the current EtlDate 
     SELECT FamilyId
     FROM AnalyticsSourceFamilyHistorical x
@@ -249,16 +248,16 @@ AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for
     JOIN #AnalyticsSourceFamily t ON t.FamilyId = fh.FamilyId
         AND fh.CurrentRowIndicator = 1
     WHERE fh.NAME != t.NAME
-        OR fh.[FamilyTitle] != t.FamilyTitle
-        OR fh.[CampusId] != t.CampusId
-        OR fh.[ConnectionStatus] != t.ConnectionStatus
+        OR ISNULL(fh.[FamilyTitle], '') != ISNULL(t.FamilyTitle, '')
+        OR ISNULL(fh.[CampusId], 0) != ISNULL(t.CampusId, 0)
+        OR ISNULL(fh.[ConnectionStatus], '') != ISNULL(t.ConnectionStatus, '')
         OR fh.[IsFamilyActive] != t.IsFamilyActive
         OR fh.[AdultCount] != t.AdultCount
         OR fh.[ChildCount] != t.ChildCount
-        OR fh.[HeadOfHouseholdPersonKey] != t.HeadOfHouseholdPersonKey
+        OR ISNULL(fh.[HeadOfHouseholdPersonKey], 0) != ISNULL(t.HeadOfHouseholdPersonKey, 0)
         OR fh.[IsEra] != t.IsEra
-        OR fh.[MailingAddressLocationId] != t.MailingAddressLocationId
-        OR fh.[MappedAddressLocationId] != t.MappedAddressLocationId
+        OR ISNULL(fh.[MailingAddressLocationId], 0) != ISNULL(t.MailingAddressLocationId, 0)
+        OR ISNULL(fh.[MappedAddressLocationId], 0) != ISNULL(t.MappedAddressLocationId, 0)
 
     set @RowsUpdated = @@ROWCOUNT;
 

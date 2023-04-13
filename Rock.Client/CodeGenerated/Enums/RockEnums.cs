@@ -25,6 +25,22 @@ using System.Collections.Generic;
 
 #pragma warning disable CS1591
 
+namespace Rock.Client.Enums.Blocks.Security.AccountEntry
+{
+    /// <summary>
+    /// </summary>
+    public enum AccountEntryStep
+    {
+        Registration = 0x0,
+        DuplicatePersonSelection = 0x1,
+        ExistingAccount = 0x2,
+        ConfirmationSent = 0x3,
+        Completed = 0x4,
+        PasswordlessConfirmationSent = 0x5,
+    }
+
+}
+
 namespace Rock.Client.Enums
 {
     /// <summary>
@@ -677,14 +693,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum PersonAliasType
-    {
-        FromPersonAlias = 0x0,
-        ToPersonAlias = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum PersonalizationType
     {
         Segment = 0x0,
@@ -1093,6 +1101,78 @@ namespace Rock.Client.Enums
 
 }
 
+namespace Rock.Client.Enums.Crm
+{
+    /// <summary>
+    /// </summary>
+    public enum AgeBracket
+    {
+        Unknown = 0x0,
+        ZeroToTwelve = 0x1,
+        ThirteenToSeventeen = 0x2,
+        EighteenToTwentyFour = 0x3,
+        TwentyFiveToThirtyFour = 0x4,
+        ThirtyFiveToFortyFour = 0x5,
+        FortyFiveToFiftyFour = 0x6,
+        FiftyFiveToSixtyFour = 0x7,
+        SixtyFiveOrOlder = 0x8,
+    }
+
+}
+
+namespace Rock.Client.Enums.Event
+{
+    /// <summary>
+    /// </summary>
+    public enum AttendanceStatus
+    {
+        DidNotAttend = 0x0,
+        DidAttend = 0x1,
+        IsPresent = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceApprovalStatus
+    {
+        Pending = 0x0,
+        Approved = 0x1,
+        Rejected = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceCampusBehavior
+    {
+        FilterSchedulesByCampusGeofences = 0x0,
+        DetermineCampusFromGeofence = 0x1,
+        UseIndividualsCampus = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperiencePushNotificationType
+    {
+        Never = 0x0,
+        EveryAction = 0x1,
+        SpecificActions = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Communication
+{
+    /// <summary>
+    /// </summary>
+    public enum CommunicationMessageFilter
+    {
+        ShowUnreadReplies = 0x0,
+        ShowAllReplies = 0x1,
+        ShowAllMessages = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Cms
 {
     /// <summary>
@@ -1128,6 +1208,16 @@ namespace Rock.Client.Enums.Controls
         Global = 0x0,
         Personal = 0x1,
         PersonalAndGlobal = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum RequirementLevel
+    {
+        Unspecified = 0x0,
+        Optional = 0x1,
+        Required = 0x2,
+        Unavailable = 0x3,
     }
 
     /// <summary>
@@ -1168,24 +1258,92 @@ namespace Rock.Client.Enums.Reporting
 
 }
 
-namespace Rock.Client.Enums.Event
+namespace Rock.Client.Enums.Blocks.Group.GroupAttendanceDetail
 {
     /// <summary>
     /// </summary>
-    public enum InteractiveExperienceApprovalStatus
+    public enum GroupAttendanceDetailDateSelectionMode
     {
-        Pending = 0x0,
-        Approved = 0x1,
-        Rejected = 0x2,
+        None = 0x0,
+        Readonly = 0x1,
+        DatePicker = 0x2,
+        ScheduledDatePicker = 0x3,
     }
 
     /// <summary>
     /// </summary>
-    public enum InteractiveExperiencePushNotificationType
+    public enum GroupAttendanceDetailLocationSelectionMode
     {
-        Never = 0x0,
-        EveryAction = 0x1,
-        SpecificActions = 0x2,
+        None = 0x0,
+        Readonly = 0x1,
+        GroupLocationPicker = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum GroupAttendanceDetailScheduleSelectionMode
+    {
+        None = 0x0,
+        Readonly = 0x1,
+        GroupLocationSchedulePicker = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Security.Login
+{
+    /// <summary>
+    /// </summary>
+    public enum LoginMethod
+    {
+        InternalDatabase = 0x0,
+        Passwordless = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PasswordlessLoginStep
+    {
+        Start = 0x0,
+        Verify = 0x1,
+    }
+
+}
+
+namespace Rock.Client.Enums.Core
+{
+    /// <summary>
+    /// </summary>
+    public enum NotificationMessageActionType
+    {
+        Invalid = 0x0,
+        ShowMessage = 0x1,
+        LinkToPage = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Engagement.SignUp
+{
+    /// <summary>
+    /// </summary>
+    public enum RegisterMode
+    {
+        Family = 0x0,
+        Anonymous = 0x1,
+        Group = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Group
+{
+    /// <summary>
+    /// </summary>
+    public enum ScheduleConfirmationLogic
+    {
+        Ask = 0x0,
+        AutoAccept = 0x1,
     }
 
 }

@@ -28,9 +28,9 @@ using Rock.Attribute;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
-using Rock.DownhillCss.Utility;
 using Rock.Model;
 using Rock.Security;
+
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -38,6 +38,7 @@ using Rock.Web.UI.Controls;
 
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ListItem = System.Web.UI.WebControls.ListItem;
+
 using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
 
@@ -488,7 +489,6 @@ namespace RockWeb.Blocks.Mobile
 
             cbEnableNotificationsAutomatically.Checked = additionalSettings.EnableNotificationsAutomatically;
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
-            ceToastXaml.Text = additionalSettings.ToastXaml;
             cbEnableDeepLinking.Checked = additionalSettings.IsDeepLinkingEnabled;
             cbCompressUpdatePackages.Checked = additionalSettings.IsPackageCompressionEnabled;
 
@@ -504,7 +504,11 @@ namespace RockWeb.Blocks.Mobile
 
             ppEditLoginPage.SetValue( site.LoginPageId );
             ppEditProfilePage.SetValue( additionalSettings.ProfilePageId );
+            ppEditInteractiveExperiencePage.SetValue( additionalSettings.InteractiveExperiencePageId );
             ppCommunicationViewPage.SetValue( additionalSettings.CommunicationViewPageId );
+            ppEditSmsConversationPage.SetValue( additionalSettings.SmsConversationPageId );
+
+            ppEditInteractiveExperiencePage.SiteType = SiteType.Mobile;
 
             //
             // Set the API Key.
@@ -615,8 +619,34 @@ namespace RockWeb.Blocks.Mobile
             }
             else
             {
+                var groupService = new GroupService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+
+                // Create the person that is representative of the mobile application.
                 restPerson = new Person();
                 personService.Add( restPerson );
+
+                // Our default 'Mobile Application Users' RSR group.
+                var mobileApplicationUsersGroupGuid = Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS.AsGuid();
+                var mobileApplicationUsersGroup = groupService
+                    .Queryable()
+                    .FirstOrDefault( g => g.Guid == mobileApplicationUsersGroupGuid );
+
+                // This group really shouldn't ever be null, but just in case someone
+                // manually deleted it.
+                if ( mobileApplicationUsersGroup != null )
+                {
+                    var groupRoleId = GroupTypeCache.Get( mobileApplicationUsersGroup.GroupTypeId )
+                   .DefaultGroupRoleId;
+
+                    // Add the person to the default mobile rest security group.
+                    var groupMember = new GroupMember();
+                    groupMember.PersonId = restPerson.Id;
+                    groupMember.GroupId = mobileApplicationUsersGroup.Id;
+                    groupMember.GroupRoleId = groupRoleId.Value;
+
+                    groupMemberService.Add( groupMember );
+                }
             }
 
             // the rest user name gets saved as the last name on a person
@@ -946,11 +976,12 @@ namespace RockWeb.Blocks.Mobile
 
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
+            additionalSettings.InteractiveExperiencePageId = ppEditInteractiveExperiencePage.PageId;
             additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
+            additionalSettings.SmsConversationPageId = ppEditSmsConversationPage.PageId;
             additionalSettings.EnableNotificationsAutomatically = cbEnableNotificationsAutomatically.Checked;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
             additionalSettings.IsDeepLinkingEnabled = cbEnableDeepLinking.Checked;
-            additionalSettings.ToastXaml = ceToastXaml.Text;
             additionalSettings.PushTokenUpdateValue = tbEditPushTokenUpdateValue.Text;
             additionalSettings.IsPackageCompressionEnabled = cbCompressUpdatePackages.Checked;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;

@@ -162,6 +162,12 @@ namespace Rock.Model
 
             // ignoring Registration,GroupId
 
+            if ( new Service<SystemPhoneNumber>( Context ).Queryable().Any( a => a.SmsNotificationGroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, SystemPhoneNumber.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, WorkflowActivity.FriendlyTypeName );
@@ -219,11 +225,14 @@ namespace Rock.Model
                 Name = model.Name,
                 Order = model.Order,
                 ParentGroupId = model.ParentGroupId,
+                ReminderAdditionalDetails = model.ReminderAdditionalDetails,
+                ReminderOffsetDays = model.ReminderOffsetDays,
+                ReminderSystemCommunicationId = model.ReminderSystemCommunicationId,
                 RequiredSignatureDocumentTemplateId = model.RequiredSignatureDocumentTemplateId,
-                RSVPReminderAdditionalDetails = model.RSVPReminderAdditionalDetails,
                 RSVPReminderOffsetDays = model.RSVPReminderOffsetDays,
                 RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
                 ScheduleCancellationPersonAliasId = model.ScheduleCancellationPersonAliasId,
+                ScheduleConfirmationLogic = ( int? ) model.ScheduleConfirmationLogic,
                 ScheduleId = model.ScheduleId,
                 SchedulingMustMeetRequirements = model.SchedulingMustMeetRequirements,
                 StatusValueId = model.StatusValueId,
@@ -323,11 +332,14 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
+            target.ReminderAdditionalDetails = source.ReminderAdditionalDetails;
+            target.ReminderOffsetDays = source.ReminderOffsetDays;
+            target.ReminderSystemCommunicationId = source.ReminderSystemCommunicationId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
-            target.RSVPReminderAdditionalDetails = source.RSVPReminderAdditionalDetails;
             target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
+            target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             target.ScheduleId = source.ScheduleId;
             target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             target.StatusValueId = source.StatusValueId;

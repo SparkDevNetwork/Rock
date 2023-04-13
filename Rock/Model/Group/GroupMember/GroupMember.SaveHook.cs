@@ -57,7 +57,12 @@ namespace Rock.Model
                         if ( !Entity.ValidateGroupMembership( rockContext, out errorMessage ) )
                         {
                             var ex = new GroupMemberValidationException( errorMessage );
-                            ExceptionLogService.LogException( ex );
+                            /*
+                                3/14/2023 - CWR
+
+                            We should not log exceptions that are thrown here, just allow the exception to return to the calling block.
+                            Reason: Neither a person using Rock to add or change a group member, nor a Rock admin would be helped by a log exception here.
+                           */
                             throw ex;
                         }
                     }
@@ -402,7 +407,8 @@ namespace Rock.Model
                 var groupType = GroupTypeCache.Get( this.Entity.GroupTypeId );
                 if ( groupType != null && groupType.IsIndexEnabled && this.Entity.Group.IsActive )
                 {
-                    var groupIndexTransaction = new GroupIndexTransaction( new GroupIndexInfo() { GroupId = this.Entity.GroupId, GroupTypeId = groupType.Id } );
+                    var GroupEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP );
+                    var groupIndexTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = GroupEntityTypeId.Value, EntityId = this.Entity.GroupId } );
                     groupIndexTransaction.Enqueue();
                 }
 

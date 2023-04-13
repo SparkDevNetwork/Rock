@@ -35,9 +35,10 @@ namespace RockWeb.Blocks.Finance
     /// </summary>
     /// <seealso cref="RockBlock" />
 
-    [DisplayName( "Text To Give Settings" )]
+    [RockObsolete( "1.14.1" )]
+    [DisplayName( "Text To Give Settings (Obsolete)" )]
     [Category( "Finance" )]
-    [Description( "Displays a person's Text To Give settings for editing." )]
+    [Description( "Obsolete. Use the Giving Configuration block." )]
 
     [LinkedPage(
         "Parent Page",

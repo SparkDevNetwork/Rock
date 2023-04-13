@@ -34,6 +34,14 @@ namespace Rock.RealTime
         #region Fields
 
         /// <summary>
+        /// The rock instance identifier. This value is unique for every Rock
+        /// installation - but is the same across all servers in a single farm.
+        /// This is used to prefix all channel names to allow for sharing
+        /// cloud RealTime providers.
+        /// </summary>
+        private static readonly Lazy<string> _rockInstanceId = new Lazy<string>( () => Rock.Web.SystemSettings.GetRockInstanceId().ToString() );
+
+        /// <summary>
         /// The lazy-initialized list of registered topics.
         /// </summary>
         private readonly Lazy<List<TopicConfiguration>> _registeredTopics;
@@ -95,6 +103,15 @@ namespace Rock.RealTime
             }
 
             return topics;
+        }
+
+        /// <summary>
+        /// Gets the topic configurations. This should only be used for debugging.
+        /// </summary>
+        /// <returns>An enumeration of all the topic configurations.</returns>
+        internal IEnumerable<TopicConfiguration> GetTopicConfigurations()
+        {
+            return RegisteredTopics.ToList();
         }
 
         /// <summary>
@@ -164,9 +181,9 @@ namespace Rock.RealTime
 
             var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
 
-            var isNewConnect = state.ConnectedTopics.TryAdd( topicIdentifier, true );
+            var connectedCount = state.ConnectedTopics.IncrementTopic( topicIdentifier );
 
-            if ( isNewConnect )
+            if ( connectedCount == 1 )
             {
                 try
                 {
@@ -174,11 +191,59 @@ namespace Rock.RealTime
                 }
                 catch ( Exception ex )
                 {
-                    state.ConnectedTopics.TryRemove( topicIdentifier, out _ );
+                    state.ConnectedTopics.DecrementTopic( topicIdentifier, out var topicChannels );
+
+                    try
+                    {
+                        await RemoveFromTopicChannelsAsync( realTimeHub, connectionIdentifier, topicIdentifier, topicChannels );
+                    }
+                    catch
+                    {
+                        // Intentionally ignored, this is only best effort.
+                    }
 
                     throw ex;
                 }
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Handles a request for a client connection to disconnect from a specific
+        /// topic. This will track the disconnection and then call the topic's
+        /// <see cref="Topic{T}.OnDisconnectedAsync"/> method.
+        /// </summary>
+        /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
+        /// <param name="topicIdentifier">The topic identifier that should be connected to.</param>
+        /// <param name="connectionIdentifier">The identifier of the connection that should be connected to the topic.</param>
+        /// <returns><c>true</c> if the topic was found and disconnected, <c>false</c> otherwise.</returns>
+        public async Task<bool> DisconnectFromTopicAsync( object realTimeHub, string topicIdentifier, string connectionIdentifier )
+        {
+            var topicInstance = GetTopicInstance( realTimeHub, topicIdentifier );
+
+            if ( topicInstance == null )
+            {
+                return false;
+            }
+
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
+            if ( state.ConnectedTopics.DecrementTopic( topicIdentifier, out var topicChannels ) > 0 )
+            {
+                return true;
+            }
+
+            try
+            {
+                await RemoveFromTopicChannelsAsync( realTimeHub, connectionIdentifier, topicIdentifier, topicChannels );
+            }
+            catch
+            {
+                // Intentionally ignored, this is only best effort.
+            }
+
+            await topicInstance.OnDisconnectedAsync();
 
             return true;
         }
@@ -191,6 +256,9 @@ namespace Rock.RealTime
         /// <param name="connectionIdentifier">The connection identifier.</param>
         public virtual Task ClientConnectedAsync( object realTimeHub, string connectionIdentifier )
         {
+            // Force the creation of the connection state.
+            GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
             return Task.CompletedTask;
         }
 
@@ -209,7 +277,7 @@ namespace Rock.RealTime
 
             // This is multi-thread safe enough since a client shouldn't be able
             // to send any messages once the Disconnected event has been triggered.
-            var topicIdentifiers = state.ConnectedTopics.Keys.ToList();
+            var topicIdentifiers = state.ConnectedTopics.GetAllConnectedTopics();
             state.ConnectedTopics.Clear();
 
             foreach ( var topicIdentifier in topicIdentifiers )
@@ -239,6 +307,36 @@ namespace Rock.RealTime
         }
 
         /// <summary>
+        /// Called whenever a client has been added to a channel. This is used to
+        /// track which channels a client is listening on so they can be removed
+        /// if the client disconnects from the topic.
+        /// </summary>
+        /// <param name="connectionIdentifier">The connection identifier.</param>
+        /// <param name="topicIdentifier">The topic identifier.</param>
+        /// <param name="channelName">Name of the channel.</param>
+        public void ClientAddedToChannel( string connectionIdentifier, string topicIdentifier, string channelName )
+        {
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
+            state.ConnectedTopics.AddTopicChannel( topicIdentifier, channelName );
+        }
+
+        /// <summary>
+        /// Called whenever a client has been removed from a channel. This is used to
+        /// track which channels a client is listening on so they can be removed
+        /// if the client disconnects from the topic.
+        /// </summary>
+        /// <param name="connectionIdentifier">The connection identifier.</param>
+        /// <param name="topicIdentifier">The topic identifier.</param>
+        /// <param name="channelName">Name of the channel.</param>
+        public void ClientRemovedFromChannel( string connectionIdentifier, string topicIdentifier, string channelName )
+        {
+            var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
+
+            state.ConnectedTopics.RemoveTopicChannel( topicIdentifier, channelName );
+        }
+
+        /// <summary>
         /// Gets a state tracking object for this connection. This object is
         /// unique to each connection. Meaning a single person with two
         /// connections will have two different state objects. The state object
@@ -252,6 +350,24 @@ namespace Rock.RealTime
         {
             return ( TState ) _clientStates.GetOrAdd( connectionIdentifier, _ => new ConcurrentDictionary<Type, object>() )
                 .GetOrAdd( typeof( TState ), _ => new TState() );
+        }
+
+        /// <summary>
+        /// Determines whether the connection has state <typeparamref name="TState"/>.
+        /// This check is performed without actually creating the state if it does
+        /// not already exist.
+        /// </summary>
+        /// <typeparam name="TState">The type of state object.</typeparam>
+        /// <param name="connectionIdentifier">The connection identifier that the state object should be checked on.</param>
+        /// <returns><c>true</c> if the state object exists on the connection; otherwise, <c>false</c>.</returns>
+        public bool HasConnectionState<TState>( string connectionIdentifier )
+        {
+            if ( !_clientStates.TryGetValue( connectionIdentifier, out var clientState ) )
+            {
+                return false;
+            }
+
+            return clientState.ContainsKey( typeof( TState ) );
         }
 
         /// <summary>
@@ -271,7 +387,7 @@ namespace Rock.RealTime
             // Ensure the connection has joined the topic.
             var state = RealTimeHelper.Engine.GetConnectionState<EngineConnectionState>( connectionId );
 
-            if ( !state.ConnectedTopics.TryGetValue( topicIdentifier, out _ ) )
+            if ( !state.ConnectedTopics.IsConnected( topicIdentifier ) )
             {
                 throw new RealTimeException( $"Topic '{topicIdentifier}' must be joined before sending messages to it." );
             }
@@ -355,6 +471,75 @@ namespace Rock.RealTime
         }
 
         /// <summary>
+        /// Gets the qualified channel name that should be used with the Engine
+        /// implementation to communicate with all connections to a topic.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic.</param>
+        /// <returns>A string that represents the fully qualified channel name to be used.</returns>
+        public static string GetQualifiedAllChannelName( string topicIdentifier )
+        {
+            return $"{_rockInstanceId.Value}-{topicIdentifier}-rock:all";
+        }
+
+        /// <summary>
+        /// Gets the qualified channel name that should be used with the Engine
+        /// implementation.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic this channel is associated with.</param>
+        /// <param name="channelName">Name of the channel.</param>
+        /// <returns>A string that represents the fully qualified channel name to be used.</returns>
+        public static string GetQualifiedChannelName( string topicIdentifier, string channelName )
+        {
+            return $"{_rockInstanceId.Value}-{topicIdentifier}-{channelName}";
+        }
+
+        /// <summary>
+        /// Gets the base channel name to use for the specified person.
+        /// </summary>
+        /// <param name="personAliasId">The identifier of the Person object.</param>
+        /// <returns>A string that represents the channel name to be used.</returns>
+        public static string GetPersonChannelName( int personAliasId )
+        {
+            return $"rock:person:{personAliasId}";
+        }
+
+        /// <summary>
+        /// Gets the qualified channel name that should be used with the Engine
+        /// implementation for a personal channel. This channel can be used to
+        /// send a message to all connections belonging to the specified person.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic this person is associated with.</param>
+        /// <param name="personId">The identifier of the Person object.</param>
+        /// <returns>A string that represents the fully qualified channel name to be used.</returns>
+        public static string GetQualifiedPersonChannelName( string topicIdentifier, int personId )
+        {
+            return $"{_rockInstanceId.Value}-{topicIdentifier}-rock:person:{personId}";
+        }
+
+        /// <summary>
+        /// Gets the base channel name to use for the specified visitor.
+        /// </summary>
+        /// <param name="personAliasId">The identifier of the PersonAlias object.</param>
+        /// <returns>A string that represents the channel name to be used.</returns>
+        public static string GetVisitorChannelName( int personAliasId )
+        {
+            return $"rock:visitor:{personAliasId}";
+        }
+
+        /// <summary>
+        /// Gets the qualified channel name that should be used with the Engine
+        /// implementation for a visitor channel. This channel can be used to
+        /// send a message to all connections belonging to the specified visitor.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic this visitor is associated with.</param>
+        /// <param name="visitorAliasId">The identifier of the PersonAlias object.</param>
+        /// <returns>A string that represents the fully qualified channel name to be used.</returns>
+        public static string GetQualifiedVisitorChannelName( string topicIdentifier, int visitorAliasId )
+        {
+            return $"{_rockInstanceId.Value}-{topicIdentifier}-rock:visitor:{visitorAliasId}";
+        }
+
+        /// <summary>
         /// Gets the topic configuration for the given topic type.
         /// </summary>
         /// <param name="topicType">The <see cref="Type"/> that describes the topic to be configured.</param>
@@ -379,6 +564,17 @@ namespace Rock.RealTime
         /// <param name="parameters">The parameters to be passed in the message.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the work if it has not yet started.</param>
         public abstract Task SendMessageAsync( object proxy, string topicIdentifier, string messageName, object[] parameters, CancellationToken cancellationToken );
+
+        /// <summary>
+        /// Removes the connection from the specified topic channels. Called when
+        /// a connection requests to be disconnected from a topic.
+        /// </summary>
+        /// <param name="realTimeHub">The real time hub.</param>
+        /// <param name="connectionIdentifier">The identifier of the connection to be removed.</param>
+        /// <param name="topicIdentifier">The topic identifier.</param>
+        /// <param name="channelNames">The channel names to be removed from.</param>
+        /// <returns>A <see cref="Task"/> that indicates when the operation has completed.</returns>
+        protected abstract Task RemoveFromTopicChannelsAsync( object realTimeHub, string connectionIdentifier, string topicIdentifier, IEnumerable<string> channelNames );
 
         #endregion
     }

@@ -554,6 +554,16 @@ namespace Rock.SystemGuid
         public const string REGISTRATION_TEMPLATE = "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620";
 
         /// <summary>
+        /// Registration Template field type
+        /// </summary>
+        public const string REMINDER_TYPE = "94A5DF3C-A7E0-451E-9DBA-86A6CFD5DF70";
+
+        /// <summary>
+        /// Registration Template field type
+        /// </summary>
+        public const string REMINDER_TYPES = "C66E6BF9-4A73-4429-ACAD-D94D5E3A89B7";
+
+        /// <summary>
         /// Remote Auths field type
         /// </summary>
         public const string REMOTE_AUTHS = "ECA90666-E7A0-4406-8559-0153DCB908FD";
@@ -612,6 +622,11 @@ namespace Rock.SystemGuid
         /// System Communication field type
         /// </summary>
         public const string SYSTEM_COMMUNICATION = "72ED40C7-4D64-4D60-9411-4FFB2B9E833E";
+
+        /// <summary>
+        /// System Phone Number field type.
+        /// </summary>
+        public const string SYSTEM_PHONE_NUMBER = "B8C35BA7-85E9-4512-B99C-12DE697DE14E";
 
         /// <summary>
         /// Text field type

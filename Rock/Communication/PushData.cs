@@ -30,6 +30,7 @@ namespace Rock.Communication
         /// The mobile page identifier.
         /// </value>
         public int? MobilePageId { get; set; }
+
         /// <summary>
         /// Gets or sets the mobile page query string.
         /// </summary>
@@ -37,6 +38,7 @@ namespace Rock.Communication
         /// The mobile page query string.
         /// </value>
         public Dictionary<string, string> MobilePageQueryString { get; set; }
+
         /// <summary>
         /// Gets or sets the mobile application identifier.
         /// </summary>
@@ -44,6 +46,7 @@ namespace Rock.Communication
         /// The mobile application identifier.
         /// </value>
         public int? MobileApplicationId { get; set; }
+
         /// <summary>
         /// Gets or sets the URL.
         /// </summary>
@@ -51,5 +54,24 @@ namespace Rock.Communication
         /// The URL.
         /// </value>
         public string Url { get; set; }
+
+        /// <summary>
+        /// Gets or sets the application badge count. If <c>null</c> then no
+        /// badge count will be included.
+        /// </summary>
+        /// <remarks>
+        /// This is currently only supported by iOS shells.
+        /// </remarks>
+        /// <value>The application badge count.</value>
+        public int? ApplicationBadgeCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom keys and values that should be included in the
+        /// push notification.
+        /// </summary>
+        /// <value>
+        /// The custom keys and values that should be included in the push notification.
+        /// </value>
+        public Dictionary<string, string> CustomData { get; set; }
     }
 }

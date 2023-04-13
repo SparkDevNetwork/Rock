@@ -22,7 +22,7 @@ import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import HelpBlock from "@Obsidian/Controls/helpBlock";
 import { ValidationRule } from "@Obsidian/ValidationRules";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-import { RegistrationEntryBlockArgs, RegistrationEntryState } from "./types";
+import { RegistrationEntryBlockArgs, RegistrationEntryState } from "./types.partial";
 
 enum RegistrationCostSummaryType {
     Cost = 0,
@@ -144,7 +144,7 @@ export default defineComponent({
             }
 
             let total = 0;
-            this.lineItems.forEach(li => total += li.minPayment);
+            this.lineItems.forEach(li => total += (Math.min(li.minPayment,li.discountedCost)));
             return total;
         },
 
@@ -175,7 +175,6 @@ export default defineComponent({
             if (balance > 0) {
                 return balance;
             }
-
             return 0;
         },
 

@@ -271,6 +271,18 @@ namespace Rock.Utility
 
             return new RockColor( rgb, alpha, text );
         }
+
+        /// <summary>Calculates the contrast ratio.</summary>
+        /// <param name="foregroundColor">The color1.</param>
+        /// <param name="backgroundColor">The color2.</param>
+        /// <returns>System.Double.</returns>
+        public static double CalculateContrastRatio( RockColor foregroundColor, RockColor backgroundColor )
+        {
+            // Formula: (L1 + 0.05) / (L2 + 0.05)
+            // https://medium.muz.li/the-science-of-color-contrast-an-expert-designers-guide-33e84c41d156
+            // https://www.w3.org/TR/2012/NOTE-WCAG20-TECHS-20120103/G17.html
+            return ( backgroundColor.Luma + 0.05 ) / ( foregroundColor.Luma + 0.05 );
+        }
         #endregion 
 
         #region Constructors
@@ -524,11 +536,11 @@ namespace Rock.Utility
                 var linearG = G / 255;
                 var linearB = B / 255;
 
-                var red = TransformLinearToSrbg( linearR );
-                var green = TransformLinearToSrbg( linearG );
-                var blue = TransformLinearToSrbg( linearB );
+                var red = ( linearR <= 0.03928 ) ? linearR / 12.92 : Math.Pow( ( linearR + 0.055 ) / 1.055, 2.4 );
+                var green = ( linearG <= 0.03928 ) ? linearG / 12.92 : Math.Pow( ( linearG + 0.055 ) / 1.055, 2.4 );
+                var blue = ( linearB <= 0.03928 ) ? linearB / 12.92 : Math.Pow( ( linearB + 0.055 ) / 1.055, 2.4 );
 
-                return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+                return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
             }
         }
 

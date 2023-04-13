@@ -1595,6 +1595,18 @@ namespace Rock.Data
         public DbSet<NoteWatch> NoteWatches { get; set; }
 
         /// <summary>
+        /// Gets or sets the notification message types.
+        /// </summary>
+        /// <value>The notification message types.</value>
+        public DbSet<NotificationMessageType> NotificationMessageTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notification messages.
+        /// </summary>
+        /// <value>The notification messages.</value>
+        public DbSet<NotificationMessage> NotificationMessages { get; set; }
+
+        /// <summary>
         /// Gets or sets the notifications.
         /// </summary>
         /// <value>
@@ -1665,6 +1677,14 @@ namespace Rock.Data
         /// the Person aliases.
         /// </value>
         public DbSet<PersonAlias> PersonAliases { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Preferences.
+        /// </summary>
+        /// <value>
+        /// The Person Preferences.
+        /// </value>
+        public DbSet<PersonPreference> PersonPreferences { get; set; }
 
         /// <summary>
         /// Gets or sets the badges.
@@ -2149,6 +2169,14 @@ namespace Rock.Data
         public DbSet<SystemCommunication> SystemCommunications { get; set; }
 
         /// <summary>
+        /// Gets or sets the system phone numbers.
+        /// </summary>
+        /// <value>
+        /// The system phone numbers.
+        /// </value>
+        public DbSet<SystemPhoneNumber> SystemPhoneNumbers { get; set; }
+
+        /// <summary>
         /// Gets or sets the Tags.
         /// </summary>
         /// <value>
@@ -2323,6 +2351,22 @@ namespace Rock.Data
         /// The segments.
         /// </value>
         public DbSet<PersonalizationSegment> Segments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the snippets.
+        /// </summary>
+        /// <value>
+        /// The snippets.
+        /// </value>
+        public DbSet<Snippet> Snippets { get; set; }
+
+        /// <summary>
+        /// Gets or sets the snippet types.
+        /// </summary>
+        /// <value>
+        /// The snippet types.
+        /// </value>
+        public DbSet<SnippetType> SnippetTypes { get; set; }
 
         #endregion
 

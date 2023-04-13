@@ -234,6 +234,7 @@ namespace RockWeb.Blocks.CheckIn
                                 else
                                 {
                                     availGroupTypes.ForEach( t => t.Selected = true );
+                                    availGroupTypes.ForEach( t => t.SelectedForSchedule.Add( schedule.Schedule.Id ) );
                                     ProcessSelection( person, schedule );
                                 }
                             }

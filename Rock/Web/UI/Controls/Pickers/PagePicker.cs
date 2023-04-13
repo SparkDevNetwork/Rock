@@ -602,8 +602,8 @@ namespace Rock.Web.UI.Controls
 
                     _btnShowPageRoutePicker.RenderControl( writer );
 
-                    writer.Write( string.Format( @"<div id='page-route-picker_{0}'>", this.ClientID ) );
-                    writer.Write( @"<div class='picker-menu dropdown-menu js-page-route-picker-menu'>" );
+                    writer.Write( string.Format( @"<div id='page-route-picker_{0}' class='picker'>", this.ClientID ) );
+                    writer.Write( @"<div class='picker-menu picker dropdown-menu js-page-route-picker-menu'>" );
 
                     _rblSelectPageRoute.RenderControl( writer );
 

@@ -77,7 +77,7 @@ namespace Rock.Web.UI.Controls.Communication
         /// Gets or sets the selected numbers to display.
         /// </summary>
         /// <value>
-        /// A guid list of numbers from the defined type to filter the dropdown list down.
+        /// A guid list of numbers from System Phone Numbers to filter the dropdown list down.
         /// </value>
         public List<Guid> SelectedNumbers { get; set; }
 
@@ -90,17 +90,33 @@ namespace Rock.Web.UI.Controls.Communication
             var currentPerson = ( HttpContext.Current.CurrentHandler as RockPage )?.CurrentPerson;
 
             EnsureChildControls();
-            var valueItem = dvpFrom.Items.FindByValue( communication.SMSFromDefinedValueId.ToString() );
-            if ( valueItem == null && communication.SMSFromDefinedValueId != null )
+
+            var smsFromSystemPhoneNumberId = communication.SmsFromSystemPhoneNumberId;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Check the legacy defined value setting.
+            if ( !smsFromSystemPhoneNumberId.HasValue && communication.SMSFromDefinedValueId.HasValue )
             {
-                var lookupDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
-                if ( lookupDefinedValue != null && lookupDefinedValue.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                var fromDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.Value );
+
+                if ( fromDefinedValue != null )
                 {
-                    dvpFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                    smsFromSystemPhoneNumberId = SystemPhoneNumberCache.Get( fromDefinedValue.Guid )?.Id;
+                }
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            var valueItem = dvpFrom.Items.FindByValue( smsFromSystemPhoneNumberId.ToString() );
+            if ( valueItem == null && smsFromSystemPhoneNumberId.HasValue )
+            {
+                var lookupSystemPhoneNumber = SystemPhoneNumberCache.Get( smsFromSystemPhoneNumberId.Value );
+                if ( lookupSystemPhoneNumber != null && lookupSystemPhoneNumber.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                {
+                    dvpFrom.Items.Add( new ListItem( lookupSystemPhoneNumber.Name, lookupSystemPhoneNumber.Id.ToString() ) );
                 }
             }
 
-            dvpFrom.SetValue( communication.SMSFromDefinedValueId );
+            dvpFrom.SetValue( smsFromSystemPhoneNumberId );
             tbMessage.Text = communication.SMSMessage;
         }
 
@@ -111,8 +127,23 @@ namespace Rock.Web.UI.Controls.Communication
         public override void UpdateCommunication( CommunicationDetails communication )
         {
             EnsureChildControls();
-            communication.SMSFromDefinedValueId = dvpFrom.SelectedValueAsId();
+
+            communication.SmsFromSystemPhoneNumberId = dvpFrom.SelectedValueAsId();
             communication.SMSMessage = tbMessage.Text;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Update the legacy values.
+            communication.SMSFromDefinedValueId = null;
+            if ( communication.SmsFromSystemPhoneNumberId.HasValue )
+            {
+                var systemPhoneNumber = SystemPhoneNumberCache.Get( communication.SmsFromSystemPhoneNumberId.Value );
+
+                if ( systemPhoneNumber != null )
+                {
+                    communication.SMSFromDefinedValueId = DefinedValueCache.Get( systemPhoneNumber.Guid )?.Id;
+                }
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         #endregion
@@ -128,28 +159,31 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Clear();
 
             var selectedNumberGuids = SelectedNumbers; //GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
-            var definedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+            var smsNumbers = SystemPhoneNumberCache.All()
+                .OrderBy( spn => spn.Order )
+                .ThenBy( spn => spn.Name )
+                .ThenBy( spn => spn.Id )
+                .ToList();
 
-            var smsNumbers = definedType.DefinedValues;
             if ( selectedNumberGuids.Any() )
             {
-                smsNumbers = smsNumbers.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
+                smsNumbers = smsNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
             }
 
             dvpFrom = new RockDropDownList();
             dvpFrom.SelectedIndex = -1;
-            dvpFrom.DataSource = smsNumbers.Select( v => new
+            dvpFrom.DataSource = smsNumbers.Select( spn => new
             {
-                Description = string.IsNullOrWhiteSpace( v.Description ) ? v.Value : v.Description,
-                v.Id
+                spn.Name,
+                spn.Id
             } );
-            dvpFrom.DataTextField = "Description";
+            dvpFrom.DataTextField = "Name";
             dvpFrom.DataValueField = "Id";
             dvpFrom.DataBind();
 
             dvpFrom.ID = string.Format( "dvpFrom_{0}", this.ID );
             dvpFrom.Label = "From";
-            dvpFrom.Help = "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).";
+            dvpFrom.Help = "The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers).";
             dvpFrom.Required = true;
             Controls.Add( dvpFrom );
 
@@ -211,17 +245,13 @@ namespace Rock.Web.UI.Controls.Communication
         /// <exception cref="System.NotImplementedException"></exception>
         public override void InitializeFromSender( Person sender )
         {
-            var numbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
-            if ( numbers != null )
+            foreach ( var number in SystemPhoneNumberCache.All() )
             {
-                foreach ( var number in numbers.DefinedValues )
+                var personAliasId = number.AssignedToPersonAliasId;
+                if ( personAliasId.HasValue && sender.Aliases.Any( a => a.Id == personAliasId.Value ) )
                 {
-                    var personAliasGuid = number.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
-                    if ( personAliasGuid.HasValue && sender.Aliases.Any( a => a.Guid == personAliasGuid.Value ) )
-                    {
-                        dvpFrom.SetValue( number.Id );
-                        break;
-                    }
+                    dvpFrom.SetValue( number.Id );
+                    break;
                 }
             }
         }

@@ -120,7 +120,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// Gets or sets a value indicating whether this <see cref="RockDropDownList"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.

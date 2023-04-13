@@ -87,7 +87,7 @@ namespace Rock.Model
                 MessageKey = model.MessageKey,
                 RelatedCommunicationId = model.RelatedCommunicationId,
                 RelatedMediumEntityTypeId = model.RelatedMediumEntityTypeId,
-                RelatedSmsFromDefinedValueId = model.RelatedSmsFromDefinedValueId,
+                RelatedSmsFromSystemPhoneNumberId = model.RelatedSmsFromSystemPhoneNumberId,
                 RelatedTransportEntityTypeId = model.RelatedTransportEntityTypeId,
                 Response = model.Response,
                 ToPersonAliasId = model.ToPersonAliasId,
@@ -167,7 +167,10 @@ namespace Rock.Model
             target.MessageKey = source.MessageKey;
             target.RelatedCommunicationId = source.RelatedCommunicationId;
             target.RelatedMediumEntityTypeId = source.RelatedMediumEntityTypeId;
+            #pragma warning disable 612, 618
             target.RelatedSmsFromDefinedValueId = source.RelatedSmsFromDefinedValueId;
+            #pragma warning restore 612, 618
+            target.RelatedSmsFromSystemPhoneNumberId = source.RelatedSmsFromSystemPhoneNumberId;
             target.RelatedTransportEntityTypeId = source.RelatedTransportEntityTypeId;
             target.Response = source.Response;
             target.ToPersonAliasId = source.ToPersonAliasId;

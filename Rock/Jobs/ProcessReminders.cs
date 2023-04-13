@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using DotLiquid;
 using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
@@ -25,6 +26,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -34,6 +36,8 @@ namespace Rock.Jobs
     /// </summary>
     [DisplayName( "Process Reminders" )]
     [Description( "A job which processes reminders, including creating appropriate notifications and updating the reminder count value for people with active reminders." )]
+
+    #region Job Attributes
 
     [IntegerField(
         "Command Timeout",
@@ -53,6 +57,31 @@ namespace Rock.Jobs
         Category = "General",
         Order = 2 )]
 
+    [IntegerField(
+        "Max Reminders Per Entity Type",
+        Key = AttributeKey.MaxRemindersPerEntityType,
+        Description = "The maximum number of reminders (per entity type) to include in communication notifications (default: 20).",
+        IsRequired = true,
+        DefaultIntegerValue = 20,
+        Category = "General",
+        Order = 3 )]
+
+    [ReminderTypesField(
+        "Reminder Types Include",
+        Key = AttributeKey.ReminderTypesInclude,
+        Description = "Select any specific remindeder types to show in this block. Leave all unchecked to show all active reminder types ( except for excluded reminder types ).",
+        IsRequired = false,
+        Order = 4 )]
+
+    [ReminderTypesField(
+        "Reminder Types Exclude",
+        Key = AttributeKey.ReminderTypesExclude,
+        Description = "Select group types to exclude from this block. Note that this setting is only effective if 'Reminder Types Include' has no specific group types selected.",
+        IsRequired = false,
+        Order = 5 )]
+
+    #endregion Job Attributes
+
     [DisallowConcurrentExecution]
     public class ProcessReminders : RockJob
     {
@@ -70,6 +99,21 @@ namespace Rock.Jobs
             /// The reminder notification.
             /// </summary>
             public const string ReminderNotification = "ReminderNotification";
+
+            /// <summary>
+            /// The max reminders per entity type.
+            /// </summary>
+            public const string MaxRemindersPerEntityType = "MaxRemindersPerEntityType";
+
+            /// <summary>
+            /// The reminder types to include.
+            /// </summary>
+            public const string ReminderTypesInclude = "ReminderTypesInclude";
+
+            /// <summary>
+            /// The reminder types to exclude.
+            /// </summary>
+            public const string ReminderTypesExclude = "ReminderTypesExclude";
         }
 
         /// <summary> 
@@ -83,83 +127,213 @@ namespace Rock.Jobs
         {
         }
 
+        #region Private Fields
+
+        /// <summary>
+        /// Errors collection for job status tracking.
+        /// </summary>
+        private List<string> _jobErrors;
+
+        /// <summary>
+        /// Total processed reminders for job status tracking.
+        /// </summary>
+        private int _totalProcessedReminders;
+
+        /// <summary>
+        /// The included reminder type ids.
+        /// </summary>
+        private List<int> _includedReminderTypeIds = new List<int>();
+
+        /// <summary>
+        /// The excluded reminder type ids.
+        /// </summary>
+        private List<int> _excludedReminderTypeIds = new List<int>();
+
+        #endregion Private Fields
+
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
+            _jobErrors = new List<string>();
+            _totalProcessedReminders = 0;
             var currentDate = RockDateTime.Now;
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job started at {currentDate}." );
-
-            //var dataMap = context.JobDetail.JobDataMap;
-            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
-            var notificationSystemCommunicationGuid = GetAttributeValue( AttributeKey.ReminderNotification ).AsGuidOrNull();
-            SystemCommunication notificationSystemCommunication = null;
+            WriteLog( $"ProcessReminders job started at {currentDate}." );
 
             using ( var rockContext = new RockContext() )
             {
-                if ( notificationSystemCommunicationGuid.HasValue )
-                {
-                    notificationSystemCommunication = new SystemCommunicationService( rockContext ).Get( notificationSystemCommunicationGuid.Value );
-                }
-
+                var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
                 rockContext.Database.CommandTimeout = commandTimeout;
 
-                var reminderService = new ReminderService( rockContext );
-                var activeReminders = reminderService.GetActiveReminders( currentDate );
-                ProcessNotifications( notificationSystemCommunication, activeReminders, rockContext );
+                SetIncludeExcludeReminderTypeIds( rockContext );
 
-                // Refresh active reminders, some of them may have been auto-completed by ProcessNotifications().
-                activeReminders = reminderService.GetActiveReminders( currentDate );
+                var notificationSystemCommunication = GetNotificationSytemCommunicaton( rockContext );
+
+                var reminderService = new ReminderService( rockContext );
+                var activeReminders = reminderService.GetActiveReminders( currentDate, _includedReminderTypeIds, _excludedReminderTypeIds );
+                var reminderEntities = reminderService.GetReminderEntities( activeReminders );
+
+                ProcessWorkflowNotifications( activeReminders, rockContext );
+                ProcessCommunicationNotifications( notificationSystemCommunication, activeReminders, rockContext );
+
+                // Some reminders may have been auto-completed by notification processing and are therefore no longer active,
+                // so we need to refresh our query before we update reminder counts.
+                activeReminders = reminderService.GetActiveReminders( currentDate, _includedReminderTypeIds, _excludedReminderTypeIds );
                 UpdateReminderCounts( activeReminders, rockContext );
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job completed at {RockDateTime.Now}." );
+            WriteLog( $"ProcessReminders job completed at {RockDateTime.Now}." );
+
+            if ( _jobErrors.Any() )
+            {
+                var sbResultOutput = new System.Text.StringBuilder( "Process Reminders job completed with errors." );
+                sbResultOutput.AppendLine();
+
+                int errorCount = 0;
+                foreach ( var jobError in _jobErrors )
+                {
+                    if ( errorCount == 5 )
+                    {
+                        sbResultOutput.AppendLine( $"Additional errors were truncated, to see the full "
+                            + $"list of {_jobErrors.Count} errors please enable debug logging for the "
+                            + $"\"Jobs\" logging domain." );
+                        break;
+                    }
+
+                    errorCount++;
+                    sbResultOutput.AppendLine( jobError );
+                }
+
+                this.Result = StandardFilters.NewlineToBr( sbResultOutput.ToString() );
+            }
+            else
+            {
+                this.Result = $"Process Reminders job completed successfully.  " +
+                    $"{_totalProcessedReminders} {"reminder".PluralizeIf( _totalProcessedReminders != 1 )} processed.";
+            }
+        }
+
+        #region Job Logic Methods
+
+        /// <summary>
+        /// Sets the included/excluded reminder type ids.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void SetIncludeExcludeReminderTypeIds( RockContext rockContext )
+        {
+            var reminderTypeService = new ReminderTypeService( rockContext );
+
+            _includedReminderTypeIds.Clear();
+            List<Guid> reminderTypeIncludeGuids = GetAttributeValue( AttributeKey.ReminderTypesInclude ).SplitDelimitedValues().AsGuidList();
+            if ( reminderTypeIncludeGuids.Any() )
+            {
+                foreach ( Guid guid in reminderTypeIncludeGuids )
+                {
+                    var reminderType = reminderTypeService.Get( guid );
+                    if ( reminderType != null )
+                    {
+                        _includedReminderTypeIds.Add( reminderType.Id );
+                    }
+                }
+            }
+
+            _excludedReminderTypeIds.Clear();
+            List<Guid> reminderTypeExcludeGuids = GetAttributeValue( AttributeKey.ReminderTypesExclude ).SplitDelimitedValues().AsGuidList();
+            if ( reminderTypeExcludeGuids.Any() )
+            {
+                foreach ( Guid guid in reminderTypeExcludeGuids )
+                {
+                    var reminderType = reminderTypeService.Get( guid );
+                    if ( reminderType != null )
+                    {
+                        _excludedReminderTypeIds.Add( reminderType.Id );
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// Processes notifications for active reminders.
+        /// Gets the SystemCommunication for notifications.
+        /// </summary>
+        /// <returns></returns>
+        private SystemCommunication GetNotificationSytemCommunicaton( RockContext rockContext )
+        {
+            var notificationSystemCommunicationGuid = GetAttributeValue( AttributeKey.ReminderNotification ).AsGuidOrNull();
+            SystemCommunication notificationSystemCommunication = null;
+            if ( notificationSystemCommunicationGuid.HasValue )
+            {
+                notificationSystemCommunication = new SystemCommunicationService( rockContext ).Get( notificationSystemCommunicationGuid.Value );
+            }
+
+            return notificationSystemCommunication;
+        }
+
+        /// <summary>
+        /// Process active reminders configured for workflow notifications.
+        /// </summary>
+        /// <param name="activeReminders"></param>
+        /// <param name="rockContext"></param>
+        private void ProcessWorkflowNotifications( IQueryable<Reminder> activeReminders, RockContext rockContext )
+        {
+            WriteLog( $"ProcessReminders job:  Initiated workflow notification processing." );
+
+            var workflowReminderQuery = activeReminders
+                .Where(r => r.ReminderType.NotificationType == ReminderNotificationType.Workflow);
+
+            var reminderEntities = new ReminderService( rockContext ).GetReminderEntities( workflowReminderQuery );
+
+            var workflowReminderList = workflowReminderQuery.ToList();
+
+            WriteLog( $"ProcessReminders job:  Processing {workflowReminderList.Count} reminders for notification by workflow." );
+
+            foreach ( var workflowReminder in workflowReminderList )
+            {
+                // Create a notification workflow.
+                if ( !workflowReminder.ReminderType.NotificationWorkflowTypeId.HasValue )
+                {
+                    WriteError( $"Notification workflow for reminder {workflowReminder.Id} aborted:  The reminder type is incorrectly configured." );
+                    continue;
+                }
+
+                var entity = reminderEntities[workflowReminder.Id];
+                InitiateNotificationWorkflow( workflowReminder, rockContext, entity );
+            }
+        }
+
+        /// <summary>
+        /// Processes active reminders configured for SystemCommunication notifications.
         /// </summary>
         /// <param name="notificationSystemCommunication"></param>
         /// <param name="activeReminders"></param>
         /// <param name="rockContext"></param>
-        private void ProcessNotifications( SystemCommunication notificationSystemCommunication, IQueryable<Reminder> activeReminders, RockContext rockContext )
+        private void ProcessCommunicationNotifications( SystemCommunication notificationSystemCommunication, IQueryable<Reminder> activeReminders, RockContext rockContext )
         {
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Initiated notification processing." );
-
-            var activeReminderList = activeReminders.ToList();
-
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Processing {activeReminderList.Count} reminders for notifications." );
-
-            foreach ( var activeReminder in activeReminders.ToList() )
+            if ( notificationSystemCommunication == null )
             {
-                RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Processing Reminder {activeReminder.Id} for notifications." );
+                WriteError( $"ProcessReminders job:  Aborted SystemCommunication notification for Reminders.  No SystemCommunication was specified." );
+                return;
+            }
 
-                bool notificationSent;
-                if ( activeReminder.ReminderType.NotificationType == ReminderNotificationType.Workflow )
-                {
-                    // Create a notification workflow.
-                    if ( !activeReminder.ReminderType.NotificationWorkflowTypeId.HasValue )
-                    {
-                        RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Notification workflow for reminder {activeReminder.Id} aborted:  The reminder type is incorrectly configured." );
-                        continue;
-                    }
+            WriteLog( $"ProcessReminders job:  Initiated communication notification processing." );
 
-                    notificationSent = InitiateNotificationWorkflow( activeReminder );
-                }
-                else
-                {
-                    // Default to communication.
-                    var reminderEntity = new EntityTypeService( rockContext )
-                        .GetEntity( activeReminder.ReminderType.EntityTypeId, activeReminder.EntityId );
-                    var result = SendReminderCommunication( activeReminder, notificationSystemCommunication, reminderEntity );
-                    notificationSent = ( result.MessagesSent > 0 );
-                }
+            var remindersPerEntityType = GetAttributeValue( AttributeKey.MaxRemindersPerEntityType ).AsIntegerOrNull() ?? 20;
 
-                if ( notificationSent && activeReminder.ReminderType.ShouldAutoCompleteWhenNotified )
-                {
-                    // Mark the reminder as complete.
-                    activeReminder.CompleteReminder();
-                    rockContext.SaveChanges();
-                }
+            var communicationReminders = activeReminders.Where( r => r.ReminderType.NotificationType == ReminderNotificationType.Communication );
+
+            var communicationReminderRecipientList = communicationReminders
+                .Select( r => r.PersonAlias.Person )
+                .Distinct()
+                .ToList();
+
+            WriteLog( $"ProcessReminders job:  Processing reminder notifications for {communicationReminderRecipientList.Count} recipients." );
+
+            foreach ( var reminderRecipient in communicationReminderRecipientList )
+            {
+                WriteLog( $"ProcessReminders job:  Processing reminder notifications for recipient {reminderRecipient.Id}." );
+
+                var communicationRemindersForRecipient = communicationReminders
+                    .Where( r => r.PersonAlias.PersonId == reminderRecipient.Id );
+
+                SendReminderCommunication( reminderRecipient, communicationRemindersForRecipient, notificationSystemCommunication, rockContext, remindersPerEntityType );
             }
         }
 
@@ -167,10 +341,11 @@ namespace Rock.Jobs
         /// Creates the notification workflow for a specific reminder.
         /// </summary>
         /// <param name="reminder"></param>
-        /// <returns></returns>
-        private bool InitiateNotificationWorkflow( Reminder reminder )
+        /// <param name="rockContext"></param>
+        /// <param name="entity">The entity.</param>
+        private void InitiateNotificationWorkflow( Reminder reminder, RockContext rockContext, IEntity entity )
         {
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Creating notification workflow for reminder {reminder.Id}." );
+            WriteLog( $"ProcessReminders job:  Creating notification workflow for reminder {reminder.Id}." );
 
             try
             {
@@ -178,69 +353,166 @@ namespace Rock.Jobs
                 {
                     { "Reminder", reminder.Guid.ToString() },
                     { "ReminderType", reminder.ReminderType.Guid.ToString() },
-                    { "Person", reminder.PersonAlias.Person.Guid.ToString() },
-                    { "EntityTypeId", reminder.ReminderType.EntityTypeId.ToString() },
-                    { "EntityId", reminder.EntityId.ToString() },
+                    { "PersonAlias", reminder.PersonAlias.Guid.ToString() },
+                    { "EntityType", reminder.ReminderType.EntityType.Guid.ToString() },
+                    { "Entity", entity.Guid.ToString() },
                 };
 
                 reminder.LaunchWorkflow( reminder.ReminderType.NotificationWorkflowTypeId, reminder.ToString(), workflowParameters, null );
+                _totalProcessedReminders++;
 
-                return true;
+                if ( reminder.ReminderType.ShouldAutoCompleteWhenNotified )
+                {
+                    // Mark the reminder as complete.
+                    reminder.CompleteReminder();
+                    rockContext.SaveChanges();
+                }
             }
             catch ( Exception ex )
             {
-                RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Failed to create notification workflow for reminder {reminder.Id}: {ex.Message}" );
-                ExceptionLogService.LogException( ex );
-                return false;
+                WriteError( $"Failed to create notification workflow for reminder {reminder.Id}: {ex.Message}", ex );
             }
         }
 
         /// <summary>
-        /// Creates a SystemCommunication notification for a specific reminder.
+        /// Create SystemCommunication notifiocation for a recipient.
         /// </summary>
-        /// <param name="reminder"></param>
+        /// <param name="recipient"></param>
+        /// <param name="reminders"></param>
         /// <param name="notificationSystemCommunication"></param>
-        /// <param name="reminderEntity"></param>
-        /// <returns></returns>
-        private SendMessageResult SendReminderCommunication( Reminder reminder, SystemCommunication notificationSystemCommunication, IEntity reminderEntity )
+        /// <param name="rockContext"></param>
+        /// <param name="remindersPerEntityType"></param>
+        private void SendReminderCommunication( Person recipient, IQueryable<Reminder> reminders, SystemCommunication notificationSystemCommunication, RockContext rockContext, int remindersPerEntityType )
         {
-            if ( notificationSystemCommunication == null )
+            WriteLog( $"ProcessReminders job:  Creating SystemCommunication for recipient {recipient.Id}." );
+
+            var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+
+            var personEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) );
+            var personReminderList = reminders
+                .Where( r => r.ReminderType.EntityTypeId == personEntityTypeId )
+                .OrderByDescending( r => r.ReminderDate )
+                .Take( remindersPerEntityType )
+                .ToList();
+
+            var groupEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Group ) );
+            var groupReminderList = reminders
+                .Where( r => r.ReminderType.EntityTypeId == groupEntityTypeId )
+                .OrderByDescending( r => r.ReminderDate )
+                .Take( remindersPerEntityType )
+                .ToList();
+
+            var otherReminders = reminders
+                .Where( r => r.ReminderType.EntityTypeId != personEntityTypeId
+                        && r.ReminderType.EntityTypeId != groupEntityTypeId );
+
+            var otherReminderList = new List<Reminder>();
+            var otherReminderEntityList = otherReminders
+                .Select( r => r.ReminderType.EntityType )
+                .Distinct()
+                .OrderBy( t => t.FriendlyName ) // Sort other reminders by friendly name.
+                .ToList();
+
+            foreach ( var entityType in otherReminderEntityList )
             {
-                RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Aborted SystemCommunication notification for Reminder {reminder.Id}.  No SystemCommunication was specified." );
-                return null;
+                var entityReminderList = otherReminders
+                    .Where( r => r.ReminderType.EntityTypeId == entityType.Id )
+                    .OrderByDescending( r => r.ReminderDate )
+                    .Take( remindersPerEntityType )
+                    .ToList();
+
+                otherReminderList.AddRange( entityReminderList );
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Creating SystemCommunication for reminder {reminder.Id}." );
+            WriteLog( $"ProcessReminders job:  Creating SystemCommunication for {personReminderList.Count} Person Reminders, " +
+                $"{groupReminderList.Count} Group Reminders, and {otherReminderList.Count} other reminders for {otherReminderEntityList.Count} entity types." );
+
+            var reminderDataObjects = new List<ReminderViewModel>();
+            var reminderEntities = new ReminderService( rockContext ).GetReminderEntities( reminders );
+
+            foreach ( var reminder in personReminderList )
+            {
+                var person = reminderEntities[reminder.Id] as Person;
+                var photoUrl = person.PhotoUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
+                var reminderData = new ReminderViewModel( reminder, person, photoUrl );
+                reminderDataObjects.Add( reminderData );
+            }
+
+            foreach ( var reminder in groupReminderList )
+            {
+                var group = reminderEntities[reminder.Id] as Group;
+                var reminderData = new ReminderViewModel( reminder, group );
+                reminderDataObjects.Add( reminderData );
+            }
+
+            foreach ( var reminder in otherReminderList )
+            {
+                var entity = reminderEntities[reminder.Id];
+                var reminderData = new ReminderViewModel( reminder, entity );
+                reminderDataObjects.Add( reminderData );
+            }
 
             try
             {
-                var person = reminder.PersonAlias.Person;
                 var mergeFields = LavaHelper.GetCommonMergeFields( null );
-                mergeFields.Add( "Reminder", reminder );
-                mergeFields.Add( "ReminderType", reminder.ReminderType );
-                mergeFields.Add( "Person", person );
-                mergeFields.Add( "EntityName", reminderEntity.ToString() );
+                mergeFields.Add( "Reminders", reminderDataObjects );
+                mergeFields.Add( "Person", recipient );
+                mergeFields.Add( "MaxRemindersPerEntityType", remindersPerEntityType );
 
-                var mediumType = Model.Communication.DetermineMediumEntityTypeId(
-                    ( int ) CommunicationType.Email,
-                    ( int ) CommunicationType.SMS,
-                    ( int ) CommunicationType.PushNotification,
-                    person.CommunicationPreference );
+                var mediumType = ( int ) CommunicationType.Email;
+                var result = CommunicationHelper.SendMessage( recipient, mediumType, notificationSystemCommunication, mergeFields );
 
-                return CommunicationHelper.SendMessage( person, mediumType, notificationSystemCommunication, mergeFields );
+                if ( result.MessagesSent > 0 )
+                {
+                    var processedReminderList = new List<Reminder>();
+                    processedReminderList.AddRange( personReminderList );
+                    processedReminderList.AddRange( groupReminderList );
+                    processedReminderList.AddRange( otherReminderList );
+
+                    _totalProcessedReminders += processedReminderList.Count;
+
+                    var autoCompleteReminderList = processedReminderList
+                        .Where( r => r.ReminderType.ShouldAutoCompleteWhenNotified )
+                        .ToList();
+
+                    WriteLog( $"ProcessReminders job:  Notification sent for {processedReminderList.Count} reminders.  Auto-completing {autoCompleteReminderList.Count} reminders." );
+
+                    foreach ( var autoCompleteReminder in autoCompleteReminderList )
+                    {
+                        // Mark the reminder as complete.
+                        autoCompleteReminder.CompleteReminder();
+                        rockContext.SaveChanges();
+                    }
+                }
+                else
+                {
+                    var messageErrors = new System.Text.StringBuilder( string.Empty );
+
+                    if ( result.Errors.Any() )
+                    {
+                        result.Errors.ForEach( e => messageErrors.AppendLine( e ) );
+                    }
+                    else if ( result.Warnings.Any() )
+                    {
+                        result.Warnings.ForEach( w => messageErrors.AppendLine( w ) );
+                    }
+                    else
+                    {
+                        result.Exceptions.ForEach( e => messageErrors.AppendLine( e.Message ) );
+                    }
+
+                    var errorOutput = messageErrors.ToString();
+                    if ( errorOutput.IsNullOrWhiteSpace() )
+                    {
+                        errorOutput = "Unknown error.";
+                    }
+
+                    WriteError( $"Failed to send SystemCommunication for for Reminders for recipient {recipient.Id}: { errorOutput }" );
+                }
             }
             catch ( Exception ex )
             {
-                RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Failed to create SystemCommunication for reminder {reminder.Id}: {ex.Message}" );
-                ExceptionLogService.LogException( ex );
-
-                return new SendMessageResult()
-                {
-                    Errors = new List<string> { ex.Message },
-                    Exceptions = new List<Exception> { ex },
-                    MessagesSent = 0,
-                    Warnings = new List<string>(),
-                };
+                WriteError( $"Failed to create SystemCommunication for Reminders for recipient {recipient.Id}: {ex.Message}", ex );
             }
         }
 
@@ -260,7 +532,7 @@ namespace Rock.Jobs
                             && !activeReminders.Select( r => r.PersonAlias.PersonId ).Contains( p.Id ) );
 
             int zeroedCount = peopleWithNoReminders.Count();
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Resetting reminder counts to 0 for {zeroedCount} people." );
+            WriteLog( $"ProcessReminders job:  Resetting reminder counts to 0 for {zeroedCount} people." );
 
             rockContext.BulkUpdate( peopleWithNoReminders, p => new Person { ReminderCount = 0 } );
             rockContext.SaveChanges();
@@ -281,7 +553,38 @@ namespace Rock.Jobs
                 }
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"ProcessReminders job:  Updated reminder counts for {updatedCount} people." );
+            WriteLog( $"ProcessReminders job:  Updated reminder counts for {updatedCount} people." );
         }
+
+        #endregion Job Logic Methods
+
+        #region Log Utility Methods
+
+        /// <summary>
+        /// Writes a message to the job log.
+        /// </summary>
+        /// <param name="logMessage"></param>
+        private void WriteLog( string logMessage )
+        {
+            RockLogger.Log.Debug( RockLogDomains.Jobs, logMessage);
+        }
+
+        /// <summary>
+        /// Writes an error to the job log and reports it to the final job status.
+        /// </summary>
+        /// <param name="errorMessage"></param>
+        /// <param name="ex"></param>
+        private void WriteError( string errorMessage, Exception ex = null )
+        {
+            _jobErrors.Add( errorMessage );
+            WriteLog( $"ProcessReminders job:  {errorMessage}" );
+
+            if ( ex != null )
+            {
+                ExceptionLogService.LogException( ex );
+            }
+        }
+
+        #endregion Log Utility Methods
     }
 }

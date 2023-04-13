@@ -24,6 +24,7 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using Rock;
 using Rock.Data;
+using TimeZoneConverter;
 using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Model
@@ -39,16 +40,16 @@ namespace Rock.Model
         /// <returns></returns>
         public string CreateICalendar( GetCalendarEventFeedArgs args )
         {
-            // Get a list of Rock Calendar Events filtered by calendarProps
+            // Get a list of Rock Calendar Events that match the specified filter.
             var eventItems = GetEventItems( args );
 
             // Create the iCalendar.
-            // Allow ICal to create the VTimeZone object from the local time zone to ensure that we get the correct name and daylight saving offset.
-            var vtz = new VTimeZone( RockDateTime.OrgTimeZoneInfo.Id );
             var icalendar = new Calendar();
-            icalendar.AddTimeZone( vtz );
 
-            var timeZoneId = vtz.TzId;
+            // Specify the calendar timezone using the Internet Assigned Numbers Authority (IANA) identifier, because most third-party applications
+            // require this to interpret event times correctly.
+            var timeZoneId = TZConvert.WindowsToIana( RockDateTime.OrgTimeZoneInfo.Id );
+            icalendar.AddTimeZone( VTimeZone.FromDateTimeZone( timeZoneId ) );
 
             // Create each of the events for the calendar(s)
             foreach ( EventItem eventItem in eventItems )
@@ -67,6 +68,7 @@ namespace Rock.Model
                         var ievent = icalEvent.Copy<CalendarEvent>();
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
                         ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
+                        ievent.Uid = occurrence.Guid.ToString();
 
                         // Determine the start and end time for the event.
                         // For an all-day event, omit the End date.
@@ -297,9 +299,17 @@ namespace Rock.Model
             var rockContext = new RockContext();
 
             var eventCalendarItemService = new EventCalendarItemService( rockContext );
-            var eventIdsForCalendar = eventCalendarItemService
+            var eventItemQuery = eventCalendarItemService
                 .Queryable()
-                .Where( i => i.EventCalendarId == calendarProps.CalendarId )
+                .Where( i => i.EventCalendarId == calendarProps.CalendarId );
+
+            // Filter by Event Item.
+            if ( calendarProps.EventItemIds != null && calendarProps.EventItemIds.Any() )
+            {
+                eventItemQuery = eventItemQuery.Where( eci => calendarProps.EventItemIds.Contains( eci.EventItemId ) );
+            }
+
+            var eventIdsForCalendar = eventItemQuery
                 .Select( i => i.EventItemId )
                 .ToList();
 
@@ -307,7 +317,7 @@ namespace Rock.Model
             var eventQueryable = eventItemService
                 .Queryable( "EventItemAudiences, EventItemOccurrences.Schedule" )
                 .Where( e => eventIdsForCalendar.Contains( e.Id ) )
-                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate <= calendarProps.EndDate && calendarProps.StartDate <= ( o.Schedule.EffectiveEndDate == null ? o.Schedule.EffectiveStartDate : o.Schedule.EffectiveEndDate ) ) )
+                .Where( e => e.EventItemOccurrences.Any( o => ( o.Schedule.EffectiveStartDate == null || o.Schedule.EffectiveStartDate <= calendarProps.EndDate ) && ( o.Schedule.EffectiveEndDate == null || calendarProps.StartDate <= o.Schedule.EffectiveEndDate ) ) )
                 .Where( e => e.IsActive == true )
                 .Where( e => e.IsApproved );
 
@@ -409,6 +419,14 @@ namespace Rock.Model
         /// The Lava template to be used for the Event Item summaries.
         /// </summary>
         public string EventCalendarLavaTemplate { get; set; } = "";
+
+        /// <summary>
+        /// Gets or sets the Event Item identifiers to be included. If not set, this filter is ignored.
+        /// </summary>
+        /// <value>
+        /// A collection of Event Item identifiers.
+        /// </value>
+        public List<int> EventItemIds { get; set; }
     }
 
     #endregion

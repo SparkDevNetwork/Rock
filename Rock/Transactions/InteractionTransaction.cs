@@ -569,7 +569,7 @@ namespace Rock.Transactions
             // Fall back to values from the HTTP request if specified by the caller AND the values weren't explicitly set on the info object:
             // (The rockPage and request variables will only be defined if this.GetValuesFromHttpRequest was true.)
 
-            this.InteractionData = this.InteractionData ?? request?.Url.ToString();
+            this.InteractionData = this.InteractionData ?? request?.UrlProxySafe().ToString();
             this.UserAgent = this.UserAgent ?? request?.UserAgent;
 
             try

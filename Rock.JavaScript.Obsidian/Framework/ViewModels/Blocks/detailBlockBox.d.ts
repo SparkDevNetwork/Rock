@@ -26,7 +26,10 @@ export type DetailBlockBox<TEntityBag, TOptions> = {
     /** Gets or sets the entity. */
     entity?: TEntityBag | null;
 
-    /** Gets or sets the error message. */
+    /**
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
+     */
     errorMessage?: string | null;
 
     /** Gets or sets a value indicating whether this instance is editable. */

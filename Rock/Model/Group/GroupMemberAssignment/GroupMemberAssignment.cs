@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,15 +66,6 @@ namespace Rock.Model
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// The date and time when the last RSVP reminder sent.
-        /// </summary>
-        /// <value>
-        /// The last RSVP reminder sent.
-        /// </value>
-        [DataMember]
-        public DateTime? LastRSVPReminderSentDateTime { get; set; }
-
-        /// <summary>
         /// The date and time when the confirmation is sent.
         /// </summary>
         /// <value>
@@ -82,6 +73,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? ConfirmationSentDateTime { get; set; }
+
+        /// <summary>
+        /// The date and time when the last reminder was sent.
+        /// </summary>
+        /// <value>
+        /// The last reminder was sent.
+        /// </value>
+        public DateTime? LastReminderSentDateTime { get; set; }
 
         #endregion Entity Properties
 
@@ -112,6 +111,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Schedule Schedule { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.Person"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        [NotMapped]
+        public virtual int? PersonId
+        {
+            get
+            {
+                return GroupMember?.PersonId;
+            }
+        }
 
         #endregion
 

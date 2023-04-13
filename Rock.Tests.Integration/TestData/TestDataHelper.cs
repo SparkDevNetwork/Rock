@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -6,8 +22,10 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Tests.Shared;
+using Rock.Tests.Integration.Crm.Prayer;
+using Rock.Tests.Integration.Crm.Steps;
 
-namespace Rock.Tests.Integration.TestData
+namespace Rock.Tests.Integration
 {
     public static partial class TestDataHelper
     {
@@ -80,15 +98,38 @@ namespace Rock.Tests.Integration.TestData
             return minDate.AddDays( randomGenerator.Next( range ) );
         }
 
+        /// <summary>
+        /// Returns an ordered list of random dates within a specified range.
+        /// </summary>
+        /// <param name="minDate"></param>
+        /// <param name="maxDate"></param>
+        /// <param name="dateCount"></param>
+        /// <returns></returns>
+        public static List<DateTime> GetRandomDateTimesInRange( DateTime minDate, DateTime maxDate, int dateCount )
+        {
+            var totalSeconds = Convert.ToInt32( ( maxDate - minDate ).TotalSeconds );
+
+            var dateList = new List<DateTime>();
+            while ( dateCount > 0 )
+            {
+                dateList.Add( minDate.AddSeconds( randomGenerator.Next( totalSeconds ) ) );
+                dateCount--;
+            }
+
+            dateList.Sort();
+
+            return dateList;
+        }
+
         public static Dictionary<int, DateTime> GetAnalyticsSourceDateTestData()
         {
             return new Dictionary<int, DateTime>
             {
-                {20100131,  Convert.ToDateTime("1/31/2010")},
-                {20101231,  Convert.ToDateTime("12/31/2010")},
-                {20101201,  Convert.ToDateTime("12/1/2010")},
-                {20100101,  Convert.ToDateTime("1/1/2010")},
-                {20160229,  Convert.ToDateTime("02/29/2016")},
+                {20100131,  Convert.ToDateTime("2010-1-31")},
+                {20101231,  Convert.ToDateTime("2010-12-31")},
+                {20101201,  Convert.ToDateTime("2010-12-1")},
+                {20100101,  Convert.ToDateTime("2010-1-1")},
+                {20160229,  Convert.ToDateTime("2016-02-29")},
             };
         }
 
@@ -110,7 +151,7 @@ namespace Rock.Tests.Integration.TestData
         }
 
         #region Attribute Helpers
-        
+
         /// <summary>
         /// Sets the value of an existing <see cref="AttributeValue"/> and saves it to the database or creates a new database record if one doesn't already exist.
         /// </summary>
@@ -187,6 +228,7 @@ namespace Rock.Tests.Integration.TestData
 
         public static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
         public static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
+        public static string SecondaryCampusName = "Stepping Stone";
 
         public static Campus GetOrAddCampusSteppingStone( RockContext rockContext )
         {
@@ -202,18 +244,233 @@ namespace Rock.Tests.Integration.TestData
                 campusService.Add( campus2 );
             }
 
-            campus2.Name = "Stepping Stone";
+            campus2.Name = SecondaryCampusName;
             campus2.Guid = SecondaryCampusGuidString.AsGuid();
+            campus2.IsActive = true;
+            campus2.CampusStatusValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN.AsGuid() );
+            campus2.CampusTypeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL.AsGuid() );
 
             rockContext.SaveChanges();
 
             return campus2;
         }
 
-#endregion
-#region Events
+        #endregion
+
+        /// <summary>
+        /// Delete a set of person aliases identified by ForeignKey.
+        /// </summary>
+        /// <param name="foreignKeyList"></param>
+        public static void DeletePersonAliases( IEnumerable<string> foreignKeyList )
+        {
+            var rockContext = new RockContext();
+
+            var personAliasService = new PersonAliasService( rockContext );
+            var personAliases = personAliasService.Queryable().Where( pa => foreignKeyList.Contains( pa.ForeignKey ) ).ToList();
+
+            personAliasService.DeleteRange( personAliases );
+
+            rockContext.SaveChanges();
+        }
+
+        public static void DeletePersonByGuid( IEnumerable<Guid> guidList )
+        {
+            try
+            {
+                var rockContext = new RockContext();
+
+                // Delete Search Key
+                //using ( var rockContext = new RockContext() )
+                //{
+                    var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                    var personSearchKeyQuery = personSearchKeyService.Queryable()
+                        .Where( psk => guidList.Contains( psk.PersonAlias.Person.Guid ) );
+                    personSearchKeyService.DeleteRange( personSearchKeyQuery );
+                    rockContext.SaveChanges();
+                //}
+
+                // Delete Connection Requests
+                //using ( var rockContext = new RockContext() )
+                //{
+                    var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+                    var connectionRequestActivityQuery = connectionRequestActivityService.Queryable()
+                        .Where( x => guidList.Contains( x.ConnectorPersonAlias.Person.Guid ) || guidList.Contains( x.ConnectionRequest.PersonAlias.Person.Guid ) );
+                    connectionRequestActivityService.DeleteRange( connectionRequestActivityQuery );
+                    rockContext.SaveChanges();
+                //}
+
+                //using ( var rockContext = new RockContext() )
+                //{
+                    var connectionRequestService = new ConnectionRequestService( rockContext );
+                    var connectionRequestQuery = connectionRequestService.Queryable()
+                        .Where( x => guidList.Contains( x.ConnectorPersonAlias.Person.Guid ) || guidList.Contains( x.PersonAlias.Person.Guid ) );
+                    connectionRequestService.DeleteRange( connectionRequestQuery );
+                    rockContext.SaveChanges();
+                //}
+
+                // Delete Auths.
+                var authService = new AuthService( rockContext );
+                var authQuery = authService.Queryable().Where( a => guidList.Contains( a.PersonAlias.Person.Guid ) );
+                authService.DeleteRange( authQuery );
+                rockContext.SaveChanges();
+
+                // Delete Person Aliases
+                //using ( var rockContext = new RockContext() )
+                //{
+                var personAliasService = new PersonAliasService( rockContext );
+                    var personAliasQuery = personAliasService.Queryable()
+                        .Where( pa => guidList.Contains( pa.Person.Guid ) || guidList.Contains( pa.AliasPerson.Guid ) );
+                    personAliasService.DeleteRange( personAliasQuery );
+                    rockContext.SaveChanges();
+                //}
+
+                // Delete Person
+                //using ( var rockContext = new RockContext() )
+                //{
+                    var personService = new PersonService( rockContext );
+                    var personQuery = personService.Queryable()
+                        .Where( p => guidList.Contains( p.Guid ) );
+                    personService.DeleteRange( personQuery );
+                    rockContext.SaveChanges();
+                //}
+            }
+            catch ( Exception ex )
+            {
+                throw ex;
+            }
+
+        }
+
+
+        #region Sample Data
+
+        private static List<string> _loadedFeatureDataSets = new List<string>();
+
+        public static class DataSetIdentifiers
+        {
+            public static string PrayerSampleData = "PrayerSampleData";
+            public static string StepsSampleData = "StepsSampleData";
+        }
+
+        /// <summary>
+        /// Add a well-known set of test data.
+        /// </summary>
+        /// <param name="datasetIdentifier">A <c>SampleDataHelper.DataSetIdentifiers</c> value that uniquely identifies the data set.</param>
+        public static void AddTestDataSet( string datasetIdentifier )
+        {
+            if ( GetFeatureDataLoadState( datasetIdentifier ) )
+            {
+                return;
+            }
+
+            var isValid = false;
+
+            if ( datasetIdentifier == DataSetIdentifiers.PrayerSampleData )
+            {
+                PrayerFeatureDataHelper.AddSampleData();
+                isValid = true;
+            }
+            else if ( datasetIdentifier == DataSetIdentifiers.StepsSampleData )
+            {
+                StepsFeatureDataHelper.AddSampleTestData();
+                isValid = true;
+            }
+
+            else
+            {
+
+            }
+
+            if ( !isValid )
+            {
+                throw new Exception( $"Invalid Data Set. The data set \"{datasetIdentifier}\" could not be loaded." );
+            }
+
+            SetFeatureDataLoadState( datasetIdentifier );
+        }
+
+        public static void RemoveTestDataSet( string datasetIdentifier )
+        {
+            if ( !GetFeatureDataLoadState( datasetIdentifier ) )
+            {
+                return;
+            }
+
+            var isValid = false;
+
+            if ( datasetIdentifier == DataSetIdentifiers.PrayerSampleData )
+            {
+                PrayerFeatureDataHelper.RemoveSampleData();
+                isValid = true;
+            }
+            else if ( datasetIdentifier == DataSetIdentifiers.StepsSampleData )
+            {
+                StepsFeatureDataHelper.RemoveStepsFeatureTestData();
+                isValid = true;
+            }
+
+            if ( !isValid )
+            {
+                throw new Exception( $"Invalid Data Set. The data set \"{datasetIdentifier}\" could not be loaded." );
+            }
+
+            SetFeatureDataLoadState( datasetIdentifier );
+        }
+
+        private static bool GetFeatureDataLoadState( string datasetName )
+        {
+            return _loadedFeatureDataSets.Contains( datasetName );
+        }
+
+        private static void SetFeatureDataLoadState( string datasetName, bool isLoaded = true )
+        {
+            if ( _loadedFeatureDataSets.Contains( datasetName ) )
+            {
+                if ( !isLoaded )
+                {
+                    _loadedFeatureDataSets.Remove( datasetName );
+                }
+            }
+            else
+            {
+                if ( isLoaded )
+                {
+                    _loadedFeatureDataSets.Add( datasetName );
+                }
+            }
+        }
 
         #endregion
 
+        #region Communications
+
+        public static void DeleteCommunicationsByForeignKey( string foreignKey )
+        {
+            var rockContext = new RockContext();
+            var communicationService = new CommunicationService( rockContext );
+
+            var communications = communicationService.Queryable().Where( x => x.ForeignKey == foreignKey );
+
+            DeleteCommunications( communications, rockContext );
+        }
+        public static void DeleteCommunications( IEnumerable<Rock.Model.Communication> communications )
+        {
+            DeleteCommunications( communications, new RockContext() );
+        }
+
+        private static void DeleteCommunications( IEnumerable<Rock.Model.Communication> communications, RockContext dataContext )
+        {
+            var communicationService = new CommunicationService( dataContext );
+            communicationService.DeleteRange( communications );
+
+            dataContext.SaveChanges();
+        }
+
+        #endregion
+
+        private static RockContext GetActiveRockContext( RockContext rockContext )
+        {
+            return rockContext ?? new RockContext();
+        }
     }
 }

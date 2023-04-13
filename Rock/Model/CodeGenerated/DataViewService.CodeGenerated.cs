@@ -165,6 +165,7 @@ namespace Rock.Model
                 CategoryId = model.CategoryId,
                 DataViewFilterId = model.DataViewFilterId,
                 Description = model.Description,
+                DisableUseOfReadOnlyContext = model.DisableUseOfReadOnlyContext,
                 EntityTypeId = model.EntityTypeId,
                 IncludeDeceased = model.IncludeDeceased,
                 IsSystem = model.IsSystem,
@@ -172,6 +173,7 @@ namespace Rock.Model
                 Name = model.Name,
                 PersistedLastRefreshDateTime = model.PersistedLastRefreshDateTime,
                 PersistedLastRunDurationMilliseconds = model.PersistedLastRunDurationMilliseconds,
+                PersistedScheduleId = model.PersistedScheduleId,
                 PersistedScheduleIntervalMinutes = model.PersistedScheduleIntervalMinutes,
                 RunCount = model.RunCount,
                 RunCountLastRefreshDateTime = model.RunCountLastRefreshDateTime,
@@ -249,6 +251,7 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.DataViewFilterId = source.DataViewFilterId;
             target.Description = source.Description;
+            target.DisableUseOfReadOnlyContext = source.DisableUseOfReadOnlyContext;
             target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -258,6 +261,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
             target.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
+            target.PersistedScheduleId = source.PersistedScheduleId;
             target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             target.RunCount = source.RunCount;
             target.RunCountLastRefreshDateTime = source.RunCountLastRefreshDateTime;

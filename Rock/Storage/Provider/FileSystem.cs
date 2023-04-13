@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -145,6 +145,12 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         private string GetRelativePath( BinaryFile binaryFile )
         {
+            // If binaryFile has a relative path then use it since the file name and BinaryFile.Name can be different
+            if ( binaryFile != null && binaryFile.Path.IsNotNullOrWhiteSpace() && binaryFile.Path.StartsWith("~") )
+            {
+                return binaryFile.Path;
+            }
+
             if ( binaryFile != null && !string.IsNullOrWhiteSpace( binaryFile.FileName ) )
             {
                 string subFolder = string.Empty;

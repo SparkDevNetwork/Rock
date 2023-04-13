@@ -58,7 +58,7 @@ namespace Rock.Field.Types
         {
             // Encode because if the user typed <span>hello</span> then we want
             // it to display on screen as "<span>hello</span>" rather than "hello".
-            return privateValue.Truncate( 100 ).EncodeHtml();
+            return privateValue.Truncate( CondensedTruncateLength ).EncodeHtml();
         }
 
         #endregion

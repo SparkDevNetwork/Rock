@@ -1,6 +1,6 @@
 {%- if ccid != empty -%}
 [
-    {% contentchannelitem where:'ContentChannelId == {{ ccid }} && Status != 3' limit:'10000' sort:'StartDateTime desc' securityenabled:'false' iterator:'items' -%}
+    {% contentchannelitem where:'ContentChannelId == {{ ccid }} && Status == 2' limit:'10000' sort:'StartDateTime desc' securityenabled:'false' iterator:'items' -%}
       {%- for item in items -%}
         {%- assign itemsManuallyOrdered = item.ContentChannel.ItemsManuallyOrdered -%}
         {%- assign childItemsManuallyOrdered = item.ContentChannel.ChildItemsManuallyOrdered -%}

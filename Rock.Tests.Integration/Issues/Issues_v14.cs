@@ -15,11 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
-using Rock.Tests.Integration.Lava;
+using Rock.Lava.RockLiquid;
+using Rock.Tests.Integration.Core.Lava;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.BugFixes
@@ -43,21 +43,23 @@ namespace Rock.Tests.Integration.BugFixes
              * For details, see https://github.com/SparkDevNetwork/Rock/issues/5173.
              * 
              * The conditions under which this issue occurs are:
-             * The active Lava engine is RockLiquid.
+             * The active Lava engine is DotLiquid.
              * Multiple requests to render an identical Lava template are processed simultaneously.
              * The template does not exist in the lava template cache.
              * Multiple threads attempt to add the "CurrentUser" key to the Lava dictionary.
-             * 
-             * Prior to the bugfix, the code below would generate the reported error within the first few iterations.
              */
 
             const int templateTotal = 100;
             const int iterationTotal = 10;
             const int parallelProcessTotal = 10;
 
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true,
-                testDotLiquidEngine: false,
-                testFluidEngine: false );
+            var engineOptions = new LavaEngineConfigurationOptions
+            {
+                InitializeDynamicShortcodes = false
+            };
+            var engine = global::Rock.Lava.LavaService.NewEngineInstance( typeof( RockLiquidEngine ), engineOptions );
+
+            LavaIntegrationTestHelper.SetEngineInstance( engine );
 
             var mergeFields = new LavaDataDictionary();
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = parallelProcessTotal };
@@ -82,7 +84,7 @@ namespace Rock.Tests.Integration.BugFixes
             {
                 // Prior to applying the bugfix, this test will fail with the following error:
                 // System.ArgumentException: An item with the same key has already been added.
-                Debug.WriteLine( $"[Template#={templateCount:00000},Iteration={passCount:00000}]\n{ex}" );
+                LogHelper.LogError( ex, $"[Template#={templateCount:00000},Iteration={passCount:00000}]" );
                 Assert.Fail( "Issue #5173: error encountered." );
             }
         }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,6 +62,11 @@ namespace Rock.SystemGuid
         /// The pin authentication provider
         /// </summary>
         public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
+
+        /// <summary>
+        /// The passwordless authentication provider
+        /// </summary>
+        public const string AUTHENTICATION_PASSWORDLESS = "2D037783-09BD-48BA-8C1D-626B0BC82495";
 
         /// <summary>
         /// The guid for the Rock.Model.Badge entity
@@ -264,6 +269,36 @@ namespace Rock.SystemGuid
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperience"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE = "3D90E693-476E-4DFC-B958-A28D1DD370BF";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceAction"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_ACTION = "8635E7E7-3576-47FF-92DE-30A69EB5D011";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceAnswer"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_ANSWER = "D11DA9D4-8887-4EC2-B396-78556926DE89";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceOccurrence"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_OCCURRENCE = "2D1263A1-A3E7-4568-AA4B-C1234824188D";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceSchedule"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_SCHEDULE = "D23B4DCF-545A-490F-AEAD-BA78A8FB4028";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceScheduleCampus"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_SCHEDULE_CAMPUS = "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.LavaShortcode"/> (well known as of v14)
         /// </summary>
         public const string LAVA_SHORTCODE = "7574A473-3326-4973-8DF6-C7BF5F64EB36";
@@ -399,9 +434,19 @@ namespace Rock.SystemGuid
         public const string MOBILE_EVENTS_CALENDARVIEW_BLOCK_TYPE = "5A26F32F-892E-4E76-B64A-0F54A77C863D";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.LiveExperience
+        /// </summary>
+        public const string MOBILE_EVENTS_LIVEEXPERIENCE_BLOCK_TYPE = "FC408E41-872D-4B71-A08C-513D7500E980";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView
         /// </summary>
         public const string MOBILE_COMMUNICATION_COMMUNICATIONVIEW_BLOCK_TYPE = "4AF5FCEF-CBF6-486B-A04D-920E31356B7F";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationEntry
+        /// </summary>
+        public const string MOBILE_COMMUNICATION_COMMUNICATIONENTRY_BLOCK_TYPE = "9A952F9F-F619-4063-B1BB-CFB2E6983C01";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventItemOccurrenceView
@@ -569,6 +614,11 @@ namespace Rock.SystemGuid
         /// The GUID for the Rock.Follow.Event.PersonPrayerRequest entity
         /// </summary>
         public const string PERSON_PRAYER_REQUEST = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B";
+
+        /// <summary>
+        /// The GUID for the Rock.Model.PersonPreference entity
+        /// </summary>
+        public const string PERSON_PREFERENCE = "FDCF766C-F36B-403B-89F3-7030DA65507E";
 
         /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity
@@ -1721,38 +1771,33 @@ namespace Rock.SystemGuid
         public const string WORKFLOW_TRIGGER = "3781C82A-7F40-4D88-B3DB-1B9589D73D3D";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperience"/> 
-        /// </summary>
-        public const string INTERACTIVE_EXPERIENCE = "3D90E693-476E-4DFC-B958-A28D1DD370BF";
-
-        /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceAction"/> 
-        /// </summary>
-        public const string INTERACTIVE_EXPERIENCE_ACTION = "8635E7E7-3576-47FF-92DE-30A69EB5D011";
-
-        /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceAnswer"/> 
-        /// </summary>
-        public const string INTERACTIVE_EXPERIENCE_ANSWER = "D11DA9D4-8887-4EC2-B396-78556926DE89";
-
-        /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceSchedule"/> 
-        /// </summary>
-        public const string INTERACTIVE_EXPERIENCE_SCHEDULE = "D23B4DCF-545A-490F-AEAD-BA78A8FB4028";
-
-        /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceScheduleCampus"/> 
-        /// </summary>
-        public const string INTERACTIVE_EXPERIENCE_SCHEDULE_CAMPUS = "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11";
-
-        /// <summary>
         /// The Test Redirection Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_REDIRECTION_GATEWAY = "AB3C5BF6-4D99-4289-84AF-3EF798849705";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceOccurrence"/> 
+        /// The EntityType Guid for <see cref="Rock.Model.Snippet"/>
         /// </summary>
-        public const string INTERACTIVE_EXPERIENCE_OCCURRENCE = "2D1263A1-A3E7-4568-AA4B-C1234824188D";
+        public const string SNIPPET = "93548852-201B-4EF6-AF27-BBF535A2CC2B";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.SnippetType"/> 
+        /// </summary>
+        public const string SNIPPET_TYPE = "FD4C72DE-6B5D-4EB5-9438-385E2E15AF05";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.SystemPhoneNumber"/> 
+        /// </summary>
+        public const string SYSTEM_PHONE_NUMBER = "66D62A9F-13CD-4160-8653-211B2A4ABF16";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.NotificationMessage"/> 
+        /// </summary>
+        public const string NOTIFICATION_MESSAGE = "239ADD2E-2DBF-46A7-BD28-4A2A201D4E7B";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.NotificationMessageType"/> 
+        /// </summary>
+        public const string NOTIFICATION_MESSAGE_TYPE = "36FB1038-8836-429F-BAD4-04D32892D6D0";
     }
 }

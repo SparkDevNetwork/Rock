@@ -75,7 +75,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            return $"<a href=\"{privateValue.EncodeXml( true )}\">{privateValue.Truncate( 100 ).EncodeHtml()}</a>";
+            return $"<a href=\"{privateValue.EncodeXml( true )}\">{privateValue.Truncate( CondensedTruncateLength ).EncodeHtml()}</a>";
         }
 
         #endregion

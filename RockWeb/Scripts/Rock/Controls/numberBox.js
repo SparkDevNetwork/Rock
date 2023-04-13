@@ -62,7 +62,7 @@
                     }
                 }
 
-                args.isValid = isValid;
+                args.IsValid = isValid;
 
                 // Set the visual feedback.
                 if (isValid) {
@@ -72,6 +72,9 @@
                 else {
                     $numberBox.addClass('has-error');
                     $numberBox.attr('title', validationMessage);
+
+                    validator.errormessage = validationMessage;
+                    validator.isvalid = false;
                 }
             }
         };

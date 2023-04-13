@@ -1,0 +1,191 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6" v-if="isPersonalAllowed">
+                <div class="col-md-6 mt-4" v-if="isAuthorizedToEdit">
+                    <Toggle v-model="isShared"
+                            trueText="On"
+                            falseText="Off">
+                        <template #on="">
+                            Shared
+                        </template>
+                        <template #off="">
+                            Personal
+                        </template>
+                    </Toggle>
+                </div>
+                <div class="col-md-6">
+                    <PersonPicker v-model="ownerPersonAlias"
+                                  v-if="!isShared"
+                                  label="Owner"
+                                  :help="ownerHelpText"
+                                  rules="required"/>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <CategoryPicker label="Category"
+                                v-model="category"
+                                :multiple="false"
+                                :entityTypeGuid="entityTypeGuid" />
+            </div>
+        </div>
+
+        <div class="pull-right">
+            <Toggle label=""
+                    v-model="isLava"
+                    trueText="On"
+                    btnSize="xs">
+                <template #on>
+                    Lava
+                </template>
+                <template #off>
+                    Text
+                </template>
+            </Toggle>
+        </div>
+
+        <div class="mt-5">
+            <RockLabel>Snippet</RockLabel>
+            <TransitionVerticalCollapse>
+                <div v-if="!isLava">
+                    <TextBox v-model="content"
+                             textMode="multiline"
+                             :rows="10"/>
+                </div>
+                <div v-else="isLava">
+                    <CodeEditor v-model="content"
+                                theme="rock"
+                                mode="text"
+                                :editorHeight="200" />
+                </div>
+            </TransitionVerticalCollapse>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch, computed } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import Toggle from "@Obsidian/Controls/toggle";
+    import PersonPicker from "@Obsidian/Controls/personPicker";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
+    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { SnippetBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetBag";
+    import { SnippetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<SnippetBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<SnippetDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: SnippetBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const content = propertyRef(props.modelValue.content ?? "", "Content");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const isShared = ref(props.modelValue.ownerPersonAlias == null);
+    const isLava = ref(props.modelValue.content?.includes("{") ?? false);
+    const isAuthorizedToEdit = ref(props.options.isAuthorizedToEdit);
+    const isPersonalAllowed = ref(props.options.isPersonalAllowed);
+    const ownerPersonAlias = propertyRef(props.modelValue.ownerPersonAlias ?? undefined, "OwnerPersonAlias");
+    const category = propertyRef(props.modelValue.category ?? null, "Category");
+    const entityTypeGuid = EntityType.Snippet;
+
+    console.log(ownerPersonAlias);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, content, name, ownerPersonAlias, category];
+
+    // #endregion
+
+    // #region Computed Values
+    const ownerHelpText = computed((): string => {
+        const helpText = "When an owner is provided only this person will be able to see the snippet.";
+        return isAuthorizedToEdit ? helpText : helpText + "To make the snippet public you will need edit access to the SMS snippet type.";
+    });
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(content, props.modelValue.content ?? "");
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(ownerPersonAlias, props.modelValue.ownerPersonAlias ?? undefined);
+        updateRefValue(category, props.modelValue.category ?? null);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: SnippetBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            content: content.value,
+            name: name.value,
+            ownerPersonAlias: ownerPersonAlias.value,
+            category: category.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

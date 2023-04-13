@@ -2156,6 +2156,24 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<NotificationMessage>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, NotificationMessage.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<NotificationMessageType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, NotificationMessageType.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<NotificationMessageType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, NotificationMessageType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<NotificationRecipient>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, NotificationRecipient.FriendlyTypeName );
@@ -2914,6 +2932,36 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<Snippet>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Snippet.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<Snippet>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Snippet.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<Snippet>( Context ).Queryable().Any( a => a.OwnerPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Snippet.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<SnippetType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SnippetType.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<SnippetType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SnippetType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Step>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Step.FriendlyTypeName );
@@ -3079,6 +3127,24 @@ namespace Rock.Model
                 return false;
             }
             #pragma warning restore 612, 618
+
+            if ( new Service<SystemPhoneNumber>( Context ).Queryable().Any( a => a.AssignedToPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SystemPhoneNumber.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<SystemPhoneNumber>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SystemPhoneNumber.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<SystemPhoneNumber>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SystemPhoneNumber.FriendlyTypeName );
+                return false;
+            }
 
             if ( new Service<Tag>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
@@ -3350,6 +3416,7 @@ namespace Rock.Model
             target.AliasPersonId = source.AliasPersonId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InternalMessage = source.InternalMessage;
             target.LastVisitDateTime = source.LastVisitDateTime;
             target.Name = source.Name;
             target.PersonId = source.PersonId;

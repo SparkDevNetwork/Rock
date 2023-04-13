@@ -33,7 +33,7 @@ using Rock.MyWell.Controls;
 using Rock.Web.Cache;
 
 // Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer.
-using RestRequest = RestSharp.Serializers.Newtonsoft.Json.RestRequest;
+using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
 
 namespace Rock.MyWell
 {

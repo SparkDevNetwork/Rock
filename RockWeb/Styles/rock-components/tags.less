@@ -2,11 +2,18 @@
 // Tags - component that allows you to tag entities
 // --------------------------------------------------
 
+.tag-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
 .tagsInput,
 .tagsinput {
   display: flex;
-  align-items: center;
-  width: 100%;
+  flex-wrap: wrap;
+  align-items: flex-start;
 
   input {
     display: block;

@@ -5,11 +5,19 @@
     "jsx": "preserve",
     "module": "ESNext"
   },
+  "vueCompilerOptions": {
+    "extensions": [
+      ".obs"
+    ]
+  },
   "include": [
     "./*.ts",
-    "./*.vue"
+    "./*.obs"
   ],
   "references": [
-    { "path": "../Core" }
+    { "path": "../Core" },
+    { "path": "../Enums" },
+    { "path": "../Libs" },
+    { "path": "../SystemGuids" }
   ]
 }

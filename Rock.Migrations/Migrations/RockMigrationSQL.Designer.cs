@@ -1140,5 +1140,307 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{%- if type == &apos;&apos;gauge&apos;&apos; or type == &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {% javascript url:&apos;&apos;~/Scripts/Chartjs/Gauge.js&apos;&apos; id:&apos;&apos;gaugejs&apos;&apos;%}{% endjavascript %}
+        ///{%- endif -%}
+        ///
+        ///{%- if type == &apos;&apos;stackedbar&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;bar&apos;&apos; -%}
+        ///    {%- assign xaxistype = &apos;&apos;st [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202212011956416_Rollup_20221201_chartupdate {
+            get {
+                return ResourceManager.GetString("_202212011956416_Rollup_20221201_chartupdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spAnalytics_ETL_Family]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///        ,@RecordStatusActiveId INT = (
+        ///            SELECT TOP 1 Id
+        ///            FROM DefinedValue
+        ///            WHERE [Guid] = &apos;618F906C-C33D-4FA3-8AEF-E58CB7B63F1E&apos;
+        ///            )
+        ///        ,@GroupTypeFamilyId INT = (
+        ///            SELECT TOP 1 Id
+        ///            FROM GroupType
+        ///            WHERE [Guid] = &apos;790E3215-3B10-442B-AF69-616C0DCB9 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022 {
+            get {
+                return ResourceManager.GetString("_202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure updates several attributes related to a person&apos;s
+        ///		attendance.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the critieria.
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EXEC [dbo].[spCrm_FamilyAnalyticsAttendance] 
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ///ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsAttendance]
+        ///
+        ///AS
+        ///BEGIN
+        ///	
+        ///	-- configuration of the duration in weeks
+        ///	DECLARE @EntryAttendanceDurationWeeks int = 16
+        ///		
+        ///	DECLARE @cACTIVE_RECORD_STATUS_VALUE_GUID uniqueid [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsAttendance {
+            get {
+                return ResourceManager.GetString("_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnaly" +
+                        "ticsAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;
+        ///		For eRA we only consider adults for the crit [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnaly" +
+                        "ticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure updates several attributes related to a person&apos;s
+        ///		giving.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the critieria.
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EXEC [dbo].[spCrm_FamilyAnalyticsGiving] 
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
+        ///	
+        ///AS
+        ///BEGIN
+        ///	
+        ///	-- configuration of the duration in weeks
+        ///	DECLARE @GivingDurationLongWeeks int = 52
+        ///	DECLARE @GivingDurationShortWeeks int = 6
+        ///	
+        ///	DECLARE @cACTIVE_RECORD [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnaly" +
+                        "ticsGiving", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure attempts to update an indivdiual&apos;s first and second visit
+        ///		attributes. Below are a few points of interest on the logic.
+        ///
+        ///		+ A child&apos;s date will only be calculated looking at their check-in data.
+        ///		+ An adult&apos;s date will be calculated looking at the check-in data of all the children.
+        ///
+        ///		+ When calculating a first-visit date it will only write the date if the first checkin date
+        ///		  is within 14 days of the record being created. This helps eliminate bad  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsUpdateVisitDates {
+            get {
+                return ResourceManager.GetString("_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnaly" +
+                        "ticsUpdateVisitDates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [SystemCommunication] SET [Body]=N&apos;{% assign peopleReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,true %}
+        ///{% assign otherReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,false %}
+        ///{% assign currentDate = &apos;&apos;Now&apos;&apos; | Date:&apos;&apos;MMMM d, yyyy&apos;&apos; %}
+        ///{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///&lt;style&gt;table[class=&quot;body&quot;] table.columns td.reminder-img-today{width:58px !important;}table[class=&quot;body&quot;] table.columns td.reminder-img{width:50px !important;}&lt;/style&gt;
+        ///&lt;h1 style=&quot;margin:0;&quot;&gt;Your Reminders&lt;/h1&gt;
+        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication {
+            get {
+                return ResourceManager.GetString("_202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        /// &lt;summary&gt;
+        ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        /// &lt;/summary&gt;
+        /// 
+        /// &lt;remarks&gt; 
+        ///  Uses the following constants:
+        ///   * Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///            * Phone Type - Cell: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        /// &lt;/remarks&gt;
+        /// &lt;code&gt;
+        ///  EX [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure {
+            get {
+                return ResourceManager.GetString("_202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /****** Object:  StoredProcedure [dbo].[spCore_DeleteOrphanedAttributeMatrices] ******/
+        ///SET ANSI_NULLS ON
+        ///GO
+        ///
+        ///SET QUOTED_IDENTIFIER ON
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure AttributeMatrix records that are no longer associated with an attribute value.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;code&gt;
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///	
+        ///CREATE PROCEDURE [dbo].[spCore_DeleteOrphanedAttributeMatrices]
+        ///AS
+        ///BEGIN
+        ///	DECLARE @MatrixItemEntityTypeId INT = (SELECT Id FROM [EntityType] WHERE [Guid]=&apos;3C9D5021-0484- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices {
+            get {
+                return ResourceManager.GetString("_202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttribute" +
+                        "Matrices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% assign apiKey = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;GoogleApiKey&apos;&apos; %}
+        ///
+        ///{% if apiKey == &quot;&quot; %}
+        ///    &lt;div class=&quot;alert alert-warning&quot;&gt;
+        ///        There is no Google API key defined. Please add your key under: &apos;&apos;Admin Tools &gt; General Settings &gt; Global Attributes &gt; Google API Key&apos;&apos;.
+        ///    &lt;/div&gt;
+        ///{% endif %}
+        ///
+        ///{% assign url = &apos;&apos;https://maps.googleapis.com/maps/api/staticmap?&apos;&apos; | Append:&apos;&apos;size=&apos;&apos; | Append:imagesize | Append:&apos;&apos;&amp;maptype=&apos;&apos; | Append:maptype | Append:&apos;&apos;&amp;scale=&apos;&apos; | Append [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap {
+            get {
+                return ResourceManager.GetString("_202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleSta" +
+                        "ticMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [AttributeValue] SET [Value]=N&apos;{
+        ///    &quot;SeriesColors&quot;: [
+        ///      &quot;#3b82f6&quot;,
+        ///      &quot;#f97316&quot;,
+        ///      &quot;#ef4444&quot;,
+        ///      &quot;#06b6d4&quot;,
+        ///      &quot;#22c55e&quot;,
+        ///      &quot;#eab308&quot;,
+        ///      &quot;#8b5cf6&quot;,
+        ///      &quot;#EC4899&quot;,
+        ///      &quot;#737373&quot;
+        ///    ],
+        ///    &quot;GoalSeriesColor&quot;: &quot;red&quot;,
+        ///    &quot;Grid&quot;: {
+        ///      &quot;ColorGradient&quot;: null,
+        ///      &quot;Color&quot;: null,
+        ///      &quot;BackgroundColorGradient&quot;: null,
+        ///      &quot;BackgroundColor&quot;: &quot;transparent&quot;,
+        ///      &quot;BorderWidth&quot;: {
+        ///        &quot;top&quot;: 0,
+        ///        &quot;right&quot;: 0,
+        ///        &quot;bottom&quot;: 1,
+        ///        &quot;left&quot; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202303231713546_Rollup_20230323_ChartColorUpdate {
+            get {
+                return ResourceManager.GetString("_202303231713546_Rollup_20230323_ChartColorUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [SystemCommunication] SET [Body]=N&apos;{% assign peopleReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,true %}
+        ///{% assign otherReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,false %}
+        ///{% assign currentDate = &apos;&apos;Now&apos;&apos; | Date:&apos;&apos;MMMM d, yyyy&apos;&apos; %}
+        ///{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///&lt;h1 style=&quot;margin:0;&quot;&gt;Your Reminders&lt;/h1&gt;
+        ///
+        ///&lt;p&gt;
+        ///    Below are {{ MaxRemindersPerEntityType }} of the most recent reminders for each feature as of {{ currentDate }}. &lt;a href=&quot;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicAp [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars {
+            get {
+                return ResourceManager.GetString("_202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look at each opt [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202304042314453_Rollup_20230404_updatechartjs {
+            get {
+                return ResourceManager.GetString("_202304042314453_Rollup_20230404_updatechartjs", resourceCulture);
+            }
+        }
     }
 }

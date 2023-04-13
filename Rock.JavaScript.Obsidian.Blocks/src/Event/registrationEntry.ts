@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, provide, reactive, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
 import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
 import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
@@ -33,7 +33,7 @@ import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
 import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
 import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
-import { RegistrantInfo, RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types";
+import { RegistrantInfo, RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types.partial";
 import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial";
 import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial";
 import RegistrationEntrySuccess from "./RegistrationEntry/success.partial";
@@ -55,7 +55,7 @@ export default defineComponent({
         RegistrationEntryPayment,
         RegistrationEntrySuccess,
         ProgressTracker,
-        Alert,
+        NotificationBox,
         CountdownTimer,
         JavaScriptAnchor,
         SessionRenewal
@@ -111,6 +111,7 @@ export default defineComponent({
             viewModel: viewModel,
             firstStep: currentStep,
             currentStep: currentStep,
+            navBack: false,
             currentRegistrantFormIndex: 0,
             currentRegistrantIndex: 0,
             registrants: viewModel.session?.registrants || [getDefaultRegistrantInfo(null, viewModel, null)],
@@ -429,6 +430,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.PerRegistrantForms;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -436,6 +438,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Intro;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -443,6 +446,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -450,6 +454,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.Intro;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -457,6 +462,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPostAttributes ? Step.RegistrationEndForm : Step.Review;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -464,6 +470,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -471,6 +478,7 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -487,7 +495,7 @@ export default defineComponent({
                     this.registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
                     this.registrationEntryState.currentStep = Step.PerRegistrantForms;
                 }
-
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
@@ -499,6 +507,7 @@ export default defineComponent({
                 else {
                     this.registrationEntryState.currentStep = Step.Success;
                 }
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         },
@@ -506,12 +515,14 @@ export default defineComponent({
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
+                this.registrationEntryState.navBack = true;
                 Page.smoothScrollToTop();
             }
         },
         async onPaymentNext(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 this.registrationEntryState.currentStep = Step.Success;
+                this.registrationEntryState.navBack = false;
                 Page.smoothScrollToTop();
             }
         }
@@ -553,36 +564,36 @@ export default defineComponent({
     },
     template: `
 <div>
-    <Alert v-if="notFound" alertType="warning">
+    <NotificationBox v-if="notFound" alertType="warning">
         <strong>Sorry</strong>
         <p>{{notFoundMessage}}</p>
-    </Alert>
-    <Alert v-else-if="mustLogin" alertType="warning">
+    </NotificationBox>
+    <NotificationBox v-else-if="mustLogin" alertType="warning">
         <strong>Please log in</strong>
         <p>You must be logged in to access this registration.</p>
-    </Alert>
-    <Alert v-else-if="isUnauthorized" alertType="warning">
+    </NotificationBox>
+    <NotificationBox v-else-if="isUnauthorized" alertType="warning">
         <strong>Sorry</strong>
         <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>
-    </Alert>
-    <Alert v-else-if="isInvalidGateway" alertType="warning">
+    </NotificationBox>
+    <NotificationBox v-else-if="isInvalidGateway" alertType="warning">
         <strong>Incorrect Configuration</strong>
         <p>This registration has costs/fees associated with it but the configured payment gateway is not supported.</p>
-    </Alert>
-    <Alert v-else-if="preventNewRegistration" class="text-left" alertType="warning">
+    </NotificationBox>
+    <NotificationBox v-else-if="preventNewRegistration" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
             There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}.
         </p>
-    </Alert>
+    </NotificationBox>
     <template v-else>
         <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
         <ProgressTracker v-if="currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
             <template #aside>
                 <div v-if="secondsBeforeExpiration >= 0" v-show="secondsBeforeExpiration <= (30 * 60)" class="remaining-time flex-grow-1 flex-md-grow-0">
-                    <Alert v-if="hasSessionRenewalSuccess" alertType="success" class="m-0 pt-3" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                    <NotificationBox v-if="hasSessionRenewalSuccess" alertType="success" class="m-0 pt-3" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
                         <h4>Success</h4>
-                    </Alert>
+                    </NotificationBox>
                     <span class="remaining-time-title">Time left before timeout</span>
                     <p class="remaining-time-countdown">
                         <CountdownTimer v-model="secondsBeforeExpiration" />
@@ -597,7 +608,7 @@ export default defineComponent({
         <RegistrationEntrySummary v-else-if="currentStep === steps.review" @next="onSummaryNext" @previous="onSummaryPrevious" />
         <RegistrationEntryPayment v-else-if="currentStep === steps.payment" @next="onPaymentNext" @previous="onPaymentPrevious" />
         <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
-        <Alert v-else alertType="danger">Invalid State: '{{currentStep}}'</Alert>
+        <NotificationBox v-else alertType="danger">Invalid State: '{{currentStep}}'</NotificationBox>
     </template>
     <SessionRenewal :isSessionExpired="isSessionExpired" @success="onSessionRenewalSuccess" />
 </div>`

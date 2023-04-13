@@ -424,7 +424,7 @@
         GeoPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId,
                 $control = $('#' + this.controlId),
-                $hiddenField = $('#hfGeoPath_' + this.controlId),
+                $hiddenField = $('#' + this.controlId + '_hfGeoPath'),
                 self = this;
 
             /**
@@ -558,8 +558,9 @@
             /**
             * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field.
             */
-            $('#btnSelect_' + controlId).on('click', function () {
-                var selectedValue = self.path,
+            $control.find('.js-geopicker-select').on('click', function () {
+                var geoInput = $('#' + controlId).find('input:checked'),
+                    selectedValue = self.path,
                     selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId);
 
                 $hiddenField.val(self.path);
@@ -607,7 +608,7 @@
         */
         GeoPicker.prototype.initialize = function () {
             var self = this;
-            var $hiddenField = $('#hfGeoPath_' + this.controlId);
+            var $hiddenField = $('#' + self.controlId + '_hfGeoPath');
             var deleteButtonId = 'gmnoprint-delete-button_' + self.controlId;
 
             // Pull anything in the hidden field onto this object's path

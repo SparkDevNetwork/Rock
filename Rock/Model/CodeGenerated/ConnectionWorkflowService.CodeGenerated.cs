@@ -90,6 +90,7 @@ namespace Rock.Model
                 IdKey = model.IdKey,
                 ConnectionOpportunityId = model.ConnectionOpportunityId,
                 ConnectionTypeId = model.ConnectionTypeId,
+                ManualTriggerFilterConnectionStatusId = model.ManualTriggerFilterConnectionStatusId,
                 QualifierValue = model.QualifierValue,
                 TriggerType = ( int ) model.TriggerType,
                 WorkflowTypeId = model.WorkflowTypeId,
@@ -166,6 +167,7 @@ namespace Rock.Model
             target.ConnectionTypeId = source.ConnectionTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.ManualTriggerFilterConnectionStatusId = source.ManualTriggerFilterConnectionStatusId;
             target.QualifierValue = source.QualifierValue;
             target.TriggerType = source.TriggerType;
             target.WorkflowTypeId = source.WorkflowTypeId;

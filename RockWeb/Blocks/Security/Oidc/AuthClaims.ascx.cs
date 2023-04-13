@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.Security.Oidc
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gUserLogins control.
+        /// Handles the GridRebind event of the gAuthClaims control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>

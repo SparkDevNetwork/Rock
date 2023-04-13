@@ -263,8 +263,7 @@ namespace Rock.Utility
             int recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
             var filteredPersonIds = new List<int>();
 
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs();
-            var personQuery = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Rock.Model.Person>().Where( a => a.RecordStatusValueId != recordStatusInactiveId );
+            var personQuery = dataView.GetQuery().OfType<Rock.Model.Person>().Where( a => a.RecordStatusValueId != recordStatusInactiveId );
 
             if ( campaignConfiguration.FamilyLimits == FamilyLimits.HeadOfHouse )
             {

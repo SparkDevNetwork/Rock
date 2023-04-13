@@ -15,12 +15,15 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection.Search
 {
     /// <summary>
     /// Basic interface that all search items must implement. This is used by
     /// the content collection system to build complex queries.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal interface ISearchItem
     {
         /// <summary>

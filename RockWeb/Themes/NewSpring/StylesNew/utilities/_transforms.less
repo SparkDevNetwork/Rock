@@ -1,0 +1,33 @@
+//
+// Utilities for transforming elements
+//
+
+.ns-util-mix-transform(@breakpoint:"base") {
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .transform-breakpoints(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .transform-breakpoints(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+.transform-breakpoints(@infix) {
+  .rotate@{infix}-90 {
+    transform: rotate(90deg);
+  }
+  .rotate@{infix}-90-counter {
+    transform: rotate(-90deg);
+  }
+  .flip@{infix}-x {
+    transform: scaleX(-1);
+  }
+  .flip@{infix}-y {
+    transform: scaleY(-1);
+  }
+}

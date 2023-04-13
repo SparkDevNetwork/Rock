@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Spatial;
+using System.Linq;
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.IpAddress.Classes;
@@ -35,7 +36,7 @@ namespace Rock.IpAddress
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.14" )]
     public abstract class IpAddressLookupComponent : Component
     {
         /// <summary>
@@ -55,7 +56,21 @@ namespace Rock.IpAddress
         /// <exception cref="System.NotImplementedException"></exception>
         public virtual IpLocation Lookup( string ipAddress, out string resultMsg )
         {
-            throw new NotImplementedException();
+            var location = BulkLookup( new List<string> { ipAddress }, out resultMsg )
+                .FirstOrDefault();
+            return location;
+        }
+
+        /// <summary>
+        /// Gets a flag indicating the current availability status of the service,
+        /// and an optional status message with additional information.
+        /// </summary>
+        /// <param name="statusMessage"></param>
+        /// <returns>true if the service is available, otherwise false.</returns>
+        public virtual bool VerifyCanProcess( out string statusMessage )
+        {
+            statusMessage = null;
+            return true;
         }
     }
 }

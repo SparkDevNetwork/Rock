@@ -46,6 +46,9 @@ export type DataViewBag = {
     /** Gets or sets the user defined description of the DataView */
     description?: string | null;
 
+    /** Gets or sets whether using a read-only Rock Context is disabled. */
+    disableUseOfReadOnlyContext: boolean;
+
     /** Gets or sets the EntityTypeId of the Rock.Model.EntityType (Rock.Data.IEntity) that this DataView reports on. */
     entityTypeId?: number | null;
 
@@ -75,6 +78,12 @@ export type DataViewBag = {
 
     /** Gets or sets the persisted last run duration in milliseconds. */
     persistedLastRunDurationMilliseconds?: number | null;
+
+    /**
+     * Gets or sets the Persisted Schedule Id.
+     * If this is null, then the DataView does not have a persisted schedule.
+     */
+    persistedScheduleId?: number | null;
 
     /**
      * Gets or sets the persisted schedule interval minutes.

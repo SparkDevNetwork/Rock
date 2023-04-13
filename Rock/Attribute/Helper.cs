@@ -166,6 +166,24 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Adds or updates a <see cref="Rock.Model.Attribute" /> item for the field attribute.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the attribute was created or updated; <c>false</c> otherwise.</returns>
+        /// <remarks>
+        /// If a <paramref name="rockContext"/> value is included, this method will save any previous changes made to the context
+        /// </remarks>
+
+        internal static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
+        {
+            return UpdateAttribute( property, entityTypeId, entityQualifierColumn, entityQualifierValue, false, rockContext );
+        }
+
+        /// <summary>
         /// Adds or Updates a <see cref="Rock.Model.Attribute" /> item for the attribute.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -1645,7 +1663,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 rockContext.ExecuteAfterCommit( () =>
                 {
                     var changedValueIds = attributeValuesThatWereChanged.Select( av => av.Id ).ToList();
-                    var attributeValueReferenceValues = new Dictionary<int, string>();
+                    var attributeValueReferenceValues = new List<AttributeValue>();
 
                     using ( var innerContext = new RockContext() )
                     {
@@ -1656,7 +1674,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                         foreach ( var changedAttributeValue in changedAttributeValues )
                         {
-                            var attributeCache = AttributeCache.Get( changedAttributeValue.Id );
+                            var attributeCache = AttributeCache.Get( changedAttributeValue.AttributeId );
 
                             if ( attributeCache != null )
                             {
@@ -1664,7 +1682,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                                 if ( attributeCache.IsReferencedEntityFieldType )
                                 {
-                                    attributeValueReferenceValues.Add( changedAttributeValue.Id, changedAttributeValue.Value );
+                                    attributeValueReferenceValues.Add( changedAttributeValue );
                                 }
                             }
                         }
@@ -2214,7 +2232,7 @@ WHERE [AV].[AttributeId] = @AttributeId
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public static void UpdateAttributeValueEntityReferences( AttributeValue attributeValue, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeValueReferencedEntity>();
@@ -2260,7 +2278,7 @@ WHERE [AV].[AttributeId] = @AttributeId
         /// <summary>
         /// Updates all entity references for the given attribute values.
         /// </summary>
-        /// <param name="attributeValues">The dictionary of attribute value identifiers and their new value.</param>
+        /// <param name="attributeValues">The list of attribute values.</param>
         /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <remarks>
         ///     <para>
@@ -2268,13 +2286,13 @@ WHERE [AV].[AttributeId] = @AttributeId
         ///         call is required.
         ///     </para>
         /// </remarks>
-        private static void BulkUpdateAttributeValueEntityReferences( Dictionary<int, string> attributeValues, RockContext rockContext )
+        private static void BulkUpdateAttributeValueEntityReferences( List<AttributeValue> attributeValues, RockContext rockContext )
         {
             var referenceDictionary = new Dictionary<int, List<Field.ReferencedEntity>>();
 
             foreach ( var attributeValue in attributeValues )
             {
-                var attributeCache = AttributeCache.Get( attributeValue.Key );
+                var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
 
                 if ( !attributeCache.IsReferencedEntityFieldType )
                 {
@@ -2284,7 +2302,7 @@ WHERE [AV].[AttributeId] = @AttributeId
                 var field = ( Rock.Field.IEntityReferenceFieldType ) attributeCache.FieldType.Field;
                 var referencedEntities = field.GetReferencedEntities( attributeValue.Value, attributeCache.ConfigurationValues ) ?? new List<Field.ReferencedEntity>();
 
-                referenceDictionary.Add( attributeValue.Key, referencedEntities );
+                referenceDictionary.Add( attributeValue.Id, referencedEntities );
             }
 
             BulkUpdateAttributeValueEntityReferences( referenceDictionary, rockContext );
@@ -2366,7 +2384,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public static void UpdateAttributeEntityReferences( Rock.Model.Attribute attribute, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeReferencedEntity>();
@@ -2428,7 +2446,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal]
+        [RockInternal( "1.14" )]
         public static void UpdateAttributeValuePersistedValues( Rock.Model.AttributeValue attributeValue, AttributeCache attribute )
         {
             var field = attribute?.FieldType?.Field;

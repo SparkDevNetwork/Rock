@@ -50,6 +50,11 @@ namespace Rock.ViewModels.Entities
         public int? ConnectionTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets Connection Status Id used to filter workflows with manual trigger.
+        /// </summary>
+        public int? ManualTriggerFilterConnectionStatusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the qualifier value.
         /// </summary>
         /// <value>

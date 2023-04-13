@@ -69,7 +69,7 @@
         btnCancel.Visible = btnCancel.Text.Trim() != string.Empty;
         if ( !btnSave.Visible )
         {
-            btnCancel.AddCssClass( "btn-primary" );
+            btnCancel.AddCssClass( "btn-primary" ).RemoveCssClass( "btn-link" );
         }
     }
 

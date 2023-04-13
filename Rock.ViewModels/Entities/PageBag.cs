@@ -273,6 +273,22 @@ namespace Rock.ViewModels.Entities
         public int? ParentPageId { get; set; }
 
         /// <summary>
+        /// Gets or sets the rate limit period.
+        /// </summary>
+        /// <value>
+        /// The rate limit period.
+        /// </value>
+        public int? RateLimitPeriod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rate limit request per period.
+        /// </summary>
+        /// <value>
+        /// The rate limit request per period.
+        /// </value>
+        public int? RateLimitRequestPerPeriod { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag that indicates if the Page requires SSL encryption.
         /// </summary>
         /// <value>

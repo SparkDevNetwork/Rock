@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,8 @@ using RestSharp.Authenticators;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security.Authentication;
+using Rock.Security.Authentication.ExternalRedirectAuthentication;
 using Rock.Web.Cache;
 
 namespace Rock.Security.ExternalAuthentication
@@ -48,7 +50,7 @@ namespace Rock.Security.ExternalAuthentication
     [TextField( "Consumer Secret", "The Twitter Consumer Secret" )]
 
     [Rock.SystemGuid.EntityTypeGuid( "CE5C0844-4020-45E8-9777-1EE13CB890BF")]
-    public class Twitter : AuthenticationComponent
+    public class Twitter : AuthenticationComponent, IExternalRedirectAuthentication
     {
         /// <summary>
         /// The _oauth token
@@ -94,10 +96,9 @@ namespace Rock.Security.ExternalAuthentication
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
-        public override Boolean IsReturningFromAuthentication( HttpRequest request )
+        public override bool IsReturningFromAuthentication( HttpRequest request )
         {
-            return ( !String.IsNullOrWhiteSpace( request.QueryString["oauth_verifier"] ) &&
-                !String.IsNullOrWhiteSpace( request.QueryString["oauth_token"] ) );
+            return IsReturningFromExternalAuthentication( request.QueryString.ToSimpleQueryStringDictionary() );
         }
 
         /// <summary>
@@ -115,13 +116,7 @@ namespace Rock.Security.ExternalAuthentication
 
             string redirectUri = GetRedirectUrl( request );
 
-            RequestToken( redirectUri );
-
-            // Redirect user to /authenticate
-            return new Uri
-                ( string.Format( "https://api.twitter.com/oauth/authenticate?oauth_token={0}",
-                _oauthToken ) );
-
+            return GenerateExternalLoginUrl( redirectUri, _returnUrl );
         }
 
         /// <summary>
@@ -142,64 +137,21 @@ namespace Rock.Security.ExternalAuthentication
             _oauthTokenSecret = r["oauth_token_secret"];
         }
 
-        /// <summary>
-        /// Authenticates the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="username">The username.</param>
-        /// <param name="returnUrl">The return URL.</param>
-        /// <returns></returns>
-        public override Boolean Authenticate( HttpRequest request, out string username, out string returnUrl )
+        /// <inheritdoc/>
+        public override bool Authenticate( HttpRequest request, out string userName, out string returnUrl )
         {
-            username = string.Empty;
-            returnUrl = _returnUrl;
-            string oauthVerifier = request.QueryString["oauth_verifier"];
-            string callbackOAuthToken = request.QueryString["oauth_token"];
-
-            // Verify callback oauth token matches previous request token
-            if ( callbackOAuthToken == _oauthToken )
+            var options = new ExternalRedirectAuthenticationOptions
             {
-                try
-                {
-                    string consumerKey = GetAttributeValue( "ConsumerKey" );
-                    string consumerSecret = GetAttributeValue( "ConsumerSecret" );
-                    // Get an access token for the authenticated request token that was returned in the callback URL
-                    var restClient = new RestClient( "https://api.twitter.com" )
-                    {
-                        Authenticator = OAuth1Authenticator.ForAccessToken( consumerKey, consumerSecret, _oauthToken, _oauthTokenSecret, oauthVerifier )
-                    };
-                    var restRequest = new RestRequest( "oauth/access_token", Method.POST ); ; ;
-                    var restResponse = restClient.Execute( restRequest );
-                    if ( restResponse.StatusCode == HttpStatusCode.OK )
-                    {
-                        NameValueCollection r = HttpUtility.ParseQueryString( restResponse.Content );
-                        string accessToken = r["oauth_token"];
-                        string accessTokenSecret = r["oauth_token_secret"];
+                RedirectUrl = null,
+                Parameters = request.QueryString.ToSimpleQueryStringDictionary()
+            };
 
-                        // Get information about the person who logged in
-                        restRequest = new RestRequest( "1.1/account/verify_credentials.json", Method.GET );
-                        restClient.Authenticator = OAuth1Authenticator.ForProtectedResource( consumerKey, consumerSecret, accessToken, accessTokenSecret );
-                        restRequest.AddParameter( "skip_status", true );
-                        restRequest.AddParameter( "include_email", true );
-                        restResponse = restClient.Execute( restRequest );
+            var result = Authenticate( options );
 
-                        if ( restResponse.StatusCode == HttpStatusCode.OK )
-                        {
-                            dynamic twitterUser = JObject.Parse( restResponse.Content );
-                            username = GetTwitterUser( twitterUser, accessToken );
-                        }
-                    }
-                }
+            userName = result.UserName;
+            returnUrl = result.ReturnUrl;
 
-                catch ( Exception ex )
-                {
-                    ExceptionLogService.LogException( ex, HttpContext.Current );
-                }
-
-            }
-
-
-            return !string.IsNullOrWhiteSpace( username );
+            return result.IsAuthenticated;
         }
 
         /// <summary>
@@ -213,15 +165,14 @@ namespace Rock.Security.ExternalAuthentication
             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }
 
-
         /// <summary>
         /// Gets the URL of an image that should be displayed.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override String ImageUrl()
+        public override string ImageUrl()
         {
-            return "";
+            return string.Empty;
         }
 
         /// <summary>
@@ -311,7 +262,6 @@ namespace Rock.Security.ExternalAuthentication
 
             using ( var rockContext = new RockContext() )
             {
-
                 // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );
                 user = userLoginService.GetByUserName( userName );
@@ -326,8 +276,13 @@ namespace Rock.Security.ExternalAuthentication
                     var personService = new PersonService( rockContext );
                     personService.SplitName( fullName, out firstName, out lastName );
                     string email = string.Empty;
-                    try { email = twitterUser.email; }
-                    catch { }
+                    try
+                    {
+                        email = twitterUser.email;
+                    }
+                    catch
+                    {
+                    }
 
                     Person person = null;
 
@@ -366,7 +321,6 @@ namespace Rock.Security.ExternalAuthentication
                             int typeId = EntityTypeCache.Get( typeof( Facebook ) ).Id;
                             user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, userName, "Twitter", true );
                         }
-
                     } );
                 }
 
@@ -384,7 +338,8 @@ namespace Rock.Security.ExternalAuthentication
                         {
                             string twitterImageUrl = twitterUser.profile_image_url;
                             bool twitterImageDefault = twitterUser.default_profile_image;
-                            twitterImageUrl = twitterImageUrl.Replace( "_normal", "" );
+                            twitterImageUrl = twitterImageUrl.Replace( "_normal", string.Empty );
+
                             // If person does not have a photo, use their Twitter photo if it exists
                             if ( !person.PhotoId.HasValue && !twitterImageDefault && !string.IsNullOrWhiteSpace( twitterImageUrl ) )
                             {
@@ -427,7 +382,6 @@ namespace Rock.Security.ExternalAuthentication
                                 person.SaveAttributeValues( rockContext );
                             }
                         }
-
                     }
                 }
 
@@ -435,12 +389,90 @@ namespace Rock.Security.ExternalAuthentication
             }
         }
 
+        #region IExternalRedirectAuthentication Implementation
+
+        /// <inheritdoc/>
+        public ExternalRedirectAuthenticationResult Authenticate( ExternalRedirectAuthenticationOptions options )
+        {
+            var result = new ExternalRedirectAuthenticationResult
+            {
+                UserName = string.Empty,
+                ReturnUrl = _returnUrl
+            };
+
+            string oauthVerifier = options.Parameters.GetValueOrNull( "oauth_verifier" );
+            string callbackOAuthToken = options.Parameters.GetValueOrNull( "oauth_token" );
+
+            // Verify callback oauth token matches previous request token
+            if ( callbackOAuthToken == _oauthToken )
+            {
+                try
+                {
+                    string consumerKey = GetAttributeValue( "ConsumerKey" );
+                    string consumerSecret = GetAttributeValue( "ConsumerSecret" );
+
+                    // Get an access token for the authenticated request token that was returned in the callback URL
+                    var restClient = new RestClient( "https://api.twitter.com" )
+                    {
+                        Authenticator = OAuth1Authenticator.ForAccessToken( consumerKey, consumerSecret, _oauthToken, _oauthTokenSecret, oauthVerifier )
+                    };
+                    var restRequest = new RestRequest( "oauth/access_token", Method.POST );
+                    var restResponse = restClient.Execute( restRequest );
+                    if ( restResponse.StatusCode == HttpStatusCode.OK )
+                    {
+                        NameValueCollection r = HttpUtility.ParseQueryString( restResponse.Content );
+                        string accessToken = r["oauth_token"];
+                        string accessTokenSecret = r["oauth_token_secret"];
+
+                        // Get information about the person who logged in
+                        restRequest = new RestRequest( "1.1/account/verify_credentials.json", Method.GET );
+                        restClient.Authenticator = OAuth1Authenticator.ForProtectedResource( consumerKey, consumerSecret, accessToken, accessTokenSecret );
+                        restRequest.AddParameter( "skip_status", true );
+                        restRequest.AddParameter( "include_email", true );
+                        restResponse = restClient.Execute( restRequest );
+
+                        if ( restResponse.StatusCode == HttpStatusCode.OK )
+                        {
+                            dynamic twitterUser = JObject.Parse( restResponse.Content );
+                            result.UserName = GetTwitterUser( twitterUser, accessToken );
+                            result.IsAuthenticated = !string.IsNullOrWhiteSpace( result.UserName );
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex, HttpContext.Current );
+                }
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public Uri GenerateExternalLoginUrl( string externalProviderReturnUrl, string successfulAuthenticationRedirectUrl )
+        {
+            RequestToken( externalProviderReturnUrl );
+
+            // Redirect user to /authenticate
+            return new Uri( string.Format(
+                "https://api.twitter.com/oauth/authenticate?oauth_token={0}",
+                _oauthToken ) );
+        }
+
+        /// <inheritdoc/>
+        public bool IsReturningFromExternalAuthentication( IDictionary<string, string> parameters )
+        {
+            return !string.IsNullOrWhiteSpace( parameters.GetValueOrNull( "oauth_verifier" ) ) &&
+                !string.IsNullOrWhiteSpace( parameters.GetValueOrNull( "oauth_token" ) );
+        }
+
+        #endregion
+
         /// <summary>
         /// Twitter User Object
         /// </summary>
         public class TwitterUser
         {
-
             /// <summary>
             ///
             /// </summary>
@@ -453,6 +485,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The coordinates.
                 /// </value>
                 public List<double> coordinates { get; set; }
+
                 /// <summary>
                 /// Gets or sets the type.
                 /// </summary>
@@ -474,6 +507,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The coordinates.
                 /// </value>
                 public List<double> coordinates { get; set; }
+
                 /// <summary>
                 /// Gets or sets the type.
                 /// </summary>
@@ -502,6 +536,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The coordinates.
                 /// </value>
                 public List<List<List<double>>> coordinates { get; set; }
+
                 /// <summary>
                 /// Gets or sets the type.
                 /// </summary>
@@ -523,6 +558,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The attributes.
                 /// </value>
                 public Attributes attributes { get; set; }
+
                 /// <summary>
                 /// Gets or sets the bounding_box.
                 /// </summary>
@@ -530,6 +566,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The bounding_box.
                 /// </value>
                 public BoundingBox bounding_box { get; set; }
+
                 /// <summary>
                 /// Gets or sets the country.
                 /// </summary>
@@ -537,6 +574,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The country.
                 /// </value>
                 public string country { get; set; }
+
                 /// <summary>
                 /// Gets or sets the country_code.
                 /// </summary>
@@ -544,6 +582,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The country_code.
                 /// </value>
                 public string country_code { get; set; }
+
                 /// <summary>
                 /// Gets or sets the full_name.
                 /// </summary>
@@ -551,6 +590,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The full_name.
                 /// </value>
                 public string full_name { get; set; }
+
                 /// <summary>
                 /// Gets or sets the identifier.
                 /// </summary>
@@ -558,6 +598,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The identifier.
                 /// </value>
                 public string id { get; set; }
+
                 /// <summary>
                 /// Gets or sets the name.
                 /// </summary>
@@ -565,6 +606,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The name.
                 /// </value>
                 public string name { get; set; }
+
                 /// <summary>
                 /// Gets or sets the place_type.
                 /// </summary>
@@ -572,6 +614,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The place_type.
                 /// </value>
                 public string place_type { get; set; }
+
                 /// <summary>
                 /// Gets or sets the URL.
                 /// </summary>
@@ -593,6 +636,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The contributors.
                 /// </value>
                 public object contributors { get; set; }
+
                 /// <summary>
                 /// Gets or sets the coordinates.
                 /// </summary>
@@ -600,6 +644,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The coordinates.
                 /// </value>
                 public Coordinates coordinates { get; set; }
+
                 /// <summary>
                 /// Gets or sets the created_at.
                 /// </summary>
@@ -607,6 +652,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The created_at.
                 /// </value>
                 public string created_at { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="Status"/> is favorited.
                 /// </summary>
@@ -614,6 +660,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if favorited; otherwise, <c>false</c>.
                 /// </value>
                 public bool favorited { get; set; }
+
                 /// <summary>
                 /// Gets or sets the geo.
                 /// </summary>
@@ -621,6 +668,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The geo.
                 /// </value>
                 public Geo geo { get; set; }
+
                 /// <summary>
                 /// Gets or sets the identifier.
                 /// </summary>
@@ -628,6 +676,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The identifier.
                 /// </value>
                 public long id { get; set; }
+
                 /// <summary>
                 /// Gets or sets the id_str.
                 /// </summary>
@@ -635,6 +684,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The id_str.
                 /// </value>
                 public string id_str { get; set; }
+
                 /// <summary>
                 /// Gets or sets the in_reply_to_screen_name.
                 /// </summary>
@@ -642,6 +692,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The in_reply_to_screen_name.
                 /// </value>
                 public string in_reply_to_screen_name { get; set; }
+
                 /// <summary>
                 /// Gets or sets the in_reply_to_status_id.
                 /// </summary>
@@ -649,6 +700,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The in_reply_to_status_id.
                 /// </value>
                 public long in_reply_to_status_id { get; set; }
+
                 /// <summary>
                 /// Gets or sets the in_reply_to_status_id_str.
                 /// </summary>
@@ -656,6 +708,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The in_reply_to_status_id_str.
                 /// </value>
                 public string in_reply_to_status_id_str { get; set; }
+
                 /// <summary>
                 /// Gets or sets the in_reply_to_user_id.
                 /// </summary>
@@ -663,6 +716,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The in_reply_to_user_id.
                 /// </value>
                 public int in_reply_to_user_id { get; set; }
+
                 /// <summary>
                 /// Gets or sets the in_reply_to_user_id_str.
                 /// </summary>
@@ -670,6 +724,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The in_reply_to_user_id_str.
                 /// </value>
                 public string in_reply_to_user_id_str { get; set; }
+
                 /// <summary>
                 /// Gets or sets the place.
                 /// </summary>
@@ -677,6 +732,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The place.
                 /// </value>
                 public Place place { get; set; }
+
                 /// <summary>
                 /// Gets or sets the retweet_count.
                 /// </summary>
@@ -684,6 +740,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The retweet_count.
                 /// </value>
                 public int retweet_count { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="Status"/> is retweeted.
                 /// </summary>
@@ -691,6 +748,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if retweeted; otherwise, <c>false</c>.
                 /// </value>
                 public bool retweeted { get; set; }
+
                 /// <summary>
                 /// Gets or sets the source.
                 /// </summary>
@@ -698,6 +756,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The source.
                 /// </value>
                 public string source { get; set; }
+
                 /// <summary>
                 /// Gets or sets the text.
                 /// </summary>
@@ -705,6 +764,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The text.
                 /// </value>
                 public string text { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="Status"/> is truncated.
                 /// </summary>
@@ -726,6 +786,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if contributors_enabled; otherwise, <c>false</c>.
                 /// </value>
                 public bool contributors_enabled { get; set; }
+
                 /// <summary>
                 /// Gets or sets the created_at.
                 /// </summary>
@@ -733,6 +794,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The created_at.
                 /// </value>
                 public string created_at { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="RootObject"/> is default_profile.
                 /// </summary>
@@ -740,6 +802,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if default_profile; otherwise, <c>false</c>.
                 /// </value>
                 public bool default_profile { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="RootObject"/> is default_profile_image.
                 /// </summary>
@@ -747,6 +810,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if default_profile_image; otherwise, <c>false</c>.
                 /// </value>
                 public bool default_profile_image { get; set; }
+
                 /// <summary>
                 /// Gets or sets the description.
                 /// </summary>
@@ -754,6 +818,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The description.
                 /// </value>
                 public string description { get; set; }
+
                 /// <summary>
                 /// Gets or sets the email.
                 /// </summary>
@@ -761,6 +826,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The email.
                 /// </value>
                 public string email { get; set; }
+
                 /// <summary>
                 /// Gets or sets the favourites_count.
                 /// </summary>
@@ -768,6 +834,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The favourites_count.
                 /// </value>
                 public int favourites_count { get; set; }
+
                 /// <summary>
                 /// Gets or sets the follow_request_sent.
                 /// </summary>
@@ -775,6 +842,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The follow_request_sent.
                 /// </value>
                 public object follow_request_sent { get; set; }
+
                 /// <summary>
                 /// Gets or sets the followers_count.
                 /// </summary>
@@ -782,6 +850,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The followers_count.
                 /// </value>
                 public int followers_count { get; set; }
+
                 /// <summary>
                 /// Gets or sets the following.
                 /// </summary>
@@ -789,6 +858,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The following.
                 /// </value>
                 public object following { get; set; }
+
                 /// <summary>
                 /// Gets or sets the friends_count.
                 /// </summary>
@@ -796,6 +866,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The friends_count.
                 /// </value>
                 public int friends_count { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="RootObject"/> is geo_enabled.
                 /// </summary>
@@ -803,6 +874,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if geo_enabled; otherwise, <c>false</c>.
                 /// </value>
                 public bool geo_enabled { get; set; }
+
                 /// <summary>
                 /// Gets or sets the identifier.
                 /// </summary>
@@ -810,6 +882,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The identifier.
                 /// </value>
                 public int id { get; set; }
+
                 /// <summary>
                 /// Gets or sets the id_str.
                 /// </summary>
@@ -817,6 +890,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The id_str.
                 /// </value>
                 public string id_str { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="RootObject"/> is is_translator.
                 /// </summary>
@@ -824,6 +898,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if is_translator; otherwise, <c>false</c>.
                 /// </value>
                 public bool is_translator { get; set; }
+
                 /// <summary>
                 /// Gets or sets the language.
                 /// </summary>
@@ -831,6 +906,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The language.
                 /// </value>
                 public string lang { get; set; }
+
                 /// <summary>
                 /// Gets or sets the listed_count.
                 /// </summary>
@@ -838,6 +914,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The listed_count.
                 /// </value>
                 public int listed_count { get; set; }
+
                 /// <summary>
                 /// Gets or sets the location.
                 /// </summary>
@@ -845,6 +922,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The location.
                 /// </value>
                 public string location { get; set; }
+
                 /// <summary>
                 /// Gets or sets the name.
                 /// </summary>
@@ -852,6 +930,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The name.
                 /// </value>
                 public string name { get; set; }
+
                 /// <summary>
                 /// Gets or sets the notifications.
                 /// </summary>
@@ -859,6 +938,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The notifications.
                 /// </value>
                 public object notifications { get; set; }
+
                 /// <summary>
                 /// Gets or sets the profile_background_color.
                 /// </summary>
@@ -866,6 +946,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The profile_background_color.
                 /// </value>
                 public string profile_background_color { get; set; }
+
                 /// <summary>
                 /// Gets or sets the profile_background_image_url.
                 /// </summary>
@@ -873,6 +954,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The profile_background_image_url.
                 /// </value>
                 public string profile_background_image_url { get; set; }
+
                 /// <summary>
                 /// Gets or sets the profile_background_image_url_https.
                 /// </summary>
@@ -880,6 +962,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The profile_background_image_url_https.
                 /// </value>
                 public string profile_background_image_url_https { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="RootObject"/> is profile_background_tile.
                 /// </summary>
@@ -887,6 +970,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if profile_background_tile; otherwise, <c>false</c>.
                 /// </value>
                 public bool profile_background_tile { get; set; }
+
                 /// <summary>
                 /// Gets or sets the profile_image_url.
                 /// </summary>
@@ -894,6 +978,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The profile_image_url.
                 /// </value>
                 public string profile_image_url { get; set; }
+
                 /// <summary>
                 /// Gets or sets the profile_image_url_https.
                 /// </summary>
@@ -901,6 +986,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The profile_image_url_https.
                 /// </value>
                 public string profile_image_url_https { get; set; }
+
                 /// <summary>
                 /// Gets or sets the profile_link_color.
                 /// </summary>
@@ -908,6 +994,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The profile_link_color.
                 /// </value>
                 public string profile_link_color { get; set; }
+
                 /// <summary>
                 /// Gets or sets the profile_sidebar_border_color.
                 /// </summary>
@@ -915,6 +1002,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The profile_sidebar_border_color.
                 /// </value>
                 public string profile_sidebar_border_color { get; set; }
+
                 /// <summary>
                 /// Gets or sets the profile_sidebar_fill_color.
                 /// </summary>
@@ -922,6 +1010,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The profile_sidebar_fill_color.
                 /// </value>
                 public string profile_sidebar_fill_color { get; set; }
+
                 /// <summary>
                 /// Gets or sets the profile_text_color.
                 /// </summary>
@@ -929,6 +1018,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The profile_text_color.
                 /// </value>
                 public string profile_text_color { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="RootObject"/> is profile_use_background_image.
                 /// </summary>
@@ -936,6 +1026,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// <c>true</c> if profile_use_background_image; otherwise, <c>false</c>.
                 /// </value>
                 public bool profile_use_background_image { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="RootObject"/> is protected.
                 /// </summary>
@@ -943,6 +1034,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if protected; otherwise, <c>false</c>.
                 /// </value>
                 public bool @protected { get; set; }
+
                 /// <summary>
                 /// Gets or sets the screen_name.
                 /// </summary>
@@ -950,6 +1042,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The screen_name.
                 /// </value>
                 public string screen_name { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="RootObject"/> is show_all_inline_media.
                 /// </summary>
@@ -957,6 +1050,7 @@ namespace Rock.Security.ExternalAuthentication
                 ///   <c>true</c> if show_all_inline_media; otherwise, <c>false</c>.
                 /// </value>
                 public bool show_all_inline_media { get; set; }
+
                 /// <summary>
                 /// Gets or sets the status.
                 /// </summary>
@@ -964,6 +1058,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The status.
                 /// </value>
                 public Status status { get; set; }
+
                 /// <summary>
                 /// Gets or sets the statuses_count.
                 /// </summary>
@@ -971,6 +1066,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The statuses_count.
                 /// </value>
                 public int statuses_count { get; set; }
+
                 /// <summary>
                 /// Gets or sets the time_zone.
                 /// </summary>
@@ -978,6 +1074,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The time_zone.
                 /// </value>
                 public string time_zone { get; set; }
+
                 /// <summary>
                 /// Gets or sets the URL.
                 /// </summary>
@@ -985,6 +1082,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The URL.
                 /// </value>
                 public object url { get; set; }
+
                 /// <summary>
                 /// Gets or sets the utc_offset.
                 /// </summary>
@@ -992,6 +1090,7 @@ namespace Rock.Security.ExternalAuthentication
                 /// The utc_offset.
                 /// </value>
                 public int utc_offset { get; set; }
+
                 /// <summary>
                 /// Gets or sets a value indicating whether this <see cref="RootObject"/> is verified.
                 /// </summary>

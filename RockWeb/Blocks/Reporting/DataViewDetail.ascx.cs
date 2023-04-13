@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -48,7 +49,7 @@ namespace RockWeb.Blocks.Reporting
         Key = AttributeKey.AddAdministrateSecurityToItemCreator,
         Description = "If enabled, the person who creates a new item will be granted 'Administrate' security rights to the item.  This was the behavior in previous versions of Rock.  If disabled, the item creator will not be able to edit the Data View, its security settings, or possibly perform other functions without the Rock administrator settings up a role that is allowed to perform such functions.",
         DefaultBooleanValue = false,
-        Order = 0)]
+        Order = 0 )]
 
     [LinkedPage(
         "Data View Detail Page",
@@ -216,6 +217,7 @@ $(document).ready(function() {
         {
             var service = new DataViewService( new RockContext() );
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
+            BindReadOnlyContextControls( service.ReadOnlyContextEnabled, item.DisableUseOfReadOnlyContext );
             ShowEditDetails( item );
         }
 
@@ -254,10 +256,10 @@ $(document).ready(function() {
         protected void btnSave_Click( object sender, EventArgs e )
         {
             cvSecurityError.IsValid = true;
-            var AddAdminToCreator = GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean();
+            var addAdminToCreator = GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean();
             var dvCategory = CategoryCache.Get( cpCategory.SelectedValueAsInt( false ).Value );
 
-            if ( !AddAdminToCreator && !dvCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( !addAdminToCreator && !dvCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 cvSecurityError.IsValid = false;
                 cvSecurityError.ErrorMessage = string.Format( "You are not authorized to create or edit Data Views for the Category '{0}'.", dvCategory.Name );
@@ -288,8 +290,14 @@ $(document).ready(function() {
             dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
-            dataView.IncludeDeceased = cbIncludeDeceased.Checked;
-            dataView.PersistedScheduleIntervalMinutes = swPersistDataView.Checked ? ipPersistedScheduleInterval.IntervalInMinutes : null;
+            dataView.IncludeDeceased = tglIncludeDeceased.Checked;
+            dataView.DisableUseOfReadOnlyContext = cbDisableUseOfReadOnlyContext.Checked;
+
+            // If the switch is set to "Persistence Schedule", and the Persistence Type radio button list is set to "Interval" then use the schedule interval picker,
+            // otherwise set the value as null so that a "Schedule" Persistence Type selection will clear out the interval value.
+            dataView.PersistedScheduleIntervalMinutes =
+                swPersistDataView.Checked
+                && rblPersistenceType.SelectedValue == PersistenceType.Interval.ConvertToInt().ToString() ? ipPersistedScheduleInterval.IntervalInMinutes : null;
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
 
@@ -307,6 +315,77 @@ $(document).ready(function() {
             var adding = dataView.Id.Equals( 0 );
             rockContext.WrapTransaction( () =>
             {
+                // Determine if this DataView will have a persisted schedule.
+                bool shouldHavePersistedSchedule = rblPersistenceType.SelectedValue == PersistenceType.Schedule.ConvertToInt().ToString();
+
+                if ( swPersistDataView.Checked && shouldHavePersistedSchedule )
+                {
+                    var scheduleService = new ScheduleService( rockContext );
+                    Schedule schedule = null;
+                    if ( HasNamedSchedule() )
+                    {
+                        schedule = scheduleService.Get( ddlNamedSchedule.SelectedValueAsId() ?? 0 );
+                    }
+                    else if ( HasUniqueSchedule() )
+                    {
+                        // If the dataview has a persisted schedule without a name, use that id.
+                        bool hasUnnamedSchedule = dataView.PersistedScheduleId.HasValue && dataView.PersistedSchedule.Name.IsNullOrWhiteSpace();
+                        if ( hasUnnamedSchedule )
+                        {
+                            schedule = scheduleService.Get( dataView.PersistedSchedule.Id );
+                        }
+                    }
+
+                    int dataviewScheduleCategoryId = new CategoryService( rockContext ).Get( Rock.SystemGuid.Category.SCHEDULE_PERSISTED_DATAVIEWS.AsGuid() ).Id;
+                    if ( schedule == null )
+                    {
+                        schedule = new Schedule()
+                        {
+                            // make it an "Unnamed" dataview persisted schedule.
+                            Name = string.Empty,
+                            CategoryId = dataviewScheduleCategoryId
+                        };
+                    }
+
+                    if ( HasUniqueSchedule() )
+                    {
+                        // if the schedule was a unique schedule, configured in the DataView UI, set the schedule's iCal content to the schedule builder UI's value.
+                        schedule.iCalendarContent = sbUniqueSchedule.iCalendarContent;
+                    }
+
+                    var scheduleSelectionType = rblPersistenceSchedule.SelectedValue.AsIntegerOrNull();
+
+                    if ( !schedule.HasSchedule() && scheduleSelectionType == PersistedScheduleType.Unique.ConvertToInt() )
+                    {
+                        // Don't save as an unnamed unique schedule if the schedule doesn't do anything.
+                        schedule = null;
+                    }
+                    else
+                    {
+                        if ( schedule.Id == 0 )
+                        {
+                            scheduleService.Add( schedule );
+
+                            // save to make sure we have a scheduleId
+                            rockContext.SaveChanges();
+                        }
+                    }
+
+                    if ( schedule != null )
+                    {
+                        dataView.PersistedScheduleId = schedule.Id;
+                    }
+                    else
+                    {
+                        dataView.PersistedScheduleId = null;
+                    }
+                }
+                else
+                {
+                    // If the Persist Schedule switch is off, then clear out the Persisted Schedule Id.
+                    dataView.PersistedScheduleId = null;
+                }
+
                 if ( adding )
                 {
                     service.Add( dataView );
@@ -355,7 +434,7 @@ $(document).ready(function() {
                 }
             }
 
-            if ( adding && AddAdminToCreator )
+            if ( adding && addAdminToCreator )
             {
                 Rock.Security.Authorization.AllowPerson( dataView, Authorization.EDIT, this.CurrentPerson, rockContext );
                 Rock.Security.Authorization.AllowPerson( dataView, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
@@ -522,6 +601,21 @@ $(document).ready(function() {
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
                 .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
+
+            // Set the schedules available to only those with the schedule "Persisted DataViews" category.
+            var persistedDataViewsScheduleCategoryId = CategoryCache.GetId( Rock.SystemGuid.Category.SCHEDULE_PERSISTED_DATAVIEWS.AsGuid() ).Value;
+
+            var persistedNamedSchedules = new ScheduleService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( s => s.CategoryId == persistedDataViewsScheduleCategoryId && s.Name != string.Empty )
+                        .OrderBy( s => s.Name )
+                        .ToList();
+
+            ddlNamedSchedule.Items.Clear();
+            foreach ( var schedule in persistedNamedSchedules )
+            {
+                ddlNamedSchedule.Items.Add( new ListItem( schedule.Name, schedule.Id.ToString() ) );
+            }
         }
 
         /// <summary>
@@ -625,6 +719,7 @@ $(document).ready(function() {
             btnSecurity.Title = dataView.Name;
             btnSecurity.EntityId = dataView.Id;
 
+            BindReadOnlyContextControls( dataViewService.ReadOnlyContextEnabled, dataView.DisableUseOfReadOnlyContext );
             if ( readOnly )
             {
                 btnEdit.Visible = false;
@@ -702,8 +797,46 @@ $(document).ready(function() {
             cpCategory.SetValue( dataView.CategoryId );
 
             ipPersistedScheduleInterval.IntervalInMinutes = dataView.PersistedScheduleIntervalMinutes;
+            if ( dataView.PersistedScheduleIntervalMinutes.HasValue )
+            {
+                rblPersistenceType.SelectedValue = PersistenceType.Interval.ConvertToInt().ToString();
 
-            SetPersistenceScheduleVisibility( dataView.PersistedScheduleIntervalMinutes > 0 );
+                // If the Interval type is set, hide the schedule controls.
+                SetScheduleVisibility( false );
+
+                // And show the interval controls.
+                SetIntervalVisibility( true );
+            }
+            else if ( dataView.PersistedScheduleId.HasValue )
+            {
+                rblPersistenceType.SelectedValue = PersistenceType.Schedule.ConvertToInt().ToString();
+
+                // If the Schedule type is set, hide the interval controls.
+                SetIntervalVisibility( false );
+
+                // And show the Schedule controls.
+                SetScheduleVisibility( true );
+                if ( dataView.PersistedSchedule.Name.IsNotNullOrWhiteSpace() )
+                {
+                    rblPersistenceSchedule.SelectedValue = PersistedScheduleType.NamedSchedule.ConvertToInt().ToString();
+                    ddlNamedSchedule.SetValue( dataView.PersistedScheduleId );
+                    sbUniqueSchedule.Visible = false;
+                }
+                else if ( dataView.PersistedSchedule.iCalendarContent.Length > 0 )
+                {
+                    rblPersistenceSchedule.SelectedValue = PersistedScheduleType.Unique.ConvertToInt().ToString();
+                    sbUniqueSchedule.iCalendarContent = dataView.PersistedSchedule.iCalendarContent;
+                    ddlNamedSchedule.Visible = false;
+                }
+            }
+
+            SetPersistenceVisibility( dataView.PersistedScheduleIntervalMinutes > 0 || dataView.PersistedScheduleId.HasValue );
+
+            // Hide the DataView ID and the Create report button.
+            hlblEditDataViewId.Visible = false;
+            lbCreateReport.Visible = false;
+
+            lActionTitle.Text = dataView.Name;
 
             var rockContext = new RockContext();
             BindDataTransformations( rockContext );
@@ -776,10 +909,26 @@ $(document).ready(function() {
             lFilters.Text = descriptionListFilters.Html;
 
             DescriptionList descriptionListPersisted = new DescriptionList();
-            hlblPersisted.Visible = dataView.PersistedScheduleIntervalMinutes.HasValue && dataView.PersistedLastRefreshDateTime.HasValue;
+            hlblPersisted.Visible = dataView.PersistedLastRefreshDateTime.HasValue
+                && ( dataView.PersistedScheduleIntervalMinutes.HasValue || dataView.PersistedScheduleId.HasValue );
             if ( hlblPersisted.Visible )
             {
                 hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedLastRefreshDateTime.ToElapsedString() );
+            }
+
+            // If the dataview has a persisted schedule or interval, include the details in the description.
+            if ( dataView.PersistedScheduleId.HasValue )
+            {
+                descriptionListPersisted.Add(
+                    "Persisted Schedule",
+                    dataView.PersistedSchedule.FriendlyScheduleText );
+            }
+
+            if ( dataView.PersistedScheduleIntervalMinutes.HasValue )
+            {
+                descriptionListPersisted.Add(
+                    "Persisted Schedule",
+                    string.Format( "Every {0}", new TimeIntervalSetting( dataView.PersistedScheduleIntervalMinutes, null ).ToString() ) );
             }
 
             lPersisted.Text = descriptionListPersisted.Html;
@@ -800,10 +949,9 @@ $(document).ready(function() {
                  .Where( d => d.DataViewFilter.ChildFilters
                      .Any( f => f.Selection == dataView.Id.ToString()
                          && f.EntityTypeId == otherDataViewFilterComponentEntityId ) ).ToList();
-                
 
             relatedDataViews.AddRange( otherDataViewsLegacy );
-            relatedDataViews = relatedDataViews.DistinctBy( r => r.Id ).OrderBy(a => a.Name).ToList();
+            relatedDataViews = relatedDataViews.DistinctBy( r => r.Id ).OrderBy( a => a.Name ).ToList();
 
             StringBuilder sbDataViews = new StringBuilder();
             var dataViewDetailPage = GetAttributeValue( AttributeKey.DataViewDetailPage );
@@ -966,13 +1114,37 @@ $(document).ready(function() {
         {
             hlTimeToRun.Text = string.Empty;
             hlTimeToRun.LabelType = LabelType.Default;
-
-            if ( dataView == null || dataView.TimeToRunDurationMilliseconds == null )
+            bool isPersisted = false;
+            if ( dataView == null )
             {
                 return;
             }
+            else if ( dataView.PersistedScheduleId != null || dataView.PersistedScheduleIntervalMinutes != null  )
+            {
+                // This is a persisted data view...
+                if ( ! dataView.PersistedLastRunDurationMilliseconds.HasValue )
+                {
+                    return;
+                }
 
-            var labelValue = dataView.TimeToRunDurationMilliseconds.Value;
+                isPersisted = true;
+            }
+            else if ( ! dataView.TimeToRunDurationMilliseconds.HasValue )
+            {
+                // Otherwise it is not persisted data view, but there is no 'time to run duration' to show.
+                return;
+            }
+
+            double labelValue;
+            if ( isPersisted )
+            {
+                labelValue = dataView.PersistedLastRunDurationMilliseconds.Value;
+            }
+            else
+            {
+                labelValue = dataView.TimeToRunDurationMilliseconds.Value;
+            }
+
             var labelUnit = "ms";
             var labelType = LabelType.Success;
             if ( labelValue > 1000 )
@@ -1036,9 +1208,10 @@ $(document).ready(function() {
             }
 
             dataView.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
-            dataView.IncludeDeceased = cbIncludeDeceased.Checked;
+            dataView.IncludeDeceased = tglIncludeDeceased.Checked;
+            dataView.DisableUseOfReadOnlyContext = cbDisableUseOfReadOnlyContext.Checked;
 
-            // just show the first 15 rows in the preview grid
+            // Just show the first 15 rows in the preview grid.
             int? fetchRowCount = 15;
 
             gPreview.DataSource = null;
@@ -1059,11 +1232,9 @@ $(document).ready(function() {
             try
             {
                 gPreview.CreatePreviewColumns( dataviewEntityTypeType );
-                var dbContext = dataView.GetDbContext();
                 var dataViewGetQueryArgs = new DataViewGetQueryArgs
                 {
                     SortProperty = gPreview.SortProperty,
-                    DbContext = dbContext,
                     DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180,
                     DataViewFilterOverrides = new DataViewFilterOverrides
                     {
@@ -1133,6 +1304,11 @@ $(document).ready(function() {
         {
             pnlEditDetails.Visible = editable;
             pnlViewDetails.Visible = !editable;
+        }
+
+        protected void tbName_TextChanged( object sender, EventArgs e )
+        {
+            lActionTitle.Text = tbName.Text;
         }
 
         #endregion
@@ -1387,15 +1563,28 @@ $(document).ready(function() {
             }
 
             var isPersonDataView = filteredEntityType.Id == EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
-            cbIncludeDeceased.Visible = isPersonDataView;
+            tglIncludeDeceased.Visible = isPersonDataView;
             if ( isPersonDataView )
             {
-                cbIncludeDeceased.Checked = includeDeceased;
+                tglIncludeDeceased.Checked = includeDeceased;
             }
             else
             {
-                cbIncludeDeceased.Checked = false;
+                tglIncludeDeceased.Checked = false;
             }
+        }
+
+        private void BindReadOnlyContextControls( bool readOnlyContextEnabled, bool disableUseOfReadOnlyContext )
+        {
+            if ( !readOnlyContextEnabled )
+            {
+                return;
+            }
+
+            cbDisableUseOfReadOnlyContext.Visible = true;
+            cbDisableUseOfReadOnlyContext.Checked = disableUseOfReadOnlyContext;
+
+            hlblReadOnlyContext.Visible = disableUseOfReadOnlyContext;
         }
 
         #endregion
@@ -1408,10 +1597,10 @@ $(document).ready(function() {
         /// <param name="isEnabled"></param>
         /// <param name="persistedScheduleIntervalMinutes"></param>
         /// <param name="scheduleUnit">The schedule unit, or null if the unit should be determined by the interval.</param>
-        private void SetPersistenceScheduleVisibility( bool isEnabled )
+        private void SetPersistenceVisibility( bool isEnabled )
         {
             swPersistDataView.Checked = isEnabled;
-            pnlSpeedSettings.Visible = isEnabled;
+            pnlPersistenceSchedule.Visible = isEnabled;
         }
 
         /// <summary>
@@ -1421,7 +1610,107 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void swPersistDataView_CheckedChanged( object sender, EventArgs e )
         {
-            SetPersistenceScheduleVisibility( swPersistDataView.Checked );
+            SetPersistenceVisibility( swPersistDataView.Checked );
+        }
+
+        private void SetIntervalVisibility( bool isEnabled )
+        {
+            ipPersistedScheduleInterval.Visible = isEnabled;
+        }
+
+        private void SetScheduleVisibility( bool isEnabled )
+        {
+            rblPersistenceSchedule.Visible = isEnabled;
+            sbUniqueSchedule.Visible = isEnabled;
+            ddlNamedSchedule.Visible = isEnabled;
+        }
+
+        protected void rblPersistenceType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( rblPersistenceType.SelectedValue == PersistenceType.Interval.ConvertToInt().ToString() )
+            {
+                // If the Interval type was selected, hide the schedule controls.
+                SetScheduleVisibility( false );
+                SetPersistenceScheduleTypeVisibility( false );
+
+                // And show the interval controls.
+                SetIntervalVisibility( true );
+            }
+            else if ( rblPersistenceType.SelectedValue == PersistenceType.Schedule.ConvertToInt().ToString() )
+            {
+                // If the Interval type was selected, hide the interval controls.
+                SetIntervalVisibility( false );
+
+                // And show the schedule controls.
+                SetScheduleVisibility( true );
+
+                SetPersistenceScheduleType();
+            }
+        }
+
+        private bool HasNamedSchedule()
+        {
+            var isPersistedScheduleTypeSelected = rblPersistenceType.SelectedValue.ConvertToEnumOrNull<PersistenceType>() == PersistenceType.Schedule;
+            if ( !isPersistedScheduleTypeSelected )
+            {
+                return false;
+            }
+
+            var isPersistedNamedScheduleSelected = rblPersistenceSchedule.SelectedValue.ConvertToEnumOrNull<PersistedScheduleType>() == PersistedScheduleType.NamedSchedule;
+            return swPersistDataView.Checked && isPersistedScheduleTypeSelected && isPersistedNamedScheduleSelected && ddlNamedSchedule.SelectedValue.IsNotNullOrWhiteSpace();
+        }
+
+        private bool HasUniqueSchedule()
+        {
+            var isPersistedScheduleTypeSelected = rblPersistenceType.SelectedValue.ConvertToEnumOrNull<PersistenceType>() == PersistenceType.Schedule;
+            if ( !isPersistedScheduleTypeSelected )
+            {
+                return false;
+            }
+
+            var isPersistedUniqueScheduleSelected = rblPersistenceSchedule.SelectedValue.ConvertToEnumOrNull<PersistedScheduleType>() == PersistedScheduleType.Unique;
+            return swPersistDataView.Checked && isPersistedScheduleTypeSelected && isPersistedUniqueScheduleSelected && sbUniqueSchedule.iCalendarContent.IsNotNullOrWhiteSpace();
+        }
+
+        private void SetPersistenceScheduleTypeVisibility( bool isEnabled )
+        {
+            sbUniqueSchedule.Visible = isEnabled;
+            ddlNamedSchedule.Visible = isEnabled;
+        }
+
+        protected void rblPersistenceSchedule_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetPersistenceScheduleType();
+        }
+
+        private void SetPersistenceScheduleType()
+        {
+            if ( rblPersistenceSchedule.SelectedValueAsEnumOrNull<PersistedScheduleType>() == PersistedScheduleType.Unique )
+            {
+                ddlNamedSchedule.Visible = false;
+                sbUniqueSchedule.Visible = true;
+                ddlNamedSchedule.Required = false;
+            }
+            else
+            {
+                // When the Persisted Schedule Type is 'Named' or it was not selected.
+                sbUniqueSchedule.Visible = false;
+                ddlNamedSchedule.Visible = true;
+                ddlNamedSchedule.Required = true;
+                rblPersistenceSchedule.SetValue( PersistedScheduleType.NamedSchedule.ConvertToInt() );
+            }
+        }
+
+        private enum PersistenceType
+        {
+            Interval = 0,
+            Schedule = 1
+        }
+
+        private enum PersistedScheduleType
+        {
+            Unique = 0,
+            NamedSchedule = 1
         }
 
         #endregion

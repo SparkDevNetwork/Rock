@@ -235,6 +235,10 @@ namespace Rock.Web.Cache
 
             CacheManager.Clear();
             CacheWasUpdatedMessage.Publish<T>();
+
+            // This is somewhat temporary. In the future this should be updated
+            // to use it's own domain.
+            RockLogger.Log.WriteToLog( RockLogLevel.Debug, RockLogDomains.Other, $"Cache was cleared for {typeof(T).Name}. StackTrace: {Environment.StackTrace}" );
         }
 
         /// <summary>
@@ -332,12 +336,14 @@ namespace Rock.Web.Cache
             var type = typeof( T );
 
             string name = type.Name;
+            string fullname = type.FullName;
             if ( type.IsGenericType && type.GenericTypeArguments[0] != null )
             {
                 name = type.GenericTypeArguments[0].ToString();
+                fullname = type.GenericTypeArguments[0].ToString();
             }
 
-            var cacheStatistics = new CacheItemStatistics( name );
+            var cacheStatistics = new CacheItemStatistics( name, fullname );
 
             foreach ( var handle in CacheManager.CacheHandles )
             {
@@ -390,6 +396,14 @@ namespace Rock.Web.Cache
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the full name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string FullName { get; set; }
+
+        /// <summary>
         /// Gets or sets the handle stats.
         /// </summary>
         /// <value>
@@ -404,6 +418,18 @@ namespace Rock.Web.Cache
         public CacheItemStatistics( string name )
         {
             Name = name;
+            FullName = $"Rock.Web.Cache.{name},Rock";
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CacheItemStatistics"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="fullname">The full name.</param>
+        public CacheItemStatistics( string name, string fullname )
+        {
+            Name = name;
+            FullName = fullname;
         }
     }
 

@@ -33,6 +33,7 @@ using Rock.ElectronicSignature;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Pdf;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
@@ -194,18 +195,46 @@ namespace Rock.Blocks.Event
         #region Block Actions
 
         /// <summary>
-        /// Checks the discount code.
+        /// Checks the discount code provided. If a null/blank string is used then checks for AutoApplied discounts.
         /// </summary>
         /// <param name="code">The code.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CheckDiscountCode( string code )
+        public BlockActionResult CheckDiscountCode( string code, int registrantCount )
         {
             using ( var rockContext = new RockContext() )
             {
                 var registrationInstanceId = GetRegistrationInstanceId( rockContext );
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
-                var discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                RegistrationTemplateDiscountWithUsage discount = null;
+
+                // If the code isn't provided then check for an auto apply discount.
+                if ( code.IsNullOrWhiteSpace() )
+                {
+                    var registrationTemplateDiscountCodes = registrationTemplateDiscountService
+                        .GetDiscountsForRegistrationInstance( registrationInstanceId )
+                        .Where( d => d.AutoApplyDiscount )
+                        .OrderBy( d => d.Order )
+                        .Select( d => d.Code )
+                        .ToList();
+
+                    foreach( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
+                    {
+                        discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, registrationTemplateDiscountCode );
+
+                        if ( discount == null || ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value ) )
+                        {
+                            continue;
+                        }
+
+                        // use the first discount that is valid
+                        break;
+                    }
+                }
+                else
+                {
+                    discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                }
 
                 if ( discount == null )
                 {
@@ -495,7 +524,7 @@ namespace Rock.Blocks.Event
                 // be used later to validate the document after signing.
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var unencryptedSecurityToken = new[] { RockDateTime.Now.ToString( "o" ), GetSha256Hash( fieldHashToken + html ) }.ToJson();
-                var encryptedSecurityToken = Security.Encryption.EncryptString( unencryptedSecurityToken );
+                var encryptedSecurityToken = Encryption.EncryptString( unencryptedSecurityToken );
 
                 return ActionOk( new RegistrationEntrySignatureDocument
                 {
@@ -542,7 +571,7 @@ namespace Rock.Blocks.Event
                 }
 
                 // Validate they did not modify any of the fields or the signed HTML.
-                var unencryptedSecurityToken = Security.Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
+                var unencryptedSecurityToken = Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var hash = GetSha256Hash( fieldHashToken + documentHtml );
 
@@ -563,7 +592,7 @@ namespace Rock.Blocks.Event
                     SignedByEmail = signature.SignedByEmail
                 };
 
-                return ActionOk( Security.Encryption.EncryptString( signedData.ToJson() ) );
+                return ActionOk( Encryption.EncryptString( signedData.ToJson() ) );
             }
         }
 
@@ -826,7 +855,7 @@ namespace Rock.Blocks.Event
             // If the Registration Instance linkage specified a group, load it now
             var groupId = GetRegistrationGroupId( rockContext );
 
-            Group group = null;
+            Rock.Model.Group group = null;
 
             if ( groupId.HasValue )
             {
@@ -2117,7 +2146,7 @@ namespace Rock.Blocks.Event
             registrant.LoadAttributes();
             if ( UpdateRegistrantAttributes( registrant, registrantInfo, registrantChanges, context.RegistrationSettings ) )
             {
-                rockContext.SaveChanges();
+                registrant.SaveAttributeValues( rockContext );
             }
 
             // Save the signed document if we have one. We only process a document
@@ -2126,7 +2155,7 @@ namespace Rock.Blocks.Event
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired && isNewRegistration )
             {
                 var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
-                var signedData = Security.Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
+                var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                 var signedBy = RequestContext.CurrentPerson ?? registrar;
 
                 var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.Person.FullName, context.RegistrationSettings.Name);
@@ -3461,12 +3490,6 @@ namespace Rock.Blocks.Event
                 args.AmountToPayNow = 0;
             }
 
-            // Cannot pay more than is owed
-            if ( args.AmountToPayNow > amountDue )
-            {
-                args.AmountToPayNow = amountDue;
-            }
-
             var isNewRegistration = context.Registration == null;
 
             // Validate the charge amount is not too low according to the initial payment amount
@@ -3476,11 +3499,11 @@ namespace Rock.Blocks.Event
                     ? context.RegistrationSettings.PerRegistrantMinInitialPayment.Value * args.Registrants.Count
                     : amountDue;
 
-                if ( args.AmountToPayNow < minimumInitialPayment )
-                {
-                    args.AmountToPayNow = minimumInitialPayment;
-                }
+                args.AmountToPayNow = args.AmountToPayNow < minimumInitialPayment ? minimumInitialPayment : args.AmountToPayNow;
             }
+
+            // Cannot pay more than is owed. This check should be the last one performed regarding payment in this method.
+            args.AmountToPayNow = args.AmountToPayNow > amountDue ? amountDue : args.AmountToPayNow;
 
             return context;
         }
@@ -3522,7 +3545,7 @@ namespace Rock.Blocks.Event
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
 
-            return registrationService.GetRegistrationContext( registrationInstanceId, out errorMessage );
+            return registrationService.GetRegistrationContext( registrationInstanceId, PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull(), out errorMessage );
         }
 
         /// <summary>
@@ -3614,7 +3637,7 @@ namespace Rock.Blocks.Event
         /// <param name="group">The group the person will be added to.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns>A new <see cref="GroupMember"/> instance.</returns>
-        private GroupMember BuildGroupMember( Person person, Group group, RegistrationSettings settings )
+        private GroupMember BuildGroupMember( Person person, Rock.Model.Group group, RegistrationSettings settings )
         {
             var groupMember = new GroupMember();
             groupMember.GroupId = group.Id;

@@ -1,11 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ReminderLinks.ascx.cs" Inherits="RockWeb.Blocks.Reminders.ReminderLinks" %>
 <%@ Import Namespace="Rock" %>
 
-<style>
-    /* This is a temporary workaround to hide the reminders button - REMOVE THIS when the feature is ready for public deployment. */
-    .js-rock-reminders { display:none; }
-</style>
-
 <script type="text/javascript">
     function clearActiveReminderDialog() {
         $('#<%=hfActiveReminderDialog.ClientID %>').val('');
@@ -54,12 +49,12 @@
 
     function checkReminders() {
         var reminderCount = $('#<%=hfReminderCount.ClientID %>').val();
-        var remindersButton = $('#<%=lbReminders.ClientID %>');
+        var remindersButton = $('#<%=btnReminders.ClientID %>');
         var buttonHtml = '<i class="fa fa-bell"></i>';
 
         if (reminderCount != '' && reminderCount != "0") {
             remindersButton.addClass('active has-reminders');
-            buttonHtml = buttonHtml + '<span class="count-bottom">' + reminderCount + "</span>";
+            buttonHtml = buttonHtml + '<span class="count-bottom">' + new Intl.NumberFormat().format(reminderCount) + "</span>";
         }
 
         remindersButton.html(buttonHtml);
@@ -94,14 +89,14 @@
 <asp:HiddenField ID="hfContextEntityTypeId" runat="server" Value="0" />
 
 <div class="dropdown js-rock-reminders">
-    <%-- LinkButton inner html is set by checkReminders() function. --%>
-    <asp:LinkButton runat="server" ID="lbReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown" />
+    <%-- LinkButton inner html is updated by checkReminders() function. --%>
+    <asp:LinkButton runat="server" ID="btnReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown"><i class="fa fa-bell"></i></asp:LinkButton>
     <asp:Panel ID="pnlReminders" runat="server" CssClass="dropdown-menu js-reminders-container">
-        <li>
-            <asp:LinkButton runat="server" ID="lbViewReminders" OnClick="lbViewReminders_Click">View Reminders</asp:LinkButton>
-        </li>
         <li class="js-add-reminder d-none">
-            <asp:LinkButton runat="server" ID="lbAddReminder" CssClass="" OnClick="lbAddReminder_Click">Add Reminder</asp:LinkButton>
+            <asp:LinkButton runat="server" ID="btnAddReminder" CssClass="" OnClick="btnAddReminder_Click">Add Reminder</asp:LinkButton>
+        </li>
+        <li>
+            <asp:LinkButton runat="server" ID="btnViewReminders" OnClick="btnViewReminders_Click">View Reminders</asp:LinkButton>
         </li>
     </asp:Panel>
 </div>
@@ -120,18 +115,18 @@
             CancelLinkVisible="true" OnCancelScript="clearActiveReminderDialog();"
             SaveButtonText="Save" OnSaveClick="mdAddReminder_SaveClick">
             <Content>
-                <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                <asp:UpdatePanel ID="upnlInternalPanel" runat="server">
                     <ContentTemplate>
 
                         <asp:Panel ID="pnlExistingReminders" runat="server" Visible="false">
                             <h4 class="mt-0">Existing Reminders</h4>
 
                             <p>
-                                <asp:Literal ID="litExistingReminderTextTemplate" runat="server" Visible="false">
+                                <asp:Literal ID="lExistingReminderTextTemplate" runat="server" Visible="false">
                                     You currently have {REMINDER_QUANTITY_TEXT_1} for this {ENTITY_TYPE}. The most {REMINDER_QUANTITY_TEXT_2} listed below. 
                                 </asp:Literal>
-                                <asp:Literal ID="litExistingReminderText" runat="server" />
-                                <asp:LinkButton runat="server" ID="lbViewReminders2" OnClick="lbViewReminders_Click" Visible="false">See your reminders settings for a complete list</asp:LinkButton>
+                                <asp:Literal ID="lExistingReminderText" runat="server" />
+                                <asp:LinkButton runat="server" ID="btnViewReminders2" OnClick="btnViewReminders_Click" Visible="false">See your reminders settings for a complete list</asp:LinkButton>
                             </p>
 
                             <asp:Repeater ID="rptReminders" runat="server" OnItemCommand="rptReminders_ItemCommand">
@@ -147,7 +142,7 @@
                                                             <span class="note-details">
                                                                 <span class="tag-flair">
                                                                     <asp:Literal ID="lIcon" runat="server" Text='<%# "<span class=\"tag-color\" style=\"background-color: " + Eval("HighlightColor") + "\"></span>" %>' />
-                                                                    <asp:Literal ID="lReminderType" runat="server"  Text='<%# "<span class=\"tag-label\">" + Eval("ReminderType") + "</span>" %>' />
+                                                                    <asp:Literal ID="lReminderType" runat="server"  Text='<%# "<span class=\"tag-label\">" + Eval("ReminderTypeName") + "</span>" %>' />
                                                                 </span>
                                                             </span>
                                                         </div>
@@ -168,10 +163,10 @@
                                                 <ul class="dropdown-menu">
                                                     <asp:HiddenField ID="hfReminderId" runat="server" Value='<%# Eval("Id") %>' />
                                                     <li>
-                                                        <asp:LinkButton ID="lbMarkComplete" runat="server" Text="Mark Complete" CommandName="MarkComplete" />
-                                                        <asp:LinkButton ID="lbCancelReoccurrence" runat="server" Visible='<%# Eval("IsRenewing") %>' Text="Cancel Reoccurrence" CommandName="CancelReoccurrence" />
-                                                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="EditReminder" />
-                                                        <asp:LinkButton ID="lbDelete" runat="server" Text="Delete" CssClass="dropdown-item-danger" CommandName="DeleteReminder" />
+                                                        <asp:LinkButton ID="btnMarkComplete" runat="server" Text="Mark Complete" CommandName="MarkComplete" />
+                                                        <asp:LinkButton ID="btnCancelReoccurrence" runat="server" Visible='<%# Eval("IsRenewing") %>' Text="Cancel Reoccurrence" CommandName="CancelReoccurrence" />
+                                                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CommandName="EditReminder" />
+                                                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="dropdown-item-danger" CommandName="DeleteReminder" />
                                                     </li>
                                                 </ul>
                                             </div>
@@ -186,23 +181,23 @@
                         <asp:Panel ID="pnlAddReminder" runat="server">
                             <h4 class="mt-0">Reminder for <asp:Literal ID="lEntity" runat="server" /></h4>
 
-                            <Rock:DatePicker ID="rdpReminderDate" runat="server" Label="Reminder Date" Required="true" ValidationGroup="AddReminder" AllowPastDateSelection="false" />
-                            <Rock:RockTextBox ID="rtbNote" runat="server" Label="Note" TextMode="MultiLine" />
-                            <Rock:RockDropDownList ID="rddlReminderType" runat="server" Label="Reminder Type" ValidationGroup="AddReminder" Required="true" />
+                            <Rock:DatePicker ID="dpReminderDate" runat="server" Label="Reminder Date" Required="true" ValidationGroup="AddReminder" AllowPastDateSelection="false" />
+                            <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" />
+                            <Rock:RockDropDownList ID="ddlReminderType" runat="server" Label="Reminder Type" ValidationGroup="AddReminder" Required="true" />
 
                             <div id="reminders-show-additional-options">
                                 <a href="javascript:remindersShowAdditionalOptions();">Additional Options</a>
                             </div>
 
                             <div id="reminders-additional-options" class="d-none">
-                                <Rock:PersonPicker ID="rppPerson" runat="server" Label="Send Reminder To" Required="true" ValidationGroup="AddReminder" EnableSelfSelection="true" />
+                                <Rock:PersonPicker ID="ppPerson" runat="server" Label="Assign Reminder To" Required="true" ValidationGroup="AddReminder" EnableSelfSelection="true" />
 
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:NumberBox ID="rnbRepeatDays" runat="server" Label="Repeat Every" Help="Will repeat the reminder the provided number of days after the completion." AppendText="days" />
+                                        <Rock:NumberBox ID="numbRepeatDays" runat="server" Label="Repeat Every" Help="Will repeat the reminder the provided number of days after the completion." AppendText="days" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:NumberBox ID="rnbRepeatTimes" runat="server" Label="Number of Times to Repeat" Help="The number of times to repeat.  Leave blank to repeat indefinitely." AppendText="times" />
+                                        <Rock:NumberBox ID="numbRepeatTimes" runat="server" Label="Number of Times to Repeat" Help="The number of times to repeat.  Leave blank to repeat indefinitely." AppendText="times" />
                                     </div>
                                 </div>
                             </div>

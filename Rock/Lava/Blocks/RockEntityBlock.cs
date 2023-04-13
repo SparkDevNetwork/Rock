@@ -32,6 +32,7 @@ using Rock.Reporting;
 using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -149,7 +150,7 @@ namespace Rock.Lava.Blocks
 
                         List<string> selectionParms = new List<string>();
                         selectionParms.Add( PropertyComparisonConversion( "==" ).ToString() );
-                        selectionParms.Add( parms["id"].ToString() );
+                        selectionParms.Add( parms["id"].AsInteger().ToString() ); // Ensure this is an integer: https://github.com/SparkDevNetwork/Rock/issues/5230
                         selectionParms.Add( propertyName );
 
                         var entityProperty = entityType.GetProperty( propertyName );
@@ -608,6 +609,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         public static void RegisterEntityCommands( ILavaEngine engine )
         {
+            // If the database is not connected, we do not have access to entity definitions.
+            // This can occur when the Lava engine is started without an attached database.
+            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            {
+                return;
+            }
+
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
@@ -863,7 +871,7 @@ namespace Rock.Lava.Blocks
                 }
 
                 // parse the part to get the expression
-                string regexPattern = @"([a-zA-Z]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
+                var regexPattern = @"((?!_=|_!)[a-zA-Z_]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
                 var expressionParts = Regex.Matches( component, regexPattern )
                .Cast<Match>()
                .Select( m => m.Value )
@@ -874,6 +882,14 @@ namespace Rock.Lava.Blocks
                     var property = expressionParts[0];
                     var operatorType = expressionParts[1];
                     var value = expressionParts[2].Replace( "\"", "" );
+
+                    // Check if the property is Id, if so ensure that it's an integer to prevent
+                    // returning everything in the database.
+                    // https://github.com/SparkDevNetwork/Rock/issues/5236
+                    if ( property == "Id" )
+                    {
+                        value = value.AsInteger().ToString();
+                    }
 
                     List<string> selectionParms = new List<string>();
                     selectionParms.Add( PropertyComparisonConversion( operatorType ).ToString() );
@@ -909,13 +925,20 @@ namespace Rock.Lava.Blocks
                             filterAttribute = attribute;
                             var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
+                            var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            if ( filterExpression is NoAttributeFilterExpression )
+                            {
+                                // Ignore this filter because it would cause the Where expression to match everything.
+                                continue;
+                            }
+
                             if ( attributeWhereExpression == null )
                             {
-                                attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                                attributeWhereExpression = filterExpression;
                             }
                             else
                             {
-                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
+                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, filterExpression );
                             }
                         }
 

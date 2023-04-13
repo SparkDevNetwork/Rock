@@ -18,7 +18,6 @@
 {% endcomment %}
 {% assign Item = displayItemsString | ReplaceLast:',', '' | StripNewlines | FromJSON | First %}
 
-
 {% if Item and Item != empty %}
 
   {% assign parentChannelId = Item.ParentChannelId | AsInteger %}

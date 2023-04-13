@@ -59,6 +59,14 @@ namespace Rock.ViewModels.Entities
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets whether using a read-only Rock Context is disabled.
+        /// </summary>
+        /// <value>
+        ///   true if [disable use of read-only]; otherwise, false.
+        /// </value>
+        public bool DisableUseOfReadOnlyContext { get; set; }
+
+        /// <summary>
         /// Gets or sets the EntityTypeId of the Rock.Model.EntityType (Rock.Data.IEntity) that this DataView reports on.
         /// </summary>
         /// <value>
@@ -113,6 +121,16 @@ namespace Rock.ViewModels.Entities
         /// The persisted last run duration in milliseconds.
         /// </value>
         public int? PersistedLastRunDurationMilliseconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Persisted Schedule Id.
+        /// If this is null, then the DataView does not have a persisted schedule.
+        /// </summary>
+        /// <value>
+        /// A System.Int32 representing the Id of the Rock.Model.Schedule for this DataView.
+        /// If it does not have a persisted schedule, this value will be null.
+        /// </value>
+        public int? PersistedScheduleId { get; set; }
 
         /// <summary>
         /// Gets or sets the persisted schedule interval minutes.

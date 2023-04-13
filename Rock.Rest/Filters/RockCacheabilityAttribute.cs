@@ -60,7 +60,7 @@ namespace Rock.Rest.Filters
                 restActionCache = RestActionCache.Get( apiId );
             }
 
-            if ( restActionCache != null )
+            if ( restActionCache != null && restActionCache.CacheControlHeader != null )
             {
                 var cacheControl = restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() ? restActionCache.CacheControlHeader : "no-store";
 

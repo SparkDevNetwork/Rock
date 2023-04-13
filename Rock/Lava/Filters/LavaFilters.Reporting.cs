@@ -39,7 +39,7 @@ namespace Rock.Lava
                 return false;
             }
 
-            var qry = dataView.GetQuery( new DataViewGetQueryArgs() );
+            var qry = dataView.GetQuery();
 
             // Apply a filter to limit the result set to the target entity.
             if ( input is IEntity e )

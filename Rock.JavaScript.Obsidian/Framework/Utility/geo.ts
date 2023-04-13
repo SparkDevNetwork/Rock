@@ -142,7 +142,7 @@ export function isClockwisePolygon(polygon: number[][]): boolean {
  * @return Promise with the map settings retrieved from the API
  */
 export async function loadMapResources(options: GeoPickerGetSettingsOptionsBag = {}): Promise<GeoPickerSettingsBag> {
-    const response = await post<GeoPickerGoogleMapSettingsBag>("/api/v2/Controls/GeoPickerGetSettings", undefined, options);
+    const response = await post<GeoPickerGoogleMapSettingsBag>("/api/v2/Controls/GeoPickerGetGoogleMapSettings", undefined, options);
     const googleMapSettings = response.data ?? {};
 
     let keyParam = "";

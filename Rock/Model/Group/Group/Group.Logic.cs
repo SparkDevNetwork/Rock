@@ -24,6 +24,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using Rock.Data;
+using Rock.Enums.Group;
 using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -106,10 +107,10 @@ namespace Rock.Model
             var rockContext = new RockContext();
 
             // return people
-            var groups = new GroupService( rockContext ).Queryable().AsNoTracking()
-                                .Where( g =>
-                                     g.IsActive == true
-                                     && g.GroupType.IsIndexEnabled == true );
+            var groups = new GroupService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( g => g.IsActive == true && g.GroupType.IsIndexEnabled == true );
 
             int recordCounter = 0;
 
@@ -474,6 +475,33 @@ namespace Rock.Model
             var groupTypeCache = GroupTypeCache.Get( GroupTypeId );
 
             return groupTypeCache?.GetInheritedAttributesForQualifier( TypeId, "GroupTypeId" );
+        }
+
+        /// <summary>
+        /// Gets the ṣchedule confirmation Logic.
+        /// </summary>
+        /// <returns></returns>
+        public ScheduleConfirmationLogic GetScheduleConfirmationLogic()
+        {
+            var scheduleConfirmationLogic = Enums.Group.ScheduleConfirmationLogic.Ask;
+            if ( this.ScheduleConfirmationLogic.HasValue )
+            {
+                scheduleConfirmationLogic = this.ScheduleConfirmationLogic.Value;
+            }
+            else if ( this.GroupType != null )
+            {
+                scheduleConfirmationLogic = this.GroupType.ScheduleConfirmationLogic;
+            }
+            else
+            {
+                var groupType = GroupTypeCache.Get( this.GroupTypeId );
+                if ( groupType != null )
+                {
+                    scheduleConfirmationLogic = groupType.ScheduleConfirmationLogic;
+                }
+            }
+
+            return scheduleConfirmationLogic;
         }
 
         #endregion

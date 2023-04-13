@@ -40,6 +40,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
+    [SecurityAction( SecurityActionKey.ViewProtectionProfile, "The roles and/or users that can view the protection profile alert for the selected person." )]
+
     #region Block Attributes
 
     [BadgesField(
@@ -222,6 +224,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         }
 
         #endregion Attribute Keys
+
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string ViewProtectionProfile = "ViewProtectionProfile";
+        }
+
+        #endregion
 
         #region Fields
 
@@ -492,12 +506,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         private void ShowPersonImage()
         {
-            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-profile"">";
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400 )}&Style=icon"" alt class=""img-profile"">";
         }
 
         private void ShowProtectionLevel()
         {
-            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low )
+            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low && IsUserAuthorized( SecurityActionKey.ViewProtectionProfile ) )
             {
                 string acctProtectionLevel = $@"
                     <div class=""protection-profile"">
@@ -819,9 +833,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( raceAndEthnicity.Count > 0 )
             {
+                var title = $"{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )}/{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )}";
                 lRaceAndEthnicity.Text =
-                    $@"<dt title=""Race/Ethnicity"">{raceAndEthnicity.AsDelimited("/")}</dt>
-                    <dd class=""d-none"">Race/Ethnicity</dd>";
+                    $@"<dt title=""{title}"">{raceAndEthnicity.AsDelimited("/")}</dt>
+                    <dd class=""d-none"">{title}</dd>";
             }
 
             if ( Person.BirthDate.HasValue )
@@ -845,7 +860,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            if ( Person.AnniversaryDate.HasValue && GetAttributeValue( AttributeKey.DisplayAnniversaryDate ).AsBoolean() )
+            if ( !Person.IsDeceased && Person.AnniversaryDate.HasValue && GetAttributeValue( AttributeKey.DisplayAnniversaryDate ).AsBoolean() )
             {
                 lMaritalStatus.Text = $"<dt>{Person.MaritalStatusValueId.DefinedValue()} {Person.AnniversaryDate.Value.Humanize().Replace( "ago", "" )}</dt><dd>{Person.AnniversaryDate.Value.ToShortDateString()}</dd>";
             }
@@ -859,7 +874,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( GetAttributeValue( AttributeKey.DisplayGraduation ).AsBoolean() )
             {
-                lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
+                if ( !string.IsNullOrWhiteSpace( Person.GradeFormatted ) )
+                {
+                    lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
+                }
+
                 if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                 {
                     lGraduation.Text = Person.HasGraduated.Value ? $@"<dt>Graduated {Person.GraduationYear.Value}</dt>" : $@"<dd>Graduates {Person.GraduationYear.Value}</dd>";
@@ -884,10 +903,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
 
             // if phoneNumbers exist then bind
-            if ( phoneNumbers.Any() ) {
+            if ( phoneNumbers.Any() )
+            {
                 rptPhones.DataSource = phoneNumbers;
                 rptPhones.DataBind();
-            } else {
+            }
+            else
+            {
                 rptPhones.Visible = false;
             }
         }

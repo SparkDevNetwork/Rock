@@ -378,6 +378,8 @@ namespace Rock.Mobile
                 CssStyles = cssStyles,
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
+                InteractiveExperiencePageGuid = additionalSettings.InteractiveExperiencePageId.HasValue ? PageCache.Get( additionalSettings.InteractiveExperiencePageId.Value )?.Guid : null,
+                SmsConversationPageGuid = additionalSettings.SmsConversationPageId.HasValue ? PageCache.Get( additionalSettings.SmsConversationPageId.Value )?.Guid : null,
                 PhoneFormats = phoneFormats,
                 DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,
@@ -396,7 +398,7 @@ namespace Rock.Mobile
             package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
             package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
-            package.AppearanceSettings.ToastXaml = additionalSettings.ToastXaml;
+
             package.AppearanceSettings.NavigationBarActionsXaml = additionalSettings.NavigationBarActionXaml;
             package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
@@ -781,11 +783,12 @@ namespace Rock.Mobile
         /// <param name="name">The name of the control.</param>
         /// <param name="label">The label.</param>
         /// <param name="value">The current value.</param>
+        /// <param name="isEnabled">if set to <c>true</c> [is enabled].</param>
         /// <param name="isRequired">if set to <c>true</c> [is required].</param>
         /// <param name="multiline">if set to <c>true</c> [multiline].</param>
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
-        public static string GetTextEditFieldXaml( string name, string label, string value, bool isRequired, bool multiline = false, int maxLength = 0 )
+        public static string GetTextEditFieldXaml( string name, string label, string value, bool isEnabled, bool isRequired, bool multiline = false, int maxLength = 0 )
         {
             string maxLengthStr = string.Empty;
 
@@ -798,10 +801,10 @@ namespace Rock.Mobile
 
             if ( multiline )
             {
-                return $"<Rock:TextEditor x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" MinimumHeightRequest=\"80\" AutoSize=\"TextChanges\" {maxLengthStr}/>";
+                return $"<Rock:TextEditor x:Name=\"{name}\" IsEnabled=\"{isEnabled}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" MinimumHeightRequest=\"80\" AutoSize=\"TextChanges\" {maxLengthStr}/>";
             }
 
-            return $"<Rock:TextBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" {maxLengthStr}/>";
+            return $"<Rock:TextBox x:Name=\"{name}\" IsEnabled=\"{isEnabled}\"  Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" {maxLengthStr}/>";
         }
 
         /// <summary>
@@ -810,14 +813,15 @@ namespace Rock.Mobile
         /// <param name="name">The name of the control.</param>
         /// <param name="label">The label.</param>
         /// <param name="value">The current value.</param>
+        /// /// <param name="isEnabled">if set to <c>true</c> [is required].</param>
         /// <param name="isRequired">if set to <c>true</c> [is required].</param>
         /// <param name="multiline">if set to <c>true</c> [multiline].</param>
         /// <returns></returns>
-        public static string GetEmailEditFieldXaml( string name, string label, string value, bool isRequired, bool multiline = false )
+        public static string GetEmailEditFieldXaml( string name, string label, string value, bool isEnabled, bool isRequired, bool multiline = false )
         {
             value = value ?? string.Empty;
 
-            return $"<Rock:TextBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" Keyboard=\"Email\" />";
+            return $"<Rock:TextBox x:Name=\"{name}\" IsEnabled=\"{isEnabled}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" Keyboard=\"Email\" />";
         }
 
         /// <summary>

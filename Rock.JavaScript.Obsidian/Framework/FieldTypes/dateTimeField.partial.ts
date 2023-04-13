@@ -16,7 +16,7 @@
 //
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { dateComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
@@ -134,7 +134,7 @@ export class DateTimeFieldType extends FieldTypeBase {
             if (range.rangeType === RangeType.Current) {
                 return `${rangeTypeText} ${timeUnitText}`;
             }
-            else if ([RangeType.Last, RangeType.Previous, RangeType.Next, RangeType.Upcoming].includes(range.rangeType)) {
+            else if (([RangeType.Last, RangeType.Previous, RangeType.Next, RangeType.Upcoming] as number[]).includes(range.rangeType)) {
                 return `${rangeTypeText} ${timeUnitValue} ${timeUnitText}`;
             }
             else {
@@ -166,7 +166,7 @@ export class DateTimeFieldType extends FieldTypeBase {
     /**
      * Determines if the value is a "current date" value, which would then
      * specify the number of minutes +/- to adjust.
-     * 
+     *
      * @param value The value to be checked.
      *
      * @returns true if the value represents a "current date" value; otherwise false.
@@ -177,7 +177,7 @@ export class DateTimeFieldType extends FieldTypeBase {
 
     /**
      * Get the text that describes the "current date" value specified.
-     * 
+     *
      * @param value The value that contains the "current date" value.
      *
      * @returns A human friendly description of the "current date" value.

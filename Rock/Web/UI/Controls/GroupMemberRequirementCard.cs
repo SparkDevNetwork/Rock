@@ -263,7 +263,7 @@ namespace Rock.Web.UI.Controls
                 if ( _hasDoesNotMeetWorkflow )
                 {
                     var qryParms = new Dictionary<string, string>();
-                    qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
+                    qryParms.Add( "WorkflowTypeGuid", _groupMemberRequirementType.DoesNotMeetWorkflowType.Guid.ToString() );
                     var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
                     if ( workflowLink.PageId > 0 )
                     {
@@ -291,7 +291,7 @@ namespace Rock.Web.UI.Controls
                 if ( _hasWarningWorkflow )
                 {
                     var qryParms = new Dictionary<string, string>();
-                    qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
+                    qryParms.Add( "WorkflowTypeGuid", _groupMemberRequirementType.WarningWorkflowType.Guid.ToString() );
                     var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParms );
                     if ( workflowLink.PageId > 0 )
                     {
@@ -359,7 +359,6 @@ namespace Rock.Web.UI.Controls
                     _modalAlert.RenderControl( writer );
                 }
 
-
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "requirement-title h6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( this.Title.Trim() );
@@ -373,6 +372,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "requirement-due small" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
                     writer.Write( "Due: " + GroupMemberRequirementDueDate.Value.ToShortDateString() );
+
                     // End the Span tag.
                     writer.RenderEndTag();
                 }
@@ -476,7 +476,6 @@ namespace Rock.Web.UI.Controls
                     // End the Ul tag.
                     writer.RenderEndTag();
                 }
-
 
                 // End the Div Col tag.
                 writer.RenderEndTag();
@@ -626,6 +625,14 @@ namespace Rock.Web.UI.Controls
 
             // Begin the workflow.
             var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value );
+
+            // If a workflow type is not persisted, let the user know that it did not work.
+            if ( !workflowType.IsPersisted )
+            {
+                _modalAlert.Show( $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started.", ModalAlertType.Warning );
+                return;
+            }
+
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var rockContext = new RockContext();
@@ -639,7 +646,7 @@ namespace Rock.Web.UI.Controls
                     workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
                     var qryParams = new Dictionary<string, string>
                             {
-                                { "WorkflowTypeId", workflow.WorkflowTypeId.ToString() },
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
                                 { "WorkflowGuid", workflow.Guid.ToString() }
                             };
                     var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParams );
@@ -679,7 +686,7 @@ namespace Rock.Web.UI.Controls
 
                             var qryParams = new Dictionary<string, string>
                             {
-                                { "WorkflowTypeId", workflow.WorkflowTypeId.ToString() },
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
                                 { "WorkflowGuid", workflow.Guid.ToString() }
                             };
 
@@ -710,6 +717,14 @@ namespace Rock.Web.UI.Controls
 
             // Begin the workflow.
             var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.WarningWorkflowTypeId.Value );
+
+            // If a workflow type is not persisted, let the user know that it did not work.
+            if ( !workflowType.IsPersisted )
+            {
+                _modalAlert.Show( $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started.", ModalAlertType.Warning );
+                return;
+            }
+
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var rockContext = new RockContext();
@@ -723,7 +738,7 @@ namespace Rock.Web.UI.Controls
                     workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
                     var qryParams = new Dictionary<string, string>
                             {
-                                { "WorkflowTypeId", workflow.WorkflowTypeId.ToString() },
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
                                 { "WorkflowGuid", workflow.Guid.ToString() }
                             };
                     var workflowLink = new PageReference( WorkflowEntryLinkedPageValue, qryParams );
@@ -763,7 +778,7 @@ namespace Rock.Web.UI.Controls
 
                             var qryParams = new Dictionary<string, string>
                             {
-                                { "WorkflowTypeId", workflow.WorkflowTypeId.ToString() },
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
                                 { "WorkflowGuid", workflow.Guid.ToString() }
                             };
 

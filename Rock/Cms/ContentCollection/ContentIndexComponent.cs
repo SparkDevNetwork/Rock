@@ -17,6 +17,7 @@
 using System;
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Cms.ContentCollection.IndexDocuments;
 using Rock.Cms.ContentCollection.Search;
 using Rock.Extension;
@@ -26,6 +27,7 @@ namespace Rock.Cms.ContentCollection
     /// <summary>
     /// The base class that all content collection index components must inherit from.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal abstract class ContentIndexComponent : Component
     {
         /// <summary>

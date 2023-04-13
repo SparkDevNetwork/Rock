@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Net;
 using System.Web;
 using RestSharp;
@@ -25,6 +25,7 @@ using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security.Authentication.ExternalRedirectAuthentication;
 using Rock.Web.Cache;
 
 namespace Rock.Security.Authentication.Auth0
@@ -44,7 +45,7 @@ namespace Rock.Security.Authentication.Auth0
     [TextField( "Login Button Text", "The text shown on the log in button.", defaultValue: "Auth0 Login", required: false, order: 3 )]
     [TextField( "Login Button CSS Class", "The CSS class applied to the log in button.", required: false, order: 4 )]
     [Rock.SystemGuid.EntityTypeGuid( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F")]
-    public class Auth0Authentication : AuthenticationComponent
+    public class Auth0Authentication : AuthenticationComponent, IExternalRedirectAuthentication
     {
         /// <summary>
         /// Gets the type of the service.
@@ -71,7 +72,7 @@ namespace Rock.Security.Authentication.Auth0
         /// <returns></returns>
         public override bool IsReturningFromAuthentication( System.Web.HttpRequest request )
         {
-            return !string.IsNullOrWhiteSpace( request.QueryString["code"] ) && !string.IsNullOrWhiteSpace( request.QueryString["state"] );
+            return IsReturningFromExternalAuthentication( request.QueryString.ToSimpleQueryStringDictionary() );
         }
 
         /// <summary>
@@ -79,19 +80,9 @@ namespace Rock.Security.Authentication.Auth0
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
-        public override Uri GenerateLoginUrl( System.Web.HttpRequest request )
+        public override Uri GenerateLoginUrl( HttpRequest request )
         {
-            // see: https://auth0.com/docs/api/authentication#support
-            string returnUrl = request.QueryString["returnurl"] ?? System.Web.Security.FormsAuthentication.DefaultUrl;
-            string redirectUri = GetRedirectUrl( request );
-            string authDomain = this.GetAttributeValue( "ClientDomain" );
-            string scope = HttpUtility.UrlEncode( "openid profile email phone_number birthdate" );
-            string audience = $"https://{authDomain}/userinfo";
-            string clientId = this.GetAttributeValue( "ClientID" );
-
-            string authorizeUrl = $"https://{authDomain}/authorize?response_type=code&scope={scope}&audience={audience}&client_id={clientId}&redirect_uri={redirectUri}&state={returnUrl}";
-
-            return new Uri( authorizeUrl );
+            return GenerateExternalLoginUrl( GetRedirectUrl( request ), request.QueryString["returnurl"] );
         }
 
         /// <summary>
@@ -101,95 +92,20 @@ namespace Rock.Security.Authentication.Auth0
         /// <param name="userName">Name of the user.</param>
         /// <param name="returnUrl">The return URL.</param>
         /// <returns></returns>
-        public override bool Authenticate( System.Web.HttpRequest request, out string userName, out string returnUrl )
+        public override bool Authenticate( HttpRequest request, out string userName, out string returnUrl )
         {
-            string authDomain = this.GetAttributeValue( "ClientDomain" );
-            string clientId = this.GetAttributeValue( "ClientID" );
-            string clientSecret = this.GetAttributeValue( "ClientSecret" );
-
-            userName = string.Empty;
-            returnUrl = request.QueryString["state"];
-            string code = request.QueryString["code"];
-            string redirectUri = GetRedirectUrl( request );
-
-            // see: https://auth0.com/docs/api/authentication#support
-            var restClient = new RestClient( $"https://{authDomain}" );
-            var authTokenRequest = new RestRequest( "oauth/token", Method.POST );
-            var authTokenRequestBody = new
+            var options = new ExternalRedirectAuthenticationOptions
             {
-                grant_type = "authorization_code",
-                client_id = clientId,
-                client_secret = clientSecret,
-                code,
-                redirect_uri = redirectUri
+                RedirectUrl = GetRedirectUrl( request ),
+                Parameters = request.QueryString.ToSimpleQueryStringDictionary()
             };
 
-            authTokenRequest.AddJsonBody( authTokenRequestBody );
+            var result = Authenticate( options );
 
-            var authTokenRestResponse = restClient.Execute( authTokenRequest );
+            userName = result.UserName;
+            returnUrl = result.ReturnUrl;
 
-            if ( authTokenRestResponse.StatusCode == HttpStatusCode.OK )
-            {
-                Auth0TokenResponse authTokenResponse = authTokenRestResponse.Content.FromJsonOrNull<Auth0TokenResponse>();
-                if ( authTokenResponse != null )
-                {
-                    var userInfoRequest = new RestRequest( $"userinfo?access_token={authTokenResponse.access_token}", Method.GET );
-                    var userInfoRestResponse = restClient.Execute( userInfoRequest );
-                    if ( userInfoRestResponse.StatusCode == HttpStatusCode.OK )
-                    {
-                        Auth0UserInfo auth0UserInfo = userInfoRestResponse.Content.FromJsonOrNull<Auth0UserInfo>();
-
-                        var managementTokenRequest = new RestRequest( "oauth/token", Method.POST );
-                        var managementTokenRequestBody = new
-                        {
-                            grant_type = "client_credentials",
-                            client_id = clientId,
-                            client_secret = clientSecret,
-                            audience = $"https://{authDomain}/api/v2/"
-                        };
-
-                        managementTokenRequest.AddJsonBody( managementTokenRequestBody );
-
-                        var managementTokenRestResponse = restClient.Execute( managementTokenRequest );
-                        if ( managementTokenRestResponse.StatusCode == HttpStatusCode.OK )
-                        {
-                            Auth0TokenResponse managementTokenResponse = managementTokenRestResponse.Content.FromJsonOrNull<Auth0TokenResponse>();
-                            var managementUserLookupRequest = new RestRequest( $"api/v2/users/{auth0UserInfo.sub}", Method.GET );
-                            managementUserLookupRequest.AddHeader( "authorization", $"Bearer {managementTokenResponse?.access_token}" );
-                            var managementUserLookupResponse = restClient.Execute( managementUserLookupRequest );
-
-                            if ( managementUserLookupResponse.StatusCode == HttpStatusCode.OK )
-                            {
-                                // if we were able to look up the user using the management api, fill in null given_name from user_metadata or app_metadata;
-                                var managementUserInfo = managementUserLookupResponse.Content.FromJsonOrNull<Auth0ManagementUserInfo>();
-
-                                if ( managementUserInfo != null )
-                                {
-                                    if ( auth0UserInfo.given_name == null )
-                                    {
-                                        auth0UserInfo.given_name = managementUserInfo.user_metadata?.given_name ?? managementUserInfo.app_metadata?.given_name;
-
-                                        // if we had to get given_name from user_metadata/app_metadata, then the nickname that we got back might not be correct, so just have it be given_name
-                                        auth0UserInfo.nickname = auth0UserInfo.given_name;
-                                    }
-
-                                    if ( auth0UserInfo.family_name == null )
-                                    {
-                                        auth0UserInfo.family_name = managementUserInfo.user_metadata?.family_name ?? managementUserInfo.app_metadata?.family_name;
-                                    }
-                                }
-                            }
-                        }
-
-
-                        userName = GetAuth0UserName( auth0UserInfo );
-
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            return result.IsAuthenticated;
         }
 
         /// <summary>
@@ -419,5 +335,121 @@ namespace Rock.Security.Authentication.Auth0
             // don't implement
             throw new NotImplementedException();
         }
+        #region IExternalRedirectAuthentication Implementation
+
+        /// <inheritdoc/>
+        public ExternalRedirectAuthenticationResult Authenticate( ExternalRedirectAuthenticationOptions options )
+        {
+            var authDomain = this.GetAttributeValue( "ClientDomain" );
+            var clientId = this.GetAttributeValue( "ClientID" );
+            var clientSecret = this.GetAttributeValue( "ClientSecret" );
+
+            var result = new ExternalRedirectAuthenticationResult
+            {
+                UserName = string.Empty,
+                ReturnUrl = options.Parameters.GetValueOrNull( "state" )
+            };
+
+            // see: https://auth0.com/docs/api/authentication#support
+            var restClient = new RestClient( $"https://{authDomain}" );
+            var authTokenRequest = new RestRequest( "oauth/token", Method.POST );
+            var authTokenRequestBody = new
+            {
+                grant_type = "authorization_code",
+                client_id = clientId,
+                client_secret = clientSecret,
+                code = options.Parameters.GetValueOrNull( "code" ),
+                redirect_uri = options.RedirectUrl
+            };
+
+            authTokenRequest.AddJsonBody( authTokenRequestBody );
+
+            var authTokenRestResponse = restClient.Execute( authTokenRequest );
+
+            if ( authTokenRestResponse.StatusCode == HttpStatusCode.OK )
+            {
+                Auth0TokenResponse authTokenResponse = authTokenRestResponse.Content.FromJsonOrNull<Auth0TokenResponse>();
+                if ( authTokenResponse != null )
+                {
+                    var userInfoRequest = new RestRequest( $"userinfo?access_token={authTokenResponse.access_token}", Method.GET );
+                    var userInfoRestResponse = restClient.Execute( userInfoRequest );
+                    if ( userInfoRestResponse.StatusCode == HttpStatusCode.OK )
+                    {
+                        Auth0UserInfo auth0UserInfo = userInfoRestResponse.Content.FromJsonOrNull<Auth0UserInfo>();
+
+                        var managementTokenRequest = new RestRequest( "oauth/token", Method.POST );
+                        var managementTokenRequestBody = new
+                        {
+                            grant_type = "client_credentials",
+                            client_id = clientId,
+                            client_secret = clientSecret,
+                            audience = $"https://{authDomain}/api/v2/"
+                        };
+
+                        managementTokenRequest.AddJsonBody( managementTokenRequestBody );
+
+                        var managementTokenRestResponse = restClient.Execute( managementTokenRequest );
+                        if ( managementTokenRestResponse.StatusCode == HttpStatusCode.OK )
+                        {
+                            Auth0TokenResponse managementTokenResponse = managementTokenRestResponse.Content.FromJsonOrNull<Auth0TokenResponse>();
+                            var managementUserLookupRequest = new RestRequest( $"api/v2/users/{auth0UserInfo.sub}", Method.GET );
+                            managementUserLookupRequest.AddHeader( "authorization", $"Bearer {managementTokenResponse?.access_token}" );
+                            var managementUserLookupResponse = restClient.Execute( managementUserLookupRequest );
+
+                            if ( managementUserLookupResponse.StatusCode == HttpStatusCode.OK )
+                            {
+                                // if we were able to look up the user using the management api, fill in null given_name from user_metadata or app_metadata;
+                                var managementUserInfo = managementUserLookupResponse.Content.FromJsonOrNull<Auth0ManagementUserInfo>();
+
+                                if ( managementUserInfo != null )
+                                {
+                                    if ( auth0UserInfo.given_name == null )
+                                    {
+                                        auth0UserInfo.given_name = managementUserInfo.user_metadata?.given_name ?? managementUserInfo.app_metadata?.given_name;
+
+                                        // if we had to get given_name from user_metadata/app_metadata, then the nickname that we got back might not be correct, so just have it be given_name
+                                        auth0UserInfo.nickname = auth0UserInfo.given_name;
+                                    }
+
+                                    if ( auth0UserInfo.family_name == null )
+                                    {
+                                        auth0UserInfo.family_name = managementUserInfo.user_metadata?.family_name ?? managementUserInfo.app_metadata?.family_name;
+                                    }
+                                }
+                            }
+                        }
+
+                        result.UserName = GetAuth0UserName( auth0UserInfo );
+                        result.IsAuthenticated = true;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public Uri GenerateExternalLoginUrl( string externalProviderReturnUrl, string successfulAuthenticationRedirectUrl )
+        {
+            // see: https://auth0.com/docs/api/authentication#support
+            successfulAuthenticationRedirectUrl = successfulAuthenticationRedirectUrl ?? System.Web.Security.FormsAuthentication.DefaultUrl;
+            var authDomain = this.GetAttributeValue( "ClientDomain" );
+            var scope = HttpUtility.UrlEncode( "openid profile email phone_number birthdate" );
+            var audience = $"https://{authDomain}/userinfo";
+            var clientId = this.GetAttributeValue( "ClientID" );
+
+            var authorizeUrl = $"https://{authDomain}/authorize?response_type=code&scope={scope}&audience={audience}&client_id={clientId}&redirect_uri={externalProviderReturnUrl}&state={successfulAuthenticationRedirectUrl}";
+
+            return new Uri( authorizeUrl );
+        }
+
+        /// <inheritdoc/>
+        public bool IsReturningFromExternalAuthentication( IDictionary<string, string> parameters )
+        {
+            return !string.IsNullOrWhiteSpace( parameters.GetValueOrNull( "code" ) )
+                && !string.IsNullOrWhiteSpace( parameters.GetValueOrNull( "state" ) );
+        }
+
+        #endregion
     }
 }

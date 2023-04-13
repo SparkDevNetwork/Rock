@@ -557,7 +557,6 @@ namespace Rock.Web.UI
         /// </value>
         public int ViewStateSize { get; private set; }
 
-
         /// <summary>
         /// Gets the view state size compressed.
         /// </summary>
@@ -1589,6 +1588,11 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 {
                     Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
+
+                // Add reponse headers to request that the client tell us if they prefer dark mode
+                Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme" );
+                Response.Headers.Add( "Vary", "Sec-CH-Prefers-Color-Scheme" );
+                Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme" );
 
                 if ( _showDebugTimings )
                 {
@@ -2893,7 +2897,7 @@ Sys.Application.add_load(function () {
 
                         Type modelType = entity.GetEntityType();
 
-                        if ( modelType == null )
+                        if ( modelType == null && entity.AssemblyName.IsNotNullOrWhiteSpace() )
                         {
                             // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assembly it is in and look in there
                             string[] assemblyNameParts = entity.AssemblyName.Split( new char[] { ',' } );

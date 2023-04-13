@@ -1,0 +1,82 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-if="error" v-bind="formFieldProps" :modelValue="internalValue" name="cat-val-picker">
+        <NotificationBox :alertType="AlertType.Danger">
+            An error occurred while fetching category tree.&nbsp;<RockButton @click="loadTree">Retry</RockButton>
+        </NotificationBox>
+    </RockFormField>
+    <RockFormField v-else-if="loadedItems" v-bind="formFieldProps" :modelValue="internalValue" name="cat-val-picker">
+        <CategorizedValuePickerDropDownLevel v-bind="formFieldProps" :root="loadedItems" v-model="internalValue" :definedTypeName="definedTypeName" key="root-cat-val-picker" />
+    </RockFormField>
+    <DropDownList v-else v-bind="formFieldProps" loading :modelValue="internalValue?.value ?? ''" />
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { PropType, ref, watch } from "vue";
+    import CategorizedValuePickerDropDownLevel from "./categorizedValuePickerDropDownLevel.obs";
+    import RockFormField from "./rockFormField";
+    import { CategorizedValuePickerGetTreeOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categorizedValuePickerGetTreeOptionsBag";
+    import { CategorizedValuePickerGetTreeResultsBag } from "@Obsidian/ViewModels/Rest/Controls/categorizedValuePickerGetTreeResultsBag";
+    import { CategorizedValuePickerNodeBag } from "@Obsidian/ViewModels/Rest/Controls/categorizedValuePickerNodeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { useVModelPassthrough, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import NotificationBox from "./notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import RockButton from "./rockButton";
+    import DropDownList from "./dropDownList";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<ListItemBag | null>,
+            default: ""
+        },
+
+        definedTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        onlyIncludeGuids: {
+            type: Array as PropType<Guid[] | null>,
+            default: null
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | null): void
+    }>();
+
+    const http = useHttp();
+    const loadedItems = ref<CategorizedValuePickerNodeBag | null>(null);
+    const error = ref<boolean>(false);
+    const definedTypeName = ref<string>("");
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const formFieldProps = useStandardRockFormFieldProps(props);
+
+    async function loadTree(): Promise<void> {
+        error.value = false;
+        const options: Partial<CategorizedValuePickerGetTreeOptionsBag> = {
+            definedTypeGuid: props.definedTypeGuid,
+            onlyIncludeGuids: props.onlyIncludeGuids
+        };
+        const result = await http.post<CategorizedValuePickerGetTreeResultsBag>("/api/v2/Controls/CategorizedValuePickerGetTree", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            loadedItems.value = result.data.tree ?? null;
+            definedTypeName.value = result.data.definedType ?? "";
+            return;
+        }
+
+        console.error(result.errorMessage ?? "Unknown error while loading data.");
+        error.value = true;
+        loadedItems.value = null;
+        definedTypeName.value = "";
+    }
+
+    watch(() => props.definedTypeGuid, loadTree, { immediate: true });
+</script>

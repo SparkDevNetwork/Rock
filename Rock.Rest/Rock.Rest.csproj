@@ -81,6 +81,7 @@
     <Reference Include="Rock.Common.Mobile, Version=0.3.13.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Rock.Common.Tv">
       <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>
@@ -150,15 +151,23 @@
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceScheduleCampusController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceSchedulesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperiencesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\NotificationMessagesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\NotificationMessageTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonalizationSegmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RemindersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ReminderTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RemoteAuthenticationSessionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RequestFiltersController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\SnippetsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\SnippetTypesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\SystemPhoneNumbersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\EntitySetsController.cs" />
+    <Compile Include="Controllers\NotificationMessagesController.Partial.cs" />
     <Compile Include="Controllers\ReminderTypesController.Partial.cs" />
     <Compile Include="Controllers\RemindersController.Partial.cs" />
+    <Compile Include="HttpRequestMessageWrapper.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />

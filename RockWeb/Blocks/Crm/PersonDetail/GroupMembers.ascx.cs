@@ -660,6 +660,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
             var litGroupAttributes = e.Item.FindControl( "litGroupAttributes" ) as Literal;
             var litMoreGroupAttributes = e.Item.FindControl( "litMoreGroupAttributes" ) as Literal;
+            var lblShowGroupAttributeTitle = e.Item.FindControl( "lblShowGroupAttributeTitle" ) as Label;
+            var pnlShowExpandChevorn = e.Item.FindControl( "pnlShowExpandChevorn" ) as Panel;
 
             if ( pnlGroupAttributes == null || litGroupAttributes == null || litMoreGroupAttributes == null )
             {
@@ -689,7 +691,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if ( attribute.IsGridColumn )
                     {
-                        pnlGroupAttributes.Visible = true;
                         litGroupAttributes.Text += attributeHtml;
                     }
                     else
@@ -697,6 +698,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         litMoreGroupAttributes.Text += attributeHtml;
                     }
                 }
+            }
+
+            // show the group attributes panel if there are any group attributes to be displayed
+            if( litGroupAttributes.Text.IsNotNullOrWhiteSpace() || litMoreGroupAttributes.Text.IsNotNullOrWhiteSpace() )
+            {
+                pnlGroupAttributes.Visible = true;
+            }
+
+            if( litGroupAttributes.Text.IsNullOrWhiteSpace() && litMoreGroupAttributes.Text.IsNotNullOrWhiteSpace() )
+            {
+                lblShowGroupAttributeTitle.Visible = true;
+                lblShowGroupAttributeTitle.Text = group.GroupType.Name + " Attributes";
+            }
+            if( litMoreGroupAttributes.Text.IsNullOrWhiteSpace() ) {
+                
+                pnlShowExpandChevorn.Visible = false;
             }
         }
 

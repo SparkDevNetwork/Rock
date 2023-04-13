@@ -39,7 +39,7 @@ namespace Rock.RealTime.AspNet
     ///     </para>
     /// </remarks>
     [HubName( "realTime" )]
-    [RockInternal]
+    [RockInternal( "1.14.1" )]
     public sealed class RealTimeHub : Hub<IRockHubClientProxy>
     {
         /// <summary>
@@ -77,7 +77,7 @@ namespace Rock.RealTime.AspNet
 
             if ( joined )
             {
-                await Groups.Add( Context.ConnectionId, topicIdentifier );
+                await Groups.Add( Context.ConnectionId, Engine.GetQualifiedAllChannelName( topicIdentifier ) );
 
                 if ( Context.User is ClaimsPrincipal claimsPrincipal )
                 {
@@ -91,7 +91,8 @@ namespace Rock.RealTime.AspNet
 
                         if ( personId.HasValue )
                         {
-                            await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:person:{personId}" );
+                            RealTimeHelper.Engine.ClientAddedToChannel( Context.ConnectionId, topicIdentifier, Engine.GetPersonChannelName( personId.Value ) );
+                            await Groups.Add( Context.ConnectionId, Engine.GetQualifiedPersonChannelName( topicIdentifier, personId.Value ) );
                         }
                     }
 
@@ -105,11 +106,34 @@ namespace Rock.RealTime.AspNet
 
                         if ( visitorId.HasValue )
                         {
-                            await Groups.Add( Context.ConnectionId, $"{topicIdentifier}-rock:visitor:{visitorId}" );
+                            RealTimeHelper.Engine.ClientAddedToChannel( Context.ConnectionId, topicIdentifier, Engine.GetVisitorChannelName( visitorId.Value ) );
+                            await Groups.Add( Context.ConnectionId, Engine.GetQualifiedPersonChannelName( topicIdentifier, visitorId.Value ) );
                         }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Requests that the client be disconnected from the specified topic.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic to be disconnected from.</param>
+        public async Task DisconnectFromTopic( string topicIdentifier )
+        {
+            await RealTimeHelper.Engine.DisconnectFromTopicAsync( this, topicIdentifier, Context.ConnectionId );
+        }
+
+        /// <summary>
+        /// Determines whether this connection is still valid. A connection can
+        /// become invalid if the Rock server restarts. In this case the SignalR
+        /// connection resumes as a reconnect without ever calling the
+        /// <see cref="OnConnected"/> method. This also means all connection
+        /// state is lost.
+        /// </summary>
+        /// <returns><c>true</c> if the connection is valid; otherwise <c>false</c>.</returns>
+        public Task<bool> IsConnectionValid()
+        {
+            return Task.FromResult( RealTimeHelper.Engine.HasConnectionState<EngineConnectionState>( Context.ConnectionId ) );
         }
 
         /// <inheritdoc/>

@@ -193,8 +193,8 @@ namespace Rock.Lava.RockLiquid.Blocks
                 var content = showContent ? _matchContent.ToString() : _otherwiseContent.ToString();
                 if ( !string.IsNullOrEmpty( content ) )
                 {
-                    var render = LavaService.RenderTemplate( content );
-                    result.Write( render.Text );
+                    var renderResult = LavaService.RenderTemplate( content, new LavaRenderParameters { Context = lavaContext } );
+                    result.Write( renderResult.Text );
                 }
             }
             catch ( Exception ex )

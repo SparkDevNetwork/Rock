@@ -28,6 +28,7 @@ using Quartz.Impl.Matchers;
 using Rock.Data;
 using Rock.Jobs;
 using CronExpressionDescriptor;
+using Rock.Attribute;
 
 namespace Rock.Model
 {
@@ -55,11 +56,34 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Schedules the Job to run immediately and waits for the job to finish.
+        /// Returns <c>false</c> with an <c>out</c> if the job is already running as a RunNow job or if an exception occurs.
+        /// </summary>
+        /// <param name="job">The job.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        [Obsolete]
+        [RockObsolete( "1.15" )]
+        public bool RunNow( ServiceJob job, out string errorMessage )
+        {
+            if ( RunNow( job ) )
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
+            else
+            {
+                errorMessage = "Unable to run job.";
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Runs the now.
         /// </summary>
         /// <param name="job">The job.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public bool RunNow( ServiceJob job )
+        internal bool RunNow( ServiceJob job )
         {
             var task = Task.Run( async () => await RunNowAsync( job ) );
             task.Wait();
@@ -75,7 +99,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="job">The job.</param>
         /// <returns></returns>
-        private static async Task<bool> RunNowAsync( ServiceJob job )
+        internal static async Task<bool> RunNowAsync( ServiceJob job )
         {
             // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
             var rockContext = new RockContext();
@@ -326,6 +350,15 @@ namespace Rock.Model
         /// <summary>
         /// Starts the quartz scheduler.
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.15" )]
         public static void StartQuartzScheduler()
         {
             QuartzScheduler?.Start();
@@ -334,6 +367,15 @@ namespace Rock.Model
         /// <summary>
         /// Shutdowns the quartz scheduler.
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.15" )]
         public static void ShutdownQuartzScheduler()
         {
             QuartzScheduler?.Shutdown();
@@ -343,7 +385,7 @@ namespace Rock.Model
         /// Gets the quartz scheduler.
         /// </summary>
         /// <value>The quartz scheduler.</value>
-        public static IScheduler QuartzScheduler { get; private set; } = null;
+        internal static IScheduler QuartzScheduler { get; private set; } = null;
 
         internal static void InitializeJobScheduler()
         {

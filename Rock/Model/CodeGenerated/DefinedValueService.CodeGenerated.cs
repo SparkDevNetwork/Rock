@@ -122,18 +122,6 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<Communication>( Context ).Queryable().Any( a => a.SMSFromDefinedValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Communication.FriendlyTypeName );
-                return false;
-            }
-
-            if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.SMSFromDefinedValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
-                return false;
-            }
-
             if ( new Service<ContentChannel>( Context ).Queryable().Any( a => a.StructuredContentToolValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, ContentChannel.FriendlyTypeName );

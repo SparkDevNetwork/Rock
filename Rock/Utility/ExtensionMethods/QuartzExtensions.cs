@@ -70,7 +70,7 @@ namespace Rock
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns>System.Int32.</returns>
-        public static int GetJobIdFromQuartz( this Quartz.IJobExecutionContext context )
+        internal static int GetJobIdFromQuartz( this Quartz.IJobExecutionContext context )
         {
             return context.JobDetail.Description.AsInteger();
         }

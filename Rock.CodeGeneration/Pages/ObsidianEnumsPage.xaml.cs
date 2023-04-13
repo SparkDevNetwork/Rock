@@ -128,7 +128,7 @@ namespace Rock.CodeGeneration.Pages
                 name = name.CamelCase();
             }
 
-            return $"{name}.d.ts";
+            return $"{name}.ts";
         }
 
         /// <summary>

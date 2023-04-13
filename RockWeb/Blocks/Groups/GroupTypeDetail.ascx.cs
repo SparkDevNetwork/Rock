@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Group;
 using Rock.Model;
 using Rock.Security;
 using Rock.UniversalSearch;
@@ -488,6 +489,18 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            var attendanceFollowupDays = new List<int>();
+            foreach ( ListItem item in cblAttendanceReminderFollowupDays.Items )
+            {
+                if ( item.Selected )
+                {
+                    if ( int.TryParse( item.Value, out int followupDays ) )
+                    {
+                        attendanceFollowupDays.Add( followupDays );
+                    }
+                }
+            }
+
             groupType.Name = tbName.Text;
             groupType.Description = tbDescription.Text;
             groupType.GroupTerm = tbGroupTerm.Text;
@@ -509,6 +522,9 @@ namespace RockWeb.Blocks.Groups
             groupType.GroupAttendanceRequiresSchedule = cbGroupAttendanceRequiresSchedule.Checked;
             groupType.AttendanceCountsAsWeekendService = cbWeekendService.Checked;
             groupType.SendAttendanceReminder = cbSendAttendanceReminder.Checked;
+            groupType.AttendanceReminderSystemCommunicationId = ddlAttendanceReminderCommunication.SelectedValue.AsIntegerOrNull();
+            groupType.AttendanceReminderSendStartOffsetMinutes = nbAttendanceReminderOffsetMinutes.Text.AsIntegerOrNull();
+            groupType.AttendanceReminderFollowupDaysList = attendanceFollowupDays;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.GroupCapacityRule = ddlGroupCapacityRule.SelectedValueAsEnum<GroupCapacityRule>();
             groupType.IsCapacityRequired = cbRequireCapacityRule.Checked;
@@ -549,6 +565,7 @@ namespace RockWeb.Blocks.Groups
             groupType.ScheduleCancellationWorkflowTypeId = wtpScheduleCancellationWorkflowType.SelectedValueAsId();
             groupType.ScheduleReminderSystemCommunicationId = ddlScheduleReminderSystemCommunication.SelectedValue.AsIntegerOrNull();
             groupType.ScheduleReminderEmailOffsetDays = nbScheduleReminderOffsetDays.Text.AsIntegerOrNull();
+            groupType.ScheduleConfirmationLogic = ddlScheduleConfirmationLogic.SelectedValueAsEnum<ScheduleConfirmationLogic>();
 
             // if GroupHistory is turned off, we'll delete group and group member history for this group type
             bool deleteGroupHistory = false;
@@ -735,6 +752,16 @@ namespace RockWeb.Blocks.Groups
             cblScheduleTypes.Required = cbSchedulingEnabled.Checked;
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbSendAttendanceReminder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbSendAttendanceReminder_CheckedChanged( object sender, EventArgs e )
+        {
+            AttendanceReminderCommunicationRequired();
+        }
+
         #endregion
 
         #region Internal Methods
@@ -775,6 +802,7 @@ namespace RockWeb.Blocks.Groups
 
                 groupType.ScheduleConfirmationSystemCommunicationId = systemCommunicationIdLookup.GetValueOrNull( Rock.SystemGuid.SystemCommunication.SCHEDULING_CONFIRMATION.AsGuid() );
                 groupType.ScheduleReminderSystemCommunicationId = systemCommunicationIdLookup.GetValueOrNull( Rock.SystemGuid.SystemCommunication.SCHEDULING_REMINDER.AsGuid() );
+                groupType.AttendanceReminderSystemCommunicationId = systemCommunicationIdLookup.GetValueOrNull( Rock.SystemGuid.SystemCommunication.GROUP_ATTENDANCE_REMINDER.AsGuid() );
 
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
@@ -933,6 +961,20 @@ namespace RockWeb.Blocks.Groups
             cbTakesAttendance.Checked = groupType.TakesAttendance;
             cbWeekendService.Checked = groupType.AttendanceCountsAsWeekendService;
             cbSendAttendanceReminder.Checked = groupType.SendAttendanceReminder;
+            ddlAttendanceReminderCommunication.SetValue( groupType.AttendanceReminderSystemCommunicationId.ToString() );
+            nbAttendanceReminderOffsetMinutes.Text = groupType.AttendanceReminderSendStartOffsetMinutes.ToString();
+            foreach ( var followupDays in groupType.AttendanceReminderFollowupDaysList )
+            {
+                foreach ( ListItem item in cblAttendanceReminderFollowupDays.Items )
+                {
+                    if ( item.Value == followupDays.ToString() )
+                    {
+                        item.Selected = true;
+                    }
+                }
+            }
+            AttendanceReminderCommunicationRequired();
+
             ddlAttendanceRule.SetValue( ( int ) groupType.AttendanceRule );
             ddlPrintTo.SetValue( ( int ) groupType.AttendancePrintTo );
             cbGroupAttendanceRequiresSchedule.Checked = groupType.GroupAttendanceRequiresSchedule;
@@ -948,7 +990,7 @@ namespace RockWeb.Blocks.Groups
             cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
             ScheduleTypesRequired();
             cblScheduleTypes.RequiredErrorMessage = "A 'Group Schedule Option' must be selected under 'Attendance / Check-In' when Scheduling is enabled.";
-
+            ddlScheduleConfirmationLogic.SetValue( ( int ) groupType.ScheduleConfirmationLogic );
             ddlScheduleConfirmationSystemCommunication.SetValue( groupType.ScheduleConfirmationSystemCommunicationId );
             cbRequiresReasonIfDeclineSchedule.Checked = groupType.RequiresReasonIfDeclineSchedule;
             nbScheduleConfirmationOffsetDays.Text = groupType.ScheduleConfirmationEmailOffsetDays.ToString();
@@ -1023,6 +1065,14 @@ namespace RockWeb.Blocks.Groups
             }
 
             BindMemberWorkflowTriggersGrid();
+        }
+
+        /// <summary>
+        /// Sets the required attribute of the Attendance Reminder Communication Template control.
+        /// </summary>
+        private void AttendanceReminderCommunicationRequired()
+        {
+            ddlAttendanceReminderCommunication.Required = cbSendAttendanceReminder.Checked;
         }
 
         /// <summary>
@@ -1114,6 +1164,8 @@ namespace RockWeb.Blocks.Groups
             ddlScheduleReminderSystemCommunication.Items.Add( new ListItem() );
             ddlRsvpReminderSystemCommunication.Items.Clear();
             ddlRsvpReminderSystemCommunication.Items.Add( new ListItem() );
+            ddlAttendanceReminderCommunication.Items.Clear();
+            ddlAttendanceReminderCommunication.Items.Add(new ListItem());
 
             // Get a list of System Communications - these are used for Group Scheduling and RSVP Reminders.
             var systemCommunications = new SystemCommunicationService( new RockContext() )
@@ -1135,6 +1187,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     ddlScheduleConfirmationSystemCommunication.Items.Add( new ListItem( scheduleReminder.Title, scheduleReminder.Id.ToString() ) );
                     ddlScheduleReminderSystemCommunication.Items.Add( new ListItem( scheduleReminder.Title, scheduleReminder.Id.ToString() ) );
+                    ddlAttendanceReminderCommunication.Items.Add( new ListItem( scheduleReminder.Title, scheduleReminder.Id.ToString() ) );
                 }
             }
 
@@ -1147,6 +1200,8 @@ namespace RockWeb.Blocks.Groups
             {
                 ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
             }
+
+            ddlScheduleConfirmationLogic.BindToEnum<ScheduleConfirmationLogic>();
         }
 
         /// <summary>

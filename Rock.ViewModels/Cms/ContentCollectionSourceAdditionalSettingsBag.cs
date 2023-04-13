@@ -34,5 +34,12 @@ namespace Rock.ViewModels.Cms
         /// The attribute unique identifiers that are included for indexing.
         /// </value>
         public List<Guid> AttributeGuids { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom fields that when indexing content for
+        /// this source.
+        /// </summary>
+        /// <value>The custom fields definitions.</value>
+        public List<ContentCollectionCustomFieldBag> CustomFields { get; set; }
     }
 }

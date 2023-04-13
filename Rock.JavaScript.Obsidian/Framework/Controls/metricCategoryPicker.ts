@@ -19,7 +19,7 @@ import { defineComponent, PropType, ref, watch } from "vue";
 import { MetricCategoryTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import TreeItemPicker from "./treeItemPicker";
+import TreeItemPicker from "./treeItemPicker.obs";
 
 export default defineComponent({
     name: "MetricCategoryPicker",

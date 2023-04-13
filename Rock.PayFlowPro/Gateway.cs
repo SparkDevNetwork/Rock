@@ -34,7 +34,8 @@ namespace Rock.PayFlowPro
     /// <summary>
     /// PayFlowPro Payment Gateway
     /// </summary>
-    [Description( "PayFlowPro Payment Gateway" )]
+    [DisplayName( "PayFlow Pro (Legacy)" )]
+    [Description( "PayFlow Pro Payment Gateway (Legacy)" )]
     [Export( typeof( GatewayComponent ) )]
     [ExportMetadata( "ComponentName", "PayFlowPro" )]
 

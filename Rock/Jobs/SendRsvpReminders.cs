@@ -308,7 +308,7 @@ namespace Rock.Jobs
 
             if ( person.CommunicationPreference == CommunicationType.SMS
                 && !string.IsNullOrWhiteSpace( reminder.SMSMessage )
-                && reminder.SMSFromDefinedValueId.HasValue
+                && reminder.SmsFromSystemPhoneNumberId.HasValue
                 && !string.IsNullOrWhiteSpace( smsNumber ) )
             {
                 return SendReminderSMS( person, reminder, lavaMergeFields, smsNumber );

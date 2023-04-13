@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using Rock.Data;
 
 namespace Rock.Model
@@ -141,12 +143,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-                 /// Gets reminders by reminder type, entity type and person.
-                 /// </summary>
-                 /// <param name="reminderTypeId">The entity type identifier.</param>
-                 /// <param name="entityTypeId">The entity type identifier.</param>
-                 /// <param name="personId">The person identifier.</param>
-                 /// <returns></returns>
+        /// Gets reminders by reminder type, entity type and person.
+        /// </summary>
+        /// <param name="reminderTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
         public IQueryable<Reminder> GetByReminderTypeEntityTypeAndPerson( int reminderTypeId, int entityTypeId, int personId )
         {
             return this.Queryable()
@@ -176,12 +178,37 @@ namespace Rock.Model
         /// Gets entity types associated with reminders by person.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
-        /// <returns></returns>
-        public IQueryable<EntityType> GetReminderEntityTypesByPerson( int personId )
+        /// <param name="includedReminderTypeIds">The included reminder type ids.</param>
+        /// <param name="excludedReminderTypeIds">The excluded reminder type ids.</param>
+        /// <returns>IQueryable&lt;EntityType&gt;.</returns>
+        public IQueryable<EntityType> GetReminderEntityTypesByPerson( int personId, List<int> includedReminderTypeIds, List<int> excludedReminderTypeIds )
         {
-            var entityTypeIds = GetByPerson( personId ).Select( r => r.ReminderType.EntityTypeId ).Distinct();
+            var reminderQuery = GetByPerson( personId );
+
+            if ( includedReminderTypeIds.Any() )
+            {
+                reminderQuery = reminderQuery.Where( r => includedReminderTypeIds.Contains( r.ReminderTypeId ) );
+            }
+            else if ( excludedReminderTypeIds.Any() )
+            {
+                reminderQuery = reminderQuery.Where( t => !excludedReminderTypeIds.Contains( t.ReminderTypeId ) );
+            }
+
+            /*
+                02/07/2022 - SMC
+
+                This query is executed here to avoid causing a very slow join in the SQL EntityFramework creates on
+                the next query.  While this could technically cause the SQL query to grow beyond the maximum length
+                and/or have performance issues because of having too many elements in the comma-delimited "IN" list,
+                it is highly unlikely that anyone would have enough unique EntityTypes in their database to cause a
+                problem.
+            */
+
+            var entityTypeIds = reminderQuery.Select( r => r.ReminderType.EntityTypeId ).Distinct().ToList();
+
             var entityTypes = new EntityTypeService( this.Context as RockContext ).Queryable()
                 .Where( t => entityTypeIds.Contains( t.Id ) );
+
             return entityTypes;
         }
 
@@ -189,9 +216,14 @@ namespace Rock.Model
         /// Gets active reminders based on the current date.
         /// </summary>
         /// <param name="currentDate">The current date (e.g., RockDateTime.Now).</param>
-        /// <returns></returns>
-        public IQueryable<Reminder> GetActiveReminders( DateTime currentDate )
+        /// <param name="includedReminderTypeIds">The included reminder type ids.</param>
+        /// <param name="excludedReminderTypeIds">The excluded reminder type ids.</param>
+        /// <returns>IQueryable&lt;Reminder&gt;.</returns>
+        public IQueryable<Reminder> GetActiveReminders( DateTime currentDate, List<int> includedReminderTypeIds = null, List<int> excludedReminderTypeIds = null )
         {
+            includedReminderTypeIds = includedReminderTypeIds ?? new List<int>();
+            excludedReminderTypeIds = excludedReminderTypeIds ?? new List<int>();
+
             var activeReminders = this
                 .Queryable()                                // Get reminders that:
                 .Where( r => r.ReminderType.IsActive        //   have active reminder types;
@@ -199,6 +231,15 @@ namespace Rock.Model
                         && r.ReminderDate <= currentDate )  //   are active (i.e., reminder date has passed).
                 .Include( r => r.ReminderType )             // Make sure to include the ReminderType
                 .Include( r => r.PersonAlias.Person );      // and Person.
+
+            if ( includedReminderTypeIds.Any() )
+            {
+                activeReminders = activeReminders.Where( r => includedReminderTypeIds.Contains( r.ReminderTypeId ) );
+            }
+            else if ( excludedReminderTypeIds.Any() )
+            {
+                activeReminders = activeReminders.Where( r => !excludedReminderTypeIds.Contains( r.ReminderTypeId ) );
+            }
 
             return activeReminders;
         }
@@ -226,5 +267,45 @@ namespace Rock.Model
 
             return authorizedReminderTypes;
         }
+
+        /// <summary>
+        /// Gets the reminder entities in a dictionary indexed by the Reminder Id./>.
+        /// </summary>
+        /// <param name="reminders">The reminders.</param>
+        /// <returns>Dictionary&lt;System.Int32, IEntity&gt;.</returns>
+        public Dictionary<int, IEntity> GetReminderEntities( IQueryable<Reminder> reminders )
+        {
+            var rockContext = this.Context as RockContext;
+            var reminderEntities = new Dictionary<int, IEntity>();
+            var entityTypeIds = reminders.Select( r => r.ReminderType.EntityTypeId ).Distinct().ToList();
+
+            var entityTypes = new List<Rock.Web.Cache.EntityTypeCache>();
+            foreach ( var entityTypeId in entityTypeIds )
+            {
+                var systemType = Rock.Web.Cache.EntityTypeCache.Get( entityTypeId ).GetEntityType();
+                var serviceInstance = Reflection.GetServiceForEntityType( systemType, rockContext );
+                var remindersByEntity = reminders.Where( r => r.ReminderType.EntityTypeId == entityTypeId);
+                var reminderEntityIds = remindersByEntity.Select( r => r.EntityId );
+
+                MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
+                var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
+                entityQry = entityQry.Where( e => reminderEntityIds.Contains( e.Id ) );
+
+                var joinedQuery = remindersByEntity.Join(
+                    entityQry,
+                    r => r.EntityId,
+                    e => e.Id,
+                    ( r, e ) => new { ReminderId = r.Id, Entity = e } );
+
+                var dictionaryForEntityType = joinedQuery.ToDictionary( a => a.ReminderId, a => a.Entity );
+                foreach ( var reminderId in dictionaryForEntityType.Keys )
+                {
+                    reminderEntities.Add( reminderId, dictionaryForEntityType[reminderId] );
+                }
+            }
+
+            return reminderEntities;
+        }
+
     }
 }

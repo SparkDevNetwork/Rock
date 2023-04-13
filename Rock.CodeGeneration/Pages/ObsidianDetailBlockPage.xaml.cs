@@ -214,42 +214,42 @@ namespace Rock.CodeGeneration.Pages
                 files.Add( new GeneratedFile( $"{options.EntityType.Name}Detail.cs", blockPath, result ) );
             }
 
-            // Generate the Obsidian <entity>Detail.vue file.
+            // Generate the Obsidian <entity>Detail.obs file.
             using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EntityDetailBlock-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}Detail.vue", typeScriptBlockPath, result ) );
+                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}Detail.obs", typeScriptBlockPath, result ) );
             }
 
-            // Generate the Obsidian <Entity>Detail\viewPanel.partial.vue file.
+            // Generate the Obsidian <Entity>Detail\viewPanel.partial.obs file.
             using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.ViewPanel-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"viewPanel.partial.vue", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
+                files.Add( new GeneratedFile( $"viewPanel.partial.obs", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
             }
 
-            // Generate the Obsidian <Entity>Detail\editPanel.partial.vue file.
+            // Generate the Obsidian <Entity>Detail\editPanel.partial.obs file.
             using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EditPanel-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"editPanel.partial.vue", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
+                files.Add( new GeneratedFile( $"editPanel.partial.obs", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
             }
 
-            // Generate the Obsidian <Entity>Detail\types.d.ts file.
+            // Generate the Obsidian <Entity>Detail\types.partial.ts file.
             content = tsGenerator.GenerateDetailBlockTypeDefinitionFile( new Dictionary<string, string>
             {
                 ["ParentPage"] = "ParentPage"
             } );
-            files.Add( new GeneratedFile( "types.d.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", content ) );
+            files.Add( new GeneratedFile( "types.partial.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", content ) );
 
             return files;
         }
@@ -288,7 +288,7 @@ namespace Rock.CodeGeneration.Pages
                         var file = createdFiles[i];
                         var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
 
-                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) || filename.EndsWith( ".vue" ) )
+                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) || filename.EndsWith( ".obs" ) )
                         {
                             var projectName = file.SolutionRelativePath.Split( '\\' )[0];
 

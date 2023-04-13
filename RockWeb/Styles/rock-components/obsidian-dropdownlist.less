@@ -7,18 +7,24 @@
     padding: 0;
 
     .ant-select-selector {
-      height: @input-height-base;
-      padding: @input-padding-y @input-padding-x;
-      border-radius: @input-border-radius;
-      margin: 0;
-      background-color: initial;
-      border: none;
-      box-shadow: none;
-    
+      height: @input-height-base !important;
+      padding: @input-padding-y @input-padding-x !important;
+      border-radius: @input-border-radius !important;
+      margin: 0 !important;
+      background-color: initial !important;
+      border: none !important;
+      box-shadow: none !important;
+
       .ant-select-selection-item {
         display: inline-flex;
         align-items: center;
       }
+    }
+  }
+
+  .input-group & {
+    &.ant-select-focused {
+      z-index: 3;
     }
   }
 
@@ -41,15 +47,32 @@
     font-size: 16px;
   }
 
-  /* Allow control height to grow in multi-select mode. */
+  // Prevent text from flowing undernearth caret indicator.
+  &.ant-select-single.form-control .ant-select-selection-item {
+    padding-right: 0px;
+    margin-right: 18px;
+    transition: margin-right 0s, padding-right 0s;
+  }
+
+  // Prevent text from flowing undernearth clear and caret indicators.
+  &.ant-select-single.ant-select-allow-clear.form-control .ant-select-selection-item {
+    margin-right: 36px;
+  }
+
+  // Prevent text from flowing undernearth caret indicator.
+  &.ant-select-multiple.form-control .ant-select-selection-overflow {
+    padding-right: 18px;
+  }
+
+  // Allow control height to grow in multi-select mode.
   &.ant-select-multiple.form-control,
   &.ant-select-multiple.form-control .ant-select-selector {
-    height: initial;
+    height: initial !important;
     min-height: @input-height-base;
   }
 }
 
-/* Prevent clear button from overlapping chevron arrow. */
+// Prevent clear button from overlapping chevron arrow.
 .ant-select-clear {
   right: 30px;
 }

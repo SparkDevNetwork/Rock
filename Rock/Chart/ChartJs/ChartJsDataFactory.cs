@@ -14,18 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Rock.Model;
 using Rock.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Chart
 {
     /// <summary>
-    /// Provides base functionality for factories that build a data model for an "X vs Y" graph that can be rendered by the Chart.js library.
-    /// For this style of graph, the X-axis maps the independent variable and the Y-axis maps the dependent variable.
-    /// An example of this style of graph would be "Distance vs Time", where distance is determined by elapsed time.
+    /// Provides base functionality for factories that build the data structures needed to render a chart with the Chart.js library.
+    /// These factories produce data that descirbes the presentation and functionality of a chart,
+    /// they do not produce the datapoints that are mapped by the chart.
     /// </summary>
     /// <remarks>
     /// Compatible with ChartJS v2.8.0.
@@ -62,17 +63,9 @@ namespace Rock.Chart
         /// <summary>
         /// Display legend?
         /// </summary>
+        [RockObsolete( "1.15" )]
+        [Obsolete]
         public bool DisplayLegend { get; set; } = true;
-
-        /// <summary>
-        /// Legend position: {top|left|bottom|right}
-        /// </summary>
-        public string LegendPosition { get; set; } = "bottom";
-
-        /// <summary>
-        /// Legend alignment: {start|center|end}
-        /// </summary>
-        public string LegendAlignment { get; set; } = "center";
 
         /// <summary>
         /// Size to fit container width?
@@ -136,26 +129,6 @@ namespace Rock.Chart
         public string CustomTooltipScript { get; set; }
 
         /// <summary>
-        /// Apply a Rock Chart Style to the settings of the ChartJs factory.
-        /// </summary>
-        /// <param name="chartStyle">The chart style.</param>
-        public virtual void SetChartStyle( ChartStyle chartStyle )
-        {
-            if ( chartStyle == null )
-            {
-                return;
-            }
-
-            // Set the chart Legend style.
-            if ( chartStyle.Legend != null )
-            {
-                this.DisplayLegend = chartStyle.Legend.Show ?? true;
-
-                SetLegendPositionAndAlignment( chartStyle.Legend.Position );
-            }
-        }
-
-        /// <summary>
         /// Gets a JavaScript data object that represents the configuration for the ChartJs Y-axis.
         /// </summary>
         /// <returns></returns>
@@ -200,14 +173,17 @@ namespace Rock.Chart
         /// <summary>
         /// Gets a JavaScript data object that represents the configuration for the ChartJs legend chart element.
         /// </summary>
+        /// <param name="legendPosition"></param>
+        /// <param name="legendAlignment"></param>
+        /// <param name="displayLegend"></param>
         /// <returns></returns>
-        protected dynamic GetLegendConfigurationObject()
+        protected dynamic GetLegendConfigurationObject( string legendPosition, string legendAlignment, bool displayLegend )
         {
             var optionsLegend = new
             {
-                position = this.LegendPosition,
-                align = this.LegendAlignment,
-                display = this.DisplayLegend
+                position = legendPosition,
+                align = legendAlignment,
+                display = displayLegend
             };
 
             return optionsLegend;
@@ -217,7 +193,7 @@ namespace Rock.Chart
         /// Gets a JavaScript data object that represents the configuration for the ChartJs tooltip chart element.
         /// </summary>
         /// <returns></returns>
-        protected dynamic GetTooltipsConfigurationObject( string containerControlId, string valueFormatString )
+        protected virtual dynamic GetTooltipsConfigurationObject( string containerControlId, string valueFormatString )
         {
             if ( containerControlId == null )
             {
@@ -409,6 +385,79 @@ function(tooltipModel) {
             }
         }
 
+        private void SynchroniseSizingSettings()
+        {
+            // If "maintainAspectRatio" is enabled, responsive mode must also be enabled to avoid a Chart.js resizing bug detailed here:
+            // https://github.com/chartjs/Chart.js/issues/1006
+            // Until this issue is resolved, avoid this invalid combination of settings.
+            if ( _maintainAspectRatio &&
+                 !_sizeToFitContainerWidth )
+            {
+                _sizeToFitContainerWidth = true;
+            }
+        }
+
+        /// <summary>
+        /// Serialize the specified object to JSON.
+        /// </summary>
+        /// <param name="jsonObject"></param>
+        /// <returns></returns>
+        protected string SerializeJsonObject( dynamic jsonObject )
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                NullValueHandling = NullValueHandling.Ignore
+            };
+
+            string jsonString = JsonConvert.SerializeObject( jsonObject, Formatting.None, jsonSetting );
+
+            return jsonString;
+        }
+
+        #region Obsolete
+
+        /// <summary>
+        /// Legend position: {top|left|bottom|right}
+        /// </summary>
+        [Obsolete( "Use the GetJsonArgs parameter instead." )]
+        [RockObsolete( "1.15" )]
+        public string LegendPosition { get; set; } = "bottom";
+
+        /// <summary>
+        /// Legend alignment: {start|center|end}
+        /// </summary>
+        /// <remarks>
+        /// This setting has no effect in ChartJs v2.8.0
+        /// </remarks>
+        [Obsolete( "Use the GetJsonArgs parameter instead." )]
+        [RockObsolete("1.15")]
+        public string LegendAlignment { get; set; } = "center";
+
+        /// <summary>
+        /// Apply a Rock Chart Style to the settings of the ChartJs factory.
+        /// </summary>
+        /// <param name="chartStyle">The chart style.</param>
+        [Obsolete( "Use the GetJsonArgs parameters instead." )]
+        [RockObsolete( "1.15" )]
+        public virtual void SetChartStyle( ChartStyle chartStyle )
+        {
+            if ( chartStyle == null )
+            {
+                return;
+            }
+
+            // Set the chart Legend style.
+            if ( chartStyle.Legend != null )
+            {
+                this.DisplayLegend = chartStyle.Legend.Show ?? true;
+
+                SetLegendPositionAndAlignment( chartStyle.Legend.Position );
+            }
+        }
+
+        [Obsolete]
+        [RockObsolete( "1.15" )]
         private void SetLegendPositionAndAlignment( string rockLegendPosition )
         {
             rockLegendPosition = rockLegendPosition?.ToLower() ?? string.Empty;
@@ -440,17 +489,7 @@ function(tooltipModel) {
             }
         }
 
-        private void SynchroniseSizingSettings()
-        {
-            // If "maintainAspectRatio" is enabled, responsive mode must also be enabled to avoid a Chart.js resizing bug detailed here:
-            // https://github.com/chartjs/Chart.js/issues/1006
-            // Until this issue is resolved, avoid this invalid combination of settings.
-            if ( _maintainAspectRatio &&
-                 !_sizeToFitContainerWidth )
-            {
-                _sizeToFitContainerWidth = true;
-            }
-        }
+        #endregion
 
         #region Helper Classes
 
@@ -462,6 +501,8 @@ function(tooltipModel) {
             /// <summary>
             /// A Rock chart configuration settings object.
             /// </summary>
+            [RockObsolete( "1.15" )]
+            [Obsolete]
             public ChartStyle ChartStyle { get; set; }
 
             /// <summary>
@@ -478,6 +519,19 @@ function(tooltipModel) {
             /// Display legend?
             /// </summary>
             public bool DisplayLegend { get; set; } = true;
+
+            /// <summary>
+            /// Legend position: {top|left|bottom|right}
+            /// </summary>
+            public string LegendPosition { get; set; } = "bottom";
+
+            /// <summary>
+            /// Legend alignment: {start|center|end}
+            /// </summary>
+            /// <remarks>
+            /// This setting has no effect in ChartJs v2.8.0
+            /// </remarks>
+            public string LegendAlignment { get; set; } = "center";
 
             /// <summary>
             /// Bezier curve tension of the line. Set to 0 to draw straightlines.
@@ -505,7 +559,7 @@ function(tooltipModel) {
             /// </summary>
             public bool DisableAnimation { get; set; } = false;
         }
-    }
 
-    #endregion
+        #endregion
+    }
 }
