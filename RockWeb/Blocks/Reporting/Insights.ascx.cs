@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using OpenXmlPowerTools;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -222,31 +223,31 @@ namespace RockWeb.Blocks.Reporting
             var dataItems = new List<DataItem>();
             var peopleWithAgeQry = qry.Where( p => p.BirthDate.HasValue );
 
-            var zeroTo12RangeSql = peopleWithAgeQry.Count( p => p.Age >= 0 && p.Age <= 12 );
+            var zeroTo12RangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ZeroToTwelve );
             dataItems.Add( new DataItem( "0-12", zeroTo12RangeSql.ToString() ) );
 
-            var thirteenToSeventeenRangeSql = peopleWithAgeQry.Count( p => p.Age >= 13 && p.Age <= 17 );
+            var thirteenToSeventeenRangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ThirteenToSeventeen );
             dataItems.Add( new DataItem( "13-17", thirteenToSeventeenRangeSql.ToString() ) );
 
-            var eighteenAndTwentyFour = peopleWithAgeQry.Count( p => p.Age >= 18 && p.Age <= 24 );
+            var eighteenAndTwentyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.EighteenToTwentyFour );
             dataItems.Add( new DataItem( "18-24", eighteenAndTwentyFour.ToString() ) );
 
-            var twentyFiveAndThirtyFour = peopleWithAgeQry.Count( p => p.Age >= 25 && p.Age <= 34 );
+            var twentyFiveAndThirtyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.TwentyFiveToThirtyFour );
             dataItems.Add( new DataItem( "25-34", twentyFiveAndThirtyFour.ToString() ) );
 
-            var thirtyFiveAndFortyFour = peopleWithAgeQry.Count( p => p.Age >= 35 && p.Age <= 44 );
+            var thirtyFiveAndFortyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ThirtyFiveToFortyFour );
             dataItems.Add( new DataItem( "35-44", thirtyFiveAndFortyFour.ToString() ) );
 
-            var fortyFiveAndFiftyFour = peopleWithAgeQry.Count( p => p.Age >= 45 && p.Age <= 54 );
+            var fortyFiveAndFiftyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.FortyFiveToFiftyFour );
             dataItems.Add( new DataItem( "45-54", fortyFiveAndFiftyFour.ToString() ) );
 
-            var fiftyFiveAndSixtyFour = peopleWithAgeQry.Count( p => p.Age >= 55 && p.Age <= 64 );
+            var fiftyFiveAndSixtyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.FiftyFiveToSixtyFour );
             dataItems.Add( new DataItem( "55-64", fiftyFiveAndSixtyFour.ToString() ) );
 
-            var overSixtyFive = peopleWithAgeQry.Count( predicate: p => p.Age >= 60 );
-            dataItems.Add( new DataItem( ">60", overSixtyFive.ToString() ) );
+            var overSixtyFive = peopleWithAgeQry.Count( predicate: p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.SixtyFiveOrOlder);
+            dataItems.Add( new DataItem( ">65", overSixtyFive.ToString() ) );
 
-            var unknown = qry.Count( p => !p.BirthDate.HasValue );
+            var unknown = qry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.Unknown );
             dataItems.Add( new DataItem( "Unknown", unknown.ToString() ) );
 
             return PopulateShortcodeDataItems( PieChartConfig, dataItems );
