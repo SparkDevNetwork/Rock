@@ -22,7 +22,7 @@
                     <div class="col-md-6">
                         <RadioButtonList v-model="displayProjectFiltersAs"
                                          label="Display Project Filters As"
-                                         help="Determines if the project filters should be show as checkboxes or multi-select dropdowns."
+                                         help='Determines if the "Project Types", "Campus", and "Named Schedule" project filters should be shown as checkboxes or multi-select dropdowns.'
                                          :items="displayProjectFiltersAsItems"
                                          :horizontal="true"
                                          rules="required" />
