@@ -70,7 +70,7 @@
                                                                  :showBlankItem="true" />
 
                                 <GroupLocationSchedulePicker v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.GroupLocationSchedulePicker && locationGuid"
-                                                             @update:modelVa-lue="onGroupLocationSchedulePickerChanged"
+                                                             @update:modelValue="onGroupLocationSchedulePickerChanged"
                                                              :disabled="!isAutoSaveOn"
                                                              :groupGuid="config.groupGuid"
                                                              label="Schedule"
