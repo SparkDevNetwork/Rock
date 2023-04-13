@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using OpenXmlPowerTools;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
