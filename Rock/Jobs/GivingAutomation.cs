@@ -1364,13 +1364,11 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                         }
                         else
                         {
-                            previousTransactionDate = null;
+                            previousTransactionDate = transaction.TransactionDateTime;
                         }
 
-                        List<FinancialTransactionAlert> alertsForTransaction;
-                        if ( previousTransactionDate.HasValue )
-                        {
-                            alertsForTransaction = CreateAlertsForTransaction(
+                        List<FinancialTransactionAlert> alertsForTransaction =
+                            CreateAlertsForTransaction(
                                 twelveMonthsAlerts,
                                 transaction,
                                 twelveMonthsTransactions,
@@ -1379,11 +1377,6 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                                 context,
                                 allowGratitude,
                                 allowFollowUp );
-                        }
-                        else
-                        {
-                            alertsForTransaction = new List<FinancialTransactionAlert>();
-                        }
 
                         alertsToAddToDb.AddRange( alertsForTransaction );
 
