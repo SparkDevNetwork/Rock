@@ -869,7 +869,7 @@ namespace Rock.Blocks.Group
 
                 if ( !occurrenceData.IsValid || !occurrenceData.AttendanceOccurrence.IsValid )
                 {
-                    return ActionBadRequest( occurrenceData.ErrorMessage );
+                    return ActionBadRequest( occurrenceData.ErrorMessage ?? occurrenceData.AttendanceOccurrence.ValidationResults?.Select( v => v.ErrorMessage ).FirstOrDefault() );
                 }
 
                 var result = clientService.Save( occurrenceData, bag );
