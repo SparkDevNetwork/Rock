@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -369,7 +369,10 @@ namespace RockWeb.Blocks.Reporting
             dataItems.Add( new DataItem( "Active", DataItem.GetPercentage( activeCount, total ) ) );
 
             var inActiveCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-            dataItems.Add( new DataItem( "InActive", DataItem.GetPercentage( inActiveCount, total ) ) );
+            dataItems.Add( new DataItem( "Inactive", DataItem.GetPercentage( inActiveCount, total ) ) );
+
+            var pendingCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() );
+            dataItems.Add( new DataItem( "Pending", DataItem.GetPercentage( pendingCount, total ) ) );
 
             const string chartConfig = "{[ chart type:'pie' chartheight:'200px' legendshow:'true' legendposition:'right' valueformat:'percentage' ]}";
 

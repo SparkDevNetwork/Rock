@@ -666,6 +666,17 @@ th[align="right"] {
             padding: 0;
             min-height: 0;
             line-height: 1.5;
+            // force long words to wrap
+            overflow-wrap: break-word;
+
+            // force link attributes to clamp to one line with ellipsis without using block
+            > a {
+              display: inline-block;
+              max-width: 100%;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
           }
         }
 
