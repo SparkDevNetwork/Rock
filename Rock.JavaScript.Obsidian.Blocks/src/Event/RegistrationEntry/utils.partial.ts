@@ -18,7 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { newGuid } from "@Obsidian/Utility/guid";
-import { RegistrantBasicInfo, RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from "./types";
+import { RegistrantBasicInfo, RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType, RegistrationFieldSource } from "./types";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -66,9 +66,9 @@ export function getDefaultRegistrantInfo(currentPerson: PersonBag | null, viewMo
 export function getRegistrantBasicInfo(registrant: RegistrantInfo, registrantForms: RegistrationEntryBlockFormViewModel[]): RegistrantBasicInfo {
     const fields = registrantForms?.reduce((acc, f) => acc.concat(f.fields), [] as RegistrationEntryBlockFormFieldViewModel[]) || [];
 
-    const firstNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.FirstName)?.guid || "";
-    const lastNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.LastName)?.guid || "";
-    const emailGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.Email)?.guid || "";
+    const firstNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.FirstName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
+    const lastNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.LastName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
+    const emailGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.Email && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
 
     return {
         firstName: (registrant?.fieldValues[firstNameGuid] || "") as string,
