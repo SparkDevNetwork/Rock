@@ -357,18 +357,25 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 string username;
                 string externalLoginAuthPassword;
+                int? providerEntityTypeId;
 
                 switch ( provider )
                 {
                     case Common.Mobile.Enums.SupportedAuthenticationProvider.Auth0:
                         username = "AUTH0_" + userInfo.ForeignKey;
                         externalLoginAuthPassword = "auth0";
+                        providerEntityTypeId = EntityTypeCache.Get( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F" )?.Id;
                         break;
                     default:
                         return ActionBadRequest( "Unsupported authentication provider." );
                 }
 
-                var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, username, externalLoginAuthPassword, rockContext );
+                if ( !providerEntityTypeId.HasValue )
+                {
+                    return ActionBadRequest( "There was no entity found for that authentication provider." );
+                }
+
+                var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerEntityTypeId.Value, username, externalLoginAuthPassword, rockContext );
 
                 // Make sure the login is confirmed, otherwise login is not allowed.
                 if ( userLogin.IsConfirmed != true && SendConfirmation( userLogin ) )
@@ -404,11 +411,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="username">The username of the person to look for or create. This is usually dependent on the
         /// authentication provider. For instance, an Auth0 related username is "AUTH0_{FOREIGN_KEY}. It is up to the person
         /// implementing this method into an external authentication provider to make sure the username is formatted correctly."</param>
+        /// <param name="authentitationEntityTypeId"></param>
         /// <param name="rockContext"></param>
         /// <param name="password"></param>
         /// <returns></returns>
         [RockInternal( "1.15.1" )]
-        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag externallyAuthenticatedUser, string username, string password, RockContext rockContext = null )
+        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag externallyAuthenticatedUser, int authentitationEntityTypeId, string username, string password, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
             UserLogin user = null;
@@ -457,8 +465,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         PersonService.SaveNewPerson( person, rockContext, null, false );
                     }
 
-                    int typeId = EntityTypeCache.Get( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F" ).Id;
-                    user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, username, password, true );
+                    user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, authentitationEntityTypeId, username, password, true );
                     user.ForeignKey = externallyAuthenticatedUser.ForeignKey;
                 } );
             }
