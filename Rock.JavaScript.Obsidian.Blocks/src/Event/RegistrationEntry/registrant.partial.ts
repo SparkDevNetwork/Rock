@@ -36,8 +36,32 @@ import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
+import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+import { RegistrationEntryBlockFormFieldRuleViewModel } from "./types";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 
 const store = useStore();
+
+function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
+    const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
+
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    const comparedToFormField = formFields.find(ff => areEqual(ff.guid, rule.comparedToRegistrationTemplateFormFieldGuid));
+    if (!comparedToFormField?.attribute?.fieldTypeGuid) {
+        return false;
+    }
+
+    const fieldType = getFieldType(comparedToFormField.attribute.fieldTypeGuid);
+
+    if (!fieldType) {
+        return false;
+    }
+
+    return fieldType.doesValueMatchFilter(value, rule.comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
+}
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrant",
@@ -141,9 +165,48 @@ export default defineComponent({
                 .filter(f => !this.isWaitList || f.showOnWaitList);
         },
 
+        /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
+        currentFormFieldsAugmented(): RegistrationEntryBlockFormFieldViewModel[] {
+            var fields = JSON.parse(JSON.stringify(this.currentFormFields));
+
+            fields.forEach((value, index) => {
+                if (value.fieldSource != this.fieldSources.personField) {
+                    let isVisible = true;
+                    switch (value.visibilityRuleType) {
+                        case FilterExpressionType.GroupAll:
+                            isVisible = value.visibilityRules.every(vr => isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAllFalse:
+                            isVisible = value.visibilityRules.every(vr => !isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAny:
+                            isVisible = value.visibilityRules.some(vr => isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAnyFalse:
+                            isVisible = value.visibilityRules.some(vr => !isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        default:
+                            isVisible = true;
+                            break;
+                    }
+
+                    if (isVisible === false) {
+                        value.preHtml = "";
+                        value.postHtml = "";
+                    }
+                }
+            })
+
+            return fields;
+        },
+
         /** The current fields as pre-post items to allow pre-post HTML to be rendered */
         prePostHtmlItems (): ItemWithPreAndPostHtml[] {
-            return this.currentFormFields
+            return this.currentFormFieldsAugmented
                 .map(f => ({
                     preHtml: f.preHtml,
                     postHtml: f.postHtml,
