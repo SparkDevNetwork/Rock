@@ -386,7 +386,9 @@ namespace Rock.Mobile
                 HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic,
                 DoNotEnableNotificationsAtLaunch = !additionalSettings.EnableNotificationsAutomatically,
                 TimeZone = timeZoneName,
-                PushTokenUpdateValue = additionalSettings.PushTokenUpdateValue
+                PushTokenUpdateValue = additionalSettings.PushTokenUpdateValue,
+                Auth0ClientId = additionalSettings.Auth0ClientId,
+                Auth0ClientDomain = additionalSettings.Auth0Domain
             };
 
             //

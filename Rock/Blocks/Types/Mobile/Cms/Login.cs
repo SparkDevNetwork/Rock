@@ -16,22 +16,17 @@
 //
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Net;
 
 using RestSharp;
 
 using Rock.Attribute;
-using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Login;
 using Rock.Common.Mobile.Security.Authentication;
-using Rock.Common.Mobile.Security.Authentication.Auth0;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
-using Rock.Security;
 using Rock.Utility;
-using Rock.Utility.SparkDataApi;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Cms
@@ -517,9 +512,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
                             }
                         }
                     }
-
-                    // Use the person we created or the person we retrieved.
-                    person = person ?? userPerson;
                 }
             }
 

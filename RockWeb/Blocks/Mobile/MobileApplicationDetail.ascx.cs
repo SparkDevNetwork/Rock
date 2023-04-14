@@ -989,6 +989,8 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.CampusFilterDataViewId = dvpCampusFilter.SelectedValueAsId();
             additionalSettings.NavigationBarActionXaml = ceEditNavBarActionXaml.Text;
             additionalSettings.HomepageRoutingLogic = ceEditHomepageRoutingLogic.Text;
+            additionalSettings.Auth0ClientId = tbAuth0ClientId.Text;
+            additionalSettings.Auth0Domain = tbAuth0ClientDomain.Text;
 
             //
             // Save the image.
