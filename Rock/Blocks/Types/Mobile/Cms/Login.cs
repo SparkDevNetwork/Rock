@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,12 +16,22 @@
 //
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Net;
+
+using RestSharp;
 
 using Rock.Attribute;
+using Rock.Common.Mobile;
+using Rock.Common.Mobile.Blocks.Login;
+using Rock.Common.Mobile.Security.Authentication;
+using Rock.Common.Mobile.Security.Authentication.Auth0;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
+using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.SparkDataApi;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Cms
@@ -75,10 +85,32 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.CancelPage,
         Order = 5 )]
 
+    [BooleanField(
+        "Enable Auth0 Login",
+        Key = AttributeKeys.EnableAuth0Login,
+        Description = "Whether or not to enable Auth0 as an authentication provider. This must be configured in `Security > Authentication Services` beforehand.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
+    [BooleanField( "Enable Database Login",
+        Key = AttributeKeys.EnableDatabaseLogin,
+        Description = "Whether or not to enable `Database` as an authentication provider.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        Order = 7 )]
+
+    [TextField( "Auth0 Login Button Text",
+        Key = AttributeKeys.Auth0LoginButtonText,
+        Description = "The text of the Auth0 login button.",
+        IsRequired = false,
+        DefaultValue = "Login With Auth0",
+        Order = 8 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_LOGIN_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "6006FE32-DC01-4B1C-A9B8-EE172451F4C5")]
+    [Rock.SystemGuid.BlockTypeGuid( "6006FE32-DC01-4B1C-A9B8-EE172451F4C5" )]
     public class Login : RockMobileBlockType
     {
         /// <summary>
@@ -115,6 +147,21 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The cancel page key.
             /// </summary>
             public const string CancelPage = "CancelPage";
+
+            /// <summary>
+            /// The enable auth0 login key.
+            /// </summary>
+            public const string EnableAuth0Login = "EnableAuth0Login";
+
+            /// <summary>
+            /// The enable database login key.
+            /// </summary>
+            public const string EnableDatabaseLogin = "EnableDatabaseLogin";
+
+            /// <summary>
+            /// The auth0 login button text.
+            /// </summary>
+            public const string Auth0LoginButtonText = "Auth0LoginButtonText";
         }
 
         #region IRockMobileBlockType Implementation
@@ -143,12 +190,18 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            return new
+
+
+            return new Rock.Common.Mobile.Blocks.Login.Configuration
             {
+                // todo update this to use the mobile configuration
                 RegistrationPageGuid = GetAttributeValue( AttributeKeys.RegistrationPage ).AsGuidOrNull(),
                 ForgotPasswordUrl = GetAttributeValue( AttributeKeys.ForgotPasswordUrl ),
                 ReturnPageGuid = GetAttributeValue( AttributeKeys.ReturnPage ).AsGuidOrNull(),
-                CancelPageGuid = GetAttributeValue( AttributeKeys.CancelPage ).AsGuidOrNull()
+                CancelPageGuid = GetAttributeValue( AttributeKeys.CancelPage ).AsGuidOrNull(),
+                EnableAuth0Login = GetAttributeValue( AttributeKeys.EnableAuth0Login ).AsBoolean(),
+                EnableDatabaseLogin = GetAttributeValue( AttributeKeys.EnableDatabaseLogin ).AsBoolean(),
+                Auth0LoginButtonText = GetAttributeValue( AttributeKeys.Auth0LoginButtonText )
             };
         }
 
@@ -196,7 +249,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
             mobilePerson.AuthToken = authCookie.Value;
 
-            return ActionOk( new
+            return ActionOk( new MobileLoginResult
             {
                 Person = mobilePerson
             } );
@@ -292,6 +345,186 @@ namespace Rock.Blocks.Types.Mobile.Cms
             }
         }
 
+        /// <summary>
+        /// Processes an external login request. 
+        /// </summary>
+        /// <param name="userInfo"></param>
+        /// <param name="personalDeviceGuid"></param>
+        /// <param name="rememberMe"></param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult ProcessExternalLogin( ExternalAuthenticationUserInfoBag userInfo, Guid? personalDeviceGuid, bool rememberMe, Rock.Common.Mobile.Enums.SupportedAuthenticationProvider provider )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                string username = "";
+                switch ( provider )
+                {
+                    case Common.Mobile.Enums.SupportedAuthenticationProvider.Auth0:
+                        username = "AUTH0_" + userInfo.ForeignKey;
+                        break;
+                    default:
+                        return ActionBadRequest( "Unsupported authentication provider." );
+                }
+
+                var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, username, rockContext );
+
+                // Make sure the login is confirmed, otherwise login is not allowed.
+                if ( userLogin.IsConfirmed != true && SendConfirmation( userLogin ) )
+                {
+                    return ActionBadRequest( GetUnconfirmedMessage() );
+                }
+
+                // Make sure the login is not locked out.
+                if ( userLogin.IsLockedOut == true )
+                {
+                    return ActionBadRequest( GetLockedOutMessage() );
+                }
+
+                UpdateLastLoginDetails( userLogin, personalDeviceGuid, rockContext );
+
+                var authCookie = Rock.Security.Authorization.GetSimpleAuthCookie( userLogin.UserName, rememberMe, false );
+                var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, PageCache.Layout.Site );
+                mobilePerson.AuthToken = authCookie.Value;
+
+                return ActionOk( new
+                {
+                    Person = mobilePerson
+                } );
+            }
+        }
+
         #endregion
+
+        /// <summary>
+        /// Gets or creates a person from information returned by external authentication.
+        /// </summary>
+        /// <param name="externallyAuthenticatedUser">The externally authenticated user to either create or get.</param>
+        /// <param name="username">The username of the person to look for or create. This is usually dependent on the
+        /// authentication provider. For instance, an Auth0 related username is "AUTH0_{FOREIGN_KEY}. It is up to the person
+        /// implementing this method into an external authentication provider to make sure the username is formatted correctly."</param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        [RockInternal( "1.15.1" )]
+        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag externallyAuthenticatedUser, string username, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            UserLogin user = null;
+            Person person = null;
+
+            // Query for an existing user from the Auth0 user name.
+            var userLoginService = new UserLoginService( rockContext );
+            user = userLoginService.GetByUserName( username );
+
+            // If no user was found, see if we can find a match in the person table.
+            if ( user == null )
+            {
+                // Get name/email from auth0 userinfo.
+                string lastName = externallyAuthenticatedUser.FirstName?.Trim()?.FixCase();
+                string firstName = externallyAuthenticatedUser.LastName?.Trim()?.FixCase();
+                string nickName = externallyAuthenticatedUser.NickName?.Trim()?.FixCase();
+                string email = externallyAuthenticatedUser.Email;
+
+                // If person had an email, get the first person with the same name and email address.
+                if ( !string.IsNullOrWhiteSpace( email ) )
+                {
+                    var personService = new PersonService( rockContext );
+                    person = personService.FindPerson( firstName, lastName, email, true );
+                }
+
+                var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                var personStatusPending = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+
+                rockContext.WrapTransaction( () =>
+                {
+                    // If we couldn't match a person, we should create a new one.
+                    if ( person == null )
+                    {
+                        person = new Person();
+                        person.IsSystem = false;
+                        person.RecordTypeValueId = personRecordTypeId;
+                        person.RecordStatusValueId = personStatusPending;
+                        person.FirstName = firstName;
+                        person.LastName = lastName;
+                        person.Email = email;
+                        person.IsEmailActive = true;
+                        person.EmailPreference = EmailPreference.EmailAllowed;
+
+                        if ( externallyAuthenticatedUser.Gender == "male" )
+                        {
+                            person.Gender = Gender.Male;
+                        }
+                        else if ( externallyAuthenticatedUser.Gender == "female" )
+                        {
+                            person.Gender = Gender.Female;
+                        }
+                        else
+                        {
+                            person.Gender = Gender.Unknown;
+                        }
+
+                        PersonService.SaveNewPerson( person, rockContext, null, false );
+                    }
+
+                    int typeId = EntityTypeCache.Get( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F" ).Id;
+                    user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, username, "auth0", true );
+                    user.ForeignKey = externallyAuthenticatedUser.ForeignKey;
+                } );
+            }
+
+            // If an Auth0 UserLogin entry already exists for this username.
+            if ( user != null )
+            {
+                username = user.UserName;
+
+                // If there is an associated Person with this user.
+                if ( user.PersonId.HasValue )
+                {
+                    // Query that person.
+                    var personService = new PersonService( rockContext );
+                    var userPerson = personService.Get( user.PersonId.Value );
+                    if ( userPerson != null )
+                    {
+                        // If person does not have a photo, try to get the photo return with auth0.
+                        if ( !userPerson.PhotoId.HasValue && !string.IsNullOrWhiteSpace( externallyAuthenticatedUser.Picture ) )
+                        {
+                            // Download the photo from the url provided.
+                            var restClient = new RestClient( externallyAuthenticatedUser.Picture );
+                            var restRequest = new RestRequest( Method.GET );
+                            var restResponse = restClient.Execute( restRequest );
+                            if ( restResponse.StatusCode == HttpStatusCode.OK )
+                            {
+                                var bytes = restResponse.RawBytes;
+
+                                // Create and save the image.
+                                BinaryFileType fileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+                                if ( fileType != null )
+                                {
+                                    var binaryFileService = new BinaryFileService( rockContext );
+                                    var binaryFile = new BinaryFile();
+                                    binaryFileService.Add( binaryFile );
+                                    binaryFile.IsTemporary = false;
+                                    binaryFile.BinaryFileType = fileType;
+                                    binaryFile.MimeType = restResponse.ContentType;
+                                    binaryFile.FileName = user.Person.NickName + user.Person.LastName + ".jpg";
+                                    binaryFile.FileSize = bytes.Length;
+                                    binaryFile.ContentStream = new System.IO.MemoryStream( bytes );
+
+                                    rockContext.SaveChanges();
+                                    userPerson.PhotoId = binaryFile.Id;
+                                    rockContext.SaveChanges();
+                                }
+                            }
+                        }
+                    }
+
+                    // Use the person we created or the person we retrieved.
+                    person = person ?? userPerson;
+                }
+            }
+
+            return user;
+
+        }
     }
 }
