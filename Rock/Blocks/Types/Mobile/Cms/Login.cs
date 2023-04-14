@@ -341,28 +341,34 @@ namespace Rock.Blocks.Types.Mobile.Cms
         }
 
         /// <summary>
-        /// Processes an external login request. 
+        /// Processes an external login.
+        /// On the shell, use whatever authentication
+        /// component to create a <see cref="ExternalAuthenticationUserInfoBag" />. 
         /// </summary>
-        /// <param name="userInfo"></param>
-        /// <param name="personalDeviceGuid"></param>
-        /// <param name="rememberMe"></param>
-        /// <returns></returns>
+        /// <param name="userInfo">The user information.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
+        /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
+        /// <param name="provider">The supported authentication provider.</param>
+        /// <returns>BlockActionResult.</returns>
         [BlockAction]
         public BlockActionResult ProcessExternalLogin( ExternalAuthenticationUserInfoBag userInfo, Guid? personalDeviceGuid, bool rememberMe, Rock.Common.Mobile.Enums.SupportedAuthenticationProvider provider )
         {
             using ( var rockContext = new RockContext() )
             {
-                string username = "";
+                string username;
+                string externalLoginAuthPassword;
+
                 switch ( provider )
                 {
                     case Common.Mobile.Enums.SupportedAuthenticationProvider.Auth0:
                         username = "AUTH0_" + userInfo.ForeignKey;
+                        externalLoginAuthPassword = "auth0";
                         break;
                     default:
                         return ActionBadRequest( "Unsupported authentication provider." );
                 }
 
-                var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, username, rockContext );
+                var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, username, externalLoginAuthPassword, rockContext );
 
                 // Make sure the login is confirmed, otherwise login is not allowed.
                 if ( userLogin.IsConfirmed != true && SendConfirmation( userLogin ) )
@@ -399,9 +405,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// authentication provider. For instance, an Auth0 related username is "AUTH0_{FOREIGN_KEY}. It is up to the person
         /// implementing this method into an external authentication provider to make sure the username is formatted correctly."</param>
         /// <param name="rockContext"></param>
+        /// <param name="password"></param>
         /// <returns></returns>
         [RockInternal( "1.15.1" )]
-        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag externallyAuthenticatedUser, string username, RockContext rockContext = null )
+        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag externallyAuthenticatedUser, string username, string password, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
             UserLogin user = null;
@@ -415,10 +422,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
             if ( user == null )
             {
                 // Get name/email from auth0 userinfo.
-                string lastName = externallyAuthenticatedUser.FirstName?.Trim()?.FixCase();
-                string firstName = externallyAuthenticatedUser.LastName?.Trim()?.FixCase();
-                string nickName = externallyAuthenticatedUser.NickName?.Trim()?.FixCase();
-                string email = externallyAuthenticatedUser.Email;
+                var lastName = externallyAuthenticatedUser.FirstName?.Trim()?.FixCase();
+                var firstName = externallyAuthenticatedUser.LastName?.Trim()?.FixCase();
+                var nickName = externallyAuthenticatedUser.NickName?.Trim()?.FixCase();
+                var email = externallyAuthenticatedUser.Email;
+                var gender = externallyAuthenticatedUser.Gender;
 
                 // If person had an email, get the first person with the same name and email address.
                 if ( !string.IsNullOrWhiteSpace( email ) )
@@ -444,25 +452,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         person.Email = email;
                         person.IsEmailActive = true;
                         person.EmailPreference = EmailPreference.EmailAllowed;
-
-                        if ( externallyAuthenticatedUser.Gender == "male" )
-                        {
-                            person.Gender = Gender.Male;
-                        }
-                        else if ( externallyAuthenticatedUser.Gender == "female" )
-                        {
-                            person.Gender = Gender.Female;
-                        }
-                        else
-                        {
-                            person.Gender = Gender.Unknown;
-                        }
+                        person.Gender = gender.ToNative();
 
                         PersonService.SaveNewPerson( person, rockContext, null, false );
                     }
 
                     int typeId = EntityTypeCache.Get( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F" ).Id;
-                    user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, username, "auth0", true );
+                    user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, username, password, true );
                     user.ForeignKey = externallyAuthenticatedUser.ForeignKey;
                 } );
             }
