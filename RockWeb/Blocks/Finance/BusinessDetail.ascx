@@ -11,6 +11,18 @@
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     </div>
+
+                    <asp:Panel ID="pnlActionWrapper" runat="server" CssClass="pull-right" style="margin-left: revert">
+                        <div class="btn-group js-button-dropdownlist panel-options pull-right dropdown-right" data-checkmarks-enabled="1">
+                            <div>
+                                <button type="button" class="btn btn-default dropdown-toggle js-buttondropdown-btn-select" data-toggle="dropdown">Actions <span class="fa fa-caret-down"></span></button>
+                                <ul class="dropdown-menu">
+                                        <asp:Literal ID="lActions" runat="server" />
+                                </ul>
+                            </div>
+                        </div>
+                    </asp:Panel>
+
                 </div>
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <div class="panel-body">
