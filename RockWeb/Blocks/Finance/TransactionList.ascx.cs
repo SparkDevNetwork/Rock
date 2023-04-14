@@ -1625,7 +1625,7 @@ namespace RockWeb.Blocks.Finance
                         AccountId = a.AccountId,
                         Amount = a.Amount,
                         EntityId = a.EntityId,
-                        EntityTypeId = a.EntityId
+                        EntityTypeId = a.EntityTypeId
                     },
                     Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
                     FinancialPaymentDetail = new PaymentDetailInfo
