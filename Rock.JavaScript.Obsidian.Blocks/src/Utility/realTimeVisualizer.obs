@@ -239,6 +239,9 @@
         //revoke wrongly replaced :root blocks
         css = css.replace(new RegExp("(" + parentRe + ")\\s*:root", "g"), ":root");
 
+        //revoke wrongly replaced ::view-transition-old blocks
+        css = css.replace(new RegExp("(" + parentRe + ")\\s*::view-transition-old", "g"), "::view-transition-old");
+
         //animations: prefix animation anmes
         const animations: string[] = [];
         const animationNameRe = /@keyframes\s+([a-zA-Z0-9_-]+)\s*{/g;

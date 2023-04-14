@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Security;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
@@ -565,29 +566,16 @@ namespace Rock.Blocks.Utility
     transition: opacity var(--animationDuration) ease-in, transform var(--animationDuration) ease-in, height var(--animationDuration) ease-in;
 }
 ";
-        const string ToastScript = @"let confetti;
-let Fireworks;
-let fireworks;
-let activeCount = 0;
+        const string ToastScript = @"let helper = undefined;
 
 // Called one time to initialize everything before any
 // calls to showItem() are made.
 async function setup(container, settings) {
     const itemContainer = container.getElementsByClassName(""visualizer-container"")[0];
+    const fingerprint = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
 
-    if (settings.fireworks === ""true"") {
-        const Fireworks = (await import(""https://cdn.jsdelivr.net/npm/fireworks-js/+esm"")).Fireworks;
-        fireworks = new Fireworks(itemContainer);
-    }
-    
-    if (settings.confetti === ""true"") {
-        const confettiFactory = (await import(""https://cdn.jsdelivr.net/npm/canvas-confetti/+esm"")).create;
-        const confettiCanvas = document.createElement(""canvas"");
-        confettiCanvas.setAttribute(""width"", itemContainer.clientWidth.toString());
-        confettiCanvas.setAttribute(""height"", itemContainer.clientHeight.toString());
-        itemContainer.append(confettiCanvas);
-        confetti = confettiFactory(confettiCanvas);
-    }
+    const Helper = (await import(`/Scripts/Rock/UI/realtimevisualizer/common.js?v=${fingerprint}`)).Helper;
+    helper = new Helper(itemContainer);
 }
 
 // Shows a single visual item from the RealTime system.
@@ -618,14 +606,21 @@ async function showItem(content, container, settings) {
     }
 
     // Show the item.
-    setItemHeight(item);
+    helper.setItemHeight(item);
     item.classList.add(""in"");
-    activeCount++;
 
     // Start up all the extras.
-    playAudio(item, settings);
-    showConfetti();
-    startFireworks();
+    if (settings.playAudio) {
+        helper.playAudio(item, settings.defautlAudioUrl);
+    }
+    
+    if (settings.confetti) {
+        helper.showConfetti();
+    }
+    
+    if (settings.fireworks) {
+        helper.startFireworks();
+    }
     
     // Wait until this item should be removed and then start
     // the removal process.
@@ -636,110 +631,15 @@ async function showItem(content, container, settings) {
         item.addEventListener(""transitionend"", () => {
             if (item.parentElement) {
                 item.remove();
-            }
 
-            activeCount--;
-
-            if (activeCount === 0) {
-                stopFireworks();
+                if (settings.fireworks) {
+                    helper.stopFireworks();
+                }
             }
         });
     }, parseInt(settings.duration) || 5000);
 }
-
-// Sets the height of the item. This calculates the height required
-// to display the entire item, including any margins on the first
-// and last child. This allows items to gently slide down to make
-// room for the new item.
-function setItemHeight(item) {
-    let topMargin = 0;
-    let bottomMargin = 0;
-    
-    if (item.children.length > 0) {
-        let computedStyle = window.getComputedStyle(item.children[0]);
-        topMargin = Number(computedStyle.marginTop.replace(""px"", """") || ""0"");
-        
-        computedStyle = window.getComputedStyle(item.children[item.children.length - 1]);
-        bottomMargin = Number(computedStyle.marginBottom.replace(""px"", """") || ""0"");
-    }
-
-    item.style.height = `${item.scrollHeight + topMargin + bottomMargin}px`;
-}
-
-// If we are configured to play audio then this will search the item
-// for a data-audio-url tag somewhere in the content. If found it will
-// be used as the audio source, otherwise the default URL will be used.
-function playAudio(item, settings) {
-    if (!settings.playAudio) {
-        return;
-    }
-
-    try
-    {
-        let audioUrl = settings.defaultAudioUrl || """";
-        const urlElement = item.querySelector(""[data-audio-url]"");
-        
-        if (urlElement) {
-            audioUrl = urlElement.dataset.audioUrl;
-        }
-        
-        if (audioUrl) {
-            new Audio(audioUrl).play();
-        }
-    }
-    catch (error) {
-        console.error(error);
-    }
-}
-
-// Shows a burst of confetti for a single item.
-function showConfetti() {
-    if (!confetti) {
-        return;
-    }
-
-    confetti({
-        particleCount: 100,
-        startVelocity: 75,
-        decay: 0.92,
-        spread: 90,
-        angle: 35,
-        origin: { x: 0, y: 0.75 }
-    });
-
-    confetti({
-        particleCount: 100,
-        startVelocity: 75,
-        decay: 0.92,
-        spread: 90,
-        angle: 125,
-        origin: { x: 1, y: 0.75 }
-    });
-}
-
-// Starts showing fireworks if they have not been started.
-function startFireworks() {
-    if (activeCount > 0 && fireworks && !fireworks.isRunning) {
-        fireworks.start();
-    }
-}
-
-// Stops the fireworks from running.
-function stopFireworks() {
-    if (!fireworks) {
-        return;
-    }
-
-    fireworks.waitStop().then(() => {
-        // If we showed an item before the fireworks completely
-        // stopped then start them up again.
-        if (activeCount > 0) {
-            fireworks.start();
-        }
-    });
-}
 ";
-
         const string ToastHelpContent = @"<p>
     The Toast theme displays the item at the top of the area for a short period of time
     and then removes it. If additional items are displayed before previous ones are
@@ -760,7 +660,7 @@ function stopFireworks() {
     <li><strong>fullscreen:</strong> Determines if the theme should render itself full-screen. You can turn this off to use CSS to customize what part of the screen to fill. (Default: <strong>true</strong>)</li>
     <li><strong>slideAmount:</strong> The number of pixels to slide the item when slideInDirection or slideOutDirection are specified. (Default: <strong>15px</strong>)</li>
     <li><strong>slideInDirection:</strong> If set to a value this will determine what direction the item will slide in from. Valid values are ""left"", ""top"", ""right"" and ""bottom"". (No default)</li>
-    <li><strong>slideOutDirection: </strong>If set to a value this will determine what direction the item will slide out towards. Valid values are ""left"", ""top"", ""right"" and ""bottom"". <strong>(No default)</strong></li>
+    <li><strong>slideOutDirection: </strong>If set to a value this will determine what direction the item will slide out towards. Valid values are ""left"", ""top"", ""right"" and ""bottom"". (No default)</li>
 </ul>
 
 <div><strong>Advanced Settings</strong></div>
@@ -776,5 +676,132 @@ function stopFireworks() {
     <li><strong>playAudio:</strong> If turned on, an audio file will be played when an item appears on screen. If the item includes a ""data-audio-url"" attribute then it will be used as the URL of the audio file to play. Otherwise any value in defaultAudioUrl will be used. (Default: <strong>false</strong>)</li>
 </ul>
 ";
+        // fullscreen = true
+        // slideAmount = 15px
+        // animationDuration = 0.5s
+        // duration = 5000
+        // fireworks = false
+        // confetti = false
+        // playAudio = false
+        // defaultAudioUrl =
+        // fade = true
+        // slideInDirection =
+        // slideOutDirection =
+
+
+        const string SwapPageTemplate = @"<div class=""visualizer-container"">
+</div>";
+        const string SwapStyle = @".visualizer-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    position: relative;
+    background-color: black;
+{% if Settings.fullscreen == ""true"" %}
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+{% endif %}
+}
+
+.visualizer-container > canvas {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+
+.visualizer-item.in {
+  animation: 1.5s incoming both;
+}
+::view-transition-old(outgoing) {
+  animation: 1.5s outgoing both;
+}
+
+@keyframes outgoing {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes incoming {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+";
+        const string SwapScript = @"let helper = undefined;
+let itemCount = 0;
+
+// Called one time to initialize everything before any
+// calls to showItem() are made.
+async function setup(container, settings) {
+    const itemContainer = container.getElementsByClassName(""visualizer-container"")[0];
+    const fingerprint = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
+
+    const Helper = (await import(`/Scripts/Rock/UI/realtimevisualizer/common.js?v=${fingerprint}`)).Helper;
+    helper = new Helper(itemContainer);
+}
+
+// Shows a single visual item from the RealTime system.
+async function showItem(content, container, settings) {
+    if (!content) {
+        return;
+    }
+    
+    const itemContainer = container.getElementsByClassName(""visualizer-container"")[0];
+    
+    // Configure the item and it's content.
+    const item = document.createElement(""div"");
+    item.classList.add(""visualizer-item"", ""in"");
+    item.style.viewTransitionName = `visualizer-item-${itemCount++}`;
+    item.innerHTML = content;
+
+    // Prepare old items for removal.
+    const oldItems = itemContainer.querySelectorAll("".visualizer-item"");
+    for (let i = 0; i < oldItems.length; i++) {
+        oldItems[i].classList.remove(""in"");
+        oldItems[i].style.viewTransitionName = ""outgoing"";
+    }
+
+    if (document.startViewTransition) {
+        document.startViewTransition(() => {
+            itemContainer.prepend(item);
+            for (let i = 0; i < oldItems.length; i++) {
+                oldItems[i].remove();
+            }
+        });
+    }
+    else {
+        itemContainer.prepend(item);
+        for (let i = 0; i < oldItems.length; i++) {
+            oldItems[i].remove();
+        }
+    }
+
+    // Start up all the extras.
+    if (settings.playAudio) {
+        helper.playAudio(item, settings.defautlAudioUrl);
+    }
+    
+    if (settings.confetti) {
+        helper.showConfetti();
+    }
+}
+";
+        const string SwapHelpContent = @"";
+        // fullscreen = true
+        // confetti = false
+        // playAudio = false
+        // defaultAudioUrl =
     }
 }
