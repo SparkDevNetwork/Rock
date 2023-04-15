@@ -369,16 +369,19 @@ namespace Rock.Web.Cache
         /// <param name="item">Type of the item.</param>
         private void UpdateCacheReferences( string key, string region, T item )
         {
+            var cacheReferenceItem = new RockCache.CacheKeyReference { Key = key, Region = region };
+
             if ( item is List<string> )
             {
-                RockCache.StringCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+                RockCache.StringConcurrentCacheKeyReferences.AddOrIgnore( cacheReferenceItem.ToString(), cacheReferenceItem );
             }
 
             if ( item is List<object> )
             {
-                RockCache.ObjectCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+                RockCache.ObjectConcurrentCacheKeyReferences.AddOrIgnore( cacheReferenceItem.ToString(), cacheReferenceItem );
             }
         }
+
         #endregion
     }
 
