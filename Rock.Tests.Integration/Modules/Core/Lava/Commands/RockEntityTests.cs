@@ -23,6 +23,9 @@ using Rock.Tests.Shared;
 using Rock.Lava.Blocks;
 using Rock.Lava;
 using Rock.Web.Cache;
+using Rock.Data;
+using System.Linq;
+using Rock.Model;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -151,6 +154,96 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 Assert.That.Contains( output, "Of Faith and Firsts (Pete Foster)" );
                 Assert.That.Contains( output, "1x8 (Pete Foster)" );
             } );
+        }
+
+        private const string _Count1AttributeGuid = "38850248-49DE-44B0-A150-1BA447AE35D0";
+        private const string _Count2AttributeGuid = "32BAD99A-049E-4BC6-ABE7-786BF187484D";
+
+        /// <summary>
+        /// Verify sorting by an Entity Attribute that has the same Key as a second Attribute on a different
+        /// Entity produces a correctly ordered result set for both entities.
+        /// </summary>
+        [TestMethod]
+        public void EntityCommandBlock_SortByAttributeWithDuplicateKey_ReturnsCorrectlyOrderedSet()
+        {
+            AddDefinedTypesWithDuplicateAttribute();
+
+            var template = @"
+{% definedtype where:'Name == ""Title"" || Name == ""Suffix""' sort:'Name desc' iterator:'definedTypes' %}
+    {% for definedType in definedTypes %}
+        {% assign definedTypeId = definedType.Id %}
+        <h1>{{ definedType.Name }}</h1>
+        <ul>
+        {% definedvalue where:'DefinedTypeId == {{definedTypeId}}' sort:'Count desc' iterator:'values' %}
+            {% for value in values %}<li>{{ value | Attribute:'Count' }}: {{ value.Value }}</li>{% endfor %}
+        {% enddefinedvalue %}
+        </ul>
+    {% endfor %}
+{% enddefinedtype %}
+";
+
+            var expectedOutput = @"
+<h1>Title</h1>
+<ul>
+    <li>7: Rev.</li><li>6: Ms.</li><li>5: Mrs.</li><li>4: Mr.</li><li>3: Miss</li><li>2: Dr.</li><li>1: Cpt.</li>
+</ul>
+<h1>Suffix</h1>
+<ul>
+    <li>8: VI</li><li>7: V</li><li>6: Sr.</li><li>5: Ph.D.</li><li>4: Jr.</li><li>3: IV</li><li>2: III</li><li>1: II</li>
+</ul>
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, new LavaTestRenderOptions { EnabledCommands = "all" } );
+        }
+
+        private void AddDefinedTypesWithDuplicateAttribute()
+        {
+            var rockContext = new RockContext();
+
+            // Add Attribute "Count" to multiple Defined Types.
+            var definedTypeTitle = DefinedTypeCache.All().FirstOrDefault( c => c.Name == "Title" );
+            var definedTypeSuffix = DefinedTypeCache.All().FirstOrDefault( c => c.Name == "Suffix" );
+
+            var args = new TestDataHelper.Core.AddEntityAttributeArgs
+            {
+                ForeignKey = "IntegrationTest",
+
+                EntityTypeIdentifier = SystemGuid.EntityType.DEFINED_VALUE,
+                Key = "Count",
+                FieldTypeIdentifier = SystemGuid.FieldType.INTEGER,
+                EntityTypeQualifierColumn = "DefinedTypeId"
+            };
+
+            args.Guid = _Count1AttributeGuid.AsGuid();
+            args.EntityTypeQualifierValue = definedTypeTitle.Id.ToString();
+
+            var attribute1 = TestDataHelper.Core.AddEntityAttribute( args, rockContext );
+
+            args.Guid = _Count2AttributeGuid.AsGuid();
+            args.EntityTypeQualifierValue = definedTypeSuffix.Id.ToString();
+
+            var attribute2 = TestDataHelper.Core.AddEntityAttribute( args, rockContext );
+
+            rockContext.SaveChanges();
+
+            // Set the Count values.
+            var definedTypeIdList = new List<int> { definedTypeTitle.Id, definedTypeSuffix.Id };
+            foreach ( var definedTypeId in definedTypeIdList )
+            {
+                var definedValueService = new DefinedValueService( rockContext );
+                var definedValues = definedValueService.Queryable()
+                    .Where( dv => dv.DefinedTypeId == definedTypeId )
+                    .OrderBy( dv => dv.Value )
+                    .ToList();
+                var count = 1;
+                foreach ( var definedValue in definedValues )
+                {
+                    definedValue.LoadAttributes( rockContext );
+                    definedValue.SetAttributeValue( "Count", count.ToString() );
+                    definedValue.SaveAttributeValues( rockContext );
+                    count++;
+                }
+            }
         }
 
         [TestMethod]

@@ -77,6 +77,7 @@ namespace Rock.Tests.Integration.Core.Lava
             engineOptions.FileSystem = new MockFileProvider();
             engineOptions.CacheService = new NullTemplateCacheService();
             engineOptions.InitializeDynamicShortcodes = loadShortcodes;
+            engineOptions.HostService = new WebsiteLavaHost();
 
             if ( RockLiquidEngineIsEnabled )
             {
@@ -1007,6 +1008,7 @@ namespace Rock.Tests.Integration.Core.Lava
             var engineOptions = new LavaEngineConfigurationOptions
             {
                 FileSystem = new WebsiteLavaFileSystem(),
+                HostService = new WebsiteLavaHost(),
                 CacheService = new WebsiteLavaTemplateCacheService(),
                 TimeZone = RockDateTime.OrgTimeZoneInfo
             };
