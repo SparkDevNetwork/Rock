@@ -4049,24 +4049,65 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ResolveRockUrl( string input )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            if ( string.IsNullOrWhiteSpace(input) )
+            {
+                return string.Empty;
+            }
 
+            var page = HttpContext.Current?.Handler as RockPage;
+
+            // Resolve theme references.
             if ( input.StartsWith( "~~" ) )
             {
-                string theme = "Rock";
-                if ( page.Theme.IsNotNullOrWhiteSpace() )
+                var theme = "Rock";
+                if ( page != null )
                 {
-                    theme = page.Theme;
-                }
-                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
-                {
-                    theme = page.Site.Theme;
+                    // Get the theme from the current page if we have one.
+                    if ( page.Theme.IsNotNullOrWhiteSpace() )
+                    {
+                        theme = page.Theme;
+                    }
+                    else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
+                    {
+                        theme = page.Site.Theme;
+                    }
                 }
 
                 input = "~/Themes/" + theme + ( input.Length > 2 ? input.Substring( 2 ) : string.Empty );
             }
 
-            return page.ResolveUrl( input );
+            // Resolve relative references.
+            string url;
+            if ( page != null )
+            {
+                url = page.ResolveUrl( input );
+            }
+            else
+            {
+                // In the absence of a HttpRequest, use the application root configuration setting as the base URL.
+                var rootUrl = GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" );
+                if ( string.IsNullOrWhiteSpace( rootUrl ) )
+                {
+                    rootUrl = "/";
+                }
+
+                if ( input.StartsWith( "~" ) )
+                {
+                    input = input.Trim( '~' );
+                }
+
+                var uri = new Uri( input, UriKind.RelativeOrAbsolute );
+                if ( uri.IsAbsoluteUri )
+                {
+                    return uri.AbsoluteUri;
+                }
+
+                // Create an absolute Uri.
+                uri = new Uri( new Uri( rootUrl ), uri );
+                url = uri.AbsoluteUri;
+            }
+
+            return url;
         }
 
         /// <summary>
@@ -4607,7 +4648,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddMetaTagToHead( string input, string attributeName, string attributeValue )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -4629,7 +4670,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
         {
-            var page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -4674,12 +4715,10 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string SetPageTitle( string input, string titleLocation )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
-
-
                 if ( titleLocation.Equals( "BrowserTitle", StringComparison.InvariantCultureIgnoreCase ) || titleLocation.Equals( "All", StringComparison.InvariantCultureIgnoreCase ) )
                 {
                     page.BrowserTitle = input;
@@ -4715,9 +4754,9 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddScriptLink( string input, bool fingerprintLink = false )
         {
-            if ( HttpContext.Current != null )
+            var page = HttpContext.Current?.Handler as RockPage;
+            if ( page != null )
             {
-                RockPage page = HttpContext.Current.Handler as RockPage;
                 RockPage.AddScriptLink( page, ResolveRockUrl( input ), fingerprintLink );
             }
 
@@ -4732,9 +4771,9 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddCssLink( string input, bool fingerprintLink = false )
         {
-            if ( HttpContext.Current != null )
+            var page = HttpContext.Current?.Handler as RockPage;
+            if ( page != null )
             {
-                RockPage page = HttpContext.Current.Handler as RockPage;
                 RockPage.AddCSSLink( page, ResolveRockUrl( input ), fingerprintLink );
             }
 
@@ -4910,7 +4949,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Page( string input, string parm )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -5026,7 +5065,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object PageParameter( string input, string parm )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
+            if ( page == null )
+            {
+                return null;
+            }
 
             var parmReturn = page.PageParameter( parm );
 
@@ -5449,43 +5492,48 @@ namespace Rock.Lava
         /// <param name="typeOrder">The type order.</param>
         public static void AddQuickReturn( string input, string typeName, int typeOrder = 0 )
         {
-            RockPage rockPage = HttpContext.Current.Handler as RockPage;
-
-            if ( input.IsNotNullOrWhiteSpace() )
+            if ( input.IsNullOrWhiteSpace() )
             {
+                return;
+            }
 
-                /* 08-16-2021 MDP
-                 * This is only supported for pages that have the PersonalLinks block on it.
-                 * 
-                 * 02-02-2022 SMC
-                 * Added checks to prevent this script from being called if the personalLinks script hasn't been loaded,
-                 * so that if this filter is used on a page without the Personal Links block, it will fail safely
-                 * without doing anything.
-                 */
+            var rockPage = HttpContext.Current?.Handler as RockPage;
+            if ( rockPage == null )
+            {
+                return;
+            }
 
-                input = input.EscapeQuotes();
+            /* 08-16-2021 MDP
+                * This is only supported for pages that have the PersonalLinks block on it.
+                * 
+                * 02-02-2022 SMC
+                * Added checks to prevent this script from being called if the personalLinks script hasn't been loaded,
+                * so that if this filter is used on a page without the Personal Links block, it will fail safely
+                * without doing anything.
+                */
 
-                if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
-                {
-                    var quickReturnScript = "" +
-                    $"function addQuickReturnAjax(typeName, typeOrder, input) {{" + Environment.NewLine +
-                    $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
-                    $"    Rock.personalLinks.addQuickReturn(typeName, typeOrder, input);" + Environment.NewLine +
-                    $"  }}" + Environment.NewLine +
-                    $"}};" + Environment.NewLine +
-                    $"addQuickReturnAjax('{typeName}', {typeOrder}, '{input}');";
-                    ScriptManager.RegisterStartupScript( rockPage, rockPage.GetType(), "AddQuickReturn", quickReturnScript, true );
-                }
-                else
-                {
-                    var quickReturnScript = "" +
-                    $"$( document ).ready( function () {{" + Environment.NewLine +
-                    $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
-                    $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
-                    $"  }}" + Environment.NewLine +
-                    $"}});";
-                    RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
-                }
+            input = input.EscapeQuotes();
+
+            if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
+            {
+                var quickReturnScript = "" +
+                $"function addQuickReturnAjax(typeName, typeOrder, input) {{" + Environment.NewLine +
+                $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
+                $"    Rock.personalLinks.addQuickReturn(typeName, typeOrder, input);" + Environment.NewLine +
+                $"  }}" + Environment.NewLine +
+                $"}};" + Environment.NewLine +
+                $"addQuickReturnAjax('{typeName}', {typeOrder}, '{input}');";
+                ScriptManager.RegisterStartupScript( rockPage, rockPage.GetType(), "AddQuickReturn", quickReturnScript, true );
+            }
+            else
+            {
+                var quickReturnScript = "" +
+                $"$( document ).ready( function () {{" + Environment.NewLine +
+                $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
+                $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
+                $"  }}" + Environment.NewLine +
+                $"}});";
+                RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
             }
         }
 

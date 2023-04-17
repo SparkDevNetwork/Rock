@@ -199,6 +199,7 @@
     <Compile Include="Modules\Crm\CrmModuleTestHelper.cs" />
     <Compile Include="Modules\Crm\PersonAddressTests.cs" />
     <Compile Include="Modules\Reporting\DataFilter\DataViewTests.cs" />
+    <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
     <Compile Include="TestData\Crm\HistoryDataFactory.cs" />
     <Compile Include="TestData\Engagement\PrayerFeatureDataHelper.cs" />
@@ -279,6 +280,7 @@
     <Compile Include="Modules\Core\StorageTests\AzureCloudComponentTests.cs" />
     <Compile Include="Modules\Core\StorageTests\BaseStorageComponentTests.cs" />
     <Compile Include="Modules\Core\StorageTests\GoogleCloudComponentTests.cs" />
+    <Compile Include="TestData\CreateEntityActionArgsBase.cs" />
     <Compile Include="TestData\EventTestDataHelper.cs" />
     <Compile Include="TestData\Crm\TestDataHelper.Crm.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Web.cs" />
@@ -428,6 +430,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Constants\" />
+    <Folder Include="Jobs\" />
     <Folder Include="Modules\Crm\Steps\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
