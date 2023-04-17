@@ -55,6 +55,9 @@
     <Content Include="src\Crm\BadgeDetail\viewPanel.partial.vue" />
     <Content Include="src\Bus\QueueDetail\editPanel.partial.vue" />
     <Content Include="src\Bus\QueueDetail\viewPanel.partial.vue" />
+    <Content Include="src\Engagement\streakDetail.obs" />
+    <Content Include="src\Engagement\StreakDetail\editPanel.partial.obs" />
+    <Content Include="src\Engagement\StreakDetail\viewPanel.partial.obs" />
     <Content Include="src\Engagement\streakTypeDetail.obs" />
     <Content Include="src\Engagement\StreakTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StreakTypeDetail\viewPanel.partial.obs" />
@@ -207,6 +210,7 @@
     <Folder Include="src\Crm\PersonDetail\" />
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
+    <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Prayer\" />
@@ -337,6 +341,7 @@
     <TypeScriptCompile Include="src\Crm\AssessmentTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
+    <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Prayer\PrayerRequestDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchDetail\types.partial.ts" />

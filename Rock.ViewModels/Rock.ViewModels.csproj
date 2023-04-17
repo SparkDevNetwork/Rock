@@ -52,6 +52,8 @@
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentList\AssessmentListBag.cs" />
     <Compile Include="Blocks\Crm\PhotoOptOut\PhotoOptOutBag.cs" />
+    <Compile Include="Blocks\Engagement\StreakDetail\StreakBag.cs" />
+    <Compile Include="Blocks\Engagement\StreakDetail\StreakDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\CustomFieldFilterBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpDetail\SignUpDetailInitializationBox.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterRequestBag.cs" />

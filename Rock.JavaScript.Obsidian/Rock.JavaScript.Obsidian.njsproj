@@ -187,6 +187,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\Steps\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\" />
@@ -709,6 +710,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\stepFlowGetDataBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\stepFlowInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\streakBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\streakDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\streakTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\streakTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\experienceManagerOccurrencesInitializationBox.d.ts" />
