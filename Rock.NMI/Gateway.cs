@@ -2256,22 +2256,40 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         /// <param name="queryParameters">The query parameters.</param>
         private static void PopulateAddressParameters( ReferencePaymentInfo referencedPaymentInfo, Dictionary<string, string> queryParameters )
         {
-            if ( !referencedPaymentInfo.IncludesAddressData() )
+            if ( referencedPaymentInfo.FirstName.IsNotNullOrWhiteSpace() )
             {
-                return;
+                queryParameters.Add( "first_name", referencedPaymentInfo.FirstName );
             }
 
-            queryParameters.Add( "first_name", referencedPaymentInfo.FirstName );
-            queryParameters.Add( "last_name", referencedPaymentInfo.LastName );
-            queryParameters.Add( "address1", referencedPaymentInfo.Street1 );
-            queryParameters.Add( "address2", referencedPaymentInfo.Street2 );
-            queryParameters.Add( "city", referencedPaymentInfo.City );
-            queryParameters.Add( "state", referencedPaymentInfo.State );
-            queryParameters.Add( "zip", referencedPaymentInfo.PostalCode );
-            queryParameters.Add( "country", referencedPaymentInfo.Country );
-            queryParameters.Add( "phone", referencedPaymentInfo.Phone );
-            queryParameters.Add( "email", referencedPaymentInfo.Email );
-            queryParameters.Add( "company", referencedPaymentInfo.BusinessName );
+            if ( referencedPaymentInfo.LastName.IsNotNullOrWhiteSpace() )
+            {
+                queryParameters.Add( "last_name", referencedPaymentInfo.LastName );
+            }
+
+            if ( referencedPaymentInfo.Phone.IsNotNullOrWhiteSpace() )
+            {
+                queryParameters.Add( "phone", referencedPaymentInfo.Phone );
+            }
+
+            if ( referencedPaymentInfo.Email.IsNotNullOrWhiteSpace() )
+            {
+                queryParameters.Add( "email", referencedPaymentInfo.Email );
+            }
+
+            if ( referencedPaymentInfo.BusinessName.IsNotNullOrWhiteSpace() )
+            {
+                queryParameters.Add( "company", referencedPaymentInfo.BusinessName );
+            }
+
+            if ( referencedPaymentInfo.IncludesAddressData() )
+            {
+                queryParameters.Add( "address1", referencedPaymentInfo.Street1 );
+                queryParameters.Add( "address2", referencedPaymentInfo.Street2 );
+                queryParameters.Add( "city", referencedPaymentInfo.City );
+                queryParameters.Add( "state", referencedPaymentInfo.State );
+                queryParameters.Add( "zip", referencedPaymentInfo.PostalCode );
+                queryParameters.Add( "country", referencedPaymentInfo.Country );
+            }
         }
 
         /// <summary>
