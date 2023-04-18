@@ -188,7 +188,7 @@ namespace Rock.Web.Cache
         /// The object cache key references.
         /// </value>
         [RockInternal( "1.14" )]
-        internal static ConcurrentDictionary<string,CacheKeyReference> ObjectConcurrentCacheKeyReferences
+        public static ConcurrentDictionary<string,CacheKeyReference> ObjectConcurrentCacheKeyReferences
         {
             get
             {
@@ -213,7 +213,7 @@ namespace Rock.Web.Cache
         /// The string cache key references.
         /// </value>
         [RockInternal( "1.14" )]
-        internal static ConcurrentDictionary<string, CacheKeyReference> StringConcurrentCacheKeyReferences
+        public static ConcurrentDictionary<string, CacheKeyReference> StringConcurrentCacheKeyReferences
         {
             get
             {
