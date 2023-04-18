@@ -1,0 +1,8 @@
+<template>
+    hi
+</template>
+
+<script setup lang="ts">
+    import { XmlDocMember } from "./RealTimeApiBrowser/xmlDoc.partial";
+
+</script>

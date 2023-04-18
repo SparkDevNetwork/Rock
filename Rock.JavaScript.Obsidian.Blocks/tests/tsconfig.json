@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "rootDir": "../",
+    "outDir": "./",
+    "noEmit": false,
+    "sourceMap": true,
+    "module": "CommonJS",
+    "baseUrl": "..",
+    "paths": {
+      "@Obsidian/Controls/*": [ "../Rock.JavaScript.Obsidian/Framework/Controls/*" ],
+      "@Obsidian/Core/*": [ "../Rock.JavaScript.Obsidian/Framework/Core/*" ],
+      "@Obsidian/Directives/*": [ "../Rock.JavaScript.Obsidian/Framework/Directives/*" ],
+      "@Obsidian/Enums/*": [ "../Rock.JavaScript.Obsidian/Framework/Enums/*" ],
+      "@Obsidian/FieldTypes/*": [ "../Rock.JavaScript.Obsidian/Framework/FieldTypes/*" ],
+      "@Obsidian/PageState": [ "../Rock.JavaScript.Obsidian/Framework/PageState" ],
+      "@Obsidian/SystemGuids": [ "../Rock.JavaScript.Obsidian/Framework/SystemGuids" ],
+      "@Obsidian/Types": [ "../Rock.JavaScript.Obsidian/Framework/Types" ],
+      "@Obsidian/Types/*": [ "../Rock.JavaScript.Obsidian/Framework/Types/*" ],
+      "@Obsidian/Utility": [ "../Rock.JavaScript.Obsidian/Framework/Utility" ],
+      "@Obsidian/Utility/*": [ "../Rock.JavaScript.Obsidian/Framework/Utility/*" ],
+      "@Obsidian/ValidationRules": [ "../Rock.JavaScript.Obsidian/Framework/ValidationRules" ],
+      "@Obsidian/ViewModels/*": [ "../Rock.JavaScript.Obsidian/Framework/ViewModels/*" ]
+    }
+  },
+  "include": [ "**/*.ts" ],
+  "exclude": [ "**/*.ignored.ts" ]
+}
