@@ -426,22 +426,32 @@ namespace Rock.Blocks.Types.Mobile.Cms
             var userLoginService = new UserLoginService( rockContext );
             user = userLoginService.GetByUserName( username );
 
+            var phoneNumber = externallyAuthenticatedUser.PhoneNumber;
+
             // If no user was found, see if we can find a match in the person table.
             if ( user == null )
             {
                 // Get name/email from auth0 userinfo.
-                var lastName = externallyAuthenticatedUser.FirstName?.Trim()?.FixCase();
-                var firstName = externallyAuthenticatedUser.LastName?.Trim()?.FixCase();
+                
+                var firstName = externallyAuthenticatedUser.FirstName?.Trim()?.FixCase();
+                var lastName = externallyAuthenticatedUser.LastName?.Trim()?.FixCase();
+
                 var nickName = externallyAuthenticatedUser.NickName?.Trim()?.FixCase();
                 var email = externallyAuthenticatedUser.Email;
                 var gender = externallyAuthenticatedUser.Gender;
 
-                // If person had an email, get the first person with the same name and email address.
-                if ( !string.IsNullOrWhiteSpace( email ) )
+                var hasValidPhoneOrEmail = email.IsNotNullOrWhiteSpace() || phoneNumber.IsNotNullOrWhiteSpace();
+                var hasValidFirstAndLastName = firstName.IsNotNullOrWhiteSpace() && lastName.IsNotNullOrWhiteSpace();
+
+                if ( !hasValidPhoneOrEmail || !hasValidFirstAndLastName )
                 {
-                    var personService = new PersonService( rockContext );
-                    person = personService.FindPerson( firstName, lastName, email, true );
+                    return null;
                 }
+
+                var personMatchQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, phoneNumber );
+
+                var personService = new PersonService( rockContext );
+                person = personService.FindPerson( personMatchQuery, true );
 
                 var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                 var personStatusPending = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
@@ -458,11 +468,19 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         person.FirstName = firstName;
                         person.LastName = lastName;
                         person.Email = email;
+                        person.NickName = nickName;
                         person.IsEmailActive = true;
                         person.EmailPreference = EmailPreference.EmailAllowed;
                         person.Gender = gender.ToNative();
 
+                        if ( phoneNumber.IsNotNullOrWhiteSpace() )
+                        {
+                            var mobilePhoneDefinedValueCache = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                            person.UpdatePhoneNumber( mobilePhoneDefinedValueCache.Id, null, Rock.Model.PhoneNumber.CleanNumber( phoneNumber ), null, null, rockContext );
+                        }
+
                         PersonService.SaveNewPerson( person, rockContext, null, false );
+                        rockContext.SaveChanges();
                     }
 
                     user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, authentitationEntityTypeId, username, password, true );
@@ -483,6 +501,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     var userPerson = personService.Get( user.PersonId.Value );
                     if ( userPerson != null )
                     {
+                        if ( phoneNumber.IsNotNullOrWhiteSpace() )
+                        {
+                            var mobilePhoneDefinedValueCache = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                            userPerson.UpdatePhoneNumber( mobilePhoneDefinedValueCache.Id, null, Rock.Model.PhoneNumber.CleanNumber( phoneNumber ), null, null, rockContext );
+                            rockContext.SaveChanges();
+                        }
+
                         // If person does not have a photo, try to get the photo return with auth0.
                         if ( !userPerson.PhotoId.HasValue && !string.IsNullOrWhiteSpace( externallyAuthenticatedUser.Picture ) )
                         {
@@ -519,7 +544,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
             }
 
             return user;
-
         }
     }
 }

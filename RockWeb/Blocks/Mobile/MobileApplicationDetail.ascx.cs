@@ -491,6 +491,8 @@ namespace RockWeb.Blocks.Mobile
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             cbEnableDeepLinking.Checked = additionalSettings.IsDeepLinkingEnabled;
             cbCompressUpdatePackages.Checked = additionalSettings.IsPackageCompressionEnabled;
+            tbAuth0ClientDomain.Text = additionalSettings.Auth0Domain;
+            tbAuth0ClientId.Text = additionalSettings.Auth0ClientId;
 
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
             ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
