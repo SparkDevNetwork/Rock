@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="did-attend-filter">
+    <div class="did-attend-filter form-group">
         <RockFormField v-bind="standardFieldProps" name="didAttendFilter" :modelValue="allFilters">
             <div class="control-wrapper">
                 <div class="btn-group">
