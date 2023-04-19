@@ -1671,11 +1671,9 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="directoryPath">The directory path.</param>
         /// <param name="expirationDate">The file expiration date. Files older than this date will be deleted</param>
-        /// <param name="compareFileDateModified" />
-        /// <param name="fileLimit" />
-        /// A flag indicating if the expiry date should be compared to the modified date of the file.
-        /// If <c>false</c>, the created date of the file is used.
-        /// </param>
+        /// <param name="compareFileDateModified">A flag indicating if the expiry date should be compared to the
+        /// modified date of the file. If <c>false</c>, the created date of the file is used.</param>
+        /// <param name="fileLimit">The maximum number of files to process for deletion before exiting.</param>
         private int CleanCacheDirectory( string directoryPath, DateTime expirationDate, int? fileLimit = null, bool compareFileDateModified = false )
         {
             int resultCount = 0;
