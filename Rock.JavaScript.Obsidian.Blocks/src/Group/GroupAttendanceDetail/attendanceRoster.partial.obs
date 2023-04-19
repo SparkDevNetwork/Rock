@@ -3,7 +3,7 @@
     <div class="attendance-roster">
         <template v-for="(groupedAttendances, groupLabel, index) in attendanceGroups" :key="groupLabel">
             <template v-if="groupedAttendances.length">
-                <hr v-if="hasMultipleGroups" />
+                <hr v-if="hasMultipleGroups && index > 0" />
                 <h2 v-if="groupLabel && hasMultipleGroups">{{ groupLabel }}</h2>
                 <div class="attendance-grid">
                     <template v-for="attendance in groupedAttendances" :key="attendance.personGuid">
@@ -84,12 +84,12 @@
         },
 
         /**
-         * If specified, will not start grouping attendances until the number of filtered attendances exceeds.
+         * If `true`, will not group attendances.
          */
-        groupWhenFilteredAttendanceCountExceeds: {
-            type: Number as PropType<number | null>,
+        isLongListDisabled: {
+            type: Boolean as PropType<boolean>,
             required: false,
-            default: null
+            default: false
         }
     });
 
@@ -142,9 +142,8 @@
     const attendanceGroups = computed<Record<string, GroupAttendanceDetailAttendanceBag[]>>(() => {
         const groupBy = props.groupBy;
         const attendances = filteredAttendances.value;
-        const onlyGroupWhenFilteredAttendanceCountExceeds = props.groupWhenFilteredAttendanceCountExceeds;
 
-        const shouldGroup = groupBy && (!onlyGroupWhenFilteredAttendanceCountExceeds || attendances.length > onlyGroupWhenFilteredAttendanceCountExceeds);
+        const shouldGroup = groupBy && !props.isLongListDisabled;
 
         if (!shouldGroup) {
             return { "": attendances };

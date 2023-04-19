@@ -87,15 +87,6 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.AllowCampusFilter,
         Order = 4 )]
 
-    [WorkflowTypeField(
-        "Workflow",
-        AllowMultiple = false,
-        Category = AttributeCategory.None,
-        Description = "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.",
-        IsRequired = false,
-        Key = AttributeKey.Workflow,
-        Order = 5 )]
-
     [MergeTemplateField(
         "Attendance Roster Template",
         Category = AttributeCategory.None,
@@ -257,7 +248,6 @@ namespace Rock.Blocks.Group
             public const string AddPersonAs = "AddPersonAs";
             public const string GroupMemberAddPage = "GroupMemberAddPage";
             public const string AllowCampusFilter = "AllowCampusFilter";
-            public const string Workflow = "Workflow";
             public const string AttendanceRosterTemplate = "AttendanceRosterTemplate";
             public const string ListItemDetailsTemplate = "ListItemDetailsTemplate";
             public const string RestrictFutureOccurrenceDate = "RestrictFutureOccurrenceDate";
@@ -364,34 +354,6 @@ namespace Rock.Blocks.Group
         ///   <c>true</c> if filtering by campus is allowed; otherwise, <c>false</c>.
         /// </value>
         private bool IsCampusFilteringAllowed => GetAttributeValue( AttributeKey.AllowCampusFilter ).AsBoolean();
-
-        /// <summary>
-        /// An optional workflow type to launch whenever attendance is saved.
-        /// <para>The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.</para>
-        /// </summary>
-        private Guid? WorkflowGuid => GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
-
-        /// <summary>
-        /// An optional workflow type to launch whenever attendance is saved.
-        /// <para>The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.</para>
-        /// </summary>
-        /// <value>
-        /// The workflow cache.
-        /// </value>
-        private WorkflowTypeCache WorkflowType
-        {
-            get
-            {
-                var guid = this.WorkflowGuid;
-
-                if ( guid.HasValue )
-                {
-                    return WorkflowTypeCache.Get( guid.Value );
-                }
-
-                return null;
-            }
-        }
 
         /// <summary>
         /// Gets the attendance roster template unique identifier.
