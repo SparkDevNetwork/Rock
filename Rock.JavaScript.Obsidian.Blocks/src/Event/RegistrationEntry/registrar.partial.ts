@@ -183,34 +183,34 @@ export default defineComponent({
     <h4>This Registration Was Completed By</h4>
     <template v-if="useLoggedInPersonForRegistrar">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-6 col-sm-6">
             <StaticFormControl label="First Name" v-model="registrar.nickName" />
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6 col-sm-6">
             <StaticFormControl label="Last Name" v-model="registrar.lastName" />
           </div>
         </div>
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-6 col-sm-6">
             <StaticFormControl label="Email" v-model="registrar.email" />
           </div>
         </div>
     </template>
     <template v-else>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6 col-sm-6">
                 <TextBox label="First Name" rules="required" v-model="registrar.nickName" tabIndex="1" />
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 col-sm-6">
                 <TextBox label="Last Name" rules="required" v-model="registrar.lastName" tabIndex="2" />
             </div>
         </div>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6 col-sm-6">
                 <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.email" tabIndex="3" />
                 <InlineCheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.updateEmail" />
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 col-sm-6">
                 <RadioButtonList
                     v-if="familyOptions.length"
                     :label="(registrar.nickName || 'Person') + ' is in the same immediate family as'"
