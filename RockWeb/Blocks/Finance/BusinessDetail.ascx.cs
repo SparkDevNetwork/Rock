@@ -190,7 +190,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             if ( !Page.IsPostBack )
             {
                 var businessId = PageParameter( "BusinessId" ).AsInteger();
-                CreateActionMenu( businessId );
                 ShowDetail( businessId );
             }
         }
@@ -246,7 +245,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         private void BusinessDetail_BlockUpdated( object sender, EventArgs e )
         {
             var businessId = PageParameter( "BusinessId" ).AsInteger();
-            CreateActionMenu( businessId );
             ShowDetail( businessId );
         }
 
@@ -716,6 +714,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <param name="business">The business.</param>
         private void ShowSummary( int businessId )
         {
+            CreateActionMenu( businessId );
             SetEditMode( false );
             hfBusinessId.SetValue( businessId );
             lTitle.Text = "Business Details".FormatAsHtmlTitle();
@@ -886,6 +885,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             BindPersonSearchKeysGrid();
             SetEditMode( true );
             ShowEditAttributes( business );
+            pnlActionWrapper.Visible = false;
         }
 
         /// <summary>
