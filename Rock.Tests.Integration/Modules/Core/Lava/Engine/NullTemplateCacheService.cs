@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava
@@ -80,9 +81,36 @@ namespace Rock.Tests.Integration.Core.Lava
 
         ILavaTemplate ILavaTemplateCacheService.GetOrAddTemplate( ILavaEngine engine, string templateContent, string cacheKey )
         {
+            throw new NotImplementedException( "Obsolete." );
+        }
+
+        AddOrGetTemplateResult ILavaTemplateCacheService.AddOrGetTemplate( ILavaEngine engine, string templateContent, string cacheKey )
+        {
             _cacheMisses++;
 
-            return engine.ParseTemplate( templateContent ).Template;
+            var parseResult = engine.ParseTemplate( templateContent );
+
+            ILavaTemplate template;
+
+            if ( parseResult.HasErrors )
+            {
+                // If the template is invalid, cache the error message to prevent subsequent parse attempts.
+                try
+                {
+                    template = engine.ParseTemplate( parseResult.GetLavaException().GetUserMessage() ).Template;
+                }
+                catch
+                {
+                    template = engine.ParseTemplate( "#Lava Template Error#" ).Template;
+                }
+            }
+            else
+            {
+                template = parseResult.Template;
+            }
+
+            var result = new AddOrGetTemplateResult( template, parseResult.Error );
+            return result;
         }
 
         #endregion

@@ -310,5 +310,38 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             } );
         }
 
+        /// <summary>
+        /// If a custom Lava component encounters an error and the exception handling strategy is set to "render",
+        /// the Exception thrown by the component should be visible in the render output because it may contain important configuration information.
+        /// </summary>
+        [TestMethod]
+        public void EntityCommandBlock_WithNoParameters_RendersErrorMessageToOutput()
+        {
+            // If a RockEntity command block is included without specifying any parameters, the block throws an Exception.
+            // The Exception is wrapped in higher-level LavaExceptions, but we want to ensure that the original message 
+            // is displayed in the render output to alert the user.
+            var input = @"
+{% person %}
+    {% for person in personItems %}
+        {{ person.FullName }} <br/>
+    {% endfor %}
+{% endperson %}
+            ";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var context = engine.NewRenderContext();
+
+                context.SetEnabledCommands( "RockEntity" );
+
+                var renderOptions = new LavaRenderParameters { Context = context, ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput };
+
+                var output = TestHelper.GetTemplateRenderResult( engine, input, renderOptions );
+
+                TestHelper.DebugWriteRenderResult( engine, input, output.Text );
+
+                Assert.IsTrue( output.Text.Contains( "No parameters were found in your command." ), "Expected message not found." );
+            } );
+        }
     }
 }
