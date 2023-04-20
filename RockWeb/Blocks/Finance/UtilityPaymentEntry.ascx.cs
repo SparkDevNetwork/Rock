@@ -3737,7 +3737,10 @@ mission. We are so grateful for your commitment.</p>
                 mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
             }
 
-            var accountDetails = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 );
+            var accountDetails = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 )
+                .Select( a => new TransactionAccountDetail( a.AccountId, a.Amount ?? 0.0M, caapPromptForAccountAmounts.CampusId ) )
+                .ToList();
+
             mergeFields.Add( "TransactionAccountDetails", accountDetails );
 
             var paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
@@ -3839,6 +3842,57 @@ mission. We are so grateful for your commitment.</p>
                         parent.HasChildren = parent.Children.Any();
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// This POCO is intended to provide backwards compatibility to RockWeb.Blocks.Financial.TransactionEntry.AccountItem,
+        /// which is used in parsing the Payment Comment Lava Template.  This is necessary so that Lava templates from that
+        /// block can be used on this block.
+        /// </summary>
+        protected class TransactionAccountDetail : RockDynamic
+        {
+            public int Id { get; set; }
+
+            public int Order { get; set; }
+
+            public string Name { get; set; }
+
+            public int? CampusId { get; set; }
+
+            public decimal Amount { get; set; }
+
+            public bool Enabled { get; set; }
+
+            public string PublicName { get; set; }
+
+            public string AmountFormatted
+            {
+                get
+                {
+                    return this.Amount > 0 ? this.Amount.FormatAsCurrency() : string.Empty;
+                }
+            }
+
+            public TransactionAccountDetail( int accountId, decimal amount, int? campusId )
+            {
+                this.Id = accountId;
+                this.Amount = amount;
+                this.CampusId = campusId;
+
+                var account = FinancialAccountCache.Get( this.Id );
+                if ( account == null )
+                {
+                    return;
+                }
+
+                this.PublicName = account.PublicName;
+                this.Order = account.Order;
+                this.Name = account.Name;
+
+                // this was used for tracking whether accounts passed in to the query string were enabled in the TransactionEntry block.
+                // We (probably?) don't need it here, but it's being kept for backwards compatibilty.
+                this.Enabled = true;
             }
         }
 
