@@ -170,8 +170,6 @@ namespace Rock.Jobs
                                             // Record workflow exception as warning or debug for RockLog instead of creating multiple exception logs and ending.
                                             RockLogger.Log.Warning( RockLogDomains.Jobs, $"Could not launch workflow: {workflowName} with group requirement: {groupRequirement} for person.Id: {personGroupRequirementStatus.PersonId} so the workflow was skipped." );
                                             RockLogger.Log.Debug( RockLogDomains.Jobs, ex, "Error when launching workflow for requirement." );
-
-                                            continue;
                                         }
                                     }
 
@@ -188,7 +186,6 @@ namespace Rock.Jobs
                                 RockLogger.Log.Debug( RockLogDomains.Jobs, ex, "Error when calculating person for group requirement." );
 
                                 skippedPersonIds.Add( personGroupRequirementStatus.PersonId, true );
-                                continue;
                             }
                         }
                     }
@@ -199,7 +196,6 @@ namespace Rock.Jobs
                         RockLogger.Log.Debug( RockLogDomains.Jobs, ex, "Error when calculating group for requirement." );
 
                         skippedGroups.Add( groupIdName.Name, true );
-                        continue;
                     }
                 }
             }
