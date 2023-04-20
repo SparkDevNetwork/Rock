@@ -163,6 +163,10 @@
     <Compile Include="Blocks\Group\GroupSchedulePreference\PreferencePageContentBag.cs" />
     <Compile Include="Blocks\Mobile\Communication\SmsConversationList\PhoneNumberBag.cs" />
     <Compile Include="Blocks\Mobile\Communication\SmsConversation\ConversationDetailBag.cs" />
+    <Compile Include="Blocks\Utility\RealTimeVisualizer\CustomSettingsBag.cs" />
+    <Compile Include="Blocks\Utility\RealTimeVisualizer\CustomSettingsOptionsBag.cs" />
+    <Compile Include="Blocks\Utility\RealTimeVisualizer\ThemeListItemBag.cs" />
+    <Compile Include="Blocks\Utility\RealTimeVisualizer\TopicAndChannelBag.cs" />
     <Compile Include="Cms\ContentCollectionCustomFieldBag.cs" />
     <Compile Include="Cms\ContentCollectionCustomFieldFilterSettingsBag.cs" />
     <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />

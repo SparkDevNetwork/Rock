@@ -200,21 +200,27 @@ namespace Rock.Jobs
         /// </summary>
         private void GetSettings()
         {
-            Log.LogVerbose( $"Reading configuration from job execution context..." );
+            if ( GetJobId() != 0 )
+            {
+                Log.LogVerbose( $"Reading configuration from job execution context..." );
 
-            this.SystemEmailTemplateGuid = this.GetAttributeValue( AttributeKey.SystemEmail ).ToString().AsGuid();
+                this.SystemEmailTemplateGuid = this.GetAttributeValue( AttributeKey.SystemEmail ).ToStringSafe().AsGuidOrNull();
+                this.CategoryGuidList = this.GetAttributeValue( AttributeKey.PrayerCategories ).ToStringSafe().SplitDelimitedValues().AsGuidList();
+                this.IncludeChildCategories = this.GetAttributeValue( AttributeKey.IncludeChildCategories ).ToStringSafe().AsBoolean();
+                this.CreateCommunicationRecord = this.GetAttributeValue( AttributeKey.SaveCommunications ).ToStringSafe().AsBoolean();
 
-            this.CategoryGuidList = this.GetAttributeValue( AttributeKey.PrayerCategories ).ToString().SplitDelimitedValues().AsGuidList();
+                // Job settings are stored uniquely for each instance of this Job, identified by the ServiceJob.Id.
+                this.SystemSettingsId = this.GetJobId().ToString();
+            }
 
-            this.IncludeChildCategories = this.GetAttributeValue( AttributeKey.IncludeChildCategories ).ToString().AsBoolean();
-
-            this.CreateCommunicationRecord = this.GetAttributeValue( AttributeKey.SaveCommunications ).ToString().AsBoolean();
-
-            // Job settings are stored uniquely for each instance of this Job, identified by the ServiceJob.Id.
-            this.SystemSettingsId = this.GetJobId().ToString();
-
-            this.StartDate = this.GetNextStartDate();
-            this.EndDate = RockDateTime.Now;
+            if ( this.StartDate == null )
+            {
+                this.StartDate = this.GetNextStartDate();
+            }
+            if ( this.EndDate == null )
+            {
+                this.EndDate = RockDateTime.Now;
+            }
         }
 
         private string GetSystemSettingsKey()

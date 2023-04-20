@@ -95,7 +95,7 @@ namespace Rock.Migrations
                 stopwatch.Stop();
                 if ( lastLoggedCompletedMigration != lastMigrationName )
                 {
-                    WriteToLog( $"[{stopwatch.Elapsed.TotalMilliseconds,5:#} ms] {lastMigrationName}" );
+                    WriteToLog( $"[{stopwatch.Elapsed.TotalMilliseconds,5:#} ms],{lastMigrationName}" );
                     lastLoggedCompletedMigration = lastMigrationName;
                 }
             }
@@ -129,7 +129,7 @@ namespace Rock.Migrations
                     logFile = new StreamWriter( filePath, true  );
                 }
 
-                logFile.WriteLine( message );
+                logFile.WriteLine( $"{RockDateTime.Now:MM/dd/yyyy HH:mm:ss.fff},{message}" );
                 logFile.Flush();
             }
             catch

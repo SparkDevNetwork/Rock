@@ -39,17 +39,75 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Creates a navigation tree for groups of the configured group type(s)." )]
 
-    [TextField( "Treeview Title", "Group Tree View", false, order: 1 )]
-    [GroupTypesField( "Group Types Include", "Select any specific group types to show in this block. Leave all unchecked to show all group types where 'Show in Navigation' is enabled ( except for excluded group types )", false, key: "GroupTypes", order: 2 )]
-    [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block. Note that this setting is only effective if 'Group Types Include' has no specific group types selected.", false, key: "GroupTypesExclude", order: 3 )]
-    [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false, order: 4 )]
-    [BooleanField( "Limit to Security Role Groups", order: 5 )]
-    [BooleanField( "Show Settings Panel", defaultValue: true, key: "ShowFilterOption", order: 6 )]
-    [BooleanField( "Display Inactive Campuses", "Include inactive campuses in the Campus Filter", true )]
-    [CustomDropdownListField( "Initial Count Setting", "Select the counts that should be initially shown in the treeview.", "0^None,1^Child Groups,2^Group Members", false, "0", "", 7 )]
-    [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active groups in the treeview", "0^All,1^Active", false, "1", "", 8 )]
-    [LinkedPage( "Detail Page", order: 9 )]
-    [BooleanField( "Disable Auto-Select First Group", description: "Whether to disable the default behavior of auto-selecting the first group (ordered by name) in the tree view.", order: 10, key: AttributeKey.DisableAutoSelectFirstGroup )]
+    #region BlockAttributes
+
+    [TextField(
+        "Treeview Title",
+        Key = AttributeKey.TreeviewTitle,
+        Description = "Group Tree View",
+        IsRequired = false,
+        Order = 1 )]
+    [GroupTypesField(
+        "Group Types Include",
+        Key = AttributeKey.GroupTypesInclude,
+        Description = "Select any specific group types to show in this block. Leave all unchecked to show all group types where 'Show in Navigation' is enabled ( except for excluded group types )",
+        IsRequired = false,
+        Order = 2 )]
+    [GroupTypesField(
+        "Group Types Exclude",
+        Key = AttributeKey.GroupTypesExclude,
+        Description = "Select group types to exclude from this block. Note that this setting is only effective if 'Group Types Include' has no specific group types selected.",
+        IsRequired = false,
+        Order = 3 )]
+    [GroupField(
+        "Root Group",
+        Key = AttributeKey.RootGroup,
+        Description = "Select the root group to use as a starting point for the tree view.",
+        IsRequired = false,
+        Order = 4 )]
+    [BooleanField(
+        "Limit to Security Role Groups",
+        Key = AttributeKey.LimitToSecurityRoleGroups,
+        Order = 5 )]
+    [BooleanField(
+        "Show Settings Panel",
+        Key = AttributeKey.ShowSettingsPanel,
+        DefaultBooleanValue = true,
+        Order  = 6 )]
+    [BooleanField(
+        "Display Inactive Campuses",
+        Key = AttributeKey.DisplayInactiveCampuses,
+        Description = "Include inactive campuses in the Campus Filter",
+        DefaultBooleanValue = true )]
+    [CustomDropdownListField(
+        "Initial Count Setting",
+        Key = AttributeKey.InitialCountSetting,
+        Description = "Select the counts that should be initially shown in the treeview.",
+        ListSource = "\"0^None,1^Child Groups,2^Group Members\"",
+        IsRequired = false,
+        DefaultValue = "0",
+        Category = "",
+        Order = 7 )]
+    [CustomDropdownListField(
+        "Initial Active Setting",
+        Key = AttributeKey.InitialActiveSetting,
+        Description = "Select whether to initially show all or just active groups in the treeview",
+        ListSource = "0^All,1^Active",
+        IsRequired = false,
+        DefaultValue = "1",
+        Category = "",
+        Order = 8 )]
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 9 )]
+    [BooleanField(
+        "Disable Auto-Select First Group",
+        Key = AttributeKey.DisableAutoSelectFirstGroup,
+        Description = "Whether to disable the default behavior of auto-selecting the first group (ordered by name) in the tree view.",
+        Order = 10 )]
+
+    #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "2D26A2C4-62DC-4680-8219-A52EB2BC0F65" )]
     public partial class GroupTreeView : RockBlock
@@ -58,6 +116,15 @@ namespace RockWeb.Blocks.Groups
         public static class AttributeKey
         {
             public const string TreeviewTitle = "TreeviewTitle";
+            public const string GroupTypesInclude = "GroupTypes";
+            public const string GroupTypesExclude = "GroupTypesExclude";
+            public const string RootGroup = "RootGroup";
+            public const string LimitToSecurityRoleGroups = "LimitToSecurityRoleGroups";
+            public const string ShowSettingsPanel = "ShowFilterOption";
+            public const string DisplayInactiveCampuses = "DisplayInactiveCampuses";
+            public const string InitialCountSetting = "InitialCountSetting";
+            public const string InitialActiveSetting = "InitialActiveSetting";
+            public const string DetailPage = "DetailPage";
             public const string DisableAutoSelectFirstGroup = "DisableAutoSelectFirstGroup";
         }
 
@@ -83,7 +150,7 @@ namespace RockWeb.Blocks.Groups
 
             var preferences = GetBlockPersonPreferences();
             var typePreferences = GetBlockTypePersonPreferences();
-            var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
+            var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.DetailPage ) );
 
             // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavior)
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
@@ -107,8 +174,8 @@ namespace RockWeb.Blocks.Groups
                 hfDetailPageUrl.Value = detailPageReference.BuildUrl();
             }
 
-            hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
-            Guid? rootGroupGuid = GetAttributeValue( "RootGroup" ).AsGuidOrNull();
+            hfLimitToSecurityRoleGroups.Value = GetAttributeValue( AttributeKey.LimitToSecurityRoleGroups );
+            Guid? rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
             if ( rootGroupGuid.HasValue )
             {
                 var group = new GroupService( new RockContext() ).Get( rootGroupGuid.Value );
@@ -122,15 +189,15 @@ namespace RockWeb.Blocks.Groups
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upGroupType );
 
-            pnlConfigPanel.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? false;
-            pnlRolloverConfig.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? false;
+            pnlConfigPanel.Visible = this.GetAttributeValue( AttributeKey.ShowSettingsPanel ).AsBooleanOrNull() ?? false;
+            pnlRolloverConfig.Visible = this.GetAttributeValue( AttributeKey.ShowSettingsPanel ).AsBooleanOrNull() ?? false;
 
             if ( pnlConfigPanel.Visible )
             {
                 var hideInactiveGroups = preferences.GetValue( "hide-inactive-groups" ).AsBooleanOrNull();
                 if ( !hideInactiveGroups.HasValue )
                 {
-                    hideInactiveGroups = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
+                    hideInactiveGroups = this.GetAttributeValue( AttributeKey.InitialActiveSetting ) == "1";
                 }
 
                 tglHideInactiveGroups.Checked = hideInactiveGroups ?? true;
@@ -151,7 +218,7 @@ namespace RockWeb.Blocks.Groups
             var countsType = preferences.GetValue( "counts-type" );
             if ( string.IsNullOrEmpty( countsType ) )
             {
-                countsType = this.GetAttributeValue( "InitialCountSetting" );
+                countsType = this.GetAttributeValue( AttributeKey.InitialCountSetting );
             }
 
             if ( _groupId.IsNullOrWhiteSpace() )
@@ -169,7 +236,7 @@ namespace RockWeb.Blocks.Groups
                 ddlCountsType.SetValue( "" );
             }
 
-            ddlCampuses.Campuses = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
+            ddlCampuses.Campuses = CampusCache.All( GetAttributeValue( AttributeKey.DisplayInactiveCampuses ).AsBoolean() );
 
             var campusFilter = typePreferences.GetValue( "campus-filter" );
             if ( pnlConfigPanel.Visible )
@@ -466,7 +533,7 @@ namespace RockWeb.Blocks.Groups
         {
             // limit GroupType selection to what Block Attributes allow
             hfGroupTypesInclude.Value = string.Empty;
-            List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+            List<Guid> groupTypeIncludeGuids = GetAttributeValue( AttributeKey.GroupTypesInclude ).SplitDelimitedValues().AsGuidList();
 
             if ( groupTypeIncludeGuids.Any() )
             {
@@ -484,7 +551,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             hfGroupTypesExclude.Value = string.Empty;
-            List<Guid> groupTypeExcludeGuids = GetAttributeValue( "GroupTypesExclude" ).SplitDelimitedValues().AsGuidList();
+            List<Guid> groupTypeExcludeGuids = GetAttributeValue( AttributeKey.GroupTypesExclude ).SplitDelimitedValues().AsGuidList();
             if ( groupTypeExcludeGuids.Any() )
             {
                 var groupTypeIdExcludeList = new List<int>();

@@ -96,7 +96,7 @@ namespace Rock.Tests.Integration.Core
         }
 
         [TestMethod]
-        [Ignore( "Failing test. Likely broken by this commit: (Reporting) Added Week of Year, Week Counter, Leap Year Indicator, and Sunday Date Year to the Analytics Source Date information." )]
+        [Ignore( "Fix required. Likely broken by this commit: (Reporting) Added Week of Year, Week Counter, Leap Year Indicator, and Sunday Date Year to the Analytics Source Date information. [Last Modified by DV]" )]
         public void TestFirstDateOfWeekSunday()
         {
             var sundayDate20191006 = new DateTime( 2019, 10, 6 );

@@ -77,6 +77,15 @@ registerFieldType(FieldTypeGuids.File, new FileFieldType());
 import { GenderFieldType } from "./genderField.partial";
 registerFieldType(FieldTypeGuids.Gender, new GenderFieldType());
 
+import { GroupFieldType } from "./groupField.partial";
+registerFieldType(FieldTypeGuids.Group, new GroupFieldType());
+
+import { GroupRoleFieldType } from "./groupRoleField.partial";
+registerFieldType(FieldTypeGuids.GroupRole, new GroupRoleFieldType());
+
+import { GroupMemberFieldType } from "./groupMemberField.partial";
+registerFieldType(FieldTypeGuids.GroupMember, new GroupMemberFieldType());
+
 import { ImageFieldType } from "./imageField.partial";
 registerFieldType(FieldTypeGuids.Image, new ImageFieldType());
 
@@ -109,6 +118,12 @@ registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());
 
 import { ReminderTypesFieldType } from "./reminderTypesField.partial";
 registerFieldType(FieldTypeGuids.ReminderTypes, new ReminderTypesFieldType());
+
+import { ScheduleFieldType } from "./scheduleField.partial";
+registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
+
+import { SchedulesFieldType } from "./schedulesField.partial";
+registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
 
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());

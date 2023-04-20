@@ -120,7 +120,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Attribute Keys
         /// </summary>
-        private static class AttributeKey
+        internal static class AttributeKey
         {
             public const string ProcessPersonBIAnalytics = "ProcessPersonBIAnalytics";
             public const string ProcessFamilyBIAnalytics = "ProcessFamilyBIAnalytics";

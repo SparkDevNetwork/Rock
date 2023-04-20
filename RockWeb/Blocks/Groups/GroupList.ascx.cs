@@ -905,6 +905,9 @@ namespace RockWeb.Blocks.Groups
                 // load with groups that have Group History
                 _groupsWithGroupHistory = new HashSet<int>( new GroupHistoricalService( rockContext ).Queryable().Where( a => qryGroups.Any( g => g.Id == a.GroupId ) ).Select( a => a.GroupId ).ToList() );
 
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupSyncService = new GroupSyncService( rockContext );
+
                 groupList = qryGroups
                     .AsEnumerable()
                     .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
@@ -924,8 +927,8 @@ namespace RockWeb.Blocks.Groups
                         ElevatedSecurityLevel = g.ElevatedSecurityLevel,
                         IsSecurityRole = g.IsSecurityRole,
                         DateAdded = DateTime.MinValue,
-                        IsSynced = g.GroupSyncs.Any(),
-                        MemberCount = g.Members.Count()
+                        IsSynced = groupSyncService.Queryable().Any( gs => gs.GroupId == g.Id ),
+                        MemberCount = groupMemberService.Queryable().Count( gm => gm.GroupId == g.Id )
                     } )
                     .AsQueryable()
                     .Sort( sortProperty )
@@ -964,6 +967,16 @@ namespace RockWeb.Blocks.Groups
 
             var groupTypeService = new GroupTypeService( new RockContext() );
             var qry = groupTypeService.Queryable().Where( t => t.ShowInGroupList );
+
+            /*
+                04/20/2022 - KA
+
+                The GroupType filtering should use an if/else clause with the IncludeGroupTypes taking priority over the ExcludeGroupTypes
+                (refer to ReminderService.GetReminderEntityTypesByPerson for how it should work). Thus if any GroupTypes are selected as 
+                part of the IncludeGroupTypes they should not be excluded even if they are selected as part of the ExcludeGroupTypes. This
+                implementation has been left as it is because it would be too late/risky to change the behavior now since people/admins
+                have already configured it and it is working the way it is working now.
+            */
 
             List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
             if ( includeGroupTypeGuids.Count > 0 )

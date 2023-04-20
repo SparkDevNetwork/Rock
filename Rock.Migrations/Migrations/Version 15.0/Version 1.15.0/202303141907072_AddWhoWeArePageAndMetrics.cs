@@ -37,6 +37,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             RockMigrationHelper.AddPage( Rock.SystemGuid.Page.REPORTING, Rock.SystemGuid.Layout.FULL_WIDTH_INTERNAL_SITE, "Insights", "Shows high-level statistics of the Rock database", "721C8E32-CAAD-4670-AD1B-04FC42A26BB2" );
+            Sql( @"UPDATE [Page] SET [PageDisplayDescription] = 0 WHERE [Guid] = '721C8E32-CAAD-4670-AD1B-04FC42A26BB2'" ); // Page: Insights,  Zone: Main
             RockMigrationHelper.AddBlockType( "Insights", "Shows high-level statistics of the Rock database.", "~/Blocks/Reporting/Insights.ascx", "Reporting", "B215F5FA-410C-4674-8C47-43DC40AF9F67" );
             RockMigrationHelper.AddBlock( "721C8E32-CAAD-4670-AD1B-04FC42A26BB2", null, "B215F5FA-410C-4674-8C47-43DC40AF9F67", "Insights", "Main", "", "", 0, "D916FCD5-F58C-4BCC-87CA-A78595A04734" );
 
@@ -67,7 +68,7 @@ BEGIN:VEVENT
 DTEND:20230301T050001
 DTSTAMP:20230301T102849
 DTSTART:20230301T050000
-RRULE:FREQ=MONTHLY;BYMONTHDAY=28
+RRULE:FREQ=MONTHLY;BYMONTHDAY=1
 SEQUENCE:0
 UID:3736edbb-2e51-4114-bd4f-3ed62b98ed12
 END:VEVENT

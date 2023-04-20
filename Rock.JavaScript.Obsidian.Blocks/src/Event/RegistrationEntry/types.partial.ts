@@ -177,6 +177,7 @@ export type RegistrantInfo = {
     personGuid: Guid | null;
 
     fieldValues: Record<Guid, unknown>;
+    cost: number;
     feeItemQuantities: Record<Guid, number>;
     signatureData?: string | null;
 

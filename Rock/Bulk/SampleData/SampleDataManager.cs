@@ -2034,6 +2034,7 @@ namespace Rock.Utility
                     ConnectionRequest connectionRequest = new ConnectionRequest()
                     {
                         ConnectionOpportunityId = connectionOpportunity.Id,
+                        ConnectionTypeId = connectionOpportunity.ConnectionTypeId,
                         PersonAliasId = _peopleAliasDictionary[personGuid],
                         Comments = comment,
                         ConnectionStatus = noContact,

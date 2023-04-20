@@ -15,6 +15,12 @@ namespace Rock.Tests.Integration.Core.Jobs
     [TestClass]
     public class SendFollowingEventNotificationTests
     {
+        [ClassInitialize]
+        public static void TestInitialize( TestContext context )
+        {
+            TestDatabaseHelper.ResetDatabase();
+        }
+
         #region Tests
 
         /// <summary>
@@ -133,14 +139,13 @@ namespace Rock.Tests.Integration.Core.Jobs
                 followingService.Add( following );
                 rockContext.SaveChanges();
             }
-            
+
             var job = new SendFollowingEvents();
-            var jobContext = new TestJobContext();
             var followingEventSystemEmailGuid = "CA7576CD-0A10-4ADA-A068-62EE598178F5".AsGuid();
             var testAttributeValues = new Dictionary<string, string>();
             testAttributeValues.AddOrReplace( "EligibleFollowers", rsrStaffWorkersGroupGuid.ToString() );
             testAttributeValues.AddOrReplace( "EmailTemplate", followingEventSystemEmailGuid.ToString());
-            job.ExecuteAsIntegrationTest( jobContext, testAttributeValues );
+            job.ExecuteInternal( testAttributeValues );
         }
 
         #endregion Tests

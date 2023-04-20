@@ -120,10 +120,40 @@ namespace Rock.Jobs
         /// <value>The result.</value>
         public string Result { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Execute the Job using the specified context configuration.
+        /// </summary>
+        /// <param name="context"></param>
         internal void ExecuteInternal( IJobExecutionContext context )
         {
             InitializeFromJobContext( context );
+            Execute();
+        }
+
+        /// <summary>
+        /// Execute the Job using the specified configuration settings.
+        /// </summary>
+        /// <param name="testAttributeValues"></param>
+        internal void ExecuteInternal( Dictionary<string, string> testAttributeValues )
+        {
+            // If this job instance is not associated with a stored Job definition, create a new definition.
+            if ( this.ServiceJob == null )
+            {
+                ServiceJob = new ServiceJob();
+                ServiceJob.LoadAttributes();
+            }
+
+            foreach ( var attributeValue in testAttributeValues )
+            {
+                var existingValue = this.ServiceJob.AttributeValues.GetValueOrNull( attributeValue.Key );
+                if ( existingValue == null )
+                {
+                    existingValue = new AttributeValueCache();
+                    this.ServiceJob.AttributeValues.Add( attributeValue.Key, existingValue );
+                }
+                existingValue.Value = attributeValue.Value;
+            }
+
             Execute();
         }
 
@@ -136,24 +166,6 @@ namespace Rock.Jobs
 #pragma warning restore CS0612, CS0618 // Type or member is obsolete
         {
             ExecuteInternal( context );
-        }
-
-        internal void ExecuteAsIntegrationTest( Quartz.IJobExecutionContext context, Dictionary<string, string> testAttributeValues )
-        {
-            InitializeFromJobContext( context );
-            if ( this.ServiceJob == null )
-            {
-                ServiceJob = new ServiceJob();
-                ServiceJob.LoadAttributes();
-            }
-
-            foreach ( var attributeValue in testAttributeValues )
-            {
-                var existingValue = this.ServiceJob.AttributeValues.GetValueOrNull( attributeValue.Key ) ?? new AttributeValueCache();
-                existingValue.Value = attributeValue.Value;
-            }
-
-            Execute();
         }
     }
 }
