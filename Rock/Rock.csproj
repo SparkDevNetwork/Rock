@@ -1059,6 +1059,7 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\170_UpdateSignUpFinderBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\169_UpdateFutureWeeksAttributeForGroupSchedulingToolboxV2.cs" />
     <Compile Include="Plugin\HotFixes\168_MigrationRollupsForV14_2_1.cs" />
     <Compile Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid.cs" />
