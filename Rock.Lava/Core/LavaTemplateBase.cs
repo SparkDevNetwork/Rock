@@ -22,10 +22,7 @@ namespace Rock.Lava
     /// </summary>
     public abstract class LavaTemplateBase : ILavaTemplate
     {
-        /// <summary>
-        /// Returns a description of the template that can be used to identify it.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public abstract string GetDescription();
     }
 }
