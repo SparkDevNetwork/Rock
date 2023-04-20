@@ -3831,7 +3831,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Lightweight object for each contribution item
         /// </summary>
-        protected class AccountItem
+        protected class AccountItem : RockDynamic
         {
             public int Id { get; set; }
 
