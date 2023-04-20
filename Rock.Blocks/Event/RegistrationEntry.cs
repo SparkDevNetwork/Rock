@@ -916,7 +916,10 @@ namespace Rock.Blocks.Event
 
                 foreach ( var registrantInfo in args.Registrants )
                 {
-                    var forceWaitlist = context.SpotsRemaining < 1;
+                    // Force the waitlist if there are no spots remaining, and this is an existing registration or if the registrant is already on the waitlist.
+                    // Rock should not force the waitlist when existing registrants are making payments
+                    // Rock should force the waitlist if there are no spots remaining and a registrant is being added
+                    var forceWaitlist = context.SpotsRemaining < 1 && ( isNewRegistration == true || registrantInfo.IsOnWaitList == true );
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
                     UpsertRegistrant(
