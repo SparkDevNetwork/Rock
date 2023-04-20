@@ -119,6 +119,9 @@ registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());
 import { ReminderTypesFieldType } from "./reminderTypesField.partial";
 registerFieldType(FieldTypeGuids.ReminderTypes, new ReminderTypesFieldType());
 
+import { ScheduleFieldType } from "./scheduleField.partial";
+registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
+
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
 
