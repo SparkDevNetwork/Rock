@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationFieldBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Prayer\PrayerRequestDetail\PrayerRequestBag.cs" />
@@ -51,6 +53,14 @@
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentList\AssessmentListBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSaveResponseBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationGetScheduleDatesRequestBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationGetScheduleDatesResponseBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationInitializationBox.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationCreateAccountRequestBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationPersonBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSaveRequestBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationScheduleDateBag.cs" />
     <Compile Include="Blocks\Crm\PhotoOptOut\PhotoOptOutBag.cs" />
     <Compile Include="Blocks\Engagement\StreakDetail\StreakBag.cs" />
     <Compile Include="Blocks\Engagement\StreakDetail\StreakDetailOptionsBag.cs" />

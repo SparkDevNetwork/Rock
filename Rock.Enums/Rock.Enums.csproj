@@ -46,6 +46,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Security\ForgotUserName\SendInstructionsResultType.cs" />
     <Compile Include="Blocks\Engagement\SignUp\RegisterMode.cs" />
     <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailScheduleSelectionMode.cs" />

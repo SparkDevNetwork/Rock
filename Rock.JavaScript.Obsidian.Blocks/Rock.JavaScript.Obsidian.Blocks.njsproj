@@ -43,6 +43,9 @@
     <Content Include="src\Core\ScheduleDetail\editPanel.partial.obs" />
     <Content Include="src\Core\ScheduleDetail\viewPanel.partial.obs" />
     <Content Include="src\Crm\assessmentList.obs" />
+    <Content Include="src\Crm\familyPreRegistration.obs" />
+    <Content Include="src\Crm\FamilyPreRegistration\preRegistrationChild.partial.obs" />
+    <Content Include="src\Crm\FamilyPreRegistration\preRegistrationChildren.partial.obs" />
     <Content Include="src\Crm\photoOptOutDetail.obs" />
     <Content Include="src\Crm\documentTypeDetail.vue" />
     <Content Include="src\Crm\DocumentTypeDetail\editPanel.partial.vue" />
@@ -207,6 +210,7 @@
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
     <Folder Include="src\Crm\BadgeDetail\" />
+    <Folder Include="src\Crm\FamilyPreRegistration\" />
     <Folder Include="src\Crm\PersonDetail\" />
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
@@ -334,6 +338,8 @@
     <TypeScriptCompile Include="src\Core\TagDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\BadgeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Crm\FamilyPreRegistration\types.partial.ts" />
+    <TypeScriptCompile Include="src\Crm\FamilyPreRegistration\utils.partial.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Crm\assessmentTypeDetail.ts" />
     <TypeScriptCompile Include="src\Crm\AssessmentTypeDetail\editPanel.partial.ts" />

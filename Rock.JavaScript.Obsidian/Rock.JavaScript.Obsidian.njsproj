@@ -111,6 +111,8 @@
     <Folder Include="Framework\Enums\Blocks\" />
     <Folder Include="Framework\Enums\Blocks\Cms\" />
     <Folder Include="Framework\Enums\Blocks\Cms\ContentCollectionView\" />
+    <Folder Include="Framework\Enums\Blocks\Crm\" />
+    <Folder Include="Framework\Enums\Blocks\Crm\FamilyPreRegistration\" />
     <Folder Include="Framework\Enums\Blocks\Groups\" />
     <Folder Include="Framework\Enums\Blocks\Groups\GroupAttendanceDetail\" />
     <Folder Include="Framework\Enums\Blocks\Security\" />
@@ -178,6 +180,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\BadgeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\" />
@@ -343,6 +346,8 @@
     <TypeScriptCompile Include="Framework\Controls\treeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Blocks\Crm\familyPreRegistrationCommunicationPreference.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Blocks\Crm\FamilyPreRegistration\communicationPreference.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\ConfirmAccount\confirmAccountViewType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\ForgotUserName\sendInstructionsResultType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Engagement\SignUp\registerMode.ts" />
@@ -692,6 +697,16 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\BadgeDetail\badgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\BadgeDetail\badgeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationCreateAccountRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationDateAndTimeFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationGetScheduleDatesRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationGetScheduleDatesResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationPersonBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationSaveRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationSaveResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationScheduleDateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\badgesConfigurationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\photoOptOutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
