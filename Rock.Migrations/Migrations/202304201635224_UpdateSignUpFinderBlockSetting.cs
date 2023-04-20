@@ -13,15 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
-namespace Rock.Plugin.HotFixes
+//
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+
     /// <summary>
-    /// Plug-in migration
+    /// JPH: Update Sign-Up Finder Block Setting Up.
     /// </summary>
-    /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 170, "1.15.0" )]
-    public class UpdateSignUpFinderBlockSetting : Migration
+    public partial class UpdateSignUpFinderBlockSetting : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -32,11 +33,11 @@ namespace Rock.Plugin.HotFixes
         }
 
         /// <summary>
-        /// Operations to be performed during the downgrade process.
+        /// JPH: Update Sign-Up Finder Block Setting Down.
         /// </summary>
         public override void Down()
         {
-            // Down migrations are not yet supported in plug-in migrations.
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "74A20402-00DF-4A87-98D1-B5A8920F1D32", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Display Project Filters As", "DisplayProjectFiltersAs", "Display Project Filters As", "Determines if the project filters should be show as checkboxes or multi-select dropdowns.", 0, "Checkboxes", "F4640D8E-0EAC-4DEF-AD7A-3C07E3DD8FBC" );
         }
     }
 }
