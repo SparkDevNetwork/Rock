@@ -1695,6 +1695,7 @@
     <Compile Include="Transactions\SendAchievementCompletedRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendAttendanceOccurrenceRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendAttendanceRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\UpdateDataViewStatisticsTransaction.cs" />
     <Compile Include="Transactions\UpdateNotificationMessageBadgeCountTransaction.cs" />
     <Compile Include="Transactions\UpdatePersonPreferenceLastAccessedTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
