@@ -558,10 +558,18 @@ namespace Rock.Mobile
             {
                 var additionalPageSettings = page.AdditionalSettings.FromJsonOrNull<AdditionalPageSettings>() ?? new AdditionalPageSettings();
 
+
                 var mobilePage = new MobilePage
                 {
                     LayoutGuid = page.Layout.Guid,
-                    DisplayInNav = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed,
+
+                    // This property was obsoleted for the DisplayInNavWhen property,
+                    // but we set it just in case someone is still on an old version of the shell.
+#pragma warning disable CS0618 // Type or member is obsolete
+                    DisplayInNav = page.DisplayInNavWhen == Rock.Model.DisplayInNavWhen.WhenAllowed,
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                    DisplayInNavWhen = page.DisplayInNavWhen.ToMobile(),
                     Title = page.PageTitle,
                     PageGuid = page.Guid,
                     Order = page.Order,
@@ -578,6 +586,7 @@ namespace Rock.Mobile
                     PageType = additionalPageSettings.PageType,
                     WebPageUrl = additionalPageSettings.WebPageUrl
                 };
+
 
                 package.Pages.Add( mobilePage );
 

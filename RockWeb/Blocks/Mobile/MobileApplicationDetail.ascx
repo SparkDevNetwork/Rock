@@ -219,7 +219,7 @@
                                         <Rock:ReorderField />
                                         <Rock:RockBoundField DataField="InternalName" SortExpression="Name" HeaderText="Name" />
                                         <Rock:RockBoundField DataField="LayoutName" SortExpression="LayoutName" HeaderText="Layout" />
-                                        <Rock:BoolField DataField="DisplayInNav" SortExpression="DisplayInNav" HeaderText="Display In Nav" />
+                                        <Rock:RockBoundField DataField="DisplayInNavWhen" SortExpression="DisplayInNav" HeaderText="Display In Nav" />
                                         <Rock:DeleteField OnClick="gPages_DeleteClick" />
                                     </Columns>
                                 </Rock:Grid>

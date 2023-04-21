@@ -748,7 +748,7 @@ namespace RockWeb.Blocks.Mobile
                     p.Id,
                     p.InternalName,
                     LayoutName = p.Layout.Name,
-                    DisplayInNav = p.DisplayInNavWhen != DisplayInNavWhen.Never
+                    DisplayInNavWhen = p.DisplayInNavWhen.GetDescription() ?? p.DisplayInNavWhen.ToStringSafe()
                 } )
                 .ToList();
 
@@ -1043,7 +1043,7 @@ namespace RockWeb.Blocks.Mobile
                         PageTitle = pageName,
                         Description = string.Empty,
                         LayoutId = layout.Id,
-                        DisplayInNavWhen = DisplayInNavWhen.WhenAllowed
+                        DisplayInNavWhen = Rock.Model.DisplayInNavWhen.WhenAllowed
                     };
 
                     pageService.Add( page );
