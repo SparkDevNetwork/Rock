@@ -70,13 +70,14 @@
                           label="Allow Multiple Submissions" />
             </div>
 
-            <div class="col-md-4">
+            <div v-if="isAnonymousResponsesVisible" class="col-md-4">
                 <CheckBox v-model="anonymousResponses"
                           label="Anonymous Responses" />
             </div>
         </div>
 
-        <DropDownList v-model="responseVisual"
+        <DropDownList v-if="isResponseVisualVisible"
+                      v-model="responseVisual"
                       label="Response Visual"
                       :items="responseVisualItems" />
 
@@ -279,11 +280,21 @@
     });
 
     const isRequiresModerationVisible = computed((): boolean => {
-        return selectedActionType.value?.isModerationSupported === true;
+        return selectedActionType.value?.isModerationSupported === true
+            && selectedActionType.value?.isQuestionSupported === true;
     });
 
     const isMultipleSubmissionsVisible = computed((): boolean => {
-        return selectedActionType.value?.isMultipleSubmissionSupported === true;
+        return selectedActionType.value?.isMultipleSubmissionSupported === true
+        && selectedActionType.value?.isQuestionSupported === true;
+    });
+
+    const isAnonymousResponsesVisible = computed((): boolean => {
+        return selectedActionType.value?.isQuestionSupported === true;
+    });
+
+    const isResponseVisualVisible = computed((): boolean => {
+        return selectedActionType.value?.isQuestionSupported === true;
     });
 
     // #endregion

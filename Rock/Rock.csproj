@@ -907,6 +907,7 @@
     <Compile Include="Drawing\Avatar\AvatarStyle.cs" />
     <Compile Include="Drawing\RockImage.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\EmbedWebpage.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\Poll.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\ShortAnswer.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeContainer.cs" />
