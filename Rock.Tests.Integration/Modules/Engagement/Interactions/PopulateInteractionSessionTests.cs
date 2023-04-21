@@ -187,15 +187,19 @@ namespace Rock.Tests.Integration.Engagement.Interactions
 
                 foreach ( var testPage in interactionPages )
                 {
-                    var interaction = CreatePageViewInteraction( interactionDateTime,
-                        internalSite.Id,
-                        testPage.Id,
-                        agentList.GetRandomElement(),
-                        ipAddress,
-                        browserSessionGuid,
-                        $"http://localhost:12345/page/{testPage.Id}",
-                        personTedDecker.PrimaryAliasId,
-                        rockContext );
+                    var args = new TestDataHelper.Interactions.CreatePageViewInteractionActionArgs
+                    {
+                        ViewDateTime = interactionDateTime,
+                        SiteId = internalSite.Id,
+                        PageId = testPage.Id,
+                        UserAgentString = agentList.GetRandomElement(),
+                        BrowserIpAddress = ipAddress,
+                        BrowserSessionGuid = browserSessionGuid,
+                        RequestUrl = $"http://localhost:12345/page/{testPage.Id}",
+                        UserPersonAliasId = personTedDecker.PrimaryAliasId
+                    };
+
+                    var interaction = TestDataHelper.Interactions.CreatePageViewInteraction( args, rockContext );
 
                     interaction.ForeignKey = "IntegrationTestData";
 
@@ -208,62 +212,6 @@ namespace Rock.Tests.Integration.Engagement.Interactions
                 }
             }
         }
-
-        /// <summary>
-        /// Create an interaction for a Page View.
-        /// </summary>
-        /// <param name="viewDateTime"></param>
-        /// <param name="siteId"></param>
-        /// <param name="pageId"></param>
-        /// <param name="userAgentString"></param>
-        /// <param name="browserIpAddress"></param>
-        /// <param name="requestedUrl"></param>
-        /// <param name="userPersonAliasId"></param>
-        /// <param name="rockContext"></param>
-        /// <returns></returns>
-        private Interaction CreatePageViewInteraction( DateTime viewDateTime, int siteId, int pageId, string userAgentString, string browserIpAddress, Guid? browserSessionGuid, string requestUrl, int? userPersonAliasId, RockContext rockContext )
-        {
-            string deviceApplication;
-            string deviceOs;
-            string deviceClientType;
-
-            TestDataHelper.Web.ParseUserAgentString( userAgentString,
-                out deviceOs,
-                out deviceApplication,
-                out deviceClientType );
-
-            var interactionService = new InteractionService( rockContext );
-
-            // Get the Interaction Channel: Internal Site
-            var dvWebsiteChannelType = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
-            var interactionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( dvWebsiteChannelType.Id,
-                siteId,
-                channelName: null,
-                componentEntityTypeId: null,
-                interactionEntityTypeId: null );
-
-            // Get the Interaction Component: Page
-            var interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId,
-                pageId,
-                componentName: null );
-
-            var interaction = interactionService.CreateInteraction( interactionComponentId,
-                pageId,
-                operation: "View",
-                $"Browser Session {browserSessionGuid}",
-                requestUrl,
-                userPersonAliasId,
-                viewDateTime,
-                deviceApplication,
-                deviceOs,
-                deviceClientType,
-                deviceTypeData: "",
-                browserIpAddress,
-                browserSessionGuid );
-
-            return interaction;
-        }
-
 
         /// <summary>
         /// If the IP Registry Provider is correctly configured, batch processing should complete successfully.
