@@ -89,6 +89,9 @@ registerFieldType(FieldTypeGuids.GroupRole, new GroupRoleFieldType());
 import { GroupMemberFieldType } from "./groupMemberField.partial";
 registerFieldType(FieldTypeGuids.GroupMember, new GroupMemberFieldType());
 
+import { GroupTypeField } from "./groupTypeField.partial";
+registerFieldType(FieldTypeGuids.GroupType, new GroupTypeField());
+
 import { ImageFieldType } from "./imageField.partial";
 registerFieldType(FieldTypeGuids.Image, new ImageFieldType());
 
