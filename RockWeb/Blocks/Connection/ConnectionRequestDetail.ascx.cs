@@ -2359,7 +2359,7 @@ namespace RockWeb.Blocks.Connection
             // Status
             rblStatus.Items.Clear();
 
-            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.AutoInactivateState ).ThenBy( a => a.Name );
+            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Order ).ThenByDescending( a => a.IsDefault ).ThenBy( a => a.Name );
 
             foreach ( var status in allStatuses )
             {

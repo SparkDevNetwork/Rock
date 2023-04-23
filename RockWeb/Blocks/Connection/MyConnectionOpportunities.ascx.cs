@@ -1000,7 +1000,7 @@ namespace RockWeb.Blocks.Connection
                 cblStatus.Items.Clear();
                 if ( SelectedOpportunityId.HasValue )
                 {
-                    cblStatus.DataSource = new ConnectionOpportunityService( rockContext ).Get( SelectedOpportunityId.Value ).ConnectionType.ConnectionStatuses.OrderBy( a => a.Name ).ToList();
+                    cblStatus.DataSource = new ConnectionOpportunityService( rockContext ).Get( SelectedOpportunityId.Value ).ConnectionType.ConnectionStatuses.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
                     cblStatus.DataBind();
                     cblStatus.SetValues( rFilter.GetFilterPreference( MakeKeyUniqueToOpportunity( "Status" ) ).SplitDelimitedValues().AsIntegerList() );
                 }

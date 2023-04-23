@@ -1185,7 +1185,7 @@ namespace RockWeb.Blocks.Connection
 
                 // Status control
                 ddlRequestModalViewModeTransferModeStatus.Items.Clear();
-                var statuses = GetConnectionType().ConnectionStatuses;
+                var statuses = GetConnectionType().ConnectionStatuses.OrderBy( a => a.Name ).ThenByDescending( cs => cs.IsDefault ).ThenBy( a => a.Name );
 
                 foreach ( var status in statuses )
                 {
@@ -4290,7 +4290,7 @@ namespace RockWeb.Blocks.Connection
             if ( connectionOpportunity.ShowStatusOnTransfer )
             {
                 ddlRequestModalViewModeTransferModeStatus.Items.Clear();
-                foreach ( var status in connectionOpportunity.ConnectionType.ConnectionStatuses )
+                foreach ( var status in connectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Order ).ThenByDescending( a => a.IsDefault ).ThenBy( a => a.Name ) )
                 {
                     ddlRequestModalViewModeTransferModeStatus.Items.Add( new ListItem( status.Name, status.Id.ToString() ) );
                 }
@@ -5374,6 +5374,7 @@ namespace RockWeb.Blocks.Connection
                 .SelectMany( co => co.ConnectionType.ConnectionStatuses )
                 .Where( cs => cs.IsActive )
                 .OrderBy( cs => cs.Order )
+                .ThenByDescending( a => a.IsDefault )
                 .ThenBy( cs => cs.Name );
         }
 
