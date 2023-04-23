@@ -69,9 +69,9 @@ namespace Rock.Jobs
 
     [TextField( "Base Cache Folder",
         Key = AttributeKey.BaseCacheDirectory,
-        Description = "The base/starting Directory for the file cache (default is ~/Cache.)",
+        Description = "The top-level Directory for the file cache (default is ~/App_Data/Cache). As a safeguard against accidental file deletions during the cleanup process, the full path must include both an 'App_Data' and a 'Cache' folder.",
         IsRequired = false,
-        DefaultValue = "~/Cache",
+        DefaultValue = "~/App_Data/Cache",
         Category = "General",
         Order = 4 )]
 
