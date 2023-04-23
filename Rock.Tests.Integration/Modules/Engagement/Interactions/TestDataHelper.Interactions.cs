@@ -30,7 +30,6 @@ namespace Rock.Tests.Integration
             {
                 public Guid? Guid;
                 public string ForeignKey;
-
                 public DateTime ViewDateTime;
                 public string SiteIdentifier;
                 public string PageIdentifier;
@@ -41,32 +40,38 @@ namespace Rock.Tests.Integration
                 public int? UserPersonAliasId;
             }
 
+            /// <summary>
+            /// Remove the specified interaction.
+            /// </summary>
+            /// <param name="interactionIdentifier"></param>
+            /// <param name="context"></param>
+            /// <returns></returns>
             public static bool DeleteInteraction( string interactionIdentifier, RockContext context )
             {
-                var interactionService = new InteractionService( context );
-                var interaction = interactionService.Get( interactionIdentifier );
+                var service = new InteractionService( context );
+                var interaction = service.Get( interactionIdentifier );
 
                 if ( interaction == null )
                 {
                     return false;
                 }
 
-                return interactionService.Delete( interaction );
+                return service.Delete( interaction );
             }
 
             /// <summary>
             /// Create an interaction for a Page View.
             /// </summary>
-            /// <param name="args"></param>
+            /// <param name="actionInfo"></param>
             /// <param name="rockContext"></param>
             /// <returns></returns>
-            public static Interaction CreatePageViewInteraction( CreatePageViewInteractionActionArgs args, RockContext rockContext )
+            public static Interaction CreatePageViewInteraction( CreatePageViewInteractionActionArgs actionInfo, RockContext rockContext )
             {
                 string deviceApplication;
                 string deviceOs;
                 string deviceClientType;
 
-                TestDataHelper.Web.ParseUserAgentString( args.UserAgentString,
+                TestDataHelper.Web.ParseUserAgentString( actionInfo.UserAgentString,
                     out deviceOs,
                     out deviceApplication,
                     out deviceClientType );
@@ -74,15 +79,15 @@ namespace Rock.Tests.Integration
                 var interactionService = new InteractionService( rockContext );
 
                 // Get the Page.
-                var page = PageCache.Get( args.PageIdentifier, allowIntegerIdentifier: true );
+                var page = PageCache.Get( actionInfo.PageIdentifier, allowIntegerIdentifier: true );
                 Assert.IsNotNull( page, "Invalid page." );
 
                 // Get the Site.
-                if ( string.IsNullOrWhiteSpace( args.SiteIdentifier ) )
+                if ( string.IsNullOrWhiteSpace( actionInfo.SiteIdentifier ) )
                 {
-                    args.SiteIdentifier = page.SiteId.ToString();
+                    actionInfo.SiteIdentifier = page.SiteId.ToString();
                 }
-                var site = SiteCache.Get( args.SiteIdentifier, allowIntegerIdentifier: true );
+                var site = SiteCache.Get( actionInfo.SiteIdentifier, allowIntegerIdentifier: true );
                 Assert.IsNotNull( site, "Invalid site." );
 
                 // Get the Interaction Channel.
@@ -101,18 +106,18 @@ namespace Rock.Tests.Integration
                 var interaction = interactionService.CreateInteraction( interactionComponentId,
                     page.Id,
                     operation: "View",
-                    $"Browser Session {args.BrowserSessionGuid ?? Guid.NewGuid() }",
-                    args.RequestUrl,
-                    args.UserPersonAliasId,
-                    args.ViewDateTime,
+                    $"Browser Session {actionInfo.BrowserSessionGuid}",
+                    actionInfo.RequestUrl,
+                    actionInfo.UserPersonAliasId,
+                    actionInfo.ViewDateTime,
                     deviceApplication,
                     deviceOs,
                     deviceClientType,
                     deviceTypeData: "",
-                    args.BrowserIpAddress ?? "127.0.0.1",
-                    args.BrowserSessionGuid );
+                    actionInfo.BrowserIpAddress,
+                    actionInfo.BrowserSessionGuid );
 
-                interaction.ForeignKey = args.ForeignKey;
+                interaction.ForeignKey = actionInfo.ForeignKey;
 
                 return interaction;
             }
