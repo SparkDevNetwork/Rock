@@ -1,0 +1,268 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Update Preference"
+           saveText="Save"
+           :subtitle="subtitle"
+           :saveButtonDisabled="isUpdatingDisabled"
+           @save="onSave">
+
+        <NotificationBox v-if="loadPreferencesErrorMessage" :alertType="AlertType.Warning">
+            {{ loadPreferencesErrorMessage }}
+        </NotificationBox>
+
+        <template v-else>
+
+            <NotificationBox v-if="updatePreferenceErrorMessage" :alertType="AlertType.Warning">
+                {{ updatePreferenceErrorMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-if="warningMessage" :alertType="AlertType.Warning">
+                {{ warningMessage }}
+            </NotificationBox>
+
+            <DropDownList v-model="scheduleTemplate"
+                          label="Schedule"
+                          :items="availableScheduleTemplates"
+                          :loading="isBusy"
+                          :showBlankItem="false" />
+
+            <DatePicker v-if="showScheduleStartDate"
+                        v-model="scheduleStartDate"
+                        label="Starting On"
+                        :isLoading="isBusy" />
+
+            <div class="form-group">
+                <RadioButtonList v-model="updateMode"
+                                 :items="availableUpdateModes"
+                                 :horizontal="true" />
+            </div>
+
+            <NotificationBox v-if="showOtherPreferences" :alertType="AlertType.Info">
+                <span class='control-label'>These other preferences will be removed and replaced.</span>
+                <ul>
+                    <li v-for="otherPreference in otherPreferences">
+                        {{ otherPreference }}
+                    </li>
+                </ul>
+            </NotificationBox>
+
+        </template>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ISchedulerResourceAttend } from "./types.partial";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import Modal from "@Obsidian/Controls/modal";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import { UpdateSchedulePreferenceMode, UpdateSchedulePreferenceModeDescription } from "@Obsidian/Enums/Blocks/Group/Scheduling/updateSchedulePreferenceMode";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { GroupSchedulerGetPreferencesBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerGetPreferencesBag";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+    import { GroupSchedulerPreferencesBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerPreferencesBag";
+    import { GroupSchedulerUpdatePreferenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUpdatePreferenceBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        occurrence: {
+            type: Object as PropType<GroupSchedulerOccurrenceBag>,
+            required: true
+        },
+
+        resource: {
+            type: Object as PropType<ISchedulerResourceAttend>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible"): void,
+        (e: "preferenceUpdated"): void
+    }>();
+
+    const noScheduleTemplateValue = "0";
+
+    const availableUpdateModes: ListItemBag[] = [
+        {
+            value: UpdateSchedulePreferenceMode.ReplacePreference.toString(),
+            text: UpdateSchedulePreferenceModeDescription[UpdateSchedulePreferenceMode.ReplacePreference]
+        },
+        {
+            value: UpdateSchedulePreferenceMode.AddToPreference.toString(),
+            text: UpdateSchedulePreferenceModeDescription[UpdateSchedulePreferenceMode.AddToPreference]
+        }
+    ];
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    const isLoadingPreferences = ref(false);
+    const loadPreferencesErrorMessage = ref("");
+
+    const isUpdatingPreference = ref(false);
+    const updatePreferenceErrorMessage = ref("");
+
+    const scheduleTemplate = ref("");
+    const scheduleStartDate = ref<string | null>("");
+    const otherPreferences = ref<string[]>([]);
+    const availableScheduleTemplates = ref<ListItemBag[]>([]);
+    const warningMessage = ref("");
+
+    const updateMode = ref<string>(UpdateSchedulePreferenceMode.ReplacePreference.toString());
+
+    // #endregion
+
+    // #region Computed Values
+
+    const subtitle = computed((): string => {
+        const o = props.occurrence;
+        const r = props.resource;
+        const titleParts: string[] = [];
+
+        if (o?.scheduleName) {
+            titleParts.push(o.scheduleName);
+        }
+
+        if (o?.locationName) {
+            titleParts.push(o.locationName);
+        }
+
+        const personName = r?.PersonName
+            ? `${r.PersonName}, `
+            : "";
+
+        return titleParts.length
+            ? `${personName}${titleParts.join(" - ")}`
+            : "";
+    });
+
+    const attendanceId = computed((): number => {
+        return props.resource?.AttendanceId ?? 0;
+    });
+
+    const groupMemberId = computed((): number => {
+        return props.resource?.GroupMemberId ?? 0;
+    });
+
+    const showScheduleStartDate = computed((): boolean => {
+        return !!scheduleTemplate.value && scheduleTemplate.value !== noScheduleTemplateValue;
+    });
+
+    const showOtherPreferences = computed((): boolean => {
+        return !!otherPreferences.value?.length && updateMode.value === UpdateSchedulePreferenceMode.ReplacePreference.toString();
+    });
+
+    const isBusy = computed((): boolean => {
+        return isLoadingPreferences.value || isUpdatingPreference.value;
+    });
+
+    const isUpdatingDisabled = computed((): boolean => {
+        return isBusy.value
+            || !!loadPreferencesErrorMessage.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the existing preferences.
+     */
+    async function getPreferences(): Promise<void> {
+        if (isLoadingPreferences.value) {
+            return;
+        }
+
+        isLoadingPreferences.value = true;
+        loadPreferencesErrorMessage.value = "";
+
+        const bag: GroupSchedulerGetPreferencesBag = {
+            attendanceId: attendanceId.value,
+            groupMemberId: groupMemberId.value
+        };
+
+        const result = await invokeBlockAction<GroupSchedulerPreferencesBag>("GetPreferences", { bag });
+        isLoadingPreferences.value = false;
+
+        if (!result.isSuccess) {
+            loadPreferencesErrorMessage.value = result.errorMessage || "Unknown error while trying to load preferences.";
+            return;
+        }
+
+        const preferences = result.data;
+        if (preferences?.errorMessage) {
+            loadPreferencesErrorMessage.value = `${preferences.errorMessage} Unable to update preferences for this individual.`;
+            return;
+        }
+
+        scheduleTemplate.value = preferences?.schedulePreference?.scheduleTemplate ?? "";
+        scheduleStartDate.value = preferences?.schedulePreference?.scheduleStartDate ?? "";
+        otherPreferences.value = preferences?.otherPreferencesForGroup ?? [];
+        availableScheduleTemplates.value = preferences?.availableScheduleTemplates ?? [];
+        warningMessage.value = preferences?.warningMessage ?? "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `save` event of the update preference modal.
+     */
+    async function onSave(): Promise<void> {
+        if (isUpdatingPreference.value) {
+            return;
+        }
+
+        isUpdatingPreference.value = true;
+        updatePreferenceErrorMessage.value = "";
+
+        const bag: GroupSchedulerUpdatePreferenceBag = {
+            attendanceId: attendanceId.value,
+            groupMemberId: groupMemberId.value,
+            schedulePreference: {
+                scheduleStartDate: showScheduleStartDate.value ? scheduleStartDate.value : undefined,
+                scheduleTemplate: scheduleTemplate.value
+            },
+            updateMode: +updateMode.value as UpdateSchedulePreferenceMode
+        };
+
+        const result = await invokeBlockAction("UpdatePreference", { bag });
+        isUpdatingPreference.value = false;
+
+        if (!result.isSuccess) {
+            updatePreferenceErrorMessage.value = result.errorMessage || "Unknown error while trying to update preference.";
+            return;
+        }
+
+        emit("preferenceUpdated");
+
+        isVisible.value = false;
+    }
+
+    // #endregion
+
+    watch(isVisible, () => {
+        if (isVisible.value) {
+            getPreferences();
+        }
+        else {
+            isLoadingPreferences.value = false;
+        }
+    });
+</script>

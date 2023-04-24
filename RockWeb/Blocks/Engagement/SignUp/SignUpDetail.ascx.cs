@@ -2682,7 +2682,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                             if ( isThreshold )
                             {
                                 // Show threshold "ticks" to the left of the spot that will satisfy a given value.
-                                part = part > 0 ? part - 1 : part;
+                                part = part > 1 ? part - 1 : part;
                             }
 
                             var percentage = ( int ) ( ( double ) part / whole * 100 );

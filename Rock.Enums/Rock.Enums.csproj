@@ -50,6 +50,8 @@
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailScheduleSelectionMode.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailLocationSelectionMode.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailDateSelectionMode.cs" />
+    <Compile Include="Blocks\Group\Scheduling\ResourceListSourceType.cs" />
+    <Compile Include="Blocks\Group\Scheduling\UpdateSchedulePreferenceMode.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryStep.cs" />
     <Compile Include="Blocks\Security\Login\LoginMethod.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
