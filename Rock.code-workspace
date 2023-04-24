@@ -60,6 +60,7 @@
 			"html": true
 		},
 		"volar.completion.preferredAttrNameCase": "camel",
+		"vue.features.complete.propNameCasing": "camel",
 		"volar.vueserver.additionalExtensions": [
 			"obs"
 		],
