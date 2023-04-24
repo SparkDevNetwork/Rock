@@ -1020,6 +1020,7 @@
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.Logic.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
+    <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
@@ -2774,7 +2775,6 @@
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateAttachmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\GroupHistoricalService.CodeGenerated.cs" />
-    <Compile Include="Model\CodeGenerated\GroupLocationHistoricalScheduleService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\GroupLocationHistoricalService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberHistoricalService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemSlugService.CodeGenerated.cs" />

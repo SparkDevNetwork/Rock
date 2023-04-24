@@ -159,8 +159,7 @@ namespace Rock.ViewModels.Entities
         public int? ParentGroupId { get; set; }
 
         /// <summary>
-        /// If this group's group type supports a schedule for a group, this is the schedule id for that group at this point in history
-        /// NOTE: If this Group has Schedules at it's Locations, those will be in GroupLocationHistorical.GroupLocationHistoricalSchedules
+        /// If this group's group type supports a schedule for a group, this is the schedule id for that group at this point in history.
         /// </summary>
         /// <value>
         /// The schedule identifier.
@@ -176,8 +175,7 @@ namespace Rock.ViewModels.Entities
         public DateTime? ScheduleModifiedDateTime { get; set; }
 
         /// <summary>
-        /// If this group's group type supports a schedule for a group, this is the schedule text (Schedule.ToString()) for that group at this point in history
-        /// NOTE: If this Group has Schedules at it's Locations, those will be in GroupLocationHistorical.GroupLocationHistoricalSchedules
+        /// If this group's group type supports a schedule for a group, this is the schedule text (Schedule.ToString()) for that group at this point in history.
         /// </summary>
         /// <value>
         /// The schedule name.

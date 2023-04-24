@@ -1184,6 +1184,8 @@ namespace Rock.Data
         /// <value>
         /// The group location historical schedules.
         /// </value>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Consider using 'History' entity instead." )]
         public DbSet<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
 
         /// <summary>
