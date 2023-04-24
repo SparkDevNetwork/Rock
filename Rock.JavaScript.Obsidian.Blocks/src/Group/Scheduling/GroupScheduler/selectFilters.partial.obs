@@ -1,0 +1,289 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Filters"
+           saveText="Apply"
+           :saveButtonDisabled="isBusy"
+           @save="onSave">
+
+        <div class="new-group-scheduler">
+            <NotificationBox :alertType="AlertType.Info">
+                Select the filter options below to limit what is shown on the group scheduler.
+            </NotificationBox>
+
+            <NotificationBox v-if="warningMessage" :alertType="AlertType.Warning">
+                {{ warningMessage }}
+            </NotificationBox>
+
+            <GroupPicker v-model="selectedGroups"
+                         label="Groups"
+                         :multiple="true"
+                         :limitToSchedulingEnabled="true"
+                         :autoExpand="true"
+                         :disabled="isBusy"
+                         rules="required"
+                         @update:modelValue="onFiltersChanged()" />
+
+            <SlidingDateRangePicker v-model="selectedDateRange"
+                                    label="Dates"
+                                    previewLocation="Top"
+                                    :disabled="isBusy"
+                                    @update:modelValue="onFiltersChanged()" />
+
+            <!-- Don't set :loading on this control; doing so creates a poor UX, based on how we're using it. -->
+            <DropDownList v-model="selectedLocationValues"
+                          label="Locations"
+                          :items="availableLocations"
+                          :multiple="true"
+                          :disabled="isSavingFilters"
+                          @update:modelValue="onFiltersChanged()" />
+
+            <!-- Don't set :loading on this control; doing so creates a poor UX, based on how we're using it. -->
+            <DropDownList v-model="selectedScheduleValues"
+                          label="Schedules"
+                          :items="availableSchedules"
+                          :multiple="true"
+                          :disabled="isSavingFilters"
+                          @update:modelValue="onFiltersChanged()" />
+        </div>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import GroupPicker from "@Obsidian/Controls/groupPicker";
+    import Modal from "@Obsidian/Controls/modal";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { GroupSchedulerAppliedFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerAppliedFiltersBag";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+    import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        appliedFilters: {
+            type: Object as PropType<GroupSchedulerAppliedFiltersBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible"): void,
+        (e: "filtersApplied", value: GroupSchedulerAppliedFiltersBag): void
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    const isApplyingFilters = ref(false);
+    const isSavingFilters = ref(false);
+    const warningMessage = ref("");
+    const isCanceled = ref(true);
+
+    const originalValue = ref(props.appliedFilters);
+
+    const selectedGroups = ref<ListItemBag[]>(props.appliedFilters?.filters?.groups ?? []);
+    const availableLocations = ref<ListItemBag[]>(props.appliedFilters?.filters?.locations?.availableLocations ?? []);
+    const selectedLocations = ref<ListItemBag[]>(props.appliedFilters?.filters?.locations?.selectedLocations ?? []);
+    const availableSchedules = ref<ListItemBag[]>(props.appliedFilters?.filters?.schedules?.availableSchedules ?? []);
+    const selectedSchedules = ref<ListItemBag[]>(props.appliedFilters?.filters?.schedules?.selectedSchedules ?? []);
+    const selectedDateRange = ref<SlidingDateRange | null>(getSlidingDateRange(props.appliedFilters?.filters?.dateRange));
+    const firstEndOfWeekDate = ref<string | null | undefined>(props.appliedFilters?.filters?.firstEndOfWeekDate);
+    const lastEndOfWeekdDate = ref<string | null | undefined>(props.appliedFilters?.filters?.lastEndOfWeekDate);
+    const friendlyDateRange = ref<string | null | undefined>(props.appliedFilters?.filters?.friendlyDateRange);
+    const scheduleOccurrences = ref<GroupSchedulerOccurrenceBag[] | null | undefined>(props.appliedFilters?.scheduleOccurrences);
+    const navigationUrls = ref<Record<string, string> | null | undefined>(props.appliedFilters?.navigationUrls);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const selectedLocationValues = computed<string[]>({
+        get() {
+            return selectedLocations.value
+                ?.filter((item: ListItemBag) => item?.value)
+                ?.map((item: ListItemBag) => item.value ?? "") ?? [];
+        },
+        set(newValue: string[]) {
+            selectedLocations.value = newValue.map((value: string) => ({
+                value
+            }));
+        }
+    });
+
+    const selectedScheduleValues = computed<string[]>({
+        get() {
+            return selectedSchedules.value
+                ?.filter((item: ListItemBag) => item?.value)
+                ?.map((item: ListItemBag) => item.value ?? "") ?? [];
+        },
+        set(newValue: string[]) {
+            selectedSchedules.value = newValue.map((value: string) => ({
+                value
+            }));
+        }
+    });
+
+    const isBusy = computed((): boolean => {
+        return isApplyingFilters.value || isSavingFilters.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the sliding date range from the provided sliding date range bag.
+     *
+     * @param bag The date range bag from which to create a sliding date range.
+     */
+    function getSlidingDateRange(bag: SlidingDateRangeBag | null | undefined): SlidingDateRange | null {
+        return bag
+            ? bag as SlidingDateRange
+            : null;
+    }
+
+    /**
+     * Gets the current applied filters according the the controls' selected values.
+     */
+    function getCurrentAppliedFilters(): GroupSchedulerAppliedFiltersBag {
+        var dateRange: SlidingDateRangeBag | null = selectedDateRange.value
+            ? selectedDateRange.value as SlidingDateRangeBag
+            : null;
+
+        return {
+            filters: {
+                groups: selectedGroups.value,
+                locations: {
+                    availableLocations: availableLocations.value,
+                    selectedLocations: selectedLocations.value
+                },
+                schedules: {
+                    availableSchedules: availableSchedules.value,
+                    selectedSchedules: selectedSchedules.value
+                },
+                dateRange,
+                firstEndOfWeekDate: firstEndOfWeekDate.value,
+                lastEndOfWeekDate: lastEndOfWeekdDate.value,
+                friendlyDateRange: friendlyDateRange.value
+            },
+            scheduleOccurrences: scheduleOccurrences.value,
+            navigationUrls: navigationUrls.value
+        };
+    }
+
+    /**
+     * Sets the internal values using the provided applied filters.
+     *
+     * @param appliedFilters The applied filters value from which to set the internal values.
+     */
+    function setCurrentFilters(appliedFilters: GroupSchedulerAppliedFiltersBag | null): void {
+        selectedGroups.value = appliedFilters?.filters?.groups ?? [];
+        availableLocations.value = appliedFilters?.filters?.locations?.availableLocations ?? [];
+        selectedLocations.value = appliedFilters?.filters?.locations?.selectedLocations ?? [];
+        availableSchedules.value = appliedFilters?.filters?.schedules?.availableSchedules ?? [];
+        selectedSchedules.value = appliedFilters?.filters?.schedules?.selectedSchedules ?? [];
+        selectedDateRange.value = getSlidingDateRange(appliedFilters?.filters?.dateRange);
+        firstEndOfWeekDate.value = appliedFilters?.filters?.firstEndOfWeekDate;
+        lastEndOfWeekdDate.value = appliedFilters?.filters?.lastEndOfWeekDate;
+        friendlyDateRange.value = appliedFilters?.filters?.friendlyDateRange;
+        scheduleOccurrences.value = appliedFilters?.scheduleOccurrences;
+        navigationUrls.value = appliedFilters?.navigationUrls;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `save` event of the select filters modal.
+     */
+    async function onSave(): Promise<void> {
+        if (isSavingFilters.value) {
+            return;
+        }
+
+        isSavingFilters.value = true;
+        warningMessage.value = "";
+
+        const result = await invokeBlockAction("SaveFilters", { bag: getCurrentAppliedFilters().filters });
+        isSavingFilters.value = false;
+
+        if (!result.isSuccess) {
+            warningMessage.value = result.errorMessage || "Unknown issue when trying to apply filters.";
+            return;
+        }
+
+        emit("filtersApplied", getCurrentAppliedFilters());
+        isCanceled.value = false;
+        isVisible.value = false;
+    }
+
+    /**
+     * Handles the updating of filter values within this component, based on the current combined values of all filter controls.
+     */
+    async function onFiltersChanged(): Promise<void> {
+        /*
+         * When one of the filter controls triggers this event handler, we could find ourselves in an infinite loop without
+         * this initial `isApplyingFilters.value` check (because all such controls will be updated with the server's response
+         * to the initial change event, thereby repeatedly triggering this event handler over and over). Note the `nextTick`
+         * usage below, which will set `isApplyingFilters.value` back to false once the controls have all had a chance to
+         * update their values accordingly.
+         */
+        if (isApplyingFilters.value) {
+            return;
+        }
+
+        isApplyingFilters.value = true;
+        warningMessage.value = "";
+
+        const result = await invokeBlockAction<GroupSchedulerAppliedFiltersBag>("ApplyFilters", { bag: getCurrentAppliedFilters().filters });
+        if (!result.isSuccess) {
+            isApplyingFilters.value = false;
+            warningMessage.value = result.errorMessage || "Unknown error while trying to update available filters.";
+            return;
+        }
+
+        setCurrentFilters(result.data);
+
+        nextTick(() => {
+            isApplyingFilters.value = false;
+        });
+    }
+
+    // #endregion
+
+    // Watch for applied filters props changes and update our original and internal values.
+    watch(() => props.appliedFilters, () => {
+        originalValue.value = props.appliedFilters;
+        setCurrentFilters(props.appliedFilters);
+    });
+
+    // Watch for the modal closing without the save button being clicked and revert any changes to internal values.
+    watch(isVisible, () => {
+        if (isVisible.value) {
+            // Reset this value each time this component is presented.
+            isCanceled.value = true;
+        }
+        else {
+            if (isCanceled.value) {
+                // Cancel (or close button) was clicked; reset the internal values back to the original.
+                setCurrentFilters(originalValue.value);
+            }
+        }
+    });
+</script>
