@@ -40,13 +40,6 @@
     <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js", true) %>"></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
-
-    <!-- Icons -->
-    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/favicon.ico", true) %>">
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.large.png", true) %>">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.medium.png", true) %>">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.small.png", true) %>">
-    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Themes/NewSpring/Assets/Icons/apple.touch.small.png", true) %>">
 </head>
 <body>
     <form id="form1" runat="server">
