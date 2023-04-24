@@ -997,6 +997,10 @@
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRuleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetChildrenOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetParentGuidsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetPreviewItemsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetSearchedAccountsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlGetConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlValidateAddressOptionsBag.d.ts" />

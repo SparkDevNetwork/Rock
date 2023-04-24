@@ -191,6 +191,10 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\AccountPickerGetPreviewItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\AccountPickerGetSearchedAccountsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\AccountPickerGetParentGuidsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\AccountPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetContentChannelItemsOptionsBag.cs" />
