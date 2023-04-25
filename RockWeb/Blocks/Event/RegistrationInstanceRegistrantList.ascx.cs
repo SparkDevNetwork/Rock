@@ -900,7 +900,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // Set the registrant race
-            var lRace= e.Row.FindControl( "lRace" ) as Literal;
+            var lRace = e.Row.FindControl( "lRace" ) as Literal;
             if ( lRace != null )
             {
                 if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
@@ -1406,24 +1406,31 @@ namespace RockWeb.Blocks.Event
                 if ( _registrationTemplatePlacements.Any() )
                 {
                     var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
-                    var instancePlacementGroupsQry = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrationInstance );
-                    _placementGroupInfoList = instancePlacementGroupsQry.AsNoTracking().Select( s => new
+
+                    _placementGroupInfoList = new List<PlacementGroupInfo>();
+                    foreach ( var placementTemplate in _registrationTemplatePlacements )
                     {
-                        Group = s,
-                        PersonIds = s.Members.Select( m => m.PersonId ).ToList()
-                    } )
-                        .ToList()
-                        .Select( a => new PlacementGroupInfo
+                        // Template Placement Id is needed as a parameter to properly collect placements by their group.
+                        var instancePlacementGroupsByTemplateQry = registrationInstanceService.GetRegistrationInstancePlacementGroupsByPlacement( registrationInstance, placementTemplate.Id );
+                        var _instancePlacementGroupInfoList = instancePlacementGroupsByTemplateQry.AsNoTracking().Select( s => new
                         {
-                            Group = a.Group,
-                            RegistrationTemplatePlacementId = null,
-                            PersonIds = a.PersonIds.ToArray(),
-                        } ).ToList();
+                            Group = s,
+                            PersonIds = s.Members.Select( m => m.PersonId ).ToList()
+                        } )
+                            .ToList()
+                            .Select( a => new PlacementGroupInfo
+                            {
+                                Group = a.Group,
+                                RegistrationTemplatePlacementId = placementTemplate.Id,
+                                PersonIds = a.PersonIds.ToArray(),
+                            } ).ToList();
 
-                    foreach ( var placementTemplate in registrationInstance.RegistrationTemplate.Placements )
-                    {
+                        if ( _instancePlacementGroupInfoList.Any() )
+                        {
+                            _placementGroupInfoList.AddRange( _instancePlacementGroupInfoList );
+                        }
+
                         var registrationTemplatePlacementPlacementGroupsQuery = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( placementTemplate );
-
                         var templatePlacementGroupInfoList = registrationTemplatePlacementPlacementGroupsQuery.AsNoTracking()
                             .Select( s => new
                             {
