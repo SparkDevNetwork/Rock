@@ -1352,7 +1352,9 @@ namespace RockWeb.Blocks.Groups
                        .SelectMany( r => r.Group.GroupType.GroupRequirements ).Distinct().ToList();
                     requirementsFromGroup.AddRange( requirementsFromGroupType );
 
-                    ddlRequirementType.DataSource = requirementsFromGroup.Distinct().Select( r => new { Id = r.GroupRequirementTypeId, Name = r.GroupRequirementType.Name } );
+                    ddlRequirementType.DataSource = requirementsFromGroup
+                        .Where( gr => gr.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                        .Distinct().Select( r => new { Id = r.GroupRequirementTypeId, Name = r.GroupRequirementType.Name } );
                     ddlRequirementType.DataBind();
                     ddlRequirementType.Items.Insert( 0, new ListItem() );
                 }
@@ -1914,7 +1916,11 @@ namespace RockWeb.Blocks.Groups
             {
                 foreach ( var member in _group.Members )
                 {
-                    _memberRequirements.Add( member.Id, member.GetGroupRequirementsStatuses( rockContext ).ToList() );
+                    _memberRequirements.Add(
+                        member.Id,
+                        member.GetGroupRequirementsStatuses( rockContext )
+                        .Where( s => s.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList()
+                        );
                 }
 
                 _groupMemberIdsThatDoNotMeetGroupRequirements = _memberRequirements.Where( r => r.Value.Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ).Any() ).Select( kvp => kvp.Key ).Distinct().ToHashSet();
@@ -2197,7 +2203,11 @@ namespace RockWeb.Blocks.Groups
             {
                 foreach ( var member in _group.Members )
                 {
-                    _memberRequirements.Add( member.Id, member.GetGroupRequirementsStatuses( rockContext ).ToList() );
+                    _memberRequirements.Add(
+                        member.Id,
+                        member.GetGroupRequirementsStatuses( rockContext )
+                        .Where( s => s.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList()
+                        );
                 }
 
                 _groupMemberIdsThatDoNotMeetGroupRequirements = _memberRequirements.Where( r => r.Value.Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ).Any() ).Select( kvp => kvp.Key ).Distinct().ToHashSet();
