@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Quartz;
 
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -166,6 +168,48 @@ namespace Rock.Jobs
 #pragma warning restore CS0612, CS0618 // Type or member is obsolete
         {
             ExecuteInternal( context );
+        }
+
+        /// <summary>
+        /// Writes a message to the log at the specified level.
+        /// <para>
+        /// The log message will be prefixed with
+        /// <code>
+        /// Job ID: [ServiceJob.Id], Job Name: [ServiceJob.Name], Start: [<paramref name="start"/>], End: [<paramref name="start"/> + <paramref name="elapsedMs"/>], Time to Run: [<paramref name="elapsedMs"/>]ms, 
+        /// </code>
+        /// </para>
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="exception">The exception, if any.</param>
+        /// <param name="start">The start date time for the process described by this message.</param>
+        /// <param name="elapsedMs">The elapsed time (in milliseconds) for the process described by this message.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values, if any.</param>
+        protected void Log( RockLogLevel logLevel, Exception exception, DateTime start, long elapsedMs, string messageTemplate, params object[] propertyValues )
+        {
+            if ( messageTemplate.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var values = new object[]
+            {
+                this.ServiceJobId,
+                this.ServiceJobName,
+                start,
+                start.AddMilliseconds( elapsedMs ),
+                elapsedMs
+            }
+            .Concat( propertyValues ?? new object[0] )
+            .ToArray();
+
+            RockLogger.Log.WriteToLog(
+                logLevel,
+                exception,
+                RockLogDomains.Jobs,
+                $"Job ID: {{jobId}}, Job Name: {{jobName}}, Start: {{start}}, End: {{end}}, Time To Run: {{elapsedMs}}ms, {messageTemplate}",
+                values
+            );
         }
     }
 }

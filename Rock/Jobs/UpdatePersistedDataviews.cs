@@ -98,6 +98,7 @@ namespace Rock.Jobs
                     {
                         var startDateTime = RockDateTime.Now;
                         var stopwatch = Stopwatch.StartNew();
+                        var errorOccurred = false;
 
                         var dataView = new DataViewService( persistContext ).Get( dataViewId );
                         var name = dataView.Name;
@@ -115,6 +116,7 @@ namespace Rock.Jobs
                         catch ( Exception ex )
                         {
                             stopwatch.Stop();
+                            errorOccurred = true;
 
                             // Capture and log the exception because we're not going to fail this job
                             // unless all the data views fail.
@@ -127,16 +129,15 @@ namespace Rock.Jobs
                         }
                         finally
                         {
-                            RockLogger.Log.Information(
-                                RockLogDomains.Jobs,
-                                "Job ID: {jobId}, Job Name: {jobName} DataView ID: {dataViewId}, DataView Name: {dataViewName}, Start: {startDateTime:o}, Stop: {stopDateTime:o}, Elapsed Ms: {elapsedMs:n0}",
-                                this.GetJobId(),
-                                nameof( UpdatePersistedDataviews ),
+                            this.Log(
+                                RockLogLevel.Info,
+                                null,
+                                startDateTime,
+                                stopwatch.ElapsedMilliseconds,
+                                "DataView ID: {dataViewId}, DataView Name: {dataViewName}, Error Occurred: {errorOccurred}",
                                 dataViewId,
                                 name,
-                                startDateTime,
-                                startDateTime.AddMilliseconds( stopwatch.ElapsedMilliseconds ),
-                                stopwatch.ElapsedMilliseconds
+                                errorOccurred
                             );
                         }
                     }
