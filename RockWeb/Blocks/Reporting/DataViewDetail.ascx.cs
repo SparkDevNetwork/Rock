@@ -914,6 +914,7 @@ $(document).ready(function() {
             if ( hlblPersisted.Visible )
             {
                 hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedLastRefreshDateTime.ToElapsedString() );
+                hlblPersisted.ToolTip = dataView.PersistedLastRefreshDateTime.Value.ToShortDateTimeString();
             }
 
             // If the dataview has a persisted schedule or interval, include the details in the description.
