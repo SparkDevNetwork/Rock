@@ -219,13 +219,6 @@ DELETE FROM [PageRoute] WHERE [PageId] = @PageId;" );
 
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.REMINDER_TYPES, "admin/general/reminder-types", REMINDER_TYPES_ROUTE );
 
-            // This is temporary, to prevent the Reminder Types page from showing up in pre-alpha.
-            // REMOVE THIS FOR PRODUCTION RELEASE.
-            Sql( $@"
-                UPDATE [Page]
-                SET [DisplayInNavWhen] = 2
-                WHERE [Guid] = '{SystemGuid.Page.REMINDER_TYPES}'" );
-
             RockMigrationHelper.AddBlock(
                 true,
                 SystemGuid.Page.REMINDER_TYPES,
