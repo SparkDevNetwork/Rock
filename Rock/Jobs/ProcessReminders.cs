@@ -353,9 +353,9 @@ namespace Rock.Jobs
                 {
                     { "Reminder", reminder.Guid.ToString() },
                     { "ReminderType", reminder.ReminderType.Guid.ToString() },
-                    { "PersonAlias", reminder.PersonAlias.Guid.ToString() },
+                    { "Person", reminder.PersonAlias.Guid.ToString() },
                     { "EntityType", reminder.ReminderType.EntityType.Guid.ToString() },
-                    { "Entity", entity.Guid.ToString() },
+                    { "Entity", $"{reminder.ReminderType.EntityType.Guid}|{entity.Id}" },
                 };
 
                 reminder.LaunchWorkflow( reminder.ReminderType.NotificationWorkflowTypeId, reminder.ToString(), workflowParameters, null );
