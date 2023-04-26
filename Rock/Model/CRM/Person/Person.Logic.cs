@@ -549,7 +549,7 @@ namespace Rock.Model
         /// <returns></returns>
         public string FormatAge( bool condensed = false )
         {
-            var age = Age;
+            var age = Age ?? GetAge( BirthDate, DeceasedDate );
             if ( age != null )
             {
                 if ( condensed )
