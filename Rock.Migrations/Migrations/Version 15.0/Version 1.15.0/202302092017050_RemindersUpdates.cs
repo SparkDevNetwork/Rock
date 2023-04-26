@@ -219,13 +219,6 @@ DELETE FROM [PageRoute] WHERE [PageId] = @PageId;" );
 
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.REMINDER_TYPES, "admin/general/reminder-types", REMINDER_TYPES_ROUTE );
 
-            // This is temporary, to prevent the Reminder Types page from showing up in pre-alpha.
-            // REMOVE THIS FOR PRODUCTION RELEASE.
-            Sql( $@"
-                UPDATE [Page]
-                SET [DisplayInNavWhen] = 2
-                WHERE [Guid] = '{SystemGuid.Page.REMINDER_TYPES}'" );
-
             RockMigrationHelper.AddBlock(
                 true,
                 SystemGuid.Page.REMINDER_TYPES,
@@ -294,7 +287,7 @@ DELETE FROM [PageRoute] WHERE [PageId] = @PageId;" );
                     0,
                     1,
                     'Process Reminders',
-                    'A job that calculates the updates the reminder count value for people with active reminders.',
+                    'A job which processes reminders, including creating appropriate notifications and updating the reminder count value for people with active reminders.',
                     '{jobClass}',
                     '{CRON_EXPRESSION}',
                     1,
@@ -307,7 +300,7 @@ DELETE FROM [PageRoute] WHERE [PageId] = @PageId;" );
 		              [IsSystem] = 1
 		            , [IsActive] = 1
 		            , [Name] = 'Process Reminders'
-		            , [Description] = 'A job that calculates the updates the reminder count value for people with active reminders.'
+		            , [Description] = 'A job which processes reminders, including creating appropriate notifications and updating the reminder count value for people with active reminders.'
 		            , [Class] = '{jobClass}'
 		            , [CronExpression] = '{CRON_EXPRESSION}'
 		            , [NotificationStatus] = 1

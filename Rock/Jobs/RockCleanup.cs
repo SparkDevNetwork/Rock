@@ -2874,7 +2874,7 @@ BEGIN
 			CASE 
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
 			ELSE 0
-		END BETWEEN 55 AND 65 THEN 7
+		END BETWEEN 55 AND 64 THEN 7
 		ELSE 8
 	END
 	FROM AnalyticsSourceDate A
