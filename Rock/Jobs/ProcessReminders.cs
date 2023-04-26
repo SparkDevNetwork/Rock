@@ -42,7 +42,7 @@ namespace Rock.Jobs
     [IntegerField(
         "Command Timeout",
         Key = AttributeKey.CommandTimeout,
-        Description = "Maximum amount of time (in seconds) to wait for any SQL based operations to complete. Leave blank to use the default for this job (300). Note, some metrics do not use SQL so this timeout will only apply to metrics that are SQL based.",
+        Description = "Maximum amount of time (in seconds) to wait for any operations (SQL based) to complete. Leave blank to use the default for this job (300).",
         IsRequired = false,
         DefaultIntegerValue = 60 * 5,
         Category = "General",
@@ -69,14 +69,14 @@ namespace Rock.Jobs
     [ReminderTypesField(
         "Reminder Types Include",
         Key = AttributeKey.ReminderTypesInclude,
-        Description = "Select any specific remindeder types to show in this block. Leave all unchecked to show all active reminder types ( except for excluded reminder types ).",
+        Description = "Select any specific reminder types to show in this block. Leave all unchecked to show all active reminder types (except for excluded reminder types).",
         IsRequired = false,
         Order = 4 )]
 
     [ReminderTypesField(
         "Reminder Types Exclude",
         Key = AttributeKey.ReminderTypesExclude,
-        Description = "Select group types to exclude from this block. Note that this setting is only effective if 'Reminder Types Include' has no specific group types selected.",
+        Description = "Select reminder types to exclude from this block. Note that this setting is only effective if 'Reminder Types Include' has no specific items selected.",
         IsRequired = false,
         Order = 5 )]
 
