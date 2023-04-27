@@ -68,8 +68,8 @@
     <Compile Include="Migrations\202304061959408_CodeGenerated_20230406.designer.cs">
       <DependentUpon>202304061959408_CodeGenerated_20230406.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202304201635224_UpdateSignUpFinderBlockSetting.cs" />
-    <Compile Include="Migrations\202304201635224_UpdateSignUpFinderBlockSetting.designer.cs">
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202304201635224_UpdateSignUpFinderBlockSetting.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202304201635224_UpdateSignUpFinderBlockSetting.designer.cs">
       <DependentUpon>202304201635224_UpdateSignUpFinderBlockSetting.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202304201936307_Rollup_20230420.cs" />
@@ -1637,7 +1637,7 @@
     <EmbeddedResource Include="Migrations\202304061959408_CodeGenerated_20230406.resx">
       <DependentUpon>202304061959408_CodeGenerated_20230406.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202304201635224_UpdateSignUpFinderBlockSetting.resx">
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202304201635224_UpdateSignUpFinderBlockSetting.resx">
       <DependentUpon>202304201635224_UpdateSignUpFinderBlockSetting.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202304201936307_Rollup_20230420.resx">
