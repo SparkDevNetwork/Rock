@@ -124,7 +124,10 @@
       }
 
       .resource-name {
+        display: flex;
+        align-items: center;
         flex: 1;
+        gap: 8px;
       }
 
       .resource-role {
@@ -194,17 +197,14 @@
   .avatar-status {
     width: 24px;
     height: 24px;
-
-    &.pending {
-      border: 3px solid gray;
-    }
+    border: 3px solid gray;
 
     &.confirmed {
-      border: 3px solid @brand-success;
+      border-color: @brand-success;
     }
 
     &.declined {
-      border: 3px solid @brand-danger;
+      border-color: @brand-danger;
     }
   }
 
