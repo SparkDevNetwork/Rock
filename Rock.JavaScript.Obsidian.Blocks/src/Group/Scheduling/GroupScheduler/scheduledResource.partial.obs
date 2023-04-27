@@ -6,12 +6,12 @@
             {{ personName }}
             <i v-if="conflictTooltip"
                ref="conflictElement"
-               class="ml-1 fa fa-exclamation-triangle"
+               class="fa fa-exclamation-triangle"
                data-toggle="tooltip"
                :title="conflictTooltip"></i>
             <i v-if="preferenceTooltip"
                ref="preferenceElement"
-               class="ml-1 fa fa-minus-circle"
+               class="fa fa-minus-circle"
                data-toggle="tooltip"
                :title="preferenceTooltip"></i>
         </span>
@@ -202,7 +202,7 @@
         }
 
         if (schedulingConflictList.value?.length) {
-            tooltip += "<div>Scheduling Conflicts:</div>";
+            tooltip += "<div class='font-weight-semibold'>Scheduling Conflicts:</div>";
             schedulingConflictList.value.forEach((conflict: ISchedulerResourceAssignment) => {
                 const locationName = conflict.LocationName ? ` - ${conflict.LocationName}` : "";
                 tooltip += `<div>${conflict.ScheduleName}${locationName}</div>`;
