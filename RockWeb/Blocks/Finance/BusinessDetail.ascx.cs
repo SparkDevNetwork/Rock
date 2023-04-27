@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -108,6 +108,7 @@ namespace RockWeb.Blocks.Finance
 
     #endregion BlockAttributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "3CB1F9F0-11B2-4A46-B9D1-464811E5015C" )]
     public partial class BusinessDetail : ContextEntityBlock
     {
         private static class AttributeKey
