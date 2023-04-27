@@ -452,8 +452,6 @@ function onTaskCompleted( resultData )
                 communication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
                 communication.SenderPersonAlias = this.CurrentPersonAlias;
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
-                communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
                 communication.CommunicationType = CommunicationType.Email;
             }
             else
@@ -481,6 +479,14 @@ function onTaskCompleted( resultData )
                     PushOpenMessage = communication.PushOpenMessage,
                     PushOpenAction = communication.PushOpenAction
                 };
+            }
+
+            // If the communication is not yet edited by a user, apply any appropriate block default settings.
+            // This occurs for new communications or those passed in from another process, such as an action on a Person list from a data grid or report.
+            if ( communication.Status == CommunicationStatus.Transient )
+            {
+                communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
             }
 
             var allowedCommunicationTypes = GetAllowedCommunicationTypes();
