@@ -17,11 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -94,6 +96,9 @@ namespace Rock.Jobs
                 {
                     using ( var persistContext = new RockContext() )
                     {
+                        var startDateTime = RockDateTime.Now;
+                        var stopwatch = Stopwatch.StartNew();
+
                         var dataView = new DataViewService( persistContext ).Get( dataViewId );
                         var name = dataView.Name;
                         try
@@ -104,9 +109,13 @@ namespace Rock.Jobs
                             persistContext.SaveChanges();
 
                             updatedDataViewCount++;
+
+                            stopwatch.Stop();
                         }
                         catch ( Exception ex )
                         {
+                            stopwatch.Stop();
+
                             // Capture and log the exception because we're not going to fail this job
                             // unless all the data views fail.
                             var errorMessage = $"An error occurred while trying to update persisted data view '{name}' so it was skipped. Error: {ex.Message}";
@@ -115,6 +124,20 @@ namespace Rock.Jobs
                             exceptions.Add( ex2 );
                             ExceptionLogService.LogException( ex2, null );
                             continue;
+                        }
+                        finally
+                        {
+                            RockLogger.Log.Information(
+                                RockLogDomains.Jobs,
+                                "Job ID: {jobId}, Job Name: {jobName} DataView ID: {dataViewId}, DataView Name: {dataViewName}, Start: {startDateTime:o}, Stop: {stopDateTime:o}, Elapsed Ms: {elapsedMs:n0}",
+                                this.GetJobId(),
+                                nameof( UpdatePersistedDataviews ),
+                                dataViewId,
+                                name,
+                                startDateTime,
+                                startDateTime.AddMilliseconds( stopwatch.ElapsedMilliseconds ),
+                                stopwatch.ElapsedMilliseconds
+                            );
                         }
                     }
                 }
