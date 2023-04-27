@@ -191,6 +191,8 @@ export const FieldType = {
     LavaCommands: "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D",
     /** Location field type */
     Location: "B0B9EFE3-F09F-4604-AD1B-76B298A85D83",
+    /** Location List field type */
+    LocationList: "A58A0CBF-C3E6-4054-85D7-05118035980B",
     /** Markdown field type */
     Markdown: "C2FBCF94-0FDF-4DFD-93A5-19FE6A409C84",
     /** Matrix field type */
