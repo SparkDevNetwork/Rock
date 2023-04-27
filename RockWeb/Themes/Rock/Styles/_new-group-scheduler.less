@@ -271,22 +271,17 @@
     font-size: @font-size-small;
     color: @text-muted;
 
-    .resource-notes-section {
-      /*margin-top: 6px;*/
-    }
-
     .resource-notes-header {
       font-weight: @font-weight-semibold;
     }
 
-    .resource-preference,
-    .resource-scheduled,
-    .resource-schedule-conflict {
-      /*margin-top: 4px;*/
-    }
 
     &.resource-disabled {
       opacity: 0.75;
     }
+  }
+
+  .conflict-type + .conflict-type {
+    margin-top: 4px;
   }
 }

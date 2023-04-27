@@ -174,14 +174,14 @@
 
         if (props.resource?.MatchesPreference === Preference.notMatches
             && preferenceList.value.length) {
-            tooltip += "<div>Preference</div>";
+            tooltip += "<div class='font-weight-semibold'>Preference</div>";
             preferenceList.value.forEach((preference: ISchedulerResourceAssignment) => {
                 const locationName = preference.LocationName ? ` - ${preference.LocationName}` : "";
                 tooltip += `<div>${preference.ScheduleName}${locationName}</div>`;
             });
         }
 
-        return tooltip ? `<div class="small">${tooltip}</div>` : "";
+        return tooltip;
     });
 
     const schedulingConflictList = computed((): ISchedulerResourceAssignment[] => {
@@ -194,22 +194,22 @@
         let tooltip = "";
 
         if (props.resource?.HasBlackoutConflict) {
-            tooltip += "<div>Cannot be scheduled due to a blackout.</div>";
+            tooltip += "<div class='conflict-type'>Cannot be scheduled due to a blackout.</div>";
         }
 
         if (props.resource?.HasGroupRequirementsConflict) {
-            tooltip += "<div>Does not meet the requirements for this group.</div>";
+            tooltip += "<div class='conflict-type'>Does not meet the requirements for this group.</div>";
         }
 
         if (schedulingConflictList.value?.length) {
-            tooltip += "<div class='font-weight-semibold'>Scheduling Conflicts:</div>";
+            tooltip += "<div class='conflict-type font-weight-semibold'>Scheduling Conflicts:</div>";
             schedulingConflictList.value.forEach((conflict: ISchedulerResourceAssignment) => {
                 const locationName = conflict.LocationName ? ` - ${conflict.LocationName}` : "";
                 tooltip += `<div>${conflict.ScheduleName}${locationName}</div>`;
             });
         }
 
-        return tooltip ? `<div class="small">${tooltip}</div>` : "";
+        return tooltip;
     });
 
     // #endregion
