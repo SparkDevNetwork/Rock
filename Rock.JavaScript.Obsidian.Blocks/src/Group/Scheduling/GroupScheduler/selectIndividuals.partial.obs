@@ -3,6 +3,7 @@
     <Modal v-model="isVisible"
            title="Select Individuals"
            saveText="Assign"
+           :subtitle="occurrenceTitle"
            :saveButtonDisabled="saveButtonDisabled"
            @save="onSave">
 
@@ -12,10 +13,6 @@
             </NotificationBox>
 
             <template v-else>
-
-                <p v-if="occurrenceTitle">
-                    {{ occurrenceTitle }}
-                </p>
 
                 <div class="d-md-flex justify-content-md-between">
 
