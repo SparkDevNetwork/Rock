@@ -64,6 +64,11 @@
 		"volar.vueserver.additionalExtensions": [
 			"obs"
 		],
+		"vue.complete.casing.props": "camel",
+		"vue.complete.casing.tags": "pascal",
+		"vue.server.additionalExtensions": [
+			"obs"
+		],
 		"files.trimTrailingWhitespace": true,
 		"html.format.wrapAttributes": "preserve-aligned",
 		"html.format.wrapLineLength": 0,
