@@ -2854,7 +2854,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                                 Name = gls.Config?.ConfigurationName,
                                 NextStartDateTime = nextStartDateTime,
                                 LastStartDateTime = lastStartDateTime,
-                                FriendlyDateTime = gls.Schedule.ToString(),
+                                FriendlyDateTime = gls.Schedule.ToFriendlyScheduleText( true ),
                                 FriendlyLocation = gls.Location.ToString( true ),
                                 SlotsMin = gls.Config?.MinimumCapacity,
                                 SlotsDesired = gls.Config?.DesiredCapacity,
@@ -3014,7 +3014,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 if ( sbSchedule.IsValid && calEvent != null && calEvent.DtStart != null )
                 {
                     var tempSchedule = new Schedule { iCalendarContent = sbSchedule.iCalendarContent };
-                    lScheduleText.Text = $"<span class='text-sm'>{tempSchedule.FriendlyScheduleText ?? "Custom"}</span>";
+                    lScheduleText.Text = $"<span class='text-sm'>{tempSchedule.ToFriendlyScheduleText( true )}</span>";
                     lScheduleText.Visible = true;
                 }
             }

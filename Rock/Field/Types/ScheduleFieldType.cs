@@ -47,7 +47,10 @@ namespace Rock.Field.Types
 
             if ( scheduleGuid.HasValue )
             {
-                return NamedScheduleCache.Get( scheduleGuid.Value )?.Name;
+                var name = NamedScheduleCache.Get( scheduleGuid.Value )?.Name;
+                return name.IsNotNullOrWhiteSpace()
+                    ? name :
+                    ( ( Schedule ) this.GetEntity( value ) )?.ToFriendlyScheduleText( true );
             }
             return formattedValue;
         }
