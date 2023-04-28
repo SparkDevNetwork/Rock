@@ -169,8 +169,9 @@ namespace Rock.Jobs
                                         catch ( Exception ex )
                                         {
                                             // Record workflow exception as warning or debug for RockLog instead of creating multiple exception logs and ending.
-                                            RockLogger.Log.Warning( RockLogDomains.Jobs, $"Could not launch workflow: {workflowName} with group requirement: {groupRequirement} for person.Id: {personGroupRequirementStatus.PersonId} so the workflow was skipped." );
-                                            RockLogger.Log.Debug( RockLogDomains.Jobs, ex, "Error when launching workflow for requirement." );
+                                            this.Log( RockLogLevel.Warning, $"Could not launch workflow: '{workflowName}' with group requirement: '{groupRequirement}' for person.Id: {personGroupRequirementStatus.PersonId} so the workflow was skipped." );
+                                            this.Log( RockLogLevel.Debug, ex, "Error when launching workflow for requirement." );
+
                                             skippedWorkflowNames.Add( workflowName, true );
                                         }
                                     }
@@ -184,8 +185,8 @@ namespace Rock.Jobs
                             catch ( Exception ex )
                             {
                                 // Record group member 'Person' exception as warning or debug for RockLog and continue job instead of adding to exception logs and ending.
-                                RockLogger.Log.Warning( RockLogDomains.Jobs, $"Could not update group requirement result: {groupRequirement} for Person.Id: {personGroupRequirementStatus.PersonId} in Group: '{groupIdName.Name}' so the person was skipped." );
-                                RockLogger.Log.Debug( RockLogDomains.Jobs, ex, "Error when calculating person for group requirement." );
+                                this.Log( RockLogLevel.Warning, $"Could not update group requirement result: '{groupRequirement}' for Person.Id: {personGroupRequirementStatus.PersonId} in Group: '{groupIdName.Name}' so the person was skipped." );
+                                this.Log( RockLogLevel.Debug, ex, "Error when calculating person for group requirement." );
 
                                 skippedPersonIds.Add( personGroupRequirementStatus.PersonId.ToString(), true );
                             }
@@ -194,8 +195,8 @@ namespace Rock.Jobs
                     catch ( Exception ex )
                     {
                         // Record group exception as warning or debug for RockLog and continue job instead of adding to exception logs and ending.
-                        RockLogger.Log.Warning( RockLogDomains.Jobs, $"Could not update group when calculating group requirement: '{groupRequirement}' in Group '{groupIdName.Name}' (Group.Id: {groupIdName.Id}) so the group was skipped." );
-                        RockLogger.Log.Debug( RockLogDomains.Jobs, ex, "Error when calculating group for requirement." );
+                        this.Log( RockLogLevel.Warning, $"Could not update group when calculating group requirement: '{groupRequirement}' in Group '{groupIdName.Name}' (Group.Id: {groupIdName.Id}) so the group was skipped." );
+                        this.Log( RockLogLevel.Debug, ex, "Error when calculating group for requirement." );
 
                         skippedGroupNames.Add( groupIdName.Name, true );
                     }

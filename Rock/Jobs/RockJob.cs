@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Quartz;
 
 using Rock.Data;
@@ -173,42 +174,91 @@ namespace Rock.Jobs
         /// <summary>
         /// Writes a message to the log at the specified level.
         /// <para>
-        /// The log message will be prefixed with
+        /// The log message will be prefixed with:
+        /// <code>
+        /// Job ID: [ServiceJob.Id], Job Name: [ServiceJob.Name], 
+        /// </code>
+        /// If <paramref name="start"/> is provided:
+        /// <code>
+        /// Job ID: [ServiceJob.Id], Job Name: [ServiceJob.Name], Start: [<paramref name="start"/>], 
+        /// </code>
+        /// If <paramref name="start"/> and <paramref name="elapsedMs"/> are provided:
         /// <code>
         /// Job ID: [ServiceJob.Id], Job Name: [ServiceJob.Name], Start: [<paramref name="start"/>], End: [<paramref name="start"/> + <paramref name="elapsedMs"/>], Time to Run: [<paramref name="elapsedMs"/>]ms, 
         /// </code>
         /// </para>
         /// </summary>
         /// <param name="logLevel">The log level.</param>
-        /// <param name="exception">The exception, if any.</param>
-        /// <param name="start">The start date time for the process described by this message.</param>
-        /// <param name="elapsedMs">The elapsed time (in milliseconds) for the process described by this message.</param>
         /// <param name="messageTemplate">The message template.</param>
-        /// <param name="propertyValues">The property values, if any.</param>
-        protected void Log( RockLogLevel logLevel, Exception exception, DateTime start, long elapsedMs, string messageTemplate, params object[] propertyValues )
+        /// <param name="start">The optional start date time for the process described by this message.</param>
+        /// <param name="elapsedMs">The optional elapsed time (in milliseconds) for the process described by this message.</param>
+        /// <param name="propertyValues">The property values to enrich the message template, if any.</param>
+        protected void Log( RockLogLevel logLevel, string messageTemplate, DateTime? start = null, long? elapsedMs = null, params object[] propertyValues )
+        {
+            Log( logLevel, null, messageTemplate, start, elapsedMs, propertyValues );
+        }
+
+        /// <summary>
+        /// Writes a message to the log at the specified level.
+        /// <para>
+        /// The log message will be prefixed with:
+        /// <code>
+        /// Job ID: [ServiceJob.Id], Job Name: [ServiceJob.Name], 
+        /// </code>
+        /// If <paramref name="start"/> is provided:
+        /// <code>
+        /// Job ID: [ServiceJob.Id], Job Name: [ServiceJob.Name], Start: [<paramref name="start"/>], 
+        /// </code>
+        /// If <paramref name="start"/> and <paramref name="elapsedMs"/> are provided:
+        /// <code>
+        /// Job ID: [ServiceJob.Id], Job Name: [ServiceJob.Name], Start: [<paramref name="start"/>], End: [<paramref name="start"/> + <paramref name="elapsedMs"/>], Time to Run: [<paramref name="elapsedMs"/>]ms, 
+        /// </code>
+        /// </para>
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="start">The optional start date time for the process described by this message.</param>
+        /// <param name="elapsedMs">The optional elapsed time (in milliseconds) for the process described by this message.</param>
+        /// <param name="propertyValues">The property values to enrich the message template, if any.</param>
+        protected void Log( RockLogLevel logLevel, Exception exception, string messageTemplate, DateTime? start = null, long? elapsedMs = null, params object[] propertyValues )
         {
             if ( messageTemplate.IsNullOrWhiteSpace() )
             {
                 return;
             }
 
-            var values = new object[]
+            var messageTemplateSb = new StringBuilder( "Job ID: {jobId}, Job Name: {jobName}" );
+
+            var propValues = new List<object>
             {
                 this.ServiceJobId,
-                this.ServiceJobName,
-                start,
-                start.AddMilliseconds( elapsedMs ),
-                elapsedMs
+                this.ServiceJobName
+            };
+
+            if ( start.HasValue )
+            {
+                messageTemplateSb.Append( ", Start: {start}" );
+                propValues.Add( start.Value );
+
+                if ( elapsedMs.HasValue )
+                {
+                    messageTemplateSb.Append( ", End: {end}, Time To Run: {elapsedMs}ms" );
+                    propValues.Add( start.Value.AddMilliseconds( elapsedMs.Value ) );
+                    propValues.Add( elapsedMs.Value );
+                }
             }
-            .Concat( propertyValues ?? new object[0] )
-            .ToArray();
+
+            propertyValues = propValues
+                .Concat( propertyValues ?? new object[0] )
+                .ToArray();
 
             RockLogger.Log.WriteToLog(
                 logLevel,
                 exception,
                 RockLogDomains.Jobs,
-                $"Job ID: {{jobId}}, Job Name: {{jobName}}, Start: {{start}}, End: {{end}}, Time To Run: {{elapsedMs}}ms, {messageTemplate}",
-                values
+                $"{messageTemplateSb}, {messageTemplate}",
+                propertyValues
             );
         }
     }
