@@ -181,7 +181,7 @@ namespace Rock.Jobs
         /// <param name="start">The optional start date time for the process described by this message.</param>
         /// <param name="elapsedMs">The optional elapsed time (in milliseconds) for the process described by this message.</param>
         /// <param name="propertyValues">The property values to enrich the message template, if any.</param>
-        protected void Log( RockLogLevel logLevel, string messageTemplate, DateTime? start = null, long? elapsedMs = null, params object[] propertyValues )
+        internal void Log( RockLogLevel logLevel, string messageTemplate, DateTime? start = null, long? elapsedMs = null, params object[] propertyValues )
         {
             Log( logLevel, null, messageTemplate, start, elapsedMs, propertyValues );
         }
@@ -209,7 +209,7 @@ namespace Rock.Jobs
         /// <param name="start">The optional start date time for the process described by this message.</param>
         /// <param name="elapsedMs">The optional elapsed time (in milliseconds) for the process described by this message.</param>
         /// <param name="propertyValues">The property values to enrich the message template, if any.</param>
-        protected void Log( RockLogLevel logLevel, Exception exception, string messageTemplate, DateTime? start = null, long? elapsedMs = null, params object[] propertyValues )
+        internal void Log( RockLogLevel logLevel, Exception exception, string messageTemplate, DateTime? start = null, long? elapsedMs = null, params object[] propertyValues )
         {
             if ( messageTemplate.IsNullOrWhiteSpace() )
             {
