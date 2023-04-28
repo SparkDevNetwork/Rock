@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Groups
     public partial class GroupTreeView : RockBlock
     {
         #region Attribute Keys
-        public static class AttributeKey
+        private static class AttributeKey
         {
             public const string TreeviewTitle = "TreeviewTitle";
             public const string GroupTypesInclude = "GroupTypes";
@@ -126,6 +126,20 @@ namespace RockWeb.Blocks.Groups
             public const string InitialActiveSetting = "InitialActiveSetting";
             public const string DetailPage = "DetailPage";
             public const string DisableAutoSelectFirstGroup = "DisableAutoSelectFirstGroup";
+        }
+
+        private static class PageParameter
+        {
+            public const string GroupId = "GroupId";
+        }
+
+        private static class UserPreferenceKey
+        {
+            public const string HideInactiveGroups = "hide-inactive-groups";
+            public const string LimitToPublic = "limit-to-public";
+            public const string CountsType = "counts-type";
+            public const string CampusFilter = "campus-filter";
+            public const string IncludeNoCampus = "include-no-campus";
         }
 
         #endregion
@@ -146,7 +160,7 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
-            _groupId = PageParameter( "GroupId" );
+            _groupId = PageParameter( PageParameter.GroupId );
 
             var preferences = GetBlockPersonPreferences();
             var typePreferences = GetBlockTypePersonPreferences();
@@ -194,7 +208,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( pnlConfigPanel.Visible )
             {
-                var hideInactiveGroups = preferences.GetValue( "hide-inactive-groups" ).AsBooleanOrNull();
+                var hideInactiveGroups = preferences.GetValue( UserPreferenceKey.HideInactiveGroups ).AsBooleanOrNull();
                 if ( !hideInactiveGroups.HasValue )
                 {
                     hideInactiveGroups = this.GetAttributeValue( AttributeKey.InitialActiveSetting ) == "1";
@@ -202,7 +216,7 @@ namespace RockWeb.Blocks.Groups
 
                 tglHideInactiveGroups.Checked = hideInactiveGroups ?? true;
 
-                tglLimitPublicGroups.Checked = preferences.GetValue( "limit-to-public" ).AsBooleanOrNull() ?? false;
+                tglLimitPublicGroups.Checked = preferences.GetValue( UserPreferenceKey.LimitToPublic ).AsBooleanOrNull() ?? false;
             }
             else
             {
@@ -215,7 +229,7 @@ namespace RockWeb.Blocks.Groups
             ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.ChildGroups.ConvertToString(), TreeViewItem.GetCountsType.ChildGroups.ConvertToInt().ToString() ) );
             ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.GroupMembers.ConvertToString(), TreeViewItem.GetCountsType.GroupMembers.ConvertToInt().ToString() ) );
 
-            var countsType = preferences.GetValue( "counts-type" );
+            var countsType = preferences.GetValue( UserPreferenceKey.CountsType );
             if ( string.IsNullOrEmpty( countsType ) )
             {
                 countsType = this.GetAttributeValue( AttributeKey.InitialCountSetting );
@@ -238,7 +252,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampuses.Campuses = CampusCache.All( GetAttributeValue( AttributeKey.DisplayInactiveCampuses ).AsBoolean() );
 
-            var campusFilter = typePreferences.GetValue( "campus-filter" );
+            var campusFilter = typePreferences.GetValue( UserPreferenceKey.CampusFilter );
             if ( pnlConfigPanel.Visible )
             {
                 ddlCampuses.SetValue( campusFilter );
@@ -251,7 +265,7 @@ namespace RockWeb.Blocks.Groups
             if ( pnlConfigPanel.Visible )
             {
                 tglIncludeNoCampus.Visible = ddlCampuses.Visible;
-                tglIncludeNoCampus.Checked = typePreferences.GetValue( "include-no-campus" ).AsBoolean();
+                tglIncludeNoCampus.Checked = typePreferences.GetValue( UserPreferenceKey.IncludeNoCampus ).AsBoolean();
             }
 
 
@@ -498,7 +512,7 @@ namespace RockWeb.Blocks.Groups
         protected void lbAddGroupRoot_Click( object sender, EventArgs e )
         {
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
-            qryParams.Add( "GroupId", 0.ToString() );
+            qryParams.Add( PageParameter.GroupId, 0.ToString() );
             qryParams.Add( "ParentGroupId", hfRootGroupId.Value );
             qryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
 
@@ -515,7 +529,7 @@ namespace RockWeb.Blocks.Groups
             int groupId = hfSelectedGroupId.ValueAsInt();
 
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
-            qryParams.Add( "GroupId", 0.ToString() );
+            qryParams.Add( PageParameter.GroupId, 0.ToString() );
             qryParams.Add( "ParentGroupId", groupId.ToString() );
             qryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
 
@@ -577,7 +591,7 @@ namespace RockWeb.Blocks.Groups
         {
             var preferences = GetBlockPersonPreferences();
 
-            preferences.SetValue( "hide-inactive-groups", tglHideInactiveGroups.Checked.ToTrueFalse() );
+            preferences.SetValue( UserPreferenceKey.HideInactiveGroups, tglHideInactiveGroups.Checked.ToTrueFalse() );
             preferences.Save();
 
             // reload the whole page
@@ -593,7 +607,7 @@ namespace RockWeb.Blocks.Groups
         {
             var preferences = GetBlockPersonPreferences();
 
-            preferences.SetValue( "limit-to-public", tglLimitPublicGroups.Checked.ToTrueFalse() );
+            preferences.SetValue( UserPreferenceKey.LimitToPublic, tglLimitPublicGroups.Checked.ToTrueFalse() );
             preferences.Save();
 
             // reload the whole page
@@ -609,7 +623,7 @@ namespace RockWeb.Blocks.Groups
         {
             var preferences = GetBlockPersonPreferences();
 
-            preferences.SetValue( "counts-type", ddlCountsType.SelectedValue );
+            preferences.SetValue( UserPreferenceKey.CountsType, ddlCountsType.SelectedValue );
             preferences.Save();
 
             // reload the whole page
@@ -625,7 +639,7 @@ namespace RockWeb.Blocks.Groups
         {
             var typePreferences = GetBlockTypePersonPreferences();
 
-            typePreferences.SetValue( "campus-filter", ddlCampuses.SelectedValue );
+            typePreferences.SetValue( UserPreferenceKey.CampusFilter, ddlCampuses.SelectedValue );
             typePreferences.Save();
 
             // reload the whole page
@@ -641,7 +655,7 @@ namespace RockWeb.Blocks.Groups
         {
             var typePreferences = GetBlockTypePersonPreferences();
 
-            typePreferences.SetValue( "include-no-campus", tglIncludeNoCampus.Checked.ToTrueFalse() );
+            typePreferences.SetValue( UserPreferenceKey.IncludeNoCampus, tglIncludeNoCampus.Checked.ToTrueFalse() );
             typePreferences.Save();
 
             // reload the whole page
