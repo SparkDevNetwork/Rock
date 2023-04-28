@@ -171,12 +171,10 @@ namespace Rock.Jobs
         private int commandTimeout;
         private int batchAmount;
         private DateTime lastRunDateTime;
-        private string jobName;
 
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
-            jobName = string.Format( "{0} ({1})", this.ServiceJobName, this.GetType().Name );
             batchAmount = GetAttributeValue( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
             commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
             lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
@@ -2440,7 +2438,7 @@ SELECT @@ROWCOUNT
                                     innerEx = innerEx.InnerException;
                                 }
 
-                                RockLogger.Log.Warning( RockLogDomains.Jobs, $"{jobName} : Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
+                                this.Log( RockLogLevel.Warning, $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
 
                                 // The context we used to attempt the deletion is no
                                 // good to use now since it is in a bad state. Create
