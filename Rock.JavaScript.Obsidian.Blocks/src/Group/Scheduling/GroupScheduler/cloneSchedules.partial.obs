@@ -166,12 +166,11 @@
 
         cloneSettings.value = result.data;
 
-        // TODO (JPH): Uncomment the following once person preferences are implemented.
-        // selectedSourceDate.value = cloneSettings.value?.selectedSourceDate ?? "";
-        // selectedDestinationDate.value = cloneSettings.value?.selectedDestinationDate ?? "";
-        // selectedGroups.value = cloneSettings.value?.selectedGroups ?? [];
-        // selectedLocations.value = cloneSettings.value?.selectedLocations ?? [];
-        // selectedSchedules.value = cloneSettings.value?.selectedSchedules ?? [];
+        selectedSourceDate.value = cloneSettings.value?.selectedSourceDate ?? "";
+        selectedDestinationDate.value = cloneSettings.value?.selectedDestinationDate ?? "";
+        selectedGroups.value = cloneSettings.value?.selectedGroups ?? [];
+        selectedLocations.value = cloneSettings.value?.selectedLocations ?? [];
+        selectedSchedules.value = cloneSettings.value?.selectedSchedules ?? [];
     }
 
     // #endregion

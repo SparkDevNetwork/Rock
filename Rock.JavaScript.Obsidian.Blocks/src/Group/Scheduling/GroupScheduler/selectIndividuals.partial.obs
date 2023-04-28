@@ -410,33 +410,22 @@
      * Updates settings-related values based on the currently-applied resource settings.
      */
     function updateSettingsValues(): void {
-        // TODO (JPH): Uncomment the following once person preferences are implemented.
-        // const sourceType = resourceSettings.value?.resourceListSourceType;
-        // // A "falsy" check won't work here, as sourceType might be 0.
-        // if (sourceType !== undefined) {
-        //     if (secondarySourceTypes.some((secondary: ResourceListSourceType) => secondary === sourceType)) {
-        //         selectedPrimarySourceType.value = primarySourceTypeGroupValue;
-        //         selectedSecondarySourceType.value = sourceType.toString();
-        //     }
-        //     else {
-        //         selectedPrimarySourceType.value = sourceType.toString();
-        //     }
-        // }
-
-        // selectedAlternateGroup.value = resourceSettings.value?.resourceAlternateGroup ?? null;
-        // selectedDataView.value = resourceSettings.value?.resourceDataView ?? null;
-
-        // getResources();
-
-        // TODO (JPH): Remove the following once person preferences are implemented.
-        if (primarySourceTypeItems.value.length === 1 && primarySourceTypeItems.value[0].value === primarySourceTypeGroupValue) {
-            selectedPrimarySourceType.value = primarySourceTypeGroupValue;
+        const sourceType = resourceSettings.value?.resourceListSourceType;
+        // A "falsy" check won't work here, as sourceType might be 0.
+        if (sourceType !== undefined) {
+            if (secondarySourceTypes.some((secondary: ResourceListSourceType) => secondary === sourceType)) {
+                selectedPrimarySourceType.value = primarySourceTypeGroupValue;
+                selectedSecondarySourceType.value = sourceType.toString();
+            }
+            else {
+                selectedPrimarySourceType.value = sourceType.toString();
+            }
         }
 
-        nextTick(() => {
-            // TODO (JPH): Remove `nextTick` wrapper (but leave the following line) once person preferences are implemented.
-            getResources();
-        });
+        selectedAlternateGroup.value = resourceSettings.value?.resourceAlternateGroup ?? null;
+        selectedDataView.value = resourceSettings.value?.resourceDataView ?? null;
+
+        getResources();
     }
 
     /**
