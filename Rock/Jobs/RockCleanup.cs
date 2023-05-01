@@ -275,8 +275,6 @@ namespace Rock.Jobs
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
-
             RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
 
             RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
@@ -286,6 +284,8 @@ namespace Rock.Jobs
             RunCleanupTask( "remove old notification message types", () => RemoveOldNotificationMessageTypes() );
 
             RunCleanupTask( "update person viewed count", () => UpdatePersonViewedCount() );
+
+            RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             /*
              * 21-APR-2022 DMV
