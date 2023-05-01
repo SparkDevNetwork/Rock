@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -95,7 +95,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     continue;
                                 }
 
-                                if ( dataview.PersistedScheduleIntervalMinutes.HasValue && dataview.PersistedLastRefreshDateTime.HasValue )
+                                if ( dataview.IsPersisted() && dataview.PersistedLastRefreshDateTime.HasValue )
                                 {
                                     //Get record from persisted.
                                     var persistedValuesQuery = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == dataview.Id );
