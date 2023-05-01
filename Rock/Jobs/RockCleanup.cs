@@ -2401,7 +2401,7 @@ SELECT @@ROWCOUNT
                         var personAliasesQry = bulkPersonAliasService.Queryable()
                             .Where( pa => batchPersonAliasIds.Contains( pa.Id ) );
 
-                        deleteCount += bulkRockContext.BulkDelete( personAliasesQry );
+                        deleteCount += bulkRockContext.BulkDelete( personAliasesQry, batchAmount );
                     }
                     catch
                     {
