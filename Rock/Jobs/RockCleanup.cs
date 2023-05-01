@@ -275,8 +275,6 @@ namespace Rock.Jobs
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
-
             RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
 
             RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
@@ -288,6 +286,8 @@ namespace Rock.Jobs
             RunCleanupTask( "update person viewed count", () => UpdatePersonViewedCount() );
 
             RunCleanupTask( "unused person preference", () => RemoveUnusedPersonPreferences() );
+
+            RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             /*
              * 21-APR-2022 DMV
@@ -2515,7 +2515,7 @@ SELECT @@ROWCOUNT
                         var personAliasesQry = bulkPersonAliasService.Queryable()
                             .Where( pa => batchPersonAliasIds.Contains( pa.Id ) );
 
-                        deleteCount += bulkRockContext.BulkDelete( personAliasesQry );
+                        deleteCount += bulkRockContext.BulkDelete( personAliasesQry, batchAmount );
                     }
                     catch
                     {
