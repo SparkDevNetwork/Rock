@@ -116,8 +116,9 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="discountCode">The discount code in use that should be verified.</param>
         /// <param name="errorMessage">The error result.</param>
+        /// <param name="isExistingRegistration">If the registration is an existing registration.</param>
         /// <returns></returns>
-        public RegistrationContext GetRegistrationContext( int registrationInstanceId, Guid? registrationGuid, Person currentPerson, string discountCode, out string errorMessage )
+        public RegistrationContext GetRegistrationContext( int registrationInstanceId, Guid? registrationGuid, Person currentPerson, string discountCode, out string errorMessage, bool isExistingRegistration )
         {
             var rockContext = Context as RockContext;
             Registration registration = null;
@@ -139,7 +140,7 @@ namespace Rock.Model
             {
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
 
-                context.Discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, discountCode );
+                context.Discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, discountCode, isExistingRegistration );
 
                 if ( context.Discount == null )
                 {

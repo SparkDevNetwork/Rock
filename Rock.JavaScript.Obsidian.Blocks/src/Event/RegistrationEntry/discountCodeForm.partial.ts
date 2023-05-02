@@ -104,9 +104,15 @@ export default defineComponent({
         async tryDiscountCode(): Promise<void> {
             this.loading = true;
             try {
+                let isExistingDiscountCode = false;
+                if (this.registrationEntryState.discountCode != "") {
+                    isExistingDiscountCode = this.viewModel.isExistingRegistration
+                }
+
                 const result = await this.invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", {
                     code: this.discountCodeInput,
-                    registrantCount: this.registrationEntryState.registrants.length
+                    registrantCount: this.registrationEntryState.registrants.length,
+                    isExistingRegistration: isExistingDiscountCode
                 });
 
                 if (result.isError || !result.data) {

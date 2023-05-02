@@ -129,8 +129,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <param name="code">The code.</param>
+        /// <param name="isExistingRegistration">If the registration is an existing registration.</param>
         /// <returns></returns>
-        public RegistrationTemplateDiscountWithUsage GetDiscountByCodeIfValid( int registrationInstanceId, string code )
+        public RegistrationTemplateDiscountWithUsage GetDiscountByCodeIfValid( int registrationInstanceId, string code, bool isExistingRegistration )
         {
             if ( code.IsNullOrWhiteSpace() )
             {
@@ -150,39 +151,42 @@ namespace Rock.Model
                     return null;
                 }
 
-                // Validate the date range
-                var today = RockDateTime.Today;
-
-                if ( discount.StartDate.HasValue && today < discount.StartDate.Value )
-                {
-                    // Before the discount starts
-                    return null;
-                }
-
-                if ( discount.EndDate.HasValue && today.AddDays( 1 ) > discount.EndDate.Value )
-                {
-                    // Discount has expired
-                    return null;
-                }
-
                 int? usagesRemaining = null;
 
-                if ( discount.MaxUsage.HasValue )
+                if ( isExistingRegistration == false )
                 {
-                    // Check the number of people that have already used this code
-                    var usageCount = new RegistrationService( Context as RockContext )
-                        .Queryable()
-                        .AsNoTracking()
-                        .Count( r =>
-                            r.RegistrationInstanceId == registrationInstanceId &&
-                            r.DiscountCode.Equals( code, StringComparison.OrdinalIgnoreCase ) );
+                    // Validate the date range
+                    var today = RockDateTime.Today;
 
-                    usagesRemaining = discount.MaxUsage.Value - usageCount;
-
-                    if ( usagesRemaining <= 0 )
+                    if ( discount.StartDate.HasValue && today < discount.StartDate.Value )
                     {
-                        // Discount has been used up
+                        // Before the discount starts
                         return null;
+                    }
+
+                    if ( discount.EndDate.HasValue && today.AddDays( 1 ) > discount.EndDate.Value )
+                    {
+                        // Discount has expired
+                        return null;
+                    }
+
+                    if ( discount.MaxUsage.HasValue )
+                    {
+                        // Check the number of people that have already used this code
+                        var usageCount = new RegistrationService( Context as RockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Count( r =>
+                                r.RegistrationInstanceId == registrationInstanceId &&
+                                r.DiscountCode.Equals( code, StringComparison.OrdinalIgnoreCase ) );
+
+                        usagesRemaining = discount.MaxUsage.Value - usageCount;
+
+                        if ( usagesRemaining <= 0 )
+                        {
+                            // Discount has been used up
+                            return null;
+                        }
                     }
                 }
 

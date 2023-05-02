@@ -198,9 +198,10 @@ namespace Rock.Blocks.Event
         /// Checks the discount code provided. If a null/blank string is used then checks for AutoApplied discounts.
         /// </summary>
         /// <param name="code">The code.</param>
+        /// <param name="isExistingRegistration">If the registration is an existing registration.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CheckDiscountCode( string code, int registrantCount )
+        public BlockActionResult CheckDiscountCode( string code, int registrantCount, bool isExistingRegistration )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -220,7 +221,7 @@ namespace Rock.Blocks.Event
 
                     foreach( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
                     {
-                        discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, registrationTemplateDiscountCode );
+                        discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, registrationTemplateDiscountCode, false );
 
                         if ( discount == null || ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value ) )
                         {
@@ -233,7 +234,7 @@ namespace Rock.Blocks.Event
                 }
                 else
                 {
-                    discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                    discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code, isExistingRegistration );
                 }
 
                 if ( discount == null )
@@ -3483,6 +3484,10 @@ namespace Rock.Blocks.Event
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
 
+            var context = GetContext( rockContext, out errorMessage );
+            var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
+            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue || session?.RegistrationGuid.HasValue == true;
+
             // Basic check on the args to see that they appear valid
             if ( args == null )
             {
@@ -3502,7 +3507,7 @@ namespace Rock.Blocks.Event
                 return null;
             }
 
-            var context = registrationService.GetRegistrationContext( registrationInstanceId, args.RegistrationGuid, currentPerson, args.DiscountCode, out errorMessage );
+            context = registrationService.GetRegistrationContext( registrationInstanceId, args.RegistrationGuid, currentPerson, args.DiscountCode, out errorMessage, isExistingRegistration );
             if ( context == null )
             {
                 return null;
