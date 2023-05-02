@@ -30,22 +30,30 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             Sql( @"
-                DROP INDEX IF EXISTS
-	                IX_IpAddress_LookupDateTime ON [dbo].[InteractionSessionLocation],
-	                [IX_AuthorizedPersonAliasId] ON [dbo].[FinancialTransaction]
+                IF NOT EXISTS (SELECT * 
+                FROM sys.indexes 
+                WHERE name = 'IX_IpAddress_LookupDateTime' 
+                    AND object_id = OBJECT_ID('dbo.InteractionSessionLocation'))
+                BEGIN
+	                -- Create Index IX_IpAddress_LookupDateTime
+	                CREATE NONCLUSTERED INDEX [IX_IpAddress_LookupDateTime] ON [dbo].[InteractionSessionLocation]
+	                (
+		                [IpAddress] ASC,
+		                [LookupDateTime] ASC
+	                ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON);
+                END
 
-                -- Create Index IX_IpAddress_LookupDateTime
-                CREATE NONCLUSTERED INDEX [IX_IpAddress_LookupDateTime] ON [dbo].[InteractionSessionLocation]
-                (
-	                [IpAddress] ASC,
-	                [LookupDateTime] ASC
-                ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON);
-
-                -- Create Index IX_AuthorizedPersonAliasId
-                CREATE NONCLUSTERED INDEX [IX_AuthorizedPersonAliasId] ON [dbo].[FinancialTransaction]
-                (
-	                [AuthorizedPersonAliasId] ASC
-                ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON);" );
+                IF NOT EXISTS (SELECT * 
+                FROM sys.indexes 
+                WHERE name = 'IX_AuthorizedPersonAliasId' 
+                    AND object_id = OBJECT_ID('dbo.FinancialTransaction'))
+                BEGIN
+	                -- Create Index IX_AuthorizedPersonAliasId
+	                CREATE NONCLUSTERED INDEX [IX_AuthorizedPersonAliasId] ON [dbo].[FinancialTransaction]
+	                (
+		                [AuthorizedPersonAliasId] ASC
+	                ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON);
+                END" );
         }
 
         /// <summary>
