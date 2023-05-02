@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="card card-sched">
+    <div class="card card-sched js-schedule-group">
         <div class="card-body">
             <span class="d-block font-weight-bold text-sm">
                 {{ title }}
