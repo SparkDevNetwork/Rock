@@ -378,8 +378,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerEntityTypeId.Value, username, externalLoginAuthPassword, rockContext );
 
                 // Make sure the login is confirmed, otherwise login is not allowed.
-                if ( userLogin.IsConfirmed != true && SendConfirmation( userLogin ) )
+                if ( userLogin.IsConfirmed != true )
                 {
+                    SendConfirmation( userLogin );
                     return ActionBadRequest( GetUnconfirmedMessage() );
                 }
 
