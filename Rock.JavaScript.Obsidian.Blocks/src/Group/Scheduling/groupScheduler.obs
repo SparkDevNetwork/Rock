@@ -11,43 +11,45 @@
            :hasFullscreen="true"
            :headerSecondaryActions="secondaryActions">
 
-        <!-- <template #helpContent>
-            <div class="p-4">
+        <template #helpContent>
+            <div class="p-3 bg-white">
                 <div>
                     <h5 class="mt-0 mb-4">Group Scheduler Help</h5>
                     <p><strong>Scheduling Basics</strong></p>
-                    <p>This screen allows you to schedule individuals into groups. Openings are shown for each group location schedule to meet the configured minimum number of individuals. Additional individuals can be added by dropping them into the ‘Add Individual’ zone.</p>
+                    <p>This screen allows you to schedule individuals into groups. Individuals can be added to a schedule by clicking the ‘Plus’ icon in the lower right corner of each location.</p>
                 </div>
                 <div class="row mt-4">
                     <div class="col-md-6">
                         <p><strong>Scheduled Individual Legend</strong></p>
-                        <p>Scheduled individuals have several states that they can be in. These states are described using an icon to determine how the invite matches their preference. A color describes the status of the invite.</p>
-                        <div class="text-center mb-5"><img src="/Assets/Images/group-scheduler/scheduled-legend.svg"></div>
+                        <p>Each scheduled individual has one of three invite statuses:</p>
+                        <ul>
+                            <li><i class="fa fa-circle text-success"></i> Accepted Invite</li>
+                            <li><i class="fa fa-circle text-muted"></i> Pending Invite</li>
+                            <li><i class="fa fa-circle text-danger"></i> Declined Invite</li>
+                        </ul>
+                        <p>The invite status is shown by a border around the individual's avatar.</p><p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>
+                        <ul>
+                            <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
+                            <li><i class="fa fa-minus-circle"></i> Indicates that the schedule does not match this person's scheduling preference.</li>
+                        </ul>
+                        <p>For both notification icon types, additional details can be viewed by hovering over the icon.</p>
                     </div>
 
-                    <div class="col-md-6">
-                        <p><strong>Unscheduled Individuals Legend</strong></p>
-                        <p>A person who is not scheduled can also be in various states. Each of these is represented by an icon. Rolling over the individuals will give more details about the state. Yellow indicates a conflict for one or more schedules.</p>
-                        <div class="text-left mb-5"><img src="/Assets/Images/group-scheduler/unscheduled-legend.svg"></div>
-                    </div>
-                </div>
-
-                <div class="row">
                     <div class="col-md-6">
                         <p><strong>Group Location Schedule Status</strong></p>
-                        <p>At the top of the group location for each schedule is a status bar. This bar displays quite a bit of information for you.</p>
-                        <p>The green bar represents the individuals who have accepted invites while yellow are those still pending. People who have declined will not be represented on this bar.</p>
-                        <p>The white line represents the minimum number of individuals you need. The black bar is your desired number.</p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p>&nbsp;</p>
-                        <div class="text-left mb-3"><img src="/Assets/Images/group-scheduler/progress-example.svg"></div>
-                        <p>So in this case enough people have accepted your invite to meet the minimum. If all remaining invites are accepted you would have enough to meet your desired number.</p>
+                        <p>Each group location has a status bar at the bottom that shows the overall status of the schedule.</p>
+                        <ul>
+                            <li><i class="fa fa-square text-danger"></i> A red bar means there are not enough accepted invites to reach the minimum number of individuals needed.</li>
+                            <li><i class="fa fa-square text-warning"></i> A yellow bar means there are enough accepted invites to reach the minimum number, but not the desired number.</li>
+                            <li><i class="fa fa-square text-success"></i> A green bar means there are enough accepted invites to reach or exceed the desired number.</li>
+                            <li><i class="fa fa-square text-critical"></i> An orange bar means there are too many accepted invites and the maximum number is exceeded.</li>
+                        </ul>
+                        <p>Each status bar will show a solid bar representing the accepted invites, and a semi-transparent bar representing pending invites.</p>
+                        <p>Bars include ticks, that mark the thresholds (minimum, desired and maximum) for each schedule. You can hover over each tick to see a tooltip with the threshold and the number of individuals required.</p>
                     </div>
                 </div>
             </div>
-        </template> -->
+        </template>
 
         <!-- Toolbar: Desktop -->
         <div class="panel-toolbar d-none d-md-flex flex-wrap flex-sm-nowrap justify-content-between">
@@ -764,4 +766,42 @@
     provideSecurityGrant(securityGrant);
 
     onConfigurationValuesChanged(reloadBlock);
+
+
+    nextTick(() => {
+        // if window size is greater than 768px, then we need to resize the .service-columns element
+        let serviceColumns = document.querySelectorAll<HTMLElement>(".schedule-column");
+        if (window.innerWidth > 768) {
+            let locationSize: number[] = [];
+            
+            serviceColumns.forEach((column) => {
+                const locations = column.querySelectorAll<HTMLElement>('.location');
+
+                locations.forEach((location, i) => {
+                    if (locationSize[i] === undefined) {
+                        locationSize[i] = location.offsetHeight;
+                    } else if (locationSize[i] < location.offsetHeight) {
+                        locationSize[i] = location.offsetHeight;
+                    }
+                });
+            });
+
+            serviceColumns.forEach((column) => {
+                const locations = column.querySelectorAll<HTMLElement>('.location');
+
+                locations.forEach((location, i) => {
+                    console.log(locationSize[i]);
+                    location.style.minHeight = `${locationSize[i]}px`;
+                });
+            });
+        } else {
+            serviceColumns.forEach((column) => {
+                const locations = column.querySelectorAll<HTMLElement>('.location');
+
+                locations.forEach((location) => {
+                    location.style.minHeight = 'auto';
+                });
+            });
+        }
+    });
 </script>
