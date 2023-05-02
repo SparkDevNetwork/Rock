@@ -4,7 +4,7 @@
         Unable to schedule this occurrence.
     </NotificationBox>
 
-    <div v-else class="location">
+    <div v-else class="location js-schedule-location">
         <div class="d-flex">
             <span class="d-block text-sm">
                 {{ title }}
