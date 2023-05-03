@@ -779,6 +779,22 @@ namespace Rock.Data
         public DbSet<ContentCollectionSource> ContentCollectionSources { get; set; }
 
         /// <summary>
+        /// Gets or sets the content topics.
+        /// </summary>
+        /// <value>
+        /// The content topics.
+        /// </value>
+        public DbSet<ContentTopic> ContentTopics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content topic domains.
+        /// </summary>
+        /// <value>
+        /// The content topic domains.
+        /// </value>
+        public DbSet<ContentTopicDomain> ContentTopicDomains { get; set; }
+
+        /// <summary>
         /// Gets or sets the data views.
         /// </summary>
         /// <value>

@@ -809,6 +809,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentChannelTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentCollectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentCollectionSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\contentTopicBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\contentTopicDomainBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\dataViewBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\dataViewFilterBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\definedTypeBag.d.ts" />

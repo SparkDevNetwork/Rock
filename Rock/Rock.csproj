@@ -953,6 +953,8 @@
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
     <Compile Include="Lava\WebsiteLavaHost.cs" />
     <Compile Include="Logging\RockLoggerMemoryBuffer.cs" />
+    <Compile Include="Model\CMS\ContentTopicDomain\ContentTopicDomain.cs" />
+    <Compile Include="Model\CMS\ContentTopic\ContentTopic.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.Logic.cs" />
@@ -972,6 +974,8 @@
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegmentService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilterService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
+    <Compile Include="Model\CodeGenerated\ContentTopicDomainService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\ContentTopicService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />

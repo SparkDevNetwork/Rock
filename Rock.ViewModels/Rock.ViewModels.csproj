@@ -189,6 +189,8 @@
     <Compile Include="Communication\ConversationMessageBag.cs" />
     <Compile Include="Core\NotificationMessageActionBag.cs" />
     <Compile Include="Core\PersonPreferenceValueBag.cs" />
+    <Compile Include="Entities\ContentTopicBag.cs" />
+    <Compile Include="Entities\ContentTopicDomainBag.cs" />
     <Compile Include="Entities\NotificationMessageTypeBag.cs" />
     <Compile Include="Engagement\AchievementCompletedMessageBag.cs" />
     <Compile Include="Event\AttendanceOccurrenceUpdatedMessageBag.cs" />

@@ -194,6 +194,16 @@ namespace Rock.SystemGuid
         public const string CONTENT_COLLECTION_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
 
         /// <summary>
+        /// The guid for the Rock.Model.ContentTopic entity
+        /// </summary>
+        public const string CONTENT_TOPIC = "CD4BE244-147E-4A90-9137-B35FC35B5A52";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentTopicDomain entity
+        /// </summary>
+        public const string CONTENT_TOPIC_DOMAIN = "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51";
+
+        /// <summary>
         /// The guid for the Rock.Model.DataView entity.
         /// </summary>
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
