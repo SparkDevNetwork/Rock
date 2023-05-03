@@ -237,6 +237,8 @@ export const FieldType = {
     RegistrationInstance: "5F0F6D6A-DEB7-47AD-93C7-4CCC88EF932D",
     /** Registration Template field type */
     RegistrationTemplate: "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620",
+    /** Registry Entry field type */
+    RegistryEntry: "D98E1D88-2240-4248-B93B-0512BD3BB61A",
     /** Registration Template field type */
     ReminderType: "94A5DF3C-A7E0-451E-9DBA-86A6CFD5DF70",
     /** Registration Template field type */

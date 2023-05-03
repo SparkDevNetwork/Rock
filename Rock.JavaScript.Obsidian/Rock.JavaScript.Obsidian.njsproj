@@ -433,6 +433,12 @@
     <TypeScriptCompile Include="Framework\FieldTypes\imageFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListFieldComponents.ts" />
+    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryField.partial.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryFieldComponents.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypesField.partial.ts" />

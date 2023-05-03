@@ -73,6 +73,10 @@
         }
     });
 
+    if (props.modelValue != null) {
+        internalValue.value = props.modelValue;
+    }
+
     /** Convert the `required` rule to more accurately validate if this control is filled out */
     const fieldRules = computed(() => {
         let rules = normalizeRules(props.rules);
