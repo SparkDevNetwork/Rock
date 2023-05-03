@@ -35,6 +35,9 @@ export type GroupSchedulerOccurrenceBag = {
     /** Gets or sets the group ID for this occurrence. */
     groupId: number;
 
+    /** Gets or sets the group location order for this occurrence. */
+    groupLocationOrder: number;
+
     /** Gets or sets the group name for this occurrence. */
     groupName?: string | null;
 

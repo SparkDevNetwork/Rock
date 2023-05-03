@@ -9,7 +9,7 @@
 
         <div v-else class="schedules">
 
-            <Schedule v-for="(occurrences, key, index) in occurrencesBySchedule" :key="key"
+            <Schedule v-for="(occurrences, index) in sortedOccurrencesBySchedule" :key="getScheduleIdKey(occurrences)"
                       :occurrences="occurrences"
                       :showPrevNextButtons="showPrevNextButtons"
                       :ref="(comp) => addScheduleComponent(comp, index)"
@@ -92,31 +92,36 @@
         return friendlyOccurrenceDate || "No Date Provided";
     });
 
-    const occurrencesBySchedule = computed((): Record<number, GroupSchedulerOccurrenceBag[]> => {
+    const sortedOccurrencesBySchedule = computed((): (GroupSchedulerOccurrenceBag[])[] => {
         if (!props.occurrences?.length) {
-            return {};
+            return [];
         }
 
-        const groupedOccurrences: Record<number, GroupSchedulerOccurrenceBag[]> = {};
+        // We're assuming the server has performed the sort and returned the occcurrences to us in the expected display order.
+        // A Map object is needed to maintain sort order.
+        const groupedOccurrences = new Map<number, GroupSchedulerOccurrenceBag[]>();
         props.occurrences
             .filter((o: GroupSchedulerOccurrenceBag) => o.scheduleId)
             .forEach((o: GroupSchedulerOccurrenceBag) => {
                 const scheduleId = o.scheduleId || 0;
-                let scheduleOccurrences = groupedOccurrences[scheduleId];
+                let scheduleOccurrences = groupedOccurrences.get(scheduleId);
 
                 if (!scheduleOccurrences) {
                     scheduleOccurrences = [];
-                    groupedOccurrences[scheduleId] = scheduleOccurrences;
+                    groupedOccurrences.set(scheduleId, scheduleOccurrences);
                 }
 
                 scheduleOccurrences.push(o);
             });
 
-        return groupedOccurrences;
+        const sortedScheduleOccurrences: (GroupSchedulerOccurrenceBag[])[] = [];
+        groupedOccurrences.forEach((occurrences) => sortedScheduleOccurrences.push(occurrences));
+
+        return sortedScheduleOccurrences;
     });
 
     const scheduleCount = computed((): number => {
-        return Object.keys(occurrencesBySchedule.value).length;
+        return sortedOccurrencesBySchedule.value.length;
     });
 
     const anySchedules = computed((): boolean => {
@@ -130,6 +135,15 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the schedule ID "key" from the first occurrence in the collection.
+     *
+     * @param occurrences The occurrences for a given schedule.
+     */
+    function getScheduleIdKey(occurrences: GroupSchedulerOccurrenceBag[]): number {
+        return occurrences?.[0]?.scheduleId ?? 0;
+    }
 
     /**
      * Adds the component to the array of schedule components.

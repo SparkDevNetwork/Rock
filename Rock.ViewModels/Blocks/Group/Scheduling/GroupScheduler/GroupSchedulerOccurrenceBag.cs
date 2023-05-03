@@ -65,6 +65,14 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         public string ParentGroupName { get; set; }
 
         /// <summary>
+        /// Gets or sets the group location order for this occurrence.
+        /// </summary>
+        /// <value>
+        /// The group location order for this occurrence.
+        /// </value>
+        public int GroupLocationOrder { get; set; }
+
+        /// <summary>
         /// Gets or sets the location ID for this occurrence.
         /// </summary>
         /// <value>

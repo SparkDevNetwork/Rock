@@ -40,7 +40,7 @@ export type GroupSchedulerCloneSettingsBag = {
     /** Gets or sets the available source dates. */
     availableSourceDates?: ListItemBag[] | null;
 
-    /** Gets or sets the selected destination date. */
+    /** Gets or sets the ISO 8601 selected destination date. */
     selectedDestinationDate?: string | null;
 
     /** Gets or sets the selected groups. */
@@ -52,6 +52,6 @@ export type GroupSchedulerCloneSettingsBag = {
     /** Gets or sets the selected schedules. */
     selectedSchedules?: string[] | null;
 
-    /** Gets or sets the selected source date. */
+    /** Gets or sets the ISO 8601 selected source date. */
     selectedSourceDate?: string | null;
 };

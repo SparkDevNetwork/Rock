@@ -915,6 +915,7 @@ namespace Rock.Blocks.Group.Scheduling
                         GroupName = gls.Group.Name,
                         ParentGroupId = gls.Group.ParentGroupId,
                         ParentGroupName = gls.Group.ParentGroup?.Name,
+                        GroupLocationOrder = gls.GroupLocation.Order,
                         LocationId = gls.Location.Id,
                         LocationName = gls.Location.ToString( true ),
                         ScheduleId = gls.Schedule.Id,
@@ -934,6 +935,9 @@ namespace Rock.Blocks.Group.Scheduling
                 .OrderBy( o => o.OccurrenceDate )
                 .ThenBy( o => o.ScheduleOrder )
                 .ThenBy( o => o.OccurrenceDateTime )
+                .ThenBy( o => o.GroupName )
+                .ThenBy( o => o.GroupLocationOrder )
+                .ThenBy( o => o.LocationName )
                 .ToList();
 
             _actualLocationIds = occurrences.Select( o => o.LocationId ).Distinct().ToList();
