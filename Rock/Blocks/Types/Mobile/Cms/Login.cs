@@ -106,6 +106,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_LOGIN_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "6006FE32-DC01-4B1C-A9B8-EE172451F4C5" )]
+
     public class Login : RockMobileBlockType
     {
         /// <summary>
@@ -185,8 +186,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-
-
             return new Rock.Common.Mobile.Blocks.Login.Configuration
             {
                 // todo update this to use the mobile configuration
@@ -293,6 +292,155 @@ namespace Rock.Blocks.Types.Mobile.Cms
             return true;
         }
 
+
+        /// <summary>
+        /// Gets or creates a person from information returned by external authentication.
+        /// </summary>
+        /// <param name="externallyAuthenticatedUser">The externally authenticated user to either create or get.</param>
+        /// <param name="username">The username of the person to look for or create. This is usually dependent on the
+        /// authentication provider. For instance, an Auth0 related username is "AUTH0_{FOREIGN_KEY}. It is up to the person
+        /// implementing this method into an external authentication provider to make sure the username is formatted correctly."</param>
+        /// <param name="authentitationEntityTypeId">The authentication entity type id.</param>
+        /// <param name="rockContext"></param>
+        /// <param name="password">The external authentication password.</param>
+        /// <returns></returns>
+        [RockInternal( "1.15.1" )]
+        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag externallyAuthenticatedUser, int authentitationEntityTypeId, string username, string password, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            UserLogin user = null;
+            Person person = null;
+
+            // Query for an existing user from the Auth0 user name.
+            var userLoginService = new UserLoginService( rockContext );
+            user = userLoginService.GetByUserName( username );
+
+            // If no user was found, see if we can find a match in the person table.
+            if ( user == null )
+            {
+                var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                var personStatusPending = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+
+                //
+                // Build the person match query based off of the data the external authentication returned.
+                //
+                var firstName = externallyAuthenticatedUser.FirstName?.Trim()?.FixCase();
+                var lastName = externallyAuthenticatedUser.LastName?.Trim()?.FixCase();
+                var email = externallyAuthenticatedUser.Email;
+                var phoneNumber = externallyAuthenticatedUser.PhoneNumber;
+
+                // In order to match or create a person, we need a valid
+                // email or phone, and first and last name,
+                var hasValidPhoneOrEmail = email.IsNotNullOrWhiteSpace() || phoneNumber.IsNotNullOrWhiteSpace();
+                var hasValidFirstAndLastName = firstName.IsNotNullOrWhiteSpace() && lastName.IsNotNullOrWhiteSpace();
+
+                if ( !hasValidPhoneOrEmail || !hasValidFirstAndLastName )
+                {
+                    return null;
+                }
+
+                // Match the person.
+                var personMatchQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, phoneNumber );
+                var personService = new PersonService( rockContext );
+
+                person = personService.FindPerson( personMatchQuery, true );
+
+                rockContext.WrapTransaction( () =>
+                {
+                    // If we couldn't match a person, we should create a new one.
+                    if ( person == null )
+                    {
+                        person = new Person();
+                        person.IsSystem = false;
+                        person.RecordTypeValueId = personRecordTypeId;
+                        person.RecordStatusValueId = personStatusPending;
+                        person.FirstName = firstName;
+                        person.LastName = lastName;
+                        person.Email = email;
+                        person.IsEmailActive = true;
+                        person.EmailPreference = EmailPreference.EmailAllowed;
+
+                        person.NickName = externallyAuthenticatedUser.NickName?.Trim()?.FixCase();
+                        person.Gender = externallyAuthenticatedUser.Gender.ToNative();
+
+                        if( externallyAuthenticatedUser.BirthDate.HasValue )
+                        {
+                            person.SetBirthDate( externallyAuthenticatedUser.BirthDate.Value.DateTime );
+                        }
+                        
+                        if ( phoneNumber.IsNotNullOrWhiteSpace() )
+                        {
+                            var mobilePhoneDefinedValueCache = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                            person.UpdatePhoneNumber( mobilePhoneDefinedValueCache.Id, null, Rock.Model.PhoneNumber.CleanNumber( phoneNumber ), null, null, rockContext );
+                        }
+
+                        PersonService.SaveNewPerson( person, rockContext, null, false );
+                        rockContext.SaveChanges();
+                    }
+
+                    user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, authentitationEntityTypeId, username, password, true );
+                    user.ForeignKey = externallyAuthenticatedUser.ForeignKey;
+                } );
+            }
+
+            // If an Auth0 UserLogin entry already exists for this username.
+            if ( user != null )
+            {
+                username = user.UserName;
+
+                // If there is an associated Person with this user.
+                if ( user.PersonId.HasValue )
+                {
+                    // Query that person.
+                    var personService = new PersonService( rockContext );
+                    var userPerson = personService.Get( user.PersonId.Value );
+                    if ( userPerson != null )
+                    {
+                        if ( externallyAuthenticatedUser.PhoneNumber.IsNotNullOrWhiteSpace() )
+                        {
+                            var mobilePhoneDefinedValueCache = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                            userPerson.UpdatePhoneNumber( mobilePhoneDefinedValueCache.Id, null, Rock.Model.PhoneNumber.CleanNumber( externallyAuthenticatedUser.PhoneNumber ), null, null, rockContext );
+                            rockContext.SaveChanges();
+                        }
+
+                        // If person does not have a photo, try to get the photo return with auth0.
+                        if ( !userPerson.PhotoId.HasValue && !string.IsNullOrWhiteSpace( externallyAuthenticatedUser.Picture ) )
+                        {
+                            // Download the photo from the url provided.
+                            var restClient = new RestClient( externallyAuthenticatedUser.Picture );
+                            var restRequest = new RestRequest( Method.GET );
+                            var restResponse = restClient.Execute( restRequest );
+                            if ( restResponse.StatusCode == HttpStatusCode.OK )
+                            {
+                                var bytes = restResponse.RawBytes;
+
+                                // Create and save the image.
+                                BinaryFileType fileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+                                if ( fileType != null )
+                                {
+                                    var binaryFileService = new BinaryFileService( rockContext );
+                                    var binaryFile = new BinaryFile();
+                                    binaryFileService.Add( binaryFile );
+                                    binaryFile.IsTemporary = false;
+                                    binaryFile.BinaryFileType = fileType;
+                                    binaryFile.MimeType = restResponse.ContentType;
+                                    binaryFile.FileName = user.Person.NickName + user.Person.LastName + ".jpg";
+                                    binaryFile.FileSize = bytes.Length;
+                                    binaryFile.ContentStream = new System.IO.MemoryStream( bytes );
+
+                                    rockContext.SaveChanges();
+                                    userPerson.PhotoId = binaryFile.Id;
+                                    rockContext.SaveChanges();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return user;
+        }
+
         #endregion
 
         #region Block Actions
@@ -359,6 +507,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 string externalLoginAuthPassword;
                 int? providerEntityTypeId;
 
+                //
+                // For the authentication providers that are supported,
+                // we need to structure the UserLogin accordingly.
+                //
                 switch ( provider )
                 {
                     case Common.Mobile.Enums.SupportedAuthenticationProvider.Auth0:
@@ -375,6 +527,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     return ActionBadRequest( "There was no entity found for that authentication provider." );
                 }
 
+                // Create or retrieve a Person using the information provided in the external authentication info bag.
                 var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerEntityTypeId.Value, username, externalLoginAuthPassword, rockContext );
 
                 // Make sure the login is confirmed, otherwise login is not allowed.
@@ -405,146 +558,5 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #endregion
 
-        /// <summary>
-        /// Gets or creates a person from information returned by external authentication.
-        /// </summary>
-        /// <param name="externallyAuthenticatedUser">The externally authenticated user to either create or get.</param>
-        /// <param name="username">The username of the person to look for or create. This is usually dependent on the
-        /// authentication provider. For instance, an Auth0 related username is "AUTH0_{FOREIGN_KEY}. It is up to the person
-        /// implementing this method into an external authentication provider to make sure the username is formatted correctly."</param>
-        /// <param name="authentitationEntityTypeId"></param>
-        /// <param name="rockContext"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        [RockInternal( "1.15.1" )]
-        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag externallyAuthenticatedUser, int authentitationEntityTypeId, string username, string password, RockContext rockContext = null )
-        {
-            rockContext = rockContext ?? new RockContext();
-            UserLogin user = null;
-            Person person = null;
-
-            // Query for an existing user from the Auth0 user name.
-            var userLoginService = new UserLoginService( rockContext );
-            user = userLoginService.GetByUserName( username );
-
-            var phoneNumber = externallyAuthenticatedUser.PhoneNumber;
-
-            // If no user was found, see if we can find a match in the person table.
-            if ( user == null )
-            {
-                // Get name/email from auth0 userinfo.
-                
-                var firstName = externallyAuthenticatedUser.FirstName?.Trim()?.FixCase();
-                var lastName = externallyAuthenticatedUser.LastName?.Trim()?.FixCase();
-
-                var nickName = externallyAuthenticatedUser.NickName?.Trim()?.FixCase();
-                var email = externallyAuthenticatedUser.Email;
-                var gender = externallyAuthenticatedUser.Gender;
-
-                var hasValidPhoneOrEmail = email.IsNotNullOrWhiteSpace() || phoneNumber.IsNotNullOrWhiteSpace();
-                var hasValidFirstAndLastName = firstName.IsNotNullOrWhiteSpace() && lastName.IsNotNullOrWhiteSpace();
-
-                if ( !hasValidPhoneOrEmail || !hasValidFirstAndLastName )
-                {
-                    return null;
-                }
-
-                var personMatchQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, phoneNumber );
-
-                var personService = new PersonService( rockContext );
-                person = personService.FindPerson( personMatchQuery, true );
-
-                var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                var personStatusPending = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    // If we couldn't match a person, we should create a new one.
-                    if ( person == null )
-                    {
-                        person = new Person();
-                        person.IsSystem = false;
-                        person.RecordTypeValueId = personRecordTypeId;
-                        person.RecordStatusValueId = personStatusPending;
-                        person.FirstName = firstName;
-                        person.LastName = lastName;
-                        person.Email = email;
-                        person.NickName = nickName;
-                        person.IsEmailActive = true;
-                        person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.Gender = gender.ToNative();
-
-                        if ( phoneNumber.IsNotNullOrWhiteSpace() )
-                        {
-                            var mobilePhoneDefinedValueCache = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
-                            person.UpdatePhoneNumber( mobilePhoneDefinedValueCache.Id, null, Rock.Model.PhoneNumber.CleanNumber( phoneNumber ), null, null, rockContext );
-                        }
-
-                        PersonService.SaveNewPerson( person, rockContext, null, false );
-                        rockContext.SaveChanges();
-                    }
-
-                    user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, authentitationEntityTypeId, username, password, true );
-                    user.ForeignKey = externallyAuthenticatedUser.ForeignKey;
-                } );
-            }
-
-            // If an Auth0 UserLogin entry already exists for this username.
-            if ( user != null )
-            {
-                username = user.UserName;
-
-                // If there is an associated Person with this user.
-                if ( user.PersonId.HasValue )
-                {
-                    // Query that person.
-                    var personService = new PersonService( rockContext );
-                    var userPerson = personService.Get( user.PersonId.Value );
-                    if ( userPerson != null )
-                    {
-                        if ( phoneNumber.IsNotNullOrWhiteSpace() )
-                        {
-                            var mobilePhoneDefinedValueCache = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
-                            userPerson.UpdatePhoneNumber( mobilePhoneDefinedValueCache.Id, null, Rock.Model.PhoneNumber.CleanNumber( phoneNumber ), null, null, rockContext );
-                            rockContext.SaveChanges();
-                        }
-
-                        // If person does not have a photo, try to get the photo return with auth0.
-                        if ( !userPerson.PhotoId.HasValue && !string.IsNullOrWhiteSpace( externallyAuthenticatedUser.Picture ) )
-                        {
-                            // Download the photo from the url provided.
-                            var restClient = new RestClient( externallyAuthenticatedUser.Picture );
-                            var restRequest = new RestRequest( Method.GET );
-                            var restResponse = restClient.Execute( restRequest );
-                            if ( restResponse.StatusCode == HttpStatusCode.OK )
-                            {
-                                var bytes = restResponse.RawBytes;
-
-                                // Create and save the image.
-                                BinaryFileType fileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
-                                if ( fileType != null )
-                                {
-                                    var binaryFileService = new BinaryFileService( rockContext );
-                                    var binaryFile = new BinaryFile();
-                                    binaryFileService.Add( binaryFile );
-                                    binaryFile.IsTemporary = false;
-                                    binaryFile.BinaryFileType = fileType;
-                                    binaryFile.MimeType = restResponse.ContentType;
-                                    binaryFile.FileName = user.Person.NickName + user.Person.LastName + ".jpg";
-                                    binaryFile.FileSize = bytes.Length;
-                                    binaryFile.ContentStream = new System.IO.MemoryStream( bytes );
-
-                                    rockContext.SaveChanges();
-                                    userPerson.PhotoId = binaryFile.Id;
-                                    rockContext.SaveChanges();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return user;
-        }
     }
 }
