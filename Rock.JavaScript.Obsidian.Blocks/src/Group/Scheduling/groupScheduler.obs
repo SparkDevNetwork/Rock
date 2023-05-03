@@ -27,7 +27,8 @@
                             <li><i class="fa fa-circle text-muted"></i> Pending Invite</li>
                             <li><i class="fa fa-circle text-danger"></i> Declined Invite</li>
                         </ul>
-                        <p>The invite status is shown by a border around the individual's avatar.</p><p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>
+                        <p>The invite status is shown by a border around the individual's avatar.</p>
+                        <p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>
                         <ul>
                             <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
                             <li><i class="fa fa-minus-circle"></i> Indicates that the schedule does not match this person's scheduling preference.</li>
@@ -163,7 +164,7 @@
 
         <div v-else ref="snapContainer" class="snap-container">
 
-            <OccurrenceDate v-for="(occurrences, key, index) in occurrencesByDate" :key="key"
+            <OccurrenceDate v-for="(occurrences, index) in sortedOccurrencesByDate" :key="getOccurrenceDateKey(occurrences)"
                             :occurrences="occurrences"
                             :showPrevNextButtons="showPrevNextButtons"
                             :disabled="isSchedulingDisabled"
@@ -371,31 +372,36 @@
         };
     });
 
-    const occurrencesByDate = computed((): Record<string, GroupSchedulerOccurrenceBag[]> => {
+    const sortedOccurrencesByDate = computed((): (GroupSchedulerOccurrenceBag[])[] => {
         if (!scheduleOccurrences.value?.length) {
-            return {};
+            return [];
         }
 
-        const groupedOccurrences: Record<string, GroupSchedulerOccurrenceBag[]> = {};
+        // We're assuming the server has performed the sort and returned the occcurrences to us in the expected display order.
+        // A Map object is needed to maintain sort order.
+        const groupedOccurrences = new Map<string, GroupSchedulerOccurrenceBag[]>();
         scheduleOccurrences.value
             .filter((o: GroupSchedulerOccurrenceBag) => o.occurrenceDate)
             .forEach((o: GroupSchedulerOccurrenceBag) => {
                 const date = o.occurrenceDate || "";
-                let dateOccurrences = groupedOccurrences[date];
+                let dateOccurrences = groupedOccurrences.get(date);
 
                 if (!dateOccurrences) {
                     dateOccurrences = [];
-                    groupedOccurrences[date] = dateOccurrences;
+                    groupedOccurrences.set(date, dateOccurrences);
                 }
 
                 dateOccurrences.push(o);
             });
 
-        return groupedOccurrences;
+        const sortedDateOccurrences: (GroupSchedulerOccurrenceBag[])[] = [];
+        groupedOccurrences.forEach((occurrences) => sortedDateOccurrences.push(occurrences));
+
+        return sortedDateOccurrences;
     });
 
     const occurrenceDateCount = computed((): number => {
-        return Object.keys(occurrencesByDate.value).length;
+        return sortedOccurrencesByDate.value.length;
     });
 
     const anyOccurrences = computed((): boolean => {
@@ -403,7 +409,7 @@
     });
 
     const showPrevNextButtons = computed((): boolean => {
-        if (!occurrenceDateCount.value) {
+        if (!anyOccurrences.value) {
             return false;
         }
 
@@ -417,7 +423,7 @@
          * more than one schedule. If so, show the prev/next buttons.
          */
         const uniqueScheduleIds: number[] = [];
-        occurrencesByDate[Object.keys(occurrencesByDate.value)[0]]?.forEach((o: GroupSchedulerOccurrenceBag) => {
+        sortedOccurrencesByDate[0]?.forEach((o: GroupSchedulerOccurrenceBag) => {
             if (!uniqueScheduleIds.some((id: number) => id === o.scheduleId)) {
                 uniqueScheduleIds.push(o.scheduleId);
             }
@@ -483,6 +489,15 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the occurrence date "key" from the first occurrence in the collection.
+     *
+     * @param occurrences The occurrences for a given occurrence date.
+     */
+    function getOccurrenceDateKey(occurrences: GroupSchedulerOccurrenceBag[]): string {
+        return occurrences?.[0]?.occurrenceDate ?? "unknown";
+    }
 
     /**
      * Scrolls to the previous or next schedule component.
@@ -766,42 +781,4 @@
     provideSecurityGrant(securityGrant);
 
     onConfigurationValuesChanged(reloadBlock);
-
-
-    nextTick(() => {
-        // if window size is greater than 768px, then we need to resize the .service-columns element
-        let serviceColumns = document.querySelectorAll<HTMLElement>(".schedule-column");
-        if (window.innerWidth > 768) {
-            let locationSize: number[] = [];
-            
-            serviceColumns.forEach((column) => {
-                const locations = column.querySelectorAll<HTMLElement>('.location');
-
-                locations.forEach((location, i) => {
-                    if (locationSize[i] === undefined) {
-                        locationSize[i] = location.offsetHeight;
-                    } else if (locationSize[i] < location.offsetHeight) {
-                        locationSize[i] = location.offsetHeight;
-                    }
-                });
-            });
-
-            serviceColumns.forEach((column) => {
-                const locations = column.querySelectorAll<HTMLElement>('.location');
-
-                locations.forEach((location, i) => {
-                    console.log(locationSize[i]);
-                    location.style.minHeight = `${locationSize[i]}px`;
-                });
-            });
-        } else {
-            serviceColumns.forEach((column) => {
-                const locations = column.querySelectorAll<HTMLElement>('.location');
-
-                locations.forEach((location) => {
-                    location.style.minHeight = 'auto';
-                });
-            });
-        }
-    });
 </script>

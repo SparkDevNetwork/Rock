@@ -17,7 +17,7 @@
             No groups available.
         </NotificationBox>
 
-        <Group v-for="(occurrences, key) in occurrencesByGroup" :key="key"
+        <Group v-for="occurrences in sortedOccurrencesByGroup" :key="getGroupIdKey(occurrences)"
                :occurrences="occurrences"
                :disabled="disabled"
                @resourceListUpdated="onResourceListUpdated"
@@ -77,32 +77,50 @@
         return scheduleName || "Schedule";
     });
 
-    const occurrencesByGroup = computed((): Record<number, GroupSchedulerOccurrenceBag[]> => {
+    const sortedOccurrencesByGroup = computed((): (GroupSchedulerOccurrenceBag[])[] => {
         if (!props.occurrences?.length) {
-            return {};
+            return [];
         }
 
-        const groupedOccurrences: Record<number, GroupSchedulerOccurrenceBag[]> = {};
+        // We're assuming the server has performed the sort and returned the occcurrences to us in the expected display order.
+        // A Map object is needed to maintain sort order.
+        const groupedOccurrences = new Map<number, GroupSchedulerOccurrenceBag[]>();
         props.occurrences
             .filter((o: GroupSchedulerOccurrenceBag) => o.groupId)
             .forEach((o: GroupSchedulerOccurrenceBag) => {
                 const groupId = o.groupId || 0;
-                let groupOccurrences = groupedOccurrences[groupId];
+                let groupOccurrences = groupedOccurrences.get(groupId);
 
                 if (!groupOccurrences) {
                     groupOccurrences = [];
-                    groupedOccurrences[groupId] = groupOccurrences;
+                    groupedOccurrences.set(groupId, groupOccurrences);
                 }
 
                 groupOccurrences.push(o);
             });
 
-        return groupedOccurrences;
+        const sortedGroupOccurrences: (GroupSchedulerOccurrenceBag[])[] = [];
+        groupedOccurrences.forEach((occurrences) => sortedGroupOccurrences.push(occurrences));
+
+        return sortedGroupOccurrences;
     });
 
     const anyGroups = computed((): boolean => {
-        return !!Object.keys(occurrencesByGroup.value).length;
+        return !!sortedOccurrencesByGroup.value.length;
     });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the group ID "key" from the first occurrence in the collection.
+     *
+     * @param occurrences The occurrences for a given group.
+     */
+    function getGroupIdKey(occurrences: GroupSchedulerOccurrenceBag[]): number {
+        return occurrences?.[0]?.groupId ?? 0;
+    }
 
     // #endregion
 
