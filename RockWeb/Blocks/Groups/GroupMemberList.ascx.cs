@@ -1912,9 +1912,10 @@ namespace RockWeb.Blocks.Groups
 
             if ( _hasGroupRequirements )
             {
+                _memberRequirements.Clear();
                 foreach ( var member in _group.Members )
                 {
-                    _memberRequirements.Add( member.Id, member.GetGroupRequirementsStatuses( rockContext ).ToList() );
+                    _memberRequirements.AddOrIgnore( member.Id, member.GetGroupRequirementsStatuses( rockContext ).ToList() );
                 }
 
                 _groupMemberIdsThatDoNotMeetGroupRequirements = _memberRequirements.Where( r => r.Value.Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ).Any() ).Select( kvp => kvp.Key ).Distinct().ToHashSet();
