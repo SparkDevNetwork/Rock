@@ -1914,13 +1914,14 @@ namespace RockWeb.Blocks.Groups
 
             if ( _hasGroupRequirements )
             {
+                _memberRequirements.Clear();
                 foreach ( var member in _group.Members )
                 {
-                    _memberRequirements.Add(
+                    _memberRequirements.AddOrIgnore(
                         member.Id,
                         member.GetGroupRequirementsStatuses( rockContext )
-                        .Where( s => s.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList()
-                        );
+                        	.Where( s => s.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                        	.ToList() );
                 }
 
                 _groupMemberIdsThatDoNotMeetGroupRequirements = _memberRequirements.Where( r => r.Value.Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ).Any() ).Select( kvp => kvp.Key ).Distinct().ToHashSet();
