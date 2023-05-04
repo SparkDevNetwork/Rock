@@ -80,6 +80,9 @@ registerFieldType(FieldTypeGuids.Gender, new GenderFieldType());
 import { GroupFieldType } from "./groupField.partial";
 registerFieldType(FieldTypeGuids.Group, new GroupFieldType());
 
+import { GroupLocationTypeFieldType } from "./groupLocationTypeField.partial";
+registerFieldType(FieldTypeGuids.GroupLocationType, new GroupLocationTypeFieldType());
+
 import { GroupRoleFieldType } from "./groupRoleField.partial";
 registerFieldType(FieldTypeGuids.GroupRole, new GroupRoleFieldType());
 
@@ -98,6 +101,9 @@ registerFieldType(FieldTypeGuids.IntegerRange, new IntegerRangeFieldType());
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
 
+import { LocationListFieldType } from "./locationListField.partial";
+registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
+
 import { MemoFieldType } from "./memoField.partial";
 registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
 
@@ -112,6 +118,9 @@ registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
 
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
+
+import { RegistryEntryFieldType } from "./registryEntryField.partial";
+registerFieldType(FieldTypeGuids.RegistryEntry, new RegistryEntryFieldType());
 
 import { ReminderTypeFieldType } from "./reminderTypeField.partial";
 registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());

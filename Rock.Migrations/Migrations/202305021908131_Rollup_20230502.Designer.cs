@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class UpdateSignUpFinderBlockSetting : IMigrationMetadata
+    public sealed partial class Rollup_20230502 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(UpdateSignUpFinderBlockSetting));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Rollup_20230502));
         
         string IMigrationMetadata.Id
         {
-            get { return "202304201635224_UpdateSignUpFinderBlockSetting"; }
+            get { return "202305021908131_Rollup_20230502"; }
         }
         
         string IMigrationMetadata.Source

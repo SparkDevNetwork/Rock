@@ -907,6 +907,7 @@
     <Compile Include="Drawing\Avatar\AvatarStyle.cs" />
     <Compile Include="Drawing\RockImage.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\EmbedWebpage.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\Poll.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\ShortAnswer.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeContainer.cs" />
@@ -952,6 +953,8 @@
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
     <Compile Include="Lava\WebsiteLavaHost.cs" />
     <Compile Include="Logging\RockLoggerMemoryBuffer.cs" />
+    <Compile Include="Model\CMS\ContentTopicDomain\ContentTopicDomain.cs" />
+    <Compile Include="Model\CMS\ContentTopic\ContentTopic.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.Logic.cs" />
@@ -971,6 +974,8 @@
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegmentService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilterService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
+    <Compile Include="Model\CodeGenerated\ContentTopicDomainService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\ContentTopicService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />
@@ -1019,6 +1024,7 @@
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.Logic.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
+    <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
@@ -1055,8 +1061,11 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
-    <Compile Include="Plugin\HotFixes\171_UpdateColorsInTBD.cs" />
+    <Compile Include="Plugin\HotFixes\175_MigrationRollupsForV15_1_0.cs" />
+    <Compile Include="Plugin\HotFixes\174_AddIndicesForPerformanceImprovements.cs" />
+    <Compile Include="Plugin\HotFixes\173_UpdateSignUpFinderBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\172_MobileDuplicateInteractionCleanupJob.cs" />
+    <Compile Include="Plugin\HotFixes\171_UpdateColorsInTBD.cs" />
     <Compile Include="Plugin\HotFixes\170_UpdateInsightsMetricsToExcludeAnonymousVisitor .cs" />
     <Compile Include="Plugin\HotFixes\169_UpdateFutureWeeksAttributeForGroupSchedulingToolboxV2.cs" />
     <Compile Include="Plugin\HotFixes\168_MigrationRollupsForV14_2_1.cs" />
@@ -1695,6 +1704,7 @@
     <Compile Include="Transactions\SendAchievementCompletedRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendAttendanceOccurrenceRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendAttendanceRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\UpdateDataViewStatisticsTransaction.cs" />
     <Compile Include="Transactions\UpdateNotificationMessageBadgeCountTransaction.cs" />
     <Compile Include="Transactions\UpdatePersonPreferenceLastAccessedTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
@@ -2772,7 +2782,6 @@
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateAttachmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\GroupHistoricalService.CodeGenerated.cs" />
-    <Compile Include="Model\CodeGenerated\GroupLocationHistoricalScheduleService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\GroupLocationHistoricalService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberHistoricalService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemSlugService.CodeGenerated.cs" />

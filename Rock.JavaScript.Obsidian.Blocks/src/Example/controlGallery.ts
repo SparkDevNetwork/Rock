@@ -212,6 +212,7 @@ import PopOver from "@Obsidian/Controls/popOver.obs";
 import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
 import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
+import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
 
 // #region Gallery Support
 
@@ -7550,7 +7551,7 @@ const groupTypeGroupPickerGallery = defineComponent({
             required: ref(false),
             glabel: ref("Group"),
             importCode: getSfcControlImportPath("groupTypeGroupPicker"),
-            exampleCode: `<GroupTypeGroupPicker label="Group Type and TypeGroup" groupLabel="Group" v-model="value"v-model:groupType="groupType" />`
+            exampleCode: `<GroupTypeGroupPicker label="Group Type and TypeGroup" groupLabel="Group" v-model="value" v-model:groupType="groupType" />`
         };
     },
     template: `
@@ -7570,6 +7571,61 @@ const groupTypeGroupPickerGallery = defineComponent({
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates account picker */
+const accountPickerGallery = defineComponent({
+    name: "AccountPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        AccountPicker,
+        TextBox,
+        RockButton
+    },
+    setup() {
+        return {
+            value: ref(null),
+            activeOnly: ref(false),
+            displayPublic: ref(false),
+            multiple: ref(false),
+            enhance: ref(false),
+            displayChildItemCountLabel: ref(false),
+            importCode: getSfcControlImportPath("accountPicker"),
+            exampleCode: `<AccountPicker label="Financial Account" v-model="value" enhanceForLongLists activeOnly displayPublicName multiple displayChildItemCountLabel />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <AccountPicker label="Financial Account" v-model="value" :enhanceForLongLists="enhance" :activeOnly="activeOnly" :displayPublicName="displayPublic" :multiple="multiple" :displayChildItemCountLabel="displayChildItemCountLabel" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhance" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Active Only" v-model="activeOnly" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Display Public Names" v-model="displayPublic" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Select Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Display Child Count" v-model="displayChildItemCountLabel" />
             </div>
         </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
@@ -7718,6 +7774,7 @@ const controlGalleryComponents: Record<string, Component> = [
     rockLiteralGallery,
     registryEntryGallery,
     groupTypeGroupPickerGallery,
+    accountPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

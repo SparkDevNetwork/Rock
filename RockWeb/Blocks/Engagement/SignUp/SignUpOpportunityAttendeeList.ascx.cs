@@ -1256,7 +1256,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         {
             lTitle.Text = opportunity.Name;
             lLocation.Text = opportunity.Location.ToString();
-            lSchedule.Text = opportunity.Schedule.FriendlyScheduleText ?? "Custom";
+            lSchedule.Text = opportunity.Schedule.ToFriendlyScheduleText( true );
             lConfiguredSlots.Text = opportunity.ConfiguredSlots;
             bSlotsFilled.Text = opportunity.SlotsFilled.ToString( "N0" );
             bSlotsFilled.BadgeType = opportunity.SlotsFilledBadgeType;

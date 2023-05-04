@@ -491,6 +491,8 @@ namespace RockWeb.Blocks.Mobile
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             cbEnableDeepLinking.Checked = additionalSettings.IsDeepLinkingEnabled;
             cbCompressUpdatePackages.Checked = additionalSettings.IsPackageCompressionEnabled;
+            tbAuth0ClientDomain.Text = additionalSettings.Auth0Domain;
+            tbAuth0ClientId.Text = additionalSettings.Auth0ClientId;
 
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
             ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
@@ -748,7 +750,7 @@ namespace RockWeb.Blocks.Mobile
                     p.Id,
                     p.InternalName,
                     LayoutName = p.Layout.Name,
-                    DisplayInNav = p.DisplayInNavWhen != DisplayInNavWhen.Never
+                    DisplayInNavWhen = p.DisplayInNavWhen.GetDescription() ?? p.DisplayInNavWhen.ToStringSafe()
                 } )
                 .ToList();
 
@@ -989,6 +991,8 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.CampusFilterDataViewId = dvpCampusFilter.SelectedValueAsId();
             additionalSettings.NavigationBarActionXaml = ceEditNavBarActionXaml.Text;
             additionalSettings.HomepageRoutingLogic = ceEditHomepageRoutingLogic.Text;
+            additionalSettings.Auth0ClientId = tbAuth0ClientId.Text;
+            additionalSettings.Auth0Domain = tbAuth0ClientDomain.Text;
 
             //
             // Save the image.
@@ -1043,7 +1047,7 @@ namespace RockWeb.Blocks.Mobile
                         PageTitle = pageName,
                         Description = string.Empty,
                         LayoutId = layout.Id,
-                        DisplayInNavWhen = DisplayInNavWhen.WhenAllowed
+                        DisplayInNavWhen = Rock.Model.DisplayInNavWhen.WhenAllowed
                     };
 
                     pageService.Add( page );

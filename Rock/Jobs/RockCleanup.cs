@@ -69,9 +69,9 @@ namespace Rock.Jobs
 
     [TextField( "Base Cache Folder",
         Key = AttributeKey.BaseCacheDirectory,
-        Description = "The base/starting Directory for the file cache (default is ~/Cache.)",
+        Description = "The top-level Directory for the file cache (default is ~/App_Data/Cache). As a safeguard against accidental file deletions during the cleanup process, the full path must include both an 'App_Data' and a 'Cache' folder.",
         IsRequired = false,
-        DefaultValue = "~/Cache",
+        DefaultValue = "~/App_Data/Cache",
         Category = "General",
         Order = 4 )]
 
@@ -171,12 +171,10 @@ namespace Rock.Jobs
         private int commandTimeout;
         private int batchAmount;
         private DateTime lastRunDateTime;
-        private string jobName;
 
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
-            jobName = string.Format( "{0} ({1})", this.ServiceJobName, this.GetType().Name );
             batchAmount = GetAttributeValue( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
             commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
             lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
@@ -277,8 +275,6 @@ namespace Rock.Jobs
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
-
             RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
 
             RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
@@ -290,6 +286,8 @@ namespace Rock.Jobs
             RunCleanupTask( "update person viewed count", () => UpdatePersonViewedCount() );
 
             RunCleanupTask( "unused person preference", () => RemoveUnusedPersonPreferences() );
+
+            RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             /*
              * 21-APR-2022 DMV
@@ -2517,7 +2515,7 @@ SELECT @@ROWCOUNT
                         var personAliasesQry = bulkPersonAliasService.Queryable()
                             .Where( pa => batchPersonAliasIds.Contains( pa.Id ) );
 
-                        deleteCount += bulkRockContext.BulkDelete( personAliasesQry );
+                        deleteCount += bulkRockContext.BulkDelete( personAliasesQry, batchAmount );
                     }
                     catch
                     {
@@ -2554,7 +2552,7 @@ SELECT @@ROWCOUNT
                                     innerEx = innerEx.InnerException;
                                 }
 
-                                RockLogger.Log.Warning( RockLogDomains.Jobs, $"{jobName} : Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
+                                this.Log( RockLogLevel.Warning, $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
 
                                 // The context we used to attempt the deletion is no
                                 // good to use now since it is in a bad state. Create
@@ -2874,7 +2872,7 @@ BEGIN
 			CASE 
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
 			ELSE 0
-		END BETWEEN 55 AND 65 THEN 7
+		END BETWEEN 55 AND 64 THEN 7
 		ELSE 8
 	END
 	FROM AnalyticsSourceDate A

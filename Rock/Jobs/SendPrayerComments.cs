@@ -107,7 +107,7 @@ namespace Rock.Jobs
 
         #region Properties
 
-        private TaskLog _Log = new TaskLog();
+        private readonly TaskLog _Log = new TaskLog();
         private List<int> _CategoryIdList;
         private List<Note> _PrayerComments;
         private List<PrayerRequest> _PrayerRequests;
@@ -116,13 +116,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Returns the log device for this job.
         /// </summary>
-        public TaskLog Log
-        {
-            get
-            {
-                return _Log;
-            }
-        }
+        internal TaskLog MainLog => _Log;
 
         /// <summary>
         /// The unique identifier of the system email template used to create the notification emails.
@@ -202,7 +196,7 @@ namespace Rock.Jobs
         {
             if ( GetJobId() != 0 )
             {
-                Log.LogVerbose( $"Reading configuration from job execution context..." );
+                MainLog.LogVerbose( $"Reading configuration from job execution context..." );
 
                 this.SystemEmailTemplateGuid = this.GetAttributeValue( AttributeKey.SystemEmail ).ToStringSafe().AsGuidOrNull();
                 this.CategoryGuidList = this.GetAttributeValue( AttributeKey.PrayerCategories ).ToStringSafe().SplitDelimitedValues().AsGuidList();
@@ -307,7 +301,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            Log.LogProgress( $"Job Started: SendPrayerComments" );
+            MainLog.LogProgress( $"Job Started: SendPrayerComments" );
 
             GetSettings();
 
@@ -368,7 +362,7 @@ namespace Rock.Jobs
 
             Rock.Web.SystemSettings.SetValue( GetSystemSettingsKey(), lastRunDate.ToISO8601DateString() );
 
-            Log.LogProgress( $"Job Completed: SendPrayerComments" );
+            MainLog.LogProgress( $"Job Completed: SendPrayerComments" );
         }
 
         /// <summary>
@@ -588,18 +582,18 @@ namespace Rock.Jobs
         /// <param name="rockContext"></param>
         private void GetPrayerRequests( RockContext rockContext )
         {
-            Log.LogVerbose( $"Job Configuration:" );
-            Log.LogVerbose( $"SystemEmailTemplateGuid = {this.SystemEmailTemplateGuid}" );
+            MainLog.LogVerbose( $"Job Configuration:" );
+            MainLog.LogVerbose( $"SystemEmailTemplateGuid = {this.SystemEmailTemplateGuid}" );
 
             if ( this.CategoryGuidList != null
                  && this.CategoryGuidList.Any() )
             {
-                Log.LogVerbose( $"CategoryGuidList = [{this.CategoryGuidList.AsDelimited( "," )}]" );
-                Log.LogVerbose( $"IncludeChildCategories = {this.IncludeChildCategories}" );
+                MainLog.LogVerbose( $"CategoryGuidList = [{this.CategoryGuidList.AsDelimited( "," )}]" );
+                MainLog.LogVerbose( $"IncludeChildCategories = {this.IncludeChildCategories}" );
             }
 
-            Log.LogVerbose( $"CreateCommunicationRecord = {this.CreateCommunicationRecord}" );
-            Log.LogVerbose( $"Report Period = {this.StartDate} to {this.EndDate}" );
+            MainLog.LogVerbose( $"CreateCommunicationRecord = {this.CreateCommunicationRecord}" );
+            MainLog.LogVerbose( $"Report Period = {this.StartDate} to {this.EndDate}" );
 
             var prayerRequestService = new PrayerRequestService( rockContext );
 

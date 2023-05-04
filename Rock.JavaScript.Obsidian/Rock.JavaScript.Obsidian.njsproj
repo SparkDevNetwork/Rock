@@ -433,6 +433,12 @@
     <TypeScriptCompile Include="Framework\FieldTypes\imageFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListFieldComponents.ts" />
+    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryField.partial.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryFieldComponents.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypesField.partial.ts" />
@@ -803,6 +809,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentChannelTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentCollectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentCollectionSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\contentTopicBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Entities\contentTopicDomainBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\dataViewBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\dataViewFilterBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\definedTypeBag.d.ts" />
@@ -997,6 +1005,10 @@
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRuleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetChildrenOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetParentGuidsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetPreviewItemsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetSearchedAccountsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlGetConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlValidateAddressOptionsBag.d.ts" />
