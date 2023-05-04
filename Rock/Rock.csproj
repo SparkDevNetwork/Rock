@@ -1060,6 +1060,7 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\175_MigrationRollupsForV15_1_0.cs" />
     <Compile Include="Plugin\HotFixes\174_AddIndicesForPerformanceImprovements.cs" />
     <Compile Include="Plugin\HotFixes\173_UpdateSignUpFinderBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\172_MobileDuplicateInteractionCleanupJob.cs" />
