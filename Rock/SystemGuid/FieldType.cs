@@ -559,6 +559,11 @@ namespace Rock.SystemGuid
         public const string REGISTRATION_TEMPLATE = "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620";
 
         /// <summary>
+        /// Registration Entry field type
+        /// </summary>
+        public const string REGISTRY_ENTRY = "D98E1D88-2240-4248-B93B-0512BD3BB61A";
+
+        /// <summary>
         /// Registration Template field type
         /// </summary>
         public const string REMINDER_TYPE = "94A5DF3C-A7E0-451E-9DBA-86A6CFD5DF70";

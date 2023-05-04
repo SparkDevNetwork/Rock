@@ -102,19 +102,13 @@ export type GroupHistoricalBag = {
     /** Gets or sets the parent Rock.Model.Group identifier at this point in history */
     parentGroupId?: number | null;
 
-    /**
-     * If this group's group type supports a schedule for a group, this is the schedule id for that group at this point in history
-     * NOTE: If this Group has Schedules at it's Locations, those will be in GroupLocationHistorical.GroupLocationHistoricalSchedules
-     */
+    /** If this group's group type supports a schedule for a group, this is the schedule id for that group at this point in history. */
     scheduleId?: number | null;
 
     /** Gets or sets the Schedule's ModifiedDateTime. This is used internally to detect if the group's schedule has changed */
     scheduleModifiedDateTime?: string | null;
 
-    /**
-     * If this group's group type supports a schedule for a group, this is the schedule text (Schedule.ToString()) for that group at this point in history
-     * NOTE: If this Group has Schedules at it's Locations, those will be in GroupLocationHistorical.GroupLocationHistoricalSchedules
-     */
+    /** If this group's group type supports a schedule for a group, this is the schedule text (Schedule.ToString()) for that group at this point in history. */
     scheduleName?: string | null;
 
     /** Gets or sets the Group Status Id.  DefinedType depends on this group's Rock.Model.GroupType.GroupStatusDefinedType */

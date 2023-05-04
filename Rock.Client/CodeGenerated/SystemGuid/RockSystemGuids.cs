@@ -1301,6 +1301,7 @@ namespace Rock.Client.SystemGuid
         public const string LAVA = "27718256-C1EB-4B1F-9B4B-AC53249F78DF";
         public const string LAVA_COMMANDS = "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D";
         public const string LOCATION = "B0B9EFE3-F09F-4604-AD1B-76B298A85D83";
+        public const string LOCATION_LIST = "A58A0CBF-C3E6-4054-85D7-05118035980B";
         public const string MARKDOWN = "C2FBCF94-0FDF-4DFD-93A5-19FE6A409C84";
         public const string MATRIX = "F16FC460-DC1E-4821-9012-5F21F974C677";
         public const string MEDIA_ELEMENT = "A17D5AAC-B7AE-4587-B703-A0FC3625F0F8";
