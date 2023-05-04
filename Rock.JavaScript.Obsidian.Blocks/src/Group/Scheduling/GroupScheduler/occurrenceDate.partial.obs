@@ -68,10 +68,8 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        /*
-         * It's assumed that all occurrences provided will belong to the same occurrence date;
-         * just grab the first friendlyOccurrenceDate, since they should all be the same.
-         */
+        // It's assumed that all occurrences provided will belong to the same occurrence date;
+        // just grab the first friendlyOccurrenceDate, since they should all be the same.
         let friendlyOccurrenceDate: string | null | undefined;
         if (props.occurrences?.length) {
             friendlyOccurrenceDate = props.occurrences[0].friendlyOccurrenceDate;

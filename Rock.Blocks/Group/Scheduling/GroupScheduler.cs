@@ -31,7 +31,6 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Group.Scheduling
 {
@@ -403,23 +402,21 @@ namespace Rock.Blocks.Group.Scheduling
         /// <param name="filters">The filters whose date range should be validated.</param>
         private void ValidateDateRange( GroupSchedulerFiltersBag filters )
         {
-            /*
-             * Date range validation approach: Since we're likely scheduling for recurring schedules that have no end date, we must
-             * have defined start and end date filters so we don't try to show occurrences that span into eternity. We'll allow the
-             * selection of past dates, so the individual may choose a past week as the source when cloning schedules. The UI will be
-             * responsible for preventing the scheduling/manipulation of past schedules (and we'll also double-check & prevent doing
-             * so within this block's action methods).
-             * 
-             *  1) If no date range selected, default to the next 6 weeks.
-             *  2) If only a start date is selected, set end date = start date.
-             *  3) If only an end date is selected, set start date = end date.
-             *  4) If end date >= start date, set end date = start date.
-             *  5) Allow any other valid selections (knowing they might be selecting an excessively-large range).
-             * 
-             * Our goal is to "translate" the sliding date range selection to weeks, as the Group Scheduler is designed to work
-             * against a week at a time. More specifically, we need to determine the "end of week dates" we're working against,
-             * and from those values, we can then determine the "start of week dates" to have blocks of 7-day ranges.
-             */
+            // Date range validation approach: Since we're likely scheduling for recurring schedules that have no end date, we must
+            // have defined start and end date filters so we don't try to show occurrences that span into eternity. We'll allow the
+            // selection of past dates, so the individual may choose a past week as the source when cloning schedules. The UI will be
+            // responsible for preventing the scheduling/manipulation of past schedules (and we'll also double-check & prevent doing
+            // so within this block's action methods).
+            // 
+            //  1) If no date range selected, default to the next 6 weeks.
+            //  2) If only a start date is selected, set end date = start date.
+            //  3) If only an end date is selected, set start date = end date.
+            //  4) If end date >= start date, set end date = start date.
+            //  5) Allow any other valid selections (knowing they might be selecting an excessively-large range).
+            // 
+            // Our goal is to "translate" the sliding date range selection to weeks, as the Group Scheduler is designed to work
+            // against a week at a time. More specifically, we need to determine the "end of week dates" we're working against,
+            // and from those values, we can then determine the "start of week dates" to have blocks of 7-day ranges.
 
             var defaultDateRange = new SlidingDateRangeBag
             {
@@ -464,42 +461,27 @@ namespace Rock.Blocks.Group.Scheduling
                 }
             }
 
-            /*
-             * Use the non-Obsidian Sliding Date Range Picker control (for now) to calculate the selected start and end dates,
-             * as it has logic built into its property getters and setters. This way, we'll keep our behavior consistent with
-             * Web Forms usages of this picker.
-             */
-            SlidingDateRangePicker NewPicker( SlidingDateRangeBag slidingDateRange )
+            DateRange GetDateRange( SlidingDateRangeBag slidingDateRange )
             {
-                return new SlidingDateRangePicker
-                {
-                    SlidingDateRangeMode = ( SlidingDateRangePicker.SlidingDateRangeType ) ( int ) slidingDateRange.RangeType,
-                    TimeUnit = ( SlidingDateRangePicker.TimeUnitType ) ( int ) ( slidingDateRange.TimeUnit ?? 0 ),
-                    NumberOfTimeUnits = slidingDateRange.TimeValue ?? 1,
-                    DateRangeModeStart = slidingDateRange.LowerDate?.DateTime,
-                    DateRangeModeEnd = slidingDateRange.UpperDate?.DateTime
-                };
+                var rangeType = slidingDateRange.RangeType.ToString();
+                var number = slidingDateRange.TimeValue.ToString();
+                var unitType = slidingDateRange.TimeUnit.ToString();
+                var startDate = slidingDateRange.LowerDate.ToString();
+                var endDate = slidingDateRange.UpperDate.ToString();
+
+                var delimitedValues = $"{rangeType}|{number}|{unitType}|{startDate}|{endDate}";
+
+                return RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( delimitedValues );
             }
 
-            var picker = NewPicker( filters.DateRange );
-            var dateRange = picker.SelectedDateRange;
+            var dateRange = GetDateRange( filters.DateRange );
 
             // At this point, we should have validated start and end dates, but if for some reason we don't, default to the next 6 weeks.
             if ( dateRange?.Start == null || dateRange?.End == null )
             {
-                picker = NewPicker( defaultDateRange );
-                dateRange = picker.SelectedDateRange;
+                filters.DateRange = defaultDateRange;
+                dateRange = GetDateRange( filters.DateRange );
             }
-
-            // Reset the Obsidian picker control to match any changes made above.
-            filters.DateRange = new SlidingDateRangeBag
-            {
-                RangeType = ( SlidingDateRangeType ) ( int ) picker.SlidingDateRangeMode,
-                TimeUnit = ( TimeUnitType ) ( int ) picker.TimeUnit,
-                TimeValue = picker.NumberOfTimeUnits,
-                LowerDate = picker.DateRangeModeStart,
-                UpperDate = picker.DateRangeModeEnd
-            };
 
             var firstEndOfWeekDate = ( dateRange?.Start ?? defaultStartDate ).EndOfWeek( RockDateTime.FirstDayOfWeek );
             var lastEndOfWeekDate = ( dateRange?.End ?? defaultEndDate ).EndOfWeek( RockDateTime.FirstDayOfWeek );
@@ -597,13 +579,7 @@ namespace Rock.Blocks.Group.Scheduling
                 .ThenBy( g => g.Name )
                 .ToList();
 
-            filters.Groups = groups
-                .Select( g => new ListItemBag
-                {
-                    Value = g.Guid.ToString(),
-                    Text = g.Name
-                } )
-                .ToList();
+            filters.Groups = groups.ToListItemBagList();
 
             // Set aside the final list of group IDs for later use.
             _groupIds = groups
@@ -645,29 +621,22 @@ namespace Rock.Blocks.Group.Scheduling
                 return;
             }
 
-            /*
-             * Get any already-existing attendance occurrence records tied to the [group, location, schedule, occurrence date] occurrences
-             * we're retrieving. We'll need these IDs to facilitate scheduling within the Obsidian JavaScript block. Note that we'll create
-             * any missing attendance occurrence records below, before sending the final, filtered collection of occurrences back to the client.
-             */
+            // Get any already-existing attendance occurrence records tied to the [group, location, schedule, occurrence date] occurrences
+            // we're retrieving. We'll need these IDs to facilitate scheduling within the Obsidian JavaScript block. Note that we'll create
+            // any missing attendance occurrence records below, before sending the final, filtered collection of occurrences back to the client.
             var attendanceOccurrencesQry = new AttendanceOccurrenceService( rockContext )
                 .Queryable()
                 .AsNoTracking();
 
-            /*
-             * Determine the actual start and end dates, based on the date range validation that has already taken place.
-             * For the end date, add a day so we can follow Rock's rule: let your start be "inclusive" and your end be "exclusive".
-             */
-            var actualStartDate = filters.FirstEndOfWeekDate.StartOfWeek( RockDateTime.FirstDayOfWeek );
-            var actualEndDate = filters.LastEndOfWeekDate.AddDays( 1 );
+            // Determine the actual start and end dates, based on the date range validation that has already taken place.
+            // For the end date, add a day so we can follow Rock's rule: let your start be "inclusive" and your end be "exclusive".
+            var actualStartDate = filters.FirstEndOfWeekDate.DateTime.StartOfWeek( RockDateTime.FirstDayOfWeek );
+            var actualEndDate = filters.LastEndOfWeekDate.DateTime.AddDays( 1 );
 
-            /*
-             * Get all locations and schedules tied to the selected group(s) initially, so we can properly load the "available" lists.
-             * 
-             * Go ahead and materialize the list so we can:
-             *  1) Perform additional, in-memory filtering.
-             *  2) Set the scheduled start date/time(s) on the returned instances; these represent the "occurrences" that may be scheduled.
-             */
+            // Get all locations and schedules tied to the selected group(s) initially, so we can properly load the "available" lists.
+            // Go ahead and materialize the list so we can:
+            //  1) Perform additional, in-memory filtering.
+            //  2) Set the scheduled start date/time(s) on the returned instances; these represent the "occurrences" that may be scheduled.
             var groupLocationSchedules = new GroupLocationService( rockContext )
                 .Queryable()
                 .AsNoTracking()
@@ -686,18 +655,16 @@ namespace Rock.Blocks.Group.Scheduling
                 } )
                 .Where( gls =>
                     gls.Schedule.IsActive
-                    /*
-                     * Limit to those schedules that fall within the specified date range. Due to the design of recurring schedules,
-                     * we can only do loose date comparisons at the query level. We'll potentially pull back more records than we'll
-                     * actually display (for now), and further refine once the schedule objects are materialized below.
-                     * 
-                     * Get schedules whose:
-                     * 
-                     *  1) EffectiveStartDate < end date (so we don't get any Schedules that start AFTER the specified date range), AND
-                     *  2) EffectiveEndDate is null OR >= start date (so we don't get any Schedules that have already ended BEFORE the specified date range).
-                     * 
-                     * Keep in mind that schedules with a null EffectiveEndDate represent recurring schedules that have no end date.
-                     */
+                    // Limit to those schedules that fall within the specified date range. Due to the design of recurring schedules,
+                    // we can only do loose date comparisons at the query level. We'll potentially pull back more records than we'll
+                    // actually display (for now), and further refine once the schedule objects are materialized below.
+                    // 
+                    // Get schedules whose:
+                    // 
+                    //  1) EffectiveStartDate < end date (so we don't get any Schedules that start AFTER the specified date range), AND
+                    //  2) EffectiveEndDate is null OR >= start date (so we don't get any Schedules that have already ended BEFORE the specified date range).
+                    // 
+                    // Keep in mind that schedules with a null EffectiveEndDate represent recurring schedules that have no end date.
                     && gls.Schedule.EffectiveStartDate.HasValue
                     && gls.Schedule.EffectiveStartDate.Value < actualEndDate
                     && (
@@ -764,10 +731,8 @@ namespace Rock.Blocks.Group.Scheduling
                 .Where( gls => !selectedScheduleGuids.Any() || selectedScheduleGuids.Contains( gls.Schedule.Guid ) )
                 .ToList();
 
-            /*
-             * Refine down to the intersection of the above two collections.
-             * This is the list of GroupLocationSchedules that match all currently-applied filters.
-             */
+            // Refine down to the intersection of the above two collections.
+            // This is the list of GroupLocationSchedules that match all currently-applied filters.
             _filteredGroupLocationSchedules = glsMatchingLocations
                 .Intersect( glsMatchingSchedules )
                 .ToList();
@@ -1026,10 +991,8 @@ namespace Rock.Blocks.Group.Scheduling
                 [NavigationUrlKey.RosterPage] = this.GetLinkedPageUrl( AttributeKey.RosterPage, queryParams )
             };
 
-            /*
-             * Rework query params to support "copy link" URL.
-             * Note that it's necessary to set each value to null if not defined, to overwrite any params that were previously set.
-             */
+            // Rework query params to support "copy link" URL.
+            // Note that it's necessary to set each value to null if not defined, to overwrite any params that were previously set.
             queryParams.Remove( PageParameterKey.OccurrenceDate );
             queryParams.AddOrReplace( PageParameterKey.LocationIds, _selectedLocationIds?.Any() == true ? _selectedLocationIds.AsDelimited( "," ) : null );
             queryParams.AddOrReplace( PageParameterKey.ScheduleIds, _selectedScheduleIds?.Any() == true ? _selectedScheduleIds.AsDelimited( "," ) : null );
@@ -1219,10 +1182,8 @@ namespace Rock.Blocks.Group.Scheduling
                 //// If the provided type [to apply] is enabled, save it.
                 //this.PersonPreferences.SetValue( PersonPreferenceKey.ResourceListSourceType, typeToApply.ToString() );
 
-                ///*
-                // * Only overwrite alternate list identifiers within person preferences if they selected that resource list source type.
-                // * Otherwise, preserve their previously-selected identifier values for the next time they select that type.
-                // */
+                //// Only overwrite alternate list identifiers within person preferences if they selected that resource list source type.
+                //// Otherwise, preserve their previously-selected identifier values for the next time they select that type.
 
                 //if ( typeToApply == ResourceListSourceType.AlternateGroup && settingsToApply.ResourceAlternateGroupGuid.HasValue )
                 //{
@@ -1372,18 +1333,16 @@ namespace Rock.Blocks.Group.Scheduling
         /// <returns>An object containing the outcome of the clone schedules attempt.</returns>
         private GroupSchedulerCloneSchedulesResponseBag CloneSchedules( RockContext rockContext, GroupSchedulerCloneSettingsBag cloneSettings )
         {
-            /*
-             * We'll transpose the provided clone settings to a filters object in order to leverage the same private helpers that are used when
-             * populating the Group Scheduler for the UI. This way, we can make use of permissions checks, Etc., that are already performed
-             * in that scenario.
-             *  1) Create a filters object to represent the source week's date range + selected groups, locations and schedules; run this
-             *     object through the private helpers to strip out any unauthorized groups + any group, location, schedule combos that don't
-             *     actually exist within the source week.
-             *  2) Modify the filters object to represent the destination week's date range + source set of group, location, schedule combos;
-             *     run the object through the private helpers once again, to further strip out any group, location, schedule combos that might
-             *     not be relevant for the destination week, then create any missing AttendanceOccurrence records for the remaining occurrences.
-             *  3) Clone the relevant Attendance records for each source-to-destination occurrence.
-             */
+            // We'll transpose the provided clone settings to a filters object in order to leverage the same private helpers that are used when
+            // populating the Group Scheduler for the UI. This way, we can make use of permissions checks, Etc., that are already performed
+            // in that scenario.
+            //  1) Create a filters object to represent the source week's date range + selected groups, locations and schedules; run this
+            //     object through the private helpers to strip out any unauthorized groups + any group, location, schedule combos that don't
+            //     actually exist within the source week.
+            //  2) Modify the filters object to represent the destination week's date range + source set of group, location, schedule combos;
+            //     run the object through the private helpers once again, to further strip out any group, location, schedule combos that might
+            //     not be relevant for the destination week, then create any missing AttendanceOccurrence records for the remaining occurrences.
+            //  3) Clone the relevant Attendance records for each source-to-destination occurrence.
 
             var sourceDate = cloneSettings.SelectedSourceDate.AsDateTime();
             var destinationDate = cloneSettings.SelectedDestinationDate.AsDateTime();
@@ -1451,11 +1410,9 @@ namespace Rock.Blocks.Group.Scheduling
                 return response;
             }
 
-            /*
-             * We have at least one source schedule occurrence to clone. Move on to step 2 in order to strip out any group, location,
-             * schedule combos that aren't relevant for the destination week + create any missing AttendanceOccurrence records for the
-             * occurrences that remain.
-             */
+            // We have at least one source schedule occurrence to clone. Move on to step 2 in order to strip out any group, location,
+            // schedule combos that aren't relevant for the destination week + create any missing AttendanceOccurrence records for the
+            // occurrences that remain.
             filters.DateRange = new SlidingDateRangeBag
             {
                 RangeType = SlidingDateRangeType.DateRange,
@@ -1757,7 +1714,15 @@ namespace Rock.Blocks.Group.Scheduling
             }
 
             schedulePreference.LocationId = locationId;
-            groupMember.ScheduleStartDate = bag.SchedulePreference?.ScheduleStartDate;
+
+            if ( bag.SchedulePreference?.ScheduleStartDate.HasValue == true )
+            {
+                groupMember.ScheduleStartDate = bag.SchedulePreference.ScheduleStartDate.Value.DateTime;
+            }
+            else
+            {
+                groupMember.ScheduleStartDate = null;
+            }
 
             var scheduleTemplateGuid = bag.SchedulePreference?.ScheduleTemplate.AsGuidOrNull();
             if ( scheduleTemplateGuid.HasValue )

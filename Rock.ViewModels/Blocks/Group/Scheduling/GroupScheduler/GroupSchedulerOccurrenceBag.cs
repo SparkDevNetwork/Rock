@@ -134,7 +134,7 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         /// <value>
         /// The occurrence date and time.
         /// </value>
-        public DateTime OccurrenceDateTime { get; set; }
+        public DateTimeOffset OccurrenceDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the ISO 8601 Sunday date for this occurrence.

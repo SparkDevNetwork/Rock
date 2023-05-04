@@ -89,7 +89,6 @@
     import RockForm from "@Obsidian/Controls/rockForm";
     import TextBox from "@Obsidian/Controls/textBox";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
-    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";

@@ -1407,19 +1407,15 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 {
                     // Edit existing opportunity.
 
-                    /*
-                     * GroupMemberAssignments are tied to a specific Schedule & Location combo.
-                     * If either of these change for an existing opportunity, we'll have to reassign any members.
-                     */
+                    // GroupMemberAssignments are tied to a specific Schedule & Location combo.
+                    // If either of these change for an existing opportunity, we'll have to reassign any members.
                     var shouldReassignMembers = false;
                     var groupLocationChanged = false;
 
                     if ( !newLocationId.Equals( existingGroupLocation.LocationId ) )
                     {
-                        /*
-                         * The Location changed from what was previously saved.
-                         * Let's try to find another existing GroupLocation matching this opportunity's Group and newly-specified Location, or create a new one if needed.
-                         */
+                        // The Location changed from what was previously saved.
+                        // Let's try to find another existing GroupLocation matching this opportunity's Group and newly-specified Location, or create a new one if needed.
                         groupLocationToSave = GetNewOrMatchingGroupLocation();
                         shouldReassignMembers = true;
                         groupLocationChanged = true;
@@ -1440,12 +1436,10 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                         else
                         {
-                            /*
-                             * If we got here, this means:
-                             *   1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and exisingGroupLocation now point to the same object).
-                             *   2) We found an existing Schedule based on the previous Schedule Id.
-                             *   3) The last thing we need to do is compare the existing Schedule with the new/edited instance.
-                             */
+                            // If we got here, this means:
+                            //  1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and exisingGroupLocation now point to the same object).
+                            //  2) We found an existing Schedule based on the previous Schedule Id.
+                            //  3) The last thing we need to do is compare the existing Schedule with the new/edited instance.
 
                             if ( newScheduleType != existingSchedule.ScheduleType )
                             {
@@ -1620,23 +1614,18 @@ namespace RockWeb.Blocks.Engagement.SignUp
             var locationId = e.RowKeyValues[DataKeyName.LocationId].ToIntSafe();
             var scheduleId = e.RowKeyValues[DataKeyName.ScheduleId].ToIntSafe();
 
-            /*
-             * We should consider moving this logic to a service (probably the GroupLocationService), as this code block is identical
-             * to that found within the SignUpOverview block's dfOpportunities_Click() method.
-             */
+            // We should consider moving this logic to a service (probably the GroupLocationService), as this code block is identical
+            // to that found within the SignUpOverview block's dfOpportunities_Click() method.
 
             using ( var rockContext = new RockContext() )
             {
-                /*
-                 * An Opportunity is a GroupLocationSchedule with possible GroupMemberAssignments (and therefore, GroupMembers).
-                 * When deleting an Opportunity we should delete the following:
-                 * 
-                 * 1) GroupMemberAssignments
-                 * 2) GroupMembers (if no more GroupMemberAssignments for a given GroupMember)
-                 * 3) GroupLocationSchedule & GroupLocationScheduleConfig
-                 * 4) GroupLocation (if no more Schedules tied to it)
-                 * 5) Schedule (if non-named and nothing else is using it)
-                 */
+                // An Opportunity is a GroupLocationSchedule with possible GroupMemberAssignments (and therefore, GroupMembers).
+                // When deleting an Opportunity we should delete the following:
+                // 1) GroupMemberAssignments
+                // 2) GroupMembers (if no more GroupMemberAssignments for a given GroupMember)
+                // 3) GroupLocationSchedule & GroupLocationScheduleConfig
+                // 4) GroupLocation (if no more Schedules tied to it)
+                // 5) Schedule (if non-named and nothing else is using it)
 
                 var groupMemberAssignmentService = new GroupMemberAssignmentService( rockContext );
                 var groupMemberAssignments = groupMemberAssignmentService
@@ -1653,11 +1642,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     .Select( gma => gma.GroupMember )
                     .ToList();
 
-                /*
-                 * For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
-                 * We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
-                 * delete approach) if this changes in the future.
-                 */
+                // For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
+                // We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
+                // delete approach) if this changes in the future.
                 groupMemberAssignmentService.DeleteRange( groupMemberAssignments );
 
                 // Get the GroupType to check if this Group has history enabled below, so we know whether to call GroupMemberService.CanDelete() for each GroupMember.
@@ -1722,11 +1709,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                     }
 
-                    /*
-                     * We cannot safely remove referenced Locations (even non-named ones):
-                     *   1) because of the way we reuse/share Locations across entities (the LocationPicker control auto-searches/matches and saves Locations).
-                     *   2) because of the cascade deletes many of the referencing entities have on their LocationId FK constraints (we might accidentally delete a lot of unintended stuff).
-                     */
+                    // We cannot safely remove referenced Locations (even non-named ones):
+                    //  1) because of the way we reuse/share Locations across entities (the LocationPicker control auto-searches/matches and saves Locations).
+                    //  2) because of the cascade deletes many of the referencing entities have on their LocationId FK constraints (we might accidentally delete a lot of unintended stuff).
 
                     // Follow-up save for deleted referenced entities.
                     rockContext.SaveChanges();
