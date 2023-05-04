@@ -292,7 +292,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
             return true;
         }
 
-
         /// <summary>
         /// Gets or creates a person from information returned by external authentication.
         /// </summary>
@@ -383,7 +382,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 } );
             }
 
-            // If an Auth0 UserLogin entry already exists for this username.
+            // If a UserLogin entry already exists for this username.
             if ( user != null )
             {
                 username = user.UserName;
@@ -529,6 +528,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                 // Create or retrieve a Person using the information provided in the external authentication info bag.
                 var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerEntityTypeId.Value, username, externalLoginAuthPassword, rockContext );
+
+                // Something went wrong or we didn't receive enough information to create a Person.
+                if( userLogin == null )
+                {
+                    return ActionBadRequest( "There was an error when authenticating your request. Please ensure your external authentication provider is configured correctly." );
+                }
 
                 // Make sure the login is confirmed, otherwise login is not allowed.
                 if ( userLogin.IsConfirmed != true )
