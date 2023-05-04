@@ -490,9 +490,9 @@ namespace Rock.Tests.Integration.Core.Jobs
                 // This exception is processed internally when the Job is executed via the Rock application.
                 Assert.That.MatchesWildcard( $@"%Path ""%/RockAvatarCacheTest"" does not match the required pattern ""*\App_Data\*\Cache\*""%",
                     ex.Message,
-                    ignoreCase:true,
-                    ignoreWhiteSpace:true,
-                    wildcard:"%" );
+                    ignoreCase: true,
+                    ignoreWhiteSpace: true,
+                    wildcard: "%" );
             }
         }
 
@@ -533,6 +533,36 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
 
             return fileInfo;
+        }
+
+        #endregion
+
+        #region Cleanup Task: Cleanup Person-Related Records
+
+        [TestMethod]
+        public void RockCleanup_CleanupPersonRelatedRecords_MissingSearchKeysAreAdded()
+        {
+            var job = new Rock.Jobs.RockCleanup();
+            var rockContext = new RockContext();
+
+            // Remove the existing Person Search Keys.
+            var personSearchKeyService = new PersonSearchKeyService( rockContext );
+
+            var initialSearchKeyCount = personSearchKeyService.Queryable().Count();
+
+            var sql = "DELETE FROM PersonSearchKey";
+            DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
+
+            // Remove a PersonAlias record to verify that this will not cause a problem processing the cleanup.
+            sql = $"DELETE FROM PersonAlias WHERE AliasPersonId IN (SELECT Id FROM Person WHERE [Guid] = '{TestGuids.TestPeople.SamHanks}')";
+            DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
+
+            // Execute the cleanup job and verify that all of the search keys have been regenerated.
+            job.PersonCleanup();
+
+            var finalSearchKeyCount = personSearchKeyService.Queryable().Count();
+
+            Assert.AreEqual( initialSearchKeyCount, finalSearchKeyCount, "Invalid search key count." );
         }
 
         #endregion

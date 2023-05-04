@@ -211,7 +211,7 @@ namespace Rock.Jobs
             RunCleanupTask( "person age / age bracket", () => UpdateAgeAndAgeBracketOnPerson() );
 
             // updates missing person aliases, metaphones, etc (doesn't delete any records)
-            RunCleanupTask( "person", () => PersonCleanup() );
+            RunCleanupTask( "person-related record", () => PersonCleanup() );
 
             RunCleanupTask( "family salutation", () => GroupSalutationCleanup() );
 
@@ -563,12 +563,13 @@ namespace Rock.Jobs
         /// <summary>
         /// Does cleanup of Person Aliases and Metaphones
         /// </summary>
-
-        private int PersonCleanup()
+        internal int PersonCleanup()
         {
             int resultCount = 0;
 
-            // Add any missing person aliases
+            // Add missing person aliases.
+            // Only process a limited number of records to ensure the job completes in a reasonable time,
+            // and the remainder will be processed next time the job executes.
             using ( var personRockContext = CreateRockContext() )
             {
                 var personService = new PersonService( personRockContext );
@@ -804,12 +805,18 @@ namespace Rock.Jobs
                     .Select( a => a.SearchValue )
                     .ToList() );
 
-                string alternateId = string.Empty;
+                var alternateId = string.Empty;
 
-                // Find everyone who does not yet have an alternateKey.
-                foreach ( var person in personQuery = personQuery
+                // Get a limited batch of people who do not yet have an alternate identifier,
+                // to ensure the job completes in a timely manner.
+                var personAliasIdList = personQuery
                     .Where( p => !alternateKeyQuery.Any( f => f.PersonAlias.PersonId == p.Id ) )
-                    .Take( 150000 ) )
+                    .Take( 150000 )
+                    .Select( p => p.Aliases.Where( a => a.AliasPersonId == p.Id ).FirstOrDefault() )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                foreach ( var personAliasId in personAliasIdList )
                 {
                     // Regenerate key if it already exists.
                     do
@@ -822,7 +829,7 @@ namespace Rock.Jobs
                     itemsToInsert.Add(
                         new PersonSearchKey()
                         {
-                            PersonAliasId = person.PrimaryAliasId,
+                            PersonAliasId = personAliasId,
                             SearchTypeValueId = alternateValueId,
                             SearchValue = alternateId
                         } );
@@ -1082,7 +1089,7 @@ namespace Rock.Jobs
             // Create a set of arguments from the Quartz Job context.
             var args = new RockCleanupActionArgs
             {
-                HostName = this.Scheduler.SchedulerName,
+                HostName = this.Scheduler?.SchedulerName,
                 ImageCachePath = GetAttributeValue( AttributeKey.BaseCacheDirectory ),
                 AvatarCachePath = "~/App_Data/Avatar/Cache",
                 CacheDurationDays = GetAttributeValue( AttributeKey.DaysKeepCachedFiles ).AsIntegerOrNull(),
@@ -1123,13 +1130,7 @@ namespace Rock.Jobs
                 return segments;
             }
 
-            //var file = Path.GetFileName( filePath );
             var currentDirectory = new DirectoryInfo( filePath );
-            //if ( currentDirectory == null )
-            //{
-            //    return segments;
-            //}
-
             for ( var thisDirectory = currentDirectory; thisDirectory != null; thisDirectory = thisDirectory.Parent )
             {
                 segments.Insert( 0, thisDirectory.Name );
