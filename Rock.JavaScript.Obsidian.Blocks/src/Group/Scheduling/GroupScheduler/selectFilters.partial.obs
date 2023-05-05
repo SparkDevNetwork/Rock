@@ -237,13 +237,11 @@
      * Handles the updating of filter values within this component, based on the current combined values of all filter controls.
      */
     async function onFiltersChanged(): Promise<void> {
-        /*
-         * When one of the filter controls triggers this event handler, we could find ourselves in an infinite loop without
-         * this initial `isApplyingFilters.value` check (because all such controls will be updated with the server's response
-         * to the initial change event, thereby repeatedly triggering this event handler over and over). Note the `nextTick`
-         * usage below, which will set `isApplyingFilters.value` back to false once the controls have all had a chance to
-         * update their values accordingly.
-         */
+        // When one of the filter controls triggers this event handler, we could find ourselves in an infinite loop without
+        // this initial `isApplyingFilters.value` check (because all such controls will be updated with the server's response
+        // to the initial change event, thereby repeatedly triggering this event handler over and over). Note the `nextTick`
+        // usage below, which will set `isApplyingFilters.value` back to false once the controls have all had a chance to
+        // update their values accordingly.
         if (isApplyingFilters.value) {
             return;
         }

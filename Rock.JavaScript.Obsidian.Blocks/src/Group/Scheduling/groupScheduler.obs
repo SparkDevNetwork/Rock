@@ -418,10 +418,8 @@
             return true;
         }
 
-        /*
-         * If we got here, this means we have eactly one occurrence date; check to see if this date contains
-         * more than one schedule. If so, show the prev/next buttons.
-         */
+        // If we got here, this means we have eactly one occurrence date; check to see if this date contains
+        // more than one schedule. If so, show the prev/next buttons.
         const uniqueScheduleIds: number[] = [];
         sortedOccurrencesByDate[0]?.forEach((o: GroupSchedulerOccurrenceBag) => {
             if (!uniqueScheduleIds.some((id: number) => id === o.scheduleId)) {
@@ -574,7 +572,8 @@
         const snapContainerScrollLeft: number = snapContainer.value?.scrollLeft ?? 0;
 
         snapContainer.value.scrollTo({
-            left: elementLeft + snapContainerScrollLeft
+            left: elementLeft + snapContainerScrollLeft,
+            behavior: "smooth"
         });
     }
 
@@ -725,7 +724,8 @@
         nextTick(() => {
             if (snapContainer.value) {
                 snapContainer.value.scrollTo({
-                    left: 0
+                    left: 0,
+                    behavior: "smooth"
                 });
             }
         });

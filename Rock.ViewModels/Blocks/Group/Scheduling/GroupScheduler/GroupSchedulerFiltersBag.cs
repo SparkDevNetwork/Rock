@@ -65,7 +65,7 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         /// <value>
         /// The first "end of week" date, based on the selected date range.
         /// </value>
-        public DateTime FirstEndOfWeekDate { get; set; }
+        public DateTimeOffset FirstEndOfWeekDate { get; set; }
 
         /// <summary>
         /// Gets or sets the last "end of week" date, based on the selected date range.
@@ -73,7 +73,7 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         /// <value>
         /// The last "end of week" date, based on the selected date range.
         /// </value>
-        public DateTime LastEndOfWeekDate { get; set; }
+        public DateTimeOffset LastEndOfWeekDate { get; set; }
 
         /// <summary>
         /// Gets or sets the friendly date range, based on the selected date range.
