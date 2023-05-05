@@ -252,7 +252,7 @@ namespace Rock.Blocks.Group.Scheduling
             }
             else
             {
-                groupIds = ( this.PersonPreferences.GetValue( PersonPreferenceKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
+                groupIds = this.PersonPreferences.GetValue( PersonPreferenceKey.GroupIds ).Split( ',' ).AsIntegerList();
             }
 
             if ( groupIds.Any() )
@@ -266,7 +266,7 @@ namespace Rock.Blocks.Group.Scheduling
 
             var locationIds = HasPageParameter( PageParameterKey.LocationIds )
                 ? ( this.PageParameter( PageParameterKey.LocationIds ) ?? string.Empty ).Split( ',' ).AsIntegerList()
-                : ( this.PersonPreferences.GetValue( PersonPreferenceKey.LocationIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
+                : this.PersonPreferences.GetValue( PersonPreferenceKey.LocationIds ).Split( ',' ).AsIntegerList();
 
             if ( locationIds.Any() )
             {
@@ -282,7 +282,7 @@ namespace Rock.Blocks.Group.Scheduling
 
             var scheduleIds = HasPageParameter( PageParameterKey.ScheduleIds )
                 ? ( this.PageParameter( PageParameterKey.ScheduleIds ) ?? string.Empty ).Split( ',' ).AsIntegerList()
-                : ( this.PersonPreferences.GetValue( PersonPreferenceKey.ScheduleIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
+                : this.PersonPreferences.GetValue( PersonPreferenceKey.ScheduleIds ).Split( ',' ).AsIntegerList();
 
             if ( scheduleIds.Any() )
             {
@@ -1255,7 +1255,7 @@ namespace Rock.Blocks.Group.Scheduling
                     ? selectedDestinationDate
                     : null;
 
-            var selectedGroups = ( this.PersonPreferences.GetValue( PersonPreferenceKey.CloneGroups ) ?? string.Empty ).Split( ',' );
+            var selectedGroups = this.PersonPreferences.GetValue( PersonPreferenceKey.CloneGroups ).Split( ',' );
             cloneSettings.SelectedGroups = selectedGroups
                 .Where( g =>
                 {
@@ -1265,7 +1265,7 @@ namespace Rock.Blocks.Group.Scheduling
                 } )
                 .ToList();
 
-            var selectedLocations = ( this.PersonPreferences.GetValue( PersonPreferenceKey.CloneLocations ) ?? string.Empty ).Split( ',' );
+            var selectedLocations = this.PersonPreferences.GetValue( PersonPreferenceKey.CloneLocations ).Split( ',' );
             cloneSettings.SelectedLocations = selectedLocations
                 .Where( l =>
                 {
@@ -1275,7 +1275,7 @@ namespace Rock.Blocks.Group.Scheduling
                 } )
                 .ToList();
 
-            var selectedSchedules = ( this.PersonPreferences.GetValue( PersonPreferenceKey.CloneSchedules ) ?? string.Empty ).Split( ',' );
+            var selectedSchedules = this.PersonPreferences.GetValue( PersonPreferenceKey.CloneSchedules ).Split( ',' );
             cloneSettings.SelectedSchedules = selectedSchedules
                 .Where( s =>
                 {
