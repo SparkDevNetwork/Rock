@@ -635,8 +635,8 @@ namespace Rock.Blocks.Event
                 Registrar = args.Registrar,
                 RegistrationGuid = context.Registration?.Guid,
                 RegistrationSessionGuid = args.RegistrationSessionGuid,
-                Slug = PageParameter(PageParameterKey.Slug ),
-                GroupId = PageParameter(PageParameterKey.GroupId ).AsIntegerOrNull()
+                Slug = PageParameter( PageParameterKey.Slug ),
+                GroupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull()
             };
 
             var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
@@ -3401,8 +3401,8 @@ namespace Rock.Blocks.Event
                 Registrar = new RegistrarInfo(),
                 RegistrationGuid = registration.Guid,
                 PreviouslyPaid = alreadyPaid,
-                Slug = PageParameter(PageParameterKey.Slug ),
-                GroupId = PageParameter(PageParameterKey.GroupId ).AsIntegerOrNull()
+                Slug = PageParameter( PageParameterKey.Slug ),
+                GroupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull()
             };
 
             // Add attributes about the registration itself
