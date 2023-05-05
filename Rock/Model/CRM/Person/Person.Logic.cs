@@ -549,6 +549,11 @@ namespace Rock.Model
         /// <returns></returns>
         public string FormatAge( bool condensed = false )
         {
+            if (BirthDate > DateTime.Now)
+            {
+                return string.Empty;
+            }
+
             var age = Age ?? GetAge( BirthDate, DeceasedDate );
             if ( age != null )
             {
