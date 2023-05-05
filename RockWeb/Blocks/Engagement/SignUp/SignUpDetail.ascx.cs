@@ -2662,12 +2662,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                     if ( whole > 0 )
                     {
-                        int GetPercentageOfWhole( int part, bool isThreshold = true )
+                        int GetPercentageOfWhole( int part, bool isThreshold = true, bool isMax = false )
                         {
-                            if ( isThreshold )
+                            if ( isThreshold && !isMax )
                             {
                                 // Show threshold "ticks" to the left of the spot that will satisfy a given value.
-                                part = part > 1 ? part - 1 : part;
+                                part--;
                             }
 
                             var percentage = ( int ) ( ( double ) part / whole * 100 );
@@ -2676,7 +2676,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                         minPercentage = GetPercentageOfWhole( min );
                         desiredPercentage = GetPercentageOfWhole( desired );
-                        maxPercentage = GetPercentageOfWhole( max );
+                        maxPercentage = GetPercentageOfWhole( max, true, true );
                         filledPercentage = GetPercentageOfWhole( filled, false );
                     }
 
@@ -2699,10 +2699,10 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                     }
 
-                    string GetIndicator( int percentage, bool isMaxIndicator = false )
+                    string GetIndicator( int percentage, bool isMax = false )
                     {
                         var shouldShow = percentage > 0 && percentage < 100;
-                        if ( shouldShow && isMaxIndicator )
+                        if ( shouldShow && isMax )
                         {
                             shouldShow = filled > max;
                         }
