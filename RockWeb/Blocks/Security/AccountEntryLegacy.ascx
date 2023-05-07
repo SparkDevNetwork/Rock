@@ -170,7 +170,7 @@
     </asp:PlaceHolder>
 
     <asp:PlaceHolder ID="phSuccess" runat="server" Visible="false">
-
+        <asp:HiddenField ID="hfUserId" runat="server" />
         <div class="alert alert-success">
             <asp:Literal ID="lSuccessCaption" runat="server" />
         </div>

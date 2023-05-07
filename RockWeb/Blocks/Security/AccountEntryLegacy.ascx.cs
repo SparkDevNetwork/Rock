@@ -705,6 +705,15 @@ usernameTextbox.blur(function () {{
 
         protected void btnContinue_Click( object sender, EventArgs e )
         {
+            var user = new UserLoginService( new RockContext() ).Get( hfUserId.ValueAsInt() );
+            if ( user == null )
+            {
+                return;
+            }
+
+            Authorization.SignOut();
+            Authorization.SetAuthCookie( user.UserName, false, false );
+
             string returnUrl = Request.QueryString["returnurl"];
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
@@ -1020,11 +1029,9 @@ usernameTextbox.blur(function () {{
         /// <param name="user">The user.</param>
         private void DisplaySuccess( Rock.Model.UserLogin user )
         {
-            Authorization.SignOut();
-            Authorization.SetAuthCookie( tbUserName.Text, false, false );
-
             if ( user != null && user.PersonId.HasValue )
             {
+                hfUserId.SetValue( user.Id );
                 PersonService personService = new PersonService( new RockContext() );
                 Person person = personService.Get( user.PersonId.Value );
 
