@@ -72,7 +72,7 @@ namespace RockWeb
         /// <exception cref="System.NotImplementedException"></exception>
         public void ProcessRequest( HttpContext context )
         {
-            // Read query string parms
+            // Read query string parameters
             var settings = ReadSettingsFromRequest( context.Request );
 
             if ( settings.PhotoId.HasValue && !IsAuthorized( settings.PhotoId.Value ) )
@@ -230,8 +230,21 @@ namespace RockWeb
             settings.CachePath = request.MapPath( $"~/App_Data/Avatar/Cache/" );
 
             // Colors
-            settings.AvatarColors.BackgroundColor = ( request.QueryString["BackgroundColor"] ?? "" ).ToString();
-            settings.AvatarColors.ForegroundColor = ( request.QueryString["ForegroundColor"] ?? "" ).ToString();
+            var backgroundColor = string.Empty;
+            var foregroundColor = string.Empty;
+
+            if ( request.QueryString["BackgroundColor"] != null )
+            {
+                backgroundColor = $"#{request.QueryString["BackgroundColor"]}".AsHexColorString();
+            }
+
+            if ( request.QueryString["ForegroundColor"] != null )
+            {
+                foregroundColor = $"#{request.QueryString["ForegroundColor"]}".AsHexColorString();
+            }
+
+            settings.AvatarColors.BackgroundColor = backgroundColor;
+            settings.AvatarColors.ForegroundColor = foregroundColor;
             
             // Size
             if ( request.QueryString["Size"] != null )
@@ -430,7 +443,7 @@ namespace RockWeb
                 Person currentPerson = currentUser?.Person;
                 var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
-                // If no parent entity is specified then check if there is scecurity on the BinaryFileType
+                // If no parent entity is specified then check if there is security on the BinaryFileType
                 if ( parentEntityAllowsView == null )
                 {
                     if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
