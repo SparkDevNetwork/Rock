@@ -1003,44 +1003,47 @@ th[align="right"] {
 
   .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
 
-  &:hover {
-    background-color: darken(@btn-default-bg, 10%);
-  }
-
   &.facebook,
   &.google,
   &.twitter {
     color: #fff;
+    background-color: var(--btn-bg, @btn-default-bg);
+    border-color: var(--btn-bg, @btn-default-bg);
 
     &::before {
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;
+      content: var(--social-icon);
     }
   }
 
   &.facebook {
-    background-color: @brand-facebook;
-
-    &::before {
-      content: @fa-var-facebook;
-    }
+    --social-icon: @fa-var-facebook-f;
+    --btn-bg: @brand-facebook;
   }
 
   &.google {
-    background-color: @brand-googleplus;
-
-    &::before {
-      content: @fa-var-google;
-    }
+    --social-icon: @fa-var-google;
+    --btn-bg: @brand-googleplus;
   }
 
   &.twitter {
-    background-color: @brand-twitter;
+    --social-icon: @fa-var-twitter;
+    --btn-bg: @brand-twitter;
+  }
+}
 
-    &::before {
-      content: @fa-var-twitter;
-    }
+.btn-authentication-v2 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 999px;
+  white-space: normal;
+
+  &:after {
+    content: " ";
+    flex: 0 1 1.25em;
   }
 }
 
