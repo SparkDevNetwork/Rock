@@ -1241,7 +1241,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( f.ShowCurrentValue && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName
                             || f.PersonFieldType == RegistrationPersonFieldType.LastName;
@@ -1615,10 +1615,13 @@ namespace Rock.Blocks.Event
 
             if ( registrant != null )
             {
+                // If the form has first or last name fields and they have data then match the registrant.Person with the form values.
+                // If the form values are blank then this is an existing registration and a payment is being made and we do not want to null out the registrant(s).
+                var firstNameMatch = firstName.IsNullOrWhiteSpace() ? true : ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) );
+                var lastNameMatch = lastName.IsNullOrWhiteSpace() ? true : registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase );
+
                 person = registrant.Person;
-                if ( person != null && (
-                    ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
-                    registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) ) )
+                if ( person != null && firstNameMatch && lastNameMatch )
                 {
                     // Do nothing
                 }

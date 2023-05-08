@@ -1004,14 +1004,16 @@ namespace Rock.Blocks.Group.Scheduling
         }
 
         /// <summary>
-        /// Validates and applies the provided filters.
+        /// Validates and applies the provided filters, saving the validated filters to person preferences.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="filters">The filters to apply.</param>
-        /// <returns>An object containing the validated filters and new list of filtered [group, location, schedule, occurrence date] occurrences.</returns>
+        /// <returns>An object containing the validated filters, new list of filtered [group, location, schedule, occurrence date] occurrences and updated navigation URLs.</returns>
         private GroupSchedulerAppliedFiltersBag ApplyFilters( RockContext rockContext, GroupSchedulerFiltersBag filters )
         {
             RefineFilters( rockContext, filters );
+
+            SaveFiltersToPersonPreferences( filters );
 
             var appliedFilters = new GroupSchedulerAppliedFiltersBag
             {
@@ -1026,12 +1028,9 @@ namespace Rock.Blocks.Group.Scheduling
         /// <summary>
         /// Validates and saves the provided filters to person preferences.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="filters">The filters to save.</param>
-        private void SaveFiltersToPersonPreferences( RockContext rockContext, GroupSchedulerFiltersBag filters )
+        private void SaveFiltersToPersonPreferences( GroupSchedulerFiltersBag filters )
         {
-            RefineFilters( rockContext, filters, true );
-
             this.PersonPreferences.SetValue( PersonPreferenceKey.GroupIds, _groupIds?.Any() == true ? _groupIds.AsDelimited( "," ) : null );
             this.PersonPreferences.SetValue( PersonPreferenceKey.LocationIds, _selectedLocationIds?.Any() == true ? _selectedLocationIds.AsDelimited( "," ) : null );
             this.PersonPreferences.SetValue( PersonPreferenceKey.ScheduleIds, _selectedScheduleIds?.Any() == true ? _selectedScheduleIds.AsDelimited( "," ) : null );
@@ -1494,7 +1493,7 @@ namespace Rock.Blocks.Group.Scheduling
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="filters">The filters containing the occurrences to auto-schedule.</param>
-        /// <returns>An object containing the validated filters and new list of filtered [group, location, schedule, occurrence date] occurrences.</returns>
+        /// <returns>An object containing the validated filters, new list of filtered [group, location, schedule, occurrence date] occurrences and updated navigation URLs.</returns>
         private GroupSchedulerAppliedFiltersBag AutoSchedule( RockContext rockContext, GroupSchedulerFiltersBag filters )
         {
             RefineFilters( rockContext, filters );
@@ -1754,6 +1753,22 @@ namespace Rock.Blocks.Group.Scheduling
         #region Block Actions
 
         /// <summary>
+        /// Refines the provided filters.
+        /// </summary>
+        /// <param name="bag">The filters to refine.</param>
+        /// <returns>An object containing the refined filters.</returns>
+        [BlockAction]
+        public BlockActionResult RefineFilters( GroupSchedulerFiltersBag bag )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                RefineFilters( rockContext, bag, true );
+
+                return ActionOk( bag );
+            }
+        }
+
+        /// <summary>
         /// Applies the provided filters.
         /// </summary>
         /// <param name="bag">The filters to apply.</param>
@@ -1767,25 +1782,6 @@ namespace Rock.Blocks.Group.Scheduling
 
                 return ActionOk( appliedFilters );
             }
-        }
-
-        /// <summary>
-        /// Saves the provided filters.
-        /// </summary>
-        /// <param name="bag">The filters to save.</param>
-        /// <returns>200-OK response with no content.</returns>
-        [BlockAction]
-        public BlockActionResult SaveFilters( GroupSchedulerFiltersBag bag )
-        {
-            if ( bag != null )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    SaveFiltersToPersonPreferences( rockContext, bag );
-                }
-            }
-
-            return ActionOk();
         }
 
         /// <summary>
