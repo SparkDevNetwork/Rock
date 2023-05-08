@@ -139,7 +139,7 @@ namespace Rock.Drawing.Avatar
             if ( settings.PhotoId.HasValue )
             {
                 // Get image from the binary file
-                avatar = RockImage.GetImageFromBinaryFileService( settings.PhotoId.Value );
+                avatar = RockImage.GetPersonImageFromBinaryFileService( settings.PhotoId.Value );
 
                 // Resize image
                 avatar.CropResize( settings.Size, settings.Size );
