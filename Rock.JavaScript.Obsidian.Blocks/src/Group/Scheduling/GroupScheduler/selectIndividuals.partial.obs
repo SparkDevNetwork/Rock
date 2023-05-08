@@ -7,110 +7,108 @@
            :saveButtonDisabled="saveButtonDisabled"
            @save="onSave">
 
-        <div class="new-group-scheduler">
-            <NotificationBox v-if="loadResourceSettingsErrorMessage" :alertType="AlertType.Warning">
-                {{ loadResourceSettingsErrorMessage }}
-            </NotificationBox>
+        <NotificationBox v-if="loadResourceSettingsErrorMessage" :alertType="AlertType.Warning">
+            {{ loadResourceSettingsErrorMessage }}
+        </NotificationBox>
 
-            <template v-else>
+        <template v-else>
 
-                <div class="d-md-flex justify-content-md-between">
+            <div class="d-md-flex justify-content-md-between">
 
-                    <div>
-                        <template v-if="primarySourceTypeItems.length > 1">
-                            <!-- Desktop -->
-                            <div class="d-none d-md-block form-group">
-                                <ButtonGroup v-model="selectedPrimarySourceType"
-                                             :items="primarySourceTypeItems"
-                                             :disabled="isBusy"
-                                             @update:modelValue="onSettingsSelectionChanged" />
-                            </div>
-
-                            <!-- Mobile -->
-                            <div class="d-md-none form-group">
-                                <DropDownList v-model="selectedPrimarySourceType"
-                                              :items="primarySourceTypeItems"
-                                              :showBlankItem="false"
-                                              :disabled="isBusy"
-                                              @update:modelValue="onSettingsSelectionChanged" />
-                            </div>
-                        </template>
-
-                        <div v-if="selectedSourceTypeIsAlternateGroup" class="form-group">
-                            <GroupPicker v-model="selectedAlternateGroup"
-                                         :disabled="isBusy"
-                                         @update:modelValue="onSettingsSelectionChanged" />
-                        </div>
-
-                        <div v-if="selectedSourceTypeIsDataView" class="form-group">
-                            <DataViewPicker
-                                            v-model="selectedDataView"
-                                            :entityTypeGuid="EntityType.Person"
+                <div>
+                    <template v-if="primarySourceTypeItems.length > 1">
+                        <!-- Desktop -->
+                        <div class="d-none d-md-block form-group">
+                            <ButtonGroup v-model="selectedPrimarySourceType"
+                                            :items="primarySourceTypeItems"
                                             :disabled="isBusy"
                                             @update:modelValue="onSettingsSelectionChanged" />
                         </div>
 
-                        <h4 v-if="groupName">{{ groupName }}</h4>
+                        <!-- Mobile -->
+                        <div class="d-md-none form-group">
+                            <DropDownList v-model="selectedPrimarySourceType"
+                                            :items="primarySourceTypeItems"
+                                            :showBlankItem="false"
+                                            :disabled="isBusy"
+                                            @update:modelValue="onSettingsSelectionChanged" />
+                        </div>
+                    </template>
 
-                        <template v-if="selectedSourceTypeIsGroup">
-                            <!-- Desktop -->
-                            <div class="d-none d-md-block form-group">
-                                <ButtonGroup v-model="selectedSecondarySourceType"
-                                             :items="secondarySourceTypeItems"
-                                             :btnSize="BtnSize.ExtraSmall"
-                                             :disabled="isBusy"
-                                             @update:modelValue="onSettingsSelectionChanged" />
-                            </div>
-
-                            <!-- Mobile -->
-                            <div class="d-md-none form-group">
-                                <DropDownList v-model="selectedSecondarySourceType"
-                                              :items="secondarySourceTypeItems"
-                                              :showBlankItem="false"
-                                              :disabled="isBusy"
-                                              @update:modelValue="onSettingsSelectionChanged" />
-                            </div>
-                        </template>
+                    <div v-if="selectedSourceTypeIsAlternateGroup" class="form-group">
+                        <GroupPicker v-model="selectedAlternateGroup"
+                                        :disabled="isBusy"
+                                        @update:modelValue="onSettingsSelectionChanged" />
                     </div>
 
-                    <div v-if="remainingResourceSpots" class="form-group">
-                        <span :class="remainingResourceSpots.cssClass">
-                            {{ remainingResourceSpots.label }}
-                        </span>
+                    <div v-if="selectedSourceTypeIsDataView" class="form-group">
+                        <DataViewPicker
+                                        v-model="selectedDataView"
+                                        :entityTypeGuid="EntityType.Person"
+                                        :disabled="isBusy"
+                                        @update:modelValue="onSettingsSelectionChanged" />
                     </div>
 
+                    <h4 v-if="groupName">{{ groupName }}</h4>
+
+                    <template v-if="selectedSourceTypeIsGroup">
+                        <!-- Desktop -->
+                        <div class="d-none d-md-block form-group">
+                            <ButtonGroup v-model="selectedSecondarySourceType"
+                                            :items="secondarySourceTypeItems"
+                                            :btnSize="BtnSize.ExtraSmall"
+                                            :disabled="isBusy"
+                                            @update:modelValue="onSettingsSelectionChanged" />
+                        </div>
+
+                        <!-- Mobile -->
+                        <div class="d-md-none form-group">
+                            <DropDownList v-model="selectedSecondarySourceType"
+                                            :items="secondarySourceTypeItems"
+                                            :showBlankItem="false"
+                                            :disabled="isBusy"
+                                            @update:modelValue="onSettingsSelectionChanged" />
+                        </div>
+                    </template>
                 </div>
 
-                <Loading :isLoading="isBusy">
-                    <NotificationBox v-if="unsuccessfulAssignmentPersonIds.length" :alertType="AlertType.Warning">
-                        <template v-if="!unsuccessfulAssignmentMessages.length">
-                            Some assignments were unsuccessful.
-                        </template>
-                        <template v-else-if="unsuccessfulAssignmentMessages.length === 1">
-                            {{ unsuccessfulAssignmentMessages[0] }}
-                        </template>
-                        <ul v-else>
-                            <li v-for="(message, index) in unsuccessfulAssignmentMessages" :key="index">
-                                {{ message }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
+                <div v-if="remainingResourceSpots" class="form-group">
+                    <span :class="remainingResourceSpots.cssClass">
+                        {{ remainingResourceSpots.label }}
+                    </span>
+                </div>
 
-                    <NotificationBox v-if="loadResourcesErrorMessage" :alertType="AlertType.Warning">
-                        {{ loadResourcesErrorMessage }}
-                    </NotificationBox>
+            </div>
 
-                    <NotificationBox v-else-if="loadResourcesInfoMessage" :alertType="AlertType.Info">
-                        {{ loadResourcesInfoMessage }}
-                    </NotificationBox>
+            <Loading :isLoading="isBusy">
+                <NotificationBox v-if="unsuccessfulAssignmentPersonIds.length" :alertType="AlertType.Warning">
+                    <template v-if="!unsuccessfulAssignmentMessages.length">
+                        Some assignments were unsuccessful.
+                    </template>
+                    <template v-else-if="unsuccessfulAssignmentMessages.length === 1">
+                        {{ unsuccessfulAssignmentMessages[0] }}
+                    </template>
+                    <ul v-else>
+                        <li v-for="(message, index) in unsuccessfulAssignmentMessages" :key="index">
+                            {{ message }}
+                        </li>
+                    </ul>
+                </NotificationBox>
 
-                    <AvailableResources v-else v-model="selectedPersonIds"
-                                        :resources="availableResources"
-                                        :disabled="isBusy" />
-                </Loading>
+                <NotificationBox v-if="loadResourcesErrorMessage" :alertType="AlertType.Warning">
+                    {{ loadResourcesErrorMessage }}
+                </NotificationBox>
 
-            </template>
-        </div>
+                <NotificationBox v-else-if="loadResourcesInfoMessage" :alertType="AlertType.Info">
+                    {{ loadResourcesInfoMessage }}
+                </NotificationBox>
+
+                <AvailableResources v-else v-model="selectedPersonIds"
+                                    :resources="availableResources"
+                                    :disabled="isBusy" />
+            </Loading>
+
+        </template>
 
     </Modal>
 </template>

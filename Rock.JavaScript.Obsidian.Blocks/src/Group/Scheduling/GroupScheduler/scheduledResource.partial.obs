@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <li v-if="resource" class="list-group-item text-sm">
+    <li v-if="resource" class="list-group-item cursor-default text-sm">
         <img :src="imgSrc" :class="imgCssClass">
         <span class="resource-name">
             {{ personName }}
