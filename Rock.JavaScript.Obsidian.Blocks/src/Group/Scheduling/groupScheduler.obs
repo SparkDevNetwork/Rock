@@ -176,7 +176,7 @@
         </div>
 
         <SelectFilters v-model:isVisible="isSelectingFilters"
-                       :appliedFilters="currentlyAppliedFilters"
+                       :filters="filters"
                        @filtersApplied="onFiltersApplied" />
 
         <CloneSchedules v-model:isVisible="isSelectingCloneSettings"
@@ -362,14 +362,6 @@
 
     const filtersCssClass = computed((): string => {
         return `d-block text-muted${(isBusy.value ? "" : " clickable")} text-truncate`;
-    });
-
-    const currentlyAppliedFilters = computed((): GroupSchedulerAppliedFiltersBag => {
-        return {
-            filters: filters.value,
-            scheduleOccurrences: scheduleOccurrences.value,
-            navigationUrls: navigationUrls.value
-        };
     });
 
     const sortedOccurrencesByDate = computed((): (GroupSchedulerOccurrenceBag[])[] => {
@@ -714,7 +706,7 @@
      *
      * @param appliedFilters The filters to apply.
      */
-    function onFiltersApplied(appliedFilters: GroupSchedulerAppliedFiltersBag): void {
+    function onFiltersApplied(appliedFilters: GroupSchedulerAppliedFiltersBag | null): void {
         scheduleComponentsByOccurrenceDate.value = {};
 
         filters.value = appliedFilters?.filters;
