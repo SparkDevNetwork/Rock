@@ -311,8 +311,11 @@ namespace RockWeb.Blocks.Cms
         {
             int pageId = hfPageId.Value.AsInteger();
 
+            var selectedZoneValue = ddlZones.SelectedValue;
+            var selectedMoveValue = ddlMoveToZoneList.SelectedValue;
             ddlZones.Items.Clear();
             ddlMoveToZoneList.Items.Clear();
+
             var page = PageCache.Get( pageId );
             if ( page != null )
             {
@@ -334,8 +337,17 @@ namespace RockWeb.Blocks.Cms
                     ddlZones.Items.Add( new ListItem( string.Format( "{0} ({1})", invalidPageZone, zoneBlockCount ), invalidPageZone ) );
                 }
 
-                // default to Main Zone (if there is one)
-                ddlZones.SetValue( "Main" );
+                if ( Page.IsPostBack )
+                {
+                    // Restore the previously selected values.
+                    ddlZones.SelectedValue = selectedZoneValue;
+                    ddlMoveToZoneList.SelectedValue = selectedMoveValue;
+                }
+                else
+                { 
+                    // default to Main Zone (if there is one)
+                    ddlZones.SetValue( "Main" );
+                }
             }
 
             var rockContext = new RockContext();
