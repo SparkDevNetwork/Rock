@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Examples
     [Description( "Loads the Rock Solid Church sample data into your Rock system." )]
 
     [TextField( "XML Document URL",
-        Description = @"The URL for the input sample data XML document. You can also use a local Windows file path (e.g. C:\Rock\Documentation\sampledata_1_14_0.xml) if you want to test locally with your own fake data.  The file format is loosely defined on the <a target='blank' href='https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification-(sample-data)'>Rock Solid Demo Church Specification</a> wiki.",
+        Description = @"The URL for the input sample data XML document. You can also use a local Windows file path (e.g. C:\Rock\Documentation\sampledata_1_14_0.xml) if you want to test locally with your own fake data.  The file format is loosely defined on the <a target='blank' rel='noopener noreferrer' href='https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification-(sample-data)'>Rock Solid Demo Church Specification</a> wiki.",
         Key = AttributeKey.XMLDocumentURL,
         IsRequired = false,
         DefaultValue = "http://storage.rockrms.com/sampledata/sampledata_1_14_1.xml",
