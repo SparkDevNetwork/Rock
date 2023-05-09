@@ -164,6 +164,8 @@
   border-width: 0;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, .2);
+  // Re-include the font-family because of Google Maps Resetting it
+  font-family: @font-family-base;
 
   .card-body {
     padding: 20px;
@@ -173,6 +175,14 @@
   .card-footer {
     padding: 0 20px 20px;
     border-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .campus-icon {
+    width: 60px;
+    height: 60px;
   }
 }
 
@@ -382,6 +392,7 @@
   border-width: 0;
   border-radius: 8px;
   box-shadow: 0 0 5px rgba(0, 0, 0, .15);
+  cursor: pointer;
 
   .card-body {
     display: flex;
@@ -403,7 +414,7 @@
   .card-img-header {
     display: none;
     flex: 0 0 148px;
-
+    height: 148px;
     align-items: center;
     justify-content: center;
     overflow: hidden;

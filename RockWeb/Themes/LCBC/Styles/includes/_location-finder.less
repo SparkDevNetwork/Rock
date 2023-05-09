@@ -1,15 +1,33 @@
 .page-layout-locationfinder {
+    height: ~"calc(100vh - env(safe-area-inset-bottom, 0) - env(safe-area-inset-top, 0))";
+    min-height: ~"calc(100vh - env(safe-area-inset-bottom, 0) - env(safe-area-inset-top, 0))";
+    overflow: hidden;
+    overflow: -moz-hidden-unscrollable;
+
+    @supports (-webkit-touch-callout: none) {
+        /* for ios safari 15, safe-area-inset-bottom is 0, so a special fix apply here */
+        height: -webkit-fill-available;
+        min-height: -webkit-fill-available;
+    }
+
   #form1,
   .page {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
   }
-  // .page {
-  //     display: flex;
-  //     flex-direction: column;
-  //     flex: 1 1 auto;
-  // }
+
+  #cms-admin-footer {
+    display: none;
+  }
+}
+
+.map-divider {
+  display: none;
+
+  .has-geolocation & {
+    display: inline;
+  }
 }
 
 .fill-window {
@@ -17,18 +35,36 @@
   min-width: 0 !important;
   min-height: 0 !important;
   overflow: hidden;
+  overflow: -moz-hidden-unscrollable;
+  display: flex;
+  flex-direction: column;
 
   > .zone-content,
   .block-instance,
   .block-instance > .block-content,
   .block-instance > .block-content > div {
     height: 100%;
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .block-instance > .block-content > div:last-child  {
+    display: none;
+  }
+
+  .config-bar {
+    height: 0;
+    display: none !important;
   }
 }
 
-.finder-container {
-  height: 100%;
-  overflow: hidden;
+.page-layout-locationfinder {
+  .prayer-cta-launcher {
+    display: none;
+  }
 }
 
 .location-finder {
@@ -39,6 +75,8 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+
+
 
   .locations {
     display: contents;
@@ -75,6 +113,7 @@
     flex-direction: column;
     order: -1;
     padding-top: 0;
+    background: #eef9ed;
   }
 
   .location-header {
@@ -91,6 +130,9 @@
     overflow: auto;
     white-space: normal;
     -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    scroll-behavior: smooth;
+    padding-bottom: 80px;
   }
 
   .location-list-items {
@@ -153,4 +195,16 @@
   display: flex;
   flex-flow: column wrap;
   justify-content: space-between;
+  border-bottom: 1px solid #f3f3f3;
+}
+
+
+.gm-style {
+  .gm-style-iw-c {
+    padding: 0;
+  }
+
+  .gm-style-iw-d {
+    overflow: auto !important;
+  }
 }

@@ -3,6 +3,12 @@
 {% assign data = 'GatheringsSourceTriumph' | PersistedDataset %}
 <script>
     var googleApiKey = '{{ 'Global' | Attribute:'GoogleAPIKey' }}';
+    $(function () {
+      // on display of bootstrap tooltip element, hide all other tooltips
+      $('[data-toggle="tooltip"]').on('show.bs.tooltip', function () {
+        $('[data-toggle="tooltip"]').not(this).tooltip('hide');
+      });
+    });
 </script>
 <script async src="https://maps.googleapis.com/maps/api/js?key={{ 'Global' | Attribute:'GoogleAPIKey' }}&callback=initMap"></script>
 <script src="/Themes/LCBC/Assets/Scripts/location-finder.js"></script>
@@ -42,8 +48,8 @@
 {% endcapture %}
 
 
-
-    <main class="location-finder">
+<main class="finder-container">
+    <section class="location-finder">
         <div class="locations">
             <div class="location-filter d-none">
                 <div class="filter-section filter-header d-flex justify-content-between">
@@ -108,7 +114,7 @@
                             <span class="d-block text-primary">No Matter Where You Are</span>
                         </div>
                         <div>
-                            <a href="{{ 'Global' | Attribute:'WatchOnlineURL','RawValue' }}" class="btn btn-primary my-1"><svg class="icon icon-left"><use xlink:href="#playcircle" /></svg> Watch Online</a>
+                            <a href="#" class="btn btn-primary my-1"><svg class="icon icon-left"><use xlink:href="#playcircle" /></svg> Watch Online</a>
                             <a href="/sermons" class="btn btn-primary my-1"><svg class="icon icon-left"><use xlink:href="#monitor" /></svg> On-Demand</a>
                         </div>
                     </div>
@@ -134,12 +140,16 @@
                                         <span>
                                     {% endif %}
 
+                                    {% comment %}
+                                    {{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}{% if schedule.ASL == 'true' and schedule.Espanol == 'true' %}<sup>ES/ASL</sup>{% assign hasASL = true %}{% assign hasES = true %}{% elseif schedule.ASL == 'True' %}<sup>ASL</sup>{% assign hasASL = true %}{% elseif schedule.Espanol == 'true' %}<sup>ES</sup>{% assign hasES = true %}{% endif %}
+                                    /-Commas-/ {% if forloop.last %}</div>{% else %}{% assign nextItemI = forloop.index0 | Plus:1 %}{% assign nextItem = schedules[nextItemI].NextDayOfWeek %}{% if nextItem == schedule.NextDayOfWeek %},{% endif %}{% endif %}
+                                    {% endcomment %}
 
                                     {%- if schedule.ASL == 'true' and schedule.Espanol == 'true' -%}
                                         <span class="abbr" data-toggle="tooltip" data-trigger="click" title="{{ aslHelp }}<br>{{ esHelp }}" data-container=".location-list-items">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
                                         {%- assign hasASL = true -%}
                                         {%- assign hasES = true -%}
-                                    {%- elseif schedule.ASL == 'true' -%}
+                                    {%- elseif schedule.ASL == 'True' -%}
                                         <span class="abbr" data-toggle="tooltip" data-trigger="click" title="{{ aslHelp }}" data-container=".location-list-items">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
                                         {%- assign hasASL = true -%}
                                     {%- elseif schedule.Espanol == 'true' -%}
@@ -209,7 +219,7 @@
                                             {% endif %}
 
                                             {% comment %}
-                                            {{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}{% if schedule.ASL == 'true' and schedule.Espanol == 'true' %}<sup>ES/ASL</sup>{% assign hasASL = true %}{% assign hasES = true %}{% elseif schedule.ASL == 'true' %}<sup>ASL</sup>{% assign hasASL = true %}{% elseif schedule.Espanol == 'true' %}<sup>ES</sup>{% assign hasES = true %}{% endif %}
+                                            {{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}{% if schedule.ASL == 'true' and schedule.Espanol == 'true' %}<sup>ES/ASL</sup>{% assign hasASL = true %}{% assign hasES = true %}{% elseif schedule.ASL == 'True' %}<sup>ASL</sup>{% assign hasASL = true %}{% elseif schedule.Espanol == 'true' %}<sup>ES</sup>{% assign hasES = true %}{% endif %}
                                             /-Commas-/ {% if forloop.last %}</div>{% else %}{% assign nextItemI = forloop.index0 | Plus:1 %}{% assign nextItem = schedules[nextItemI].NextDayOfWeek %}{% if nextItem == schedule.NextDayOfWeek %},{% endif %}{% endif %}
                                             {% endcomment %}
 
@@ -217,7 +227,7 @@
                                                 <span class="abbr" data-toggle="tooltip" data-trigger="click" title="{{ aslHelp }}<br>{{ esHelp }}" data-container=".location-list-items">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
                                                 {%- assign hasASL = true -%}
                                                 {%- assign hasES = true -%}
-                                            {%- elseif schedule.ASL == 'true' -%}
+                                            {%- elseif schedule.ASL == 'True' -%}
                                                 <span class="abbr" data-toggle="tooltip" data-trigger="click" title="{{ aslHelp }}" data-container=".location-list-items">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
                                                 {%- assign hasASL = true -%}
                                             {%- elseif schedule.Espanol == 'true' -%}
@@ -234,7 +244,7 @@
                                     <div class="card-details">
                                         <span class="map-distance"></span>
                                         {% if hasES or hasASL %}
-                                            <span class="map-divider"> · </span>
+                                            ·
                                             {% if hasASL %}
                                             <svg class="icon" data-toggle="tooltip" title="{{ aslHelp }}" data-container=".location-list-items"><use xlink:href="#asl" /></svg>
                                             {% endif %}
@@ -270,6 +280,7 @@
 
         </div>
     </section>
+</main>
 
 
 <script>

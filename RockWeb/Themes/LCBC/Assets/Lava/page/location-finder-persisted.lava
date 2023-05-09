@@ -1,0 +1,74 @@
+{% group id:'788690' securityenabled:'false' %}
+    {% assign GroupLocations = groupItems[0].GroupLocations | OrderBy:'Location.Name' %}
+{% endgroup %}
+[
+    {% for gl in GroupLocations %}
+        {% campus Where:'LocationId == {{ gl.Location.Id }}' securityenabled:'false' %}{% assign campus = campusItems | First %}{% endcampus %}
+        {% assign schedules = gl.Schedules | Where:'IsActive',true %}
+        {% assign primaryImage = campus | Attribute:'PrimaryImage','RawValue' %}
+        {% assign images = campus | Attribute:'CampusImages','Object' %}
+    {
+        "CampusId": {{ campus.Id }},
+        "CampusName": {{ campus.Name | ToJSON }},
+        "CampusType": {{ campus.CampusTypeValueId | FromCache:'DefinedValue' | Property:'Value' | Replace:'Physical','Campus' | ToJSON }},
+        "CampusGuid": {{ campus.Guid | ToJSON }},
+        "Latitude": {{ gl.Location.Latitude | ToJSON }},
+        "Longitude": {{ gl.Location.Longitude | ToJSON }},
+        "AddressLine1": {{ gl.Location.Street1 | Append:' ' | Append:gl.Location.Street2 | Capitalize | Trim | ToJSON }},
+        "AddressLine2": {{ gl.Location.City | Capitalize | Append:' ' | Append:gl.Location.State | Append:' ' | Append:gl.Location.PostalCode | Trim | ToJSON }},
+        "Url": {{ campus | Attribute:'URLSlug' | ToJSON }},
+        "Email": {{ campus | Attribute:'CampusEmail','RawValue' | ToJSON }},
+        "Phone": {{ campus.PhoneNumber | ToJSON }},
+        {% if primaryImage != '' %}
+        "HeaderImage": {{ primaryImage | Prepend:'https://origin.lcbcchurch.com/GetImage.ashx?Guid=' | TriumphImgCdn:'auto=format,compress' | ToJSON }},
+        {% endif %}
+        "Schedules":[ {% for sched in schedules %}
+            {% assign nextDayOfWeek = sched.NextStartDateTime | Date:'dddd' %}
+            {% case nextDayOfWeek %}
+                {% when 'Sunday' %}
+                    {% assign nextDayNum = 0 %}
+                {% when 'Monday' %}
+                    {% assign nextDayNum = 1 %}
+                {% when 'Tuesday' %}
+                    {% assign nextDayNum = 2 %}
+                {% when 'Wednesday' %}
+                    {% assign nextDayNum = 3 %}
+                {% when 'Thursday' %}
+                    {% assign nextDayNum = 4 %}
+                {% when 'Friday' %}
+                    {% assign nextDayNum = 5 %}
+                {% when 'Saturday' %}
+                    {% assign nextDayNum = 6 %}
+                {% else %}
+                    {% assign nextDayNum = '' %}
+            {% endcase %}
+                {
+                    "CategoryId": {{ sched.Category.Id }},
+                    "CategoryName": {{ sched.Category.Name | ToJSON }},
+                    "FirstDayOfWeek": {{ sched.FirstStartDateTime | Date:'dddd' | ToJSON }},
+                    "FirstStartDateTime": {{ sched.FirstStartDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' | ToJSON }},
+                    "NextDayOfWeek": {{ sched.NextStartDateTime | Date:'dddd' | ToJSON }},
+                    "NextDayOfWeekNumber": {{ nextDayNum }},
+                    "NextStartDateTime": {{ sched.NextStartDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' | ToJSON }},
+                    "NextEndDateTime": {{ sched.NextStartDateTime | DateAdd:sched.DurationInMinutes,'M' | Date:'yyyy-MM-ddTHH:mm:sszzz' | ToJSON }},
+                    "ASL":{% assign ASLCampuses = sched | Attribute:'ASL' | AsString %}{% if ASLCampuses contains gl.Location.Name %}"true",{% else %}"false",{% endif %}
+                    "Espanol":{% assign EspanolCampuses = sched | Attribute:'Espanol' | AsString %}{% if EspanolCampuses contains gl.Location.Name %}"true"{% else %}"false"{% endif %}
+                    }{% if forloop.last	!= true %},{% endif %}
+             {% endfor %}
+        ],
+        "Images": [
+            {% if primaryImage != '' %}
+            {
+                "ThumbnailUrl": {{ primaryImage | Prepend:'https://origin.lcbcchurch.com/GetImage.ashx?Guid=' | TriumphImgCdn:'w=300&h=300&fit=crop&auto=format,compress' | ToJSON }}
+            }
+            {% endif %}
+            {% for image in images.AttributeMatrixItems %}
+                {% assign imageUrl = image | Attribute:'Image','RawValue' %}
+                ,{
+                    "ThumbnailUrl": {{ imageUrl | Prepend:'https://origin.lcbcchurch.com/GetImage.ashx?Guid=' | TriumphImgCdn:'w=300&h=300&fit=crop&auto=format,compress' | ToJSON }}
+                }
+            {% endfor %}
+        ]
+    }{% if forloop.last	!= true %},{% endif %}
+{% endfor %}
+]

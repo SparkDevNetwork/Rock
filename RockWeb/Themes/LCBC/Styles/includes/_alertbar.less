@@ -15,13 +15,17 @@
   transition: height .5s ease 0s;
 
   &.live {
-    height: 64px;
+    height: 74px;
+
+    @media screen and (min-width: 480px) {
+      height: 56px; 
+    }
   }
 }
 
 .alertbar-content {
   display: block;
-  padding: 18px;
+  padding: 12px 18px;
   font-size: 18px;
   font-weight: 800;
   color: #fff !important;

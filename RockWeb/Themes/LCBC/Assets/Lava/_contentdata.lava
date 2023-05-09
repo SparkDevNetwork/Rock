@@ -1,0 +1,19 @@
+{% comment %} {% include '~~/Assets/Lava/_contentdata.lava' %} {% endcomment %}
+
+<script>
+var rockData =
+{% cache key:'variable' duration:'10' twopass:'false' %}
+    [
+        {% definedvalue where:'DefinedTypeId == 104' limit:'999' iterator:'Items' sort:'Order' securityenabled:'false' lazyloadenabled:'true'  %}
+            {% for item in Items %}{ {% assign cat = item.CategoryId | FromCache:'Category' %}
+                "TopicId": {{ item.Id }},
+                "TopicGuid": {{ item.Guid | ToJSON }},
+                "TopicName": {{ item.Value | ToJSON }},
+                "CategoryId": {{ item.CategoryId }},
+                "Category": {{ cat.Guid | ToJSON }},
+                "CategoryName": {{ cat.Name | ToJSON }}
+            }{% unless forloop.last %},{% endunless %}
+            {% endfor %}{% enddefinedvalue %}
+    ]
+    {% endcache %}
+</script>

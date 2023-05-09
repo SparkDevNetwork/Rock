@@ -1,0 +1,59 @@
+{% comment %} {% include '~~/Assets/Lava/examples/test.lava' %} {% endcomment %}
+
+{% eventitem expression:'EventItemOccurrences.Any()' iterator:'Events' securityenabled:'false' %}
+where:'Id == 39 && IsActive == true && IsApproved == true'
+<pre>{{ Events | First | ToJSON }}</pre>
+    {% assign eventitem = Events | First %}
+    {% if eventitem %}
+        {% assign eventCalendarItems = eventitem.EventCalendarItems | Map:'EventCalendarId' %}
+        <pre>{{ eventCalendarItems | ToJSON }}</pre>
+        {% if true %}
+            {% assign showEvent = true %}
+            {{ eventitem.Name | Append:' | LCBC Church' | SetPageTitle:'All' }}
+            {% assign photoId = eventitem.PhotoId %}
+            {% if photoId != '' %}
+                <section id="main_secPageTitle" class="page-header has-image" role="banner">
+                    <img src="{{ photoId | Prepend:'https://origin.lcbcchurch.com/GetImage.ashx?Id=' | TriumphImgCdn:'auto=format,compress' }}" sizes="100vw" class="hero-image" alt="" width="{{ eventitem.Photo.Width }}" height="{{ eventitem.Photo.Height }}" itemprop="image">
+                </section>
+            {% endif %}
+
+            <section class="page-section">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h1 class="mt-0">{{ eventitem.Name }}</h1>
+                            <div>{{ eventitem.Summary }}</div>
+                        </div>
+                        <div class="col-md-6 d-flex">
+                            <div class="d-flex flex-column flex-md-row align-items-center mx-auto mr-md-0 mt-4 mt-md-0">
+                                <strong>Share This Event</strong>
+                                <ul class="socialsharing ml-2">
+                                    <li>
+                                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
+                                            <i class="fa fa-fw fa-facebook"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
+                                            <i class="fa fa-fw fa-twitter"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="mailto:?Subject={{ eventitem.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' }}" class="socialicon socialicon-email" title="" data-original-title="Share via Email">
+                                            <i class="fa fa-fw fa-envelope-o"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="socialicon socialicon-email btn-copy-url" title="" data-original-title="Copy URL">
+                                            <i class="fa fa-fw fa-clipboard"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% endif  %}
+    {% endif %}
+{% endeventitem %}
