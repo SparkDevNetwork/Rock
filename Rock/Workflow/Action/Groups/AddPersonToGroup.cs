@@ -186,6 +186,17 @@ namespace Rock.Workflow.Action
                     // if the group member couldn't be added (for example, one of the group membership rules didn't pass), add the validation messages to the errormessages
                     errorMessages.AddRange( groupMember.ValidationResults.Select( a => a.ErrorMessage ) );
                 }
+
+                // If group member attribute was specified, requery the request and set the attribute's value
+                Guid? groupMemberAttributeGuid = GetAttributeValue( action, "GroupMember" ).AsGuidOrNull();
+                if ( groupMemberAttributeGuid.HasValue )
+                {
+                    groupMember = groupMemberService.Get( groupMember.Id );
+                    if ( groupMember != null )
+                    {
+                        SetWorkflowAttributeValue( action, groupMemberAttributeGuid.Value, groupMember.Guid.ToString() );
+                    }
+                }
             }
 
             errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
