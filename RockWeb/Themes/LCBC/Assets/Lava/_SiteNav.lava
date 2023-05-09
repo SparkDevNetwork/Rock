@@ -1,5 +1,4 @@
 /- {% include '~~/Assets/Lava/_SiteNav.lava' %} -/
-
 <div class="container flexfix">
     <div class="navbar-header">
         <a class="navbar-brand" aria-label="LCBC Home" href="/">
@@ -14,7 +13,6 @@
         </button>
         {% if Page.DisplayChildPages and Page.Pages != empty %}
             <ul class="nav navbar-nav">
-
                 {% for childPage in Page.Pages %}
                     {% assign childCount = childPage.Pages.size %}
 
@@ -22,12 +20,11 @@
                         <a href="{{ childPage.Url }}" data-bs-toggle="dropdown">{{ childPage.Title }}</a>
                         {% if childCount > 0 %}
                             <ul class="dropdown-menu">
-                                {%- for grandchildPage in childPage.Pages -%}
-                                    <li><a role="menu-item" href="{{ grandchildPage.Url }}">{{ grandchildPage.Title }}</a></li>
-                                {% endfor %}
+                            {% for grandchildPage in childPage.Pages %}
+                                <li><a role="menu-item" href="{{ grandchildPage.Url }}">{{ grandchildPage.Title }}</a></li>
+                            {% endfor %}
                             </ul>
                         {% endif %}
-
                     </li>
                 {% endfor %}
                 {% for includedPage in IncludePageList %}
@@ -37,12 +34,10 @@
                         <a href="{{ attributeParts.Value }}">{{ attributeParts.Key }}</a>
                     </li>
                 {% endfor %}
-
             </ul>
         {% endif %}
     </div>
     <div class="navbar-end">
-
         <a href="/search" class="btn btn-default btn-nav" aria-label="Search">
             {% raw %}
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">

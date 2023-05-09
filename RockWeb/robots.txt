@@ -1,0 +1,7 @@
+User-agent: Googlebot
+Disallow: /nogooglebot/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://rockprod-job-01.lcbcchurch.com/Content/Sitemaps/site-26-sitemap.xml.gz

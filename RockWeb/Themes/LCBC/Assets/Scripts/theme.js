@@ -37,13 +37,56 @@ function navInteractions() {
                 // if next element is dropdown menu
                 if ( $(this).next().hasClass('dropdown-menu') ) {
                     // slide toggle any dropdowns that were open
-                    $('.navbar-nav .dropdown .dropdown-menu').not($(this).next()).slideUp();
+                    $('.navbar-nav .dropdown .dropdown-menu').not($(this).next()).slideUp().closest('.dropdown').removeClass('dropdown-open');
                     // slide toggle current dropdown
-                    $(this).next().slideToggle();
+                    $(this).next().slideToggle().closest('.dropdown').toggleClass('dropdown-open');
                 }
             });
         });
     }
+}
+
+function serviceCountdown() {
+    if (document.getElementById('serviceCountdown')) {
+        var second = 1000,
+        minute = second * 60,
+        hour = minute * 60,
+        day = hour * 24;
+        var serviceCountdown = document.getElementById('serviceCountdown');
+        var serviceCountdownTime = serviceCountdown.getAttribute('data-countdown-time');
+        
+        if (serviceCountdownTime !== null) {
+            // get data-countdown-time attribute from #serviceCountdown
+            var countDown = new Date(serviceCountdownTime).getTime();
+            var x = setInterval(function() {
+                var now = new Date().getTime();
+                var distance = countDown - now;
+
+                // if distance is 60 minutes or less, show the countdown in minutes
+                if (distance < 0) {
+                    clearInterval(x);
+                    document.getElementById('countdown-wrapper').innerText = serviceCountdown.getAttribute('data-live-text');
+                    // if watchnow-livebtn exists, replace href with live stream url
+                    var watchNowLiveBtn = document.getElementById('watchnow-livebtn');
+                    if (watchNowLiveBtn) {
+                        watchNowLiveBtn.href = watchNowLiveBtn.getAttribute('data-live-url');
+                        watchNowLiveBtn.innerHTML = `<span class="label label-danger">New</span> Watch Now!`;
+                    }
+                } else if (distance <= 60 * minute) {
+                    // add class live to serviceCountdown
+                    serviceCountdown.classList.add('live');
+                    document.getElementById('olm').innerText = ('0' + Math.floor((distance % (hour)) / (minute)) + 'm').substr(-3),
+                    document.getElementById('ols').innerText = ('0' + Math.floor((distance % (minute)) / second) + 's').substr(-3);
+                }
+            }, second);
+        } else {
+            var watchNowLiveBtn = document.getElementById('watchnow-livebtn');
+            if (watchNowLiveBtn) {
+                watchNowLiveBtn.href = watchNowLiveBtn.getAttribute('data-live-url');
+                watchNowLiveBtn.innerHTML = `<span class="label label-danger">LIVE</span> Watch Now!`;
+            }
+        }
+    };
 }
 
 // DOMContentLoaded end
@@ -63,6 +106,8 @@ document.addEventListener('DOMContentLoaded', function () {
         $(window).on("scroll", function () {
             scrollInteractions();
         });
+
+        serviceCountdown();
 
         // if .js-alertbar
         if ($('.js-alertbar').length) {
@@ -137,7 +182,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         $('.navbar-collapse').on('hidden.bs.collapse', function (e) {
             $(e.target).find('.dropdown-menu').removeAttr('style');
+            $(e.target).find('.dropdown').removeClass('dropdown-open');
         });
+
+        $('.js-collapse-nav').on('click', function (e) {
+            $('#main-navcol').collapse('hide');
+        });
+
 
         // copyUrl are items with the class .btn-copy-url
         var copyUrl = document.querySelector('.btn-copy-url');
@@ -230,7 +281,7 @@ function doDynamicModal(url, closeConfirmation, modalTitle, closeConfirmationMes
         } else {
             url += '&modal=true';
         }
-        html = '<div class="modal fade" id="dynamicModal" tabindex="-1" role="dialog">';
+        var html = '<div class="modal fade" id="dynamicModal" tabindex="-1" role="dialog">';
         html += '<div class="modal-dialog" role="document">';
         html += '<div class="modal-content">';
         html += '<div class="absolute-close">';
@@ -241,9 +292,7 @@ function doDynamicModal(url, closeConfirmation, modalTitle, closeConfirmationMes
         }
         html += '</div>';
         if (modalTitle && modalTitle !== '') {
-            html += '<div class="modal-header border-0">';
-            html += '<h4 class="modal-title">' + modalTitle + '</h4>';
-            html += '</div>';
+            html += '<div class="modal-header border-0"><h4 class="modal-title">' + modalTitle + '</h4></div>';
         }
         html += '<div class="modal-body p-0">';
         html += '<div id="modalLoading" class="w-100 bg-white d-none" style="height:2000px;"></div>';
@@ -259,8 +308,6 @@ function doDynamicModal(url, closeConfirmation, modalTitle, closeConfirmationMes
             $('#dynamicModal').modal().modal('show');
         }
         $('#dynamicModalIframe').on('load', function (e) {
-
-
             resizeDynamicIframe(this, $('#dynamicModal'));
             $(this).delay(100).animate({ opacity: "1" }, 600);
         });

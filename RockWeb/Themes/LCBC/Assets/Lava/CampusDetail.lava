@@ -1,0 +1,336 @@
+{% comment %} {% include '~~/Assets/Lava/CampusDetail.lava' %} {% endcomment %}
+{% comment %} {% assign campusId = PageParameter.CampusId %}
+{% assign campus = campusId | FromCache:'Campus' %} {% endcomment %}
+
+{% assign slug = PageParameter.slug %}
+
+{% if slug and slug != '' %}
+    {% assign slug = slug | Downcase %}
+    {% assign campuses = 'All' | FromCache:'Campus' %}
+
+    {% for campus in campuses %}
+        {% assign urlSlug = campus | Attribute:'URLSlug' %}
+
+        {% if slug == urlSlug %}
+            {% comment %}Pre-Cache SEO Adds{% endcomment %}
+            {% assign campus = campus %}
+            {% assign data = 'GatheringsSourceTriumph' | PersistedDataset %}
+            {% assign campusData = data | Where:'CampusId',campus.Id | First %}
+            {%- assign campusName = campus.Name -%}
+            {% assign campusUrl = 'https://www.lcbcchurch.com/locations/' | Append:urlSlug %}
+            {{ campusUrl | AddLinkTagToHead:'rel','canonical' }}
+            {{ campusUrl | AddLinkTagToHead:'property','og:url' }}
+            {{ campusName | AddMetaTagToHead:'property','og:title' }}
+            {{ campusName | SetPageTitle:'PageTitle' }}
+            {{ campusName | Append:' | LCBC Church' | SetPageTitle:'BrowserTitle' }}
+            {% if campusData.HeaderImage %}
+                {{ campusData.HeaderImage | AddMetaTagToHead:'property','og:image' }}
+            {% endif %}
+
+            {% break %}
+        {% endif %}
+    {% endfor %}
+
+
+     {% cache key:'campus-page-{{ campus.Id }}' duration:'86400' twopass:'false' tags:'campuses' %}
+        {% assign schedules = campusData.Schedules | Where:'CategoryId',50 | OrderBy:'NextDayOfWeekNumber' %}
+        {% assign campusDescription = campus | Attribute:'CampusDescription' %}
+        {% assign kidsDescription = campus | Attribute:'KidsDescription' %}
+        {% assign studentsDescription = campus | Attribute:'StudentsDescription' %}
+        {% assign campusEmail = campusData.Email %}
+        {% assign primaryImage = campusData.HeaderImage %}
+
+        {% capture locationAddress %}{{ campusData.AddressLine1 }} {{ campusData.AddressLine2 }}{% endcapture %}
+
+        {% capture aslHelp %}ASL translation available{% endcapture %}
+        {% capture esHelp %}Traducción en español disponible{% endcapture %}
+
+        {% raw %}
+            <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                <symbol id="asl" viewBox="0 0 640 512" fill="currentColor"><path d="M290.5 189a83.6 83.6 0 0 0-64.7-3.9c42.6 0 71.2 20.5 85.6 50.6 8.6 18-5.2 38.1-23.6 38.1a26.7 26.7 0 0 1 23.6 38 89.4 89.4 0 0 1-80.3 51l-94.5-8.7-66.4 33.4a18 18 0 0 1-23.9-7.8L2 290.7a18.2 18.2 0 0 1 7-23.6l58-33 41.1-74.2A221.3 221.3 0 0 1 187.7 13a26.5 26.5 0 0 1 37.6 3.6 26.7 26.7 0 0 1-3.7 37.6 178.6 178.6 0 0 0-32.5 35.5 167.2 167.2 0 0 1 74.2-28c14.7-2 28 8.3 29.7 23 2 14.8-8.3 28.1-23 29.8a113 113 0 0 0-44.2 15.3c26.1-5.8 58.7-3.2 88 11a26.8 26.8 0 0 1-23.3 48zm-27.2 69.5a35.6 35.6 0 0 0-32.2-20.3 35.5 35.5 0 0 0-35.6 35.6 35.6 35.6 0 0 0 67.8 15.3c4.5-9.5 13.6-15 23.4-15.3a26.5 26.5 0 0 1-23.4-15.3zm374.8-37.2a18.2 18.2 0 0 1-7 23.6l-58 33-41.1 74.3a221.3 221.3 0 0 1-79.7 146.7 26.6 26.6 0 0 1-37.6-3.6 26.5 26.5 0 0 1 3.7-37.5 178.6 178.6 0 0 0 32.5-35.6 167.2 167.2 0 0 1-74.2 28c-10 2.6-27.6-5.6-29.7-23-2-14.7 8.3-28 23-29.7a113 113 0 0 0 44.2-15.3 138.7 138.7 0 0 1-88-11.1 26.8 26.8 0 0 1 23.3-48 83.6 83.6 0 0 0 64.7 3.8c-42.6 0-71.2-20.5-85.6-50.6a26.7 26.7 0 0 1 23.6-38 26.7 26.7 0 0 1-23.6-38.1c14-29.4 44-51 82-50.9l92.8 8.6 66.4-33.3c9.4-4.7 19.8-.4 23.9 7.7l44.4 89zM409 202.7a35.6 35.6 0 0 0-32.2 20.2 26.5 26.5 0 0 1-23.4 15.3c9.8.3 19 5.9 23.4 15.3a35.6 35.6 0 0 0 32.2 20.3 35.5 35.5 0 0 0 35.6-35.6 35.6 35.6 0 0 0-35.6-35.5z"/></symbol>
+
+                <symbol id="es" viewBox="0 0 18 16"><path d="M4 11.6V4h4.7v.8H5v2.6h3.4v.8H5v2.6h3.7v.8H4.1Zm10.5-5.7c0-.4-.2-.7-.6-.9a2 2 0 0 0-1.1-.3c-.4 0-.7 0-1 .2-.2 0-.4.2-.5.4a1 1 0 0 0 0 1.2l.3.3.5.3.5.1.7.2.7.2.7.4.6.6.2 1c0 .3-.1.7-.4 1-.2.4-.5.6-.9.8-.4.2-.9.3-1.5.3-.5 0-1 0-1.4-.3-.4-.1-.7-.4-1-.7l-.3-1h1c0 .2 0 .4.2.6.2.2.4.4.7.4l.8.2c.4 0 .7 0 1-.2.3-.1.5-.3.6-.5.2-.2.3-.4.3-.7 0-.3 0-.5-.2-.6l-.6-.4-.7-.3-1-.2c-.6-.2-1-.4-1.4-.8-.3-.3-.5-.7-.5-1.2 0-.4.1-.8.3-1.1l1-.8 1.3-.2c.5 0 1 0 1.3.2l1 .7.3 1h-1Z" fill="currentColor"/><path stroke="currentColor" fill="none" stroke-width=".9" d="M1 1.1h16.5V15H1z"/></symbol>
+            </svg>
+
+            <script>
+                var storedLat = 0;
+                var storedLon = 0;
+                function getDistanceFromLatLonInMiles (lat1, lon1, lat2, lon2) {
+                    var R = 3958.8; // Radius of the earth in miles
+                    var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+                    var dLon = deg2rad(lon2 - lon1);
+                    var a =
+                        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2)
+                        ;
+                    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    var d = R * c; // Distance in miles
+                    return d;
+                }
+
+                function deg2rad (deg) {
+                    return deg * (Math.PI / 180)
+                }
+
+                //41.01168,-76.41389
+                // on page load, get distance from current location
+                window.addEventListener('load', function () {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function (position) {
+                            storedLat = position.coords.latitude;
+                            storedLng = position.coords.longitude;
+                            // get data-lat and data-lon from the .js-distance element
+                            var campus = document.querySelector('.js-distance');
+                            // if there is no .js-distance element, return
+                            if (!campus) {
+                                return;
+                            }
+
+                            var campusLat = campus.getAttribute('data-lat');
+                            var campusLon = campus.getAttribute('data-lng');
+
+                            if (!campusLat || !campusLon) {
+                                return;
+                            }
+
+                            var distance = getDistanceFromLatLonInMiles(storedLat,storedLng,campusLat,campusLon);
+                            if (distance < 20) {
+                                distance = distance.toFixed(1);
+                            } else {
+                                distance = Math.round(distance).toLocaleString();
+                            }
+
+                            campus.innerHTML = '(' + distance + ' miles away)';
+                        });
+                    }
+                })
+            </script>
+        {% endraw %}
+
+        <section id="main_secPageTitle" class="page-header is-campus" role="banner">
+            {% if primaryImage %}
+                <img src="{{ primaryImage }}" sizes="100vw" class="hero-image" alt="" width="1600" height="800" itemprop="image">
+            {% endif %}
+            {% comment %} <div class="hero-overlay"></div> {% endcomment %}
+            <div class="bg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h1 id="page-title" class="page-title">Welcome to LCBC {{ campus.Name }}</h1>
+                            {% if campusData.AddressLine1 != '' %}
+                            <div class="pageoverview-description">
+                                <a href="https://www.google.com/maps/place/{{ locationAddress | EscapeDataString }}" class="text-white text-underline" target="_blank">{{ locationAddress }}</a>
+                                <span class="js-distance text-sm o-80 ml-1" {% if campusData.Latitude != '' %}data-lat="{{ campusData.Latitude }}" data-lng="{{ campusData.Longitude }}"{% endif %}></span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="container overflow-x-hidden">
+                <div class="row g g-5">
+                    <div class="col-md-9">
+                        {% if campusDescription != '' %}
+                            <h4>About</h4>
+                            {{ campusDescription }}
+                        {% endif %}
+
+                        {% if campusData.Images.size > 1 %}
+                            <div class="overflow-hidden">
+                                <hr>
+                                <div class="row g g-3">
+                                    {% for image in campusData.Images offset:1 limit:4 %}
+                                        <div class="col-xs-6 col-md-3">
+                                            <img src="{{ image.ThumbnailUrl }}" alt="" width="300" height="300" class="img-responsive">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if kidsDescription != '' %}
+                            <div>
+                                <hr>
+                                <h4>Kids</h4>
+                                {{ kidsDescription }}
+                            </div>
+                        {% endif %}
+
+                        {% if studentsDescription != '' %}
+                            <div>
+                                <hr>
+                                <h4>Students</h4>
+                                {{ studentsDescription }}
+                            </div>
+                        {% endif %}
+
+                        {% calendarevents calendarid:'1' maxoccurrences:'3' campusids:'{{ campus.Id }}' %}
+                            {% if EventItems.size > 0 %}
+                                <hr>
+                                <h4>Happening at LCBC {{ campus.Name }}</h4>
+                                <div class="row">
+                                    {% for item in EventItems %}
+                                        {% assign itemOccurrence = item | First | Property:'EventItemOccurrence' %}
+                                        <div class="col-xs-12 col-md-4">
+                                            <div class="card card-transparent">
+                                                    <div class="card-img-header">
+                                                        <img src="{{ 'https://origin.lcbcchurch.com/GetImage.ashx?Id=' | Append:itemOccurrence.EventItem.PhotoId | TriumphImgCdn:'auto=format,compress&fit=crop&w=512&h=288' }}" alt="" class="card-img-top img-responsive" loading="lazy" width="512" height="288">
+                                                    </div>
+                                                <div class="card-body">
+                                                    <h4 class="card-title"><a href="/events/{{ itemOccurrence.EventItemId }}" class="stretched-link">{{ item | First | Property:'Name' }}</a></h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endcalendarevents %}
+
+
+                        <div class="d-flex flex-column align-items-center align-items-md-start mt-4">
+                            <strong>Share</strong>
+                            <ul class="socialsharing">
+                                <li>
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ campusUrl | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
+                                        <i class="fa fa-fw fa-facebook"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://twitter.com/intent/tweet?text={{ campusUrl | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter" target="_blank">
+                                        <i class="fa fa-fw fa-twitter"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="mailto:?Subject={{ campus.Name | EscapeDataString }}&Body={{ campusUrl }}" class="socialicon socialicon-email" title="" data-original-title="Share via Email">
+                                        <i class="fa fa-fw fa-envelope-o"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <button type="button" class="socialicon socialicon-email btn-copy-url btn" title="" data-original-title="Copy URL">
+                                        <i class="fa fa-fw fa-clipboard"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+
+                    </div>
+
+                    <div class="col-md-3">
+                        {% if schedules != null and schedules != empty %}
+                            <h6 class="text-primary mt-0 mb-1">Service Times</h6>
+                            <div>
+                                {% assign hasASL = false | AsBoolean %}
+                                {% assign hasES = false | AsBoolean %}
+                                {% assign prevDay = '' %}
+                                {% for schedule in schedules %}
+                                    {% if schedule.NextDayOfWeek != prevDay %}
+                                        {% if prevDay != '' %}</span></div>{% endif %}
+                                        <div>
+                                        <span>{{ schedule.NextDayOfWeek | Pluralize }}:</span>
+                                        <span>
+                                    {% endif %}
+
+                                    {%- if schedule.ASL == 'true' and schedule.Espanol == 'true' -%}
+                                        <span class="abbr" data-toggle="tooltip" title="{{ aslHelp }}<br>{{ esHelp }}">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
+                                        {%- assign hasASL = true -%}
+                                        {%- assign hasES = true -%}
+                                    {%- elseif schedule.ASL == 'True' -%}
+                                        <span class="abbr" data-toggle="tooltip" title="{{ aslHelp }}">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
+                                        {%- assign hasASL = true -%}
+                                    {%- elseif schedule.Espanol == 'true' -%}
+                                        <span class="abbr" data-toggle="tooltip" title="{{ esHelp }}">{{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}</span>
+                                        {%- assign hasES = true -%}
+                                    {%- else -%}
+                                        {{ schedule.NextStartDateTime | Date:'h:mmtt' | Downcase }}{%- endif -%}/-Commas-/{%- if forloop.last -%}</div>{%- else -%}{%- assign nextItemI = forloop.index0 | Plus:1 -%}{%- assign nextItem = schedules[nextItemI].NextDayOfWeek -%}{%- if nextItem == schedule.NextDayOfWeek -%},{%- endif -%}
+                                    {%- endif -%}
+
+                                    {% assign prevDay = schedule.NextDayOfWeek %}
+                                {% endfor %}
+                                {% if hasASL or hasES %}
+                                    <div class="mt-2">
+                                        {% if hasASL %}
+                                            <div class="text-sm text-muted">
+                                                <svg class="icon"><use xlink:href="#asl" /></svg> ASL Available
+                                            </div>
+                                        {% endif %}
+                                        {% if hasES %}
+                                            <div class="text-sm text-muted">
+                                                <svg class="icon"><use xlink:href="#es" /></svg> Spanish Translation Available
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        {% if campusData.AddressLine1 != '' %}
+                            <h6 class="mt-4 mb-1">Address</h6>
+                            <a href="https://www.google.com/maps/place/{{ locationAddress | EscapeDataString }}" target="_blank" class="text-body">{{ campusData.AddressLine1 }}<br>
+                            {{ campusData.AddressLine2 }}</a>
+                        {% endif %}
+
+                        {% if campus.PhoneNumber != '' %}
+                            <h6 class="mt-4 mb-1">Contact</h6>
+                            <a href="tel:{{ campus.PhoneNumber }}" class="text-body">{{ campus.PhoneNumber }}</a><br>
+                            {% if campusEmail != '' %}
+                            <a href="mailto:{{ campusEmail }}" class="text-wrap">{{ campusEmail | Downcase }}</a><br>
+                            {% endif %}
+                        {% endif %}
+
+                        <hr>
+                        {% if campus.LeaderPersonAliasId %}
+                            {% assign campusLeader = campus.LeaderPersonAliasId | PersonByAliasId %}
+                            {% assign campusPhotoGuid = campusLeader | Attribute:'StaffPhoto','RawValue' %}
+                            <div class="d-flex flex-row align-items-center gap-2">
+                                {% if campusPhotoGuid != '' %}
+                                    <img src="{{ 'https://origin.lcbcchurch.com/GetImage.ashx?Guid=' | Append:campusPhotoGuid | TriumphImgCdn:'auto=format,compress&w=100&h=100&fit=crop' }}" alt="" class="img-responsive">
+                                {% endif %}
+                                <div>
+                                    <h6 class="m-0">{{ campusLeader.FullName }}</h6>
+                                    <div>
+                                        {{ campusLeader | Attribute:'Position' }}<br>
+                                        <a href="mailto:{{ campusLeader.Email }}">Email {{ campusLeader.NickName }}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <hr>
+                        <div class="text-center">
+                            <a href="/team/{{ urlSlug }}">Meet the Team</a>
+                        </div>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    {% endcache %}
+{% else %}
+    {% assign campuses = 'All' | FromCache:'Campus' | Where:'CampusStatusValueId',2065 %}
+    <section id="main_secPageTitle" class="page-header no-image" role="banner">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1 id="page-title" class="page-title">Campuses</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 block-pad-top block-pad-bottom">
+                <ul class="nav nav-pills">
+                    {% for campus in campuses %}
+                        <li role="presentation"><a href="/locations/{{ campus | Attribute:'URLSlug' }}">{{ campus.Name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endif %}

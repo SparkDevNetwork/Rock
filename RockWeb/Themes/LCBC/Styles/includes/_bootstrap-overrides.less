@@ -44,6 +44,7 @@
 .g-5,.gy-5{--bs-gutter-y:64px;}
 .g-6,.gx-6{--bs-gutter-x:80px;}
 .g-6,.gy-6{--bs-gutter-y:80px;}
+.mt-g {margin-top: var(--bs-gutter-y);}
 
 @media screen and (min-width: @screen-sm-min) {
   .g-sm-0,.gx-sm-0{--bs-gutter-x:0;}
@@ -60,6 +61,7 @@
   .g-sm-5,.gy-sm-5{--bs-gutter-y:64px;}
   .g-sm-6,.gx-sm-6{--bs-gutter-x:80px;}
   .g-sm-6,.gy-sm-6{--bs-gutter-y:80px;}
+  .mt-sm-g {margin-top: var(--bs-gutter-y);}
 }
 
 @media screen and (min-width: @screen-md-min) {
@@ -77,6 +79,7 @@
   .g-md-5,.gy-md-5{--bs-gutter-y:64px;}
   .g-md-6,.gx-md-6{--bs-gutter-x:80px;}
   .g-md-6,.gy-md-6{--bs-gutter-y:80px;}
+  .mt-md-g {margin-top: var(--bs-gutter-y);}
 }
 
 @media screen and (min-width: @screen-lg-min) {
@@ -94,6 +97,7 @@
   .g-lg-5,.gy-lg-5{--bs-gutter-y:64px;}
   .g-lg-6,.gx-lg-6{--bs-gutter-x:80px;}
   .g-lg-6,.gy-lg-6{--bs-gutter-y:80px;}
+  .mt-lg-g {margin-top: var(--bs-gutter-y);}
 }
 /* stylelint-enable */
 
@@ -118,7 +122,7 @@
   .suffix {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
     bottom: 0;
     display: inline-flex;
     align-items: center;
@@ -129,7 +133,7 @@
   }
 
   .form-control {
-    padding: 0;
+    padding: 0 0 0 28px;
     background: transparent;
     border-width: 0;
     border-bottom: 2px solid @color-dark-charcoal;
@@ -143,6 +147,9 @@
   }
 }
 
+.overflow-x-hidden {
+  overflow-x: hidden;
+}
 
 .tooltip-inner {
   padding: 18px;
@@ -152,4 +159,9 @@
   p:last-child {
     margin-bottom: 0;
   }
+}
+
+// TODO: Remove with V15
+.input-max-w-xl {
+  max-width: @input-width-xl;
 }

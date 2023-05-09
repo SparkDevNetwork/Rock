@@ -4,9 +4,7 @@
 <%@ Import Namespace="Rock.Web.UI" %>
 <%@ Import Namespace="Rock.Web.Cache" %><!DOCTYPE html>
 <script runat="server">
-
     // keep code below to call base class init method
-
     /// <summary>
     /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
     /// </summary>
@@ -59,9 +57,12 @@
     <link rel="preconnect" href="https://lcbcchurch.imgix.net">
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
     <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js", true) %>"></script>
-    <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!-- Included CSS Files -->
+    <meta content="112377455462185" property="fb:profile_id">
+    <meta content="en_US" property="og:locale">
+    <meta content="LCBC Church" property="og:site_name">
+    <meta name="twitter:site" content="@lcbcchurch">
+    <meta name="twitter:creator" content="@lcbcchurch">
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
