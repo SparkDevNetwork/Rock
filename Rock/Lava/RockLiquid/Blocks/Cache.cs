@@ -155,7 +155,8 @@ namespace Rock.Lava.RockLiquid.Blocks
 
             var twoPassEnabled = settings.GetBoolean( "twopass", false );
 
-            var cacheKey = "lavacache-" + settings.GetString( "key", string.Empty );
+            // Make sure the cache key is unique to this Lava engine.
+            var cacheKey = "lavacache-dotliquid-" + settings.GetString( "key", string.Empty );
             if ( cacheKey == string.Empty )
             {
                 result.Write( "* No cache key provided. *" );

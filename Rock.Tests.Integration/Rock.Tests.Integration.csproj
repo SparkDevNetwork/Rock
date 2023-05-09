@@ -178,6 +178,7 @@
   <ItemGroup>
 	<Compile Include="Issues\Issues_v15.cs" />
     <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
+    <Compile Include="Modules\Core\Lava\Commands\CacheTests.cs" />
     <Compile Include="Modules\Core\Rock.Security\RockSigningCredentialsTests.cs" />
     <Compile Include="Modules\Crm\Following\FollowingTests.cs" />
     <Compile Include="Modules\Crm\PersonBulkUpdateProcessorTests.cs" />
