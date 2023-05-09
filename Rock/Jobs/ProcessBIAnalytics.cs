@@ -622,7 +622,7 @@ UPDATE [{analyticsTableName}]
 
                     if ( recordsDeleted > 0 )
                     {
-                        this.Log( RockLogLevel.Debug, $"Removed {recordsDeleted} history records that do not correspond to a Person record." );
+                        Log( RockLogLevel.Debug, $"Removed {recordsDeleted} history records that do not correspond to a Person record." );
                     }
                 }
 
