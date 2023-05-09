@@ -2552,7 +2552,7 @@ SELECT @@ROWCOUNT
                                     innerEx = innerEx.InnerException;
                                 }
 
-                                this.Log( RockLogLevel.Warning, $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
+                                Log( RockLogLevel.Warning, $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
 
                                 // The context we used to attempt the deletion is no
                                 // good to use now since it is in a bad state. Create

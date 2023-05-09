@@ -169,7 +169,7 @@ namespace Rock.Jobs
                         }
                         finally
                         {
-                            this.Log(
+                            Log(
                                 RockLogLevel.Info,
                                 "DataView ID: {dataViewId}, DataView Name: {dataViewName}, Error Occurred: {errorOccurred}",
                                 startDateTime,

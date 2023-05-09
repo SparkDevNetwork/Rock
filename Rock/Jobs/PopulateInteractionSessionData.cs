@@ -675,7 +675,7 @@ namespace Rock.Jobs
         }
         private void LogDebugInfo( string taskName, string message )
         {
-            this.Log( RockLogLevel.Debug, $"({taskName}): {message}" );
+            Log( RockLogLevel.Debug, $"({taskName}): {message}" );
         }
 
         internal class PopulateInteractionSessionDataJobSettings
