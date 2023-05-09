@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Rock.Model;
+using Rock.Utilities;
 
 namespace Rock.Utility
 {
@@ -26,11 +28,11 @@ namespace Rock.Utility
     /// </summary>
     /// 9/30/2018 - JME
     /// A good piece of this class came from the color class of dotLess. Several other
-    /// resources were used to create the algorthms used. For instance the conversion
-    /// between HSL and RGB. Becuase of that it is a bit of frankencode, but it is
+    /// resources were used to create the algorithms used. For instance the conversion
+    /// between HSL and RGB. Because of that it is a bit of frankencode, but it is
     /// working and I did put in quite a bit of effort to clean up the code to our
     /// standards and document it as best as possible.
-    public class RockColor
+    public class RockColor 
     {
         #region Private Members
         private static readonly Dictionary<string, int> Html4Colors = new Dictionary<string, int>
@@ -282,6 +284,49 @@ namespace Rock.Utility
             // https://medium.muz.li/the-science-of-color-contrast-an-expert-designers-guide-33e84c41d156
             // https://www.w3.org/TR/2012/NOTE-WCAG20-TECHS-20120103/G17.html
             return ( backgroundColor.Luma + 0.05 ) / ( foregroundColor.Luma + 0.05 );
+        }
+
+        /// <summary>
+        /// Creates a color pair from a single color with logic for light and dark modes.
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="colorScheme"></param>
+        /// <returns></returns>
+        public static ColorPair CalculateColorPair( RockColor color, ColorScheme colorScheme = ColorScheme.Light )
+        {
+            var colorPair = new ColorPair();
+
+            // Create the matched color. We'll adjust this color below.
+            var pairedColor = color.Clone(); 
+
+            // Create the color pair with the lighter color as the background and the darker color as the foreground.
+            if ( color.IsLight )
+            {
+                colorPair.BackgroundColor = color;
+
+                // Create the darker foreground color
+                colorPair.ForegroundColor = color.Clone();
+                colorPair.ForegroundColor.Saturation = .60;
+                colorPair.ForegroundColor.Luminosity = .20;
+            }
+            else
+            {
+                colorPair.ForegroundColor = color;
+
+                // Create the darker background color
+                colorPair.BackgroundColor = color.Clone();
+                colorPair.BackgroundColor.Saturation = .88;
+                colorPair.BackgroundColor.Luminosity = .87;
+            }
+
+            // If dark theme then flip the foreground and background making the darker color is the background.
+            if ( colorScheme == ColorScheme.Dark )
+            {
+                colorPair.Flip();
+
+            }
+
+            return colorPair;
         }
         #endregion 
 
@@ -598,6 +643,46 @@ namespace Rock.Utility
             }
         }
 
+        /// <summary>
+        /// Gets the color as a hex string.
+        /// </summary>
+        public string Hex
+        {
+            get
+            {
+                return this.ToHex();
+            }
+        }
+
+        /// <summary>
+        /// Determines if the color is a light color.
+        /// </summary>
+        public bool IsLight
+        {
+            get
+            {
+                if (Luminosity > .5 )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines if the color is a dark color.
+        /// </summary>
+        public bool IsDark
+        {
+            get
+            {
+                return !IsLight;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -711,6 +796,15 @@ namespace Rock.Utility
         public void Grayscale()
         {
             Saturate( -100 );
+        }
+
+        /// <summary>
+        /// Creates a clone of this color.
+        /// </summary>
+        /// <returns></returns>
+        public RockColor Clone()
+        {
+            return new RockColor(R, G, B);
         }
 
         /// <summary>
