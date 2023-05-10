@@ -27,6 +27,7 @@ namespace Rock.Model
     [RockObsolete( "1.16" )]
     public partial class GroupLocationHistoricalScheduleService : Service<GroupLocationHistoricalSchedule>
     {
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupLocationHistoricalScheduleService"/> class
         /// </summary>
@@ -34,6 +35,7 @@ namespace Rock.Model
         public GroupLocationHistoricalScheduleService( RockContext context ) : base( context )
         {
         }
+#endif
     }
 
     /// <summary>

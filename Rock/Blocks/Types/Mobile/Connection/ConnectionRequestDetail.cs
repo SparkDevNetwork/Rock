@@ -24,7 +24,9 @@ using System.Data.Entity;
 #endif
 using System.Linq;
 
+#if REVIEW_WEBFORMS
 using OpenXmlPowerTools;
+#endif
 
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;

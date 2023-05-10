@@ -49,7 +49,9 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+#if REVIEW_WEBFORMS
         [Index( "IX_PersonAliasIdKey", 0, IsUnique = true )]
+#endif
         public int PersonAliasId { get; set; }
 
         /// <summary>
@@ -71,7 +73,9 @@ namespace Rock.Model
         [Required]
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
+#if REVIEW_WEBFORMS
         [Index( "IX_PersonAliasIdKey", 1, IsUnique = true )]
+#endif
         public string Key { get; set; }
 
         /// <summary>

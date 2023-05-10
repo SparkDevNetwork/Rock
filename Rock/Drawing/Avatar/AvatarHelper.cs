@@ -98,7 +98,11 @@ namespace Rock.Drawing.Avatar
         {
 
             // Load icon masks. 
+#if REVIEW_NET5_0_OR_GREATER
+            var folderPath = Path.Combine( Environment.CurrentDirectory, "App_Data", "Avatar" );
+#else
             var folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~\\App_Data\\Avatar\\" );
+#endif
 
             // Load role guids that are allowed to refresh the cache
             AuthorizedRefreshCacheRoleGuids.Add( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() );

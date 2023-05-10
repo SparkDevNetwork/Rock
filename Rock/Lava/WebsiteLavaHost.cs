@@ -31,11 +31,13 @@ namespace Rock.Lava
 
         #region ILava Host implementation
 
+#if REVIEW_WEBFORMS
         internal virtual HttpRequest GetCurrentRequest()
         {
             var request = HttpContext.Current?.Request;
             return request;
         }
+#endif
 
         /// <inheritdoc />
         public bool TryGetConfigurationSetting( string settingKey, out string value )
@@ -73,6 +75,9 @@ namespace Rock.Lava
         /// <returns></returns>
         protected virtual string GetCurrentThemeName()
         {
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             // Get the theme from the current page.
             var theme = "Rock";
 
@@ -90,12 +95,17 @@ namespace Rock.Lava
             }
 
             return theme;
+#endif
         }
 
         internal virtual string ResolveVirtualPath( string virtualPath )
         {
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             var path = System.Web.VirtualPathUtility.ToAbsolute( virtualPath );
             return path;
+#endif
         }
 
         /// <summary>
@@ -105,6 +115,9 @@ namespace Rock.Lava
         /// <returns></returns>
         public string ResolveRockUrl( string input )
         {
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             if ( string.IsNullOrWhiteSpace( input ) )
             {
                 return string.Empty;
@@ -147,6 +160,7 @@ namespace Rock.Lava
             }
 
             return url;
+#endif
         }
 
         #endregion

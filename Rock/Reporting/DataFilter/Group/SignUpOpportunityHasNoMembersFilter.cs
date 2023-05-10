@@ -18,7 +18,11 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -144,6 +148,7 @@ namespace Rock.Reporting.DataFilter.Group
             return "Sign-Up Opportunity Has No Members";
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// </summary>
@@ -229,6 +234,7 @@ namespace Rock.Reporting.DataFilter.Group
 
             writer.RenderEndTag();
         }
+#endif
 
         /// <summary>
         /// Formats the selection on the client-side. When the filter is collapsed by the user, the Filterfield control
@@ -311,6 +317,7 @@ function() {
             return $"{timeframe} {groupTypeName} opportunity has no {memberType}";
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Returns a JSON representation of selected values.
         /// </summary>
@@ -351,6 +358,7 @@ function() {
             ddlMemberType.SetValue( selectionConfig.MemberType );
             cbHidePastOpportunities.Checked = selectionConfig.HidePastOpportunities;
         }
+#endif
 
         /// <summary>
         /// Creates a LINQ Expression that can be applied to an IQueryable to filter the result set.
