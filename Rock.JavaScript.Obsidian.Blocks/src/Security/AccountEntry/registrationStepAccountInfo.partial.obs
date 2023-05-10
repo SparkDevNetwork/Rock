@@ -3,40 +3,40 @@
     <fieldset>
         <legend>New Account</legend>
         <TextBox
-            v-if="!isEmailRequiredForUsername"
-            v-model="internalUsername"
-            :disabled="disabled"
-            :label="usernameFieldLabel"
-            :rules="usernameValidators"
-            @change="onUsernameChanged"></TextBox>
+                 v-if="!isEmailRequiredForUsername"
+                 v-model="internalUsername"
+                 :disabled="disabled"
+                 :label="usernameFieldLabel"
+                 :rules="usernameValidators"
+                 @change="onUsernameChanged"></TextBox>
 
         <EmailBox
-            v-else
-            v-model="internalUsername"
-            :disabled="disabled"
-            label="Email"
-            rules="required"></EmailBox>
+                  v-else
+                  v-model="internalUsername"
+                  :disabled="disabled"
+                  label="Email"
+                  rules="required"></EmailBox>
 
-        <Alert v-if="usernameValidationCaption" :alertType="!isUsernameAvailable || isUsernameError ? 'warning' : 'success'">{{ usernameValidationCaption }}</Alert>
+        <NotificationBox v-if="usernameValidationCaption" :alertType="!isUsernameAvailable || isUsernameError ? 'warning' : 'success'">{{ usernameValidationCaption }}</NotificationBox>
 
         <TextBox
-            v-model="internalPassword"
-            :disabled="disabled"
-            label="Password"
-            rules="required"
-            type="password"></TextBox>
+                 v-model="internalPassword"
+                 :disabled="disabled"
+                 label="Password"
+                 rules="required"
+                 type="password"></TextBox>
         <TextBox
-            v-model="internalConfirmPassword"
-            :disabled="disabled"
-            label="Confirm Password"
-            :rules="confirmPasswordRules"
-            type="password"></TextBox>
+                 v-model="internalConfirmPassword"
+                 :disabled="disabled"
+                 label="Confirm Password"
+                 :rules="confirmPasswordRules"
+                 type="password"></TextBox>
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox";
     import TextBox from "@Obsidian/Controls/textBox";
     import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";

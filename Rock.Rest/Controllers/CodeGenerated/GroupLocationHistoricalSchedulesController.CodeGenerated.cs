@@ -29,6 +29,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// GroupLocationHistoricalSchedules REST API
     /// </summary>
+    [RockObsolete( "1.16" )]
+    [System.Obsolete( "Group Location Historical Schedule is not used and is not reflected in the UI.  Consider using 'History' entity instead." )]
     [RestControllerGuid( "70CF7D92-E133-4C4E-8E58-000B44C8D891" )]
     public partial class GroupLocationHistoricalSchedulesController : Rock.Rest.ApiController<Rock.Model.GroupLocationHistoricalSchedule>
     {

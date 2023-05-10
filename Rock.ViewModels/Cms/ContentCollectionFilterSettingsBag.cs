@@ -82,6 +82,12 @@ namespace Rock.ViewModels.Cms
         public Dictionary<string, ContentCollectionAttributeFilterSettingsBag> AttributeFilters { get; set; }
 
         /// <summary>
+        /// Gets or sets the custom field filters that are enabled for filtering.
+        /// </summary>
+        /// <value>The custom field filters.</value>
+        public Dictionary<string, ContentCollectionCustomFieldFilterSettingsBag> CustomFieldFilters { get; set; }
+
+        /// <summary>
         /// Gets or sets the field values that have been learned. These
         /// are used to display the known values in the filter panel.
         /// </summary>

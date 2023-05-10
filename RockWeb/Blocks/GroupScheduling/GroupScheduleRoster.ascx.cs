@@ -145,7 +145,8 @@ namespace RockWeb.Blocks.GroupScheduling
                 UpdateConfigurationFromUrl();
                 UpdateLiveRefreshConfiguration( this.GetAttributeValue( AttributeKey.EnableLiveRefresh ).AsBoolean() );
 
-                RosterConfiguration rosterConfiguration = this.GetBlockUserPreference( UserPreferenceKey.RosterConfigurationJSON )
+                var preferences = GetBlockPersonPreferences();
+                RosterConfiguration rosterConfiguration = preferences.GetValue( UserPreferenceKey.RosterConfigurationJSON )
                 .FromJsonOrNull<RosterConfiguration>() ?? new RosterConfiguration();
 
                 if ( !rosterConfiguration.IsConfigured() )
@@ -211,7 +212,8 @@ namespace RockWeb.Blocks.GroupScheduling
   If PageParameters are used, we use the same behavior as the various Analytics blocks  which is
     - Set UserPrefs from URL when first loaded, then Edit/Use/Save UserPrefs like usual
 */
-            RosterConfiguration rosterConfiguration = this.GetBlockUserPreference( UserPreferenceKey.RosterConfigurationJSON )
+            var preferences = GetBlockPersonPreferences();
+            RosterConfiguration rosterConfiguration = preferences.GetValue( UserPreferenceKey.RosterConfigurationJSON )
                 .FromJsonOrNull<RosterConfiguration>() ?? new RosterConfiguration();
 
             if ( this.PageParameter( PageParameterKey.GroupIds ).IsNotNullOrWhiteSpace() )
@@ -249,7 +251,8 @@ namespace RockWeb.Blocks.GroupScheduling
             }
 
             // just in case URL updated any configuration, save it back to user preferences
-            this.SetBlockUserPreference( UserPreferenceKey.RosterConfigurationJSON, rosterConfiguration.ToJson() );
+            preferences.SetValue( UserPreferenceKey.RosterConfigurationJSON, rosterConfiguration.ToJson() );
+            preferences.Save();
         }
 
         #endregion
@@ -288,7 +291,8 @@ namespace RockWeb.Blocks.GroupScheduling
         /// </summary>
         private void PopulateRoster( ViewStateMode viewStateMode = ViewStateMode.Disabled )
         {
-            RosterConfiguration rosterConfiguration = this.GetBlockUserPreference( UserPreferenceKey.RosterConfigurationJSON )
+            var preferences = GetBlockPersonPreferences();
+            RosterConfiguration rosterConfiguration = preferences.GetValue( UserPreferenceKey.RosterConfigurationJSON )
                 .FromJsonOrNull<RosterConfiguration>() ?? new RosterConfiguration();
 
             if ( !rosterConfiguration.IsConfigured() )
@@ -448,7 +452,8 @@ namespace RockWeb.Blocks.GroupScheduling
             // don't do the live refresh when the configuration dialog is showing
             UpdateLiveRefreshConfiguration( false );
 
-            RosterConfiguration rosterConfiguration = this.GetBlockUserPreference( UserPreferenceKey.RosterConfigurationJSON )
+            var preferences = GetBlockPersonPreferences();
+            RosterConfiguration rosterConfiguration = preferences.GetValue( UserPreferenceKey.RosterConfigurationJSON )
                             .FromJsonOrNull<RosterConfiguration>();
 
             if ( rosterConfiguration == null )
@@ -640,7 +645,8 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdRosterConfiguration_SaveClick( object sender, EventArgs e )
         {
-            RosterConfiguration rosterConfiguration = this.GetBlockUserPreference( UserPreferenceKey.RosterConfigurationJSON )
+            var preferences = GetBlockPersonPreferences();
+            RosterConfiguration rosterConfiguration = preferences.GetValue( UserPreferenceKey.RosterConfigurationJSON )
                 .FromJsonOrNull<RosterConfiguration>();
 
             if ( rosterConfiguration == null )
@@ -655,7 +661,9 @@ namespace RockWeb.Blocks.GroupScheduling
             rosterConfiguration.DisplayRole = cbDisplayRole.Checked;
             rosterConfiguration.OccurrenceDate = dpOccurrenceDate.SelectedDate;
 
-            this.SetBlockUserPreference( UserPreferenceKey.RosterConfigurationJSON, rosterConfiguration.ToJson() );
+            preferences.SetValue( UserPreferenceKey.RosterConfigurationJSON, rosterConfiguration.ToJson() );
+            preferences.Save();
+
             mdRosterConfiguration.Hide();
 
             UpdateLiveRefreshConfiguration( this.GetAttributeValue( AttributeKey.EnableLiveRefresh ).AsBoolean() );

@@ -33,27 +33,55 @@
         border-left: 0;
       }
     }
-  }
 
-  .panel-header-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 0;
-    margin: 0;
+    .panel-header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0;
+      margin: 0;
 
-    > .action {
-      padding: 12px;
-      color: #616161;
+      > .action {
+        padding: 10px;
+        margin: 2px;
+        color: #616161;
+        transition: color 0.2s, background-color 0.2s, border-radius 0.2s;
 
-      &:hover {
-        color: #212121;
+        &:hover {
+          color: #212121;
+        }
+
+        &.active {
+          background-color: rgba(0, 0, 0, 0.05);
+          border-radius: 4px;
+        }
+      }
+
+      // Hide the action buttons on small screens
+      @media screen and (max-width: @screen-sm-max) {
+        .panel-action-zoom,
+        .panel-action-zoom-control,
+        .panel-action-fullscreen {
+          display: none;
+        }
       }
     }
   }
 
+  .panel-sub-header > .panel-sub-header-left {
+    flex-grow: 1;
+  }
+
   .footer-secondary-actions {
     margin: 0 0 0 auto !important;
+  }
+
+  .panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0 @panel-body-padding @panel-body-padding;
+    margin: @panel-body-padding -@panel-body-padding -@panel-body-padding -@panel-body-padding;
   }
 }
 
@@ -109,3 +137,37 @@
 
 //   margin: 0;
 // }
+
+.picker.picker-obsidian {
+  width: initial;
+  max-width: 600px;
+
+  > .picker-label {
+    width: 100%;
+    max-width: initial;
+
+    .fa.fa-times {
+      margin-top: 3px;
+      margin-right: 12px;
+      color: rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      transition: opacity 0.3s, color 0.3s;
+
+      &:hover {
+        color: rgba(0, 0, 0, 0.5);
+      }
+    }
+  }
+
+  > .picker-label:hover .fa.fa-times {
+    opacity: 1;
+  }
+
+  &.picker-show-clear .picker-label span {
+    width: ~"calc(100% - 68px)";
+  }
+
+  &.picker-full-width {
+    max-width: initial;
+  }
+}

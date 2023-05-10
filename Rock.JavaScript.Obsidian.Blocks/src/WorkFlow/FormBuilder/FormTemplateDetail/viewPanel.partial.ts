@@ -17,7 +17,7 @@
 
 import { defineComponent, PropType, ref, watch } from "vue";
 import { updateRefValue } from "@Obsidian/Utility/component";
-import { TemplateDetail } from "./types";
+import { TemplateDetail } from "./types.partial";
 
 export default defineComponent({
     name: "Workflow.FormTemplateDetail",

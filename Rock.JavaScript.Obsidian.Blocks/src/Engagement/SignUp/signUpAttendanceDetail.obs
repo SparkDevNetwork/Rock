@@ -1,33 +1,37 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="blockErrorMessage" alertType="warning">
+    <NotificationBox v-if="blockErrorMessage" :alertType="AlertType.Warning">
         {{ blockErrorMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <Alert v-if="errorMessage" alertType="danger">
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
         {{ errorMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <Alert v-if="successMessage" alertType="success" :dismissible="true" @dismiss="successMessage = ''">
+    <NotificationBox v-if="successMessage" :alertType="AlertType.Success">
         {{ successMessage }}
-    </Alert>
+    </NotificationBox>
 
-    <div v-if="!blockErrorMessage">
+    <div v-if="shouldShowAttendanceForm">
         <div ref="headerElement"></div>
-        <hr />
-        <RockForm @submit="onSaveAttendance">
+        <RockForm @submit="onSubmit">
             <CheckboxList v-model="selectedAttendees" label="Attendees" :items="attendees" @update:modelValue="onAttendeesUpdated" />
-            <RockButton type="submit" :disabled="isSaving">Save</RockButton>
+
+            <div class="actions">
+                <RockButton type="submit" :btnType="BtnType.Primary" :disabled="isSaving">Save</RockButton>
+            </div>
         </RockForm>
     </div>
 </template>
 
 <script setup lang="ts">
     import { computed, onMounted, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
     import CheckboxList from "@Obsidian/Controls/checkBoxList";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { SignUpAttendanceBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpAttendanceDetail/signUpAttendanceBag";
@@ -37,13 +41,15 @@
 
     const config = useConfigurationValues<SignUpAttendanceDetailInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
 
     // #region Values
 
-    const errorMessage = ref("");
-    const successMessage = ref("");
     const headerElement = ref<HTMLElement | null>(null);
     const selectedAttendees = ref<string[]>([]);
+
+    const errorMessage = ref("");
+    const successMessage = ref("");
     const isSaving = ref(false);
 
     // #endregion
@@ -63,6 +69,14 @@
         return listItemBag;
     });
 
+    const shouldShowAttendanceForm = computed((): boolean => {
+        if (blockErrorMessage.value) {
+            return false;
+        }
+
+        return !successMessage.value;
+    });
+
     // #endregion
 
     // #region Event Handlers
@@ -79,9 +93,9 @@
     }
 
     /**
-     * Saves attendance records.
+     * Handles the form submission.
      */
-    async function onSaveAttendance(): Promise<void> {
+    async function onSubmit(): Promise<void> {
         isSaving.value = true;
         errorMessage.value = "";
         successMessage.value = "";
@@ -103,7 +117,7 @@
 
     // #endregion
 
-    onConfigurationValuesChanged(useReloadBlock());
+    onConfigurationValuesChanged(reloadBlock);
 
     if (config.attendees?.length) {
         config.attendees

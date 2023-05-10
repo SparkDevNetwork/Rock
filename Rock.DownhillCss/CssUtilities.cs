@@ -1960,6 +1960,68 @@ formfield .required-indicator {
 .schedule-signup .signups-container {
     padding: 12;
 }
+
+/*** Communication Entry Block ***/
+.block-communication-entry .communication-entry-layout {
+    spacing: 0;
+}
+
+.block-communication-entry .recipients-container {
+    background-color: white;
+}
+
+/* Recipient View */
+.recipient-container {
+    padding: 8, 0;
+    -xf-spacing: 8;
+}
+
+.recipient-name-and-communication {
+    -xf-spacing: 0;
+}
+
+.recipients-layout {
+    -xf-spacing: 0;
+}
+
+.block-communication-entry .recipients-icon {
+    color: ?color-primary;
+    font-size: 18;
+}
+
+.recipient-container .recipient-image {
+    height: 50;
+    width: 50;
+}
+
+.recipient-name-and-communication {
+    -xf-spacing: 0;
+}
+
+.recipient-container .swipe-to-remove-detail {
+    padding: 8;
+}
+
+.block-communication-entry .recipient-name {
+    font-size: 17;
+    font-style: bold;
+}
+
+.block-communication-entry .success-layout {
+    -xf-spacing: 16;
+}
+
+.block-communication-entry .swipe-to-remove-detail {
+    padding: 8;
+}
+
+.block-communication-entry .failed-recipients-layout {
+    -xf-spacing: 0;
+}
+
+.block-communication-entry .failed-recipient-item {
+    height: 30;
+}
 ";
         #endregion
     }

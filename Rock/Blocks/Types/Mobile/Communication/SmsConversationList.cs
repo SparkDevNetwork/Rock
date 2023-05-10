@@ -236,7 +236,6 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
 #endif
 
-                    var publicUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
                     var months = GetAttributeValue( AttributeKey.ShowConversationsFromMonthsAgo ).AsInteger();
                     var startDateTime = RockDateTime.Now.AddMonths( -months );
                     var maxConversations = GetAttributeValue( AttributeKey.MaxConversations ).AsIntegerOrNull() ?? 1000;

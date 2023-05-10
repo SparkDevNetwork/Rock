@@ -27,6 +27,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Event.InteractiveExperiences.LiveExperience;
 using Rock.Web.Cache;
@@ -106,9 +107,10 @@ namespace Rock.Blocks.Types.Mobile.Events
                 ["Token"] = "((Token))"
             } );
 
+            
             return new
             {
-                Url = $"{GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' )}{url}",
+                Url = MobileHelper.BuildPublicApplicationRootUrl( url ),
                 AlwaysRequestLocation = GetAttributeValue( AttributeKeys.AlwaysRequestLocation ).AsBoolean(),
                 KeepScreenOn = GetAttributeValue( AttributeKeys.KeepScreenOn ).AsBoolean()
             };

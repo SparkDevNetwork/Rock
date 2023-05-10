@@ -14,7 +14,7 @@
       background-color: initial !important;
       border: none !important;
       box-shadow: none !important;
-    
+
       .ant-select-selection-item {
         display: inline-flex;
         align-items: center;
@@ -47,10 +47,27 @@
     font-size: 16px;
   }
 
+  // Prevent text from flowing undernearth caret indicator.
+  &.ant-select-single.form-control .ant-select-selection-item {
+    padding-right: 0px;
+    margin-right: 18px;
+    transition: margin-right 0s, padding-right 0s;
+  }
+
+  // Prevent text from flowing undernearth clear and caret indicators.
+  &.ant-select-single.ant-select-allow-clear.form-control .ant-select-selection-item {
+    margin-right: 36px;
+  }
+
+  // Prevent text from flowing undernearth caret indicator.
+  &.ant-select-multiple.form-control .ant-select-selection-overflow {
+    padding-right: 18px;
+  }
+
   // Allow control height to grow in multi-select mode.
   &.ant-select-multiple.form-control,
   &.ant-select-multiple.form-control .ant-select-selector {
-    height: initial;
+    height: initial !important;
     min-height: @input-height-base;
   }
 }

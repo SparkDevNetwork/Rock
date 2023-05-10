@@ -195,6 +195,8 @@ namespace RockWeb
 
                 ExceptionLogService.AlwaysLogToFile = false;
 
+                Task.Run( () => WarmupCache() );
+
                 // Perform any Rock startups
                 RunStartups();
 
@@ -230,6 +232,35 @@ namespace RockWeb
             StartEnsureChromeEngineThread();
 
             Rock.Bus.RockMessageBus.IsRockStarted = true;
+        }
+
+        /// <summary>
+        /// Warms the cache up by loading various cache types into memory that
+        /// are most likely required for normal operation. This ensures that if
+        /// Rock starts up without a request coming in that many things will
+        /// be in cache already before the first request comes in.
+        /// </summary>
+        private static void WarmupCache()
+        {
+            var sw = Stopwatch.StartNew();
+
+            // These have probably already been loaded, but make sure they are still hot.
+            EntityTypeCache.All();
+            FieldTypeCache.All();
+
+            // Load additional cache items that are most likely going to be required for
+            // normal operation.
+            AttributeCache.All();
+            GroupTypeCache.All();
+            BlockTypeCache.All();
+            BlockCache.All();
+            DefinedTypeCache.All();
+            DefinedValueCache.All();
+            CategoryCache.All();
+
+            sw.Stop();
+
+            RockApplicationStartupHelper.ShowDebugTimingMessage( "Warmup Cache", sw.Elapsed.TotalMilliseconds );
         }
 
         // This is used to cancel our CompileThemesThread and BlockTypeCompilationThread if they aren't done when Rock shuts down

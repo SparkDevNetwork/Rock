@@ -166,7 +166,7 @@ namespace Rock.Transactions
         {
             if ( transaction is IQueuedTransaction queuedTransaction )
             {
-                queuedTransaction.WillEnqueue();
+                queuedTransaction.OnEnqueue();
             }
 
             if ( !useFastQueue )
@@ -201,7 +201,7 @@ namespace Rock.Transactions
                     // IQueuedTransaction into the legacy queue.
                     if ( CurrentlyExecutingTransaction is IQueuedTransaction queuedTransaction )
                     {
-                        queuedTransaction.WillEnqueue();
+                        queuedTransaction.OnEnqueue();
                     }
 
                     if ( CurrentlyExecutingTransaction is IAsyncTransaction asyncTransation )

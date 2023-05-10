@@ -38,6 +38,11 @@ namespace Rock.Field
     [Serializable]
     public abstract class FieldType : IFieldType
     {
+        /// <summary>
+        /// The condensed truncate length
+        /// </summary>
+        public static readonly int CondensedTruncateLength = 100;
+
         #region Constructors
 
         /// <summary>
@@ -159,7 +164,7 @@ namespace Rock.Field
         [RockInternal( "1.13.2" )]
         public virtual string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues )?.Truncate( 100 );
+            return GetTextValue( privateValue, privateConfigurationValues )?.Truncate( CondensedTruncateLength );
         }
 
         /// <remarks>
@@ -186,7 +191,7 @@ namespace Rock.Field
         {
             if ( condensed )
             {
-                return value.Truncate( 100 );
+                return value.Truncate( CondensedTruncateLength );
             }
 
             return value;

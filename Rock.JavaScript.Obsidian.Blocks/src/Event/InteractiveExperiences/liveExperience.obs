@@ -2,9 +2,9 @@
 <template>
     <div class="styled-scroll">
         <div class="live-experience-body" :style="experienceStyles">
-            <Alert v-if="isExperienceInactive" alertType="warning">
+            <NotificationBox v-if="isExperienceInactive" alertType="warning">
                 This experience has ended.
-            </Alert>
+            </NotificationBox>
             <div v-if="isWelcomeContentVisible" class="welcome">
                 <div class="welcome-header">
                     <img v-if="welcomeHeaderImageUrl" :src="welcomeHeaderImageUrl" class="header-image" />
@@ -74,12 +74,13 @@ body {
 </style>
 
 <script setup lang="ts">
+    import ActionEmbedWebpage from "./LiveExperience/actionEmbedWebpage.partial.obs";
     import ActionShortAnswer from "./LiveExperience/actionShortAnswer.partial.obs";
     import ActionPoll from "./LiveExperience/actionPoll.partial.obs";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { Component as VueComponent, computed, ref } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
-    import { IParticipantTopic } from "./types";
+    import { IParticipantTopic } from "./types.partial";
     import { LiveExperienceInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/LiveExperience/liveExperienceInitializationBox";
     import { ActionRenderConfigurationBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/actionRenderConfigurationBag";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
@@ -88,6 +89,7 @@ body {
     const config = useConfigurationValues<LiveExperienceInitializationBox>();
 
     const actionTypeLookup: Record<Guid, VueComponent> = {
+        "3aefe3aa-41a1-4812-86e2-38255b965001": ActionEmbedWebpage,
         "5ffe1f8f-5f0b-4b34-9c3f-1706d9093210": ActionShortAnswer,
         "9256a5b7-480d-4ffa-86d1-03b8aefc254e": ActionPoll
     };

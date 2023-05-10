@@ -1101,6 +1101,65 @@ namespace Rock.Client.Enums
 
 }
 
+namespace Rock.Client.Enums.Crm
+{
+    /// <summary>
+    /// </summary>
+    public enum AgeBracket
+    {
+        Unknown = 0x0,
+        ZeroToTwelve = 0x1,
+        ThirteenToSeventeen = 0x2,
+        EighteenToTwentyFour = 0x3,
+        TwentyFiveToThirtyFour = 0x4,
+        ThirtyFiveToFortyFour = 0x5,
+        FortyFiveToFiftyFour = 0x6,
+        FiftyFiveToSixtyFour = 0x7,
+        SixtyFiveOrOlder = 0x8,
+    }
+
+}
+
+namespace Rock.Client.Enums.Event
+{
+    /// <summary>
+    /// </summary>
+    public enum AttendanceStatus
+    {
+        DidNotAttend = 0x0,
+        DidAttend = 0x1,
+        IsPresent = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceApprovalStatus
+    {
+        Pending = 0x0,
+        Approved = 0x1,
+        Rejected = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperienceCampusBehavior
+    {
+        FilterSchedulesByCampusGeofences = 0x0,
+        DetermineCampusFromGeofence = 0x1,
+        UseIndividualsCampus = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum InteractiveExperiencePushNotificationType
+    {
+        Never = 0x0,
+        EveryAction = 0x1,
+        SpecificActions = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Communication
 {
     /// <summary>
@@ -1199,33 +1258,34 @@ namespace Rock.Client.Enums.Reporting
 
 }
 
-namespace Rock.Client.Enums.Event
+namespace Rock.Client.Enums.Blocks.Group.GroupAttendanceDetail
 {
     /// <summary>
     /// </summary>
-    public enum InteractiveExperienceApprovalStatus
+    public enum GroupAttendanceDetailDateSelectionMode
     {
-        Pending = 0x0,
-        Approved = 0x1,
-        Rejected = 0x2,
+        None = 0x0,
+        Readonly = 0x1,
+        DatePicker = 0x2,
+        ScheduledDatePicker = 0x3,
     }
 
     /// <summary>
     /// </summary>
-    public enum InteractiveExperienceCampusBehavior
+    public enum GroupAttendanceDetailLocationSelectionMode
     {
-        FilterSchedulesByCampusGeofences = 0x0,
-        DetermineCampusFromGeofence = 0x1,
-        UseIndividualsCampus = 0x2,
+        None = 0x0,
+        Readonly = 0x1,
+        GroupLocationPicker = 0x2,
     }
 
     /// <summary>
     /// </summary>
-    public enum InteractiveExperiencePushNotificationType
+    public enum GroupAttendanceDetailScheduleSelectionMode
     {
-        Never = 0x0,
-        EveryAction = 0x1,
-        SpecificActions = 0x2,
+        None = 0x0,
+        Readonly = 0x1,
+        GroupLocationSchedulePicker = 0x2,
     }
 
 }
@@ -1271,7 +1331,31 @@ namespace Rock.Client.Enums.Blocks.Engagement.SignUp
     {
         Family = 0x0,
         Anonymous = 0x1,
-        Group = 0x3,
+        Group = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Group.Scheduling
+{
+    /// <summary>
+    /// </summary>
+    public enum ResourceListSourceType
+    {
+        GroupMembers = 0x0,
+        GroupMatchingPreference = 0x1,
+        AlternateGroup = 0x2,
+        ParentGroup = 0x3,
+        DataView = 0x4,
+        GroupMatchingAssignment = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UpdateSchedulePreferenceMode
+    {
+        ReplacePreference = 0x0,
+        AddToPreference = 0x1,
     }
 
 }

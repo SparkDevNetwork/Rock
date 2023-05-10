@@ -68,7 +68,7 @@
                 <div class="checkin-search-body <%= (!CurrentCheckInState.Kiosk.RegistrationModeEnabled && (CurrentCheckInType == null || CurrentCheckInType.SearchType.Guid == new Guid(Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER)) ? "search-phone" : "search-name") %>">
 
                     <asp:Panel ID="pnlSearchPhone" runat="server" CssClass="clearfix">
-                        <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg" FormGroupCssClass="search-phone-form-group" runat="server" Label="Phone Number" autocomplete="off" />
+                        <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg js-search-input js-phone-search" FormGroupCssClass="search-phone-form-group" runat="server" Label="Phone Number" autocomplete="off" />
 
                         <div class="tenkey checkin-phone-keypad">
                             <div>
@@ -95,7 +95,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlSearchName" CssClass="clearfix" runat="server">
-                        <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" autocapitalize="off" autocomplete="off" spellcheck="false" autocorrect="off" />
+                        <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="search-input namesearch input-lg js-search-input js-name-search" FormGroupCssClass="search-name-form-group" autocapitalize="off" autocomplete="off" spellcheck="false" autocorrect="off" />
                     </asp:Panel>
 
                     <div class="checkin-actions">

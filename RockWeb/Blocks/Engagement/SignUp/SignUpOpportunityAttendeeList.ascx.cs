@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
             }
 
-            // Add lazyload so that person-link-popover javascript works
+            // Add lazy load so that person-link-popover JavaScript works
             RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
 
             // This event gets fired after block settings are updated. It's nice to repaint the screen if these settings would alter it.
@@ -345,12 +345,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfAttendees_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfAttendees.SaveUserPreference( GridFilterKey.FirstName, "First Name", tbFirstName.Text );
-            gfAttendees.SaveUserPreference( GridFilterKey.LastName, "Last Name", tbLastName.Text );
-            gfAttendees.SaveUserPreference( GridFilterKey.Role, "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
-            gfAttendees.SaveUserPreference( GridFilterKey.Status, "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
-            gfAttendees.SaveUserPreference( GridFilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
-            gfAttendees.SaveUserPreference( GridFilterKey.Gender, "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
+            gfAttendees.SetFilterPreference( GridFilterKey.FirstName, "First Name", tbFirstName.Text );
+            gfAttendees.SetFilterPreference( GridFilterKey.LastName, "Last Name", tbLastName.Text );
+            gfAttendees.SetFilterPreference( GridFilterKey.Role, "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
+            gfAttendees.SetFilterPreference( GridFilterKey.Status, "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
+            gfAttendees.SetFilterPreference( GridFilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
+            gfAttendees.SetFilterPreference( GridFilterKey.Gender, "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
 
             BindAttendeesGrid();
         }
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfAttendees_ClearFilterClick( object sender, EventArgs e )
         {
-            gfAttendees.DeleteUserPreferences();
+            gfAttendees.DeleteFilterPreferences();
 
             using ( var rockContext = new RockContext() )
             {
@@ -634,10 +634,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         {
                             if ( !groupMemberService.CanDelete( groupMember, out string groupMemberErrorMessage ) )
                             {
-                                /*
-                                 * Just swallow this error, as there's really no need to show the user.
-                                 * The Attendee (Group Member Assignment) record itself will be deleted, but we cannot delete the underlying GroupMember record.
-                                 */
+                                // Just swallow this error, as there's really no need to show the user.
+                                // The Attendee (Group Member Assignment) record itself will be deleted, but we cannot delete the underlying GroupMember record.
                             }
                             else
                             {
@@ -730,7 +728,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             gAttendees.GetRecipientMergeFields += gAttendees_GetRecipientMergeFields;
             gAttendees.Actions.AddClick += gAttendees_AddClick;
 
-            // we'll have custom javascript (see SignUpOpportunityAttendeeList.ascx ) do this instead.
+            // we'll have custom JavaScript (see SignUpOpportunityAttendeeList.ascx ) do this instead.
             gAttendees.ShowConfirmDeleteDialog = false;
 
             gAttendees.Actions.ShowAdd = _canEdit;
@@ -738,7 +736,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             AddGridRowButtons();
 
-            gfAttendees.UserPreferenceKeyPrefix = $"{_groupId}-{_locationId}-{_scheduleId}-";
+            gfAttendees.PreferenceKeyPrefix = $"{_groupId}-{_locationId}-{_scheduleId}-";
             SetGridFilters( group );
         }
 
@@ -910,13 +908,6 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
         private class Opportunity
         {
-            private class BadgeType
-            {
-                public const string Danger = "danger";
-                public const string Success = "success";
-                public const string Warning = "warning";
-            }
-
             private int? SlotsMin => Config?.MinimumCapacity;
             private int? SlotsDesired => Config?.DesiredCapacity;
             private int? SlotsMax => Config?.MaximumCapacity;
@@ -971,28 +962,43 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
             }
 
+            private class ProgressState
+            {
+                public const string Success = "success";
+                public const string Warning = "warning";
+                public const string Critical = "critical";
+                public const string Danger = "danger";
+            }
+
             public string SlotsFilledBadgeType
             {
                 get
                 {
-                    if ( SlotsMax.GetValueOrDefault() > 0 )
+                    var min = this.SlotsMin.GetValueOrDefault();
+                    var desired = this.SlotsDesired.GetValueOrDefault();
+                    var max = this.SlotsMax.GetValueOrDefault();
+                    var filled = this.SlotsFilled;
+
+                    var progressState = ProgressState.Danger;
+                    if ( filled > 0 )
                     {
-                        return SlotsFilled == 0 || SlotsFilled < SlotsMin.GetValueOrDefault()
-                            ? BadgeType.Warning
-                            : SlotsFilled < SlotsMax.Value
-                                ? BadgeType.Success
-                                : BadgeType.Danger;
-                    }
-                    else if ( SlotsMin.GetValueOrDefault() > 0 )
-                    {
-                        return SlotsFilled < SlotsMin.Value
-                            ? BadgeType.Warning
-                            : BadgeType.Success;
+                        progressState = ProgressState.Success;
+
+                        if ( max > 0 && filled > max )
+                        {
+                            progressState = ProgressState.Critical;
+                        }
+                        else if ( filled < min )
+                        {
+                            progressState = ProgressState.Danger;
+                        }
+                        else if ( filled < desired )
+                        {
+                            progressState = ProgressState.Warning;
+                        }
                     }
 
-                    return SlotsFilled > 0
-                        ? BadgeType.Success
-                        : BadgeType.Warning;
+                    return progressState;
                 }
             }
         }
@@ -1032,13 +1038,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 .Include( gma => gma.GroupMember.GroupRole )
                 .Include( gma => gma.GroupMember.Person )
                 .Where( gma =>
-                    !gma.GroupMember.Person.IsDeceased
-                    && gma.GroupMember.GroupId == _groupId
+                    gma.GroupMember.GroupId == _groupId
                     && gma.LocationId == _locationId
                     && gma.ScheduleId == _scheduleId
                 );
 
-            var slotsFilled = qry.Count();
+            var slotsFilled = qry.Count( gma => !gma.GroupMember.Person.IsDeceased );
             bSlotsFilled.Text = slotsFilled.ToString( "N0" );
 
             if ( _isCommunicating )
@@ -1249,7 +1254,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         {
             lTitle.Text = opportunity.Name;
             lLocation.Text = opportunity.Location.ToString();
-            lSchedule.Text = opportunity.Schedule.FriendlyScheduleText ?? "Custom";
+            lSchedule.Text = opportunity.Schedule.ToFriendlyScheduleText( true );
             lConfiguredSlots.Text = opportunity.ConfiguredSlots;
             bSlotsFilled.Text = opportunity.SlotsFilled.ToString( "N0" );
             bSlotsFilled.BadgeType = opportunity.SlotsFilledBadgeType;
@@ -1308,8 +1313,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="group">The group.</param>
         private void SetGridFilters( Group group )
         {
-            tbFirstName.Text = gfAttendees.GetUserPreference( GridFilterKey.FirstName );
-            tbLastName.Text = gfAttendees.GetUserPreference( GridFilterKey.LastName );
+            tbFirstName.Text = gfAttendees.GetFilterPreference( GridFilterKey.FirstName );
+            tbLastName.Text = gfAttendees.GetFilterPreference( GridFilterKey.LastName );
 
             if ( group != null )
             {
@@ -1317,7 +1322,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 cblRole.DataBind();
             }
 
-            var roleValue = gfAttendees.GetUserPreference( GridFilterKey.Role );
+            var roleValue = gfAttendees.GetFilterPreference( GridFilterKey.Role );
             if ( !string.IsNullOrWhiteSpace( roleValue ) )
             {
                 cblRole.SetValues( roleValue.Split( ';' ).ToList() );
@@ -1325,16 +1330,16 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             cblGroupMemberStatus.BindToEnum<GroupMemberStatus>();
 
-            var statusValue = gfAttendees.GetUserPreference( GridFilterKey.Status );
+            var statusValue = gfAttendees.GetFilterPreference( GridFilterKey.Status );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
             {
                 cblGroupMemberStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
 
             cpCampusFilter.Campuses = CampusCache.All();
-            cpCampusFilter.SelectedCampusId = gfAttendees.GetUserPreference( "Campus" ).AsIntegerOrNull();
+            cpCampusFilter.SelectedCampusId = gfAttendees.GetFilterPreference( "Campus" ).AsIntegerOrNull();
 
-            string genderValue = gfAttendees.GetUserPreference( GridFilterKey.Gender );
+            string genderValue = gfAttendees.GetFilterPreference( GridFilterKey.Gender );
             if ( !string.IsNullOrWhiteSpace( genderValue ) )
             {
                 cblGenderFilter.SetValues( genderValue.Split( ';' ).ToList() );
@@ -1391,8 +1396,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
             {
                 foreach ( var groupRequirementType in unmetRequirementTypes.Value )
                 {
-                    var friendlyName = groupRequirementType?.NegativeLabel;
+                    if ( groupRequirementType == null )
+                    {
+                        continue;
+                    }
 
+                    var friendlyName = groupRequirementType.NegativeLabel;
                     if ( string.IsNullOrWhiteSpace( friendlyName ) )
                     {
                         friendlyName = groupRequirementType?.Name;

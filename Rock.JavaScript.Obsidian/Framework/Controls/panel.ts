@@ -61,6 +61,15 @@ export default defineComponent({
             default: false
         },
 
+        /**
+         * True if the panel will show a control in the header that allows
+         * the individual to change the zoom of the panel body.
+         */
+        hasZoom: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** True if the panel can go into full screen mode. */
         hasFullscreen: {
             type: Boolean as PropType<boolean>,
@@ -124,6 +133,11 @@ export default defineComponent({
         const isHelpOpen = ref(false);
         const headerSecondaryActionMenu = ref<HTMLElement | null>(null);
 
+        const isZoomActive = ref(false);
+        const zoomValue = ref(100);
+        const isZoomSupported = !/Firefox\/([0-9.]+)(?:\s|$)/.test(navigator.userAgent)
+            && !/FxiOS\/([0-9.]+)/.test(navigator.userAgent);
+
         /** The CSS class names to be applied to the panel. */
         const panelClass = computed((): string[] => {
             const classes = ["panel", "panel-flex"];
@@ -146,6 +160,17 @@ export default defineComponent({
             }
 
             return classes;
+        });
+
+        /** The style attribute values to apply to the panel-body. */
+        const panelBodyStyle = computed((): Record<string, string> => {
+            const styles: Record<string, string> = {};
+
+            if (props.hasZoom && isZoomActive.value) {
+                styles["zoom"] = `${zoomValue.value}%`;
+            }
+
+            return styles;
         });
 
         /** The tab index for the panel, this allows us to catch the escape key. */
@@ -233,6 +258,25 @@ export default defineComponent({
             }
         };
 
+        /** Event handler for when the zoom action is clicked. */
+        function onZoomClick(): void {
+            isZoomActive.value = !isZoomActive.value;
+        }
+
+        /** Event handler for when the increase zoom button is clicked. */
+        function onZoomIncreaseClick(): void {
+            if (zoomValue.value < 400) {
+                zoomValue.value += 25;
+            }
+        }
+
+        /** Event handler for when the decrease zoom button is clicked. */
+        function onZoomDecreaseClick(): void {
+            if (zoomValue.value > 25) {
+                zoomValue.value -= 25;
+            }
+        }
+
         // Watches for changes to our full screen status and responds accordingly.
         watch(isFullscreen, () => {
             // If we have entered full screen then wait for the UI to update
@@ -258,6 +302,8 @@ export default defineComponent({
             isFullscreen,
             isHelpOpen,
             isPanelOpen,
+            isZoomActive,
+            isZoomSupported,
             onActionClick,
             onDrawerPullClick,
             onFullscreenClick,
@@ -266,10 +312,15 @@ export default defineComponent({
             onPanelExpandClick,
             onPanelHeadingClick,
             onPanelKeyDown,
+            onZoomClick,
+            onZoomDecreaseClick,
+            onZoomIncreaseClick,
+            panelBodyStyle,
             panelClass,
             panelElement,
             panelHeadingClass,
-            panelTabIndex
+            panelTabIndex,
+            zoomValue
         };
     },
 
@@ -289,16 +340,32 @@ export default defineComponent({
             <div class="panel-header-actions" @click.prevent.stop="onIgnoreClick">
                 <slot name="headerActions" />
 
-                <span v-if="$slots.helpContent" class="action clickable" @click="onHelpClick">
+                <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1 panel-action-zoom-control">
+                    <span class="input-group">
+                        <span class="input-group-addon">
+                            <span class="btn btn-default" type="button" @click="onZoomDecreaseClick"><i class="fa fa-minus"></i></span>
+                        </span>
+                        <input class="form-control text-center" type="text" style="width: 70px; pointer-events: none;" :value="zoomValue + '%'" />
+                        <span class="input-group-addon">
+                            <span class="btn btn-default" type="button" @click="onZoomIncreaseClick"><i class="fa fa-plus"></i></span>
+                        </span>
+                    </span>
+                </span>
+
+                <span v-if="hasZoom && isZoomSupported" class="action panel-action-zoom clickable" :class="{active: isZoomActive}" @click="onZoomClick">
+                    <i class="fa fa-search-plus" />
+                </span>
+
+                <span v-if="$slots.helpContent" class="action panel-action-help clickable" @click="onHelpClick">
                     <i class="fa fa-question"></i>
                 </span>
 
-                <span v-if="hasFullscreen" class="action clickable" @click="onFullscreenClick">
+                <span v-if="hasFullscreen" class="action panel-action-fullscreen clickable" @click="onFullscreenClick">
                     <i class="fa fa-expand"></i>
                 </span>
 
                 <template v-if="hasHeaderSecondaryActions">
-                    <span class="action clickable" style="position: relative;">
+                    <span class="action panel-action-context clickable" style="position: relative;">
                         <i class="fa fa-ellipsis-v" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li v-for="action in headerSecondaryActions" :class="getHeaderSecondaryActionItemClass(action)">
@@ -319,11 +386,11 @@ export default defineComponent({
         </div>
 
         <div v-if="$slots.subheaderLeft || $slots.subheaderRight" class="panel-sub-header">
-            <div v-if="$slots.subheaderLeft" class="panel-sub-header-left">
+            <div class="panel-sub-header-left">
                 <slot name="subheaderLeft" />
             </div>
 
-            <div v-if="$slots.subheaderRight" class="panel-sub-header-right">
+            <div class="panel-sub-header-right">
                 <slot name="subheaderRight" />
             </div>
         </div>
@@ -353,7 +420,7 @@ export default defineComponent({
         </template>
 
         <TransitionVerticalCollapse>
-            <div v-show="isPanelOpen" class="panel-body">
+            <div v-show="isPanelOpen" class="panel-body" :style="panelBodyStyle">
                 <slot />
 
                 <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="actions">

@@ -118,7 +118,7 @@ namespace Rock.Tasks
                 return;
             }
 
-            var workflowTransaction=new LaunchWorkflowTransaction<AchievementAttempt>( workflowTypeId, attempt.Id );
+            var workflowTransaction = new LaunchWorkflowTransaction<AchievementAttempt>( workflowTypeId, attempt.Id );
             
             workflowTransaction.Execute();
         }

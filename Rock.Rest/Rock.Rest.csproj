@@ -144,6 +144,8 @@
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionSourcesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentTopicDomainsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentTopicsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionSessionLocationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceActionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceAnswersController.CodeGenerated.cs" />
@@ -163,6 +165,7 @@
     <Compile Include="Controllers\CodeGenerated\SystemPhoneNumbersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\EntitySetsController.cs" />
     <Compile Include="Controllers\NotificationMessagesController.Partial.cs" />
     <Compile Include="Controllers\ReminderTypesController.Partial.cs" />
     <Compile Include="Controllers\RemindersController.Partial.cs" />
@@ -506,6 +509,8 @@
     <Compile Include="Utility\ValueProviders\RockQueryStringValueProviderFactory.cs" />
     <Compile Include="Utility\ValueProviders\RockRouteDataValueProvider.cs" />
     <Compile Include="Utility\ValueProviders\RockRouteDataValueProviderFactory.cs" />
+    <Compile Include="v2\UtilitiesController.PersonPreferences.cs" />
+    <Compile Include="v2\UtilitiesController.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

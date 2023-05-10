@@ -6,8 +6,11 @@
   4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right
   5. ASP.Net Overrides - Yep they get it wrong too sometimes
 */
+@color-base-primary: red(@brand-primary), green(@brand-primary), blue(@brand-primary);
 
 :root {
+  --color-primary: @brand-primary;
+  --color-base-primary: @color-base-primary;
   --focus-state-border: 1px solid @input-border-focus;
   --focus-state-border-color: @input-border-focus;
   --focus-state-shadow: @input-focus-box-shadow;
@@ -663,6 +666,17 @@ th[align="right"] {
             padding: 0;
             min-height: 0;
             line-height: 1.5;
+            // force long words to wrap
+            overflow-wrap: break-word;
+
+            // force link attributes to clamp to one line with ellipsis without using block
+            > a {
+              display: inline-block;
+              max-width: 100%;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
           }
         }
 
@@ -766,6 +780,47 @@ th[align="right"] {
 
   .panel-sidebar {
     border-right: 1px solid @panel-border;
+  }
+}
+
+.panel-waterfall {
+  .panel-variant(@panel-border; @panel-heading-text-color; transparent; transparent;);
+  box-shadow: none !important;
+  overflow: hidden;
+
+  .panel-heading {
+    padding-bottom: 8px;
+
+    + .panel-body {
+      border-top: 1px solid @panel-border;
+    }
+  }
+
+  .panel-body {
+    padding: 0 @panel-body-padding;
+
+    > .row {
+      display: flex;
+      flex-wrap: wrap;
+      // Add right border to all but last column
+      > [class*="col-"] {
+        padding-top: @panel-body-padding;
+        padding-bottom: @panel-body-padding;
+        &:not(:last-child),
+        &.show-divider {
+          border-bottom: 1px solid @panel-border;
+
+          @media (min-width: @screen-md-min) {
+            border-bottom-width: 0;
+            border-right: 1px solid @panel-border;
+          }
+        }
+      }
+    }
+  }
+
+  .panel-footer {
+    padding: 0;
   }
 }
 
@@ -948,44 +1003,47 @@ th[align="right"] {
 
   .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
 
-  &:hover {
-    background-color: darken(@btn-default-bg, 10%);
-  }
-
   &.facebook,
   &.google,
   &.twitter {
     color: #fff;
+    background-color: var(--btn-bg, @btn-default-bg);
+    border-color: var(--btn-bg, @btn-default-bg);
 
     &::before {
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;
+      content: var(--social-icon);
     }
   }
 
   &.facebook {
-    background-color: @brand-facebook;
-
-    &::before {
-      content: @fa-var-facebook;
-    }
+    --social-icon: @fa-var-facebook-f;
+    --btn-bg: @brand-facebook;
   }
 
   &.google {
-    background-color: @brand-googleplus;
-
-    &::before {
-      content: @fa-var-google;
-    }
+    --social-icon: @fa-var-google;
+    --btn-bg: @brand-googleplus;
   }
 
   &.twitter {
-    background-color: @brand-twitter;
+    --social-icon: @fa-var-twitter;
+    --btn-bg: @brand-twitter;
+  }
+}
 
-    &::before {
-      content: @fa-var-twitter;
-    }
+.btn-authentication-v2 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 999px;
+  white-space: normal;
+
+  &:after {
+    content: " ";
+    flex: 0 1 1.25em;
   }
 }
 
@@ -1247,6 +1305,7 @@ div.aspNetDisabled {
   max-width: 100%;
   font-size: 14px;
   border-radius: 4px;
+  color: @text-color;
 
   @media (min-width: 480px) {
     flex-wrap: nowrap;

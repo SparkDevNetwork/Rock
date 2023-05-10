@@ -307,12 +307,12 @@ export default defineComponent({
 
         <TextBox v-model="preHtml"
             label="Pre-HTML"
-            help="HTML that should be rendered before teh attribute's edit control."
+            help="HTML that should be rendered before the attribute's edit control."
             textMode="multiline" />
 
         <TextBox v-model="postHtml"
             label="Post-HTML"
-            help="HTML that should be rendered before teh attribute's edit control."
+            help="HTML that should be rendered before the attribute's edit control."
             textMode="multiline" />
     </PanelWidget>
 </fieldset>

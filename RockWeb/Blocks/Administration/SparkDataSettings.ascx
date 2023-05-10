@@ -46,7 +46,7 @@
                                 <p> Spark Data is a set of services that allows you to easily clean and enhance your data with
                                 little effort. Before you can begin you’ll need to get an API key from the Rock RMS website
                                 and ensure that a credit card is on file for use with paid services.</p>
-                                <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank">Sign Up Now</a></p>
+                                <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank" rel="noopener noreferrer">Sign Up Now</a></p>
 
                                 <asp:ValidationSummary ID="vsSignIn" runat="server" HeaderText="Please Correct the Following" ValidationGroup="SignInValidationGroup" CssClass="alert alert-validation" />
                                 <div class="row">
@@ -65,7 +65,7 @@
                     <asp:Panel ID="pnlSparkDataEdit" runat="server" Visible="false">
                         <p> For more information about your account, or to update your payment information please visit your organization's profile on the
                         Rock RMS website.</p>
-                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank">Organization Profile</a></p>
+                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank" rel="noopener noreferrer">Organization Profile</a></p>
                         <asp:ValidationSummary ID="vsSparkDataEdit" runat="server" HeaderText="Please Correct the Following" ValidationGroup="SparkDataEditValidationGroup" CssClass="alert alert-validation" />
                         <div class="row">
                             <div class="col-md-6">
@@ -113,7 +113,7 @@
                             <asp:CheckBox ID="cbNcoaAcceptTerms" runat="server" AutoPostBack="true" OnCheckedChanged="cbNcoaAcceptTerms_CheckedChanged" Text="By accepting these terms, you agree that Rock RMS may share your data with TrueNCOA for NCOA processing. You understand that through your use
                                 of the Services you consent to the collection and use of this information, including the storage, processing and use by TrueNCOA and its affiliates. Customer
                                 information will only be shared by TrueNCOA to provide or improve our products, services and advertising; it will not be shared with third parties for their
-                                marketing purposes. Read TrueNCOA’s full Terms of Service here, and read TrueNCOA’s Privacy Policy &lt;a href='http://truencoa.com/privacy-policy/' target='_blank' &gt;here&lt;/a&gt;." />
+                                marketing purposes. Read TrueNCOA’s full Terms of Service here, and read TrueNCOA’s Privacy Policy &lt;a href='http://truencoa.com/privacy-policy/' target='_blank' rel='noopener noreferrer' &gt;here&lt;/a&gt;." />
                             <asp:CheckBox ID="cbNcoaAckPrice" runat="server" AutoPostBack="true" OnCheckedChanged="cbNcoaAckPrice_CheckedChanged" Text="I acknowledge that running this service will charge the card on file &#36;xx for each file run." />
                             <br />
                             <div class="row">

@@ -82,6 +82,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.AttendanceReminderSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleConfirmationSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupType.FriendlyTypeName );

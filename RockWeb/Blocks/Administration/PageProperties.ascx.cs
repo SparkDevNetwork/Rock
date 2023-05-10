@@ -566,6 +566,10 @@ namespace RockWeb.Blocks.Administration
             cbIncludeAdminFooter.Checked = page.IncludeAdminFooter;
             cbAllowIndexing.Checked = page.AllowIndexing;
 
+            cbEnableRateLimiting.Checked = page.IsRateLimited;
+            nbRateLimitPeriod.IntegerValue = page.RateLimitPeriod;
+            nbRequestPerPeriod.IntegerValue = page.RateLimitRequestPerPeriod;
+
             if ( page.CacheControlHeaderSettings != null )
             {
                 cpCacheSettings.CurrentCacheability = JsonConvert.DeserializeObject<RockCacheability>( page.CacheControlHeaderSettings );
@@ -773,6 +777,17 @@ namespace RockWeb.Blocks.Administration
             page.AllowIndexing = cbAllowIndexing.Checked;
 
             page.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheability.ToJson();
+
+            if ( cbEnableRateLimiting.Checked )
+            {
+                page.RateLimitPeriod = nbRateLimitPeriod.IntegerValue;
+                page.RateLimitRequestPerPeriod = nbRequestPerPeriod.IntegerValue;
+            }
+            else
+            {
+                page.RateLimitPeriod = null;
+                page.RateLimitRequestPerPeriod = null;
+            }
 
             page.Description = tbDescription.Text;
             page.HeaderContent = ceHeaderContent.Text;

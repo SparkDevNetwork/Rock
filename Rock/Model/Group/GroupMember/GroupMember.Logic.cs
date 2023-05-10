@@ -220,7 +220,7 @@ namespace Rock.Model
                 var person = this.Person ?? new PersonService( rockContext ).GetNoTracking( this.PersonId );
 
                 var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
-                errorMessage = $"{person} already belongs to the {groupRole.Name.ToLower()} role for this {groupType.GroupTerm.ToLower()}, and cannot be added again with the same role";
+                errorMessage = $"{person} already belongs to the {groupRole.Name.ToLower()} role for this {groupType.GroupTerm.ToLower()} in GroupId ({ this.GroupId }), and cannot be added again with the same role";
 
                 return false;
             }
@@ -316,12 +316,13 @@ namespace Rock.Model
                 {
                     var requirementStatusesRequiredForAdd = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId )
                         .Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
-                        && ( ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) && ( a.GroupRequirement.MustMeetRequirementToAddMember == true ) ) );
+                        && ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) && ( a.GroupRequirement.MustMeetRequirementToAddMember == true ) );
 
                     if ( requirementStatusesRequiredForAdd.Any() )
                     {
-                        // deny if any of the non-manual MustMeetRequirementToAddMember requirements are not met
-                        errorMessage = "This person must meet the following requirements before they are added or made an active member in this group: "
+                        this.Person = this.Person ?? new PersonService( rockContext ).GetNoTracking( this.PersonId );
+                        // Deny adding to the group if any of the non-manual MustMeetRequirementToAddMember requirements are not met.
+                        errorMessage = $"{this.Person.FullName} must meet the following requirements before being added or made an active member in group '{group.Name}': "
                             + requirementStatusesRequiredForAdd
                             .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
                             .ToList().AsDelimited( ", " );
@@ -491,7 +492,8 @@ namespace Rock.Model
                     {
                         requirementToRemoveIds.Add( requirement.Id );
                     }
-                };
+                }
+
                 if ( requirementToRemoveIds.Any() )
                 {
                     allGroupRequirements.RemoveAll( r => requirementToRemoveIds.Contains( r.Id ) );
@@ -540,7 +542,7 @@ namespace Rock.Model
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
             var group = this.Group ?? new GroupService( rockContext ).Queryable( "GroupRequirements" ).FirstOrDefault( a => a.Id == this.GroupId );
 
-            if ( !group.GetGroupRequirements( rockContext ).Any() )
+            if ( group == null || !group.GetGroupRequirements( rockContext ).Any() )
             {
                 // group doesn't have requirements, so clear any existing group member requirements and save if necessary.
                 if ( GroupMemberRequirements.Any() )

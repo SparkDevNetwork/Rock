@@ -23,6 +23,8 @@
 
 /** Static Guids used by the Rock application */
 export const DefinedType = {
+    /** Lists checklist items to be completed by the administrator after installs and updates. */
+    AdministratorChecklist: "4BF34677-37E9-4E71-BD03-252B66C9373D",
     /** The apple device models */
     AppleDeviceModels: "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C",
     /** Guid for the Conflict Profile assessment. */
@@ -80,6 +82,8 @@ export const DefinedType = {
     EntitySetPurpose: "618BBF3F-794F-4FF9-9615-9211CDBAF723",
     /** Guid for External Application */
     ExternalApplication: "1FAC459C-5F62-4E7C-8933-61FF9FE2DFEF",
+    /** Guid for the types of External Links */
+    ExternalLinkType: "D42C1A05-6504-4BDE-BBB7-0EC99A7FB632",
     /** Guid for a group's (Family's) status for GroupType of Family */
     FamilyGroupStatus: "792C6979-0F40-47C5-BD0C-06FA7DF22837",
     /** Guid for Financial Currency Type */
@@ -122,6 +126,10 @@ export const DefinedType = {
     LavaShortcodes: "3B1AF656-7AEF-52A8-4E2C-5EFF75A1A23A",
     /** Used to store various liquid templates for features in Rock. */
     LavaTemplates: "C3D44004-6951-44D9-8560-8567D705A48B",
+    /** Guid for the types of Library Content */
+    LibraryContentType: "C23B34D6-91D7-4FC5-AA80-E68A62288A05",
+    /** Guid for the types of Library Licenses */
+    LibraryLicenseType: "83FB89B4-205A-41D6-A798-A81F12E6CDB0",
     /** Guid for Default link list */
     LinklistDefaultList: "7E7969BD-945C-4472-8A80-889EF5833776",
     /** Guid for the types of States that can be tied to a Location's address. */

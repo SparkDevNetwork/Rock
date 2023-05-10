@@ -15,9 +15,12 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks
@@ -91,6 +94,16 @@ namespace Rock.Blocks
         }
 
         /// <summary>
+        /// Gets the block attribute values given an attribute key - splitting that delimited value into a list of strings.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>A list of attribute value strings or an empty list if no attribute values exist.</returns>
+        internal List<string> GetAttributeValues( string key )
+        {
+            return BlockCache.GetAttributeValues( key );
+        }
+
+        /// <summary>
         /// Gets the attribute value.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -127,6 +140,59 @@ namespace Rock.Blocks
         protected Person GetCurrentPerson()
         {
             return RequestContext.CurrentPerson;
+        }
+
+        #endregion
+
+        #region Person Preferences
+
+        /// <summary>
+        /// Gets the global person preferences. These are unique to the person
+        /// but global across the entire system. Global preferences should be
+        /// used with extreme caution and care.
+        /// </summary>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetGlobalPersonPreferences()
+        {
+            return RequestContext.GetGlobalPersonPreferences();
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntity scopedEntity )
+        {
+            return RequestContext.GetScopedPersonPreferences( scopedEntity );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntityCache scopedEntity )
+        {
+            return RequestContext.GetScopedPersonPreferences( scopedEntity );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the current block.
+        /// </summary>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetBlockPersonPreferences()
+        {
+            return RequestContext.GetScopedPersonPreferences( BlockCache );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the current block type.
+        /// </summary>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetBlockTypePersonPreferences()
+        {
+            return RequestContext.GetScopedPersonPreferences( BlockCache.BlockType );
         }
 
         #endregion

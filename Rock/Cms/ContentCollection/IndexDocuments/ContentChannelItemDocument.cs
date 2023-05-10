@@ -62,9 +62,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
             var yearValue = document.Year.ToString();
             FieldValueHelper.AddFieldValue( source.ContentCollectionId, nameof( document.Year ), yearValue, yearValue );
 
-            document.AddPersonalizationData( contentChannelItem, source );
-            document.AddIndexableAttributes( contentChannelItem, source );
-            await document.AddExistingTrendingDataAsync( source );
+            await document.AddStandardFieldsAsync( contentChannelItem, source );
 
             return document;
         }

@@ -27,14 +27,14 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import RockForm from "@Obsidian/Controls/rockForm";
 import Switch from "@Obsidian/Controls/switch";
 import TextBox from "@Obsidian/Controls/textBox";
-import { SectionAsideSettings } from "./types";
+import { SectionAsideSettings } from "./types.partial";
 import { useFormSources, getFilterGroupTitle, getFilterRuleDescription, timeoutAsync } from "./utils.partial";
 import { FormError } from "@Obsidian/Utility/form";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { FormField } from "../Shared/types";
+import { FormField } from "../Shared/types.partial";
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.SectionEditAside",
@@ -313,7 +313,7 @@ export default defineComponent({
                 <LoadingIndicator v-if="isConditionalsLoading" />
 
                 <div v-else-if="conditionalSources.length < 1">
-                    <Alert alertType="warning">No source fields available.</Alert>
+                    <NotificationBox alertType="warning">No source fields available.</NotificationBox>
 
                     <div class="d-flex justify-content-end">
                         <RockButton btnType="default" btnSize="sm" disabled><i class="fa fa-pencil"></i></RockButton>

@@ -31,6 +31,7 @@ using Rock.BulkExport;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
@@ -575,59 +576,30 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "DA70741A-30DF-4E63-AD26-0444E2E10689" )]
         public IHttpActionResult UpdateProfilePhoto( [NakedBody] byte[] photoBytes, string filename )
         {
-            var personId = GetPerson()?.Id;
+            var personGuid = GetPerson()?.Guid;
 
-            if ( !personId.HasValue )
+            if ( !personGuid.HasValue )
             {
                 return NotFound();
             }
 
-            if ( photoBytes.Length == 0 || string.IsNullOrWhiteSpace( filename ) )
-            {
-                return BadRequest();
-            }
+            return Ok( PersonService.UpdatePersonProfilePhoto( personGuid.Value, photoBytes, filename ) );
+        }
 
-            char[] illegalCharacters = new char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
-
-            if ( filename.IndexOfAny( illegalCharacters ) >= 0 )
-            {
-                return BadRequest( "Invalid Filename.  Please remove any special characters (" + string.Join( " ", illegalCharacters ) + ")." );
-            }
-
-            using ( var rockContext = new Data.RockContext() )
-            {
-                BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
-
-                // always create a new BinaryFile record of IsTemporary when a file is uploaded
-                var binaryFileService = new BinaryFileService( rockContext );
-                var binaryFile = new BinaryFile();
-                binaryFileService.Add( binaryFile );
-
-                binaryFile.IsTemporary = false;
-                binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                binaryFile.MimeType = "octet/stream";
-                binaryFile.FileSize = photoBytes.Length;
-                binaryFile.FileName = filename;
-                binaryFile.ContentStream = new MemoryStream( photoBytes );
-
-                rockContext.SaveChanges();
-
-                var person = new Model.PersonService( rockContext ).Get( personId.Value );
-                int? oldPhotoId = person.PhotoId;
-                person.PhotoId = binaryFile.Id;
-
-                rockContext.SaveChanges();
-
-                if ( oldPhotoId.HasValue )
-                {
-                    binaryFile = binaryFileService.Get( oldPhotoId.Value );
-                    binaryFile.IsTemporary = true;
-
-                    rockContext.SaveChanges();
-                }
-
-                return Ok( $"{GlobalAttributesCache.Value( "PublicApplicationRoot" )}{person.PhotoUrl}" );
-            }
+        /// <summary>
+        /// Updates the person profile photo.
+        /// </summary>
+        /// <param name="photoBytes">The photo bytes.</param>
+        /// <param name="personGuid">The person unique identifier.</param>
+        /// <param name="filename">The filename.</param>
+        /// <returns>IHttpActionResult.</returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/People/UpdatePersonProfilePhoto" )]
+        [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "7AB0E53E-28BD-4EE6-AD31-EBAEC23B123C" )]
+        public IHttpActionResult UpdatePersonProfilePhoto( [NakedBody] byte[] photoBytes, Guid personGuid, string filename )
+        {
+            return Ok( PersonService.UpdatePersonProfilePhoto( personGuid, photoBytes, filename ) );
         }
 
         /// <summary>
@@ -640,10 +612,27 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/SetUserPreference" )]
         [HttpPost]
         [Rock.SystemGuid.RestActionGuid( "E6ED42BF-701C-4C06-822D-ED9FBA2F2E5F" )]
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the new PersonPreference endpoints in the v2 API.")]
         public void SetUserPreference( string userPreferenceKey, string value )
         {
-            var currentPerson = GetPerson();
-            PersonService.SaveUserPreference( currentPerson, userPreferenceKey, value );
+            PersonPreferenceCollection preferences;
+
+            if ( RockRequestContext.CurrentVisitorId.HasValue )
+            {
+                preferences = PersonPreferenceCache.GetVisitorPreferenceCollection( RockRequestContext.CurrentVisitorId.Value );
+            }
+            else if ( RockRequestContext.CurrentPerson != null )
+            {
+                preferences = PersonPreferenceCache.GetPersonPreferenceCollection( RockRequestContext.CurrentPerson );
+            }
+            else
+            {
+                return;
+            }
+
+            preferences.SetValue( userPreferenceKey, value );
+            preferences.Save();
         }
 
         /// <summary>
@@ -656,10 +645,28 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/SetBlockUserPreference" )]
         [HttpPost]
         [Rock.SystemGuid.RestActionGuid( "B7380EB9-81E5-4ED0-8488-EBEE04991902" )]
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the new PersonPreference endpoints in the v2 API." )]
         public void SetBlockUserPreference( int blockId, string userPreferenceKey, string value )
         {
-            var currentPerson = GetPerson();
-            PersonService.SaveUserPreference( currentPerson, PersonService.GetBlockUserPreferenceKeyPrefix( blockId ) + userPreferenceKey, value );
+            PersonPreferenceCollection preferences;
+            var blockEntityTypeCache = EntityTypeCache.Get<Block>();
+
+            if ( RockRequestContext.CurrentVisitorId.HasValue )
+            {
+                preferences = PersonPreferenceCache.GetVisitorPreferenceCollection( RockRequestContext.CurrentVisitorId.Value, blockEntityTypeCache, blockId );
+            }
+            else if ( RockRequestContext.CurrentPerson != null )
+            {
+                preferences = PersonPreferenceCache.GetPersonPreferenceCollection( RockRequestContext.CurrentPerson, blockEntityTypeCache, blockId );
+            }
+            else
+            {
+                return;
+            }
+
+            preferences.SetValue( userPreferenceKey, value );
+            preferences.Save();
         }
 
         /// <summary>
@@ -672,6 +679,8 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/SetBlockUserPreference/{blockGuid}" )]
         [HttpPost]
         [Rock.SystemGuid.RestActionGuid( "223827C2-3731-4C3F-A3F0-C8CCAF8BECE6" )]
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the new PersonPreference endpoints in the v2 API." )]
         public IHttpActionResult SetBlockUserPreference( Guid blockGuid, string userPreferenceKey, string value )
         {
             var blockId = BlockCache.Get( blockGuid )?.Id;
@@ -695,11 +704,26 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/GetUserPreference" )]
         [HttpGet]
         [Rock.SystemGuid.RestActionGuid( "E3A05482-ADAF-46DF-9047-B95B8950EBCE" )]
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the new PersonPreference endpoints in the v2 API." )]
         public string GetUserPreference( string userPreferenceKey )
         {
-            var currentPerson = GetPerson();
-            var userPreferenceValue = PersonService.GetUserPreference( currentPerson, userPreferenceKey );
-            return userPreferenceValue;
+            PersonPreferenceCollection preferences;
+
+            if ( RockRequestContext.CurrentVisitorId.HasValue )
+            {
+                preferences = PersonPreferenceCache.GetVisitorPreferenceCollection( RockRequestContext.CurrentVisitorId.Value );
+            }
+            else if ( RockRequestContext.CurrentPerson != null )
+            {
+                preferences = PersonPreferenceCache.GetPersonPreferenceCollection( RockRequestContext.CurrentPerson );
+            }
+            else
+            {
+                return string.Empty;
+            }
+
+            return preferences.GetValue( userPreferenceKey );
         }
 
         /// <summary>
@@ -712,11 +736,27 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/GetBlockUserPreference" )]
         [HttpGet]
         [Rock.SystemGuid.RestActionGuid( "66B32878-DED4-4847-8FA6-21FFD51E4094" )]
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the new PersonPreference endpoints in the v2 API." )]
         public string GetBlockUserPreference( int blockId, string userPreferenceKey )
         {
-            var currentPerson = GetPerson();
-            var userPreferenceValue = PersonService.GetUserPreference( currentPerson, PersonService.GetBlockUserPreferenceKeyPrefix( blockId ) + userPreferenceKey );
-            return userPreferenceValue;
+            PersonPreferenceCollection preferences;
+            var blockEntityTypeCache = EntityTypeCache.Get<Block>();
+
+            if ( RockRequestContext.CurrentVisitorId.HasValue )
+            {
+                preferences = PersonPreferenceCache.GetVisitorPreferenceCollection( RockRequestContext.CurrentVisitorId.Value, blockEntityTypeCache, blockId );
+            }
+            else if ( RockRequestContext.CurrentPerson != null )
+            {
+                preferences = PersonPreferenceCache.GetPersonPreferenceCollection( RockRequestContext.CurrentPerson, blockEntityTypeCache, blockId );
+            }
+            else
+            {
+                return string.Empty;
+            }
+
+            return preferences.GetValue( userPreferenceKey );
         }
 
         /// <summary>
@@ -729,6 +769,8 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/GetBlockUserPreference/{blockGuid}" )]
         [HttpGet]
         [Rock.SystemGuid.RestActionGuid( "B6AB08EF-2962-48EA-87F5-30153BCC35CC" )]
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the new PersonPreference endpoints in the v2 API." )]
         public string GetBlockUserPreference( Guid blockGuid, string userPreferenceKey )
         {
             var blockId = BlockCache.Get( blockGuid )?.Id;
@@ -974,7 +1016,7 @@ namespace Rock.Rest.Controllers
             var connectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ) : null;
             var campus = person.PrimaryCampusId.HasValue ? CampusCache.Get( person.PrimaryCampusId.Value ) : null;
 
-            personSearchResult.ImageUrl = Person.GetPersonPhotoUrl( person, 200, 200 );
+            personSearchResult.ImageUrl = Person.GetPersonPhotoUrl( person );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
             personSearchResult.AgeClassification = person.AgeClassification;
             personSearchResult.FormattedAge = person.FormatAge();
@@ -1003,7 +1045,7 @@ namespace Rock.Rest.Controllers
 
             string imageHtml = string.Format(
                 "<div class='person-image' style='background-image:url({0}&width=65);'></div>",
-                Person.GetPersonPhotoUrl( person, 200, 200 ) );
+                Person.GetPersonPhotoUrl( person ) );
 
             StringBuilder personInfoHtmlBuilder = new StringBuilder();
             int? groupLocationTypeValueId;

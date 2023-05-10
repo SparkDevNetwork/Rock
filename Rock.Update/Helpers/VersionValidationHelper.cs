@@ -18,6 +18,8 @@ using System;
 using Rock.Data;
 using Rock.Update.Enum;
 using Rock.Update.Exceptions;
+using Rock.Utility.Settings;
+using Rock.Web.Cache;
 
 namespace Rock.Update.Helpers
 {
@@ -26,6 +28,16 @@ namespace Rock.Update.Helpers
     /// </summary>
     public static class VersionValidationHelper
     {
+        public static class SqlServerVersion
+        {
+            public const int v2022 = 16;
+            public const int v2019 = 15;
+            public const int v2017 = 14;
+            public const int v2016 = 13;
+            public const int v2014 = 12;
+            public const int v2012 = 11;
+        }
+
         /// <summary>
         /// Checks the .NET Framework version and returns Pass, Fail, or Unknown which can be
         /// used to determine if it's safe to proceed.
@@ -75,6 +87,8 @@ namespace Rock.Update.Helpers
         /// level to proceed.
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "No longer required after successful update to v1.11.0" )]
+        [RockObsolete( "1.11.1" )]
         public static bool CheckSqlServerVersionGreaterThenSqlServer2012()
         {
             var isOk = false;
@@ -120,7 +134,6 @@ namespace Rock.Update.Helpers
                 return;
             }
 
-            var hasSqlServer2012OrGreater = CheckSqlServerVersionGreaterThenSqlServer2012();
             if ( requiresNet472 )
             {
                 var result = CheckFrameworkVersion();
@@ -130,9 +143,18 @@ namespace Rock.Update.Helpers
                 }
             }
 
-            if ( !hasSqlServer2012OrGreater )
+            var isTargetVersionGreaterThan15 = targetVersion.Major > 1 || targetVersion.Minor > 15;
+
+            var hasSqlServer2016OrGreater = CheckSqlServerVersion( SqlServerVersion.v2016 );
+            if ( !hasSqlServer2016OrGreater && isTargetVersionGreaterThan15 )
             {
-                throw new VersionValidationException( $"Version {targetVersion} requires Microsoft Sql Server 2012 or greater." );
+                throw new VersionValidationException( $"Version {targetVersion} requires Microsoft SQL Azure or Microsoft Sql Server 2016 or greater." );
+            }
+
+            var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
+            if ( isTargetVersionGreaterThan15 && lavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
+            {
+                throw new VersionValidationException( $"Version {targetVersion} requires a Lava Support Level of 'NoLegacy'." );
             }
         }
 
@@ -143,6 +165,38 @@ namespace Rock.Update.Helpers
         public static Version GetInstalledVersion()
         {
             return new Version( VersionInfo.VersionInfo.GetRockSemanticVersionNumber() );
+        }
+
+        /// <summary>
+        /// Checks the SQL server version and returns false if not at the needed
+        /// level to proceed.
+        /// </summary>
+        /// <param name="majorVersionNumber">The major version number required to pass the check.</param>
+        /// <returns></returns>
+        public static bool CheckSqlServerVersion( int majorVersionNumber )
+        {
+            var isOk = RockInstanceConfig.Database.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql;
+
+            if ( !isOk )
+            {
+                try
+                {
+                    var versionParts = RockInstanceConfig.Database.VersionNumber.Split( '.' );
+                    int.TryParse( versionParts[0], out var majorVersion );
+
+                    if ( majorVersion >= majorVersionNumber )
+                    {
+                        isOk = true;
+                    }
+                }
+                catch
+                {
+                    // This would be pretty bad, but regardless we'll just
+                    // return the isOk (not) and let the caller proceed.
+                }
+            }
+
+            return isOk;
         }
     }
 }

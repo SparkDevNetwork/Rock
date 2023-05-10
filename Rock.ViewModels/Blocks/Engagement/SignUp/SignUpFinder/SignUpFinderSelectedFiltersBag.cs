@@ -64,7 +64,7 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpFinder
         /// <value>
         /// The start date that should be used to limit the search results.
         /// </value>
-        public DateTime? StartDate { get; set; }
+        public DateTimeOffset? StartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end date that should be used to limit the search results.
@@ -72,7 +72,7 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpFinder
         /// <value>
         /// The end date that should be used to limit the search results.
         /// </value>
-        public DateTime? EndDate { get; set; }
+        public DateTimeOffset? EndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the location sort (zip code or city, state) that should be used to order the search results.

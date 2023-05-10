@@ -306,7 +306,7 @@ namespace Rock.Jobs
                                             notAddedCount++;
 
                                             // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
-                                            var ex = new GroupMemberValidationException( string.Join( ",", archivedGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                                            var ex = new GroupMemberValidationException( "Archived group member: " + string.Join( ",", archivedGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
                                             ExceptionLogService.LogException( ex );
                                             continue;
                                         }
@@ -331,7 +331,7 @@ namespace Rock.Jobs
                                             notAddedCount++;
 
                                             // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
-                                            var ex = new GroupMemberValidationException( string.Join( ",", newGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                                            var ex = new GroupMemberValidationException( "New group member: " + string.Join( ",", newGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
                                             ExceptionLogService.LogException( ex );
                                             continue;
                                         }

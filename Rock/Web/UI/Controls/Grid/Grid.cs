@@ -958,12 +958,14 @@ namespace Rock.Web.UI.Controls
             var pageSize = 0;
             var preferredPageSize = 0;
             var preferenceKey = string.Empty;
+            PersonPreferenceCollection preferences = null;
 
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache?.Id );
-                preferredPageSize = rockBlock.GetUserPreference( preferenceKey ).AsInteger();
+                preferences = rockBlock.GetBlockPersonPreferences();
+
+                preferredPageSize = preferences.GetValue( PAGE_SIZE_KEY ).AsInteger();
                 pageSize = preferredPageSize;
             }
 
@@ -995,9 +997,11 @@ namespace Rock.Web.UI.Controls
             // If the preferred page size was modified, store the result.
             if ( preferredPageSize > 0
                  && pageSize != preferredPageSize
-                 && rockBlock != null )
+                 && rockBlock != null
+                 && preferences != null )
             {
-                rockBlock.SetUserPreference( preferenceKey, pageSize.ToString() );
+                preferences.SetValue( PAGE_SIZE_KEY, pageSize.ToString() );
+                preferences.Save();
             }
 
             base.PageSize = pageSize;
@@ -1811,8 +1815,10 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
-                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache.Id );
-                rockBlock.SetUserPreference( preferenceKey, e.Number.ToString() );
+                var preferences = rockBlock.GetBlockPersonPreferences();
+
+                preferences.SetValue( PAGE_SIZE_KEY, e.Number.ToString() );
+                preferences.Save();
             }
 
             this.PageSize = e.Number;

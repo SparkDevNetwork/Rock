@@ -17,14 +17,14 @@
 
 import { defineComponent, inject } from "vue";
 import Registrant from "./registrant.partial";
-import Alert from "@Obsidian/Controls/alert.obs";
-import { RegistrantInfo, RegistrationEntryState } from "./types";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import { RegistrantInfo, RegistrationEntryState } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrants",
     components: {
         Registrant,
-        Alert
+        NotificationBox
     },
     setup() {
         return {
@@ -32,7 +32,7 @@ export default defineComponent({
             persistSession: inject("persistSession") as () => Promise<void>
         };
     },
-    data () {
+    data() {
         return {
             hasCopiedCommonValues: false
         };
@@ -71,17 +71,17 @@ export default defineComponent({
         },
 
         /** Copy the common values from the first registrant to the others */
-        copyCommonValuesFromFirstRegistrant () {
+        copyCommonValuesFromFirstRegistrant() {
             // Only copy one time
             if (this.hasCopiedCommonValues) {
                 return;
             }
 
             this.hasCopiedCommonValues = true;
-            const firstRegistrant = this.registrants[ 0 ];
+            const firstRegistrant = this.registrants[0];
 
             for (let i = 1; i < this.registrants.length; i++) {
-                const currentRegistrant = this.registrants[ i ];
+                const currentRegistrant = this.registrants[i];
 
                 for (const form of this.registrationEntryState.viewModel.registrantForms) {
                     for (const field of form.fields) {
@@ -89,13 +89,13 @@ export default defineComponent({
                             continue;
                         }
 
-                        const valueToShare = firstRegistrant.fieldValues[ field.guid ];
+                        const valueToShare = firstRegistrant.fieldValues[field.guid];
 
                         if (valueToShare && typeof valueToShare === "object") {
-                            currentRegistrant.fieldValues[ field.guid ] = { ...valueToShare };
+                            currentRegistrant.fieldValues[field.guid] = { ...valueToShare };
                         }
                         else {
-                            currentRegistrant.fieldValues[ field.guid ] = valueToShare;
+                            currentRegistrant.fieldValues[field.guid] = valueToShare;
                         }
                     }
                 }
@@ -110,7 +110,7 @@ export default defineComponent({
 
         /** Will this registrant be added to the waitlist? */
         isOnWaitlist(): boolean {
-            const currentRegistrant = this.registrationEntryState.registrants[ this.registrationEntryState.currentRegistrantIndex ];
+            const currentRegistrant = this.registrationEntryState.registrants[this.registrationEntryState.currentRegistrantIndex];
             return currentRegistrant.isOnWaitList;
         },
 
@@ -128,12 +128,12 @@ export default defineComponent({
     },
     template: `
 <div class="registrationentry-registrant">
-    <Alert v-if="hasWaitlist && !isOnWaitlist" alertType="success">
+    <NotificationBox v-if="hasWaitlist && !isOnWaitlist" alertType="success">
         This {{registrantTerm}} will be fully registered.
-    </Alert>
-    <Alert v-else-if="isOnWaitlist" alertType="warning">
+    </NotificationBox>
+    <NotificationBox v-else-if="isOnWaitlist" alertType="warning">
         This {{registrantTerm}} will be on the waiting list.
-    </Alert>
+    </NotificationBox>
     <template v-for="(r, i) in registrants" :key="r.guid">
         <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" :isWaitList="isOnWaitlist" @next="onNext" @previous="onPrevious" />
     </template>

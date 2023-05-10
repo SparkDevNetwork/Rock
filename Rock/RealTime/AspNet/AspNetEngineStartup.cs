@@ -47,7 +47,7 @@ namespace Rock.RealTime.AspNet
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal( "1.14.1" )]
+    [RockInternal( "1.14.1", true )]
     public static class AspNetEngineStartup
     {
         /// <summary>
@@ -75,20 +75,23 @@ namespace Rock.RealTime.AspNet
             rtHubConfiguration.Resolver.Register( typeof( IHubDescriptorProvider ), () => new RealTimeHubDescriptorProvider() );
             rtHubConfiguration.Resolver.Register( typeof( JsonSerializer ), () => CreateRealTimeSerializer() );
 
-            var azureConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["Azure:SignalR:ConnectionString"]?.ConnectionString;
+            var azureEndpoint = System.Configuration.ConfigurationManager.AppSettings["AzureSignalREndpoint"];
+            var azureAccessKey = System.Configuration.ConfigurationManager.AppSettings["AzureSignalRAccessKey"];
+
             app.Map( "/rock-rt", subApp =>
             {
                 // Register some logic to handle adding a claim for the anonymous
                 // person identifier if we have one.
                 subApp.Use( RegisterSignalRClaims );
 
-                if ( azureConnectionString.IsNullOrWhiteSpace() )
+                if ( azureEndpoint.IsNullOrWhiteSpace() || azureAccessKey.IsNullOrWhiteSpace() )
                 {
                     subApp.RunSignalR( rtHubConfiguration );
                 }
                 else
                 {
-                    subApp.RunAzureSignalR( "Rock", azureConnectionString, rtHubConfiguration );
+                    var connectionString = $"Endpoint=https://{azureEndpoint};AccessKey={azureAccessKey};Version=1.0;";
+                    subApp.RunAzureSignalR( "Rock", connectionString, rtHubConfiguration );
                 }
             } );
 

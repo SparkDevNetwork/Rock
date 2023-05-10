@@ -398,7 +398,7 @@ namespace Rock.Model
                 else
                 {
                     Person person = new PersonService( new RockContext() ).Get( PersonId );
-                    return Person.GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue?.Guid, person.AgeClassification );
+                    return Person.GetPersonPhotoUrl( person.Initials, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification );
                 }
             }
         }
@@ -419,7 +419,7 @@ namespace Rock.Model
                     if ( ConnectorPersonId.HasValue )
                     {
                         Person person = new PersonService( new RockContext() ).Get( ConnectorPersonId.Value );
-                        return Person.GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue?.Guid, person.AgeClassification );
+                        return Person.GetPersonPhotoUrl( person.Initials, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification );
                     }
                     else
                     {

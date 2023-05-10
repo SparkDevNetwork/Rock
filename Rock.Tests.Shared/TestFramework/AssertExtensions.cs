@@ -91,7 +91,7 @@ namespace Rock.Tests.Shared
                 return;
             }
 
-            Assert.IsFalse( value.Contains( substring ) );
+            Assert.IsFalse( value.Contains( substring ), $"The result \"{ value }\" contains the unexpected value \"{ substring }\"." );
         }
 
         public static void AreEqual( this Assert assert, System.Single expected, System.Single actual, System.Single delta )
@@ -376,10 +376,11 @@ namespace Rock.Tests.Shared
         {
             var expectedOutput = expected;
 
-            // If ignoring whitespace, strip it from the comparison string.
+            // If ignoring whitespace, strip it from the comparison strings.
             if ( ignoreWhiteSpace )
             {
                 expectedOutput = Regex.Replace( expectedOutput, @"\s*", string.Empty );
+                actual = Regex.Replace( actual, @"\s*", string.Empty );
             }
 
             // Replace wildcards with a non-Regex symbol.

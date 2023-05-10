@@ -28,6 +28,8 @@ namespace Rock.Lava
 {
     /// <summary>
     /// Provides functions to parse and read the attributes specified for a command or shortcode element specified in a Lava Template.
+    ///
+    /// Attribute names are case-insensitive, and are interpreted as lower-case whereever possible.
     /// Attributes are specified using the following format:
     /// <![CDATA[
     /// <lavatag param1:value_without_spaces param2:'value with spaces' ... >
@@ -110,7 +112,12 @@ namespace Rock.Lava
         /// <param name="value"></param>
         public void SetValue( string name, string value )
         {
-            _settings[name] = value;
+            if ( string.IsNullOrWhiteSpace(name) )
+            {
+                throw new ArgumentException( "Parameter name is invalid", nameof( name ) );
+            }
+
+            _settings[name.Trim().ToLower()] = value;
         }
 
         /// <summary>
@@ -443,7 +450,7 @@ namespace Rock.Lava
             // Apply the attribute values to the current settings.
             foreach ( var key in newSettings.Keys )
             {
-                _settings[key] = newSettings[key];
+                _settings[key.ToLower()] = newSettings[key];
             }
         }
 
@@ -468,24 +475,143 @@ namespace Rock.Lava
         public static Dictionary<string, string> GetElementAttributes( string elementAttributesMarkup, ILavaRenderContext context = null )
         {
             // Get the set of parameters using variations of the following pattern:
-            // param1:'value1 with spaces' param2:value2_without_spaces param3:'value3 with spaces'
-            var parms = GetConfiguredAttributeDictionary();
+            // param1:'value1 with spaces' param2:value2_without_spaces param3:'value3 with "embedded quotes"' param4:'value with {{ LavaFilter | 'lavaparameter1' }}'
+            // A parameter key/value pair:
+            // 1. Must be at the start of the parameter string or immediately preceded by whitespace.
+            // 2. Must be terminated with a space that does not form part of the parameter value.
+            // 3. Must contain a colon separating the key from the value.
+            // 4. Must preserve the content of Lava tags.
 
-            var markupItems = Regex.Matches( elementAttributesMarkup, @"(\S*?:('[^']+'|[\\d.]+|[\S*]+))" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
+            var parameters = new Dictionary<string, string>();
+
+            if ( string.IsNullOrWhiteSpace( elementAttributesMarkup ) )
+            {
+                return parameters;
+            }
+
+            // Ensure that the markup string has no leading whitespace, and is terminated by a single whitespace character.
+            elementAttributesMarkup = elementAttributesMarkup.Trim() + " ";
 
             var renderParameters = new LavaRenderParameters { Context = context };
             var engine = context?.GetService<ILavaEngine>();
 
-            foreach ( var item in markupItems )
+            var delimiterCount = 0;
+            var parameterStartIndex = 0;
+            bool addKeyValuePair = false;
+            var isLavaOutput = false;
+            var isLavaTag = false;
+            var isLavaShortcode = false;
+
+            for ( int i = 0; i < elementAttributesMarkup.Length; i++ )
             {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
+                var thisChar = elementAttributesMarkup[i];
+
+                // Process Lava open tags.
+                if ( thisChar == '{' )
                 {
-                    var parameterName = itemParts[0].Trim();
-                    var value = itemParts[1].Trim();
+                    if ( !( isLavaOutput || isLavaTag || isLavaShortcode ) )
+                    {
+                        var nextChar = i < elementAttributesMarkup.Length - 1 ? elementAttributesMarkup[i + 1] : ' ';
+                        if ( nextChar == '{' )
+                        {
+                            isLavaOutput = true;
+                        }
+                        else if ( nextChar == '%' )
+                        {
+                            isLavaTag = true;
+                        }
+                        else if ( nextChar == '|' )
+                        {
+                            isLavaShortcode = true;
+                        }
+                    }
+                    continue;
+                }
+
+                // Process Lava close tags.
+                if ( thisChar == '}' )
+                {
+                    if ( isLavaOutput || isLavaTag || isLavaShortcode )
+                    {
+                        var nextChar = i < elementAttributesMarkup.Length - 1 ? elementAttributesMarkup[i + 1] : ' ';
+                        if ( nextChar == '}' )
+                        {
+                            isLavaOutput = false;
+                        }
+                        else if ( nextChar == '%' )
+                        {
+                            isLavaTag = false;
+                        }
+                        else if ( nextChar == '|' )
+                        {
+                            isLavaShortcode = false;
+                        }
+                    }
+                    continue;
+                }
+
+                if ( isLavaOutput || isLavaTag || isLavaShortcode )
+                {
+                    continue;
+                }
+
+                // Process Whitespace
+                if ( thisChar == ' ' )
+                {
+                    if ( parameterStartIndex >= 0 )
+                    {
+                        if ( delimiterCount % 2 == 0 )
+                        {
+                            // If there is no open value delimiter, interpret whitespace as a parameter separator.
+                            addKeyValuePair = true;
+
+                        }
+                    }
+                }
+                // Process single-quote delimiter.
+                else if ( thisChar == '\'' )
+                {
+                    delimiterCount++;
+                    if ( parameterStartIndex >= 0 )
+                    {
+                        // If parsing a value and there is no unpaired value delimiter, interpret whitespace as a parameter separator.
+                        if ( delimiterCount % 2 == 0 )
+                        {
+                            addKeyValuePair = true;
+                        }
+
+                    }
+                }
+                else
+                {
+                    // For any other character, assume it is the start of a new parameter.
+                    if ( parameterStartIndex == -1 )
+                    {
+                        parameterStartIndex = i;
+                    }
+                }
+
+                if ( addKeyValuePair )
+                {
+                    string key;
+                    string value;
+
+                    var parameter = elementAttributesMarkup.Substring( parameterStartIndex, i - parameterStartIndex + 1 );
+
+                    var separatorIndex = parameter.IndexOf( ':' );
+                    if ( separatorIndex >= 0 )
+                    {
+                        key = parameter.Substring( 0, separatorIndex );
+                        value = parameter.Substring( separatorIndex + 1 );
+                    }
+                    else
+                    {
+                        key = string.Empty;
+                        value = parameter;
+                    }
+
+                    // Strip delimiters from value.
+                    value = value.Trim( '\'' );
 
                     // Resolve any Lava markup in the parameter value.
                     if ( engine != null )
@@ -502,21 +628,16 @@ namespace Rock.Lava
                         }
                     }
 
-                    if ( value.StartsWith( "'" ) )
-                    {
-                        // Remove quotes from the parameter value.
-                        parms.AddOrReplace( parameterName, value.Substring( 1, value.Length - 2 ) );
-                    }
-                    else
-                    {
-                        parms.AddOrReplace( parameterName, value );
-                    }
+                    parameters[key] = value;
+
+                    delimiterCount = 0;
+                    parameterStartIndex = -1;
+                    addKeyValuePair = false;
                 }
             }
 
-            return parms;
+            return parameters;
         }
-
         #endregion
 
         #region RockLiquid Lava implementation
@@ -546,7 +667,7 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <returns></returns>
         [Obsolete( "Use GetElementAttributes( attributesMarkup, new RockLiquidRenderContext( context ) ) instead." )]
-        [RockObsolete("1.15")]
+        [RockObsolete( "1.15" )]
         public static Dictionary<string, string> GetElementAttributes( string elementAttributesMarkup, Context context = null )
         {
             // First, resolve any Lava merge fields that exist in the element attributes markup.

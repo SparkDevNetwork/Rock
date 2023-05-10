@@ -20,6 +20,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="45" />
                 <RowDefinition />
+                <RowDefinition Height="60" />
             </Grid.RowDefinitions>
 
             <Border
@@ -316,7 +317,18 @@
                 </ScrollViewer>
             </DockPanel>
 
-
+            <Button
+                x:Name="btnPrev"
+                Grid.Row="2"
+                Margin="12"
+                HorizontalAlignment="Left"
+                Click="btnPrev_Click"
+                Style="{StaticResource buttonStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="&#xf053;" Style="{StaticResource labelStyleIconLeft}" />
+                    <Label Content="Prev" Style="{StaticResource labelStyleButtonText}" />
+                </StackPanel>
+            </Button>
         </Grid>
     </Border>
 

@@ -19,7 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Http;
 using Rock.Attribute;
 using Rock.Badge;
@@ -53,6 +55,263 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "815B51F0-B552-47FD-8915-C653EEDD5B67")]
     public class ControlsController : ApiControllerBase
     {
+
+        #region Account Picker
+
+        /// <summary>
+        /// Gets the accounts that can be displayed in the account picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "5052e4a9-8cc3-4937-a2d3-9cfec07ed070" )]
+        public IHttpActionResult AccountPickerGetChildren( [FromBody] AccountPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Ok( AccountPickerGetChildrenData( options, rockContext ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the accounts that can be displayed in the account picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <param name="rockContext">DB context.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
+        private List<TreeItemBag> AccountPickerGetChildrenData ( AccountPickerGetChildrenOptionsBag options, RockContext rockContext )
+        {
+            var financialAccountService = new FinancialAccountService( rockContext );
+
+            IQueryable<FinancialAccount> qry;
+
+            if ( options.ParentGuid == Guid.Empty )
+            {
+                qry = financialAccountService.Queryable().AsNoTracking()
+                    .Where( f => f.ParentAccountId.HasValue == false );
+            }
+            else
+            {
+                qry = financialAccountService.Queryable().AsNoTracking()
+                    .Where( f => f.ParentAccount != null && f.ParentAccount.Guid == options.ParentGuid );
+            }
+
+            if ( !options.IncludeInactive )
+            {
+                qry = qry
+                    .Where( f => f.IsActive == true );
+            }
+
+            var accountList = qry
+                .OrderBy( f => f.Order )
+                .ThenBy( f => f.Name )
+                .ToList();
+
+            var accountTreeViewItems = accountList
+                .Select( a => new TreeItemBag
+                {
+                    Value = a.Guid.ToString(),
+                    Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                    IsActive = a.IsActive,
+                    IconCssClass = "fa fa-file-o"
+                } ).ToList();
+
+            var resultIds = accountList.Select( f => f.Id ).ToList();
+
+            if ( options.LoadFullTree )
+            {
+                foreach ( var accountTreeViewItem in accountTreeViewItems )
+                {
+                    var newOptions = new AccountPickerGetChildrenOptionsBag
+                    {
+                        DisplayPublicName = options.DisplayPublicName,
+                        IncludeInactive = options.IncludeInactive,
+                        LoadFullTree = options.LoadFullTree,
+                        ParentGuid = new Guid(accountTreeViewItem.Value),
+                        SecurityGrantToken = options.SecurityGrantToken
+                    };
+                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, rockContext );
+                    int childrenCount = accountTreeViewItem.Children.Count;
+
+                    accountTreeViewItem.HasChildren = childrenCount > 0;
+                    accountTreeViewItem.IsFolder = accountTreeViewItem.HasChildren;
+                    accountTreeViewItem.ChildCount = childrenCount;
+
+                    if ( !accountTreeViewItem.HasChildren )
+                    {
+                        accountTreeViewItem.Children = null;
+                    }
+                }
+            }
+            else
+            {
+                var childQry = financialAccountService.Queryable().AsNoTracking()
+                    .Where( f =>
+                    f.ParentAccountId.HasValue && resultIds.Contains( f.ParentAccountId.Value )
+                    );
+
+                if ( !options.IncludeInactive )
+                {
+                    childQry = childQry.Where( f => f.IsActive == true );
+                }
+
+                var childrenList = childQry.Select( f => f.ParentAccount.Guid.ToString() )
+                    .ToList();
+
+                foreach ( var accountTreeViewItem in accountTreeViewItems )
+                {
+                    int childrenCount = 0;
+                    childrenCount = ( childrenList?.Count( v => v == accountTreeViewItem.Value ) ).GetValueOrDefault( 0 );
+
+                    accountTreeViewItem.HasChildren = childrenCount > 0;
+                    accountTreeViewItem.IsFolder = childrenCount > 0;
+
+                    if ( accountTreeViewItem.HasChildren )
+                    {
+                        accountTreeViewItem.ChildCount = childrenCount;
+                    }
+                }
+            }
+
+            return accountTreeViewItems;
+        }
+
+        /// <summary>
+        /// Gets the accounts that can be displayed in the account picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetParentGuids" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "007512c6-0147-4683-a3fe-3fdd1da275c2" )]
+        public IHttpActionResult AccountPickerGetParentGuids( [FromBody] AccountPickerGetParentGuidsOptionsBag options )
+        {
+            var results = new HashSet<Guid>();
+
+            foreach ( var guid in options.Guids )
+            {
+                var result = FinancialAccountCache.Get( guid )?
+                    .GetAncestorFinancialAccounts()?
+                    .OrderBy( a => 0 )?
+                    .Reverse()?
+                    .Select( a => a.Guid );
+
+                foreach( var resultGuid in result)
+                {
+                    results.Add( resultGuid );
+                }
+            }
+
+            return Ok(results);
+        }
+
+        /// <summary>
+        /// Gets the accounts that match the given search terms.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the accounts that match the search.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetSearchedAccounts" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "69fd94cc-f049-4cee-85d1-13e573e30586" )]
+        public IHttpActionResult AccountPickerGetSearchedAccounts( [FromBody] AccountPickerGetSearchedAccountsOptionsBag options )
+        {
+            IQueryable<FinancialAccount> qry;
+
+            if ( options.SearchTerm.IsNullOrWhiteSpace() )
+            {
+                return BadRequest("Search Term is required");
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var financialAccountService = new FinancialAccountService( rockContext );
+                qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
+
+                if ( !options.IncludeInactive )
+                {
+                    qry = qry.Where( f => f.IsActive == true );
+                }
+
+                var accountList = qry
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name )
+                    .ToList()
+                    .Select( a => new ListItemBag
+                    {
+                        Value = a.Guid.ToString(),
+                        Text = HttpUtility.HtmlEncode( (options.DisplayPublicName ? a.PublicName : a.Name) + (a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "") ),
+                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                    } )
+                    .ToList();
+
+                return Ok( accountList );
+            }
+        }
+
+        /// <summary>
+        /// Gets the full account information of the selected accounts for the "preview" view
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the selected accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetPreviewItems" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "b080e9d6-207a-412d-acf5-d811fdec30a3" )]
+        public IHttpActionResult AccountPickerGetPreviewItems( [FromBody] AccountPickerGetPreviewItemsOptionsBag options )
+        {
+            IQueryable<FinancialAccount> qry;
+
+            if ( options.SelectedGuids.Count == 0 )
+            {
+                return Ok( new List<ListItemBag>() );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var financialAccountService = new FinancialAccountService( rockContext );
+                qry = financialAccountService.Queryable().AsNoTracking()
+                    .Where( f => options.SelectedGuids.Contains(f.Guid) );
+
+                var accountList = qry
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name )
+                    .ToList()
+                    .Select( a => new ListItemBag
+                    {
+                        Value = a.Guid.ToString(),
+                        Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                    } )
+                    .ToList();
+
+                return Ok( accountList );
+            }
+        }
+
+        /// <summary>
+        /// Gets whether or not to allow account picker to Select All based on how many accounts exist
+        /// </summary>
+        /// <returns>True if there are few enough accounts</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetAllowSelectAll" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "4a13b6ea-3031-48c2-9cdb-be183ccad9a2" )]
+        public IHttpActionResult AccountPickerGetAllowSelectAll( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var financialAccountService = new FinancialAccountService( rockContext );
+                var count = financialAccountService.Queryable().Count();
+
+                return Ok( count < 1500 );
+            }
+        }
+
+        #endregion
 
         #region Achievement Type Picker
 
@@ -635,6 +894,184 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Categorized Value Picker
+
+        /// <summary>
+        /// Gets the child items that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "CategorizedValuePickerGetTree" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9294f070-e8c8-48da-bd50-076f26200d75" )]
+        public IHttpActionResult CategorizedValuePickerGetTree( [FromBody] CategorizedValuePickerGetTreeOptionsBag options )
+        {
+
+            // NO Parent -> get roots using DefinedTypeGuid
+            // Parent -> get children of ParentGuid
+            // Eliminate values not in the LimitTo list
+
+            if ( options.DefinedTypeGuid == null )
+            {
+                return BadRequest( "Please provide a Defined Type GUID" );
+            }
+
+            // Get the Defined Type and associated values.
+            var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+
+            if ( definedType == null || !definedType.IsActive )
+            {
+                return BadRequest( "Please provide a valid Defined Type GUID" );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+
+                var definedValueService = new DefinedValueService( rockContext );
+                var definedValues = definedValueService.GetByDefinedTypeGuid( options.DefinedTypeGuid )
+                    .Where( x => x.IsActive )
+                    .OrderBy( x => x.Order )
+                    .ToList();
+
+                // Filter the selectable values.
+                if ( options.OnlyIncludeGuids != null && options.OnlyIncludeGuids.Any() )
+                {
+                    definedValues = definedValues.Where( x => options.OnlyIncludeGuids.Contains( x.Guid ) ).ToList();
+                }
+
+                if ( !definedValues.Any() )
+                {
+                    return NotFound();
+                }
+
+                // Get a list of the Categories associated with the Defined Values.
+                var categories = new Dictionary<int, Category>();
+                var definedValueCategoryIdList = new List<int>();
+
+                foreach ( var definedValue in definedValues )
+                {
+                    if ( definedValue.CategoryId != null )
+                    {
+                        if ( !definedValueCategoryIdList.Contains( definedValue.CategoryId.Value ) )
+                        {
+                            definedValueCategoryIdList.Add( definedValue.CategoryId.Value );
+                        }
+                    }
+                }
+
+                // Retrieve the Category details, including any parent categories required to build the selection tree.
+                var categoryService = new CategoryService( rockContext );
+
+                foreach ( var categoryId in definedValueCategoryIdList )
+                {
+                    // If this category already exists in the categories list, ignore it as an ancestor of a previous category.
+                    if ( categories.ContainsKey( categoryId ) )
+                    {
+                        continue;
+                    }
+
+                    var ancestors = categoryService.GetAllAncestors( categoryId ).ToList();
+                    foreach ( var ancestor in ancestors )
+                    {
+                        if ( !categories.ContainsKey( ancestor.Id ) )
+                        {
+                            categories.Add( ancestor.Id, ancestor );
+                        }
+                    }
+                }
+
+                var categoryItems = new List<CategorizedValuePickerNodeBag>();
+
+                // Create a selection tree structure from the Categories.
+                // Categories are created with a placeholder label which will be replaced by applying the naming rules.
+                foreach ( var category in categories.Values )
+                {
+                    var listItem = new CategorizedValuePickerNodeBag
+                    {
+                        Value = category.Guid.ToString(),
+                        Text = category.Name,
+                        ChildCategories = new List<CategorizedValuePickerNodeBag>(),
+                        ChildValues = new List<CategorizedValuePickerNodeBag>()
+                    };
+
+                    categoryItems.Add( listItem );
+                }
+
+                var root = new CategorizedValuePickerNodeBag
+                {
+                    Value = null,
+                    Text = definedType.Name,
+                    ChildCategories = new List<CategorizedValuePickerNodeBag>(),
+                    ChildValues = new List<CategorizedValuePickerNodeBag>()
+                };
+
+                // Go through the categories and add child categories as children of their parents
+                foreach ( var category in categories.Values )
+                {
+                    var listItem = categoryItems.Find( c => c.Value == category.Guid.ToString() );
+
+                    // No parent? Throw it at the root of the list
+                    if ( category.ParentCategory == null )
+                    {
+                        root.ChildCategories.Add( listItem );
+                    }
+                    // Has a parent. Add it as a child of its parent
+                    else
+                    {
+                        var parent = categoryItems.Find( c => c.Value == category.ParentCategory.Guid.ToString() );
+
+                        parent.ChildCategories.Add( listItem );
+                    }
+                }
+
+                // Go through the defined values and add them as children of their categories
+                foreach ( var definedValue in definedValues )
+                {
+                    var listItem = new CategorizedValuePickerNodeBag
+                    {
+                        Value = definedValue.Guid.ToString(),
+                        Text = definedValue.Value
+                    };
+
+                    // No category? Throw it at the root of the list
+                    if ( definedValue.Category == null )
+                    {
+                        AddDefinedValueToCategoryAndChildCategories( listItem, root );
+                    }
+                    // Has a category. Add it as a child of its category
+                    else
+                    {
+                        var category = categoryItems.Find( c => c.Value == definedValue.Category.Guid.ToString() );
+                        AddDefinedValueToCategoryAndChildCategories( listItem, category );
+                    }
+                }
+
+                return Ok( new CategorizedValuePickerGetTreeResultsBag {
+                    Tree = root,
+                    DefinedType = definedType.Name
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Adds the defined value to its category and all child categories of that category. It's added to the children
+        /// to facilitate the picker showing values from ancestors.
+        /// </summary>
+        /// <param name="definedValue">The defined value.</param>
+        /// <param name="category">The category node.</param>
+        private void AddDefinedValueToCategoryAndChildCategories( CategorizedValuePickerNodeBag definedValue, CategorizedValuePickerNodeBag category )
+        {
+            category.ChildValues.Add( definedValue );
+            foreach ( var childCat in category.ChildCategories )
+            {
+                AddDefinedValueToCategoryAndChildCategories( definedValue, childCat );
+            }
+        }
+
+        #endregion
+
         #region Category Picker
 
         private static readonly Regex QualifierValueLookupRegex = new Regex( "^{EL:((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12})):((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12}))}$", RegexOptions.IgnoreCase );
@@ -873,6 +1310,111 @@ namespace Rock.Rest.v2
 
                 return Ok( list );
             }
+        }
+
+        #endregion
+
+        #region Content Channel Item Picker
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannels" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2182388d-ccae-44df-a0de-597b8d123666" )]
+        public IHttpActionResult ContentChannelItemPickerGetContentChannels()
+        {
+            var contentChannels = ContentChannelCache.All()
+                .OrderBy( cc => cc.Name )
+                .Select( cc => new ListItemBag { Text = cc.Name, Value = cc.Guid.ToString() } )
+                .ToList();
+
+            return Ok( contentChannels );
+        }
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannelItems" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "e1f6ad6b-c3f5-4a1a-abc2-46726732daee" )]
+        public IHttpActionResult ContentChannelItemPickerGetContentChannelItems( [FromBody] ContentChannelItemPickerGetContentChannelItemsOptionsBag options )
+        {
+            return Ok( ContentChannelItemPickerGetContentChannelItemsForContentChannel( options.ContentChannelGuid, options.ExcludeContentChannelItems ) );
+        }
+
+        /// <summary>
+        /// Gets the content channel items and content channel information based on a selected content channel item.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>All the data for the selected role, selected type, and all of the content channel items</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ContentChannelItemPickerGetAllForContentChannelItem" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "ef6d055f-38b1-4225-b95f-cfe703f4d425" )]
+        public IHttpActionResult ContentChannelItemPickerGetAllForContentChannelItem( [FromBody] ContentChannelItemPickerGetAllForContentChannelItemOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                List<Guid> excludeContentChannelItems = options.ExcludeContentChannelItems;
+
+                var contentChannelItemService = new Rock.Model.ContentChannelItemService( rockContext );
+                var contentChannelItem = contentChannelItemService.Queryable()
+                    .Where( cc => cc.Guid == options.ContentChannelItemGuid )
+                    .First();
+
+                var contentChannel = contentChannelItem.ContentChannel;
+
+                var contentChannelItems = ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannel.Guid, excludeContentChannelItems, rockContext );
+
+                return Ok( new ContentChannelItemPickerGetAllForContentChannelItemResultsBag
+                {
+                    SelectedContentChannelItem = new ListItemBag { Text = contentChannelItem.Title, Value = contentChannelItem.Guid.ToString() },
+                    SelectedContentChannel = new ListItemBag { Text = contentChannel.Name, Value = contentChannel.Guid.ToString() },
+                    ContentChannelItems = contentChannelItems
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="contentChannelGuid">Load content channel items of this type</param>
+        /// <param name="excludeContentChannelItems">Do not include these items in the result</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        private List<ListItemBag> ContentChannelItemPickerGetContentChannelItemsForContentChannel( Guid contentChannelGuid, List<Guid> excludeContentChannelItems )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannelGuid, excludeContentChannelItems, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="contentChannelGuid">Load content channel items of this type</param>
+        /// <param name="excludeContentChannelItems">Do not include these items in the result</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        private List<ListItemBag> ContentChannelItemPickerGetContentChannelItemsForContentChannel( Guid contentChannelGuid, List<Guid> excludeContentChannelItems, RockContext rockContext )
+        {
+            var contentChannelItemService = new Rock.Model.ContentChannelItemService( rockContext );
+            
+            var contentChannelitems = contentChannelItemService.Queryable()
+                .Where( r =>
+                    r.ContentChannel.Guid == contentChannelGuid &&
+                    !excludeContentChannelItems.Contains( r.Guid ) )
+                .OrderBy( a => a.Title )
+                .Select( r => new ListItemBag { Text = r.Title, Value = r.Guid.ToString() } )
+                .ToList();
+
+            return contentChannelitems;
         }
 
         #endregion
@@ -1910,7 +2452,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "GroupMemberPickerGetGroupMembers" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
-        public IHttpActionResult GroupMemberPickerGetGroupMembers( GroupMemberPickerGetGroupMembersOptionsBag options )
+        public IHttpActionResult GroupMemberPickerGetGroupMembers( [FromBody] GroupMemberPickerGetGroupMembersOptionsBag options )
         {
             Rock.Model.Group group;
 
@@ -1921,7 +2463,7 @@ namespace Rock.Rest.v2
 
             group = new GroupService( new RockContext() ).Get( options.GroupGuid.Value );
 
-            if ( group == null && !group.Members.Any() )
+            if ( group == null || !group.Members.Any() )
             {
                 return NotFound();
             }
@@ -1943,6 +2485,63 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Type Group Picker
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group type group picker for the specified group type.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypeGroupPickerGetGroups" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "f07ac6f8-128c-4881-a4ec-c245b8f10f9e" )]
+        public IHttpActionResult GroupTypeGroupPickerGetGroups( [FromBody] GroupTypeGroupPickerGetGroupsOptionsBag options )
+        {
+            var groups = new List<ListItemBag>();
+            if ( options.GroupTypeGuid != Guid.Empty )
+            {
+                var groupService = new Rock.Model.GroupService( new RockContext() );
+                groups = groupService.Queryable()
+                    .Where( g => g.GroupType.Guid == options.GroupTypeGuid )
+                    .OrderBy( g => g.Name )
+                    .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                    .ToList();
+            }
+
+            return Ok( groups );
+        }
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group type group picker for the specified group type.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypeGroupPickerGetGroupTypeOfGroup" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "984ce064-6073-4b8d-b670-338a3049e13b" )]
+        public IHttpActionResult GroupTypeGroupPickerGetGroupTypeOfGroup( [FromBody] GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag options )
+        {
+            if ( options.GroupGuid != Guid.Empty )
+            {
+                var groupService = new Rock.Model.GroupService( new RockContext() );
+                var group = groupService.Get( options.GroupGuid );
+
+                if (group == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = group.GroupType.Name, Value = group.GroupType.Guid.ToString() } );
+            }
+
+            return NotFound();
+
+        }
+
+        #endregion
+
         #region Group Type Picker
 
         /// <summary>
@@ -1954,7 +2553,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "GroupTypePickerGetGroupTypes" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "b0e07419-0e3c-4235-b5d4-4262fd63e050" )]
-        public IHttpActionResult GroupTypePickerGetGroupTypes( GroupTypePickerGetGroupTypesOptionsBag options )
+        public IHttpActionResult GroupTypePickerGetGroupTypes( [FromBody] GroupTypePickerGetGroupTypesOptionsBag options )
         {
             var groupTypes = new List<GroupTypeCache>();
             var results = new List<ListItemBag>();
@@ -1970,6 +2569,12 @@ namespace Rock.Rest.v2
                     var groupType = GroupTypeCache.Get( groupTypeGuid );
                     groupTypes.Add( groupType );
                 }
+            }
+
+            if (options.OnlyGroupListItems)
+            {
+                // get all group types that have the ShowInGroupList flag set
+                groupTypes = groupTypes.Where( a => a.ShowInGroupList ).ToList();
             }
 
             if ( options.IsSortedByName )
@@ -2170,6 +2775,118 @@ namespace Rock.Rest.v2
 
                 return Ok( groupNameList );
             }
+        }
+
+        #endregion
+
+        #region Group Role Picker
+
+        /// <summary>
+        /// Gets the group types that can be displayed in the group role picker.
+        /// </summary>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupRolePickerGetGroupTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "56891c9b-f714-4083-8252-4c73b358aa02" )]
+        public IHttpActionResult GroupRolePickerGetGroupTypes( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupTypeService = new Rock.Model.GroupTypeService( rockContext );
+
+                // get all group types that have at least one role
+                var groupTypes = groupTypeService.Queryable()
+                    .Where( a => a.Roles.Any() )
+                    .OrderBy( a => a.Name )
+                    .Select(g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                    .ToList();
+
+                return Ok( groupTypes );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group roles that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupRolePickerGetGroupRoles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "968033ab-2596-4b0c-b06e-2c9cf59949c5" )]
+        public IHttpActionResult GroupRolePickerGetGroupRoles( [FromBody] GroupRolePickerGetGroupRolesOptionsBag options )
+        {
+            return Ok( GroupRolePickerGetGroupRolesForGroupType( options.GroupTypeGuid, options.ExcludeGroupRoles ) );
+        }
+
+        /// <summary>
+        /// Gets the group roles and group type information based on a selected group role.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>All the data for the selected role, selected type, and all of the group roles</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupRolePickerGetAllForGroupRole" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "e55374dd-7715-4392-a162-c40f09d25fc9" )]
+        public IHttpActionResult GroupRolePickerGetAllForGroupRole( [FromBody] GroupRolePickerGetAllForGroupRoleOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                List<Guid> excludeGroupRoles = options.ExcludeGroupRoles;
+
+                var groupRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
+                var groupRole = groupRoleService.Queryable()
+                    .Where( r => r.Guid == options.GroupRoleGuid )
+                    .First();
+
+                var groupType = groupRole.GroupType;
+
+                var groupRoles = GroupRolePickerGetGroupRolesForGroupType( groupType.Guid, excludeGroupRoles, rockContext );
+
+                return Ok( new GroupRolePickerGetAllForGroupRoleResultsBag
+                {
+                    SelectedGroupRole = new ListItemBag { Text = groupRole.Name, Value = groupRole.Guid.ToString()},
+                    SelectedGroupType = new ListItemBag { Text = groupType.Name, Value = groupType.Guid.ToString()},
+                    GroupRoles = groupRoles
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group roles that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="groupTypeGuid">Load group roles of this type</param>
+        /// <param name="excludeGroupRoles">Do not include these roles in the result</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        private List<ListItemBag> GroupRolePickerGetGroupRolesForGroupType( Guid groupTypeGuid, List<Guid> excludeGroupRoles )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return GroupRolePickerGetGroupRolesForGroupType( groupTypeGuid, excludeGroupRoles, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group roles that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="groupTypeGuid">Load group roles of this type</param>
+        /// <param name="excludeGroupRoles">Do not include these roles in the result</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        private List<ListItemBag> GroupRolePickerGetGroupRolesForGroupType( Guid groupTypeGuid, List<Guid> excludeGroupRoles, RockContext rockContext )
+        {
+            var groupRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
+
+            var groupRoles = groupRoleService.Queryable()
+                .Where( r =>
+                    r.GroupType.Guid == groupTypeGuid &&
+                    !excludeGroupRoles.Contains( r.Guid ) )
+                .OrderBy( r => r.Name )
+                .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
+                .ToList();
+
+            return groupRoles;
         }
 
         #endregion
@@ -3608,6 +4325,88 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Person Link
+
+        /// <summary>
+        /// Gets the popup HTML for the selected person
+        /// </summary>
+        /// <param name="options">The data needed to get the person's popup HTML</param>
+        /// <returns>A string containing the popup markups</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PersonLinkGetPopupHtml" )]
+        [Rock.SystemGuid.RestActionGuid( "39f44203-9944-4dbd-87ca-d23657e0daa5" )]
+        public IHttpActionResult PersonLinkGetPopupHtml( [FromBody] PersonLinkGetPopupHtmlOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var result = "No Details Available";
+                var html = new StringBuilder();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // Create new service (need ProxyServiceEnabled)
+                var person = new PersonService( rockContext ).Queryable( "ConnectionStatusValue, PhoneNumbers" )
+                    .Where( p => p.Id == options.PersonId )
+                    .FirstOrDefault();
+
+                if ( person != null )
+                {
+                    // If the entity can be secured, ensure the person has access to it.
+                    if ( person is ISecured securedEntity )
+                    {
+                        var isAuthorized = securedEntity.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                            || grant?.IsAccessGranted( person, Authorization.VIEW ) == true;
+
+                        if ( !isAuthorized )
+                        {
+                            return Unauthorized();
+                        }
+                    }
+
+                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                    html.AppendFormat(
+                        "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
+                        Person.GetPersonPhotoImageTag( person, 65, 65 ),
+                        person.FullName,
+                        person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
+
+                    html.Append( "<div class='body'>" );
+
+                    var spouse = person.GetSpouse( rockContext );
+                    if ( spouse != null )
+                    {
+                        html.AppendFormat(
+                            "<div><strong>Spouse</strong> {0}</div>",
+                            spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                    }
+
+                    int? age = person.Age;
+                    if ( age.HasValue )
+                    {
+                        html.AppendFormat( "<div><strong>Age</strong> {0}</div>", age );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( VirtualPathUtility.ToAbsolute( "~/" ) ) );
+                    }
+
+                    foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false && n.NumberTypeValueId.HasValue ).OrderBy( n => n.NumberTypeValue.Order ) )
+                    {
+                        html.AppendFormat( "<div><strong>{0}</strong> {1}</div>", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
+                    }
+
+                    html.Append( "</div>" );
+
+                    result = html.ToString();
+                }
+
+                return Ok( result );
+            }
+        }
+
+        #endregion
+
         #region Person Picker
 
         /// <summary>
@@ -3741,6 +4540,44 @@ namespace Rock.Rest.v2
                 var items = clientService.GetCategorizedTreeItems( queryOptions );
 
                 return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Reminder Type Picker
+
+        /// <summary>
+        /// Gets the reminder types that can be displayed in the reminder type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the reminder types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReminderTypePickerGetReminderTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "c1c338d2-6364-4217-81ec-7fc34e9218b6" )]
+        public IHttpActionResult ReminderTypePickerGetReminderTypes( [FromBody] ReminderTypePickerGetReminderTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderTypesQuery = new ReminderTypeService( rockContext ).Queryable();
+
+                if ( options.EntityTypeGuid != null )
+                {
+                    reminderTypesQuery = reminderTypesQuery.Where(t => t.EntityType.Guid == options.EntityTypeGuid );
+                }
+
+                var orderedReminderTypes = reminderTypesQuery
+                    .OrderBy( t => t.EntityType.FriendlyName )
+                    .ThenBy( t => t.Name )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.EntityType.FriendlyName + " - " + t.Name
+                    } )
+                    .ToList();
+
+                return Ok( orderedReminderTypes );
             }
         }
 

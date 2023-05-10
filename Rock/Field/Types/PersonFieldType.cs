@@ -21,11 +21,13 @@ using System.Linq;
 using System.Linq.Expressions;
 #if WEBFORMS
 using System.Web.UI;
+using OpenXmlPowerTools;
 #endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,7 +37,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a person. Stored as PersonAlias.Guid
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PERSON )]
     public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType, IEntityReferenceFieldType
     {
@@ -65,7 +67,6 @@ namespace Rock.Field.Types
                     .FirstOrDefault();
                 }
             }
-
             return formattedValue;
         }
 
@@ -93,6 +94,42 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( Guid.TryParse( privateValue, out Guid guid ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var personAlias = new PersonAliasService( rockContext )
+                        .GetNoTracking( guid );
+                    if ( personAlias != null )
+                    {
+                        return new ListItemBag()
+                        {
+                            Value = personAlias.Guid.ToString(),
+                            Text = personAlias.Person.NickName + " " + personAlias.Person.LastName,
+                        }.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var personValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( personValue != null )
+            {
+                return personValue.Value;
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 
@@ -182,7 +219,7 @@ namespace Rock.Field.Types
             }
 
             var textValue = GetTextValue( privateValue, privateConfigurationValues );
-            var condensedTextValue = textValue.Truncate( 100 );
+            var condensedTextValue = textValue.Truncate( CondensedTruncateLength );
 
             return new PersistedValues
             {

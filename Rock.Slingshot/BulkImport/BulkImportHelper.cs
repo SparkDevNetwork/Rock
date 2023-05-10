@@ -1844,7 +1844,7 @@ WHERE gta.GroupTypeId IS NULL" );
                         var familyGroup = new Group
                         {
                             GroupTypeId = familyGroupTypeId,
-                            Name = string.IsNullOrEmpty( personImport.FamilyName ) ? personImport.LastName : personImport.FamilyName,
+                            Name = string.IsNullOrEmpty( personImport.FamilyName ) ? $"{personImport.LastName} Family" : personImport.FamilyName,
                             CampusId = personImport.CampusId,
                             ForeignId = personImport.FamilyForeignId,
                             ForeignKey = foreignSystemKey,

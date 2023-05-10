@@ -24,11 +24,14 @@ using System.Data.Entity;
 #endif
 using System.Linq;
 
+using OpenXmlPowerTools;
+
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Utility;
@@ -317,7 +320,6 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>The view model that represents the request.</returns>
         private RequestViewModel GetRequestViewModel( ConnectionRequest request, RockContext rockContext )
         {
-            var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var connectionRequestService = new ConnectionRequestService( rockContext );
 
             var mergeFields = RequestContext.GetCommonMergeFields();
@@ -356,7 +358,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             var isEditable = request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            var activitesViewModel = activities.ToList()
+            var activitiesViewModel = activities.ToList()
             .Select( a => new ActivityViewModel
             {
                 ActivityTypeGuid = a.ConnectionActivityType.Guid,
@@ -370,7 +372,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 {
                     FirstName = a.ConnectorPersonAlias.Person.FirstName,
                     LastName = a.ConnectorPersonAlias.Person.LastName,
-                    PhotoUrl = $"{baseUrl}{a.ConnectorPersonAlias.Person.PhotoUrl}",
+                    PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
                 }
             } ).ToList();
 
@@ -394,7 +396,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 PersonEmail = request.PersonAlias.Person.Email,
                 PersonMobileNumber = request.PersonAlias.Person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.NumberFormatted,
                 PersonConnectionStatusName = request.PersonAlias.Person.ConnectionStatusValue?.Value,
-                PersonProfilePhotoUrl = $"{baseUrl}{request.PersonAlias.Person.PhotoUrl}",
+                PersonProfilePhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( request.PersonAlias.Person.PhotoUrl ),
                 PlacementGroupGuid = request.AssignedGroup?.Guid,
                 PlacementGroupName = request.AssignedGroup?.Name,
                 RequestDate = request.CreatedDateTime?.ToRockDateTimeOffset(),
@@ -402,7 +404,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 StatusGuid = request.ConnectionStatus.Guid,
                 StatusName = request.ConnectionStatus.Name,
                 WorkflowTypes = connectionWorkflows,
-                Activities = activitesViewModel
+                Activities = activitiesViewModel
             };
 
             if ( isEditable )
@@ -613,6 +615,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
         {
             return connectionType.ConnectionStatuses
                 .OrderBy( s => s.Order )
+                .OrderByDescending( s => s.IsDefault )
+                .ThenBy( s => s.Name )
                 .Select( s => new ListItemBag
                 {
                     Value = s.Guid.ToString(),

@@ -17,7 +17,7 @@
 
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "./rockField";
-import Alert from "./alert.obs";
+import NotificationBox from "./notificationBox.obs";
 import DropDownList from "./dropDownList";
 import StaticFormControl from "./staticFormControl";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
@@ -34,7 +34,7 @@ export default defineComponent({
     name: "FieldTypeEditor",
 
     components: {
-        Alert,
+        NotificationBox,
         DropDownList,
         RockField,
         StaticFormControl
@@ -202,7 +202,6 @@ export default defineComponent({
             http.post<FieldTypeEditorUpdateAttributeConfigurationResultBag>("/api/v2/Controls/FieldTypeEditorUpdateAttributeConfiguration", null, update)
                 .then(result => {
                     resetToDefaults();
-                    console.debug("got configuration", result.data);
 
                     if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationValues) {
                         fieldErrorMessage.value = "";
@@ -224,7 +223,6 @@ export default defineComponent({
 
         /** Called when the default value has been changed by the screen control. */
         const onDefaultValueUpdate = (value: string): void => {
-            console.debug("default value updated");
             defaultValue.value = value;
             updateModelValue();
         };
@@ -234,7 +232,6 @@ export default defineComponent({
          * configuration properties be updated from the server.
          */
         const onUpdateConfiguration = (): void => {
-            console.debug("onUpdateConfiguration");
             updateFieldConfiguration(defaultValue.value ?? "");
         };
 
@@ -309,11 +306,11 @@ export default defineComponent({
 <div>
     <template v-if="isFieldTypesReady">
         <StaticFormControl v-if="isFieldTypeReadOnly" label="Field Type" v-model="fieldTypeName" />
-        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" />
+        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" enhanceForLongLists />
     </template>
-    <Alert v-if="fieldErrorMessage" alertType="warning">
+    <NotificationBox v-if="fieldErrorMessage" alertType="warning">
         {{ fieldErrorMessage }}
-    </Alert>
+    </NotificationBox>
     <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
     <RockField v-if="hasDefaultValue" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode />
 </div>

@@ -200,7 +200,7 @@ namespace Rock.Model
                 else
                 {
                     // Add the registrant cost to the cost summary
-                    costSummary.Cost = context.RegistrationSettings.PerRegistrantCost;
+                    costSummary.Cost = registration.RegistrationGuid == null ? context.RegistrationSettings.PerRegistrantCost : registrant.Cost;
 
                     // Default the DiscountedCost to the same as the actual cost
                     costSummary.DiscountedCost = costSummary.Cost;

@@ -220,7 +220,7 @@
                                             <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                             <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                             <Rock:RockTemplateField HeaderText="Inherited">
-                                                <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
+                                                <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank' rel='noopener noreferrer'><%# Eval("GroupType") %></a>)</ItemTemplate>
                                             </Rock:RockTemplateField>
                                         </Columns>
                                     </Rock:Grid>
@@ -251,6 +251,7 @@
                                     <Rock:Grid ID="gGroupTypeGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Group Requirements for Group Type">
                                         <Columns>
                                             <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
+                                            <Rock:RockBoundField DataField="GroupRole.Name" HeaderText="Role" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>

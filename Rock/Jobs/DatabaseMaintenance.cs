@@ -38,18 +38,104 @@ namespace Rock.Jobs
     [DisplayName( "Database Maintenance" )]
     [Description( "Performs routine SQL Server database maintenance." )]
 
-    [BooleanField( "Run Integrity Check", "Determines if an integrity check should be performed.  (Integrity checks are never run on Azure SQL databases, because Azure manages its own data integrity.)", true, order: 0 )]
-    [BooleanField( "Run Index Rebuild", "Determines if indexes should be rebuilt.", true, order: 1 )]
-    [BooleanField( "Run Statistics Update", "Determines if the statistics should be updated.", true, order: 2 )]
-    [TextField( "Alert Email", "Email address to send alerts to errors occur (multiple address delimited with comma).", true, order: 3 )]
+    #region Job Attributes
 
-    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each step to complete.", false, 900, "Advanced", 4, "CommandTimeout" )]
-    [IntegerField( "Minimum Index Page Count", "The minimum size in pages that an index must be before it's considered for being re-built. Default value is 100.", false, 100, category: "Advanced", order: 5 )]
-    [IntegerField( "Minimum Fragmentation Percentage", "The minimum fragmentation percentage for an index to be considered for re-indexing. If the fragmentation is below is amount nothing will be done. Default value is 10%.", false, 10, category: "Advanced", order: 6 )]
-    [IntegerField( "Rebuild Threshold Percentage", "The threshold percentage where a REBUILD will be completed instead of a REORGANIZE. Default value is 30%.", false, 30, category: "Advanced", order: 7 )]
-    [BooleanField( "Use ONLINE Index Rebuild", "Use the ONLINE option when rebuilding indexes. NOTE: This is only supported on SQL Enterprise and Azure SQL Database.", false, category: "Advanced", order: 8 )]
+    [BooleanField(
+        "Run Integrity Check",
+        Key = AttributeKey.RunIntegrityCheck,
+        Description ="Determines if an integrity check should be performed. (Integrity checks are never run on Azure SQL databases, because Azure manages its own data integrity.)",
+        DefaultBooleanValue = true,
+        Order = 0 )]
+
+    [BooleanField(
+        "Run Index Rebuild",
+        Key = AttributeKey.RunIndexRebuild,
+        Description = "Determines if indexes should be rebuilt.",
+        DefaultBooleanValue = true,
+        Order = 1 )]
+
+    [BooleanField(
+        "Run Statistics Update",
+        Key = AttributeKey.RunStatisticsUpdate,
+        Description = "Determines if the statistics should be updated.",
+        DefaultBooleanValue = true,
+        Order = 2 )]
+
+    [TextField(
+        "Alert Email",
+        Key = AttributeKey.AlertEmail,
+        Description = "Email address to send alerts to errors occur (multiple address delimited with comma).",
+        IsRequired = true,
+        Order = 3 )]
+
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for each step to complete.",
+        IsRequired = false,
+        DefaultIntegerValue = 900,
+        Category = "Advanced",
+        Order = 4 )]
+
+    [IntegerField(
+        "Minimum Index Page Count",
+        Key = AttributeKey.MinimumIndexPageCount,
+        Description = "The minimum size in pages that an index must be before it's considered for being re-built. Default value is 100.",
+        IsRequired = false,
+        DefaultIntegerValue = 100,
+        Category = "Advanced",
+        Order = 5 )]
+
+    [IntegerField(
+        "Minimum Fragmentation Percentage",
+        Key = AttributeKey.MinimumFragmentationPercentage,
+        Description = "The minimum fragmentation percentage for an index to be considered for re-indexing. If the fragmentation is below is amount nothing will be done. Default value is 10%.",
+        IsRequired = false,
+        DefaultIntegerValue = 10,
+        Category = "Advanced",
+        Order = 6 )]
+
+    [IntegerField(
+        "Rebuild Threshold Percentage",
+        Key = AttributeKey.RebuildThresholdPercentage,
+        Description = "The threshold percentage where a REBUILD will be completed instead of a REORGANIZE. Default value is 30%.",
+        IsRequired = false,
+        DefaultIntegerValue = 30,
+        Category = "Advanced",
+        Order = 7 )]
+
+    [BooleanField(
+        "Use ONLINE Index Rebuild",
+        Key = AttributeKey.UseOnlineIndexRebuild,
+        Description = "Use the ONLINE option when rebuilding indexes. NOTE: This is only supported on SQL Enterprise and Azure SQL Database.",
+        DefaultBooleanValue = false,
+        Category = "Advanced",
+        Order = 8 )]
+
+    #endregion
+
     public class DatabaseMaintenance : RockJob
     {
+        #region Keys
+
+        /// <summary>
+        /// Keys to use for job Attributes.
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string RunIntegrityCheck = "RunIntegrityCheck";
+            public const string RunIndexRebuild = "RunIndexRebuild";
+            public const string RunStatisticsUpdate = "RunStatisticsUpdate";
+            public const string AlertEmail = "AlertEmail";
+            public const string CommandTimeout = "CommandTimeout";
+            public const string MinimumIndexPageCount = "MinimumIndexPageCount";
+            public const string MinimumFragmentationPercentage = "MinimumFragmentationPercentage";
+            public const string RebuildThresholdPercentage = "RebuildThresholdPercentage";
+            public const string UseOnlineIndexRebuild = "UseOnlineIndexRebuild";
+        }
+
+        #endregion
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -272,7 +358,7 @@ namespace Rock.Jobs
                        || RockInstanceConfig.Database.Edition.Contains( "Enterprise" ) ) )
             {
                 // Online index rebuild is only available for Azure SQL or SQL Enterprise.
-                RockLogger.Log.Information( RockLogDomains.Jobs, "Database Maintenance - Online Index Rebuild option is selected but not available for the current database platform." );
+                Log( RockLogLevel.Info, "Online Index Rebuild option is selected but not available for the current database platform." );
 
                 useONLINEIndexRebuild = false;
             }

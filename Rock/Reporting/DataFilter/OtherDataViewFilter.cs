@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -208,8 +208,8 @@ namespace Rock.Reporting.DataFilter
             int? dataViewId = dataViewItemPicker.SelectedValueAsId();
             if ( dataViewId.HasValue )
             {
-                int? persistedScheduleIntervalMinutes = new DataViewService( new RockContext() ).GetSelect( dataViewId.Value, s => s.PersistedScheduleIntervalMinutes );
-                cbUsePersisted.Visible = persistedScheduleIntervalMinutes.HasValue;
+                var dataView = new DataViewService( new RockContext() ).GetNoTracking( dataViewId.Value );
+                cbUsePersisted.Visible = dataView.IsPersisted();
             }
 
             cbUsePersisted.RenderControl( writer );

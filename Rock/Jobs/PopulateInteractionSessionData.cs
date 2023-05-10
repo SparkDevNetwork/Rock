@@ -191,7 +191,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="settings">The settings.</param>
         /// <returns>System.String.</returns>
-        internal string ProcessInteractionCountAndDuration( PopulateInteractionSessionDataJobSettings settings )
+        private string ProcessInteractionCountAndDuration( PopulateInteractionSessionDataJobSettings settings )
         {
             // This portion of the job looks for interaction sessions that need to have their interaction count and
             // duration properties updated. This de-normalization occurs to increase performance of the analytics.
@@ -247,6 +247,14 @@ namespace Rock.Jobs
 
                         foreach ( var interactionSession in interactionSessions )
                         {
+                            // If a Guid.Empty value exists in the database, subsequent attempts to update the record
+                            // will cause a validation error. In this case, flag the invalid record so the source can be tracked and corrected.
+                            if ( interactionSession.Guid == Guid.Empty )
+                            {
+                                _errors.Add( $"Interaction Session with invalid Guid ignored. [Id={interactionSession.Id}]" );
+                                continue;
+                            }
+
                             // Special Query to only get what we need to know.
                             // This could cause a lot of database calls, but it is consistently just a few milliseconds.
                             // This seems to increase overall performance vs Eager loading all the interactions of the session
@@ -395,6 +403,11 @@ namespace Rock.Jobs
             // The job setting 'Number of Records to Process' tells us the max number of IP lookups to do at the provider
             // per job run. This will represent more than that number of sessions as many sessions have the
             // same IP address. In testing, after running a few times, processing 5,000 address can update over 100,000 sessions.
+
+            if ( settings.IpAddressLookupIsDisabled )
+            {
+                return $"<i class='fa fa-circle text-warn'></i> IP Address lookup is disabled.";
+            }
 
             var stopwatch = Stopwatch.StartNew();
 
@@ -662,14 +675,20 @@ namespace Rock.Jobs
         }
         private void LogDebugInfo( string taskName, string message )
         {
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"{nameof( PopulateInteractionSessionData )} ({taskName}): {message}" );
+            Log( RockLogLevel.Debug, $"({taskName}): {message}" );
         }
 
         internal class PopulateInteractionSessionDataJobSettings
         {
             public DateTime? LastSuccessfulJobRunDateTime { get; set; }
             public DateTime? LastNullDurationLastCalculatedDateTimeUpdateDateTime { get; set; }
-            public int? MaxRecordsToProcessPerRun { get; set; }
+            public int? MaxRecordsToProcessPerRun { get; set; } 
+
+            /// <summary>
+            /// A flag indicating if the IP Address Lookup process will attempt to resolve IP addresses
+            /// in addition to recalculating interaction session data.
+            /// </summary>
+            public bool IpAddressLookupIsDisabled { get; set; }
         }
 
         /// <summary>

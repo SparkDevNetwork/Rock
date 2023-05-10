@@ -36,7 +36,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CATEGORIES )]
-    public class CategoriesFieldType : CategoryFieldType, IEntityReferenceFieldType
+    public class CategoriesFieldType : CategoryFieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType
     {
         #region Formatting
 
@@ -133,6 +133,16 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<Category>().Value, nameof( Category.Name ) )
             };
+        }
+
+        #endregion
+
+        #region ISplitMultiValueFieldType
+
+        /// <inheritdoc/>
+        public ICollection<string> SplitMultipleValues( string privateValue )
+        {
+            return privateValue.Split( ',' );
         }
 
         #endregion

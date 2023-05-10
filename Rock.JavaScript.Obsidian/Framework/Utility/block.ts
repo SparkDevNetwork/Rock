@@ -16,6 +16,7 @@
 //
 
 import { BlockEvent, InvokeBlockActionFunc, SecurityGrant } from "@Obsidian/Types/Utility/block";
+import { IBlockPersonPreferencesProvider, IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
 import { ExtendedRef } from "@Obsidian/Types/Utility/component";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { inject, provide, Ref, ref, watch } from "vue";
@@ -128,8 +129,8 @@ type ChildKeys<T extends Record<string, unknown>, PropertyName extends string> =
 type ValidPropertiesBox<PropertyName extends string> = {
     validProperties?: string[] | null;
 } & {
-    [P in PropertyName]?: Record<string, unknown> | null;
-};
+        [P in PropertyName]?: Record<string, unknown> | null;
+    };
 
 /**
  * Sets the a value for a custom settings box. This will set the value and then
@@ -163,7 +164,7 @@ export function setCustomSettingsBoxValue<T extends ValidPropertiesBox<"settings
  * @param propertyName The name of the property on the bag to set.
  * @param value The new value of the property.
  */
- export function setPropertiesBoxValue<T extends ValidPropertiesBox<"bag">, S extends NonNullable<T["bag"]>, K extends ChildKeys<T, "bag">>(box: T, propertyName: K, value: S[K]): void {
+export function setPropertiesBoxValue<T extends ValidPropertiesBox<"bag">, S extends NonNullable<T["bag"]>, K extends ChildKeys<T, "bag">>(box: T, propertyName: K, value: S[K]): void {
     if (!box.bag) {
         box.bag = {} as Record<string, unknown>;
     }
@@ -397,6 +398,67 @@ export function provideBlockGuid(blockGuid: string): void {
  */
 export function useBlockGuid(): Guid | undefined {
     return inject<Guid>(blockGuidSymbol);
+}
+
+// #endregion
+
+// #region Person Preferences
+
+const blockPreferenceProviderSymbol = Symbol();
+
+/** An no-op implementation of {@link IPersonPreferenceCollection}. */
+const emptyPreferences: IPersonPreferenceCollection = {
+    getValue(): string {
+        return "";
+    },
+    setValue(): void {
+        // Intentionally empty.
+    },
+    getKeys(): string[] {
+        return [];
+    },
+    containsKey(): boolean {
+        return false;
+    },
+    save(): Promise<void> {
+        return Promise.resolve();
+    },
+    withPrefix(): IPersonPreferenceCollection {
+        return emptyPreferences;
+    }
+};
+
+const emptyPreferenceProvider: IBlockPersonPreferencesProvider = {
+    blockPreferences: emptyPreferences,
+    getGlobalPreferences() {
+        return Promise.resolve(emptyPreferences);
+    },
+    getEntityPreferences() {
+        return Promise.resolve(emptyPreferences);
+    }
+};
+
+/**
+ * Provides the person preferences provider that will be used by components
+ * to access the person preferences associated with their block.
+ *
+ * @private This is an internal method and should not be used by plugins.
+ *
+ * @param blockGuid The unique identifier of the block.
+ */
+export function providePersonPreferences(provider: IBlockPersonPreferencesProvider): void {
+    provide(blockPreferenceProviderSymbol, provider);
+}
+
+/**
+ * Gets the person preference provider that can be used to access block
+ * preferences as well as other preferences.
+ *
+ * @returns An object that implements {@link IBlockPersonPreferencesProvider}.
+ */
+export function usePersonPreferences(): IBlockPersonPreferencesProvider {
+    return inject<IBlockPersonPreferencesProvider>(blockPreferenceProviderSymbol)
+        ?? emptyPreferenceProvider;
 }
 
 // #endregion

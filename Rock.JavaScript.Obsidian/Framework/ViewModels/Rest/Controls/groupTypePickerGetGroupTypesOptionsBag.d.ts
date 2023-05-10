@@ -33,4 +33,7 @@ export type GroupTypePickerGetGroupTypesOptionsBag = {
 
     /** Whether the results are sorted by name or order */
     isSortedByName: boolean;
+
+    /** Whether or not to filter out the group types that aren't flagged to be on the group list */
+    onlyGroupListItems: boolean;
 };

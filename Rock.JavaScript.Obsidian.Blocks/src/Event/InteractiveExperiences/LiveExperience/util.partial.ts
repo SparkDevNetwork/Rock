@@ -18,7 +18,7 @@
 import { ITopic } from "@Obsidian/Utility/realTime";
 import { ActionRenderConfigurationBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/actionRenderConfigurationBag";
 import { PropType } from "vue";
-import { IParticipantTopic } from "../types";
+import { IParticipantTopic } from "../types.partial";
 
 type ActionPropsType = {
     /** The identifier of the event. This should be used when sending responses. */

@@ -506,7 +506,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         private void ShowPersonImage()
         {
-            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-profile"">";
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400 )}&Style=icon"" alt class=""img-profile"">";
         }
 
         private void ShowProtectionLevel()
@@ -746,6 +746,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             lEmailButton.Text = $@"<a href='{emailLink}' class='btn btn-default btn-go btn-square stretched-link' title='{emailButtonTitle}' aria-label='{emailButtonTitle}'><i class='fa fa-envelope'></i></a><span>Email</span>";
         }
 
+        /// <summary>
+        /// Creates an "Actions" menu with workflow and/or custom actions, as specified in the block settings.
+        /// </summary>
         protected void CreateActionMenu()
         {
             hlVCard.NavigateUrl = ResolveUrl( string.Format( "~/api/People/VCard/{0}", Person.Guid ) );

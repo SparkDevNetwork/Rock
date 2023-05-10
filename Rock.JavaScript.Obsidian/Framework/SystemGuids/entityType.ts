@@ -205,6 +205,10 @@ export const EntityType = {
     ContentCollection: "AD7B9219-1B47-4164-9DD1-90F0AF588CB8",
     /** The guid for the Rock.Model.ContentCollectionSource entity */
     ContentCollectionSource: "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733",
+    /** The guid for the Rock.Model.ContentTopic entity */
+    ContentTopic: "CD4BE244-147E-4A90-9137-B35FC35B5A52",
+    /** The guid for the Rock.Model.ContentTopicDomain entity */
+    ContentTopicDomain: "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51",
     /** The EntityType Guid for Rock.Model.DataViewFilter  */
     DataViewFilter: "507E646B-9943-4DD6-8FB7-8BA9F95E6BD0",
     /** The guid for the Rock.Model.DataView entity. */
@@ -409,6 +413,8 @@ export const EntityType = {
     MobileCmsHeroBlockType: "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.StructuredContentView */
     MobileCmsStructuredcontentviewBlockType: "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationEntry */
+    MobileCommunicationCommunicationentryBlockType: "9A952F9F-F619-4063-B1BB-CFB2E6983C01",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView */
     MobileCommunicationCommunicationviewBlockType: "4AF5FCEF-CBF6-486B-A04D-920E31356B7F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList. */
@@ -541,6 +547,8 @@ export const EntityType = {
     PersonNoteAdded: "C4AB0F1B-E036-4D14-BFB7-30BAF12D648A",
     /** The GUID for the Rock.Follow.Event.PersonPrayerRequest entity */
     PersonPrayerRequest: "DAE05FAE-A26F-465A-836C-BAA0EFA1267B",
+    /** The GUID for the Rock.Model.PersonPreference entity */
+    PersonPreference: "FDCF766C-F36B-403B-89F3-7030DA65507E",
     /** The EntityType Guid for Rock.Model.PersonPreviousName  */
     PersonPreviousName: "80AC80E1-F769-4E34-9937-E2FEEF2B60EE",
     /** The EntityType Guid for Rock.Model.PersonScheduleExclusion  */

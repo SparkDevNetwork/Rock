@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Rock.Tests.Shared
@@ -17,14 +19,27 @@ namespace Rock.Tests.Shared
                 throw new ArgumentException( "No expected string provided.", "expectedString" );
             }
 
-            var file = System.IO.File.ReadAllText( filePath );
-            var fileContainsExpectedString = file.Contains( expectedString );
-
-            if ( !fileContainsExpectedString )
+            // Try to read the contents of the file, retrying in case the file is locked by another test executing in parallel.
+            const int retryTotal = 9;
+            const int retryDelay = 1000;
+            for ( int i = 1; i <= retryTotal; i++ )
             {
-                throw new AssertFailedException( $"File {filePath} did not contain '{expectedString}'." );
-            }
+                try
+                {
+                    var file = System.IO.File.ReadAllText( filePath );
+                    var fileContainsExpectedString = file.Contains( expectedString );
 
+                    if ( !fileContainsExpectedString )
+                    {
+                        throw new AssertFailedException( $"File {filePath} did not contain '{expectedString}'." );
+                    }
+                    break;
+                }
+                catch ( IOException ) when ( i <= retryTotal )
+                {
+                    Thread.Sleep( retryDelay );
+                }
+            }
         }
 
         public static void FileDoesNotContains( this Assert assert, string filePath, string excludedString )

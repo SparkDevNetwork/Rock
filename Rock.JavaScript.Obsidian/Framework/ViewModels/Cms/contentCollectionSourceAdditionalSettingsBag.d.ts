@@ -22,6 +22,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
 
 /**
  * The settings that describe additional details about a content collection
@@ -33,4 +34,10 @@ export type ContentCollectionSourceAdditionalSettingsBag = {
      * for indexing from this source.
      */
     attributeGuids?: Guid[] | null;
+
+    /**
+     * Gets or sets the custom fields that when indexing content for
+     * this source.
+     */
+    customFields?: ContentCollectionCustomFieldBag[] | null;
 };

@@ -362,6 +362,8 @@ export const Attribute = {
     StreakAchievementTimeSpanInDays: "80030537-ED8E-41BA-BF61-AF242B9073CC",
     /** System Communication List/Detail Page configuration setting. */
     SystemCommunicationListDetailPage: "9880C186-F079-4113-99B6-EF53AB4FE92D",
+    /** The system security settings. */
+    SystemSecuritySettings: "450EF9DC-66F6-43A3-BE22-9CB8B1C42477",
     /** The Campus workflow action attribute guid for PersonGetCampusTeamMember */
     WorkflowActionPersonGetCampusTeamMemberCampus: "B07F920E-8450-4D1F-985D-6241E4F5E5CB",
     /** The Campus Role workflow action attribute guid for PersonGetCampusTeamMember */

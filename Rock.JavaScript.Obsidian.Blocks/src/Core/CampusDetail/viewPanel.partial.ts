@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
@@ -42,7 +42,7 @@ export default defineComponent({
     },
 
     components: {
-        Alert,
+        NotificationBox,
         AttributeValuesContainer,
         ValueDetailList
     },
@@ -166,9 +166,9 @@ export default defineComponent({
 
     template: `
 <fieldset>
-    <Alert v-if="isSystem" alertType="info">
+    <NotificationBox v-if="isSystem" alertType="info">
         <strong>Note</strong> Because this campus is used by Rock, editing is not enabled.
-    </Alert>
+    </NotificationBox>
 
     <ValueDetailList :modelValue="topValues" />
 

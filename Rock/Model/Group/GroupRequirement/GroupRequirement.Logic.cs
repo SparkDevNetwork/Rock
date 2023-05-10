@@ -15,10 +15,10 @@
 // </copyright>
 //
 
+using Rock.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Data;
 
 namespace Rock.Model
 {
@@ -80,7 +80,7 @@ namespace Rock.Model
                 var result = personQry.Select( p => p.Id ).ToList().Select( a =>
                      new PersonGroupRequirementStatus
                      {
-                         PersonId = Id,
+                         PersonId = a,
                          GroupRequirement = this,
                          MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
                      } );
@@ -88,9 +88,28 @@ namespace Rock.Model
                 return result;
             }
 
+            // Create a list of statuses so that not applicable status results can be included.
+            List<PersonGroupRequirementStatus> statusResults = new List<PersonGroupRequirementStatus>();
+
+            // If this GroupRequirement is not for 'All' age classifications, then calculate those statuses.
             if ( this.AppliesToAgeClassification != AppliesToAgeClassification.All )
             {
-                // If the requirement's Applies To Age Classification is not "All", filter the person query to the corresponding Age Classification.
+                // If the person's age classification we are comparing is not the one applied to this requirement,
+                // then mark that person's requirement status as 'Not Applicable'.
+                var notApplicablePersonQry = personQry.Where( p => ( int ) p.AgeClassification != ( int ) this.AppliesToAgeClassification );
+                var results = notApplicablePersonQry.Select( p => p.Id ).ToList().Select( a =>
+                new PersonGroupRequirementStatus
+                {
+                    PersonId = a,
+                    GroupRequirement = this,
+                    MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
+                } );
+
+                if ( results != null )
+                {
+                    statusResults.AddRange( results );
+                }
+
                 personQry = personQry.Where( p => ( int ) p.AgeClassification == ( int ) this.AppliesToAgeClassification );
             }
 
@@ -102,20 +121,26 @@ namespace Rock.Model
                 var appliesToDataViewWhereExpression = this.AppliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
                 var appliesToDataViewPersonIds = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id );
 
-                // If the dataview does not contain anyone in the person query, return a "not applicable" status.
-                if ( !personQry.Where( p => appliesToDataViewPersonIds.Contains( p.Id ) ).Any() )
+                // If the dataview does not contain anyone in the person query, give the member a "not applicable" status.
+                var notApplicablePersonQry = personQry.Where( p => !appliesToDataViewPersonIds.Contains( p.Id ) );
                 {
-                    var result = personQry.Select( p => p.Id ).ToList().Select( a =>
+                    var results = notApplicablePersonQry.Select( p => p.Id ).ToList().Select( a =>
                           new PersonGroupRequirementStatus
                           {
-                              PersonId = Id,
+                              PersonId = a,
                               GroupRequirement = this,
                               MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
                           } );
 
-                    return result;
+                    if ( results != null )
+                    {
+                        statusResults.AddRange( results );
+                    }
+
+                    personQry = personQry.Where( p => appliesToDataViewPersonIds.Contains( p.Id ) );
                 }
             }
+
             var attributeValueService = new AttributeValueService( rockContext );
 
             if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
@@ -145,11 +170,14 @@ namespace Rock.Model
                         var result = personWithRequirementsList.Select( a =>
                         {
                             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                            
+                            // Get the nullable group member requirement ID based on the PersonId, GroupRequirementId, GroupId, and GroupRoleId.
+                            int? groupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( a.PersonId, this.Id, groupId, groupRoleId );
                             var personGroupRequirementStatus = new PersonGroupRequirementStatus
                             {
                                 PersonId = a.PersonId,
                                 GroupRequirement = this,
-                                GroupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( a.PersonId, this.Id, groupId, groupRoleId ),
+                                GroupMemberRequirementId = groupMemberRequirementId,
                             };
 
                             var hasWarning = warningDataViewPersonIdList?.Contains( a.PersonId ) == true;
@@ -187,13 +215,15 @@ namespace Rock.Model
                                 }
                             }
 
-                            // Get the nullable group member requirement ID based on the PersonId, GroupRequirementId, GroupId, and GroupRoleId.
-                            personGroupRequirementStatus.GroupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( personGroupRequirementStatus.PersonId, this.Id, groupId, groupRoleId );
-
                             return personGroupRequirementStatus;
                         } );
 
-                        return result;
+                        if ( result != null )
+                        {
+                            statusResults.AddRange( result );
+                        }
+
+                        return statusResults;
                     }
                 }
                 else
@@ -213,7 +243,12 @@ namespace Rock.Model
                         return personGroupRequirementStatus;
                     } );
 
-                    return result;
+                    if ( result != null )
+                    {
+                        statusResults.AddRange( result );
+                    }
+
+                    return statusResults;
                 }
             }
             else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
@@ -271,7 +306,12 @@ namespace Rock.Model
                             return personGroupRequirementStatus;
                         } );
 
-                        return result;
+                        if ( result != null )
+                        {
+                            statusResults.AddRange( result );
+                        }
+
+                        return statusResults;
                     }
                 }
                 catch ( Exception ex )
@@ -291,7 +331,12 @@ namespace Rock.Model
                         CalculationException = ex
                     } );
 
-                    return result;
+                    if ( result != null )
+                    {
+                        statusResults.AddRange( result );
+                    }
+
+                    return statusResults;
                 }
             }
             else
@@ -322,7 +367,12 @@ namespace Rock.Model
                     };
                 } );
 
-                return result;
+                if ( result != null )
+                {
+                    statusResults.AddRange( result );
+                }
+
+                return statusResults;
             }
 
             // This shouldn't happen, since a requirement must have a dataview, SQL or manual origin.

@@ -30,6 +30,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
+using Rock.Enums.Crm;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -109,6 +110,26 @@ namespace Rock.Model
                 return FormatFullName( NickName, LastName, SuffixValueId, this.RecordTypeValueId );
             }
 
+            private set
+            {
+                // intentionally blank
+            }
+        }
+
+        /// <summary>
+        /// Gets the initials for the person based on the nick name and last name.
+        /// </summary>
+        /// /// <value>
+        /// A <see cref="System.String"/> representing the initials of a Person using the NickName and LastName.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string Initials
+        {
+            get
+            {
+                return $"{NickName.Truncate( 1, false )}{LastName.Truncate( 1, false )}";
+            }
             private set
             {
                 // intentionally blank
@@ -227,12 +248,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Full Name of the Person using the Title FirstName LastName format.
+        /// Gets the Full Name of the Person using the Title FirstName LastName Suffix format.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
+        /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName Suffix format.
         /// </value>
         [NotMapped]
+        [LavaVisible]
         public virtual string FullNameFormal
         {
             get
@@ -244,7 +266,7 @@ namespace Rock.Model
 
                 var fullName = new StringBuilder();
 
-                fullName.AppendFormat( "{0} {1}", FirstName, LastName );
+                fullName.AppendFormat( "{0} {1} {2}", TitleValue, FirstName, LastName );
 
                 if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
                 {
@@ -475,27 +497,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Person's age.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
-        /// </value>
-        [DataMember]
-        [NotMapped]
-        public virtual int? Age
-        {
-            get
-            {
-                return Person.GetAge( this.BirthDate, this.DeceasedDate );
-            }
-
-            private set
-            {
-                // intentionally blank
-            }
-        }
-
-        /// <summary>
         /// Gets the age of the person in years. For infants under the age of 1, the value returned would be 0.
         /// To print the age as a string use <see cref="FormatAge(bool)"/> 
         /// </summary>
@@ -552,7 +553,12 @@ namespace Rock.Model
         /// <returns></returns>
         public string FormatAge( bool condensed = false )
         {
-            var age = Age;
+            if (BirthDate > DateTime.Now)
+            {
+                return string.Empty;
+            }
+
+            var age = Age ?? GetAge( BirthDate, DeceasedDate );
             if ( age != null )
             {
                 if ( condensed )
@@ -1410,7 +1416,18 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
+            return GetPersonPhotoUrl( person.Initials, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification, size );
         }
 
         /// <summary>
@@ -1422,10 +1439,21 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( int personId, int? maxWidth = null, int? maxHeight = null )
         {
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
             using ( RockContext rockContext = new RockContext() )
             {
                 Person person = new PersonService( rockContext ).Get( personId );
-                return GetPersonPhotoUrl( person, maxWidth, maxHeight );
+                return GetPersonPhotoUrl( person, size );
             }
         }
 
@@ -1438,7 +1466,18 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonNoPictureUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
+            return GetPersonPhotoUrl( person.Initials, null, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification, size );
         }
 
         /// <summary>
@@ -1768,6 +1807,52 @@ namespace Rock.Model
             }
 
             return personHomeAddresses;
+        }
+
+        /// <summary>
+        /// Gets the age bracket.
+        /// </summary>
+        /// <param name="age">The age.</param>
+        /// <returns></returns>
+        public static AgeBracket GetAgeBracket( int? age )
+        {
+            if ( age == null )
+            {
+                return AgeBracket.Unknown;
+            }
+
+            if ( age >= 0 && age <= 12 )
+            {
+                return Enums.Crm.AgeBracket.ZeroToTwelve;
+            }
+            else if ( age >= 13 && age <= 17 )
+            {
+                return Enums.Crm.AgeBracket.ThirteenToSeventeen;
+            }
+            else if ( age >= 18 && age <= 24 )
+            {
+                return Enums.Crm.AgeBracket.EighteenToTwentyFour;
+            }
+            else if ( age >= 25 && age <= 34 )
+            {
+                return Enums.Crm.AgeBracket.TwentyFiveToThirtyFour;
+            }
+            else if ( age >= 35 && age <= 44 )
+            {
+                return Enums.Crm.AgeBracket.ThirtyFiveToFortyFour;
+            }
+            else if ( age >= 45 && age <= 54 )
+            {
+                return Enums.Crm.AgeBracket.FortyFiveToFiftyFour;
+            }
+            else if ( age >= 55 && age <= 64 )
+            {
+                return Enums.Crm.AgeBracket.FiftyFiveToSixtyFour;
+            }
+            else
+            {
+                return Enums.Crm.AgeBracket.SixtyFiveOrOlder;
+            }
         }
 
         #endregion

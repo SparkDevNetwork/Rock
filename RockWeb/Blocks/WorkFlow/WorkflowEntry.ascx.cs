@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.WorkFlow
 
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If enabled, prevents the use of captcha verification on the form.",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         Key = AttributeKey.DisableCaptchaSupport,
         DefaultBooleanValue = false,
         Order = 8
@@ -401,13 +401,6 @@ namespace RockWeb.Blocks.WorkFlow
             */
             var formUserActions = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
             var formUserAction = formUserActions.FirstOrDefault( x => x.ActionName == eventArgument );
-            var hasActivateActivity = formUserAction != null && formUserAction.ActivateActivityTypeGuid != string.Empty;
-
-            if ( formUserAction != null && !formUserAction.CausesValidation && !hasActivateActivity )
-            {
-                // Out if the action does not cause validation and does not have an Activate Activity.
-                return;
-            }
 
             if ( formUserAction != null && formUserAction.CausesValidation )
             {
@@ -1115,7 +1108,7 @@ namespace RockWeb.Blocks.WorkFlow
                         {
                             string url = ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
                             url = ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
-                            lAttribute.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", url, formattedValue );
+                            lAttribute.Text = string.Format( "<a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a>", url, formattedValue );
                         }
                         else
                         {

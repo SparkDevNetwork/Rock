@@ -45,6 +45,8 @@ export const Group = {
     GroupFinanceUsers: "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9",
     /** The security group used by mobile app */
     GroupMobileApp: "EDD336D5-1429-41D9-8D41-2581A05F0E16",
+    /** RSR - Mobile Application Users */
+    GroupMobileApplicationUsers: "42175217-1BA4-401B-AA4E-21EC4F1F0AB4",
     /** Get the photo request application group */
     GroupPhotoRequest: "2108EF9C-10DC-4466-973D-D25AAB7818BE",
     /** RSR - Prayer Access */

@@ -1,0 +1,73 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isVisible" id="filter-drawer" class="panel-drawer">
+        <div class="p-3">
+            <div>
+                <h5 class="mt-0 mb-4">Group Scheduler Help</h5>
+                <p><strong>Scheduling Basics</strong></p>
+                <p>This screen allows you to schedule individuals into groups. Openings are shown for each group location schedule to meet the configured minimum number of individuals. Additional individuals can be added by dropping them into the ‘Add Individual’ zone.</p>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <p><strong>Scheduled Individual Legend</strong></p>
+                    <p>Scheduled individuals have several states that they can be in. These states are described using an icon to determine how the invite matches their preference. A color describes the status of the invite.</p>
+                    <div class="text-center mb-5"><img src="/Assets/Images/group-scheduler/scheduled-legend.svg"></div>
+                </div>
+
+                <div class="col-md-6">
+                    <p><strong>Unscheduled Individuals Legend</strong></p>
+                    <p>A person who is not scheduled can also be in various states. Each of these is represented by an icon. Rolling over the individuals will give more details about the state. Yellow indicates a conflict for one or more schedules.</p>
+                    <div class="text-left mb-5"><img src="/Assets/Images/group-scheduler/unscheduled-legend.svg"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Group Location Schedule Status</strong></p>
+                    <p>At the top of the group location for each schedule is a status bar. This bar displays quite a bit of information for you.</p>
+                    <p>The green bar represents the individuals who have accepted invites while yellow are those still pending. People who have declined will not be represented on this bar.</p>
+                    <p>The white line represents the minimum number of individuals you need. The black bar is your desired number.</p>
+                </div>
+
+                <div class="col-md-6">
+                    <p>&nbsp;</p>
+                    <div class="text-left mb-3"><img src="/Assets/Images/group-scheduler/progress-example.svg"></div>
+                    <p>So in this case enough people have accepted your invite to meet the minimum. If all remaining invites are accepted you would have enough to meet your desired number.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible"): void
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Hides this help panel.
+     */
+    function hide(): void {
+        isVisible.value = false;
+    }
+
+    // #endregion
+</script>

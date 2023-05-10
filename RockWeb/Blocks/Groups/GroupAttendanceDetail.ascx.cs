@@ -36,7 +36,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Groups
 {
     #region Block Attributes
-    [DisplayName( "Group Attendance Detail" )]
+    [DisplayName( "Group Attendance Detail (Legacy)" )]
     [Category( "Groups" )]
     [Description( "Lists the group members for a specific occurrence date time and allows selecting if they attended or not." )]
 
@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Groups
         private bool _allowCampusFilter = false;
         private AttendanceOccurrence _occurrence = null;
         private List<GroupAttendanceAttendee> _attendees;
-        private const string TOGGLE_SETTING = "Attendance_List_Sorting_Toggle";
+        private const string TOGGLE_SETTING = "sort-by-last-name";
 
         #endregion
 
@@ -277,9 +277,11 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
+            var preferences = GetBlockPersonPreferences();
+
             if ( !Page.IsPostBack )
             {
-                tglSort.Checked = GetUserPreference( TOGGLE_SETTING ).AsBoolean( true );
+                tglSort.Checked = preferences.GetValue( TOGGLE_SETTING ).AsBoolean( true );
             }
 
             if ( !_canManageMembers )
@@ -297,7 +299,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( _allowCampusFilter )
                     {
-                        var campus = CampusCache.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
+                        var campus = CampusCache.Get( preferences.GetValue( "Campus" ).AsInteger() );
                         if ( campus != null )
                         {
                             bddlCampus.Title = campus.Name;
@@ -468,11 +470,9 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            var uri = new UriBuilder( outputBinaryFileDoc.Url );
-            var qry = System.Web.HttpUtility.ParseQueryString( uri.Query );
-            qry["attachment"] = true.ToTrueFalse();
-            uri.Query = qry.ToString();
-            Response.Redirect( uri.ToString(), false );
+            var baseUrl = ResolveRockUrl( "~/GetFile.ashx" );
+            var getFileUrl = $"{baseUrl}?Guid={outputBinaryFileDoc.Guid}&attachment=true";
+            Response.Redirect( getFileUrl, false );
             Context.ApplicationInstance.CompleteRequest();
         }
 
@@ -493,7 +493,11 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
-            SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "Campus", bddlCampus.SelectedValue );
+            preferences.Save();
+
             var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
             bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
             BindAttendees();
@@ -629,7 +633,11 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglSort_CheckedChanged( object sender, EventArgs e )
         {
-            SetUserPreference( TOGGLE_SETTING, tglSort.Checked.ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( TOGGLE_SETTING, tglSort.Checked.ToString() );
+            preferences.Save();
+
             BindAttendees();
         }
 

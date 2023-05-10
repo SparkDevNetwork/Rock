@@ -293,6 +293,7 @@ namespace Rock.Blocks.Cms
         {
             var filters = new List<SearchFilterBag>();
             var attributeValues = contentCollection.FilterSettings.AttributeValues ?? new Dictionary<string, List<ListItemBag>>();
+            var fieldValues = contentCollection.FilterSettings.FieldValues ?? new Dictionary<string, List<ListItemBag>>();
 
             // Get the filters configured on the block custom settings.
             var filterOptions = GetAttributeValue( AttributeKey.Filters ).FromJsonOrNull<List<FilterOptionsBag>>() ?? new List<FilterOptionsBag>();
@@ -342,6 +343,25 @@ namespace Rock.Blocks.Cms
                         IsMultipleSelection = filterSettings.IsMultipleSelection,
                         HeaderMarkup = filterOption.HeaderMarkup,
                         Items = attributeValues.ContainsKey( attrKey ) ? attributeValues[attrKey] : new List<ListItemBag>()
+                    } );
+                }
+
+                if ( filterOption.SourceKey.StartsWith( "cust_" ) )
+                {
+                    var key = filterOption.SourceKey.Substring( 5 );
+
+                    if ( !contentCollection.FilterSettings.CustomFieldFilters.TryGetValue( key, out var filterSettings ) )
+                    {
+                        continue;
+                    }
+
+                    filters.Add( new SearchFilterBag
+                    {
+                        Control = filterSettings.FilterControl,
+                        Label = filterSettings.Label,
+                        IsMultipleSelection = filterSettings.IsMultipleSelection,
+                        HeaderMarkup = filterOption.HeaderMarkup,
+                        Items = fieldValues.ContainsKey( key ) ? fieldValues[key] : new List<ListItemBag>()
                     } );
                 }
             }
@@ -462,6 +482,21 @@ namespace Rock.Blocks.Cms
                 }
             }
 
+            if ( filterSettings.CustomFieldFilters != null )
+            {
+                foreach ( var kvp in filterSettings.CustomFieldFilters )
+                {
+                    if ( kvp.Value.IsEnabled )
+                    {
+                        names.Add( new ListItemBag
+                        {
+                            Value = $"cust_{kvp.Key}",
+                            Text = kvp.Value.Label
+                        } );
+                    }
+                }
+            }
+
             return names;
         }
 
@@ -471,11 +506,11 @@ namespace Rock.Blocks.Cms
         /// </summary>
         /// <param name="contentCollection">The content collection whose filters keys are being requested.</param>
         /// <returns>A list of attribute keys in lowercase form.</returns>
-        private List<string> GetActiveCollectionFilterAttributeKeys( ContentCollectionCache contentCollection )
+        private List<string> GetActiveCollectionFilterKeys( ContentCollectionCache contentCollection )
         {
             return GetActiveCollectionFilterNames( contentCollection )
-                .Where( f => f.Value.StartsWith( "attr_" ) )
-                .Select( f => f.Value.Substring( 5 ).ToLower() )
+                .Where( f => f.Value.StartsWith( "attr_" ) || f.Value.StartsWith( "cust_" ) )
+                .Select( f => f.Text.ToLower() )
                 .ToList();
         }
 
@@ -498,9 +533,7 @@ namespace Rock.Blocks.Cms
                 return true;
             }
 
-            var validKeys = GetActiveCollectionFilterNames( contentCollection )
-                .Select( f => f.Value.StartsWith( "attr_" ) ? f.Value.Substring( 5 ) : f.Value )
-                .ToList();
+            var validKeys = GetActiveCollectionFilterKeys( contentCollection );
 
             foreach ( var key in validKeys )
             {
@@ -539,9 +572,7 @@ namespace Rock.Blocks.Cms
             };
 
             // Add in all the query string filters.
-            var validKeys = GetActiveCollectionFilterNames( contentCollection )
-                .Select( f => f.Value.StartsWith( "attr_" ) ? f.Value.Substring( 5 ) : f.Value )
-                .ToList();
+            var validKeys = GetActiveCollectionFilterKeys( contentCollection );
 
             foreach ( var key in validKeys )
             {
@@ -802,8 +833,8 @@ namespace Rock.Blocks.Cms
                 return;
             }
 
-            // Get all the attribute keys that are valid to be used for filtering.
-            var validAttributeKeys = GetActiveCollectionFilterAttributeKeys( contentCollection );
+            // Get all the keys that are valid to be used for filtering.
+            var validKeys = GetActiveCollectionFilterKeys( contentCollection );
 
             foreach ( var filterPair in filters )
             {
@@ -842,39 +873,74 @@ namespace Rock.Blocks.Cms
                     continue;
                 }
 
+                if ( !validKeys.Contains( filterKey ) )
+                {
+                    continue;
+                }
+
                 // Find the attribute filter for this query filter.
                 var attributeFilterKey = contentCollection.FilterSettings?.AttributeFilters
                     .Where( kvp => kvp.Value.Label.ToLower() == filterKey )
                     .Select( kvp => kvp.Key )
                     .FirstOrDefault();
 
-                // Make sure the filter is a valid key and that it is enabled.
-                if ( attributeFilterKey == null || !validAttributeKeys.Contains( filterKey ) )
+                // See if this was an attribute filter.
+                if ( attributeFilterKey != null )
                 {
-                    continue;
+                    // Apply the search for the attribute filter.
+                    var values = filterPair.Value.Replace( ".", "" ).Split( ',' );
+
+                    if ( values.Length > 0 )
+                    {
+                        var valueQuery = new SearchQuery
+                        {
+                            IsAllMatching = false
+                        };
+
+                        foreach ( var value in values )
+                        {
+                            valueQuery.Add( new SearchField
+                            {
+                                Name = $"{attributeFilterKey}ValueRaw",
+                                Value = value,
+                                IsPhrase = true
+                            } );
+                        }
+
+                        searchQuery.Add( valueQuery );
+                    }
                 }
 
-                // Apply the search for the attribute filter.
-                var values = filterPair.Value.Replace( ".", "" ).Split( ',' );
+                var customFieldFilterKey = contentCollection.FilterSettings?.CustomFieldFilters
+                    .Where( kvp => kvp.Value.Label.ToLower() == filterKey )
+                    .Select( kvp => kvp.Key )
+                    .FirstOrDefault();
 
-                if ( values.Length > 0 )
+                // See if this was a custom field filter.
+                if ( customFieldFilterKey != null )
                 {
-                    var valueQuery = new SearchQuery
-                    {
-                        IsAllMatching = false
-                    };
+                    // Apply the search for the custom field filter.
+                    var values = filterPair.Value.Replace( ".", "" ).Split( ',' );
 
-                    foreach ( var value in values )
+                    if ( values.Length > 0 )
                     {
-                        valueQuery.Add( new SearchField
+                        var valueQuery = new SearchQuery
                         {
-                            Name = $"{attributeFilterKey}ValueRaw",
-                            Value = value,
-                            IsPhrase = true
-                        } );
-                    }
+                            IsAllMatching = false
+                        };
 
-                    searchQuery.Add( valueQuery );
+                        foreach ( var value in values )
+                        {
+                            valueQuery.Add( new SearchField
+                            {
+                                Name = $"{customFieldFilterKey}ValueRaw",
+                                Value = value,
+                                IsPhrase = true
+                            } );
+                        }
+
+                        searchQuery.Add( valueQuery );
+                    }
                 }
             }
         }

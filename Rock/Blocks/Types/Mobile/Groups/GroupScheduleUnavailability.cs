@@ -29,7 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModels.Blocks.Groups.GroupScheduleUnavailability;
+using Rock.ViewModels.Blocks.Group.GroupScheduleUnavailability;
 using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Groups

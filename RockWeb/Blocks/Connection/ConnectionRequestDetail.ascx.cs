@@ -211,7 +211,8 @@ namespace RockWeb.Blocks.Connection
 
         #region Fields
 
-        private const string CAMPUS_SETTING = "ConnectionRequestDetail_Campus";
+        private const string CAMPUS_SETTING = "default-campus";
+        
         #endregion
 
         #region Properties
@@ -223,6 +224,14 @@ namespace RockWeb.Blocks.Connection
         /// The search attributes.
         /// </value>
         public List<AttributeCache> SearchAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the flag indicating whether or not the edit is allowed.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the edit is allowed; otherwise <c>false</c>.
+        /// </value>
+        public bool? IsEditAllowed { get; set; }
 
         #endregion
 
@@ -247,6 +256,8 @@ namespace RockWeb.Blocks.Connection
                 ViewState["PlacementGroupRoleId"] as int?,
                 ViewState["PlacementGroupStatus"] as GroupMemberStatus?,
                 false );
+
+            IsEditAllowed = ViewState["IsEditAllowed"] as bool?;
         }
 
         /// <summary>
@@ -326,6 +337,11 @@ namespace RockWeb.Blocks.Connection
             {
                 ShowDetail( PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger(), PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
             }
+            else if ( IsEditAllowed.HasValue && IsEditAllowed.Value )
+            {
+                gConnectionRequestActivities.IsDeleteEnabled = true;
+                gConnectionRequestActivities.Actions.ShowAdd = true;
+            }
 
             var connectionRequest = GetConnectionRequest();
             if ( connectionRequest != null )
@@ -357,6 +373,8 @@ namespace RockWeb.Blocks.Connection
                 ViewState["PlacementGroupRoleId"] = ( int? ) null;
                 ViewState["PlacementGroupStatus"] = ( GroupMemberStatus? ) null;
             }
+
+            ViewState["IsEditAllowed"] = IsEditAllowed;
 
             return base.SaveViewState();
         }
@@ -627,7 +645,10 @@ namespace RockWeb.Blocks.Connection
 
                         if ( cpCampus.SelectedCampusId.HasValue )
                         {
-                            SetUserPreference( CAMPUS_SETTING, cpCampus.SelectedCampusId.Value.ToString() );
+                            var preferences = GetBlockPersonPreferences();
+
+                            preferences.SetValue( CAMPUS_SETTING, cpCampus.SelectedCampusId.Value.ToString() );
+                            preferences.Save();
                         }
                     }
                     else
@@ -1931,7 +1952,8 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest.ConnectionStatus = connectionStatus;
                         connectionRequest.ConnectionStatusId = connectionStatus.Id;
 
-                        int? campusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();
+                        var preferences = GetBlockPersonPreferences();
+                        int? campusId = preferences.GetValue( CAMPUS_SETTING ).AsIntegerOrNull();
                         if ( campusId.HasValue )
                         {
                             connectionRequest.CampusId = campusId.Value;
@@ -2009,7 +2031,7 @@ namespace RockWeb.Blocks.Connection
                 rConnectorSelect.Visible = editAllowed;
                 gConnectionRequestActivities.IsDeleteEnabled = editAllowed;
                 gConnectionRequestActivities.Actions.ShowAdd = editAllowed;
-
+                IsEditAllowed = editAllowed;
                 // Only show transfer if there are other Opportunities
                 if ( connectionOpportunity.ConnectionType.ConnectionOpportunities.Count > 1 )
                 {
@@ -2337,7 +2359,7 @@ namespace RockWeb.Blocks.Connection
             // Status
             rblStatus.Items.Clear();
 
-            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.AutoInactivateState ).ThenBy( a => a.Name );
+            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Order ).ThenByDescending( a => a.IsDefault ).ThenBy( a => a.Name );
 
             foreach ( var status in allStatuses )
             {

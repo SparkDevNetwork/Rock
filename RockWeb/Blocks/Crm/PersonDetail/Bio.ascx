@@ -86,7 +86,7 @@
                         <div class="d-flex flex-wrap justify-content-center">
                 </HeaderTemplate>
                 <ItemTemplate>
-                    <a href='<%# Eval("url") %>' class='text-link p-2' target="_blank">
+                    <a href='<%# Eval("url") %>' class='text-link p-2' target="_blank" rel="noopener noreferrer">
                         <i class='<%# Eval("icon") %>'></i>
                     </a>
                 </ItemTemplate>

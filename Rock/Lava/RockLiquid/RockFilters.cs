@@ -58,8 +58,12 @@ using Rock.Cms.StructuredContent;
 namespace Rock.Lava
 {
     /// <summary>
-    ///
-    /// </summary>    
+    /// Defines filter methods available for use with the RockLiquid implementation of the Lava library.
+    /// </summary>
+    /// <remarks>
+    /// This class is marked for internal use because it should only be used in the context of resolving a Lava template.
+    /// </remarks>
+    [RockInternal( "1.15", true )]
     public static class RockFilters
     {
         static Random _randomNumberGenerator = new Random();
@@ -2466,7 +2470,10 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                PersonService.SaveUserPreference( person, settingKey, settingValue );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                preferences.SetValue( settingKey, settingValue );
+                preferences.Save();
             }
         }
 
@@ -2492,7 +2499,9 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                return PersonService.GetUserPreference( person, settingKey );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                return preferences.GetValue( settingKey );
             }
 
             return string.Empty;
@@ -2519,7 +2528,10 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                PersonService.DeleteUserPreference( person, settingKey );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                preferences.SetValue( settingKey, string.Empty );
+                preferences.Save();
             }
         }
 
@@ -2692,16 +2704,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( Context context, object input )
         {
-            Person person = GetPerson( input );
-
-            if ( person != null )
-            {
-                Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-                var parents = new PersonService( new RockContext() ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == adultGuid ).Select( a => a.Person );
-                return parents.ToList();
-            }
-
-            return new List<Person>();
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.Parents( lavaContext, input );
         }
 
         /// <summary>
@@ -2712,16 +2716,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( Context context, object input )
         {
-            Person person = GetPerson( input );
-
-            if ( person != null )
-            {
-                Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                var children = new PersonService( new RockContext() ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == childGuid ).Select( a => a.Person );
-                return children.ToList();
-            }
-
-            return new List<Person>();
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.Children( lavaContext, input );
         }
 
         /// <summary>
@@ -3836,27 +3832,14 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
-        /// <param name="groupId">The role Id.</param>
+        /// <param name="roleId">The role Id.</param>
         /// <returns>
         ///   <c>true</c> if [is in security role] [the specified context]; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsInSecurityRole( Context context, object input, int groupId )
+        public static bool IsInSecurityRole( Context context, object input, object roleId )
         {
-            var person = GetPerson( input );
-            var role = RoleCache.Get( groupId );
-
-            if ( person == null || role == null )
-            {
-                return false;
-            }
-
-            if ( !role.IsSecurityTypeGroup )
-            {
-                ExceptionLogService.LogException( $"RockFilter.IsInSecurityRole group with Id: {groupId} is not a SecurityRole" );
-                return false;
-            }
-
-            return role.IsPersonInRole( person.Guid );
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.IsInSecurityRole( lavaContext, input, roleId );
         }
 
         #endregion Person Filters
@@ -4065,24 +4048,65 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ResolveRockUrl( string input )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            if ( string.IsNullOrWhiteSpace(input) )
+            {
+                return string.Empty;
+            }
 
+            var page = HttpContext.Current?.Handler as RockPage;
+
+            // Resolve theme references.
             if ( input.StartsWith( "~~" ) )
             {
-                string theme = "Rock";
-                if ( page.Theme.IsNotNullOrWhiteSpace() )
+                var theme = "Rock";
+                if ( page != null )
                 {
-                    theme = page.Theme;
-                }
-                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
-                {
-                    theme = page.Site.Theme;
+                    // Get the theme from the current page if we have one.
+                    if ( page.Theme.IsNotNullOrWhiteSpace() )
+                    {
+                        theme = page.Theme;
+                    }
+                    else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
+                    {
+                        theme = page.Site.Theme;
+                    }
                 }
 
                 input = "~/Themes/" + theme + ( input.Length > 2 ? input.Substring( 2 ) : string.Empty );
             }
 
-            return page.ResolveUrl( input );
+            // Resolve relative references.
+            string url;
+            if ( page != null )
+            {
+                url = page.ResolveUrl( input );
+            }
+            else
+            {
+                // In the absence of a HttpRequest, use the application root configuration setting as the base URL.
+                var rootUrl = GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" );
+                if ( string.IsNullOrWhiteSpace( rootUrl ) )
+                {
+                    rootUrl = "/";
+                }
+
+                if ( input.StartsWith( "~" ) )
+                {
+                    input = input.Trim( '~' );
+                }
+
+                var uri = new Uri( input, UriKind.RelativeOrAbsolute );
+                if ( uri.IsAbsoluteUri )
+                {
+                    return uri.AbsoluteUri;
+                }
+
+                // Create an absolute Uri.
+                uri = new Uri( new Uri( rootUrl ), uri );
+                url = uri.AbsoluteUri;
+            }
+
+            return url;
         }
 
         /// <summary>
@@ -4623,7 +4647,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddMetaTagToHead( string input, string attributeName, string attributeValue )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -4645,7 +4669,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
         {
-            var page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -4690,12 +4714,10 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string SetPageTitle( string input, string titleLocation )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
-
-
                 if ( titleLocation.Equals( "BrowserTitle", StringComparison.InvariantCultureIgnoreCase ) || titleLocation.Equals( "All", StringComparison.InvariantCultureIgnoreCase ) )
                 {
                     page.BrowserTitle = input;
@@ -4731,9 +4753,9 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddScriptLink( string input, bool fingerprintLink = false )
         {
-            if ( HttpContext.Current != null )
+            var page = HttpContext.Current?.Handler as RockPage;
+            if ( page != null )
             {
-                RockPage page = HttpContext.Current.Handler as RockPage;
                 RockPage.AddScriptLink( page, ResolveRockUrl( input ), fingerprintLink );
             }
 
@@ -4748,9 +4770,9 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddCssLink( string input, bool fingerprintLink = false )
         {
-            if ( HttpContext.Current != null )
+            var page = HttpContext.Current?.Handler as RockPage;
+            if ( page != null )
             {
-                RockPage page = HttpContext.Current.Handler as RockPage;
                 RockPage.AddCSSLink( page, ResolveRockUrl( input ), fingerprintLink );
             }
 
@@ -4926,7 +4948,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Page( string input, string parm )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -5042,7 +5064,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object PageParameter( string input, string parm )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
+            if ( page == null )
+            {
+                return null;
+            }
 
             var parmReturn = page.PageParameter( parm );
 
@@ -5465,43 +5491,48 @@ namespace Rock.Lava
         /// <param name="typeOrder">The type order.</param>
         public static void AddQuickReturn( string input, string typeName, int typeOrder = 0 )
         {
-            RockPage rockPage = HttpContext.Current.Handler as RockPage;
-
-            if ( input.IsNotNullOrWhiteSpace() )
+            if ( input.IsNullOrWhiteSpace() )
             {
+                return;
+            }
 
-                /* 08-16-2021 MDP
-                 * This is only supported for pages that have the PersonalLinks block on it.
-                 * 
-                 * 02-02-2022 SMC
-                 * Added checks to prevent this script from being called if the personalLinks script hasn't been loaded,
-                 * so that if this filter is used on a page without the Personal Links block, it will fail safely
-                 * without doing anything.
-                 */
+            var rockPage = HttpContext.Current?.Handler as RockPage;
+            if ( rockPage == null )
+            {
+                return;
+            }
 
-                input = input.EscapeQuotes();
+            /* 08-16-2021 MDP
+                * This is only supported for pages that have the PersonalLinks block on it.
+                * 
+                * 02-02-2022 SMC
+                * Added checks to prevent this script from being called if the personalLinks script hasn't been loaded,
+                * so that if this filter is used on a page without the Personal Links block, it will fail safely
+                * without doing anything.
+                */
 
-                if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
-                {
-                    var quickReturnScript = "" +
-                    $"function addQuickReturnAjax(typeName, typeOrder, input) {{" + Environment.NewLine +
-                    $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
-                    $"    Rock.personalLinks.addQuickReturn(typeName, typeOrder, input);" + Environment.NewLine +
-                    $"  }}" + Environment.NewLine +
-                    $"}};" + Environment.NewLine +
-                    $"addQuickReturnAjax('{typeName}', {typeOrder}, '{input}');";
-                    ScriptManager.RegisterStartupScript( rockPage, rockPage.GetType(), "AddQuickReturn", quickReturnScript, true );
-                }
-                else
-                {
-                    var quickReturnScript = "" +
-                    $"$( document ).ready( function () {{" + Environment.NewLine +
-                    $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
-                    $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
-                    $"  }}" + Environment.NewLine +
-                    $"}});";
-                    RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
-                }
+            input = input.EscapeQuotes();
+
+            if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
+            {
+                var quickReturnScript = "" +
+                $"function addQuickReturnAjax(typeName, typeOrder, input) {{" + Environment.NewLine +
+                $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
+                $"    Rock.personalLinks.addQuickReturn(typeName, typeOrder, input);" + Environment.NewLine +
+                $"  }}" + Environment.NewLine +
+                $"}};" + Environment.NewLine +
+                $"addQuickReturnAjax('{typeName}', {typeOrder}, '{input}');";
+                ScriptManager.RegisterStartupScript( rockPage, rockPage.GetType(), "AddQuickReturn", quickReturnScript, true );
+            }
+            else
+            {
+                var quickReturnScript = "" +
+                $"$( document ).ready( function () {{" + Environment.NewLine +
+                $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
+                $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
+                $"  }}" + Environment.NewLine +
+                $"}});";
+                RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
             }
         }
 
@@ -5998,72 +6029,9 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Note> Notes( Context context, object input, object noteType, string sortOrder = "desc", int? count = null )
         {
-            int? entityId = null;
-
-            if ( input is int )
-            {
-                entityId = Convert.ToInt32( input );
-            }
-            if ( input is IEntity )
-            {
-                IEntity entity = input as IEntity;
-                entityId = entity.Id;
-            }
-            if ( !entityId.HasValue )
-            {
-                return null;
-            }
-
-            List<int> noteTypeIds = new List<int>();
-
-            if ( noteType is int )
-            {
-                noteTypeIds.Add( (int)noteType );
-            }
-
-            if ( noteType is string )
-            {
-                noteTypeIds = ( (string)noteType ).Split( ',' ).Select( Int32.Parse ).ToList();
-            }
-
-            var notes = new NoteService( new RockContext() ).Queryable().AsNoTracking().Where( n => n.EntityId == entityId );
-
-            if ( noteTypeIds.Count > 0 )
-            {
-                notes = notes.Where( n => noteTypeIds.Contains( n.NoteTypeId ) );
-            }
-            else
-            {
-                return null;
-            }
-
-            // add sort order
-            if ( sortOrder == "desc" )
-            {
-                notes = notes.OrderByDescending( n => n.CreatedDateTime );
-            }
-            else
-            {
-                notes = notes.OrderBy( n => n.CreatedDateTime );
-            }
-
-            var filterNotes = new List<Note>();
-            foreach ( var note in notes )
-            {
-                if ( note.IsAuthorized( Authorization.VIEW, GetCurrentPerson( context ) ) )
-                {
-                    filterNotes.Add( note );
-                }
-            }
-
-            if ( !count.HasValue )
-            {
-                return filterNotes;
-            }
-            else
-            {
-                return filterNotes.Take( count.Value ).ToList();
-            }
+            // Create a compatible context and call the newer Lava Filter implementation.
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.Notes( lavaContext, input, noteType, sortOrder, count );
         }
 
         /// <summary>

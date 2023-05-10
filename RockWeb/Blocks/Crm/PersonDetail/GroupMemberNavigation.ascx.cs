@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             var sb = new StringBuilder(
             $@"<a href=""#"" id=""familyDropdownNav"" class=""profile-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""false"">
-                    <img src=""{Person.GetPersonPhotoUrl( this.Person )}"" class=""avatar mr-2 flex-shrink-0"" alt="""" />
+                    <img src=""{Person.GetPersonPhotoUrl( this.Person )}&Style=icon"" class=""avatar mr-2 flex-shrink-0"" alt="""" />
                     <span class=""d-none d-sm-inline text-nowrap font-weight-semibold"">{this.Person.FullName}<i class=""fa fa-chevron-down ml-2""></i></span>
                 </a>
 
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var groupMemberListItem = $@"
                 <li>
                     <a href=""{personLink}"">
-                        <img src=""{Person.GetPersonPhotoUrl( groupMember.PersonId )}"" alt="""" class=""avatar"">
+                        <img src=""{Person.GetPersonPhotoUrl( groupMember.Person.Initials, groupMember.Person.PhotoId, groupMember.Person.Age, groupMember.Person.Gender, groupMember.Person.RecordTypeValueId, groupMember.Person.AgeClassification   )}"" alt="""" class=""avatar"">
                         <span class=""name"">
                             {groupMember.Person.FullName}
                         </span>

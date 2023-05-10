@@ -38,6 +38,7 @@ using Rock.Web.Cache;
 using Rock.Lava.Blocks;
 using Rock.Attribute;
 using Rock.Lava.DotLiquid;
+using Rock.Utility.Settings;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -312,35 +313,36 @@ namespace Rock.Lava.RockLiquid.Blocks
                                 }
                                 else
                                 {
-                                    // sorting on an attribute
+                                    // Sort by Attribute.
+                                    // Get all of the Attributes for this EntityType that have a matching Key and apply the same sort for each of them.
+                                    // This situation may occur, for example, where the target entity is a DefinedValue and the same Attribute Key exists for multiple Defined Types.
+                                    var attributeIdListForAttributeKey = AttributeCache.GetByEntityType( entityTypeCache.Id )
+                                                                .Where( a => a != null && a.Key == propertyName )
+                                                                .Select( a => a.Id )
+                                                                .ToList();
 
-                                    // get attribute id
-                                    int? attributeId = null;
-                                    foreach ( var attribute in AttributeCache.GetByEntityType( entityTypeCache.Id ) )
-                                    {
-                                        if ( attribute.Key == propertyName )
-                                        {
-                                            attributeId = attribute.Id;
-                                            break;
-                                        }
-                                    }
-
-                                    if ( attributeId.HasValue )
+                                    if ( attributeIdListForAttributeKey.Any() )
                                     {
                                         // get AttributeValue queryable and parameter
-                                        if ( dbContext is RockContext )
+                                        var rockContext = dbContext as RockContext;
+                                        if ( rockContext == null )
                                         {
-                                            var attributeValues = new AttributeValueService( dbContext as RockContext ).Queryable();
-                                            ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
-                                            MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
-                                            var attributeExpression = Attribute.Helper.GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, attributeId.Value );
-
-                                            LambdaExpression sortSelector = Expression.Lambda( attributeExpression, paramExpression );
-                                            queryResultExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { queryResult.ElementType, sortSelector.ReturnType }, queryResultExpression, sortSelector );
+                                            throw new Exception( $"The database context for type {entityTypeCache.FriendlyName} does not support RockContext attribute value queries." );
                                         }
-                                        else
+
+                                        var attributeValues = new AttributeValueService( rockContext ).Queryable();
+                                        foreach ( var attributeId in attributeIdListForAttributeKey )
                                         {
-                                            throw new Exception( string.Format( "The database context for type {0} does not support RockContext attribute value queries.", entityTypeCache.FriendlyName ) );
+                                            methodName = ( direction == SortDirection.Descending ) ? orderByMethod + "Descending" : orderByMethod;
+
+                                            var attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
+                                            var idExpression = Expression.Property( paramExpression, "Id" );
+                                            var attributeExpression = Attribute.Helper.GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, attributeId );
+
+                                            var sortSelector = Expression.Lambda( attributeExpression, paramExpression );
+                                            queryResultExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { queryResult.ElementType, sortSelector.ReturnType }, queryResultExpression, sortSelector );
+
+                                            orderByMethod = "ThenBy";
                                         }
                                     }
                                 }
@@ -535,6 +537,13 @@ namespace Rock.Lava.RockLiquid.Blocks
         /// </summary>
         public static void RegisterEntityCommands()
         {
+            // If the database is not connected, do not register these commands.
+            // This can occur when the Lava engine is started without an attached database.
+            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            {
+                return;
+            }
+
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
@@ -681,7 +690,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                 }
 
                 // parse the part to get the expression
-                string regexPattern = @"([a-zA-Z]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
+                var regexPattern = @"((?!_=|_!)[a-zA-Z0-9_]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
                 var expressionParts = Regex.Matches( component, regexPattern )
                .Cast<Match>()
                .Select( m => m.Value )
@@ -735,13 +744,20 @@ namespace Rock.Lava.RockLiquid.Blocks
                             filterAttribute = attribute;
                             var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
+                            var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            if ( filterExpression is NoAttributeFilterExpression )
+                            {
+                                // Ignore this filter because it would cause the Where expression to match everything.
+                                continue;
+                            }
+
                             if ( attributeWhereExpression == null )
                             {
-                                attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                                attributeWhereExpression = filterExpression;
                             }
                             else
                             {
-                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
+                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, filterExpression );
                             }
                         }
 

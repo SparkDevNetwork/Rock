@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Utility;
@@ -637,17 +639,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Deletes or Archives (Soft-Deletes) GroupMember record depending on GroupType.EnableGroupHistory and if the GroupMember has history snapshots
-        /// with an option to null the GroupMemberId from Registrant tables
+        /// <para>Deletes or Archives (Soft-Deletes) GroupMember record depending on GroupType.EnableGroupHistory and if the GroupMember has history snapshots
+        /// with an option to null the GroupMemberId from Registrant tables.</para>
+        /// <para> Note, if the option to remove the GroupMember from registrant tables is not
+        /// exercised and the GroupMember is a registrant the the deletion will result in an exception.</para>
         /// </summary>
         /// <param name="groupMember">The group member.</param>
         /// <param name="removeFromRegistrants">if set to <c>true</c> [remove from registrants].</param>
         public void Delete( GroupMember groupMember, bool removeFromRegistrants )
         {
-            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( this.Context as RockContext );
-            foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
+            if ( removeFromRegistrants )
             {
-                registrant.GroupMemberId = null;
+                RegistrationRegistrantService registrantService = new RegistrationRegistrantService( this.Context as RockContext );
+                foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
+                {
+                    registrant.GroupMemberId = null;
+                }
             }
 
             this.Delete( groupMember );
@@ -896,11 +903,12 @@ namespace Rock.Model
             if ( registrationInstanceGroupPlacementBlock != null && currentPerson != null )
             {
                 var registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( options.RegistrationTemplatePlacementId );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( currentPerson, registrationInstanceGroupPlacementBlock );
 
                 const string groupMemberAttributeFilter_GroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}";
-                string userPreferenceKey = PersonService.GetBlockUserPreferenceKeyPrefix( options.BlockId ) + string.Format( groupMemberAttributeFilter_GroupTypeId, registrationTemplatePlacement.GroupTypeId );
+                string userPreferenceKey = string.Format( groupMemberAttributeFilter_GroupTypeId, registrationTemplatePlacement.GroupTypeId );
 
-                var attributeFilters = PersonService.GetUserPreference( currentPerson, userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
+                var attributeFilters = preferences.GetValue( userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
                 var parameterExpression = groupMemberService.ParameterExpression;
                 Expression groupMemberWhereExpression = null;
                 foreach ( var attributeFilter in attributeFilters )
@@ -986,6 +994,88 @@ namespace Rock.Model
             }
 
             return groupPlacementGroupMemberList;
+        }
+
+        /// <summary>
+        /// Takes an existing queryable of group members, and filters
+        /// the data to where the member has not had an attendance within
+        /// x number of weeks.
+        /// </summary>
+        /// <param name="members">The members.</param>
+        /// <param name="amtOfWeeks">The amt of weeks.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
+        [RockInternal( "1.15" )]
+        internal static IQueryable<GroupMember> WhereMembersWithNoAttendanceForNumberOfWeeks( IQueryable<GroupMember> members, int amtOfWeeks, RockContext rockContext )
+        {
+            var attendanceOccurenceService = new AttendanceService( rockContext );
+            var limitDate = RockDateTime.Now.AddDays( amtOfWeeks * -7 );
+
+            // Pull the attendance occurrences for this group.
+            var attendedPersonIds = attendanceOccurenceService
+                .Queryable()
+                .Where( x => x.Occurrence.OccurrenceDate >= limitDate && x.DidAttend == true )
+                .Select( a => a.PersonAlias.PersonId );
+
+            return members.Where( m => !attendedPersonIds.Contains( m.PersonId ) );
+        }
+
+        /// <summary>
+        /// Takes an existing queryable of group members, and filters
+        /// the data to where the member has had their first attendance within
+        /// x number of weeks.
+        /// </summary>
+        /// <param name="members">The members.</param>
+        /// <param name="amtOfWeeks">The amt of weeks.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
+        [RockInternal( "1.15" )]
+        internal static IQueryable<GroupMember> WhereMembersWhoFirstAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int amtOfWeeks, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var attendanceOccurenceService = new AttendanceService( rockContext );
+            var limitDate = RockDateTime.Now.AddDays( amtOfWeeks * -7 );
+
+            // Pull all of the previous attendances for this member (basically, all of the attendances BEFORE the amount of weeks
+            // we're filtering out).
+            var previousAttendancesPersonIds = attendanceOccurenceService
+                .Queryable()
+                .Where( x => x.Occurrence.OccurrenceDate < limitDate && x.DidAttend == true )
+                .Select( a => a.PersonAlias.PersonId );
+
+            // Pull all of our attendances within our cut-off.
+            var attendedPersonIds = attendanceOccurenceService
+                .Queryable()
+                .Where( x => x.Occurrence.OccurrenceDate >= limitDate && x.DidAttend == true )
+                .Select( a => a.PersonAlias.PersonId );
+
+            // Filter the data to where the group member has no previous attendance, but has an attendance within x number of weeks.
+            return members.Where( m => !previousAttendancesPersonIds.Contains( m.PersonId ) && attendedPersonIds.Contains( m.PersonId ) );
+        }
+
+        /// <summary>
+        /// Gets the members who attended within number of weeks.
+        /// </summary>
+        /// <param name="members">The members.</param>
+        /// <param name="amtOfWeeks">The amt of weeks.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
+        [RockInternal( "1.15" )]
+        internal static IQueryable<GroupMember> WhereMembersWhoAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int amtOfWeeks, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var attendanceOccurenceService = new AttendanceService( rockContext );
+            var limitDate = RockDateTime.Now.AddDays( amtOfWeeks * -7 );
+
+            // Pull the attendance occurrences for this group.
+            var attendedPersonIds = attendanceOccurenceService
+                .Queryable()
+                .Where( x => x.Occurrence.OccurrenceDate >= limitDate && x.DidAttend == true )
+                .Select( a => a.PersonAlias.PersonId );
+
+            return members.Where( m => attendedPersonIds.Contains( m.PersonId ) );
         }
     }
 

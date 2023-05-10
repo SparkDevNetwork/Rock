@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -192,6 +192,16 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.ContentCollectionSource entity
         /// </summary>
         public const string CONTENT_COLLECTION_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentTopic entity
+        /// </summary>
+        public const string CONTENT_TOPIC = "CD4BE244-147E-4A90-9137-B35FC35B5A52";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentTopicDomain entity
+        /// </summary>
+        public const string CONTENT_TOPIC_DOMAIN = "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51";
 
         /// <summary>
         /// The guid for the Rock.Model.DataView entity.
@@ -444,6 +454,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_COMMUNICATION_COMMUNICATIONVIEW_BLOCK_TYPE = "4AF5FCEF-CBF6-486B-A04D-920E31356B7F";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationEntry
+        /// </summary>
+        public const string MOBILE_COMMUNICATION_COMMUNICATIONENTRY_BLOCK_TYPE = "9A952F9F-F619-4063-B1BB-CFB2E6983C01";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventItemOccurrenceView
         /// </summary>
         public const string MOBILE_EVENTS_CALENDAREVENTITEMOCCURRENCEVIEW_BLOCK_TYPE = "04C43693-C524-4679-9F65-047F94A74CAB";
@@ -609,6 +624,11 @@ namespace Rock.SystemGuid
         /// The GUID for the Rock.Follow.Event.PersonPrayerRequest entity
         /// </summary>
         public const string PERSON_PRAYER_REQUEST = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B";
+
+        /// <summary>
+        /// The GUID for the Rock.Model.PersonPreference entity
+        /// </summary>
+        public const string PERSON_PREFERENCE = "FDCF766C-F36B-403B-89F3-7030DA65507E";
 
         /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity

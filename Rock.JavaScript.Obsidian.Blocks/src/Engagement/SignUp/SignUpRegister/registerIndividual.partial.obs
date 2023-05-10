@@ -1,0 +1,140 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <h4>{{ title }}</h4>
+
+    <div class="row">
+        <div class="col-md-6">
+            <TextBox v-model="firstName"
+                     label="First Name"
+                     rules="required"
+                     :disabled="disabled" />
+        </div>
+        <div class="col-md-6">
+            <TextBox v-model="lastName"
+                     label="Last Name"
+                     rules="required"
+                     :disabled="disabled" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <EmailBox v-model="email"
+                      label="Email"
+                      :rules="emailRules"
+                      :disabled="disabled" />
+        </div>
+        <div class="col-md-6">
+            <PhoneNumberBox v-model="mobilePhoneNumber"
+                            v-model:countryCode="mobilePhoneCountryCode"
+                            label="Mobile Phone"
+                            :rules="mobilePhoneRules"
+                            :disabled="disabled" />
+        </div>
+    </div>
+
+    <div class="row -mt-form-group">
+        <div class="col-md-6 col-md-offset-6">
+            <CheckBox v-model="registrant.allowSms"
+                      label=""
+                      text="Allow SMS Messages"
+                      :disabled="disabled || !mobilePhoneNumber" />
+        </div>
+    </div>
+
+    <hr>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import EmailBox from "@Obsidian/Controls/emailBox";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
+
+    const props = defineProps({
+        registrant: {
+            type: Object as PropType<SignUpRegistrantBag>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        requireEmail: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        requireMobilePhone: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // #region Computed Values
+
+    const firstName = computed<string>({
+        get() {
+            return props.registrant.firstName ?? "";
+        },
+        set(newValue: string) {
+            props.registrant.firstName = newValue;
+        }
+    });
+
+    const lastName = computed<string>({
+        get() {
+            return props.registrant.lastName ?? "";
+        },
+        set(newValue: string) {
+            props.registrant.lastName = newValue;
+        }
+    });
+
+    const email = computed<string>({
+        get() {
+            return props.registrant.email ?? "";
+        },
+        set(newValue: string) {
+            props.registrant.email = newValue;
+        }
+    });
+
+    const emailRules = computed((): string => {
+        return props.requireEmail ? "required" : "";
+    });
+
+    const mobilePhoneNumber = computed<string | undefined>({
+        get() {
+            return props.registrant.mobilePhoneNumber ?? undefined;
+        },
+        set(newValue: string | undefined) {
+            props.registrant.mobilePhoneNumber = newValue;
+            props.registrant.allowSms = !!newValue;
+        }
+    });
+
+    const mobilePhoneCountryCode = computed<string | undefined>({
+        get() {
+            return props.registrant.mobilePhoneCountryCode ?? undefined;
+        },
+        set(newValue: string | undefined) {
+            props.registrant.mobilePhoneCountryCode = newValue;
+        }
+    });
+
+    const mobilePhoneRules = computed((): string => {
+        return props.requireMobilePhone ? "required" : "";
+    });
+
+    // #endregion
+</script>

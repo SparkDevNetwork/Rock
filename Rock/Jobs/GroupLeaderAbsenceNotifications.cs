@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Web;using Rock.Attribute;
+using System.Web;
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -62,7 +62,7 @@ namespace Rock.Jobs
     public class GroupLeaderAbsenceNotifications : RockJob
     {
         /// <summary>
-        /// Keys for DataMap Field Attributes.
+        /// Keys to use for job Attributes.
         /// </summary>
         private static class AttributeKey
         {
@@ -121,26 +121,32 @@ namespace Rock.Jobs
             SystemCommunication systemEmail = null;
             if ( !systemEmailGuid.HasValue || systemEmailGuid == Guid.Empty )
             {
-                this.Result = "Job failed. Unable to find System Email";
+                this.Result = "Job failed. Unable to find System Email.";
                 throw new Exception( "No system email found." );
             }
 
             if ( minimumAbsences == default( int ) )
             {
-                this.Result = "Job failed. The is no minimum absense count entered.";
-                throw new Exception( "No minimum absense count found." );
+                this.Result = "Job failed. There is no minimum absence count entered.";
+                throw new Exception( "No minimum absence count found." );
             }
             systemEmail = emailService.Get( systemEmailGuid.Value );
 
             // get group members
             if ( !groupTypeGuid.HasValue || groupTypeGuid == Guid.Empty )
             {
-                this.Result = "Job failed. Unable to find group type";
+                this.Result = "Job failed. Unable to find group type.";
                 throw new Exception( "No group type found." );
             }
 
-            var groupMemberQry = new GroupMemberService( rockContext ).Queryable( "Group, Group.Members.GroupRole" )
-                                     .Where( m => m.Group.GroupType.Guid == groupTypeGuid.Value );
+            var groupMemberQry = new GroupMemberService( rockContext )
+                .Queryable( "Group, Group.Members.GroupRole" )
+                .Where( m =>
+                    !m.Group.IsArchived
+                    && m.Group.IsActive
+                    && m.Group.GroupType.Guid == groupTypeGuid.Value
+                    && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                );
 
             if ( groupRoleFilterGuid.HasValue )
             {
@@ -154,11 +160,18 @@ namespace Rock.Jobs
                 var group = groupGroupMember.Key;
                 var filteredPersons = groupGroupMember.Select( a => a.PersonId );
                 // get list of leaders
-                var groupLeaders = group.Members.Where( m => m.GroupRole.IsLeader == true && m.Person != null && m.Person.Email != null && m.Person.Email != string.Empty );
+                var groupLeaders = group.Members.Where( m =>
+                    !m.IsArchived
+                    && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                    && m.GroupRole.IsLeader == true
+                    && m.Person != null
+                    && m.Person.Email != null
+                    && m.Person.Email != string.Empty
+                );
 
                 if ( !groupLeaders.Any() )
                 {
-                    errorList.Add( "Unable to send emails to members in group " + group.Name + " because there is no group leader" );
+                    errorList.Add( "Unable to send emails to members in group " + group.Name + " because there is no group leader." );
                     continue;
                 }
 

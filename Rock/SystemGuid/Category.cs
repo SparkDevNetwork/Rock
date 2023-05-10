@@ -152,6 +152,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SCHEDULE_METRICS = "5A794741-5444-43F0-90D7-48E47276D426";
 
+        /// <summary>
+        /// Gets the DataView Persisted Schedule category guid
+        /// </summary>
+        public const string SCHEDULE_PERSISTED_DATAVIEWS = "EEC7A935-BEF2-4450-9CBF-B85CEC6F7FEA";
+
         #endregion
 
         #region Person Attributes
@@ -273,6 +278,11 @@ namespace Rock.SystemGuid
         /// Hosting Metrics Metric Category Guid
         /// </summary>
         public const string METRIC_HOSTING_METRICS = "370FBBD8-7766-4B3F-81A9-F13EE819A832";
+
+        /// <summary>
+        /// The insights metrics Category Guid
+        /// </summary>
+        public const string INSIGHTS = "CEC746EE-76D6-477F-B7CF-374542F92041";
 
         #endregion
 

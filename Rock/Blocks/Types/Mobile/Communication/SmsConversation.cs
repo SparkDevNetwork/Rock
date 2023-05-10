@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.ViewModels.Blocks.Mobile.Communication.SmsConversation;
@@ -185,11 +186,12 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
             using ( var rockContext = new RockContext() )
             {
-                var publicUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+
                 string photoUrl = null;
 
-                // Get the person via either their Guid or their alias Guid.
-                var person = new PersonService( rockContext ).Queryable()
+                // Get the person via either their Guid.
+                var person = new PersonService( rockContext )
+                    .GetQueryableByKey( personGuid.ToString() )
                     .Include( p => p.PhoneNumbers )
                     .Where( p => p.Guid == personGuid )
                     .FirstOrDefault();
@@ -202,7 +204,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
                 if ( person.PhotoId.HasValue )
                 {
-                    photoUrl = $"{publicUrl}GetImage.ashx?Id={person.PhotoId.Value}&maxwidth=512&maxheight=512";
+                    photoUrl = MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Id={person.PhotoId.Value}&maxwidth=512&maxheight=512" );
                 }
 
                 var responses = new CommunicationResponseService( rockContext )

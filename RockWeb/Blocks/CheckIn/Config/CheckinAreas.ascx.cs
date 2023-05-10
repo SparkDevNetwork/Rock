@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         {
             base.OnInit( e );
 
-            cbShowInactive.Checked = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
+            cbShowInactive.Checked = GetBlockPersonPreferences().GetValue( "show-inactive" ).AsBoolean();
 
             BuildRows( !Page.IsPostBack );
 
@@ -709,7 +709,11 @@ namespace RockWeb.Blocks.CheckIn.Config
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbShowInactive_CheckedChanged( object sender, EventArgs e )
         {
-            SetUserPreference( BlockCache.Guid.ToString() + "_showInactive", cbShowInactive.Checked.ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "show-inactive", cbShowInactive.Checked.ToString() );
+            preferences.Save();
+
             BuildRows( true );
         }
 
@@ -802,7 +806,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                          !g.ParentGroupId.HasValue ||
                         !allGroupIds.Contains( g.ParentGroupId.Value ) );
 
-                if ( !GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean() )
+                if ( !GetBlockPersonPreferences().GetValue( "show-inactive" ).AsBoolean() )
                 {
                     childGroups = childGroups.Where( g => g.IsActive );
                 }

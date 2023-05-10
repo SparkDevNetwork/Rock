@@ -9,9 +9,9 @@
             <RadioButtonList v-model="answerText" :items="answerItems" disabled />
         </div>
 
-        <Alert v-if="errorMessage" alertType="warning">
+        <NotificationBox v-if="errorMessage" alertType="warning">
             {{ errorMessage }}
-        </Alert>
+        </NotificationBox>
 
         <div class="submit">
             <RockButton :btnType="BtnType.Primary"
