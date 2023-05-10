@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
@@ -396,7 +397,6 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <returns>The note object that the shell understands.</returns>
         private object GetNoteObject( Note note )
         {
-            var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var canEdit = note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             var canReply = note.NoteType.AllowsReplies;
 
@@ -412,12 +412,18 @@ namespace Rock.Blocks.Types.Mobile.Core
                 canReply = replyDepth < note.NoteType.MaxReplyDepth.Value;
             }
 
+            string photoUrl = "";
+            if( note.CreatedByPersonAlias?.Person?.PhotoUrl != null )
+            {
+                photoUrl = MobileHelper.BuildPublicApplicationRootUrl( note.CreatedByPersonAlias.Person.PhotoUrl );
+            }
+
             return new
             {
                 note.Guid,
                 NoteTypeGuid = note.NoteType.Guid,
                 note.Text,
-                PhotoUrl = $"{baseUrl ?? ""}{note.CreatedByPersonAlias?.Person?.PhotoUrl ?? ""}",
+                PhotoUrl = photoUrl,
                 Name = note.CreatedByPersonName,
                 Date = note.CreatedDateTime.HasValue ? ( DateTimeOffset? ) new DateTimeOffset( note.CreatedDateTime.Value ) : null,
                 ReplyCount = note.ChildNotes.Count( b => b.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ),
