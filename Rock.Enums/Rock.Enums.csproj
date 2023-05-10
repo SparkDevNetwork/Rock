@@ -83,6 +83,8 @@
     <Compile Include="Core\AuditType.cs" />
     <Compile Include="Core\CameraBarcodeConfiguration.cs" />
     <Compile Include="Core\ChangeType.cs" />
+    <Compile Include="Core\ColorRecipe.cs" />
+    <Compile Include="Core\ColorScheme.cs" />
     <Compile Include="Core\ColorDepth.cs" />
     <Compile Include="Core\FollowingSuggestedStatus.cs" />
     <Compile Include="Core\Format.cs" />

@@ -275,15 +275,34 @@ namespace Rock.Utility
         }
 
         /// <summary>Calculates the contrast ratio.</summary>
-        /// <param name="foregroundColor">The color1.</param>
-        /// <param name="backgroundColor">The color2.</param>
+        /// <param name="color1">The color1.</param>
+        /// <param name="color2">The color2.</param>
         /// <returns>System.Double.</returns>
-        public static double CalculateContrastRatio( RockColor foregroundColor, RockColor backgroundColor )
+        public static double CalculateContrastRatio( RockColor color1, RockColor color2 )
         {
             // Formula: (L1 + 0.05) / (L2 + 0.05)
             // https://medium.muz.li/the-science-of-color-contrast-an-expert-designers-guide-33e84c41d156
             // https://www.w3.org/TR/2012/NOTE-WCAG20-TECHS-20120103/G17.html
-            return ( backgroundColor.Luma + 0.05 ) / ( foregroundColor.Luma + 0.05 );
+            // L1 = Lighter color
+            // L2 = Darker color
+
+            RockColor l1 = null;
+            RockColor l2 = null;
+
+            // Determine the lighter and darker color
+            if ( color1.Luminosity > color2.Luminosity )
+            {
+                // Higher luminosity = lighter color
+                l1 = color1;
+                l2 = color2;
+            }
+            else
+            {
+                l1 = color2;
+                l2 = color1;
+            }
+
+            return ( l1.Luma + 0.05 ) / ( l2.Luma + 0.05 );
         }
 
         /// <summary>
@@ -295,39 +314,114 @@ namespace Rock.Utility
         public static ColorPair CalculateColorPair( RockColor color, ColorScheme colorScheme = ColorScheme.Light )
         {
             var colorPair = new ColorPair();
+            RockColor matchedColor = null;
 
-            // Create the matched color. We'll adjust this color below.
-            var pairedColor = color.Clone(); 
+            // Create dark contrast using the Practical UI darkest recipe
+            var darkestColor =  RockColor.CalculateColorRecipe( color , ColorRecipe.Darkest);
 
-            // Create the color pair with the lighter color as the background and the darker color as the foreground.
-            if ( color.IsLight )
+            // Create light contrast using the Practical UI lightest recipe
+            var lightestColor = RockColor.CalculateColorRecipe( color, ColorRecipe.Lightest );
+
+            // Find the color with the greatest contrast
+            var darkContrast = RockColor.CalculateContrastRatio( color, darkestColor );
+            var lightContrast = RockColor.CalculateContrastRatio( color, lightestColor );
+                        
+            if (lightContrast > darkContrast )
             {
-                colorPair.BackgroundColor = color;
-
-                // Create the darker foreground color
-                colorPair.ForegroundColor = color.Clone();
-                colorPair.ForegroundColor.Saturation = .60;
-                colorPair.ForegroundColor.Luminosity = .20;
+                matchedColor = lightestColor;
             }
             else
             {
-                colorPair.ForegroundColor = color;
+                matchedColor = darkestColor;
+            }
 
-                // Create the darker background color
-                colorPair.BackgroundColor = color.Clone();
-                colorPair.BackgroundColor.Saturation = .88;
-                colorPair.BackgroundColor.Luminosity = .87;
+            // We'll create the pairing for light mode. This means we want the lightest
+            // color of the pair to be the background color. Higher luminosity is a lighter color
+            if ( color.Luminosity > matchedColor.Luminosity )
+            {
+                colorPair.BackgroundColor = color;
+                colorPair.ForegroundColor = matchedColor;
+            }
+            else
+            {
+                colorPair.BackgroundColor = matchedColor;
+                colorPair.ForegroundColor = color;
             }
 
             // If dark theme then flip the foreground and background making the darker color is the background.
             if ( colorScheme == ColorScheme.Dark )
             {
                 colorPair.Flip();
-
             }
 
             return colorPair;
         }
+
+        /// <summary>
+        /// Creates a recipe color from the provided color.
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="recipe"></param>
+        /// <returns></returns>
+        public static RockColor CalculateColorRecipe( RockColor color, ColorRecipe recipe )
+        {
+            var recipeColor = color.Clone();
+            var recipeSaturation = .00;
+            var recipeLuminosity = .00;
+
+            switch ( recipe )
+            {
+                case ColorRecipe.Lightest:
+                    {
+                        recipeSaturation = .88;
+                        recipeLuminosity = .87;
+                        break;
+                    }
+                case ColorRecipe.Light:
+                    {
+                        recipeSaturation = .10;
+                        recipeLuminosity = .95;
+                        break;
+                    }
+                case ColorRecipe.Medium:
+                    {
+                        recipeSaturation = .20;
+                        recipeLuminosity = .66;
+                        break;
+                    }
+                case ColorRecipe.Dark:
+                    {
+                        recipeSaturation = .30;
+                        recipeLuminosity = .45;
+                        break;
+                    }
+                case ColorRecipe.Darkest:
+                    {
+                        recipeSaturation = .60;
+                        recipeLuminosity = .20;
+                        break;
+                    }
+                case ColorRecipe.Primary:
+                    {
+                        recipeSaturation = .70;
+                        recipeLuminosity = .80;
+                        break;
+                    }
+            }          
+
+            // If the saturation of the original color is very low then we'll use a different recipe so the color looks
+            // more like the original (which would be gray).
+            if ( color.Saturation <= .15 )
+            {
+                recipeSaturation = .15;                
+            }
+
+            recipeColor.Saturation = recipeSaturation;
+            recipeColor.Luminosity = recipeLuminosity;
+
+            return recipeColor;
+        }
+
         #endregion 
 
         #region Constructors
@@ -1047,7 +1141,15 @@ namespace Rock.Utility
         /// <returns></returns>
         private static double Parse( string hex )
         {
-            return int.Parse( hex, NumberStyles.HexNumber );
+            var returnValue = 0;
+
+            try
+            {
+                returnValue = int.Parse( hex, NumberStyles.HexNumber );
+            }
+            catch { }
+
+            return returnValue;
         }
 
         /// <summary>
