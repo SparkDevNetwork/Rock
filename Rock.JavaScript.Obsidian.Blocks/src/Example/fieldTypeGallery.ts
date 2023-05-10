@@ -326,6 +326,10 @@ const galleryComponents: Record<string, Component> = {
         values: '[{"value": "pizza", "text": "Pizza"}, {"value": "sub", "text": "Sub"}, {"value": "bagel", "text": "Bagel"}]'
     }),
 
+    PersonGallery: getFieldTypeGalleryComponent("Person", "", FieldTypeGuids.Person, {
+        includeBusinesses: "false"
+    }),
+
     PhoneNumberGallery: getFieldTypeGalleryComponent("PhoneNumber", "(321) 456-7890", FieldTypeGuids.PhoneNumber, {
     }),
 

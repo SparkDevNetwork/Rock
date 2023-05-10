@@ -20,7 +20,8 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
-    EnableSelfSelection = "EnableSelfSelection",
+    EnableSelfSelection = "enableSelfSelection",
+    IncludeBusinesses = "includeBusinesses"
 }
 
 // The edit component can be quite large, so load it only as needed.

@@ -2312,11 +2312,13 @@ const personPickerGallery = defineComponent({
     name: "PersonPickerGallery",
     components: {
         GalleryAndResult,
-        PersonPicker
+        PersonPicker,
+        CheckBox
     },
     setup() {
         return {
             value: ref(null),
+            includeBusinesses: ref(false),
             importCode: getControlImportPath("personPicker"),
             exampleCode: `<PersonPicker v-model="value" label="Person" />`
         };
@@ -2327,8 +2329,14 @@ const personPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <PersonPicker v-model="value" label="Person" />
+    <PersonPicker v-model="value" label="Person" :includeBusinesses="includeBusinesses" />
     <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Include Businesses" v-model="includeBusinesses" />
+            </div>
+        </div>
+
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
