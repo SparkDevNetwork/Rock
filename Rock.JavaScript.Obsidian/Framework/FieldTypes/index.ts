@@ -149,6 +149,9 @@ registerFieldType(FieldTypeGuids.Text, new TextFieldType());
 import { TimeFieldType } from "./timeField.partial";
 registerFieldType(FieldTypeGuids.Time, new TimeFieldType());
 
+import { TimeZoneFieldType } from "./timeZoneField.partial";
+registerFieldType(FieldTypeGuids.TimeZone, new TimeZoneFieldType());
+
 import { UrlLinkFieldType } from "./urlLinkField.partial";
 registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());
 
