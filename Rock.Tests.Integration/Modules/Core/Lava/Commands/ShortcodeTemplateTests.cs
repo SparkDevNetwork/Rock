@@ -508,62 +508,52 @@ var chart = new Chart(ctx, {
 </div>
 
 <script>
-    var options = {
-        maintainAspectRatio: false, legend: {
-            position: 'bottom',
-            display: false
-        },
-        tooltips: {
-            enabled: true
-
-            , backgroundColor: '#000'
-            , bodyFontColor: '#fff'
-            , titleFontColor: '#fff'
-
-            , callbacks: {
-                label: function (tooltipItem, data) {
-
-
-                    return data.labels[tooltipItem.index] + ``: `` + Intl.NumberFormat().format(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]);
-
-
-                }
-            }
-
-
+var options = {
+  maintainAspectRatio: false,
+    legend: {
+        position: 'bottom',
+        display: false
+    },
+    tooltips: {
+        enabled: true,
+        backgroundColor: '#000',
+        bodyFontColor: '#fff',
+        titleFontColor: '#fff',
+        callbacks: {
+            label: function(tooltipItem,data) { return data.labels[tooltipItem.index] + ``:`` + Intl.NumberFormat().format( data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] ); }
         }
-    }; var data = {
-        labels: [``Small Groups``, ``Serving Groups``, ``General Groups``, ``Fundraising Groups``],
-        datasets: [{
-            fill: false,
-            backgroundColor: 'rgba(5,155,255,.6)',
-            borderColor: '#059BFF',
-            borderWidth: 0,
-            pointRadius: 3,
-            pointBackgroundColor: '#059BFF',
-            pointBorderColor: '#059BFF',
-            pointBorderWidth: 0,
-            pointHoverBackgroundColor: 'rgba(5,155,255,.6)',
-            pointHoverBorderColor: 'rgba(5,155,255,.6)',
-            pointHoverRadius: '3',
-            data: [45, 38, 34, 12],
-        }
-        ],
-        borderWidth: 0
-    };
+    }
+};
+var data = {
+    labels: [``Small Groups``, ``Serving Groups``, ``General Groups``, ``Fundraising Groups``],
+    datasets: [{
+          fill: false,
+          backgroundColor: 'rgba(5,155,255,.6)',
+          borderColor: '#059BFF',
+          borderWidth: 0,
+          pointRadius: 3,
+          pointBackgroundColor: '#059BFF',
+          pointBorderColor: '#059BFF',
+          pointBorderWidth: 0,
+          pointHoverBackgroundColor: 'rgba(5,155,255,.6)',
+          pointHoverBorderColor: 'rgba(5,155,255,.6)',
+          pointHoverRadius: '3',
+          data: [45,38,34,12],
+      }
+      ],
+    borderWidth: 0
+};
 
+Chart.defaults.global.defaultFontColor = '#777';
+Chart.defaults.global.defaultFontFamily = ``sans-serif``;
 
-    Chart.defaults.global.defaultFontColor = '#777';
-    Chart.defaults.global.defaultFontFamily = ``sans-serif``;
-
-    var ctx = document.getElementById('chart-id-<<guid>>').getContext('2d');
-    var chart = new Chart(ctx, {
-        type: 'pie',
-        data: data,
-        options: options
-    });
-</script>
-";
+var ctx = document.getElementById('chart-id-<<guid>>').getContext('2d');
+var chart = new Chart(ctx, {
+    type: 'pie',
+    data: data,
+    options: options
+});
+</script>";
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
