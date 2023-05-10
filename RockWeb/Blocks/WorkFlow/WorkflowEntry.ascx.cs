@@ -1108,7 +1108,7 @@ namespace RockWeb.Blocks.WorkFlow
                         {
                             string url = ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
                             url = ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
-                            lAttribute.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", url, formattedValue );
+                            lAttribute.Text = string.Format( "<a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a>", url, formattedValue );
                         }
                         else
                         {

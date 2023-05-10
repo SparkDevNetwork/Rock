@@ -259,7 +259,7 @@ export default defineComponent({
 
             <div ref="dropZoneElement" :id="uniqueId" class="fileupload-group" @click="onSelectFileClick">
                 <div class="fileupload-thumbnail">
-                    <a v-if="fileUrl" :class="thumbnailClass" :href="fileUrl" target="_blank" @click.stop>{{ fileName }}</a>
+                    <a v-if="fileUrl" :class="thumbnailClass" :href="fileUrl" target="_blank" rel="noopener noreferrer" @click.stop>{{ fileName }}</a>
                     <span v-else :class="thumbnailClass"></span>
 
                     <div v-if="isDeleteVisible" class="fileupload-remove">

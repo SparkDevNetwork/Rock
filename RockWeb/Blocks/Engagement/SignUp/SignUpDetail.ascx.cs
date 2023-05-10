@@ -2281,7 +2281,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 if ( anyGroupTypeGroupRequirements )
                 {
-                    lGroupTypeGroupRequirements.Text = $"(From <a href='{this.CurrentGroupTypeUrl}' target='_blank'>{this.CurrentGroupType.Name}</a>)";
+                    lGroupTypeGroupRequirements.Text = $"(From <a href='{this.CurrentGroupTypeUrl}' target='_blank' rel='noopener noreferrer'>{this.CurrentGroupType.Name}</a>)";
 
                     gGroupTypeGroupRequirements.DataSource = groupTypeGroupRequirements;
                     gGroupTypeGroupRequirements.DataBind();
@@ -2905,7 +2905,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         private void ShowNoAllowedScheduleTypesMessage()
         {
-            nbNoAllowedScheduleTypes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow Custom or Named Group Schedule Options. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank'>enable at least one of these types</a> to edit opportunities.";
+            nbNoAllowedScheduleTypes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow Custom or Named Group Schedule Options. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank' rel='noopener noreferrer'>enable at least one of these types</a> to edit opportunities.";
             nbNoAllowedScheduleTypes.Visible = true;
         }
 
@@ -2914,7 +2914,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         private void ShowNoAllowedLocationPickerModesMessage()
         {
-            nbNoAllowedLocationPickerModes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow any Location Selection Modes. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank'>enable at least one mode</a> to edit opportunities.";
+            nbNoAllowedLocationPickerModes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow any Location Selection Modes. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank' rel='noopener noreferrer'>enable at least one mode</a> to edit opportunities.";
             nbNoAllowedLocationPickerModes.Visible = true;
         }
 

@@ -1269,6 +1269,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes the trailing forwardslash.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>System.String.</returns>
+        public static string RemoveTrailingForwardslash( this string value )
+        {
+            return value.TrimEnd( new char[] { '/' } );
+        }
+
+        /// <summary>
         /// Evaluates string, and if null or empty, returns nullValue instead.
         /// </summary>
         /// <param name="value">The value.</param>

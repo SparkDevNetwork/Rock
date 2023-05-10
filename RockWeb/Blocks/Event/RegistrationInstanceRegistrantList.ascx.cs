@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Event
     {
         #region Properties
 
-        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}?id={1}' target='_blank' style='color: black;'><i class='fa fa-file-signature'></i></a>";
+        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}?id={1}' target='_blank' rel='noopener noreferrer' style='color: black;'><i class='fa fa-file-signature'></i></a>";
         private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='{0}'></i>";
 
         #endregion
