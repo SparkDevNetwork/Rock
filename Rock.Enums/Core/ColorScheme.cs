@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.Model
+namespace Rock.Enums.Core
 {
     /// <summary>
     /// Represents the color scheme (light or dark mode).
     /// </summary>
-    [Enums.EnumDomain( "Core" )]
     public enum ColorScheme
     {
         /// <summary>

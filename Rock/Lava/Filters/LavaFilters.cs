@@ -40,6 +40,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
+using Rock.Enums.Core;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Security;

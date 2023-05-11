@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.Model
+namespace Rock.Enums.Core
 {
     /// <summary>
     /// Represents the color recipe lightly based off of Practical UI.
     /// </summary>
-    [Enums.EnumDomain( "Core" )]
     public enum ColorRecipe
     {
         /// <summary>
