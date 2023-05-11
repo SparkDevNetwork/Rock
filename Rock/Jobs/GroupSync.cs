@@ -109,14 +109,21 @@ namespace Rock.Jobs
                     this.UpdateLastStatusMessage( $"Syncing group {syncInfo.GroupName}" );
 
                     // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
-                    using ( var rockContextReadOnly = new RockContextReadOnly() )
+                    /*  
+                        5/11/2023 - CWR
+
+                        This needs to use the regular RockContext because
+                        the change of group members' archive state versus a RockContextReadOnly version 
+                        attempts a duplicate addition and causes a potential exception.
+                    */
+                    using ( var rockContext = new RockContext() )
                     {
                         // increase the timeout just in case the data view source is slow
-                        rockContextReadOnly.Database.CommandTimeout = commandTimeout;
-                        rockContextReadOnly.SourceOfChange = "Group Sync";
+                        rockContext.Database.CommandTimeout = commandTimeout;
+                        rockContext.SourceOfChange = "Group Sync";
 
                         // Get the Sync
-                        var sync = new GroupSyncService( rockContextReadOnly )
+                        var sync = new GroupSyncService( rockContext )
                             .Queryable()
                             .Include( a => a.Group )
                             .Include( a => a.SyncDataView )
@@ -141,10 +148,10 @@ namespace Rock.Jobs
 
                                 11/28/2022 - CWR
                                 In order to prevent potential context conflicts with allowing a new Rock context being created here,
-                                this DbContext will stay set to the rockContextReadOnly that was passed in.
+                                this DbContext will stay set to the rockContext that was passed in.
 
                              */
-                            DbContext = rockContextReadOnly,
+                            DbContext = rockContext,
                             DatabaseTimeoutSeconds = commandTimeout
                         };
 
@@ -173,7 +180,7 @@ namespace Rock.Jobs
                         // so we don't try to delete anyone who's already archived, and
                         // it must include deceased members so we can remove them if they
                         // are no longer in the data view.
-                        var existingGroupMemberPersonList = new GroupMemberService( rockContextReadOnly )
+                        var existingGroupMemberPersonList = new GroupMemberService( rockContext )
                             .Queryable( true, true ).AsNoTracking()
                             .Where( gm => gm.GroupId == sync.GroupId )
                             .Where( gm => gm.GroupRoleId == sync.GroupTypeRoleId )
