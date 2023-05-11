@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Rock.Model;
+using Rock.Enums.Core;
 using Rock.Utilities;
 
 namespace Rock.Utility
