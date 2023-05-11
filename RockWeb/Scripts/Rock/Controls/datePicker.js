@@ -31,7 +31,8 @@
                     startView: options.startView,
                     showOnFocus: options.showOnFocus,
                     todayHighlight: options.todayHighlight,
-                    zIndexOffset: 1050
+                    zIndexOffset: 1050,
+                    container: document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || "body"
                 });
 
                 // note: using 'change' instead of datePicker's 'changeDate' so that both manual entry and picking from calender works
