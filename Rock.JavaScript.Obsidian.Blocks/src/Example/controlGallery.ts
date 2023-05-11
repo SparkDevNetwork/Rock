@@ -8073,6 +8073,7 @@ export default defineComponent({
     border-radius: 0;
     margin: -1px 0 -1px -1px;
     overflow-y: auto;
+    flex-shrink: 0;
 }
 
 .gallerySidebar li.current {
