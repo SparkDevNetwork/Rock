@@ -1615,21 +1615,24 @@ namespace Rock.Blocks.Event
 
             if ( registrant != null )
             {
-                // If the form has first or last name fields and they have data then match the registrant.Person with the form values.
-                // If the form values are blank then this is an existing registration and a payment is being made and we do not want to null out the registrant(s).
-                var firstNameMatch = firstName.IsNullOrWhiteSpace() ? true : ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) );
-                var lastNameMatch = lastName.IsNullOrWhiteSpace() ? true : registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase );
-
                 person = registrant.Person;
-                if ( person != null && firstNameMatch && lastNameMatch )
+                if ( person != null )
                 {
-                    // Do nothing
-                }
-                else
-                {
-                    person = null;
-                    registrant.PersonAlias = null;
-                    registrant.PersonAliasId = null;
+                    // If the form has first or last name fields and they have data then match the registrant.Person with the form values.
+                    // If the form values are blank then this is an existing registration and a payment is being made and we do not want to null out the registrant(s).
+                    var firstNameMatch = firstName.IsNullOrWhiteSpace() ? true : ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) );
+                    var lastNameMatch = lastName.IsNullOrWhiteSpace() ? true : registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase );
+
+                    if ( firstNameMatch && lastNameMatch )
+                    {
+                        // Do nothing
+                    }
+                    else
+                    {
+                        person = null;
+                        registrant.PersonAlias = null;
+                        registrant.PersonAliasId = null;
+                    }
                 }
             }
             else if ( registrantInfo.PersonGuid.HasValue )
