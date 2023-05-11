@@ -1000,37 +1000,54 @@ th[align="right"] {
 .btn-authentication {
   width: 100%;
   margin-bottom: 8px;
-
-  .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
+  color: @btn-default-color;
+  background-color: @btn-default-bg;
+  border-color: @btn-default-border;
 
   &.facebook,
   &.google,
   &.twitter {
-    color: #fff;
     background-color: var(--btn-bg, @btn-default-bg);
-    border-color: var(--btn-bg, @btn-default-bg);
+    border-color: var(--btn-bg, @btn-default-border);
 
     &::before {
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;
       content: var(--social-icon);
+      flex: 0 0 1.25em;
     }
   }
 
   &.facebook {
-    --social-icon: @fa-var-facebook-f;
+    color: #fff;
     --btn-bg: @brand-facebook;
+    --btn-hover-bg: darken(@brand-facebook, 10%);
+    --social-icon: @fa-var-facebook-f;
   }
 
   &.google {
-    --social-icon: @fa-var-google;
-    --btn-bg: @brand-googleplus;
+    color: @btn-default-color;
+    &:before {
+      background-image: url("/Assets/Icons/googlesigninicon.svg");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      width: 1em;
+      height: 1em;
+      content: "  ";
+    }
   }
 
   &.twitter {
-    --social-icon: @fa-var-twitter;
+    color: #fff;
     --btn-bg: @brand-twitter;
+    --btn-hover-bg: darken(@brand-twitter, 10%);
+    --social-icon: @fa-var-twitter;
+  }
+
+  &:hover {
+    background-color: var(--btn-hover-bg, darken(@btn-default-bg, 10%));
   }
 }
 
@@ -1038,7 +1055,6 @@ th[align="right"] {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: 999px;
   white-space: normal;
 
   &:after {

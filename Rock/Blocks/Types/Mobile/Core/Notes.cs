@@ -74,14 +74,14 @@ namespace Rock.Blocks.Types.Mobile.Core
         Order = 3 )]
 
     [BooleanField( "Enable Group Notification",
-        Description = "If a Group is available through page context, this will send a communication to every person in a group (using their `CommunicationPreference`, and the `GroupNotificationCommunicationTemplate`), when a Note is added.",
+        Description = "If a Group is available through page context, this will send a communication to every person in a group (using the Member 'CommunicationPreference', and the 'GroupNotificationCommunicationTemplate'), when a Note is added.",
         IsRequired = true,
         DefaultBooleanValue = false,
         Key = AttributeKey.EnableGroupNotification,
         Order = 4 )]
 
     [CommunicationTemplateField( "Group Notification Communication Template",
-        Description = "The template to use to send the communication.Note  will be passed as a merge field.",
+        Description = "The template to use to send the communication. Note will be passed as an additional merge field.",
         IsRequired = false,
         Key = AttributeKey.GroupNotificationCommunicationTemplate,
         Order = 5 )]
