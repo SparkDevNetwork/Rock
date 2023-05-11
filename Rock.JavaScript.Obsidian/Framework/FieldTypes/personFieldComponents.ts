@@ -39,6 +39,8 @@ export const EditComponent = defineComponent({
             return asBoolean(props.configurationValues[ConfigurationValueKey.IncludeBusinesses] ?? "");
         });
 
+        const enableSelfSelection = computed(() => asTrueFalseOrNull(props.configurationValues[ConfigurationValueKey.EnableSelfSelection]));
+
         watch(() => props.modelValue, () => {
             internalValue.value = JSON.parse(props.modelValue || "{}");
         }, { immediate: true });
@@ -49,12 +51,13 @@ export const EditComponent = defineComponent({
 
         return {
             internalValue,
-            includeBusinesses
+            includeBusinesses,
+            enableSelfSelection
         };
     },
 
     template: `
-<PersonPicker v-model="internalValue" :includeBusinesses="includeBusinesses" />
+<PersonPicker v-model="internalValue" :includeBusinesses="includeBusinesses" :enableSelfSelection="enableSelfSelection" />
 `
 });
 
