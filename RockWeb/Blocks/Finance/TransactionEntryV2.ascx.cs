@@ -3712,7 +3712,9 @@ mission. We are so grateful for your commitment.</p>
             var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetInclude( scheduledTransactionGuid.Value, s => s.AuthorizedPersonAlias.Person );
             var personService = new PersonService( rockContext );
 
-            var targetPerson = GetTargetPerson( rockContext );
+            // If there is no person action identifier, GetTargetPerson() will return a null value and we can substitute
+            // CurrentPerson to ensure that the transaction we are modifying belongs to the logged in user.
+            var targetPerson = GetTargetPerson( rockContext ) ?? CurrentPerson;
 
             // get business giving id
             var givingIds = personService.GetBusinesses( targetPerson.Id ).Select( g => g.GivingId ).ToList();
