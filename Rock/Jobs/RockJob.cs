@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Quartz;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -122,6 +122,76 @@ namespace Rock.Jobs
         /// </summary>
         /// <value>The result.</value>
         public string Result { get; set; }
+
+        /// <summary>
+        /// A collection of the various categories for the results of a job that has run.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal class</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public classes. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16" )]
+        internal class JobSummary
+        {
+            public const string SUCCESS_ICON = "<i class='fa fa-circle text-success'></i> ";
+            public const string WARNING_ICON = "<i class='fa fa-circle text-warning'></i> ";
+            public const string ERROR_ICON = "<i class='fa fa-circle text-danger'></i> ";
+
+            public JobSummary()
+            {
+                Successes = new List<string>();
+                Warnings = new List<string>();
+                Errors = new List<string>();
+            }
+
+            public List<string> Successes { get; set; }
+
+            public List<string> Warnings { get; set; }
+
+            public List<string> Errors { get; set; }
+
+            /// <summary>
+            /// Aggregates successes, warnings, and errors with icon prefixes into an HTML string.
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
+            {
+                StringBuilder sb = new StringBuilder();
+                if ( Successes.Any() )
+                {
+                    sb.Append( SUCCESS_ICON );
+                    foreach ( var success in Successes )
+                    {
+                        sb.AppendLine( success );
+                    }
+                }
+
+                if ( Warnings.Any() )
+                {
+                    sb.Append( WARNING_ICON );
+                    foreach ( var warning in Warnings )
+                    {
+                        sb.AppendLine( warning );
+                    }
+                }
+
+                if ( Errors.Any() )
+                {
+                    sb.Append( ERROR_ICON );
+                    foreach ( var error in Errors )
+                    {
+                        sb.AppendLine( error );
+                    }
+                }
+
+                return sb.ToString().ConvertCrLfToHtmlBr();
+            }
+        }
+
 
         /// <summary>
         /// Execute the Job using the specified context configuration.
