@@ -80,6 +80,9 @@ registerFieldType(FieldTypeGuids.Gender, new GenderFieldType());
 import { GroupFieldType } from "./groupField.partial";
 registerFieldType(FieldTypeGuids.Group, new GroupFieldType());
 
+import { GroupLocationTypeFieldType } from "./groupLocationTypeField.partial";
+registerFieldType(FieldTypeGuids.GroupLocationType, new GroupLocationTypeFieldType());
+
 import { ImageFieldType } from "./imageField.partial";
 registerFieldType(FieldTypeGuids.Image, new ImageFieldType());
 
