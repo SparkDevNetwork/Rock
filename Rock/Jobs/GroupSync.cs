@@ -194,7 +194,7 @@ namespace Rock.Jobs
                         var targetPersonIdsToDelete = existingGroupMemberPersonList.Where( t => !sourcePersonIds.Contains( t.PersonId ) && t.IsArchived != true ).ToList();
                         if ( targetPersonIdsToDelete.Any() )
                         {
-                            this.UpdateLastStatusMessage( $"Deleting {targetPersonIdsToDelete.Count()} group records in {syncInfo.GroupName} that are no longer in the sync data view" );
+                            this.UpdateLastStatusMessage( $"Deleting or archiving {targetPersonIdsToDelete.Count()} group records in {syncInfo.GroupName} that are no longer in the sync data view" );
                         }
 
                         int deletedCount = 0;
@@ -206,7 +206,7 @@ namespace Rock.Jobs
                             deletedCount++;
                             if ( deletedCount % 100 == 0 )
                             {
-                                this.UpdateLastStatusMessage( $"Deleted {deletedCount} of {targetPersonIdsToDelete.Count()} group member records for group {syncInfo.GroupName}" );
+                                this.UpdateLastStatusMessage( $"Deleted or archived {deletedCount} of {targetPersonIdsToDelete.Count()} group member records for group {syncInfo.GroupName}" );
                             }
 
                             try
