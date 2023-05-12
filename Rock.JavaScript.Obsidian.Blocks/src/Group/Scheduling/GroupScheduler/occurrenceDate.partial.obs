@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="occurrenceDateElement" class="occurrence-date" :style="inlineStyle">
+    <div ref="occurrenceDateElement" class="occurrence-date js-occurrence-date" :style="inlineStyle">
         <h2 class="occurrence-date-title">{{ title }}</h2>
 
         <NotificationBox v-if="!anySchedules" :alertType="AlertType.Info">
