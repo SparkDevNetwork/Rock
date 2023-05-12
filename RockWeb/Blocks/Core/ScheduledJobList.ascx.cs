@@ -99,10 +99,10 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGridFilter()
         {
-            tbNameFilter.Text = gfSettings.GetUserPreference( GridUserPreferenceKey.Name );
+            tbNameFilter.Text = gfSettings.GetFilterPreference( GridUserPreferenceKey.Name );
 
             // Set the Active Status
-            var activeStatusFilter = gfSettings.GetUserPreference( GridUserPreferenceKey.ActiveStatus );
+            var activeStatusFilter = gfSettings.GetFilterPreference( GridUserPreferenceKey.ActiveStatus );
             ddlActiveFilter.SetValue( activeStatusFilter );
         }
 
@@ -115,14 +115,14 @@ namespace RockWeb.Blocks.Administration
         {
             if ( ddlActiveFilter.SelectedValue == "all" )
             {
-                gfSettings.SaveUserPreference( GridUserPreferenceKey.ActiveStatus, string.Empty );
+                gfSettings.SetFilterPreference( GridUserPreferenceKey.ActiveStatus, string.Empty );
             }
             else
             {
-                gfSettings.SaveUserPreference( GridUserPreferenceKey.ActiveStatus, ddlActiveFilter.SelectedValue );
+                gfSettings.SetFilterPreference( GridUserPreferenceKey.ActiveStatus, ddlActiveFilter.SelectedValue );
             }
 
-            gfSettings.SaveUserPreference( GridUserPreferenceKey.Name, tbNameFilter.Text );
+            gfSettings.SetFilterPreference( GridUserPreferenceKey.Name, tbNameFilter.Text );
 
             BindGrid();
         }
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfSettings_ClearFilterClick( object sender, EventArgs e )
         {
-            gfSettings.DeleteUserPreferences();
+            gfSettings.DeleteFilterPreferences();
             BindGridFilter();
         }
 
@@ -379,13 +379,13 @@ namespace RockWeb.Blocks.Administration
 
             var jobsQuery = jobService.GetAllJobs();
 
-            var nameFilter = gfSettings.GetUserPreference( GridUserPreferenceKey.Name );
+            var nameFilter = gfSettings.GetFilterPreference( GridUserPreferenceKey.Name );
             if ( nameFilter.IsNotNullOrWhiteSpace() )
             {
                 jobsQuery = jobsQuery.Where( a => a.Name.Contains( nameFilter ) );
             }
 
-            var activeFilter = gfSettings.GetUserPreference( GridUserPreferenceKey.ActiveStatus );
+            var activeFilter = gfSettings.GetFilterPreference( GridUserPreferenceKey.ActiveStatus );
             if ( activeFilter.IsNotNullOrWhiteSpace() )
             {
                 var activeStatus = activeFilter.AsBoolean();

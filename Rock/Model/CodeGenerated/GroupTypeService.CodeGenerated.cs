@@ -141,6 +141,9 @@ namespace Rock.Model
                 AllowSpecificGroupMemberWorkflows = model.AllowSpecificGroupMemberWorkflows,
                 AttendanceCountsAsWeekendService = model.AttendanceCountsAsWeekendService,
                 AttendancePrintTo = ( int ) model.AttendancePrintTo,
+                AttendanceReminderFollowupDays = model.AttendanceReminderFollowupDays,
+                AttendanceReminderSendStartOffsetMinutes = model.AttendanceReminderSendStartOffsetMinutes,
+                AttendanceReminderSystemCommunicationId = model.AttendanceReminderSystemCommunicationId,
                 AttendanceRule = ( int ) model.AttendanceRule,
                 DefaultGroupRoleId = model.DefaultGroupRoleId,
                 Description = model.Description,
@@ -265,6 +268,10 @@ namespace Rock.Model
             target.AllowSpecificGroupMemberWorkflows = source.AllowSpecificGroupMemberWorkflows;
             target.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             target.AttendancePrintTo = source.AttendancePrintTo;
+            target.AttendanceReminderFollowupDays = source.AttendanceReminderFollowupDays;
+            target.AttendanceReminderFollowupDaysList = source.AttendanceReminderFollowupDaysList;
+            target.AttendanceReminderSendStartOffsetMinutes = source.AttendanceReminderSendStartOffsetMinutes;
+            target.AttendanceReminderSystemCommunicationId = source.AttendanceReminderSystemCommunicationId;
             target.AttendanceRule = source.AttendanceRule;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
             target.Description = source.Description;

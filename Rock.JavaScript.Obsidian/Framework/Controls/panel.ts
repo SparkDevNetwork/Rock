@@ -67,7 +67,7 @@ export default defineComponent({
          */
         hasZoom: {
             type: Boolean as PropType<boolean>,
-            default: true
+            default: false
         },
 
         /** True if the panel can go into full screen mode. */
@@ -340,7 +340,7 @@ export default defineComponent({
             <div class="panel-header-actions" @click.prevent.stop="onIgnoreClick">
                 <slot name="headerActions" />
 
-                <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1">
+                <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1 panel-action-zoom-control">
                     <span class="input-group">
                         <span class="input-group-addon">
                             <span class="btn btn-default" type="button" @click="onZoomDecreaseClick"><i class="fa fa-minus"></i></span>
@@ -352,20 +352,20 @@ export default defineComponent({
                     </span>
                 </span>
 
-                <span v-if="hasZoom && isZoomSupported" class="action clickable" :class="{active: isZoomActive}" @click="onZoomClick">
+                <span v-if="hasZoom && isZoomSupported" class="action panel-action-zoom clickable" :class="{active: isZoomActive}" @click="onZoomClick">
                     <i class="fa fa-search-plus" />
                 </span>
 
-                <span v-if="$slots.helpContent" class="action clickable" @click="onHelpClick">
+                <span v-if="$slots.helpContent" class="action panel-action-help clickable" @click="onHelpClick">
                     <i class="fa fa-question"></i>
                 </span>
 
-                <span v-if="hasFullscreen" class="action clickable" @click="onFullscreenClick">
+                <span v-if="hasFullscreen" class="action panel-action-fullscreen clickable" @click="onFullscreenClick">
                     <i class="fa fa-expand"></i>
                 </span>
 
                 <template v-if="hasHeaderSecondaryActions">
-                    <span class="action clickable" style="position: relative;">
+                    <span class="action panel-action-context clickable" style="position: relative;">
                         <i class="fa fa-ellipsis-v" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li v-for="action in headerSecondaryActions" :class="getHeaderSecondaryActionItemClass(action)">

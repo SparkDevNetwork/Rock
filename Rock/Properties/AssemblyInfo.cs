@@ -131,3 +131,6 @@ using System.Runtime.InteropServices;
 [assembly: TypeForwardedTo( typeof( Rock.Model.WorkflowTriggerType) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.WorkflowTriggerValueChangeType) )]
 [assembly: TypeForwardedTo( typeof( Rock.Utility.TimeIntervalUnit ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemMatchesPreference ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemStatus ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.SchedulerResourceGroupMemberFilterType ) )]

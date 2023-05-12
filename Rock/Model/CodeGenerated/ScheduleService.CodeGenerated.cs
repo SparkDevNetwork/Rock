@@ -58,6 +58,12 @@ namespace Rock.Model
 
             // ignoring AttendanceOccurrence,ScheduleId
 
+            if ( new Service<DataView>( Context ).Queryable().Any( a => a.PersistedScheduleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, DataView.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<EventItemOccurrence>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
@@ -76,11 +82,13 @@ namespace Rock.Model
                 return false;
             }
 
+            #pragma warning disable 612, 618 // GroupLocationHistoricalSchedule is obsolete, but we still need this code generated
             if ( new Service<GroupLocationHistoricalSchedule>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, GroupLocationHistoricalSchedule.FriendlyTypeName );
                 return false;
             }
+            #pragma warning restore 612, 618
 
             if ( new Service<GroupMemberAssignment>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {

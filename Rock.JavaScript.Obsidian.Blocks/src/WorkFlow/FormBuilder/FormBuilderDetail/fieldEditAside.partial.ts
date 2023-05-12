@@ -25,7 +25,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import RockButton from "@Obsidian/Controls/rockButton";
-import Slider from "@Obsidian/Controls/slider";
+import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
 import InlineSwitch from "@Obsidian/Controls/switch";
 import TextBox from "@Obsidian/Controls/textBox";
 import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
@@ -85,7 +85,7 @@ export default defineComponent({
         NumberBox,
         RockButton,
         RockForm,
-        Slider,
+        RangeSlider,
         TextBox,
         NotificationBox
     },
@@ -480,7 +480,7 @@ export default defineComponent({
             </Panel>
 
             <Panel title="Format" :hasCollapse="true">
-                <Slider v-model="fieldSize" label="Column Span" :min="1" :max="12" isIntegerOnly showValueBar/>
+                <RangeSlider v-model="fieldSize" label="Column Span" :min="1" :max="12" :step="1" showValueBar/>
                 <InlineSwitch v-model="isFieldRequired" text="Required" />
                 <InlineSwitch v-model="isFieldLabelHidden" text="Hide Label" />
             </Panel>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,8 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add to the group.", true, "", "", 0, null, 
         new string[] { "Rock.Field.Types.PersonFieldType" })]
+    [WorkflowAttribute( "Group Member", "An optional GroupMember attribute to store the group member that is added.", false, "", "", 1, null, 
+        new string[] { "Rock.Field.Types.GroupMemberFieldType" } )]
 
     [GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to add the person to. Leave role blank to use the default role for that group.", "Group", true, "", "", 1, "GroupAndRole" )]
     [EnumField( "Group Member Status", "The  status to set the user to in the group.", typeof( GroupMemberStatus ), true, "1", "", 2 )]

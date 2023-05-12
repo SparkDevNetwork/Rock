@@ -688,7 +688,7 @@ namespace Rock.Jobs
         /// <param name="message">The message to be logged.</param>
         private void LogInformation( string message )
         {
-            RockLogger.Log.Information( RockLogDomains.Jobs, $"Update Persisted Attribute Values - {message}" );
+            Log( RockLogLevel.Info, message );
         }
 
         /// <summary>
@@ -697,7 +697,7 @@ namespace Rock.Jobs
         /// <param name="message">The message to be logged.</param>
         private void LogDebug( string message )
         {
-            RockLogger.Log.Debug( RockLogDomains.Jobs, $"Update Persisted Attribute Values - {message}" );
+            Log( RockLogLevel.Debug, message );
         }
 
         /// <summary>

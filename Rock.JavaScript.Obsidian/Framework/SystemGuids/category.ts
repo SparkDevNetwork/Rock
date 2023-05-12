@@ -67,6 +67,8 @@ export const Category = {
     HistoryPersonRegistration: "DA9C0CC7-7B31-4E1E-BBA5-50405B2D9EFE",
     /** History of step */
     HistoryPersonStep: "517BB2D3-0A50-4132-818E-63BB3C81EAE9",
+    /** The insights metrics Category Guid */
+    Insights: "CEC746EE-76D6-477F-B7CF-374542F92041",
     /** Hosting Metrics Metric Category Guid */
     MetricHostingMetrics: "370FBBD8-7766-4B3F-81A9-F13EE819A832",
     /** The category for the Check-in Manager Roster Alert Icons */
@@ -95,6 +97,8 @@ export const Category = {
     RegistrationAttributeStartOfRegistration: "27808664-97E7-432B-A1E7-D02F6DE5977A",
     /** Gets the Metrics schedule category guid */
     ScheduleMetrics: "5A794741-5444-43F0-90D7-48E47276D426",
+    /** Gets the DataView Persisted Schedule category guid */
+    SchedulePersistedDataviews: "EEC7A935-BEF2-4450-9CBF-B85CEC6F7FEA",
     /** Gets the Service Times schedule category guid */
     ScheduleServiceTimes: "4FECC91B-83F9-4269-AE03-A006F401C47E",
     /** The System Communication RSVP Confirmation Category guid */

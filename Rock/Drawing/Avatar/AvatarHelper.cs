@@ -28,7 +28,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 namespace Rock.Drawing.Avatar
 {
     /// <summary>
-    /// Helper class for buildinging avatars
+    /// Helper class for building avatars
     /// </summary>
     public static class AvatarHelper
     {
@@ -54,7 +54,7 @@ namespace Rock.Drawing.Avatar
         public static Image ChildFemaleMask { get; } = new Image<Rgba32>( 1, 1 );
 
         /// <summary>
-        /// Mask for unknow genders
+        /// Mask for unknown genders
         /// </summary>
         public static Image UnknownGenderMask { get; } = new Image<Rgba32>( 1, 1 );
 
@@ -72,7 +72,7 @@ namespace Rock.Drawing.Avatar
         public static List<Guid> AuthorizedRefreshCacheRoleGuids { get; } = new List<Guid>();
         #endregion
 
-        #region Private Memebers
+        #region Private Members
         /// <summary>
         /// Collection of fonts to be used for avatars
         /// </summary>
@@ -139,7 +139,7 @@ namespace Rock.Drawing.Avatar
             if ( settings.PhotoId.HasValue )
             {
                 // Get image from the binary file
-                avatar = RockImage.GetImageFromBinaryFileService( settings.PhotoId.Value );
+                avatar = RockImage.GetPersonImageFromBinaryFileService( settings.PhotoId.Value );
 
                 // Resize image
                 avatar.CropResize( settings.Size, settings.Size );
@@ -181,7 +181,11 @@ namespace Rock.Drawing.Avatar
             }
 
             // Cache the image to the file system
-            avatar.SaveAsPng( $"{settings.CachePath}{settings.CacheKey}.png" );
+            try
+            {
+                avatar.SaveAsPng( $"{settings.CachePath}{settings.CacheKey}.png" );
+            }
+            catch (Exception) { }
 
             var outputStream = new MemoryStream();
             avatar.SaveAsPng( outputStream );
@@ -315,7 +319,7 @@ namespace Rock.Drawing.Avatar
 
                 // We needed to create the TextOptions above to be able to measure the size of the Text. One
                 // would think you could update that object's Origin property to tell it where to place the text
-                // but you can't. The Orgin will appear to be updated, but the text will be place at the original
+                // but you can't. The Origin will appear to be updated, but the text will be place at the original
                 // Origin (possible bug? 🤷‍). To get around that we'll need to create a new TextOption.
 
                 var renderTextOptions = new TextOptions( font )

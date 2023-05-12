@@ -202,7 +202,6 @@ export default defineComponent({
             http.post<FieldTypeEditorUpdateAttributeConfigurationResultBag>("/api/v2/Controls/FieldTypeEditorUpdateAttributeConfiguration", null, update)
                 .then(result => {
                     resetToDefaults();
-                    console.debug("got configuration", result.data);
 
                     if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationValues) {
                         fieldErrorMessage.value = "";
@@ -224,7 +223,6 @@ export default defineComponent({
 
         /** Called when the default value has been changed by the screen control. */
         const onDefaultValueUpdate = (value: string): void => {
-            console.debug("default value updated");
             defaultValue.value = value;
             updateModelValue();
         };
@@ -234,7 +232,6 @@ export default defineComponent({
          * configuration properties be updated from the server.
          */
         const onUpdateConfiguration = (): void => {
-            console.debug("onUpdateConfiguration");
             updateFieldConfiguration(defaultValue.value ?? "");
         };
 
@@ -309,7 +306,7 @@ export default defineComponent({
 <div>
     <template v-if="isFieldTypesReady">
         <StaticFormControl v-if="isFieldTypeReadOnly" label="Field Type" v-model="fieldTypeName" />
-        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" />
+        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" enhanceForLongLists />
     </template>
     <NotificationBox v-if="fieldErrorMessage" alertType="warning">
         {{ fieldErrorMessage }}

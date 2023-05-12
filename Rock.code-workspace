@@ -11,11 +11,27 @@
 				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
 			},
 			{
+				"name": "Debug Framework (Attach to existing Chrome)",
+				"request": "attach",
+				"port": 9222,
+				"type": "chrome",
+				"urlFilter": "http://localhost:6229*",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+			},
+			{
 				"name": "Debug Blocks",
 				"request": "launch",
 				"port": 9222,
 				"type": "chrome",
 				"url": "http://localhost:6229",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+			},
+			{
+				"name": "Debug Blocks (Attach to existing Chrome)",
+				"request": "attach",
+				"port": 9222,
+				"type": "chrome",
+				"urlFilter": "http://localhost:6229*",
 				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
 			}
 		]
@@ -44,7 +60,13 @@
 			"html": true
 		},
 		"volar.completion.preferredAttrNameCase": "camel",
+		"vue.features.complete.propNameCasing": "camel",
 		"volar.vueserver.additionalExtensions": [
+			"obs"
+		],
+		"vue.complete.casing.props": "camel",
+		"vue.complete.casing.tags": "pascal",
+		"vue.server.additionalExtensions": [
 			"obs"
 		],
 		"files.trimTrailingWhitespace": true,

@@ -45,7 +45,7 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <seealso cref="Rock.Blocks.IHasCustomActions" />
 
     [DisplayName( "Sign-Up Finder" )]
-    [Category( "Engagement > Sign-Up" )]
+    [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Block used for finding a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
 
@@ -71,7 +71,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [CustomDropdownListField( "Display Project Filters As",
         Key = AttributeKey.DisplayProjectFiltersAs,
-        Description = "Determines if the project filters should be show as checkboxes or multi-select dropdowns.",
+        Description = @"Determines if the ""Project Types"", ""Campus"", and ""Named Schedule"" project filters should be shown as checkboxes or multi-select dropdowns.",
         Category = AttributeCategory.CustomSetting,
         ListSource = "Checkboxes^Checkboxes,MultiSelectDropDown^Multi-Select Dropdown",
         DefaultValue = "Checkboxes",
@@ -322,7 +322,7 @@ namespace Rock.Blocks.Engagement.SignUp
 {% if projectCount > 0 %}
     <div class=""row d-flex flex-wrap"">
         {% for project in Projects %}
-            <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">
+            <div class=""col-xs-12 col-sm-6 col-md-4 mb-4"">
                 <div class=""card h-100"">
                     <div class=""card-body"">
                         <h3 class=""card-title mt-0"">{{ project.Name }}</h3>
@@ -355,7 +355,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         {% endif %}
                     </div>
                     <div class=""card-footer bg-white border-0"">
-                        {% if project.ShowRegisterButton == true %}
+                        {% if project.ShowRegisterButton %}
                             <a href=""{{ project.RegisterPageUrl }}"" class=""btn btn-primary btn-xs"">Register</a>
                         {% endif %}
                         <a href=""{{ project.ProjectDetailPageUrl }}"" class=""btn btn-link btn-xs"">Details</a>
@@ -632,13 +632,10 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <returns>The attributes that should be presented as filter items for the search, grouped by project type [guid].</returns>
         private Dictionary<string, Dictionary<string, PublicAttributeBag>> GetAttributeFilterItems( RockContext rockContext, IEnumerable<string> selectedProjectTypeGuidStrings = null )
         {
-            /*
-             * Because [Attribute].[Key]s aren't guaranteed unique across entities, we need to maintain a separate collection
-             * of attribute filters per project [group] type.
-             * 
-             * Also, because attributes can be inherited by child group types, we'll add a given attribute (by it's guid) only
-             * the first time we come across it.
-             */
+            // Because [Attribute].[Key]s aren't guaranteed unique across entities, we need to maintain a separate collection
+            // of attribute filters per project [group] type.
+            // Also, because attributes can be inherited by child group types, we'll add a given attribute (by it's guid) only
+            // the first time we come across it.
             var attributeFilterItemsByGroupTypeId = new Dictionary<string, Dictionary<string, PublicAttributeBag>>();
             var attributeGuidsAlreadyAdded = new List<Guid>();
 
@@ -688,7 +685,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     continue;
                 }
 
-                var group = new Group { GroupTypeId = projectTypeId.Value };
+                var group = new Rock.Model.Group { GroupTypeId = projectTypeId.Value };
                 group.LoadAttributes( rockContext );
 
                 // Note that we're not enforcing security here, as the public-facing individual performing the search would most likely be restricted.
@@ -709,12 +706,10 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <returns>Whether the location range filter should be displayed.</returns>
         private bool GetShouldDisplayLocationRangeFilter()
         {
-            /*
-             * When enabled a filter will be show to limit results to a specified number of miles
-             * from the location selected or their mailing address if logged in. If the Location Sort
-             * entry is not enabled to be shown and the individual is not logged in then this filter
-             * will not be shown, even if enabled, as we will not be able to honor the filter.
-             */
+            // When enabled a filter will be show to limit results to a specified number of miles
+            // from the location selected or their mailing address if logged in. If the Location Sort
+            // entry is not enabled to be shown and the individual is not logged in then this filter
+            // will not be shown, even if enabled, as we will not be able to honor the filter.
             if ( !GetAttributeValue( AttributeKey.DisplayLocationRangeFilter ).AsBoolean() )
             {
                 return false;
@@ -907,35 +902,31 @@ namespace Rock.Blocks.Engagement.SignUp
                 // This block shouldn't display past opportunities, since its goal is to get individuals to sign up.
                 if ( selectedFilters.StartDate.HasValue && selectedFilters.StartDate.Value > fromDateTime )
                 {
-                    fromDateTime = selectedFilters.StartDate.Value;
+                    fromDateTime = selectedFilters.StartDate.Value.DateTime;
                 }
 
                 if ( selectedFilters.EndDate.HasValue )
                 {
-                    /*
-                     * Set this to the end of the selected day to perform a search fully-inclusive of the day the individual
-                     * selected. Note also that we cannot apply this filter during the query phase; we need to wait until we
-                     * materialize Schedule objects so we can compare this value to Schedule.NextStartDateTime, which is a
-                     * runtime-calculated value. If we instead applied this filter to the Schedule.EffectiveEndDate, we could
-                     * accidentally rule out opportunities for which the individual might otherwise be interested in signing up.
-                     * We'll apply this filter value below.
-                     */
-                    toDateTime = selectedFilters.EndDate.Value.EndOfDay();
+                    // Set this to the end of the selected day to perform a search fully-inclusive of the day the individual
+                    // selected. Note also that we cannot apply this filter during the query phase; we need to wait until we
+                    // materialize Schedule objects so we can compare this value to Schedule.NextStartDateTime, which is a
+                    // runtime-calculated value. If we instead applied this filter to the Schedule.EffectiveEndDate, we could
+                    // accidentally rule out opportunities for which the individual might otherwise be interested in signing up.
+                    // We'll apply this filter value below.
+                    toDateTime = selectedFilters.EndDate.Value.DateTime.EndOfDay();
                 }
             }
 
-            /*
-             * Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveEndDates, which hold
-             * only a date value (without the time component). Return any Schedules whose EffectiveEndDate:
-             *  1) is not defined (this should never happen, but get them just in case), OR
-             *  2) is greater than or equal to the "from" date being filtered against.
-             * 
-             * We'll do this to rule out any Schedules that have already ended, therefore making the initial results record set smaller,
-             * since we still have to do additional Schedule-based filtering below: once we materialize the Schedule objects, we'll use their
-             * runtime-calculated "Start[Date]Time" properties and methods to ensure we're only showing Schedules that actually qualify to
-             * be shown, based on the DateTime filter criteria provided to this method (either RockDateTime.Now OR the "from" date selected
-             * by the individual performing the search).
-             */
+            // Get just the date portion of the "from" date so we can compare it against the stored Schedules' EffectiveEndDates, which hold
+            // only a date value (without the time component). Return any Schedules whose EffectiveEndDate:
+            //  1) is not defined (this should never happen, but get them just in case), OR
+            //  2) is greater than or equal to the "from" date being filtered against.
+            // 
+            // We'll do this to rule out any Schedules that have already ended, therefore making the initial results record set smaller,
+            // since we still have to do additional Schedule-based filtering below: once we materialize the Schedule objects, we'll use their
+            // runtime-calculated "Start[Date]Time" properties and methods to ensure we're only showing Schedules that actually qualify to
+            // be shown, based on the DateTime filter criteria provided to this method (either RockDateTime.Now OR the "from" date selected
+            // by the individual performing the search).
             DateTime fromDate = fromDateTime.Date;
             qryGroupLocationSchedules = qryGroupLocationSchedules
                 .Where( gls => !gls.Schedule.EffectiveEndDate.HasValue || gls.Schedule.EffectiveEndDate >= fromDate );
@@ -992,10 +983,8 @@ namespace Rock.Blocks.Engagement.SignUp
                     };
                 } );
 
-            /*
-             * Now that we have materialized Schedule objects in memory, let's further apply DateTime filtering using the Schedules' runtime-calculated
-             * "NextStartDateTime" property values; only show Schedules that have current or upcoming start DateTimes.
-             */
+            // Now that we have materialized Schedule objects in memory, let's further apply DateTime filtering using the Schedules' runtime-calculated
+            // "NextStartDateTime" property values; only show Schedules that have current or upcoming start DateTimes.
             opportunities = opportunities
                 .Where( o =>
                     o.NextStartDateTime.HasValue
@@ -1034,10 +1023,8 @@ namespace Rock.Blocks.Engagement.SignUp
                     } );
             }
 
-            /* 
-             * Try to calculate the distance to each opportunity.
-             * Perform this last, as it could be an expensive operation; refine the available opportunities above, first.
-             */
+            // Try to calculate the distance to each opportunity.
+            // Perform this last, as it could be an expensive operation; refine the available opportunities above, first.
             var sortByProvidedLocation = !string.IsNullOrWhiteSpace( selectedFilters.LocationSort ) && GetAttributeValue( AttributeKey.DisplayLocationSort ).AsBoolean();
             var filterByProvidedRange = selectedFilters.LocationRange.GetValueOrDefault() > 0 && GetShouldDisplayLocationRangeFilter();
 
@@ -1050,10 +1037,8 @@ namespace Rock.Blocks.Engagement.SignUp
 
             if ( calculateDistances )
             {
-                /* 
-                 * Display distance calculation failures to the individual only if they are actively searching with a location or range specified.
-                 * (But not if we're using a logged-in individual's home location behind the scenes to sort).
-                 */
+                // Display distance calculation failures to the individual only if they are actively searching with a location or range specified.
+                // (But not if we're using a logged-in individual's home location behind the scenes to sort).
                 var throwIfUnsuccessful = sortByProvidedLocation || filterByProvidedRange;
 
                 CalculateDistances( rockContext, filteredOpportunities, selectedFilters.LocationSort, throwIfUnsuccessful );
@@ -1133,20 +1118,15 @@ namespace Rock.Blocks.Engagement.SignUp
                 return;
             }
 
-            /*
-             * We'll throw this exception if unable to determine the origin for the search, so the individual will
-             * have some indication as to why their search isn't returning expected results.
-             */
+            // We'll throw this exception if unable to determine the origin for the search, so the individual will
+            // have some indication as to why their search isn't returning expected results.
             var friendlyException = new ApplicationException( "Unable to determine location." );
 
-            /*
-             * Determine the origin from which to calculate the distance.
-             * 
-             * If the locationSort is all numeric (zip code) we'll get the lat/long of the zip code and use that to
-             * determine proximity, otherwise we’ll assume they provided a "city, state" which we'll use to get a
-             * lat/long for. If they are logged in and have not provided a value we'll use their address that is
-             * configured as their mapped location.
-             */
+            // Determine the origin from which to calculate the distance.
+            // If the locationSort is all numeric (zip code) we'll get the lat/long of the zip code and use that to
+            // determine proximity, otherwise we’ll assume they provided a "city, state" which we'll use to get a
+            // lat/long for. If they are logged in and have not provided a value we'll use their address that is
+            // configured as their mapped location.
             DbGeography geoPointOrigin = null;
             if ( !string.IsNullOrWhiteSpace( locationSort ) )
             {
@@ -1261,10 +1241,8 @@ namespace Rock.Blocks.Engagement.SignUp
                         .Where( a => allowedGuids.Any( g => g == a.AsGuidOrNull() ) );
                 }
 
-                /*
-                 * Attributes can be inherited from parent group types, so make sure we only add a given attribute once,
-                 * while noting to which group type(s) a given attribute belongs.
-                 */
+                // Attributes can be inherited from parent group types, so make sure we only add a given attribute once,
+                // while noting to which group type(s) a given attribute belongs.
                 var groupTypeNamesByAttributeGuid = new Dictionary<Guid, List<string>>();
                 var attributeCachesByAttributeGuid = new Dictionary<Guid, AttributeCache>();
 
@@ -1276,7 +1254,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         continue;
                     }
 
-                    var group = new Group { GroupTypeId = groupTypeCache.Id };
+                    var group = new Rock.Model.Group { GroupTypeId = groupTypeCache.Id };
                     group.LoadAttributes();
 
                     foreach ( var attribute in group.Attributes.Select( a => a.Value ) )
@@ -1399,6 +1377,11 @@ namespace Rock.Blocks.Engagement.SignUp
             }
         }
 
+        /// <summary>
+        /// Gets the sign-up projects that should be displayed based on the provided filters.
+        /// </summary>
+        /// <param name="bag">The object containing the filter criteria.</param>
+        /// <returns>The sign-up projects that should be displayed based on the provided filters.</returns>
         [BlockAction]
         public BlockActionResult GetFilteredProjects( SignUpFinderSelectedFiltersBag bag )
         {
@@ -1649,7 +1632,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// </summary>
         private class Opportunity
         {
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             public Location Location { get; set; }
 
@@ -1726,13 +1709,11 @@ namespace Rock.Blocks.Engagement.SignUp
                         return 0;
                     }
 
-                    /*
-                     * This more complex approach uses a dynamic/floating minuend:
-                     * 1) If the max value is defined, use that;
-                     * 2) Else, if the desired value is defined, use that;
-                     * 3) Else, if the min value is defined, use that;
-                     * 4) Else, use int.MaxValue (there is no limit to the slots available).
-                     */
+                    // This more complex approach uses a dynamic/floating minuend:
+                    // 1) If the max value is defined, use that;
+                    // 2) Else, if the desired value is defined, use that;
+                    // 3) Else, if the min value is defined, use that;
+                    // 4) Else, use int.MaxValue (there is no limit to the slots available).
                     //var minuend = this.SlotsMax.GetValueOrDefault() > 0
                     //    ? this.SlotsMax.Value
                     //    : this.SlotsDesired.GetValueOrDefault() > 0
@@ -1741,11 +1722,9 @@ namespace Rock.Blocks.Engagement.SignUp
                     //            ? this.SlotsMin.Value
                     //            : int.MaxValue;
 
-                    /*
-                     * Simple approach:
-                     * 1) If the max value is defined, subtract participant count from that;
-                     * 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
-                     */
+                    // Simple approach:
+                    // 1) If the max value is defined, subtract participant count from that;
+                    // 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
                     var available = int.MaxValue;
                     if ( this.SlotsMax.GetValueOrDefault() > 0 )
                     {

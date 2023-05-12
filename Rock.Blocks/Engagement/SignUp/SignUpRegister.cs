@@ -39,7 +39,7 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Sign-Up Register" )]
-    [Category( "Engagement > Sign-Up" )]
+    [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Block used to register for a sign-up group/project occurrence date time." )]
     [IconCssClass( "fa fa-clipboard-check" )]
 
@@ -445,11 +445,9 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 if ( !includeChildren )
                 {
-                    /*
-                     * Remove children (unless a child is the registrar, in which case we'll leave that particular child in the collection).
-                     * This latter scenario might be a little odd; if the block settings dictate that children shouldn't be included, we
-                     * might want to consider showing an error if the registrar is a child.
-                     */
+                    // Remove children (unless a child is the registrar, in which case we'll leave that particular child in the collection).
+                    // This latter scenario might be a little odd; if the block settings dictate that children shouldn't be included, we
+                    // might want to consider showing an error if the registrar is a child.
                     qryGroupMembers = qryGroupMembers
                         .Where( gm => gm.PersonId == currentPersonId || gm.Person.AgeClassification != AgeClassification.Child );
                 }
@@ -682,7 +680,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <param name="group">The Group.</param>
         /// <param name="personId">The Person identifier.</param>
         /// <returns>The unmet GroupRequirements - if any - for the Person.</returns>
-        private List<string> GetUnmetGroupRequirementsForPerson( RockContext rockContext, Group group, int personId, int? groupRoleId )
+        private List<string> GetUnmetGroupRequirementsForPerson( RockContext rockContext, Rock.Model.Group group, int personId, int? groupRoleId )
         {
             var unmetGroupRequirements = new List<string>();
 
@@ -770,11 +768,9 @@ namespace Rock.Blocks.Engagement.SignUp
             // Get and track any existing registrations for this specific project occurrence.
             GetExistingRegistrations( registrationData, true );
 
-            /*
-             * We're using the term "registrar" loosely here, as there is no official registrar record saved to the database.
-             * We'll pass this Person instance to any workflow defined on the block, so we know who was responsible for registering
-             * a given group of registrants.
-             */
+            // We're using the term "registrar" loosely here, as there is no official registrar record saved to the database.
+            // We'll pass this Person instance to any workflow defined on the block, so we know who was responsible for registering
+            // a given group of registrants.
             Person registrarPerson = null;
             if ( IsAuthenticated )
             {
@@ -807,30 +803,25 @@ namespace Rock.Blocks.Engagement.SignUp
                     return null;
                 }
 
-                /*
-                 * Once we determine who the registrar is (either the logged-in individual or the first person in the `registrants` list), if we come across any
-                 * registrants for whom we can't find an existing Person record, try to link that registrant to one of the registrar's family members to prevent
-                 * the creation of unneeded duplicate Person records when possible.
-                 */
+                // Once we determine who the registrar is (either the logged-in individual or the first person in the `registrants` list), if we come across any
+                // registrants for whom we can't find an existing Person record, try to link that registrant to one of the registrar's family members to prevent
+                // the creation of unneeded duplicate Person records when possible.
                 List<Person> familyMemberPeople = null;
 
                 foreach ( var registrant in registrants )
                 {
-                    /*
-                     * In Anonymous mode, there will be no "allowed" registrants to compare against, and we might not even know who this Person is.
-                     * 
-                     *  1) If the individual is authenticated, they are the registrar. Otherwise, the registrar is the first Person in the `registrants` list.
-                     *     Note that the registrar might or might not be in the `registrants` list.
-                     *  2) For each registrant in the `registrants` list:
-                     *      a) Create Person & [family] Group records if we can't find exact matches for the provided search criteria.
-                     *      b) If we can determine that they're already registered for this project occurrence, make sure they still meet any required Group requirements,
-                     *         and unregister them if not.
-                     *      c) If they aren't already registered for this project occurrence, add them to the `registrantsToRegister` list (if there are no unmet Group
-                     *         requirements), so we can create missing GroupMember and GroupMemberAssignment records.
-                     *      d) If we create and register a new Person record for this registrant, add them to the `communicationUpdates` collection so we can ensure
-                     *         we have their communication preferences saved; otherwise, Anonymous mode cannot be used to update existing Person communication preferences
-                     *         or records, as it's too risky. Someone could maliciously - or even accidentally - update records that don't belong to them.
-                     */
+                    // In Anonymous mode, there will be no "allowed" registrants to compare against, and we might not even know who this Person is.
+                    //  1) If the individual is authenticated, they are the registrar. Otherwise, the registrar is the first Person in the `registrants` list.
+                    //     Note that the registrar might or might not be in the `registrants` list.
+                    //  2) For each registrant in the `registrants` list:
+                    //      a) Create Person & [family] Group records if we can't find exact matches for the provided search criteria.
+                    //      b) If we can determine that they're already registered for this project occurrence, make sure they still meet any required Group requirements,
+                    //         and unregister them if not.
+                    //      c) If they aren't already registered for this project occurrence, add them to the `registrantsToRegister` list (if there are no unmet Group
+                    //         requirements), so we can create missing GroupMember and GroupMemberAssignment records.
+                    //      d) If we create and register a new Person record for this registrant, add them to the `communicationUpdates` collection so we can ensure
+                    //         we have their communication preferences saved; otherwise, Anonymous mode cannot be used to update existing Person communication preferences
+                    //         or records, as it's too risky. Someone could maliciously - or even accidentally - update records that don't belong to them.
 
                     existingProjectMember = null;
                     existingRegistration = null;
@@ -906,13 +897,11 @@ namespace Rock.Blocks.Engagement.SignUp
 
                     if ( person == null )
                     {
-                        /*
-                         * For new people only: set `Person.CommunicationPreference` (and `GroupMember.CommunicationPreference`) only if we can
-                         * confidently determine the preference, based on the provided values:
-                         *  1) If both `registrant.Email` and `registrant.MobilePhoneNumber` are defined, we don't know which they'd prefer.
-                         *  2) If only `registrant.Email` is defined, the preference is `CommunicationType.Email`.
-                         *  3) If only `registrant.MobilePhoneNumber` is defined (AND `registrant.AllowSms` is true), the preference is `CommunicationType.SMS`.
-                         */
+                        // For new people only: set `Person.CommunicationPreference` (and `GroupMember.CommunicationPreference`) only if we can
+                        // confidently determine the preference, based on the provided values:
+                        //  1) If both `registrant.Email` and `registrant.MobilePhoneNumber` are defined, we don't know which they'd prefer.
+                        //  2) If only `registrant.Email` is defined, the preference is `CommunicationType.Email`.
+                        //  3) If only `registrant.MobilePhoneNumber` is defined (AND `registrant.AllowSms` is true), the preference is `CommunicationType.SMS`.
                         CommunicationType communicationPreference = CommunicationType.RecipientPreference; // Default value.
                         if ( wasEmailProvided && !wasMobilePhoneProvided )
                         {
@@ -1011,10 +1000,8 @@ namespace Rock.Blocks.Engagement.SignUp
 
                                 if ( existingProjectMember?.AddlRegistrationsCount == 0 )
                                 {
-                                    /*
-                                     * If this project GroupMember doesn't have any more GroupMemberAssignment records, delete (or archive) it as well.
-                                     * We'll need to set it aside for now, and delete it after we perform the initial save, to release the FK reference.
-                                     */
+                                    // If this project GroupMember doesn't have any more GroupMemberAssignment records, delete (or archive) it as well.
+                                    // We'll need to set it aside for now, and delete it after we perform the initial save, to release the FK reference.
                                     groupMembersToDelete.Add( existingRegistration.GroupMember );
                                 }
                             }
@@ -1029,10 +1016,8 @@ namespace Rock.Blocks.Engagement.SignUp
 
                     if ( existingRegistration != null )
                     {
-                        /*
-                         * This individual was previously registered, and is still registered.
-                         * Add them to the `registered` collection so we can assure the registrar that they're still registered.
-                         */
+                        // This individual was previously registered, and is still registered.
+                        // Add them to the `registered` collection so we can assure the registrar that they're still registered.
                         registered.Add( registrant );
                     }
                     else
@@ -1075,31 +1060,29 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 foreach ( var registrant in registrants )
                 {
-                    /*
-                     * In Family or Group mode, any [allowed] registrant in the `groupMemberRegistrants` list whose `WillAttend` property is true will
-                     * already have GroupMember and GroupMemberAssignment records for this project occurrence [GroupLocationSchedule].
-                     * 
-                     *  1) If the corresponding, current registrant's `WillAttend` property is false (or it's true but they no longer meet required
-                     *     GroupRequirements), we need to:
-                     *      a) Delete their GroupMemberAssignment record.
-                     *      b) Delete their GroupMember record IF there are no more GroupMemberAssignment records tied to it (they might be signed up for
-                     *         other occurrences within this same project).
-                     *  2) If the corresponding, current registrant's `WillAttend` property is true and they meet any required GroupRequirements, AND:
-                     *      a) Mode == Family, add them to the `communicationUpdates` collection so we can ensure we have their latest communication
-                     *         preferences updated.
-                     *      b) Mode != Family, we have nothing to do; they were registered before, and they're still registered now.
-                     * 
-                     * Any [allowed] registrant in the `groupMemberRegistrants` list whose `WillAttend` property is false hasn't yet been registered
-                     * for this occurrence.
-                     * 
-                     *  1) If the corresponding, current registrant's `WillAttend` property is false, we have nothing to do; they weren't registered
-                     *     before, and they're still not registered.
-                     *  2) If the corresponding, current registrant's `WillAttend` property is true:
-                     *      a) AND they have no unmet GroupRequirements, add them to the `registrantsToRegister` list, so we can create missing
-                     *         GroupMember and GroupMemberAssignment records.
-                     *      b) If Mode == Family, add them to the `communicationUpdates` collection so we can ensure we have their latest communication
-                     *         preferences updated.
-                     */
+                    // In Family or Group mode, any [allowed] registrant in the `groupMemberRegistrants` list whose `WillAttend` property is true will
+                    // already have GroupMember and GroupMemberAssignment records for this project occurrence [GroupLocationSchedule].
+                    // 
+                    //  1) If the corresponding, current registrant's `WillAttend` property is false (or it's true but they no longer meet required
+                    //     GroupRequirements), we need to:
+                    //      a) Delete their GroupMemberAssignment record.
+                    //      b) Delete their GroupMember record IF there are no more GroupMemberAssignment records tied to it (they might be signed up for
+                    //         other occurrences within this same project).
+                    //  2) If the corresponding, current registrant's `WillAttend` property is true and they meet any required GroupRequirements, AND:
+                    //      a) Mode == Family, add them to the `communicationUpdates` collection so we can ensure we have their latest communication
+                    //         preferences updated.
+                    //      b) Mode != Family, we have nothing to do; they were registered before, and they're still registered now.
+                    // 
+                    // Any [allowed] registrant in the `groupMemberRegistrants` list whose `WillAttend` property is false hasn't yet been registered
+                    // for this occurrence.
+                    // 
+                    //  1) If the corresponding, current registrant's `WillAttend` property is false, we have nothing to do; they weren't registered
+                    //     before, and they're still not registered.
+                    //  2) If the corresponding, current registrant's `WillAttend` property is true:
+                    //      a) AND they have no unmet GroupRequirements, add them to the `registrantsToRegister` list, so we can create missing
+                    //         GroupMember and GroupMemberAssignment records.
+                    //      b) If Mode == Family, add them to the `communicationUpdates` collection so we can ensure we have their latest communication
+                    //         preferences updated.
 
                     existingProjectMember = registrationData.ExistingProjectMembers
                             .FirstOrDefault( pm => pm.GroupMember.Person.IdKey == registrant.PersonIdKey );
@@ -1117,18 +1100,14 @@ namespace Rock.Blocks.Engagement.SignUp
 
                     if ( existingRegistration != null && ( !registrant.WillAttend || groupMemberRegistrant.UnmetGroupRequirements?.Any() == true ) )
                     {
-                        /*
-                         * Scenario 1) This individual was previously registered, but is now being unregistered.
-                         * Scenario 2) This individual was previously registered, but no longer meets [required] GroupRequirements.
-                         */
+                        // Scenario 1) This individual was previously registered, but is now being unregistered.
+                        // Scenario 2) This individual was previously registered, but no longer meets [required] GroupRequirements.
                         groupMemberAssignmentsToDelete.Add( existingRegistration );
 
                         if ( existingProjectMember?.AddlRegistrationsCount == 0 )
                         {
-                            /*
-                             * If this project GroupMember doesn't have any more GroupMemberAssignment records, delete (or archive) it as well.
-                             * We'll need to set it aside for now, and delete it after we perform the initial save, to release the FK reference.
-                             */
+                            // If this project GroupMember doesn't have any more GroupMemberAssignment records, delete (or archive) it as well.
+                            // We'll need to set it aside for now, and delete it after we perform the initial save, to release the FK reference.
                             groupMembersToDelete.Add( existingRegistration.GroupMember );
                         }
 
@@ -1165,10 +1144,8 @@ namespace Rock.Blocks.Engagement.SignUp
                     }
                     else if ( existingRegistration != null && registrant.WillAttend )
                     {
-                        /*
-                         * This individual was previously registered, and is still registered.
-                         * Add them to the `registered` collection so we can assure the registrar that they're still registered.
-                         */
+                        // This individual was previously registered, and is still registered.
+                        // Add them to the `registered` collection so we can assure the registrar that they're still registered.
                         registered.Add( registrant );
 
                         if ( mode == RegisterMode.Family )
@@ -1184,24 +1161,18 @@ namespace Rock.Blocks.Engagement.SignUp
 
                     if ( addCommunicationUpdate || isRegistrar )
                     {
-                        /*
-                         * A preference value of CommunicationType.RecipientPreference signifies that the registrar didn't make a preference
-                         * selection; this is the default value. In this case, leave any existing communication preferences and records as is.
-                         */
+                        // A preference value of CommunicationType.RecipientPreference signifies that the registrar didn't make a preference
+                        // selection; this is the default value. In this case, leave any existing communication preferences and records as is.
                         if ( mode == RegisterMode.Family && registrarCommunicationPreference != CommunicationType.RecipientPreference )
                         {
-                            /*
-                             * Get the existing, tracked GroupMember and Person records, if any. If we don't have these yet, we'll
-                             * fill them in later, when we create the registrant's GroupMember and GroupMemberAssignment records.
-                             */
+                            // Get the existing, tracked GroupMember and Person records, if any. If we don't have these yet, we'll
+                            // fill them in later, when we create the registrant's GroupMember and GroupMemberAssignment records.
                             var existingProjectGroupMember = existingProjectMember?.GroupMember;
                             var existingPerson = existingProjectGroupMember?.Person;
 
-                            /*
-                             * If the registrar 1) isn't an existing project member AND 2) isn't being registered for this occurrence,
-                             * go get a tracked instance of their Person record so we can update their communication records.
-                             * Otherwise, we'll get and update their Person record as part of the natural flow below.
-                             */
+                            // If the registrar 1) isn't an existing project member AND 2) isn't being registered for this occurrence,
+                            // go get a tracked instance of their Person record so we can update their communication records.
+                            // Otherwise, we'll get and update their Person record as part of the natural flow below.
                             if ( isRegistrar && existingPerson == null && !registrantsToRegister.Contains( registrant ) )
                             {
                                 existingPerson = _personService
@@ -1210,11 +1181,9 @@ namespace Rock.Blocks.Engagement.SignUp
                                     .FirstOrDefault( p => p.Id == registrarPerson.Id );
                             }
 
-                            /*
-                             * Update this family member's communication preference to match that of the registrar, but don't update
-                             * their [email and/or mobile phone] communication records, as we didn't collect this info (unless this
-                             * registrant IS the registrar, in which case we did collect this info).
-                             */
+                            // Update this family member's communication preference to match that of the registrar, but don't update
+                            // their [email and/or mobile phone] communication records, as we didn't collect this info (unless this
+                            // registrant IS the registrar, in which case we did collect this info).
 
                             var newEmail = isRegistrar && !string.IsNullOrWhiteSpace( registrant.Email )
                                 ? registrant.Email
@@ -1250,20 +1219,15 @@ namespace Rock.Blocks.Engagement.SignUp
 
             if ( groupMemberAssignmentsToDelete.Any() )
             {
-                /*
-                 * For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
-                 * We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
-                 * delete approach) if this changes in the future.
-                 */
+                // For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
+                // We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
+                // delete approach) if this changes in the future.
                 _groupMemberAssignmentService.DeleteRange( groupMemberAssignmentsToDelete );
             }
 
-            /*
-             * If they're attempting to register more individuals than this occurrence's available spots, don't register anybody.
-             * Instead, give them an opportunity to choose who - if anybody - should fill the remaining spots.
-             * 
-             * Note that they might be swapping one-for-another, Etc., so factor in the count of any individuals that are being unregistered.
-             */
+            // If they're attempting to register more individuals than this occurrence's available spots, don't register anybody.
+            // Instead, give them an opportunity to choose who - if anybody - should fill the remaining spots.
+            // Note that they might be swapping one-for-another, Etc., so factor out the count of any individuals that are being unregistered.
             var registrantsToRegisterCount = registrantsToRegister.Count - unregistered.Count;
             if ( registrantsToRegisterCount > registrationData.SlotsAvailable )
             {
@@ -1280,16 +1244,13 @@ namespace Rock.Blocks.Engagement.SignUp
 
             if ( registrantsToRegister.Any() )
             {
-                /*
-                 * Create missing GroupMember and GroupMemberAssignment records.
-                 * 
-                 *  1) Set the `GroupMember.GroupRoleId` to `GroupType.DefaultGroupRoleId` if defined for this project, or the first (preferably
-                 *     non-leader) GroupTypeRole tied to this project, or return an error if no role is found, since it's a required field on the
-                 *     GroupMember entity.
-                 *  2) The GroupMember record might already exist for a given registrant, as they might already be signed up for other occurrences
-                 *     within this same project.
-                 *  3) Supplement any `CommunicationUpdate` instances that have missing GroupMember or Person references.
-                 */
+                // Create missing GroupMember and GroupMemberAssignment records.
+                //  1) Set the `GroupMember.GroupRoleId` to `GroupType.DefaultGroupRoleId` if defined for this project, or the first (preferably
+                //     non-leader) GroupTypeRole tied to this project, or return an error if no role is found, since it's a required field on the
+                //     GroupMember entity.
+                //  2) The GroupMember record might already exist for a given registrant, as they might already be signed up for other occurrences
+                //     within this same project.
+                //  3) Supplement any `CommunicationUpdate` instances that have missing GroupMember or Person references.
 
                 var groupRoleId = registrationData.GroupType.DefaultGroupRoleId;
                 if ( !groupRoleId.HasValue )
@@ -1373,11 +1334,8 @@ namespace Rock.Blocks.Engagement.SignUp
                             var person = projectGroupMember.Person;
                             if ( person == null )
                             {
-                                /*
-                                 * We still need to go get this Person; get their phone numbers as well, since it's possible we'll be updating the mobile PhoneNumber.
-                                 * 
-                                 * `personId.Value` is guaranteed to be defined based on a check performed above.
-                                 */
+                                // We still need to go get this Person; get their phone numbers as well, since it's possible we'll be updating the mobile PhoneNumber.
+                                // `personId.Value` is guaranteed to be defined based on a check performed above.
                                 person = _personService
                                     .Queryable()
                                     .Include( p => p.PhoneNumbers )
@@ -1418,10 +1376,8 @@ namespace Rock.Blocks.Engagement.SignUp
                 {
                     var registrant = communicationUpdate.Registrant;
 
-                    /*
-                     * If for some reason this registrant had a failed registration attempt, don't update anything, as it's likely
-                     * we won't have the needed records in the database.
-                     */
+                    // If for some reason this registrant had a failed registration attempt, don't update anything, as it's likely
+                    // we won't have the needed records in the database.
                     if ( unsuccessful.Contains( registrant ) )
                     {
                         continue;
@@ -1606,7 +1562,7 @@ namespace Rock.Blocks.Engagement.SignUp
             /// <summary>
             /// Gets or sets the <see cref="Rock.Model.Group"/> for this sign-up project.
             /// </summary>
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             /// <summary>
             /// Gets or sets whether this sign-up project has any required GroupRequirements.
@@ -1711,13 +1667,11 @@ namespace Rock.Blocks.Engagement.SignUp
                         return 0;
                     }
 
-                    /*
-                     * This more complex approach uses a dynamic/floating minuend:
-                     * 1) If the max value is defined, use that;
-                     * 2) Else, if the desired value is defined, use that;
-                     * 3) Else, if the min value is defined, use that;
-                     * 4) Else, use int.MaxValue (there is no limit to the slots available).
-                     */
+                    // This more complex approach uses a dynamic/floating minuend:
+                    // 1) If the max value is defined, use that;
+                    // 2) Else, if the desired value is defined, use that;
+                    // 3) Else, if the min value is defined, use that;
+                    // 4) Else, use int.MaxValue (there is no limit to the slots available).
                     //var minuend = this.SlotsMax.GetValueOrDefault() > 0
                     //    ? this.SlotsMax.Value
                     //    : this.SlotsDesired.GetValueOrDefault() > 0
@@ -1726,11 +1680,9 @@ namespace Rock.Blocks.Engagement.SignUp
                     //            ? this.SlotsMin.Value
                     //            : int.MaxValue;
 
-                    /*
-                     * Simple approach:
-                     * 1) If the max value is defined, subtract participant count from that;
-                     * 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
-                     */
+                    // Simple approach:
+                    // 1) If the max value is defined, subtract participant count from that;
+                    // 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
                     var available = int.MaxValue;
                     if ( this.SlotsMax.GetValueOrDefault() > 0 )
                     {
@@ -1883,10 +1835,8 @@ namespace Rock.Blocks.Engagement.SignUp
                             return;
                         }
 
-                        /*
-                         * Existing mobile phone number record found; in this case, simply pass these same values back to the update call,
-                         * so we can update only the `IsMessagingEnabled` value.
-                         */
+                        // Existing mobile phone number record found; in this case, simply pass these same values back to the update call,
+                        // so we can update only the `IsMessagingEnabled` value.
                         mobilePhoneNumber = existingMobilePhone.Number;
                         mobilePhoneCountryCode = existingMobilePhone.CountryCode;
                         isUnlisted = existingMobilePhone.IsUnlisted;

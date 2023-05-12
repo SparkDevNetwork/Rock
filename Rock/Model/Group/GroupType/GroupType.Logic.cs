@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -35,6 +36,7 @@ namespace Rock.Model
         /// Gets or sets the attendance reminder followup days list.  This is the logical representation of <see cref="AttendanceReminderFollowupDays"/>.
         /// </summary>
         /// <value>The attendance reminder followup days list.</value>
+        [CodeGenExclude(CodeGenFeature.ViewModelFile)]
         public List<int> AttendanceReminderFollowupDaysList
         {
             get

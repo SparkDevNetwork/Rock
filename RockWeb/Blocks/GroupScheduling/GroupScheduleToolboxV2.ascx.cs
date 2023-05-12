@@ -46,12 +46,12 @@ namespace RockWeb.Blocks.GroupScheduling
 
     [ContextAware( typeof( Rock.Model.Person ) )]
 
-    [IntegerField(
-        "Number of Future Weeks To Show",
-        Key = AttributeKey.FutureWeeksToShow,
-        Description = "The number of weeks into the future to allow users to sign up for a schedule.",
+    [SlidingDateRangeField(
+        "Future Week Date Range",
+        Key = AttributeKey.FutureWeekDateRange,
+        Description = "The date range of future weeks to allow users to sign up for a schedule. Please note that only future dates will be accepted.",
         IsRequired = true,
-        DefaultValue = "6",
+        DefaultValue = "Next|6|Week||",
         Order = 0 )]
 
     [CodeEditorField(
@@ -198,6 +198,20 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "1",
         Order = 17 )]
 
+    [GroupTypesField(
+        "Include Group Types",
+        Key = AttributeKey.IncludeGroupTypes,
+        Description = "The group types to display in the list. If none are selected, all group types will be included.",
+        IsRequired = false,
+        Order = 18 )]
+
+    [GroupTypesField(
+        "Exclude Group Types",
+        Key = AttributeKey.ExcludeGroupTypes,
+        Description = "The group types to exclude from the list (only valid if including all groups).",
+        IsRequired = false,
+        Order = 19 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "18A6DCE3-376C-4A62-B1DD-5E5177C11595" )]
@@ -209,7 +223,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
         protected class AttributeKey
         {
-            public const string FutureWeeksToShow = "FutureWeeksToShow";
+            public const string FutureWeekDateRange = "FutureWeekDateRange";
             public const string SignupInstructions = "SignupInstructions";
             public const string DeclineReasonPage = "DeclineReasonPage";
             public const string SchedulerReceiveConfirmationEmails = "SchedulerReceiveConfirmationEmails";
@@ -227,6 +241,8 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string SignupforAdditionalTimesHeader = "SignupforAdditionalTimesHeader";
             public const string RequireLocationForAdditionalSignups = "RequireLocationForAdditionalSignups";
             public const string ScheduleListFormat = "ScheduleListFormat";
+            public const string IncludeGroupTypes = "IncludeGroupTypes";
+            public const string ExcludeGroupTypes = "ExcludeGroupTypes";
         }
 
         /// <summary>
@@ -327,9 +343,6 @@ $('#{0}').tooltip();
 
             if ( !Page.IsPostBack )
             {
-                btnSignUp.Text = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
-                btnUpdateSchedulePreferences.Text = GetAttributeValue( AttributeKey.UpdateSchedulePreferencesButtonText );
-                btnScheduleUnavailability.Text = GetAttributeValue( AttributeKey.ScheduleUnavailabilityButtonText );
                 BindScheduleRepeater();
             }
             else
@@ -661,14 +674,39 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
+        /// Gets the future week date range.
+        /// </summary>
+        /// <returns>DateRange.</returns>
+        private DateRange GetFutureWeekDateRange()
+        {
+            var currentDay = RockDateTime.Today;
+            var futureWeekDateRangeDelimitedValues = this.GetAttributeValue( AttributeKey.FutureWeekDateRange );
+            var futureWeekDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( futureWeekDateRangeDelimitedValues );
+
+            // Must start at least 1 day in the future.
+            var minimumStartDay = currentDay.AddDays(1);
+            if ( !futureWeekDateRange.Start.HasValue || futureWeekDateRange.Start.Value <= minimumStartDay )
+            {
+                futureWeekDateRange.Start = minimumStartDay;
+            }
+
+            // Must include at least this week.
+            var minimumEndDay = currentDay.AddDays(7);
+            if ( !futureWeekDateRange.End.HasValue || futureWeekDateRange.End.Value <= minimumEndDay )
+            {
+                futureWeekDateRange.End = minimumEndDay;
+            }
+
+            return futureWeekDateRange;
+        }
+
+        /// <summary>
         /// Updates the signup controls.
         /// </summary>
         /// <param name="selectedSignupPersonId">The selected signup person identifier.</param>
         private void UpdateSignupControls( int selectedSignupPersonId )
         {
-            var futureWeeksToShow = this.GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull();
-
-            List<GroupScheduleSignup> availableGroupLocationSchedules = GetScheduleSignupData( selectedSignupPersonId, futureWeeksToShow );
+            List<GroupScheduleSignup> availableGroupLocationSchedules = GetScheduleSignupData( selectedSignupPersonId );
             this.ViewState[ViewStateKey.AvailableGroupLocationSchedulesJSON] = availableGroupLocationSchedules.ToJson();
             phSignUpSchedules.Controls.Clear();
             CreateDynamicSignupControls( availableGroupLocationSchedules );
@@ -1224,12 +1262,56 @@ $('#{0}').tooltip();
             var enableAdditionalTimeSignUp = GetAttributeValue( AttributeKey.EnableAdditionalTimeSignUp ).AsBoolean();
             var enableScheduleUnavailability = GetAttributeValue( AttributeKey.EnableScheduleUnavailability ).AsBoolean();
             var enableUpdateSchedulePreferences = GetAttributeValue( AttributeKey.EnableUpdateSchedulePreferences ).AsBoolean();
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
-            lActionHeader.Text = GetAttributeValue( AttributeKey.ActionHeaderLavaTemplate ).ResolveMergeFields( mergeFields );
+            var actionsEnabled = enableAdditionalTimeSignUp || enableScheduleUnavailability || enableUpdateSchedulePreferences;
+            int enabledActionCount = 0;
+
             btnSignUp.Visible = enableAdditionalTimeSignUp;
+            if ( enableAdditionalTimeSignUp )
+            {
+                enabledActionCount++;
+                btnSignUp.Text = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
+            }
+
             btnScheduleUnavailability.Visible = enableScheduleUnavailability;
+            if ( enableScheduleUnavailability )
+            {
+                enabledActionCount++;
+                btnScheduleUnavailability.Text = GetAttributeValue( AttributeKey.ScheduleUnavailabilityButtonText );
+            }
+
             btnUpdateSchedulePreferences.Visible = enableUpdateSchedulePreferences;
-            lActionHeader.Visible = enableAdditionalTimeSignUp || enableScheduleUnavailability || enableUpdateSchedulePreferences;
+            if ( enableUpdateSchedulePreferences )
+            {
+                enabledActionCount++;
+                btnUpdateSchedulePreferences.Text = GetAttributeValue( AttributeKey.UpdateSchedulePreferencesButtonText );
+            }
+
+            lActionHeader.Visible = actionsEnabled;
+            if ( actionsEnabled )
+            {
+                if ( enabledActionCount > 1 )
+                {
+                    // Show the action header.
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+                    lActionHeader.Text = GetAttributeValue( AttributeKey.ActionHeaderLavaTemplate ).ResolveMergeFields( mergeFields );
+                }
+                else
+                {
+                    // If only one action is enabled, start on the panel for that action.
+                    if ( enableAdditionalTimeSignUp )
+                    {
+                        NavigateToSignUp();
+                    }
+                    else if ( enableScheduleUnavailability )
+                    {
+                        NavigateToScheduleUnavailability();
+                    }
+                    else if ( enableUpdateSchedulePreferences )
+                    {
+                        NavigateToUpdateSchedulePreferences();
+                    }
+                }
+            }
         }
 
         #region Preferences
@@ -1303,7 +1385,7 @@ $('#{0}').tooltip();
                 var groupService = new GroupService( rockContext );
                 var overrideHideFromToolbox = GetAttributeValue( AttributeKey.OverrideHideFromToolbox ).AsBoolean();
                 // get groups that the selected person is an active member of and have SchedulingEnabled and have at least one location with a schedule
-                var groups = groupService
+                var qry = groupService
                     .Queryable()
                     .AsNoTracking()
                     .Where( x => x.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active )
@@ -1311,10 +1393,21 @@ $('#{0}').tooltip();
                         && x.GroupType.IsSchedulingEnabled == true
                         && x.DisableScheduling == false
                         && ( overrideHideFromToolbox || x.DisableScheduleToolboxAccess == false )
-                        && x.GroupLocations.Any( gl => gl.Schedules.Any() ) )
-                    .OrderBy( x => new { x.Order, x.Name } )
-                    .AsNoTracking()
-                    .ToList();
+                        && x.GroupLocations.Any( gl => gl.Schedules.Any() ) );
+
+                List<Guid> includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                List<Guid> excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+
+                if ( includeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => includeGroupTypeGuids.Contains( t.GroupType.Guid ) );
+                }
+                else if ( excludeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.GroupType.Guid ) );
+                }
+
+                var groups = qry.OrderBy( x => new { x.Order, x.Name } ).AsNoTracking().ToList();
 
                 rptGroupPreferences.DataSource = groups;
                 rptGroupPreferences.DataBind();
@@ -1827,14 +1920,14 @@ $('#{0}').tooltip();
         /// <summary>
         /// Gets a list of available schedules for the group the selected sign-up person belongs to.
         /// </summary>
-        /// <param name="includeScheduledItems">if set to <c>true</c> [include scheduled items].</param>
-        /// <returns></returns>
-        private List<GroupScheduleSignup> GetScheduleSignupData( int selectedSignupPersonId, int? futureWeeksToShow )
+        /// <param name="selectedSignupPersonId">The selected signup person identifier.</param>
+        /// <returns>List&lt;GroupScheduleSignup&gt;.</returns>
+        private List<GroupScheduleSignup> GetScheduleSignupData( int selectedSignupPersonId )
         {
+            var futureWeekDateRange = GetFutureWeekDateRange();
             List<GroupScheduleSignup> groupScheduleSignups = new List<GroupScheduleSignup>();
-            int numOfWeeks = futureWeeksToShow ?? 6;
-            var startDate = DateTime.Now.AddDays( 1 ).Date;
-            var endDate = DateTime.Now.AddDays( numOfWeeks * 7 );
+            var startDate = futureWeekDateRange.Start.Value;
+            var endDate = futureWeekDateRange.End.Value;
 
             using ( var rockContext = new RockContext() )
             {
@@ -1852,6 +1945,18 @@ $('#{0}').tooltip();
                     && a.Group.DisableScheduling == false
                     && ( overrideHideFromToolbox || a.Group.DisableScheduleToolboxAccess == false )
                     && a.Group.Members.Any( m => m.PersonId == selectedSignupPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
+
+                List<Guid> includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                List<Guid> excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+
+                if ( includeGroupTypeGuids.Count > 0 )
+                {
+                    personGroupLocationQry = personGroupLocationQry.Where( t => includeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
+                }
+                else if ( excludeGroupTypeGuids.Count > 0 )
+                {
+                    personGroupLocationQry = personGroupLocationQry.Where( t => !excludeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
+                }
 
                 var personGroupLocationList = personGroupLocationQry.ToList();
                 var groupsThatHaveSchedulingRequirements = personGroupLocationQry.Where( a => a.Group.SchedulingMustMeetRequirements ).Select( a => a.Group ).Distinct().ToList();
@@ -1993,16 +2098,29 @@ $('#{0}').tooltip();
             {
                 var overrideHideFromToolbox = GetAttributeValue( AttributeKey.OverrideHideFromToolbox ).AsBoolean();
                 var groupMemberService = new GroupMemberService( rockContext );
-                var groups = groupMemberService
+
+                var qry = groupMemberService
                     .Queryable()
                     .AsNoTracking()
                     .Where( g => g.Group.IsActive == true
                         && g.PersonId == this.SelectedPersonId
                         && g.Group.GroupType.IsSchedulingEnabled == true
                         && g.Group.DisableScheduling == false
-                        && ( overrideHideFromToolbox || g.Group.DisableScheduleToolboxAccess == false ) )
-                    .Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } )
-                    .ToList();
+                        && ( overrideHideFromToolbox || g.Group.DisableScheduleToolboxAccess == false ) );
+
+                List<Guid> includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                List<Guid> excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+
+                if ( includeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => includeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
+                }
+                else if ( excludeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
+                }
+
+                var groups = qry.Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } ).ToList();
 
                 groups.Insert( 0, new { Value = ( int? ) null, Text = ALL_GROUPS_STRING } );
 

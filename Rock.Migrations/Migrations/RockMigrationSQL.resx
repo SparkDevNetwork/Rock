@@ -311,15 +311,24 @@
     <value>version 14.0\version 1.14.1\202301062147044_rollup_20230106_updateanalyticsstoredprocedure_spcrm_familyanalyticsupdatevisitdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202302092033593_rollup_20230209_updatereminderssystemcommunication.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 15.0\version 1.15.0\202302092033593_rollup_20230209_updatereminderssystemcommunication.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202302092033593_rollup_20230209_updatespcrm_personduplicatefinderprocedure.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 15.0\version 1.15.0\202302092033593_rollup_20230209_updatespcrm_personduplicatefinderprocedure.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 15.0\version 1.15.0\202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 15.0\version 1.15.0\202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202303231713546_Rollup_20230323_ChartColorUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 15.0\version 1.15.0\202303231713546_Rollup_20230323_ChartColorUpdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 15.0\version 1.15.0\202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202304042314453_Rollup_20230404_updatechartjs" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 15.0\version 1.15.0\202304042314453_rollup_20230404_updatechartjs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>

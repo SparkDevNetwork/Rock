@@ -605,7 +605,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                     schedule.Schedule.iCalendarContent = scheduleBag.Schedule.Value;
                     schedule.DataViewId = scheduleBag.DataView.GetEntityId<DataView>( rockContext );
-                    schedule.GroupId = scheduleBag.Group.GetEntityId<Group>( rockContext );
+                    schedule.GroupId = scheduleBag.Group.GetEntityId<Rock.Model.Group>( rockContext );
 
                     // Force the cache to refresh if the only thing that
                     // changed was the schedule content.

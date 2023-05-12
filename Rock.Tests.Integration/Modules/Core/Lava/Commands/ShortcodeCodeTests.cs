@@ -236,8 +236,8 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
         /// Using the BootstrapAlert shortcode produces the expected output.
         /// </summary>
         [DataTestMethod]
-        [DataRow( "{[ bootstrapalert type='info' ]}This is an information message.{[ endbootstrapalert ]}", "<div class='alert alert-info'>This is an information message.</div>" )]
-
+        [DataRow( "{[ bootstrapalert ]}This is an information message.{[ endbootstrapalert ]}", "<div class='alert alert-info'>This is an information message.</div>" )]
+        [DataRow( "{[ bootstrapalert type:'success' ]}This is a success message.{[ endbootstrapalert ]}", "<div class='alert alert-success'>This is a success message.</div>" )]
         public void BootstrapAlertShortcode_VariousTypes_ProducesCorrectHtml( string input, string expectedResult )
         {
             TestHelper.AssertTemplateOutput( expectedResult, input );
@@ -281,6 +281,33 @@ Schedule Active = {{isScheduleActive}}
 
         #endregion
 
+        #region MediaPlayer
+
+        [TestMethod]
+        public void MediaPlayerShortcode_WithDefaultParameters_ProducesCorrectHtml()
+        {
+            var input = @"
+{[mediaplayer media:'18' ]}{[endmediaplayer]}
+";
+            var expectedOutput = @"
+<div id=`mediaplayer_*` style=`--plyr-color-main:var(--brand-primary);`$></div>
+<script>
+(function(){newRock.UI.MediaPlayer(`#mediaplayer_*`,{`autopause`:true,`autoplay`:false,`clickToPlay`:true,`controls`:`play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen`,`debug`:false,`hideControls`:true,`mediaUrl`:``,`muted`:false,`posterUrl`:``,`resumePlaying`:false,`seekTime`:10.0,`trackProgress`:true,`type`:``,`volume`:1.0,`writeInteraction`:true});})();
+</script>
+";
+            expectedOutput = expectedOutput.Replace( "`", @"""" );
+
+            var options = new LavaTestRenderOptions
+            {
+                OutputMatchType = LavaTestOutputMatchTypeSpecifier.RegEx,
+                Wildcards = new List<string> { "*" }
+            };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        #endregion
+
         #region Scripturize
 
         /// <summary>
@@ -295,6 +322,13 @@ Schedule Active = {{isScheduleActive}}
         {
             TestHelper.AssertTemplateOutput( expectedResult,
                                           "{[ scripturize defaulttranslation:'NLT' landingsite:'YouVersion' cssclass:'scripture' ]}" + input + "{[ endscripturize ]}" );
+        }
+
+        [TestMethod]
+        public void ScripturizeShortcode_WithInvalidLandingSite_ProducesErrorMessage()
+        {
+            TestHelper.AssertTemplateOutput( "<!--the landing site provided to the scripturize shortcode was not correct-->John 3:16",
+                                          "{[ scripturize defaulttranslation:'NLT' landingsite:'InvalidSite' cssclass:'scripture' ]}John 3:16{[ endscripturize ]}" );
         }
 
         #endregion
@@ -317,17 +351,16 @@ Schedule Active = {{isScheduleActive}}
             {
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
-                var error = result.Error;
-
-                // Verify that the result is the expected parse error.
-                if ( !( result.Error is LavaParseException ) )
+                // Verify that the result emits the expected parse error.
+                var error = result.Error?.InnerException;
+                if ( !(error is LavaParseException ) )
                 {
                     throw new Exception( "Parse exception expected but not encountered." );
                 }
 
                 if ( engine.GetType() == typeof( FluidEngine ) )
                 {
-                    Assert.That.IsTrue( result.Error.Message.Contains( "Unknown shortcode 'testshortcode1'" ), "Unexpected Lava error message." );
+                    Assert.That.IsTrue( error.Message.Contains( "Unknown shortcode 'testshortcode1'" ), "Unexpected Lava error message." );
                 }
             } );
 
@@ -351,10 +384,9 @@ Schedule Active = {{isScheduleActive}}
             {
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
-                var error = result.Error;
-
-                // Verify that the result is the expected parse error.
-                if ( !( result.Error is LavaParseException ) )
+                // Verify that the result emits the expected parse error.
+                var error = result.Error?.InnerException;
+                if ( !( error is LavaParseException ) )
                 {
                     throw new Exception( "Parse exception expected but not encountered." );
                 }
@@ -362,7 +394,7 @@ Schedule Active = {{isScheduleActive}}
                 // In Fluid, parse error should correctly identify the invalid shortcode.
                 if ( engine.GetType() == typeof( FluidEngine ) )
                 {
-                    if ( !result.Error.Message.Contains( "Unknown shortcode 'invalidshortcode'" ) )
+                    if ( !error.Message.Contains( "Unknown shortcode 'invalidshortcode'" ) )
                     {
                         throw result.Error;
                     }

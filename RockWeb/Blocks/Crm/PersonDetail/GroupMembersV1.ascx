@@ -47,7 +47,7 @@
                                     <ItemTemplate>
                                         <li class="address rollover-container clearfix">
                                             <h4><%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %></h4>
-                                            <a id="aMap" runat="server" title="Map This Address" class="map" target="_blank">
+                                            <a id="aMap" runat="server" title="Map This Address" class="map" target="_blank" rel="noopener noreferrer">
                                                 <i class="fa fa-map-marker"></i>
                                             </a>
                                             <div class="address">

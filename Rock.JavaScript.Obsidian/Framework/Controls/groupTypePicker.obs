@@ -31,6 +31,12 @@
             default: false
         },
 
+        /** Only show the group types flagged to be shown in the group list */
+        onlyGroupListItems: {
+            type: Boolean,
+            default: false
+        },
+
         ...standardAsyncPickerProps
     });
 
@@ -67,7 +73,8 @@
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: GroupTypePickerGetGroupTypesOptionsBag = {
             groupTypes: props.groupTypes,
-            isSortedByName: props.isSortedByName
+            isSortedByName: props.isSortedByName,
+            onlyGroupListItems: props.onlyGroupListItems
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupTypePickerGetGroupTypes", undefined, options);
 
@@ -91,5 +98,5 @@
         loadedItems.value = null;
     });
 
-    // #endregion
+        // #endregion
 </script>

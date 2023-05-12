@@ -45,7 +45,16 @@ namespace Rock.Lava
         /// <param name="templateContent">The template source text.</param>
         /// <param name="cacheKey">An optional key that uniquely identifies the template. If not specified, the template source text is used to calculate a key for cache storage and retrieval.</param>
         /// <returns></returns>
+        [Obsolete( "Use the AddOrGetTemplate method instead." )]
         ILavaTemplate GetOrAddTemplate( ILavaEngine engine, string templateContent, string cacheKey = null );
+
+        /// <summary>
+        /// Gets a compiled template from cache or creates a new compiled template if it does not already exist.
+        /// </summary>
+        /// <param name="templateContent">The template source text.</param>
+        /// <param name="cacheKey">An optional key that uniquely identifies the template. If not specified, the template source text is used to calculate a key for cache storage and retrieval.</param>
+        /// <returns></returns>
+        AddOrGetTemplateResult AddOrGetTemplate( ILavaEngine engine, string templateContent, string cacheKey = null );
 
         /// <summary>
         /// Remove all templates from the cache.
@@ -90,4 +99,33 @@ namespace Rock.Lava
         /// </summary>
         long CacheMisses { get; }
     }
+
+    #region Support Classes
+
+    /// <summary>
+    /// Returns the result of the associated action.
+    /// </summary>
+    public class AddOrGetTemplateResult
+    {
+        public AddOrGetTemplateResult( ILavaTemplate template )
+        {
+            Template = template;
+        }
+
+        public AddOrGetTemplateResult( ILavaTemplate template, Exception parseError )
+        {
+            Template = template;
+            ParseError = parseError;
+        }
+
+        public ILavaTemplate Template { get; private set; }
+
+        /// <summary>
+        /// Gets any exceptions encountered while adding a new template to the cache.
+        /// If the source Lava is invalid, the cached template stores the error message output.
+        /// </summary>
+        public Exception ParseError { get; private set; }
+    }
+
+    #endregion
 }

@@ -912,7 +912,7 @@ namespace Rock.Blocks.Crm
                 var groupLocationService = new GroupLocationService( rockContext );
 
                 // Check to see if we're viewing an existing family
-                Group primaryFamily = null;
+                Rock.Model.Group primaryFamily = null;
                 if ( bag.FamilyGuid.HasValue )
                 {
                     primaryFamily = groupService.Get( bag.FamilyGuid.Value );
@@ -1458,9 +1458,9 @@ namespace Rock.Blocks.Crm
         /// <param name="lastName">The family name.</param>
         /// <param name="campusId">The family's campus.</param>
         /// <returns>The new family.</returns>
-        private Group CreateNewFamily( int familyGroupTypeId, string lastName, int? campusId )
+        private Rock.Model.Group CreateNewFamily( int familyGroupTypeId, string lastName, int? campusId )
         {
-            var family = new Group
+            var family = new Rock.Model.Group
             {
                 Name = lastName.FixCase() + " Family",
                 GroupTypeId = familyGroupTypeId,
@@ -2064,11 +2064,11 @@ namespace Rock.Blocks.Crm
         /// <param name="rockContext">The rock context.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <returns>The current family or a new family.</returns>
-        private ( Person adult1, Person adult2, List<( Person Person, Guid? FamilyRoleGuid)> children, Group family ) GetCurrentOrNewFamily( RockContext rockContext, Person currentPerson, Dictionary<int, ListItemBag> childRelationshipTypes )
+        private ( Person adult1, Person adult2, List<( Person Person, Guid? FamilyRoleGuid)> children, Rock.Model.Group family ) GetCurrentOrNewFamily( RockContext rockContext, Person currentPerson, Dictionary<int, ListItemBag> childRelationshipTypes )
         {
             Person adult1 = null;
             Person adult2 = null;
-            Group family = null;
+            Rock.Model.Group family = null;
             // Guid is the child's role in the family.
             List<(Person Person, Guid? RoleId)> children = new List<( Person, Guid? )>();
 
@@ -2170,7 +2170,7 @@ namespace Rock.Blocks.Crm
             {
                 adult1 = new Person();
                 adult2 = new Person();
-                family = new Group
+                family = new Rock.Model.Group
                 {
                     // Setting group type id so family-specific attributes are loaded.
                     GroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ) ?? 0
@@ -2461,7 +2461,7 @@ namespace Rock.Blocks.Crm
                 // If the person does not currently belong to any other families, we'll have to create a new family for them, and move them to that new group.
                 if ( !groupMembers.Where( m => m.GroupId != familyId ).Any() )
                 {
-                    var newGroup = new Group
+                    var newGroup = new Rock.Model.Group
                     {
                         Name = currentFamilyMembership.Person.LastName + " Family",
                         GroupTypeId = familyGroupTypeId,
@@ -2499,7 +2499,7 @@ namespace Rock.Blocks.Crm
         /// <param name="rockContext">The rock context.</param>
         /// <param name="adults">The saved adults.</param>
         /// <param name="bag">The adult request bag.</param>
-        private void SaveAdult( ref Group primaryFamily, RockContext rockContext, List<Person> adults, FamilyPreRegistrationPersonBag bag )
+        private void SaveAdult( ref Rock.Model.Group primaryFamily, RockContext rockContext, List<Person> adults, FamilyPreRegistrationPersonBag bag )
         {
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             var personService = new PersonService( rockContext );

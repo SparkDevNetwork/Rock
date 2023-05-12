@@ -19,7 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Http;
 using Rock.Attribute;
 using Rock.Badge;
@@ -53,6 +55,263 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "815B51F0-B552-47FD-8915-C653EEDD5B67")]
     public class ControlsController : ApiControllerBase
     {
+
+        #region Account Picker
+
+        /// <summary>
+        /// Gets the accounts that can be displayed in the account picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "5052e4a9-8cc3-4937-a2d3-9cfec07ed070" )]
+        public IHttpActionResult AccountPickerGetChildren( [FromBody] AccountPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Ok( AccountPickerGetChildrenData( options, rockContext ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the accounts that can be displayed in the account picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <param name="rockContext">DB context.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
+        private List<TreeItemBag> AccountPickerGetChildrenData ( AccountPickerGetChildrenOptionsBag options, RockContext rockContext )
+        {
+            var financialAccountService = new FinancialAccountService( rockContext );
+
+            IQueryable<FinancialAccount> qry;
+
+            if ( options.ParentGuid == Guid.Empty )
+            {
+                qry = financialAccountService.Queryable().AsNoTracking()
+                    .Where( f => f.ParentAccountId.HasValue == false );
+            }
+            else
+            {
+                qry = financialAccountService.Queryable().AsNoTracking()
+                    .Where( f => f.ParentAccount != null && f.ParentAccount.Guid == options.ParentGuid );
+            }
+
+            if ( !options.IncludeInactive )
+            {
+                qry = qry
+                    .Where( f => f.IsActive == true );
+            }
+
+            var accountList = qry
+                .OrderBy( f => f.Order )
+                .ThenBy( f => f.Name )
+                .ToList();
+
+            var accountTreeViewItems = accountList
+                .Select( a => new TreeItemBag
+                {
+                    Value = a.Guid.ToString(),
+                    Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                    IsActive = a.IsActive,
+                    IconCssClass = "fa fa-file-o"
+                } ).ToList();
+
+            var resultIds = accountList.Select( f => f.Id ).ToList();
+
+            if ( options.LoadFullTree )
+            {
+                foreach ( var accountTreeViewItem in accountTreeViewItems )
+                {
+                    var newOptions = new AccountPickerGetChildrenOptionsBag
+                    {
+                        DisplayPublicName = options.DisplayPublicName,
+                        IncludeInactive = options.IncludeInactive,
+                        LoadFullTree = options.LoadFullTree,
+                        ParentGuid = new Guid(accountTreeViewItem.Value),
+                        SecurityGrantToken = options.SecurityGrantToken
+                    };
+                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, rockContext );
+                    int childrenCount = accountTreeViewItem.Children.Count;
+
+                    accountTreeViewItem.HasChildren = childrenCount > 0;
+                    accountTreeViewItem.IsFolder = accountTreeViewItem.HasChildren;
+                    accountTreeViewItem.ChildCount = childrenCount;
+
+                    if ( !accountTreeViewItem.HasChildren )
+                    {
+                        accountTreeViewItem.Children = null;
+                    }
+                }
+            }
+            else
+            {
+                var childQry = financialAccountService.Queryable().AsNoTracking()
+                    .Where( f =>
+                    f.ParentAccountId.HasValue && resultIds.Contains( f.ParentAccountId.Value )
+                    );
+
+                if ( !options.IncludeInactive )
+                {
+                    childQry = childQry.Where( f => f.IsActive == true );
+                }
+
+                var childrenList = childQry.Select( f => f.ParentAccount.Guid.ToString() )
+                    .ToList();
+
+                foreach ( var accountTreeViewItem in accountTreeViewItems )
+                {
+                    int childrenCount = 0;
+                    childrenCount = ( childrenList?.Count( v => v == accountTreeViewItem.Value ) ).GetValueOrDefault( 0 );
+
+                    accountTreeViewItem.HasChildren = childrenCount > 0;
+                    accountTreeViewItem.IsFolder = childrenCount > 0;
+
+                    if ( accountTreeViewItem.HasChildren )
+                    {
+                        accountTreeViewItem.ChildCount = childrenCount;
+                    }
+                }
+            }
+
+            return accountTreeViewItems;
+        }
+
+        /// <summary>
+        /// Gets the accounts that can be displayed in the account picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetParentGuids" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "007512c6-0147-4683-a3fe-3fdd1da275c2" )]
+        public IHttpActionResult AccountPickerGetParentGuids( [FromBody] AccountPickerGetParentGuidsOptionsBag options )
+        {
+            var results = new HashSet<Guid>();
+
+            foreach ( var guid in options.Guids )
+            {
+                var result = FinancialAccountCache.Get( guid )?
+                    .GetAncestorFinancialAccounts()?
+                    .OrderBy( a => 0 )?
+                    .Reverse()?
+                    .Select( a => a.Guid );
+
+                foreach( var resultGuid in result)
+                {
+                    results.Add( resultGuid );
+                }
+            }
+
+            return Ok(results);
+        }
+
+        /// <summary>
+        /// Gets the accounts that match the given search terms.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the accounts that match the search.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetSearchedAccounts" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "69fd94cc-f049-4cee-85d1-13e573e30586" )]
+        public IHttpActionResult AccountPickerGetSearchedAccounts( [FromBody] AccountPickerGetSearchedAccountsOptionsBag options )
+        {
+            IQueryable<FinancialAccount> qry;
+
+            if ( options.SearchTerm.IsNullOrWhiteSpace() )
+            {
+                return BadRequest("Search Term is required");
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var financialAccountService = new FinancialAccountService( rockContext );
+                qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
+
+                if ( !options.IncludeInactive )
+                {
+                    qry = qry.Where( f => f.IsActive == true );
+                }
+
+                var accountList = qry
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name )
+                    .ToList()
+                    .Select( a => new ListItemBag
+                    {
+                        Value = a.Guid.ToString(),
+                        Text = HttpUtility.HtmlEncode( (options.DisplayPublicName ? a.PublicName : a.Name) + (a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "") ),
+                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                    } )
+                    .ToList();
+
+                return Ok( accountList );
+            }
+        }
+
+        /// <summary>
+        /// Gets the full account information of the selected accounts for the "preview" view
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the selected accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetPreviewItems" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "b080e9d6-207a-412d-acf5-d811fdec30a3" )]
+        public IHttpActionResult AccountPickerGetPreviewItems( [FromBody] AccountPickerGetPreviewItemsOptionsBag options )
+        {
+            IQueryable<FinancialAccount> qry;
+
+            if ( options.SelectedGuids.Count == 0 )
+            {
+                return Ok( new List<ListItemBag>() );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var financialAccountService = new FinancialAccountService( rockContext );
+                qry = financialAccountService.Queryable().AsNoTracking()
+                    .Where( f => options.SelectedGuids.Contains(f.Guid) );
+
+                var accountList = qry
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name )
+                    .ToList()
+                    .Select( a => new ListItemBag
+                    {
+                        Value = a.Guid.ToString(),
+                        Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                    } )
+                    .ToList();
+
+                return Ok( accountList );
+            }
+        }
+
+        /// <summary>
+        /// Gets whether or not to allow account picker to Select All based on how many accounts exist
+        /// </summary>
+        /// <returns>True if there are few enough accounts</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AccountPickerGetAllowSelectAll" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "4a13b6ea-3031-48c2-9cdb-be183ccad9a2" )]
+        public IHttpActionResult AccountPickerGetAllowSelectAll( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var financialAccountService = new FinancialAccountService( rockContext );
+                var count = financialAccountService.Queryable().Count();
+
+                return Ok( count < 1500 );
+            }
+        }
+
+        #endregion
 
         #region Achievement Type Picker
 
@@ -1060,7 +1319,6 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the content channel items that can be displayed in the content channel item picker.
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
         [HttpPost]
         [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannels" )]
@@ -2194,7 +2452,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "GroupMemberPickerGetGroupMembers" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
-        public IHttpActionResult GroupMemberPickerGetGroupMembers( GroupMemberPickerGetGroupMembersOptionsBag options )
+        public IHttpActionResult GroupMemberPickerGetGroupMembers( [FromBody] GroupMemberPickerGetGroupMembersOptionsBag options )
         {
             Rock.Model.Group group;
 
@@ -2227,6 +2485,63 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Type Group Picker
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group type group picker for the specified group type.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypeGroupPickerGetGroups" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "f07ac6f8-128c-4881-a4ec-c245b8f10f9e" )]
+        public IHttpActionResult GroupTypeGroupPickerGetGroups( [FromBody] GroupTypeGroupPickerGetGroupsOptionsBag options )
+        {
+            var groups = new List<ListItemBag>();
+            if ( options.GroupTypeGuid != Guid.Empty )
+            {
+                var groupService = new Rock.Model.GroupService( new RockContext() );
+                groups = groupService.Queryable()
+                    .Where( g => g.GroupType.Guid == options.GroupTypeGuid )
+                    .OrderBy( g => g.Name )
+                    .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                    .ToList();
+            }
+
+            return Ok( groups );
+        }
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group type group picker for the specified group type.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypeGroupPickerGetGroupTypeOfGroup" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "984ce064-6073-4b8d-b670-338a3049e13b" )]
+        public IHttpActionResult GroupTypeGroupPickerGetGroupTypeOfGroup( [FromBody] GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag options )
+        {
+            if ( options.GroupGuid != Guid.Empty )
+            {
+                var groupService = new Rock.Model.GroupService( new RockContext() );
+                var group = groupService.Get( options.GroupGuid );
+
+                if (group == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = group.GroupType.Name, Value = group.GroupType.Guid.ToString() } );
+            }
+
+            return NotFound();
+
+        }
+
+        #endregion
+
         #region Group Type Picker
 
         /// <summary>
@@ -2238,7 +2553,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "GroupTypePickerGetGroupTypes" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "b0e07419-0e3c-4235-b5d4-4262fd63e050" )]
-        public IHttpActionResult GroupTypePickerGetGroupTypes( GroupTypePickerGetGroupTypesOptionsBag options )
+        public IHttpActionResult GroupTypePickerGetGroupTypes( [FromBody] GroupTypePickerGetGroupTypesOptionsBag options )
         {
             var groupTypes = new List<GroupTypeCache>();
             var results = new List<ListItemBag>();
@@ -2254,6 +2569,12 @@ namespace Rock.Rest.v2
                     var groupType = GroupTypeCache.Get( groupTypeGuid );
                     groupTypes.Add( groupType );
                 }
+            }
+
+            if (options.OnlyGroupListItems)
+            {
+                // get all group types that have the ShowInGroupList flag set
+                groupTypes = groupTypes.Where( a => a.ShowInGroupList ).ToList();
             }
 
             if ( options.IsSortedByName )
@@ -2463,7 +2784,6 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the group types that can be displayed in the group role picker.
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "GroupRolePickerGetGroupTypes" )]
@@ -4006,6 +4326,88 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return Ok( routes );
+        }
+
+        #endregion
+
+        #region Person Link
+
+        /// <summary>
+        /// Gets the popup HTML for the selected person
+        /// </summary>
+        /// <param name="options">The data needed to get the person's popup HTML</param>
+        /// <returns>A string containing the popup markups</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PersonLinkGetPopupHtml" )]
+        [Rock.SystemGuid.RestActionGuid( "39f44203-9944-4dbd-87ca-d23657e0daa5" )]
+        public IHttpActionResult PersonLinkGetPopupHtml( [FromBody] PersonLinkGetPopupHtmlOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var result = "No Details Available";
+                var html = new StringBuilder();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // Create new service (need ProxyServiceEnabled)
+                var person = new PersonService( rockContext ).Queryable( "ConnectionStatusValue, PhoneNumbers" )
+                    .Where( p => p.Id == options.PersonId )
+                    .FirstOrDefault();
+
+                if ( person != null )
+                {
+                    // If the entity can be secured, ensure the person has access to it.
+                    if ( person is ISecured securedEntity )
+                    {
+                        var isAuthorized = securedEntity.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                            || grant?.IsAccessGranted( person, Authorization.VIEW ) == true;
+
+                        if ( !isAuthorized )
+                        {
+                            return Unauthorized();
+                        }
+                    }
+
+                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                    html.AppendFormat(
+                        "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
+                        Person.GetPersonPhotoImageTag( person, 65, 65 ),
+                        person.FullName,
+                        person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
+
+                    html.Append( "<div class='body'>" );
+
+                    var spouse = person.GetSpouse( rockContext );
+                    if ( spouse != null )
+                    {
+                        html.AppendFormat(
+                            "<div><strong>Spouse</strong> {0}</div>",
+                            spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                    }
+
+                    int? age = person.Age;
+                    if ( age.HasValue )
+                    {
+                        html.AppendFormat( "<div><strong>Age</strong> {0}</div>", age );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( VirtualPathUtility.ToAbsolute( "~/" ) ) );
+                    }
+
+                    foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false && n.NumberTypeValueId.HasValue ).OrderBy( n => n.NumberTypeValue.Order ) )
+                    {
+                        html.AppendFormat( "<div><strong>{0}</strong> {1}</div>", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
+                    }
+
+                    html.Append( "</div>" );
+
+                    result = html.ToString();
+                }
+
+                return Ok( result );
+            }
         }
 
         #endregion

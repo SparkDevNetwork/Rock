@@ -37,11 +37,53 @@ namespace Rock.Jobs
     [DisplayName( "Send Communications" )]
     [Description( "Job to send any future communications or communications not sent immediately by Rock." )]
 
-    [IntegerField( "Delay Period", "The number of minutes to wait before sending any new communication (If the communication block's 'Send When Approved' option is turned on, then a delay should be used here to prevent a send overlap).", false, 30, "", 0 )]
-    [IntegerField( "Expiration Period", "The number of days after a communication was created or scheduled to be sent when it should no longer be sent.", false, 3, "", 1 )]
-    [IntegerField( "Parallel Communications", "The number of communications that can be sent at the same time.", false, 3, "", 2 )]
+    #region Job Attributes
+
+    [IntegerField(
+        "Delay Period",
+        Key = AttributeKey.DelayPeriod,
+        Description = "The number of minutes to wait before sending any new communication (If the communication block's 'Send When Approved' option is turned on, then a delay should be used here to prevent a send overlap).",
+        IsRequired = false,
+        DefaultIntegerValue = 30,
+        Category = "",
+        Order = 0 )]
+
+    [IntegerField(
+        "Expiration Period",
+        Key = AttributeKey.ExpirationPeriod,
+        Description = "The number of days after a communication was created or scheduled to be sent when it should no longer be sent.",
+        IsRequired = false,
+        DefaultIntegerValue = 3,
+        Category = "",
+        Order = 1 )]
+
+    [IntegerField(
+        "Parallel Communications",
+        Key = AttributeKey.ParallelCommunications,
+        Description = "The number of communications that can be sent at the same time.",
+        IsRequired = false,
+        DefaultIntegerValue = 3,
+        Category = "",
+        Order = 2 )]
+
+    #endregion
+
     public class SendCommunications : RockJob
     {
+        #region Keys
+
+        /// <summary>
+        /// Keys to use for job Attributes.
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DelayPeriod = "DelayPeriod";
+            public const string ExpirationPeriod = "ExpirationPeriod";
+            public const string ParallelCommunications = "ParallelCommunications";
+        }
+
+        #endregion
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunications"/> class.
         /// </summary>
@@ -57,6 +99,7 @@ namespace Rock.Jobs
             int maxParallelization = this.GetAttributeValue( "ParallelCommunications" ).AsInteger();
 
             List<Model.Communication> sendCommunications = null;
+            var startDateTime = RockDateTime.Now;
             var stopWatch = Stopwatch.StartNew();
             using ( var rockContext = new RockContext() )
             {
@@ -68,7 +111,7 @@ namespace Rock.Jobs
                     .ToList();
             }
 
-            RockLogger.Log.Information( RockLogDomains.Jobs, "{0}: Queued communication query runtime: {1} ms", nameof( SendCommunications ), stopWatch.ElapsedMilliseconds );
+            Log( RockLogLevel.Info, "Retrieved {queuedCommunicationsCount} queued communications.", startDateTime, stopWatch.ElapsedMilliseconds, sendCommunications.Count );
 
             if ( sendCommunications == null )
             {
@@ -78,10 +121,10 @@ namespace Rock.Jobs
             var exceptionMsgs = new List<string>();
             int communicationsSent = 0;
 
+            startDateTime = RockDateTime.Now;
             stopWatch = Stopwatch.StartNew();
             var sendCommunicationTasks = new List<Task<SendCommunicationAsyncResult>>();
 
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "{0}: Send communications {1} communications.", nameof( SendCommunications ), sendCommunicationTasks.Count );
             using ( var mutex = new SemaphoreSlim( maxParallelization ) )
             {
                 for ( var i = 0; i < sendCommunications.Count(); i++ )
@@ -130,7 +173,7 @@ namespace Rock.Jobs
                 }
             }
 
-            RockLogger.Log.Information( RockLogDomains.Jobs, "{0}: Send communications runtime: {1} ms", nameof( SendCommunications ), stopWatch.ElapsedMilliseconds );
+            Log( RockLogLevel.Info, "Sent {communicationsSentCount} communications.", startDateTime, stopWatch.ElapsedMilliseconds, communicationsSent );
 
             if ( communicationsSent > 0 )
             {
@@ -152,6 +195,7 @@ namespace Rock.Jobs
             // limit the query to only look a week prior to the window to avoid performance issue (it could be slow to query at ALL the communication recipient before the expire date, as there could several years worth )
             var expireDateTimeBeginWindow = expireDateTimeEndWindow.AddDays( -7 );
 
+            startDateTime = RockDateTime.Now;
             stopWatch = Stopwatch.StartNew();
             using ( var rockContext = new RockContext() )
             {
@@ -167,7 +211,7 @@ namespace Rock.Jobs
                 rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
             }
 
-            RockLogger.Log.Information( RockLogDomains.Jobs, "{0}: Query expired communications runtime: {1} ms", nameof( SendCommunications ), stopWatch.ElapsedMilliseconds );
+            Log( RockLogLevel.Info, @"Updated expired communication recipients' status to ""Failed"".", startDateTime, stopWatch.ElapsedMilliseconds );
         }
 
         /// <summary>
@@ -205,8 +249,9 @@ namespace Rock.Jobs
                 Communication = comm
             };
 
+            var startDateTime = RockDateTime.Now;
             var communicationStopWatch = Stopwatch.StartNew();
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "{0}: Starting to send {1}.", nameof( SendCommunicationAsync ), comm.Name );
+            Log( RockLogLevel.Debug, "Starting to send {communicationName}.", startDateTime, propertyValues: comm.Name );
             try
             {
                 await Model.Communication.SendAsync( comm ).ConfigureAwait( false );
@@ -216,7 +261,7 @@ namespace Rock.Jobs
                 communicationResult.Exception = ex;
             }
 
-            RockLogger.Log.Information( RockLogDomains.Jobs, "{0}: {1} took {2} ms", nameof( SendCommunications ), comm.Name, communicationStopWatch.ElapsedMilliseconds );
+            Log( RockLogLevel.Info, "{communicationName} sent.", startDateTime, communicationStopWatch.ElapsedMilliseconds, comm.Name );
             mutex.Release();
             return communicationResult;
         }

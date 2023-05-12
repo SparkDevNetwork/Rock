@@ -233,6 +233,8 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
+            TestDatabaseHelper.ResetDatabase();
+
             DeleteTestData();
             CreatePersonData();
             CreateStreakTypeData();

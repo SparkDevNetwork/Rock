@@ -150,15 +150,15 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Subject", tbSubject.Text );
-            rFilter.SaveUserPreference( "Communication Type", ddlType.SelectedValue );
-            rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
+            rFilter.SetFilterPreference( "Subject", tbSubject.Text );
+            rFilter.SetFilterPreference( "Communication Type", ddlType.SelectedValue );
+            rFilter.SetFilterPreference( "Status", ddlStatus.SelectedValue );
             int personId = ppSender.PersonId ?? 0;
-            rFilter.SaveUserPreference( "Created By", personId.ToString() );
+            rFilter.SetFilterPreference( "Created By", personId.ToString() );
 
-            rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            rFilter.SetFilterPreference( "Date Range", drpDates.DelimitedValues );
 
-            rFilter.SaveUserPreference( "Content", tbContent.Text );
+            rFilter.SetFilterPreference( "Content", tbContent.Text );
 
             BindGrid();
         }
@@ -277,15 +277,15 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SetFilter()
         {
-            tbSubject.Text = rFilter.GetUserPreference( "Subject" );
+            tbSubject.Text = rFilter.GetFilterPreference( "Subject" );
 
             ddlType.BindToEnum<CommunicationType>( true );
-            ddlType.SetValue( rFilter.GetUserPreference( "Communication Type" ) );
+            ddlType.SetValue( rFilter.GetFilterPreference( "Communication Type" ) );
 
             ddlStatus.BindToEnum<CommunicationStatus>( true, new CommunicationStatus[] { CommunicationStatus.Transient } );
-            ddlStatus.SelectedValue = rFilter.GetUserPreference( "Status" );
+            ddlStatus.SelectedValue = rFilter.GetFilterPreference( "Status" );
 
-            int? personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
+            int? personId = rFilter.GetFilterPreference( "Created By" ).AsIntegerOrNull();
 
             if ( personId.HasValue && personId.Value != 0 )
             {
@@ -297,9 +297,9 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+            drpDates.DelimitedValues = rFilter.GetFilterPreference( "Date Range" );
 
-            tbContent.Text = rFilter.GetUserPreference( "Content" );
+            tbContent.Text = rFilter.GetFilterPreference( "Content" );
         }
 
         /// <summary>

@@ -194,6 +194,16 @@ namespace Rock.SystemGuid
         public const string CONTENT_COLLECTION_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
 
         /// <summary>
+        /// The guid for the Rock.Model.ContentTopic entity
+        /// </summary>
+        public const string CONTENT_TOPIC = "CD4BE244-147E-4A90-9137-B35FC35B5A52";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentTopicDomain entity
+        /// </summary>
+        public const string CONTENT_TOPIC_DOMAIN = "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51";
+
+        /// <summary>
         /// The guid for the Rock.Model.DataView entity.
         /// </summary>
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
@@ -614,6 +624,11 @@ namespace Rock.SystemGuid
         /// The GUID for the Rock.Follow.Event.PersonPrayerRequest entity
         /// </summary>
         public const string PERSON_PRAYER_REQUEST = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B";
+
+        /// <summary>
+        /// The GUID for the Rock.Model.PersonPreference entity
+        /// </summary>
+        public const string PERSON_PREFERENCE = "FDCF766C-F36B-403B-89F3-7030DA65507E";
 
         /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity

@@ -49,9 +49,11 @@
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Security\ForgotUserName\SendInstructionsResultType.cs" />
     <Compile Include="Blocks\Engagement\SignUp\RegisterMode.cs" />
-    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailScheduleSelectionMode.cs" />
-    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailLocationSelectionMode.cs" />
-    <Compile Include="Blocks\Groups\GroupAttendanceDetail\GroupAttendanceDetailDateSelectionMode.cs" />
+    <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailScheduleSelectionMode.cs" />
+    <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailLocationSelectionMode.cs" />
+    <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailDateSelectionMode.cs" />
+    <Compile Include="Blocks\Group\Scheduling\ResourceListSourceType.cs" />
+    <Compile Include="Blocks\Group\Scheduling\UpdateSchedulePreferenceMode.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryStep.cs" />
     <Compile Include="Blocks\Security\Login\LoginMethod.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
@@ -83,6 +85,8 @@
     <Compile Include="Core\AuditType.cs" />
     <Compile Include="Core\CameraBarcodeConfiguration.cs" />
     <Compile Include="Core\ChangeType.cs" />
+    <Compile Include="Core\ColorRecipe.cs" />
+    <Compile Include="Core\ColorScheme.cs" />
     <Compile Include="Core\ColorDepth.cs" />
     <Compile Include="Core\FollowingSuggestedStatus.cs" />
     <Compile Include="Core\Format.cs" />
@@ -124,6 +128,9 @@
     <Compile Include="Event\RegistrationFieldSource.cs" />
     <Compile Include="Event\RegistrationPersonFieldType.cs" />
     <Compile Include="Event\RSVP.cs" />
+    <Compile Include="Event\ScheduledAttendanceItemMachesPreference.cs" />
+    <Compile Include="Event\ScheduledAttendanceItemStatus.cs" />
+    <Compile Include="Event\SchedulerResourceGroupMemberFilterType.cs" />
     <Compile Include="Event\SessionStatus.cs" />
     <Compile Include="Event\SignatureDocumentAction.cs" />
     <Compile Include="Finance\AlertType.cs" />

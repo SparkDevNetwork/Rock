@@ -271,7 +271,7 @@ export default defineComponent({
 
             <div ref="dropZoneElement" :id="uniqueId" class="imageupload-group" :style="{pointerEvents: disabled ? 'none' : null}" @click="onSelectFileClick">
                 <div class="imageupload-thumbnail" style="width: 100px; height: 100px;">
-                    <a v-if="fileUrl" :class="thumbnailClass" :href="fileUrl" target="_blank" @click.stop>
+                    <a v-if="fileUrl" :class="thumbnailClass" :href="fileUrl" target="_blank" rel="noopener noreferrer" @click.stop>
                         <div class="imageupload-thumbnail-image" :style="thumbnailStyle"></div>
                     </a>
                     <div v-else class="imageupload-thumbnail-image" :style="thumbnailStyle"></div>

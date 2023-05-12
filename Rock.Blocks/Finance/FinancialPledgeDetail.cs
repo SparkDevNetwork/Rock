@@ -388,7 +388,7 @@ namespace Rock.Blocks.Finance
                 () => entity.EndDate = box.Entity.EndDate ?? DateTime.MinValue );
 
             box.IfValidProperty( nameof( box.Entity.Group ),
-                () => entity.GroupId = box.Entity.Group.GetEntityId<Group>( rockContext ) );
+                () => entity.GroupId = box.Entity.Group.GetEntityId<Rock.Model.Group>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.PledgeFrequencyValue ),
                 () => entity.PledgeFrequencyValueId = box.Entity.PledgeFrequencyValue.GetEntityId<DefinedValue>( rockContext ) );

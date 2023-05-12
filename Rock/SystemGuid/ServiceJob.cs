@@ -129,6 +129,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_150_REPLACE_TRANSACTION_ENTRY_BLOCKS_WITH_UTILITY_PAYMENT_ENTRY_BLOCK = "8A013CC5-CB51-48F3-8AF8-767BDECACAFE";
 
         /// <summary>
+        /// The Job to run Post v15.1 Data Migrations to cleanup duplicate mobile interaction entries.
+        /// </summary>
+        public const string DATA_MIGRATIONS_151_DUPLICATE_MOBILE_INTERACTIONS_CLEANUP = "D3D60B90-48D1-4718-905E-39638B44C665";
+
+        /// <summary>
         /// The Job to run Post v15.0 Data Migrations to add a new mobile rest group and add existing mobile applications into that group.
         /// </summary>
         public const string DATA_MIGRATIONS_150_MOBILE_APPLICATION_USERS_REST_GROUP = "480E996E-6A31-40DB-AE98-BFF85CDED506";
@@ -142,6 +147,16 @@ namespace Rock.SystemGuid
         /// The Job to run Post v15.1 Data Migrations for System Phone Numbers.
         /// </summary>
         public const string DATA_MIGRATIONS_150_SYSTEM_PHONE_NUMBERS = "6DFE731E-F28B-40B3-8383-84212A301214";
+
+        /// <summary>
+        /// The Job to run Post v15.1 Replace Web Forms Blocks with Obsidian Blocks.
+        /// </summary>
+        public const string DATA_MIGRATIONS_150_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS = "EA00D1D4-709A-4102-863D-08471AA2C345";
+
+        /// <summary>
+        /// The Job to run Post v16.0 Move Person Preferences.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_MOVE_PERSON_PREFERENCES = "C8591D15-9D37-49D3-8DF8-1DB72EE42D29";
 
         /// <summary>
         /// The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields.

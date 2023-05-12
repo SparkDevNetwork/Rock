@@ -1086,7 +1086,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The attendance reminder system communication.</value>
         [DataMember]
-        public SystemCommunication AttendanceReminderSystemCommunication { get; set; }
+        public virtual SystemCommunication AttendanceReminderSystemCommunication { get; set; }
 
         #endregion
 

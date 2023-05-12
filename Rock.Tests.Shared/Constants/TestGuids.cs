@@ -28,6 +28,12 @@ namespace Rock.Tests.Shared
         // A Guid Reference that does not match any entity in a Rock database.
         public const string NoMatch = "00000000-0000-0000-0000-000000000001";
 
+        public static class Crm
+        {
+            public const string CampusMain = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
+            public const string CampusSouth = "5434F90B-BB91-4A34-8B09-8C117A9E5D95";
+        }
+
         public static class Category
         {
             public const string DataViewLocations = "1D45C0A7-3DE8-428C-94A8-14E5ED5E2E36";
@@ -81,6 +87,9 @@ namespace Rock.Tests.Shared
         public static class TestPeople
         {
             public static string TedDecker = "8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4";
+            public static string CindyDecker = "B71494DB-D809-451A-A950-28898D0FD92C";
+            public static string AlexDecker = "27919690-3CCE-4FA6-95C4-CD21419EB51F";
+
             public static string BillMarble = "1EA811BB-3118-42D1-B020-32A82BC8081A";
             public static string AlishaMarble = "69DC0FDC-B451-4303-BD91-EF17C0015D23";
 

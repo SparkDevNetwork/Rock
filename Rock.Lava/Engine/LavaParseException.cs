@@ -42,30 +42,43 @@ namespace Rock.Lava
             _template = template;
         }
 
-        public override string Message
+        /// <inheritdoc />
+        public override string GetUserMessage()
         {
-            get
+            if ( !string.IsNullOrWhiteSpace( _message ) )
             {
-                string msg = _message;
-
-                if ( string.IsNullOrWhiteSpace( _message ) && this.InnerException != null )
-                {
-                    msg = this.InnerException.Message;
-                }
-
-                msg = "Lava Template Parse failed" + ( string.IsNullOrWhiteSpace( msg ) ? "." : $": { msg }" );
-
-                if ( !string.IsNullOrWhiteSpace( _template ) )
-                {
-                    msg += $"\n[Template=\"{ _template }\"]";
-                }
-                if ( !string.IsNullOrWhiteSpace( _engineName ) )
-                {
-                    msg += $"\n[Engine={ _engineName }]";
-                }
-
-                return msg;
+                return $"Lava Error: { _message }";
             }
+
+            if ( this.InnerException is LavaException le )
+            {
+                // Try to get a user-friendly error message from the wrapped exception.
+                return le.GetUserMessage();
+            }
+            else if ( this.InnerException != null )
+            {
+                return $"Lava Error: { this.InnerException.Message }";
+            }
+
+            return "Lava Template Parse failed.";
+        }
+
+        /// <inheritdoc />
+        public override string GetDiagnosticMessage()
+        {
+            var msg = GetUserMessage();
+
+            // Add information about the source template and Lava Engine name.
+            if ( !string.IsNullOrWhiteSpace( _template ) )
+            {
+                msg += $"\n[Template=\"{ _template }\"]";
+            }
+            if ( !string.IsNullOrWhiteSpace( _engineName ) )
+            {
+                msg += $"\n[Engine={ _engineName }]";
+            }
+
+            return msg;
         }
     }
 }

@@ -103,7 +103,7 @@ namespace Rock.Blocks.Crm
                 try
                 {
                     GroupService service = new GroupService( rockContext );
-                    Group photoRequestGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
+                    Rock.Model.Group photoRequestGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
                     var groupMember = photoRequestGroup.Members.Where( m => m.PersonId == entity.Id ).FirstOrDefault();
                     if ( groupMember == null )
                     {

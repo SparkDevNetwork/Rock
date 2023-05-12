@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Bus;
 using Rock.Tests.Integration.Core.Lava;
 using Rock.Tests.Shared;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration
@@ -51,11 +52,13 @@ namespace Rock.Tests.Integration
 
                 // Set properties of the database manager from the test context.
                 TestDatabaseHelper.ConnectionString = ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString;
-                TestDatabaseHelper.DatabaseCreatorId = context.Properties["DatabaseCreatorId"].ToStringSafe();
+                TestDatabaseHelper.DatabaseCreatorKey = context.Properties["DatabaseCreatorKey"].ToStringSafe();
                 TestDatabaseHelper.DatabaseRefreshStrategy = context.Properties["DatabaseRefreshStrategy"].ToStringSafe().ConvertToEnum<DatabaseRefreshStrategySpecifier>(DatabaseRefreshStrategySpecifier.Verified);
                 TestDatabaseHelper.SampleDataUrl = context.Properties["SampleDataUrl"].ToStringSafe();
 
                 TestDatabaseHelper.InitializeTestDatabase();
+
+                RockInstanceConfig.SetDatabaseIsAvailable( true );
 
                 // Reinitialize the Lava Engine and configure it to load dynamic shortcodes from the test database.
                 LogHelper.Log( $"Initializing Lava Engine (Pass 2)..." );

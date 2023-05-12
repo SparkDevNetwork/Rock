@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param></param>
         private void gfFormTemplates_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFormTemplates.SaveUserPreference( UserPreferenceKeys.Active, ddlIsActive.SelectedValue );
+            gfFormTemplates.SetFilterPreference( UserPreferenceKeys.Active, ddlIsActive.SelectedValue );
             BindGrid();
         }
 
@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var builderTemplateService = new WorkflowFormBuilderTemplateService( new RockContext() );
             var qry = builderTemplateService.Queryable().AsNoTracking();
 
-            var isActive = gfFormTemplates.GetUserPreference( UserPreferenceKeys.Active ).AsBooleanOrNull();
+            var isActive = gfFormTemplates.GetFilterPreference( UserPreferenceKeys.Active ).AsBooleanOrNull();
 
             // A null is active defaults to showing only active
             if ( !isActive.HasValue )
@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private void BindFilters()
         {
-            var isActive = gfFormTemplates.GetUserPreference( UserPreferenceKeys.Active ).AsBooleanOrNull();
+            var isActive = gfFormTemplates.GetFilterPreference( UserPreferenceKeys.Active ).AsBooleanOrNull();
             if ( isActive.HasValue )
             {
                 var value = isActive.Value ? "Yes" : "No";

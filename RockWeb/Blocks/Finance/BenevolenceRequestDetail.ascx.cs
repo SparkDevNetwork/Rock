@@ -1510,7 +1510,6 @@ namespace RockWeb.Blocks.Finance
             DisplayPersonName();
 
             // Setup Image
-            imgViewRequestor.ImageUrl = Person.GetPersonPhotoUrl( _requester );
             if ( _assignedTo != null )
             {
                 imgViewAssignedTo.ImageUrl = Person.GetPersonPhotoUrl( _assignedTo );
@@ -1522,6 +1521,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( _requester == null )
             {
+                imgViewRequestor.ImageUrl = "/Assets/Images/person-no-photo-unknown.svg";
                 lViewNotLinkedProfile.Visible = true;
                 lbViewProfile.Visible = false;
                 lViewNotLinkedProfile.Text = "<small class='text-muted'> Record Not Linked</small>";
@@ -1566,6 +1566,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
+                imgViewRequestor.ImageUrl = Person.GetPersonPhotoUrl( _requester );
                 lViewNotLinkedProfile.Visible = false;
                 lbViewProfile.Visible = true;
                 lbViewProfile.Text = "<small> View Profile</small>";

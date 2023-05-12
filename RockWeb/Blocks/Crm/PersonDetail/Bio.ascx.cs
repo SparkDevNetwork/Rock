@@ -746,6 +746,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             lEmailButton.Text = $@"<a href='{emailLink}' class='btn btn-default btn-go btn-square stretched-link' title='{emailButtonTitle}' aria-label='{emailButtonTitle}'><i class='fa fa-envelope'></i></a><span>Email</span>";
         }
 
+        /// <summary>
+        /// Creates an "Actions" menu with workflow and/or custom actions, as specified in the block settings.
+        /// </summary>
         protected void CreateActionMenu()
         {
             hlVCard.NavigateUrl = ResolveUrl( string.Format( "~/api/People/VCard/{0}", Person.Guid ) );

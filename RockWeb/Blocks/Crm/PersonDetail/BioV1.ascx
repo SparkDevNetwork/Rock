@@ -40,7 +40,7 @@
                     <div class="social-icons margin-t-sm">
                         <asp:Repeater ID="rptSocial" runat="server">
                             <ItemTemplate>
-                                <a href='<%# Eval("url") %>' class='btn btn-<%# Eval("name").ToString().ToLower() %> btn-sm btn-square' <%# !string.IsNullOrEmpty( Eval("color").ToString())? "style='background-color:"+Eval("color").ToString()+"'":"" %> target="_blank"><i class='<%# Eval("icon") %>'></i></a>
+                                <a href='<%# Eval("url") %>' class='btn btn-<%# Eval("name").ToString().ToLower() %> btn-sm btn-square' <%# !string.IsNullOrEmpty( Eval("color").ToString())? "style='background-color:"+Eval("color").ToString()+"'":"" %> target="_blank" rel="noopener noreferrer"><i class='<%# Eval("icon") %>'></i></a>
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>

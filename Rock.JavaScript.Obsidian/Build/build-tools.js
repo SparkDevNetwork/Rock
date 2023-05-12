@@ -317,6 +317,7 @@ function defineFileConfig(input, output, options) {
             virtualPlugin,
 
             resolve({
+                browser: true,
                 extensions: [".js", ".ts"]
             }),
 

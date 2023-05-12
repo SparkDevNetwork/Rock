@@ -278,6 +278,23 @@ const galleryComponents: Record<string, Component> = {
     GenderGallery: getFieldTypeGalleryComponent("Gender", "2", FieldTypeGuids.Gender, {
     }),
 
+    GroupGallery: getFieldTypeGalleryComponent("Group", "2", FieldTypeGuids.Group, {
+    }),
+
+    GroupLocationTypeGallery: getFieldTypeGalleryComponent("GroupLocationType", "2", FieldTypeGuids.GroupLocationType, {
+        groupTypeGuid: JSON.stringify({ value: "790E3215-3B10-442B-AF69-616C0DCB998E", text: "Family" }),
+        groupTypeLocations: `{"790E3215-3B10-442B-AF69-616C0DCB998E": ${JSON.stringify('[{"value":"8c52e53c-2a66-435a-ae6e-5ee307d9a0dc","text":"Home","category":null},{"value":"e071472a-f805-4fc4-917a-d5e3c095c35c","text":"Work","category":null},{"value":"853d98f1-6e08-4321-861b-520b4106cfe0","text":"Previous","category":null}]')} }`,
+    }),
+
+    GroupMemberGallery: getFieldTypeGalleryComponent("GroupMember", "2", FieldTypeGuids.GroupMember, {
+        allowmultiple: "false",
+        enhancedselection: "false",
+        group: JSON.stringify({ value: "0BA93D66-21B1-4229-979D-F76CEB57666D", text: "A/V Team" })
+    }),
+
+    GroupRoleGallery: getFieldTypeGalleryComponent("GroupRole", "2", FieldTypeGuids.GroupRole, {
+    }),
+
     IntegerGallery: getFieldTypeGalleryComponent("Integer", "20", FieldTypeGuids.Integer, {
     }),
 
@@ -309,11 +326,21 @@ const galleryComponents: Record<string, Component> = {
         values: '[{"value": "pizza", "text": "Pizza"}, {"value": "sub", "text": "Sub"}, {"value": "bagel", "text": "Bagel"}]'
     }),
 
+    PersonGallery: getFieldTypeGalleryComponent("Person", "", FieldTypeGuids.Person, {
+        includeBusinesses: "false"
+    }),
+
     PhoneNumberGallery: getFieldTypeGalleryComponent("PhoneNumber", "(321) 456-7890", FieldTypeGuids.PhoneNumber, {
     }),
 
     RatingGallery: getFieldTypeGalleryComponent("Rating", '{"value":3,"maxValue":5}', FieldTypeGuids.Rating, {
         max: "5"
+    }),
+
+    ScheduleGallery: getFieldTypeGalleryComponent("Schedule", "2", FieldTypeGuids.Schedule, {
+    }),
+
+    SchedulesGallery: getFieldTypeGalleryComponent("Schedules", "2", FieldTypeGuids.Schedules, {
     }),
 
     SingleSelectGallery: getFieldTypeGalleryComponent("SingleSelect", "pizza", FieldTypeGuids.SingleSelect, {

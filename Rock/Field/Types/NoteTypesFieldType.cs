@@ -51,7 +51,7 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                var entityTypeName = privateConfigurationValues[ENTITY_TYPE_NAME_KEY];
+                var entityTypeName = privateConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY );
                 if ( string.IsNullOrWhiteSpace( entityTypeName ) )
                 {
                     publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )

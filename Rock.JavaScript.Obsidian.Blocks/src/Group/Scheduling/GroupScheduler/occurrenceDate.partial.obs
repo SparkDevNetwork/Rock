@@ -1,0 +1,253 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="occurrenceDateElement" class="occurrence-date js-occurrence-date" :style="inlineStyle">
+        <h2 class="occurrence-date-title">{{ title }}</h2>
+
+        <NotificationBox v-if="!anySchedules" :alertType="AlertType.Info">
+            No schedules available.
+        </NotificationBox>
+
+        <div v-else class="schedules">
+
+            <Schedule v-for="(occurrences, index) in sortedOccurrencesBySchedule" :key="getScheduleIdKey(occurrences)"
+                      :occurrences="occurrences"
+                      :showPrevNextButtons="showPrevNextButtons"
+                      :ref="(comp) => addScheduleComponent(comp, index)"
+                      :disabled="disabled"
+                      @goPrevious="$emit('goPrevious', index)"
+                      @goNext="$emit('goNext', index)"
+                      @preferenceUpdated="$emit('preferenceUpdated', $event)"></Schedule>
+
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ComponentPublicInstance, computed, nextTick, onUnmounted, PropType, provide, ref, watch } from "vue";
+    import Schedule from "./schedule.partial.obs";
+    import { OccurrenceDateTitle } from "./types.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { toOrdinalSuffix } from "@Obsidian/Utility/numberUtils";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+
+    const props = defineProps({
+        occurrences: {
+            type: Array as PropType<GroupSchedulerOccurrenceBag[]>,
+            required: true
+        },
+
+        showPrevNextButtons: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "scheduleComponentsCreated", scheduleComponents: (ComponentPublicInstance | null)[]): void,
+        (e: "goPrevious", currentScheduleIndex: number): void,
+        (e: "goNext", currentScheduleIndex: number): void,
+        (e: "preferenceUpdated", personId: number): void
+    }>();
+
+    let locationsResizeObserver: ResizeObserver | undefined;
+
+    // #region Values
+
+    const occurrenceDateElement = ref<HTMLElement | null>(null);
+
+    const scheduleComponents = ref<(ComponentPublicInstance | null)[]>([]);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        // It's assumed that all occurrences provided will belong to the same occurrence date;
+        // just grab the first friendlyOccurrenceDate, since they should all be the same.
+        let friendlyOccurrenceDate: string | null | undefined;
+        if (props.occurrences?.length) {
+            friendlyOccurrenceDate = props.occurrences[0].friendlyOccurrenceDate;
+
+            if (friendlyOccurrenceDate) {
+                const dateParts = friendlyOccurrenceDate.split(" ");
+                if (dateParts.length === 3) {
+                    const ordinalDate = toOrdinalSuffix(+dateParts[2]);
+                    friendlyOccurrenceDate = [
+                        dateParts[0],
+                        dateParts[1],
+                        ordinalDate ?? dateParts[2]
+                    ].join(" ");
+                }
+            }
+        }
+
+        return friendlyOccurrenceDate || "No Date Provided";
+    });
+
+    const sortedOccurrencesBySchedule = computed((): (GroupSchedulerOccurrenceBag[])[] => {
+        if (!props.occurrences?.length) {
+            return [];
+        }
+
+        // We're assuming the server has performed the sort and returned the occcurrences to us in the expected display order.
+        // A Map object is needed to maintain sort order.
+        const groupedOccurrences = new Map<number, GroupSchedulerOccurrenceBag[]>();
+        props.occurrences
+            .filter((o: GroupSchedulerOccurrenceBag) => o.scheduleId)
+            .forEach((o: GroupSchedulerOccurrenceBag) => {
+                const scheduleId = o.scheduleId || 0;
+                let scheduleOccurrences = groupedOccurrences.get(scheduleId);
+
+                if (!scheduleOccurrences) {
+                    scheduleOccurrences = [];
+                    groupedOccurrences.set(scheduleId, scheduleOccurrences);
+                }
+
+                scheduleOccurrences.push(o);
+            });
+
+        const sortedScheduleOccurrences: (GroupSchedulerOccurrenceBag[])[] = [];
+        groupedOccurrences.forEach((occurrences) => sortedScheduleOccurrences.push(occurrences));
+
+        return sortedScheduleOccurrences;
+    });
+
+    const scheduleCount = computed((): number => {
+        return sortedOccurrencesBySchedule.value.length;
+    });
+
+    const anySchedules = computed((): boolean => {
+        return !!scheduleCount.value;
+    });
+
+    const inlineStyle = computed((): string => {
+        return `--schedule-count:${scheduleCount.value}`;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the schedule ID "key" from the first occurrence in the collection.
+     *
+     * @param occurrences The occurrences for a given schedule.
+     */
+    function getScheduleIdKey(occurrences: GroupSchedulerOccurrenceBag[]): number {
+        return occurrences?.[0]?.scheduleId ?? 0;
+    }
+
+    /**
+     * Adds the component to the array of schedule components.
+     *
+     * @param component The schedule component to add.
+     * @param index The index of the component's corresponding schedule within the occurrences provided to this occurrence date component.
+     *  Per Vue docs: "It should be noted that the ref array does not guarantee the same order as the source array."
+     *  Hence the need to provide this component's index to know which schedule it represents.
+     */
+    function addScheduleComponent(component: Element | ComponentPublicInstance | null, index: number): void {
+        if (!component) {
+            return;
+        }
+
+        scheduleComponents.value[index] = component as ComponentPublicInstance;
+
+        // Once all schedule components have been added, report them back to the parent component
+        // and begin observing their descendent location elements' sizes.
+        if (scheduleComponents.value.length === scheduleCount.value) {
+            emit("scheduleComponentsCreated", scheduleComponents.value);
+            observeLocationSizes();
+        }
+    }
+
+    /**
+     * Observes this occurrence date's descendent location elements' sizes.
+     */
+    function observeLocationSizes(): void {
+        if (!window.ResizeObserver || !occurrenceDateElement.value) {
+            return;
+        }
+
+        if (locationsResizeObserver) {
+            // Stop observing any previous location elements.
+            locationsResizeObserver.disconnect();
+        }
+        else {
+            locationsResizeObserver = new ResizeObserver((_: ResizeObserverEntry[]) => {
+                setEqualGroupHeights();
+            });
+        }
+
+        // Start observing any current location elements.
+        occurrenceDateElement.value.querySelectorAll(".js-schedule-location").forEach((location: Element) => {
+            locationsResizeObserver?.observe(location);
+        });
+    }
+
+    /**
+     * Sets this occurrence date's descendent group elements to have a minimum height equal to each
+     * respective tallest sibling group element. "Sibling" within this context means: the group
+     * element(s) at the matching query selector index position for each schedule column within this
+     * occurrence date.
+     */
+    function setEqualGroupHeights(): void {
+        if (!occurrenceDateElement.value) {
+            return;
+        }
+
+        const schedules = occurrenceDateElement.value.querySelectorAll<HTMLElement>(".js-schedule-column");
+
+        // Start by setting all groups back to "auto" minimum height. This will do two things:
+        //  1. Reclaim any vertical space that is no longer needed (if an individual was removed).
+        //  2. Set up the UI for mobile widths (as we won't synchronize heights in that case).
+        schedules.forEach((schedule: HTMLElement) => {
+            schedule.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((group: HTMLElement) => {
+                group.style.minHeight = "auto";
+            });
+        });
+
+        // For non-mobile widths, synchronize heights.
+        if (window.innerWidth > 768) {
+            // But wait until the next tick to give the above "auto" minimum heights to take effect first.
+            nextTick(() => {
+                const groupHeights: number[] = [];
+
+                // Loop through all groups to find the tallest one for a given index position.
+                schedules.forEach((schedule: HTMLElement) => {
+                    schedule.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((group: HTMLElement, i: number) => {
+                        if (!groupHeights[i] || groupHeights[i] < group.offsetHeight) {
+                            groupHeights[i] = group.offsetHeight;
+                        }
+                    });
+                });
+
+                // Loop through all groups again to set each minimum height to match their tallest sibling.
+                schedules.forEach((schedule: HTMLElement) => {
+                    schedule.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((group: HTMLElement, i: number) => {
+                        group.style.minHeight = `${groupHeights[i]}px`;
+                    });
+                });
+            });
+        }
+    }
+
+    // #endregion
+
+    provide(OccurrenceDateTitle, title);
+
+    watch(() => props.occurrences, () => {
+        scheduleComponents.value = [];
+    });
+
+    onUnmounted(() => {
+        if (locationsResizeObserver) {
+            locationsResizeObserver.disconnect();
+        }
+    });
+</script>

@@ -1,0 +1,229 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="`progress text-${state} m-0 flex-fill`" role="progressbar" aria-label="Group Scheduler Progress">
+        <div :class="`progress-bar bg-${state}`" :style="`width:${confirmedPercentage}%`"></div>
+        <div :class="`progress-bar bg-${state} o-50`" :style="`width:${pendingPercentage}%`"></div>
+
+        <div v-if="showMinimumThreshold"
+             ref="minimumThresholdElement"
+             class="indicator"
+             :style="`left:${minimumPercentage}%;`"
+             data-toggle="tooltip"
+             :title="`Minimum: ${minimumCapacity}`"></div>
+
+        <div v-if="showDesiredThreshold"
+             ref="desiredThresholdElement"
+             class="indicator"
+             :style="`left:${desiredPercentage}%;`"
+             data-toggle="tooltip"
+             :title="`Desired: ${desiredCapacity}`"></div>
+
+        <div v-if="showMaximumThreshold"
+             ref="maximumThresholdElement"
+             class="indicator"
+             :style="`left:${maximumPercentage}%;`"
+             data-toggle="tooltip"
+             :title="`Maximum: ${maximumCapacity}`"></div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { IScheduleProgress, ProgressState } from "./types.partial";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+
+    const props = defineProps({
+        progress: {
+            type: Object as PropType<IScheduleProgress>,
+            required: true
+        }
+    });
+
+    interface IGetPercentageConfig {
+        isThreshold: boolean;
+        isMax?: boolean;
+    }
+
+    // #region Values
+
+    const minimumThresholdElement = ref<HTMLElement | null>(null);
+    const desiredThresholdElement = ref<HTMLElement | null>(null);
+    const maximumThresholdElement = ref<HTMLElement | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const minimumCapacity = computed((): number => {
+        return props.progress?.minimumCapacity ?? 0;
+    });
+
+    const minimumPercentage = computed((): number => {
+        return getPercentageOfWhole(minimumCapacity.value, { isThreshold: true });
+    });
+
+    const showMinimumThreshold = computed((): boolean => {
+        return minimumPercentage.value > 0 && minimumPercentage.value < 100;
+
+        // Replace the above line with the following if we decide we want to show minimum "ticks" at the 0% position.
+        // Otherwise, when mimimum capacity === 1, the tick will not be shown because:
+        //  1) We have logic below to show threshold "ticks" to the left of the spot that will satisfy a given value.
+        //  2) As a result, minimum percentage will be 0%.
+        // return (minimumCapacity.value > 0 || minimumPercentage.value > 0) && minimumPercentage.value < 100;
+    });
+
+    const desiredCapacity = computed((): number => {
+        return props.progress?.desiredCapacity ?? 0;
+    });
+
+    const desiredPercentage = computed((): number => {
+        return getPercentageOfWhole(desiredCapacity.value, { isThreshold: true });
+    });
+
+    const showDesiredThreshold = computed((): boolean => {
+        return desiredPercentage.value > 0 && desiredPercentage.value < 100;
+    });
+
+    const maximumCapacity = computed((): number => {
+        return props.progress?.maximumCapacity ?? 0;
+    });
+
+    const maximumPercentage = computed((): number => {
+        return getPercentageOfWhole(maximumCapacity.value, { isThreshold: true, isMax: true });
+    });
+
+    const showMaximumThreshold = computed((): boolean => {
+        return maximumPercentage.value > 0
+            && maximumPercentage.value < 100
+            && totalCount.value > maximumCapacity.value;
+    });
+
+    const confirmedCount = computed((): number => {
+        return props.progress?.confirmedCount ?? 0;
+    });
+
+    const confirmedPercentage = computed((): number => {
+        return getPercentageOfWhole(confirmedCount.value, { isThreshold: false });
+    });
+
+    const pendingCount = computed((): number => {
+        return props.progress?.pendingCount ?? 0;
+    });
+
+    const pendingPercentage = computed((): number => {
+        const pendingCountForPercentage = pendingCount.value + confirmedCount.value;
+        return getPercentageOfWhole(pendingCountForPercentage, { isThreshold: false });
+    });
+
+    const totalCount = computed((): number => {
+        return confirmedCount.value + pendingCount.value;
+    });
+
+    const state = computed((): string => {
+        const min = minimumCapacity.value;
+        const desired = desiredCapacity.value;
+        const max = maximumCapacity.value;
+        const confirmed = confirmedCount.value;
+
+        let progressState = ProgressState.danger;
+        if (confirmed > 0) {
+            progressState = ProgressState.success;
+            if (max > 0 && confirmed > max) {
+                progressState = ProgressState.critical;
+            }
+            else if (confirmed < min) {
+                progressState = ProgressState.danger;
+            }
+            else if (confirmed < desired) {
+                progressState = ProgressState.warning;
+            }
+        }
+
+        return progressState;
+    });
+
+    const whole = computed((): number => {
+        const min = minimumCapacity.value;
+        const desired = desiredCapacity.value;
+        const max = maximumCapacity.value;
+        const filled = totalCount.value;
+
+        let whole = 0;
+        if (max > 0) {
+            whole = max;
+        }
+        else if (desired > 0) {
+            whole = desired;
+        }
+        else if (min > 0) {
+            whole = min;
+        }
+
+        if (filled > whole) {
+            whole = filled;
+        }
+
+        return whole;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the part's percentage of the whole.
+     *
+     * @param part The part whose percentage should be calculated.
+     * @param config A config object to help determine how this percentage should be calculated.
+     */
+    function getPercentageOfWhole(part: number, config: IGetPercentageConfig): number {
+        if (whole.value > 0) {
+            if (config.isThreshold && !config.isMax) {
+                // Show threshold "ticks" to the left of the spot that will satisfy a given value.
+                part--;
+            }
+
+            var percentage = Math.floor(part / whole.value * 100);
+            return percentage > 100 ? 100 : percentage;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Configures the min/desired/max tooltips.
+     */
+    function configureTooltips(): void {
+        if (minimumThresholdElement.value) {
+            tooltip(minimumThresholdElement.value);
+        }
+
+        if (desiredThresholdElement.value) {
+            tooltip(desiredThresholdElement.value);
+        }
+
+        if (maximumThresholdElement.value) {
+            tooltip(maximumThresholdElement.value);
+        }
+    }
+
+    // #endregion
+
+    watch([
+        minimumThresholdElement,
+        desiredThresholdElement,
+        maximumThresholdElement
+    ], () => {
+        configureTooltips();
+    });
+
+    watch([
+        minimumCapacity,
+        desiredCapacity,
+        maximumCapacity
+    ], () => {
+        nextTick(() => {
+            configureTooltips();
+        });
+    });
+</script>

@@ -1,16 +1,16 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockErrorMessage" alertType="warning">
+    <NotificationBox v-if="blockErrorMessage" :alertType="AlertType.Warning">
         {{ blockErrorMessage }}
     </NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="warning">
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
         {{ errorMessage }}
     </NotificationBox>
 
     <div v-if="!blockErrorMessage">
         <RockForm @submit="onSearch">
-            <div class="row">
+            <div class="row d-flex flex-wrap">
                 <div v-if="projectTypes.length" :class="columnClass">
                     <SignUpFilter v-model="selectedProjectTypes"
                                   :label="config.projectTypeFilterLabel"
@@ -46,19 +46,18 @@
                     <TextBox v-model="selectedLocationSort" :label="config.locationSortLabel" class="input-max-w-xl" />
                 </div>
                 <div v-if="config.displayLocationRangeFilter" :class="columnClass">
-                    <div class="d-flex flex-wrap">
-                        <NumberBox v-model="selectedLocationRange" label="Within" class="input-max-w-md" />
-                        <span class="align-self-center mt-1 ml-2 text-semibold">miles</span>
-                    </div>
+                    <NumberBox v-model="selectedLocationRange" label="Within" formGroupClasses="input-max-w-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">Miles</span>
+                        </template>
+                    </NumberBox>
                 </div>
                 <div v-if="config.displaySlotsAvailableFilter" :class="columnClass">
-                    <div class="form-group">
-                        <RockLabel>Spots Available</RockLabel>
-                        <div class="input-group">
+                    <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" label="Spots Available">
+                        <template #inputGroupPrepend>
                             <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
-                            <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" />
-                        </div>
-                    </div>
+                        </template>
+                    </NumberBox>
                 </div>
             </div>
             <div class="actions">
@@ -78,17 +77,18 @@
     import { computed, nextTick, ref } from "vue";
     import SignUpFilter from "./SignUpFinder/signUpFilter.partial.obs";
     import { SignUpFilterType } from "./SignUpFinder/signUpFilterType.partial";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
     import { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
     import InputGroupDropDown from "@Obsidian/Controls/inputGroupDropDown.obs";
     import Loading from "@Obsidian/Controls/loading";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import RockForm from "@Obsidian/Controls/rockForm";
     import TextBox from "@Obsidian/Controls/textBox";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
@@ -166,7 +166,7 @@
                 colWidth = 12;
         }
 
-        return `col-md-${colWidth}`;
+        return `col-xs-12 col-md-${colWidth}`;
     });
 
     const displayAs = computed((): SignUpFilterType => {

@@ -74,6 +74,7 @@ body {
 </style>
 
 <script setup lang="ts">
+    import ActionEmbedWebpage from "./LiveExperience/actionEmbedWebpage.partial.obs";
     import ActionShortAnswer from "./LiveExperience/actionShortAnswer.partial.obs";
     import ActionPoll from "./LiveExperience/actionPoll.partial.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -88,6 +89,7 @@ body {
     const config = useConfigurationValues<LiveExperienceInitializationBox>();
 
     const actionTypeLookup: Record<Guid, VueComponent> = {
+        "3aefe3aa-41a1-4812-86e2-38255b965001": ActionEmbedWebpage,
         "5ffe1f8f-5f0b-4b34-9c3f-1706d9093210": ActionShortAnswer,
         "9256a5b7-480d-4ffa-86d1-03b8aefc254e": ActionPoll
     };

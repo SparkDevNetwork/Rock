@@ -25,7 +25,9 @@ namespace Rock.ViewModels.Rest.Controls
     /// </summary>
     public class ReminderTypePickerGetReminderTypesOptionsBag
     {
-        /* Intentionally left blank for compatibility with future options. */
+        /// <summary>
+        /// Gets or sets the Entity Type Guid
+        /// </summary>
         public Guid? EntityTypeGuid { get; set; } = null;
     }
 }

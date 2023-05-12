@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 using System;
@@ -23,6 +24,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+using System.Text;
 
 namespace Rock.Jobs
 {
@@ -59,7 +61,10 @@ namespace Rock.Jobs
                 .Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
                 .AsNoTracking();
 
-            var calculationExceptions = new List<Exception>();
+            // Lists for warnings of skipped groups, workflows, or people from the job.
+            List<string> skippedGroupNames = new List<string>();
+            List<string> skippedWorkflowNames = new List<string>();
+            List<string> skippedPersonIds = new List<string>();
             List<int> groupRequirementsCalculatedPersonIds = new List<int>();
 
             foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).Include( a => a.GroupRequirementType.DataView ).Include( a => a.GroupRequirementType.WarningDataView ).AsNoTracking().ToList() )
@@ -102,7 +107,8 @@ namespace Rock.Jobs
                             qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue );
                         }
 
-                        var groupMemberQry = groupMemberService.Queryable();
+                        // Only run the group requirements calculation on group members that are not inactive.
+                        var groupMemberQry = groupMemberService.Queryable().Where( gm => gm.GroupMemberStatus != GroupMemberStatus.Inactive );
 
                         if ( groupRequirement.GroupId.HasValue )
                         {
@@ -121,8 +127,6 @@ namespace Rock.Jobs
                         var groupMembersThatDoNotMeetRequirementsPersonQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
 
                         var personGroupRequirementStatuses = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, groupMembersThatDoNotMeetRequirementsPersonQry, groupIdName.Id, groupRequirement.GroupRoleId ).ToList();
-
-                        groupRequirementsCalculatedPersonIds.AddRange( personGroupRequirementStatuses.Select( a => a.PersonId ).Distinct() );
 
                         foreach ( var personGroupRequirementStatus in personGroupRequirementStatuses )
                         {
@@ -164,31 +168,77 @@ namespace Rock.Jobs
                                         }
                                         catch ( Exception ex )
                                         {
-                                            calculationExceptions.Add( new Exception( $"Exception when launching workflow: {workflowName} with group requirement: {groupRequirement} for person.Id: {personGroupRequirementStatus.PersonId}", ex ) );
+                                            // Record workflow exception as warning or debug for RockLog instead of creating multiple exception logs and ending.
+                                            Log( RockLogLevel.Warning, $"Could not launch workflow: '{workflowName}' with group requirement: '{groupRequirement}' for person.Id: {personGroupRequirementStatus.PersonId} so the workflow was skipped." );
+                                            Log( RockLogLevel.Debug, ex, "Error when launching workflow for requirement." );
+
+                                            skippedWorkflowNames.Add( workflowName, true );
                                         }
                                     }
 
                                     rockContextUpdate.SaveChanges();
+
+                                    // Add the calculated person's ID to the list (if it is not already there) after it was successfully calculated.
+                                    groupRequirementsCalculatedPersonIds.Add( personGroupRequirementStatus.PersonId, true );
                                 }
                             }
                             catch ( Exception ex )
                             {
-                                calculationExceptions.Add( new Exception( $"Exception when updating group requirement result: {groupRequirement} for person.Id: {personGroupRequirementStatus.PersonId} in Group: '{groupIdName.Name}'", ex ) );
+                                // Record group member 'Person' exception as warning or debug for RockLog and continue job instead of adding to exception logs and ending.
+                                Log( RockLogLevel.Warning, $"Could not update group requirement result: '{groupRequirement}' for Person.Id: {personGroupRequirementStatus.PersonId} in Group: '{groupIdName.Name}' so the person was skipped." );
+                                Log( RockLogLevel.Debug, ex, "Error when calculating person for group requirement." );
+
+                                skippedPersonIds.Add( personGroupRequirementStatus.PersonId.ToString(), true );
                             }
                         }
                     }
                     catch ( Exception ex )
                     {
-                        calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: {0} ", groupRequirement ), ex ) );
+                        // Record group exception as warning or debug for RockLog and continue job instead of adding to exception logs and ending.
+                        Log( RockLogLevel.Warning, $"Could not update group when calculating group requirement: '{groupRequirement}' in Group '{groupIdName.Name}' (Group.Id: {groupIdName.Id}) so the group was skipped." );
+                        Log( RockLogLevel.Debug, ex, "Error when calculating group for requirement." );
+
+                        skippedGroupNames.Add( groupIdName.Name, true );
                     }
                 }
             }
 
-            this.UpdateLastStatusMessage( $"{groupRequirementQry.Count()} group member requirements re-calculated for {groupRequirementsCalculatedPersonIds.Distinct().Count()} people" );
+            JobSummary jobSummary = new JobSummary();
+            jobSummary.Successes.Add( $"{groupRequirementQry.Count()} group {"requirement".PluralizeIf( groupRequirementQry.Count() != 1 )} " +
+                $"re-calculated for {groupRequirementsCalculatedPersonIds.Distinct().Count()} " +
+                $"{"person".PluralizeIf( groupRequirementsCalculatedPersonIds.Distinct().Count() != 1 )}." );
 
-            if ( calculationExceptions.Any() )
+            bool jobHasWarnings = skippedGroupNames.Any() || skippedPersonIds.Any() || skippedWorkflowNames.Any();
+            if ( jobHasWarnings )
             {
-                throw new AggregateException( "One or more group requirement calculations failed ", calculationExceptions );
+                if ( skippedGroupNames.Any() )
+                {
+                    jobSummary.Warnings.Add( "Skipped groups: " );
+                    jobSummary.Warnings.AddRange( skippedGroupNames.Take( 10 ) );
+                }
+
+                if ( skippedPersonIds.Any() )
+                {
+                    jobSummary.Warnings.Add( "Skipped PersonIds: " );
+                    jobSummary.Warnings.Add( skippedPersonIds.Take( 10 ).ToList().AsDelimited( ", " ) );
+                }
+
+                if ( skippedWorkflowNames.Any() )
+                {
+                    jobSummary.Warnings.Add( "Skipped workflows: " );
+                    jobSummary.Warnings.AddRange( skippedWorkflowNames.Take( 10 ) );
+                }
+
+                jobSummary.Warnings.Add( "Enable 'Warning' or 'Debug' logging level for 'Jobs' domain in Rock Logs and re-run this job to get a full list of issues." );
+
+                string errorMessage = "Calculate Group Requirements completed with warnings";
+
+                this.Result = jobSummary.ToString();
+                throw new RockJobWarningException( errorMessage, new Exception( jobSummary.ToString() ) );
+            }
+            else
+            {
+                this.UpdateLastStatusMessage( jobSummary.ToString() );
             }
         }
 
@@ -236,6 +286,63 @@ namespace Rock.Jobs
 
                     rockContext.SaveChanges();
                 }
+            }
+        }
+
+        private class JobSummary
+        {
+            public const string SUCCESS_ICON = "<i class='fa fa-circle text-success'></i> ";
+            public const string WARNING_ICON = "<i class='fa fa-circle text-warning'></i> ";
+            public const string ERROR_ICON = "<i class='fa fa-circle text-error'></i> ";
+
+            public JobSummary()
+            {
+                Successes = new List<string>();
+                Warnings = new List<string>();
+                Errors = new List<string>();
+            }
+
+            public List<string> Successes { get; set; }
+
+            public List<string> Warnings { get; set; }
+
+            public List<string> Errors { get; set; }
+
+            /// <summary>
+            /// Aggregates successes, warnings, and errors with icon prefixes into an HTML string.
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
+            {
+                StringBuilder sb = new StringBuilder();
+                if ( Successes.Any() )
+                {
+                    sb.Append( SUCCESS_ICON );
+                    foreach ( var success in Successes )
+                    {
+                        sb.AppendLine( success );
+                    }
+                }
+
+                if ( Warnings.Any() )
+                {
+                    sb.Append( WARNING_ICON );
+                    foreach ( var warning in Warnings )
+                    {
+                        sb.AppendLine( warning );
+                    }
+                }
+
+                if ( Errors.Any() )
+                {
+                    sb.Append( ERROR_ICON );
+                    foreach ( var error in Errors )
+                    {
+                        sb.AppendLine( error );
+                    }
+                }
+
+                return sb.ToString().ConvertCrLfToHtmlBr();
             }
         }
     }

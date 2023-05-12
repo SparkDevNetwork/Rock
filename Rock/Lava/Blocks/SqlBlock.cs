@@ -73,7 +73,8 @@ namespace Rock.Lava.Blocks
                 sql = sqlWriter.ToString();
             }
 
-            var parms = ParseMarkup( _markup, context );
+            var settings = GetAttributesFromMarkup( _markup, context );
+            var parms = settings.Attributes;
 
             var sqlTimeout = (int?)null;
             if ( parms.ContainsKey( "timeout" ) )
@@ -81,13 +82,18 @@ namespace Rock.Lava.Blocks
                 sqlTimeout = parms["timeout"].AsIntegerOrNull();
             }
 
+            var summary = $"[Params]=\"{_markup}\", [Sql]=\"{sql}\"";
+            if ( sqlTimeout != null )
+            {
+                summary += $", [Timeout]={sqlTimeout}s";
+            }
+            Exception queryException = null;
             switch ( parms["statement"] )
             {
                 case "select":
                     var stopWatch = new Stopwatch();
                     DataSet results = null;
-                    Exception queryException = null;
-                    var summary = $"[Params]=\"{_markup}\", [Sql]=\"{sql}\", Timeout={sqlTimeout ?? -1}s";
+
                     try
                     {
                         stopWatch.Start();
@@ -100,11 +106,13 @@ namespace Rock.Lava.Blocks
                     }
                     finally
                     {
-                        summary += $", Elapsed={stopWatch.Elapsed.TotalSeconds}";
+                        summary += $", [Elapsed]={stopWatch.Elapsed.TotalSeconds}";
                     }
                     if ( queryException != null )
                     {
-                        throw new Exception( "SqlBlock Render failed.\n" + summary, queryException );
+                        // Throw the SQL error message as the topmost exception, and include the diagnostic detail as an inner exception for logging purposes.
+                        var detailException = new Exception( "SqlBlock Render failed.\n" + summary, queryException );
+                        throw new Exception( queryException.Message, detailException );
                     }
 
                     context.SetMergeField( parms["return"], results.Tables[0].ToDynamicTypeCollection() );
@@ -140,10 +148,27 @@ namespace Rock.Lava.Blocks
                     {
                         rockContext.Database.CommandTimeout = sqlTimeout;
                     }
-                    int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql, sqlParameters.ToArray() );
 
-                    // Put the command timeout back to the setting before we changed it... there is nothing to see here... move along...
-                    rockContext.Database.CommandTimeout = originalCommandTimeout;
+                    var numOfRowsAffected = 0;
+                    try
+                    {
+                        numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql, sqlParameters.ToArray() );
+                    }
+                    catch ( Exception ex )
+                    {
+                        queryException = ex;
+                    }
+                    finally
+                    {
+                        // Put the command timeout back to the setting before we changed it... there is nothing to see here... move along...
+                        rockContext.Database.CommandTimeout = originalCommandTimeout;
+                    }
+                    if ( queryException != null )
+                    {
+                        // Throw the SQL error message as the topmost exception, and include the diagnostic detail as an inner exception for logging purposes.
+                        var detailException = new Exception( "SqlBlock Render failed.\n" + summary, queryException );
+                        throw new Exception( queryException.Message, detailException );
+                    }
 
                     context.SetMergeField( parms["return"], numOfRowsAffected );
 
@@ -153,42 +178,15 @@ namespace Rock.Lava.Blocks
             }
         }
 
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
+        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
         {
-            // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            // Create default settings
+            var settings = LavaElementAttributes.NewFromMarkup( markup, context );
 
-            var parms = new Dictionary<string, string>();
-            parms.Add( "return", "results" );
-            parms.Add( "statement", "select" );
+            settings.AddOrIgnore( "return", "results" );
+            settings.AddOrIgnore( "statement", "select" );
 
-            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    var value = itemParts[1];
-
-                    if ( value.IsLavaTemplate() )
-                    {
-                        value = value.ResolveMergeFields( internalMergeFields );
-                    }
-
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), value.Substring( 1, value.Length - 2 ).Trim() );
-                }
-            }
-            return parms;
+            return settings;
         }
 
         #region ILavaSecured

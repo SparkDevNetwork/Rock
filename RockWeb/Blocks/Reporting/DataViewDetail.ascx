@@ -44,45 +44,42 @@
                                 <Rock:Toggle ID="tglIncludeDeceased" runat="server" Label="Include Deceased" OnText="Yes" OffText="No" Visible="false" />
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <%-- Persistence Schedule Settings --%>
-                                <asp:UpdatePanel runat="server" UpdateMode="Conditional">
-                                    <ContentTemplate>
 
-                                        <Rock:Switch ID="swPersistDataView" runat="server" CssClass="form-group" Text="Persistence Schedule" BoldText="true" AutoPostBack="true" OnCheckedChanged="swPersistDataView_CheckedChanged" Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed." />
+                        <%-- Persistence Schedule Settings --%>
+                        <asp:UpdatePanel runat="server" UpdateMode="Conditional" class="panel panel-waterfall">
+                            <ContentTemplate>
+                                <div class="panel-heading">
+                                    <Rock:Switch ID="swPersistDataView" runat="server" CssClass="form-group" Text="Persistence Schedule" BoldText="true" AutoPostBack="true" OnCheckedChanged="swPersistDataView_CheckedChanged" Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed." />
+                                </div>
 
-                                        <asp:Panel runat="server" ID="pnlPersistenceSchedule" class="mt-4">
-                                            <div class="row">
-                                                <div class="col-md-3">
-                                                    <Rock:RockRadioButtonList ID="rblPersistenceType" runat="server" Label="Type"
-                                                        OnSelectedIndexChanged="rblPersistenceType_SelectedIndexChanged" AutoPostBack="true">
-                                                        <asp:ListItem Text="Interval" Value="0"></asp:ListItem>
-                                                        <asp:ListItem Text="Schedule" Value="1"></asp:ListItem>
-                                                    </Rock:RockRadioButtonList>
-                                                </div>
-                                                <asp:Panel runat="server" ID="pnlPersistenceScheduleControls">
-                                                    <div class="col-md-3">
-                                                        <Rock:RockRadioButtonList ID="rblPersistenceSchedule" runat="server" Label="Persistence Schedule"
-                                                            OnSelectedIndexChanged="rblPersistenceSchedule_SelectedIndexChanged" AutoPostBack="true" Visible="false">
-                                                            <asp:ListItem Text="Unique" Value="0"></asp:ListItem>
-                                                            <asp:ListItem Text="Named Schedule" Value="1"></asp:ListItem>
-                                                        </Rock:RockRadioButtonList>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <Rock:SchedulePicker ID="spNamedSchedule" runat="server" Label="Named" CssClass="picker-lg picker-schedule" AllowInactiveSelection="true" Visible="false" />
-                                                        <Rock:ScheduleBuilder ID="sbUniqueSchedule" runat="server" Label="Unique" Visible="false" />
-                                                    </div>
-                                                </asp:Panel>
-                                                <asp:Panel runat="server" ID="pnlScheduleIntervalControls" class="col-md-9">
-                                                    <Rock:IntervalPicker ID="ipPersistedScheduleInterval" runat="server" Label="Persistence Interval" DefaultValue="12" DefaultInterval="Hour" Visible="false" />
-                                                </asp:Panel>
-                                            </div>
+                                <asp:Panel runat="server" ID="pnlPersistenceSchedule" class="panel-body">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-md-3 show-divider">
+                                            <Rock:RockRadioButtonList ID="rblPersistenceType" runat="server" Label="Type"
+                                                OnSelectedIndexChanged="rblPersistenceType_SelectedIndexChanged" AutoPostBack="true">
+                                                <asp:ListItem Text="Interval" Value="0"></asp:ListItem>
+                                                <asp:ListItem Text="Schedule" Value="1"></asp:ListItem>
+                                            </Rock:RockRadioButtonList>
+                                        </div>
+                                        
+                                        <div id="divPersistenceSchedule" runat="server" class="col-xs-12 col-md-3" Visible="false">
+                                            <Rock:RockRadioButtonList ID="rblPersistenceSchedule" runat="server" Label="Persistence Schedule"
+                                                OnSelectedIndexChanged="rblPersistenceSchedule_SelectedIndexChanged" AutoPostBack="true">
+                                                <asp:ListItem Text="Unique" Value="0"></asp:ListItem>
+                                                <asp:ListItem Text="Named Schedule" Value="1"></asp:ListItem>
+                                            </Rock:RockRadioButtonList>
+                                        </div>
+                                        <div id="divScheduleSelect" runat="server" class="col-xs-12 col-md-6" Visible="false">
+                                            <Rock:RockDropDownList ID="ddlNamedSchedule" runat="server" Label="Named" Required="true" RequiredErrorMessage="A Named Schedule is required when Persistence is 'Named Schedule'" Visible="false" />
+                                            <Rock:ScheduleBuilder ID="sbUniqueSchedule" runat="server" Label="Unique" ShowScheduleFriendlyTextAsToolTip="true" Visible="false" />
+                                        </div>
+                                        <asp:Panel runat="server" ID="pnlScheduleIntervalControls" class="col-xs-12 col-md-9" Visible="false">
+                                            <Rock:IntervalPicker ID="ipPersistedScheduleInterval" runat="server" Label="Persistence Interval" DefaultValue="12" DefaultInterval="Hour" />
                                         </asp:Panel>
-                                    </ContentTemplate>
-                                </asp:UpdatePanel>
-                            </div>
-                        </div>
+                                    </div>
+                                </asp:Panel>
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
                     </fieldset>
 
 

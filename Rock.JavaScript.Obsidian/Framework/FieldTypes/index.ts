@@ -35,6 +35,9 @@ registerFieldType(FieldTypeGuids.Campus, new CampusFieldType());
 import { CampusesFieldType } from "./campusesField.partial";
 registerFieldType(FieldTypeGuids.Campuses, new CampusesFieldType());
 
+import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
+registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
+
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 
@@ -77,8 +80,23 @@ registerFieldType(FieldTypeGuids.File, new FileFieldType());
 import { GenderFieldType } from "./genderField.partial";
 registerFieldType(FieldTypeGuids.Gender, new GenderFieldType());
 
+import { GroupFieldType } from "./groupField.partial";
+registerFieldType(FieldTypeGuids.Group, new GroupFieldType());
+
+import { GroupLocationTypeFieldType } from "./groupLocationTypeField.partial";
+registerFieldType(FieldTypeGuids.GroupLocationType, new GroupLocationTypeFieldType());
+
+import { GroupRoleFieldType } from "./groupRoleField.partial";
+registerFieldType(FieldTypeGuids.GroupRole, new GroupRoleFieldType());
+
+import { GroupMemberFieldType } from "./groupMemberField.partial";
+registerFieldType(FieldTypeGuids.GroupMember, new GroupMemberFieldType());
+
 import { GroupTypeField } from "./groupTypeField.partial";
 registerFieldType(FieldTypeGuids.GroupType, new GroupTypeField());
+
+import { GroupTypesFieldType } from "./groupTypesField.partial";
+registerFieldType(FieldTypeGuids.GroupTypes, new GroupTypesFieldType());
 
 import { ImageFieldType } from "./imageField.partial";
 registerFieldType(FieldTypeGuids.Image, new ImageFieldType());
@@ -91,6 +109,9 @@ registerFieldType(FieldTypeGuids.IntegerRange, new IntegerRangeFieldType());
 
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
+
+import { LocationListFieldType } from "./locationListField.partial";
+registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
 import { MemoFieldType } from "./memoField.partial";
 registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
@@ -107,14 +128,26 @@ registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());
 import { PhoneNumberFieldType } from "./phoneNumberField.partial";
 registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
 
+import { PersonFieldType } from "./personField.partial";
+registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
+
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
+
+import { RegistryEntryFieldType } from "./registryEntryField.partial";
+registerFieldType(FieldTypeGuids.RegistryEntry, new RegistryEntryFieldType());
 
 import { ReminderTypeFieldType } from "./reminderTypeField.partial";
 registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());
 
 import { ReminderTypesFieldType } from "./reminderTypesField.partial";
 registerFieldType(FieldTypeGuids.ReminderTypes, new ReminderTypesFieldType());
+
+import { ScheduleFieldType } from "./scheduleField.partial";
+registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
+
+import { SchedulesFieldType } from "./schedulesField.partial";
+registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
 
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
@@ -127,6 +160,9 @@ registerFieldType(FieldTypeGuids.Text, new TextFieldType());
 
 import { TimeFieldType } from "./timeField.partial";
 registerFieldType(FieldTypeGuids.Time, new TimeFieldType());
+
+import { TimeZoneFieldType } from "./timeZoneField.partial";
+registerFieldType(FieldTypeGuids.TimeZone, new TimeZoneFieldType());
 
 import { UrlLinkFieldType } from "./urlLinkField.partial";
 registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());

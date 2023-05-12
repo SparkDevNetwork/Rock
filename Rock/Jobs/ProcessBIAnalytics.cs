@@ -120,7 +120,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Attribute Keys
         /// </summary>
-        private static class AttributeKey
+        internal static class AttributeKey
         {
             public const string ProcessPersonBIAnalytics = "ProcessPersonBIAnalytics";
             public const string ProcessFamilyBIAnalytics = "ProcessFamilyBIAnalytics";
@@ -622,7 +622,7 @@ UPDATE [{analyticsTableName}]
 
                     if ( recordsDeleted > 0 )
                     {
-                        RockLogger.Log.Debug( RockLogDomains.Jobs, $"(Process BI Analytics) Removed {recordsDeleted} history records that do not correspond to a Person record." );
+                        Log( RockLogLevel.Debug, $"Removed {recordsDeleted} history records that do not correspond to a Person record." );
                     }
                 }
 
@@ -937,7 +937,7 @@ INSERT INTO [dbo].[AnalyticsSourcePersonHistorical] (
         @MaxExpireDate [ExpireDate],
         p.PrimaryFamilyId [PrimaryFamilyId],
         convert(INT, (convert(CHAR(8), BirthDate, 112))) [BirthDateKey],
-        dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
+        p.Age [Age], 
         1 [Count],
 " + propertyColumns.Select( a => $"        [{a.FromClause}]" ).ToList().AsDelimited( ",\n" ) + @",
         NEWID() [Guid]
@@ -1046,7 +1046,7 @@ AND asph.PersonId NOT IN ( -- Ensure that there isn't already a History Record f
         p.Id [PersonId],
         p.PrimaryFamilyId [PrimaryFamilyId],
         convert(INT, (convert(CHAR(8), BirthDate, 112))) [BirthDateKey],
-        dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
+        p.Age [Age], 
 ";
 
             updateETLScript += personValueColumns.Select( a => $"        [{a.ColumnName}]" ).ToList().AsDelimited( ",\n" );
@@ -1124,7 +1124,7 @@ WITH cte1 as (
     SELECT 
         p.Id [PersonId],
         p.PrimaryFamilyId [PrimaryFamilyId],
-        dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
+        p.Age [Age], 
 ";
 
             countCandidatePersonScript += propertyColumns.Select( a => $"        [{a.ColumnName}]" ).ToList().AsDelimited( ",\n" );

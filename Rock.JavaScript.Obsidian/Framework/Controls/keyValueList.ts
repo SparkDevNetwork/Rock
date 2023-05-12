@@ -59,6 +59,11 @@ export default defineComponent({
         displayValueFirst: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        fullWidth: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -73,6 +78,36 @@ export default defineComponent({
         const options = computed((): ListItemBag[] => props.valueOptions ?? []);
 
         const hasValues = computed((): boolean => options.value.length > 0);
+
+        const rowClasses = computed((): string => {
+            let classes = "controls controls-row form-control-group";
+
+            if (props.fullWidth) {
+                classes += " controls-row-full-width";
+            }
+
+            return classes;
+        });
+
+        const keyInputClasses = computed((): string => {
+            let classes = "key-value-key form-control";
+
+            if (!props.fullWidth) {
+                classes += " input-width-md";
+            }
+
+            return classes;
+        });
+
+        const valueInputClasses = computed((): string => {
+            let classes = "key-value-value form-control";
+
+            if (!props.fullWidth) {
+                classes += hasValues.value ? " input-width-lg" : " input-width-md";
+            }
+
+            return classes;
+        });
 
         watch(() => props.modelValue, () => {
             internalValues.value = props.modelValue ?? [];
@@ -100,10 +135,13 @@ export default defineComponent({
 
         return {
             internalValues,
+            rowClasses,
             hasValues,
+            keyInputClasses,
             options,
             onAddClick,
-            onRemoveClick
+            onRemoveClick,
+            valueInputClasses
         };
     },
 
@@ -114,24 +152,24 @@ export default defineComponent({
     name="key-value-list">
     <template #default="{uniqueId}">
         <div class="control-wrapper">
-<span :id="uniqueId" class="key-value-list">
+<span :id="uniqueId">
     <span class="key-value-rows">
-        <div v-for="(value, valueIndex) in internalValues" class="controls controls-row form-control-group">
+        <div v-for="(value, valueIndex) in internalValues" :class="rowClasses">
             <template v-if="!displayValueFirst">
-                <input v-model="value.key" class="key-value-key form-control input-width-md" type="text" :placeholder="keyPlaceholder">
+                <input v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
 
-                <select v-if="hasValues" v-model="value.value" class="form-control input-width-lg">
+                <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
                     <option v-for="option in options" :value="option.value" :key="option.value">{{ option.text }}</option>
                 </select>
-                <input v-else v-model="value.value" class="key-value-value form-control input-width-md" type="text" :placeholder="valuePlaceholder">
+                <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePlaceholder">
             </template>
             <template v-else>
-                <select v-if="hasValues" v-model="value.value" class="form-control input-width-lg">
+                <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
                     <option v-for="option in options" :value="option.value" :key="option.value">{{ option.text }}</option>
                 </select>
-                <input v-else v-model="value.value" class="key-value-value form-control input-width-md" type="text" :placeholder="valuePlaceholder">
+                <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePlaceholder">
 
-                <input v-model="value.key" class="key-value-key form-control input-width-md" type="text" :placeholder="keyPlaceholder">
+                <input v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
             </template>
 
             <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>

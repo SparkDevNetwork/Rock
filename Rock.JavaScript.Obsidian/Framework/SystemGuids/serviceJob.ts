@@ -69,8 +69,14 @@ export const ServiceJob = {
     DataMigrations150MobileApplicationUsersRestGroup: "480E996E-6A31-40DB-AE98-BFF85CDED506",
     /** The Job to run Post v14.1 Data Migrations to replace all existing instances of the TransactionEntryBlock with a new instance of the UtilityPaymentEntry block. */
     DataMigrations150ReplaceTransactionEntryBlocksWithUtilityPaymentEntryBlock: "8A013CC5-CB51-48F3-8AF8-767BDECACAFE",
+    /** The Job to run Post v15.1 Replace Web Forms Blocks with Obsidian Blocks. */
+    DataMigrations150ReplaceWebFormsBlocksWithObsidianBlocks: "EA00D1D4-709A-4102-863D-08471AA2C345",
     /** The Job to run Post v15.1 Data Migrations for System Phone Numbers. */
     DataMigrations150SystemPhoneNumbers: "6DFE731E-F28B-40B3-8383-84212A301214",
+    /** The Job to run Post v15.1 Data Migrations to cleanup duplicate mobile interaction entries. */
+    DataMigrations151DuplicateMobileInteractionsCleanup: "D3D60B90-48D1-4718-905E-39638B44C665",
+    /** The Job to run Post v16.0 Move Person Preferences. */
+    DataMigrations160MovePersonPreferences: "C8591D15-9D37-49D3-8DF8-1DB72EE42D29",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */

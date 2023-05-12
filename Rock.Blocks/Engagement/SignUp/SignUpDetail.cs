@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Engagement.SignUp
 {
     [DisplayName( "Sign-Up Detail" )]
-    [Category( "Engagement > Sign-Up" )]
+    [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Block used to show the details of a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
 
@@ -87,7 +87,7 @@ namespace Rock.Blocks.Engagement.SignUp
             public const string LavaTemplate = @"{% if Project != null %}
     <div class=""panel panel-block"">
         <div class=""panel-heading"">
-            <h1 class=""panel-title pull-left"">{{ Project.Name }}</h1>
+            <h1 class=""panel-title"">{{ Project.Name }}</h1>
         </div>
         <div class=""panel-body"">
             <div class=""row"">
@@ -109,7 +109,7 @@ namespace Rock.Blocks.Engagement.SignUp
                             <span class=""badge badge-info"">Available Spots: {{ Project.AvailableSpots }}</span>
                         </p>
                     {% endif %}
-                    {% if Project.ShowRegisterButton == true %}
+                    {% if Project.ShowRegisterButton %}
                         <div class=""actions"">
                             <a href=""{{ Project.RegisterPageUrl }}"" class=""btn btn-primary"">Register</a>
                         </div>
@@ -354,7 +354,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             public string ErrorMessage { get; set; }
 
-            public Group Project { get; set; }
+            public Rock.Model.Group Project { get; set; }
 
             public Location Location { get; set; }
 
@@ -434,13 +434,11 @@ namespace Rock.Blocks.Engagement.SignUp
                         return 0;
                     }
 
-                    /*
-                     * This more complex approach uses a dynamic/floating minuend:
-                     * 1) If the max value is defined, use that;
-                     * 2) Else, if the desired value is defined, use that;
-                     * 3) Else, if the min value is defined, use that;
-                     * 4) Else, use int.MaxValue (there is no limit to the slots available).
-                     */
+                    // This more complex approach uses a dynamic/floating minuend:
+                    // 1) If the max value is defined, use that;
+                    // 2) Else, if the desired value is defined, use that;
+                    // 3) Else, if the min value is defined, use that;
+                    // 4) Else, use int.MaxValue (there is no limit to the slots available).
                     //var minuend = this.SlotsMax.GetValueOrDefault() > 0
                     //    ? this.SlotsMax.Value
                     //    : this.SlotsDesired.GetValueOrDefault() > 0
@@ -449,11 +447,9 @@ namespace Rock.Blocks.Engagement.SignUp
                     //            ? this.SlotsMin.Value
                     //            : int.MaxValue;
 
-                    /*
-                     * Simple approach:
-                     * 1) If the max value is defined, subtract participant count from that;
-                     * 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
-                     */
+                    // Simple approach:
+                    // 1) If the max value is defined, subtract participant count from that;
+                    // 2) Otherwise, use int.MaxValue (there is no limit to the slots available).
                     var available = int.MaxValue;
                     if ( this.SlotsMax.GetValueOrDefault() > 0 )
                     {
