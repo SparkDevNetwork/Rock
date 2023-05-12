@@ -157,7 +157,7 @@ namespace Rock.Jobs
             /// <summary>
             /// Aggregates successes, warnings, and errors with icon prefixes into an HTML string.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>An HTML string value.</returns>
             public override string ToString()
             {
                 StringBuilder sb = new StringBuilder();
