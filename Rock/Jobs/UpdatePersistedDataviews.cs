@@ -77,10 +77,10 @@ namespace Rock.Jobs
         public override void Execute()
         {
             int sqlCommandTimeout = GetAttributeValue( AttributeKey.SqlCommandTimeout ).AsIntegerOrNull() ?? 300;
-            StringBuilder results = new StringBuilder();
+            JobSummary jobSummary = new JobSummary();
+
             int updatedDataViewCount = 0;
             var errors = new List<string>();
-            List<Exception> exceptions = new List<Exception>();
 
             using ( var rockContextList = new RockContext() )
             {
@@ -122,7 +122,7 @@ namespace Rock.Jobs
                     var nextStartDateTimes = dataView.PersistedSchedule.GetScheduledStartTimes( beginDateTime.Value, currentDateTime );
                     if ( !nextStartDateTimes.Any() )
                     {
-                        // This DataView does not need to be refreshed.
+                        // This Data View does not need to be refreshed.
                         continue;
                     }
 
@@ -144,7 +144,7 @@ namespace Rock.Jobs
                         var name = dataView.Name;
                         try
                         {
-                            this.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
+                            this.UpdateLastStatusMessage( $"Updating '{dataView.Name}'" );
                             dataView.PersistResult( sqlCommandTimeout );
 
                             persistContext.SaveChanges();
@@ -158,20 +158,17 @@ namespace Rock.Jobs
                             stopwatch.Stop();
                             errorOccurred = true;
 
-                            // Capture and log the exception because we're not going to fail this job
+                            // Capture and log the exception to the Rock Log because we're not going to mark this job as failed
                             // unless all the data views fail.
-                            var errorMessage = $"An error occurred while trying to update persisted data view '{name}' so it was skipped. Error: {ex.Message}";
-                            errors.Add( errorMessage );
-                            var ex2 = new Exception( errorMessage, ex );
-                            exceptions.Add( ex2 );
-                            ExceptionLogService.LogException( ex2, null );
+                            errors.Add( $"Data View: '{name}'" );
+                            RockLogger.Log.Warning( RockLogDomains.Jobs, ex, $"{this.ServiceJobName}: An error occurred while trying to update persisted data view '{name}' so it was skipped." );
                             continue;
                         }
                         finally
                         {
                             Log(
                                 RockLogLevel.Info,
-                                "DataView ID: {dataViewId}, DataView Name: {dataViewName}, Error Occurred: {errorOccurred}",
+                                "Data View ID: {dataViewId}, Data View Name: {dataViewName}, Error Occurred: {errorOccurred}",
                                 startDateTime,
                                 stopwatch.ElapsedMilliseconds,
                                 dataViewId,
@@ -183,24 +180,39 @@ namespace Rock.Jobs
             }
 
             // Format the result message
-            results.AppendLine( $"Updated {updatedDataViewCount} {"dataview".PluralizeIf( updatedDataViewCount != 1 )}" );
-            this.Result = results.ToString();
+            jobSummary.Successes.Add( $"Updated {updatedDataViewCount} data {"view".PluralizeIf( updatedDataViewCount != 1 )}" );
+            this.Result = jobSummary.ToString();
 
             if ( errors.Any() )
             {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine();
-                sb.Append( "Errors: " );
-                errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
-                string errorMessage = sb.ToString();
-                this.Result += errorMessage;
+                var errorsSummary = new List<string>();
+                errorsSummary.Add( $"Skipped {errors.Count} data {"view".PluralizeIf( errors.Count != 1 )} due to encountered errors:" );
+                errorsSummary.AddRange( errors.Take( 10 ).ToList() );
+                errorsSummary.Add( "" );
+                errorsSummary.Add( "Enable 'Warning' logging level for 'Jobs' domain in Rock Logs and re-run this job to get a full list of issues." );
 
-                // We're not going to throw an aggregate exception unless there were no successes.
-                // Otherwise the status message does not show any of the success messages in
-                // the last status message.
+                // If all the data views had issues, add to the errors list of the job summary, otherwise add to the warnings.
                 if ( updatedDataViewCount == 0 )
                 {
-                    throw new AggregateException( exceptions.ToArray() );
+                    jobSummary.Errors.AddRange( errorsSummary );
+                }
+                else
+                {
+                    jobSummary.Warnings.AddRange( errorsSummary );
+                }
+
+                this.Result = jobSummary.ToString();
+
+                // If there were no successful data view updates we will throw a standard exception.
+                // Otherwise, if there were some successes and some skipped data views,
+                // we will throw a Rock Job warning exception to list the data views that gave warnings.
+                if ( updatedDataViewCount == 0 )
+                {
+                    throw new Exception( "'Update Persisted Data Views' job could not complete.", new Exception( jobSummary.ToString() ) );
+                }
+                else
+                {
+                    throw new RockJobWarningException( "'Update Persisted Data Views' job completed with warnings.", new Exception( jobSummary.ToString() ) );
                 }
             }
         }

@@ -137,9 +137,9 @@ namespace Rock.Jobs
         [RockInternal( "1.16" )]
         internal class JobSummary
         {
-            public const string SUCCESS_ICON = "<i class='fa fa-circle text-success'></i> ";
-            public const string WARNING_ICON = "<i class='fa fa-circle text-warning'></i> ";
-            public const string ERROR_ICON = "<i class='fa fa-circle text-danger'></i> ";
+            private const string SUCCESS_ICON = "<i class='fa fa-circle text-success'></i> ";
+            private const string WARNING_ICON = "<i class='fa fa-circle text-warning'></i> ";
+            private const string ERROR_ICON = "<i class='fa fa-circle text-danger'></i> ";
 
             public JobSummary()
             {

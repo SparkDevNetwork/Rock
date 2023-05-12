@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -84,6 +85,9 @@ namespace Rock.Jobs
             string groupName = string.Empty;
             string dataViewName = string.Empty;
             var errors = new List<string>();
+            int notAddedCount = 0;
+            JobSummary jobSummary = new JobSummary();
+            Exception jobException = null;
 
             try
             {
@@ -168,7 +172,7 @@ namespace Rock.Jobs
                             // just skip trying to sync that particular group's Sync Data View for now.
                             var errorMessage = $"An error occurred while trying to GroupSync group '{groupName}' and data view '{dataViewName}' so the sync was skipped. Error: {ex.Message}";
                             errors.Add( errorMessage );
-                            ExceptionLogService.LogException( new Exception( errorMessage, ex ) );
+                            RockLogger.Log.Error( RockLogDomains.Jobs, ex, errorMessage );
                             continue;
                         }
 
@@ -251,7 +255,7 @@ namespace Rock.Jobs
                             }
                             catch ( Exception ex )
                             {
-                                ExceptionLogService.LogException( ex );
+                                RockLogger.Log.Error( RockLogDomains.Jobs, ex );
                                 continue;
                             }
 
@@ -266,8 +270,9 @@ namespace Rock.Jobs
                         var archivedTargetPersonIds = existingGroupMemberPersonList.Where( t => t.IsArchived == true ).Select( a => a.PersonId ).ToList();
 
                         this.UpdateLastStatusMessage( $"Adding {targetPersonIdsToAdd.Count()} group member records for group {syncInfo.GroupName}" );
+
                         int addedCount = 0;
-                        int notAddedCount = 0;
+
                         foreach ( var personId in targetPersonIdsToAdd )
                         {
                             if ( ( addedCount + notAddedCount ) % 100 == 0 )
@@ -312,9 +317,10 @@ namespace Rock.Jobs
                                         {
                                             notAddedCount++;
 
-                                            // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
-                                            var ex = new GroupMemberValidationException( "Archived group member: " + string.Join( ",", archivedGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
-                                            ExceptionLogService.LogException( ex );
+                                            // Validation errors will get added to the ValidationResults collection.
+                                            // Add those results to the Rock logger and then move on to the next person.
+                                            var ex = new GroupMemberValidationException( string.Join( ",", archivedGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                                            RockLogger.Log.Warning( RockLogDomains.Jobs, ex, $"Group Sync: Archived group member could not be restored to '{ sync.Group.Name }'." );
                                             continue;
                                         }
                                     }
@@ -337,9 +343,10 @@ namespace Rock.Jobs
                                         {
                                             notAddedCount++;
 
-                                            // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
-                                            var ex = new GroupMemberValidationException( "New group member: " + string.Join( ",", newGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
-                                            ExceptionLogService.LogException( ex );
+                                            // Validation errors will get added to the ValidationResults collection.
+                                            // Add those results to the Rock logger and then move on to the next person.
+                                            var ex = new GroupMemberValidationException( string.Join( ",", newGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                                            RockLogger.Log.Warning( RockLogDomains.Jobs, ex, $"Group Sync: New group member could not be added to '{ sync.Group.Name }'." );
                                             continue;
                                         }
                                     }
@@ -389,7 +396,7 @@ namespace Rock.Jobs
                             }
                             catch ( Exception ex )
                             {
-                                ExceptionLogService.LogException( ex );
+                                RockLogger.Log.Error( RockLogDomains.Jobs, ex );
                                 continue;
                             }
 
@@ -436,24 +443,41 @@ namespace Rock.Jobs
 
                 resultMessage += string.Format( " and {0} groups were changed", groupsChanged );
 
-                if ( errors.Any() )
+                jobSummary.Successes.Add( resultMessage );
+
+                // If there were group members that were not added or restored, add an exception regarding Rock logging.
+                if ( notAddedCount > 0 )
                 {
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine();
-                    sb.Append( "Errors: " );
-                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
-                    string errorMessage = sb.ToString();
-                    resultMessage += errorMessage;
-                    throw new Exception( errorMessage );
+                    jobSummary.Warnings.Add( $"{ notAddedCount } group " + "member".PluralizeIf( notAddedCount != 1 ) + " that could not be added or restored." );
+                    jobSummary.Warnings.Add( "Enable 'Warning' logging level for 'Jobs' domain in Rock Logs and re-run this job to get a full list of issues." );
+                    jobException = new RockJobWarningException( "Group Sync completed with warnings.", new Exception( jobSummary.ToString() ) );
                 }
 
-                this.Result = resultMessage;
+                if ( errors.Any() )
+                {
+                    jobSummary.Errors.Add( "Enable 'Errors' logging level for 'Jobs' domain in Rock Logs and re-run this job to get a full list of issues." );
+                    jobSummary.Errors.AddRange( errors );
+                    jobException = new Exception( "Group Sync completed with errors.", new Exception( jobSummary.ToString() ) );
+                }
+
+                this.UpdateLastStatusMessage( jobSummary.ToString() );
+
+                if ( jobException != null )
+                {
+                    throw jobException;
+                }
             }
             catch ( System.Exception ex )
             {
+                // If we already created a job exception, continue to throw it here, otherwise throw the other error from the "catch".
+                if ( jobException != null )
+                {
+                    throw jobException;
+                }
+
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( ex, context2 );
-                throw;
+                throw ex;
             }
         }
 
