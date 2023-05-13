@@ -365,7 +365,7 @@ namespace Rock.Tests.Integration.Events
             // Get Campus 2.
             var campus2 = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
 
-            var args = GetCalendarEventFeedArgumentsForTest( "Public", campus2.Name );
+            var args = GetCalendarEventFeedArgumentsForTest( "Public", campusName: TestGuids.Crm.CampusSteppingStone );
             var calendarString1 = calendarService.CreateICalendar( args );
 
             // Deserialize the calendar output and verify the results.
@@ -403,6 +403,25 @@ namespace Rock.Tests.Integration.Events
                 "Event with unexpected Audience found." );
         }
 
+        [TestMethod]
+        public void EventCalendarFeed_FilteredByEvent_ReturnsSpecifiedEventsOnly()
+        {
+            var rockContext = new RockContext();
+            var calendarService = new EventCalendarService( rockContext );
+
+            var args = GetCalendarEventFeedArgumentsForTest( calendarName: "Public",
+                eventIdentifier:TestGuids.Events.EventIdentifierRockSolidFinancesClass );
+
+            var calendarString1 = calendarService.CreateICalendar( args );
+
+            // Deserialize the calendar output and verify the results.
+            var events1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events;
+            Assert.IsTrue( events1.Any( e => e.Summary == "Rock Solid Finances Class" ),
+                "Expected result not found. Filter returned no Events." );
+            Assert.IsFalse( events1.Any( e => e.Summary != "Rock Solid Finances Class" ),
+                "Expected result not found. Filter returned unexpected Events." );
+        }
+
         /// <summary>
         /// The calendar feed must comply with specific rules to be imported correctly by Google Calendar and other calendar applications.
         /// This test verifies that the calendar feed format conforms to the known requirements.
@@ -433,47 +452,37 @@ namespace Rock.Tests.Integration.Events
             Assert.That.DoesNotContain( calendarStringDst, winTimeZoneId );
         }
 
-        private static GetCalendarEventFeedArgs GetCalendarEventFeedArgumentsForTest( string calendarName = null, string campusName = null, DateTime? startDate = null, DateTime? endDate = null, string eventName = null )
+        private static GetCalendarEventFeedArgs GetCalendarEventFeedArgumentsForTest( string calendarName = null, string campusName = null, DateTime? startDate = null, DateTime? endDate = null, string eventIdentifier = null )
         {
             var rockContext = new RockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             var args = new GetCalendarEventFeedArgs();
 
-            if ( !string.IsNullOrWhiteSpace( calendarName ) )
-            {
-                var calendarId = EventCalendarCache.All()
-                .Where( x => x.Name == calendarName )
-                .Select( x => x.Id )
-                .FirstOrDefault();
+            calendarName = calendarName ?? "Internal";
 
-                args.CalendarId = calendarId;
-            }
+            var calendar = calendarService.Queryable()
+                .GetByIdentifierOrThrow( calendarName );
 
-            args.StartDate = startDate ?? RockDateTime.New( 2015, 1, 1 ).Value;
+            args.CalendarId = calendar.Id;
+
+            args.StartDate = startDate ?? RockDateTime.New( 2010, 1, 1 ).Value;
             args.EndDate = endDate ?? RockDateTime.New( 2020, 1, 1 ).Value;
 
             if ( !string.IsNullOrWhiteSpace( campusName ) )
             {
-                var campusId = CampusCache.All()
-                    .Where( x => x.Name == campusName )
-                    .Select( x => x.Id )
-                    .FirstOrDefault();
+                var campusService = new CampusService( rockContext );
+                var campus = campusService.Queryable()
+                    .GetByIdentifierOrThrow( campusName );
 
-                Assert.IsTrue( campusId != 0, "Invalid Campus." );
-
-                args.CampusIds = new List<int> { campusId };
+                args.CampusIds = new List<int> { campus.Id };
             }
 
-            if ( !string.IsNullOrWhiteSpace( eventName ) )
+            if ( !string.IsNullOrWhiteSpace( eventIdentifier ) )
             {
                 var eventItemService = new EventItemService( rockContext );
-                var eventItemId = eventItemService.Queryable()
-                    .Where( x => x.Name == eventName )
-                    .Select( x => x.Id )
-                    .FirstOrDefault();
-
-                Assert.IsTrue( eventItemId != 0, "Invalid Event Item." );
+                  var eventItemId = eventItemService.Queryable()
+                      .GetByIdentifierOrThrow( eventIdentifier )?.Id ?? 0;
 
                 args.EventItemIds = new List<int> { eventItemId };
             }
