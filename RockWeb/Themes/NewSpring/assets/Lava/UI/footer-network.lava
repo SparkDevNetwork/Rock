@@ -1,0 +1,62 @@
+<style>
+.fa-facebook-square, .fa-twitter-square, .fa-instagram { transition: all .2s ease; }
+.fa-facebook-square:hover { color: #4467ca; }
+.fa-twitter-square:hover { color: #1DA1F2; }
+.fa-instagram:hover { color: #FDD362 }
+</style>
+
+{% assign orgEmail = 'Global' | Attribute:'OrganizationEmailNetwork' %}
+{% assign orgPhone = 'Global' | Attribute:'OrganizationPhone' %}
+
+
+<footer id="footer" class="shell soft-double-sides xs-soft-half-sides position-relative bg-gray-dark flush">
+    <div class="page-constrained mx-auto">
+        <a href="#content" data-scroll title="Scroll to Top">
+            <img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="NewSpring Network" class="position-absolute bottom-zero right-zero" style="max-width: 50px;">
+        </a>
+        <div class="row sans-serif strong text-decoration-none">
+            <div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom xs-push-half-bottom">
+                <h2 class="h5 text-white push-half-bottom">NewSpring Network</h2>
+                <span class="text-white">
+                    <p class="flush-bottom xs-push-half-bottom">
+                        <a href="tel:+1{{ orgPhone | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' }}">{{ orgPhone }}</a><br>
+                        <a href="mailto:{{ orgEmail }}">{{ orgEmail }}</a>
+                    </p>
+                </span>
+            </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom xs-push-half-bottom">
+                <h2 class="h5 text-white xs-text-center push-half-bottom">NewSpring Network</h2>
+                <ul class="list-unstyled xs-text-center flush-bottom xs-push-half-bottom">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/vision">About NewSpring Network</a></li>
+                    <li><a href="/questions">FAQs</a></li>
+                    <li><a href="/resources">Resources</a></li>
+                    <li><a href="/connect">Connect With Us</a></li>
+                    <li><a href="https://newspring.cc/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}&Source=4">Technical Support</a></li>
+                </ul>
+            </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom xs-push-half-bottom">
+                <h2 class="h5 text-white xs-text-center push-half-bottom">Resources</h2>
+                <ul class="list-unstyled xs-text-center flush-bottom xs-push-half-bottom">
+                    <li><a href="/resources/kids">Kids</a></li>
+                    <li><a href="/resources/students">Students</a></li>
+                    <li><a href="/resources/teaching">Teaching</a></li>
+                    <li class="hidden"><a href="/resources/volunteers">Volunteers</a></li>
+                    <li><a href="/resources/music">Music</a></li>
+                </ul>
+            </div><div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom">
+                <h2 class="h5 text-white push-half-bottom">Social</h2>
+                <p class="text-white flush">
+                    <a href="{{ 'Global' | Attribute:'OrganizationFacebook','RawValue' }}" target="_blank"><i class="fab fa-lg fa-facebook-square"></i></a>&nbsp;
+                    <a href="{{ 'Global' | Attribute:'OrganizationTwitter','RawValue' }}" target="_blank"><i class="fab fa-lg fa-twitter-square"></i></a>&nbsp;
+                    <a href="{{ 'Global' | Attribute:'OrganizationInstagram','RawValue' }}" target="_blank"><i class="fab fa-lg fa-instagram"></i></a>
+                </p>
+
+            </div>
+        </div>
+        <p class="sans-serif strong text-white text-decoration-none flush-bottom xs-text-center"><small><a href="https://www.rockrms.com" class="text-white text-hover-white" target="_blank">Built on
+        <span class="position-relative fa-layers fa-lg fa-fw" style="top:5px;">
+            <i class="fas fa-circle" style="color:white"></i>
+            <i class="fa-inverse fab fa-rockrms" style="color: #ee7725; transform: scale(1.1);" data-fa-transform="shrink-6"></i>
+        </span>
+        Rock RMS</a></small></p>
+    </div>
+</footer>

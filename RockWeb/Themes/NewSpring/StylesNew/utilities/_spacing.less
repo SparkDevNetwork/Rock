@@ -1,0 +1,410 @@
+//
+// Utilities for padding/margin values
+//
+
+.ns-util-mix-spacing(@breakpoint:"base") {
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .margin-breakpoints(@infix);
+    .padding-breakpoints(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .margin-breakpoints(@infix);
+    .padding-breakpoints(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+// stylelint-disable declaration-block-single-line-max-declarations
+.margin-breakpoints(@infix) {
+  .m@{infix}-0 {
+    margin: 0 !important;
+  }
+  .m@{infix}-6 {
+    margin: @spacer * @spacing-6 !important;
+  }
+  .m@{infix}-7 {
+    margin: @spacer * @spacing-7 !important;
+  }
+  .m@{infix}-8 {
+    margin: @spacer * @spacing-8 !important;
+  }
+  .m@{infix}-9 {
+    margin: @spacer * @spacing-9 !important;
+  }
+  .m@{infix}-10 {
+    margin: @spacer * @spacing-10 !important;
+  }
+  .m@{infix}-11 {
+    margin: @spacer * @spacing-11 !important;
+  }
+  .m@{infix}-12 {
+    margin: @spacer * @spacing-12 !important;
+  }
+
+  .mx@{infix}-0 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .mx@{infix}-6 {
+    margin-right: @spacer * @spacing-6 !important;
+    margin-left: @spacer * @spacing-6 !important;
+  }
+  .mx@{infix}-7 {
+    margin-right: @spacer * @spacing-7 !important;
+    margin-left: @spacer * @spacing-7 !important;
+  }
+  .mx@{infix}-8 {
+    margin-right: @spacer * @spacing-8 !important;
+    margin-left: @spacer * @spacing-8 !important;
+  }
+  .mx@{infix}-9 {
+    margin-right: @spacer * @spacing-9 !important;
+    margin-left: @spacer * @spacing-9 !important;
+  }
+  .mx@{infix}-10 {
+    margin-right: @spacer * @spacing-10 !important;
+    margin-left: @spacer * @spacing-10 !important;
+  }
+  .mx@{infix}-11 {
+    margin-right: @spacer * @spacing-11 !important;
+    margin-left: @spacer * @spacing-11 !important;
+  }
+  .mx@{infix}-12 {
+    margin-right: @spacer * @spacing-12 !important;
+    margin-left: @spacer * @spacing-12 !important;
+  }
+
+  .my@{infix}-0 {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .my@{infix}-6 {
+    margin-top: @spacer * @spacing-6 !important;
+    margin-bottom: @spacer * @spacing-6 !important;
+  }
+  .my@{infix}-7 {
+    margin-top: @spacer * @spacing-7 !important;
+    margin-bottom: @spacer * @spacing-7 !important;
+  }
+  .my@{infix}-8 {
+    margin-top: @spacer * @spacing-8 !important;
+    margin-bottom: @spacer * @spacing-8 !important;
+  }
+  .my@{infix}-9 {
+    margin-top: @spacer * @spacing-9 !important;
+    margin-bottom: @spacer * @spacing-9 !important;
+  }
+  .my@{infix}-10 {
+    margin-top: @spacer * @spacing-10 !important;
+    margin-bottom: @spacer * @spacing-10 !important;
+  }
+  .my@{infix}-11 {
+    margin-top: @spacer * @spacing-11 !important;
+    margin-bottom: @spacer * @spacing-11 !important;
+  }
+  .my@{infix}-12 {
+    margin-top: @spacer * @spacing-12 !important;
+    margin-bottom: @spacer * @spacing-12 !important;
+  }
+
+  .mt@{infix}-0 {
+    margin-top: 0 !important;
+  }
+  .mt@{infix}-6 {
+    margin-top: @spacer * @spacing-6 !important;
+  }
+  .mt@{infix}-7 {
+    margin-top: @spacer * @spacing-7 !important;
+  }
+  .mt@{infix}-8 {
+    margin-top: @spacer * @spacing-8 !important;
+  }
+  .mt@{infix}-9 {
+    margin-top: @spacer * @spacing-9 !important;
+  }
+  .mt@{infix}-10 {
+    margin-top: @spacer * @spacing-10 !important;
+  }
+  .mt@{infix}-11 {
+    margin-top: @spacer * @spacing-11 !important;
+  }
+  .mt@{infix}-12 {
+    margin-top: @spacer * @spacing-12 !important;
+  }
+
+  .mr@{infix}-0 {
+    margin-right: 0 !important;
+  }
+  .mr@{infix}-6 {
+    margin-right: @spacer * @spacing-6 !important;
+  }
+  .mr@{infix}-7 {
+    margin-right: @spacer * @spacing-7 !important;
+  }
+  .mr@{infix}-8 {
+    margin-right: @spacer * @spacing-8 !important;
+  }
+  .mr@{infix}-9 {
+    margin-right: @spacer * @spacing-9 !important;
+  }
+  .mr@{infix}-10 {
+    margin-right: @spacer * @spacing-10 !important;
+  }
+  .mr@{infix}-11 {
+    margin-right: @spacer * @spacing-11 !important;
+  }
+  .mr@{infix}-12 {
+    margin-right: @spacer * @spacing-12 !important;
+  }
+
+  .mb@{infix}-0 {
+    margin-bottom: 0 !important;
+  }
+  .mb@{infix}-5 {
+    margin-bottom: @spacer * @spacing-5 !important;
+  }
+  .mb@{infix}-6 {
+    margin-bottom: @spacer * @spacing-6 !important;
+  }
+  .mb@{infix}-7 {
+    margin-bottom: @spacer * @spacing-7 !important;
+  }
+  .mb@{infix}-8 {
+    margin-bottom: @spacer * @spacing-8 !important;
+  }
+  .mb@{infix}-9 {
+    margin-bottom: @spacer * @spacing-9 !important;
+  }
+  .mb@{infix}-10 {
+    margin-bottom: @spacer * @spacing-10 !important;
+  }
+  .mb@{infix}-11 {
+    margin-bottom: @spacer * @spacing-11 !important;
+  }
+  .mb@{infix}-12 {
+    margin-bottom: @spacer * @spacing-12 !important;
+  }
+
+  .ml@{infix}-0 {
+    margin-left: 0 !important;
+  }
+  .ml@{infix}-6 {
+    margin-left: @spacer * @spacing-6 !important;
+  }
+  .ml@{infix}-7 {
+    margin-left: @spacer * @spacing-7 !important;
+  }
+  .ml@{infix}-8 {
+    margin-left: @spacer * @spacing-8 !important;
+  }
+  .ml@{infix}-9 {
+    margin-left: @spacer * @spacing-9 !important;
+  }
+  .ml@{infix}-10 {
+    margin-left: @spacer * @spacing-10 !important;
+  }
+  .ml@{infix}-11 {
+    margin-left: @spacer * @spacing-11 !important;
+  }
+  .ml@{infix}-12 {
+    margin-left: @spacer * @spacing-12 !important;
+  }
+}
+
+.padding-breakpoints(@infix) {
+  .p@{infix}-0 {
+    padding: 0 !important;
+  }
+  .p@{infix}-6 {
+    padding: @spacer * @spacing-6 !important;
+  }
+  .p@{infix}-7 {
+    padding: @spacer * @spacing-7 !important;
+  }
+  .p@{infix}-8 {
+    padding: @spacer * @spacing-8 !important;
+  }
+  .p@{infix}-9 {
+    padding: @spacer * @spacing-9 !important;
+  }
+  .p@{infix}-10 {
+    padding: @spacer * @spacing-10 !important;
+  }
+  .p@{infix}-11 {
+    padding: @spacer * @spacing-11 !important;
+  }
+  .p@{infix}-12 {
+    padding: @spacer * @spacing-12 !important;
+  }
+
+  .px@{infix}-0 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .px@{infix}-6 {
+    padding-right: @spacer * @spacing-6 !important;
+    padding-left: @spacer * @spacing-6 !important;
+  }
+  .px@{infix}-7 {
+    padding-right: @spacer * @spacing-7 !important;
+    padding-left: @spacer * @spacing-7 !important;
+  }
+  .px@{infix}-8 {
+    padding-right: @spacer * @spacing-8 !important;
+    padding-left: @spacer * @spacing-8 !important;
+  }
+  .px@{infix}-9 {
+    padding-right: @spacer * @spacing-9 !important;
+    padding-left: @spacer * @spacing-9 !important;
+  }
+  .px@{infix}-10 {
+    padding-right: @spacer * @spacing-10 !important;
+    padding-left: @spacer * @spacing-10 !important;
+  }
+  .px@{infix}-11 {
+    padding-right: @spacer * @spacing-11 !important;
+    padding-left: @spacer * @spacing-11 !important;
+  }
+  .px@{infix}-12 {
+    padding-right: @spacer * @spacing-12 !important;
+    padding-left: @spacer * @spacing-12 !important;
+  }
+
+  .py@{infix}-0 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .py@{infix}-6 {
+    padding-top: @spacer * @spacing-6 !important;
+    padding-bottom: @spacer * @spacing-6 !important;
+  }
+  .py@{infix}-7 {
+    padding-top: @spacer * @spacing-7 !important;
+    padding-bottom: @spacer * @spacing-7 !important;
+  }
+  .py@{infix}-8 {
+    padding-top: @spacer * @spacing-8 !important;
+    padding-bottom: @spacer * @spacing-8 !important;
+  }
+  .py@{infix}-9 {
+    padding-top: @spacer * @spacing-9 !important;
+    padding-bottom: @spacer * @spacing-9 !important;
+  }
+  .py@{infix}-10 {
+    padding-top: @spacer * @spacing-10 !important;
+    padding-bottom: @spacer * @spacing-10 !important;
+  }
+  .py@{infix}-11 {
+    padding-top: @spacer * @spacing-11 !important;
+    padding-bottom: @spacer * @spacing-11 !important;
+  }
+  .py@{infix}-12 {
+    padding-top: @spacer * @spacing-12 !important;
+    padding-bottom: @spacer * @spacing-12 !important;
+  }
+
+  .pt@{infix}-0 {
+    padding-top: 0 !important;
+  }
+  .pt@{infix}-6 {
+    padding-top: @spacer * @spacing-6 !important;
+  }
+  .pt@{infix}-7 {
+    padding-top: @spacer * @spacing-7 !important;
+  }
+  .pt@{infix}-8 {
+    padding-top: @spacer * @spacing-8 !important;
+  }
+  .pt@{infix}-9 {
+    padding-top: @spacer * @spacing-9 !important;
+  }
+  .pt@{infix}-10 {
+    padding-top: @spacer * @spacing-10 !important;
+  }
+  .pt@{infix}-11 {
+    padding-top: @spacer * @spacing-11 !important;
+  }
+  .pt@{infix}-12 {
+    padding-top: @spacer * @spacing-12 !important;
+  }
+
+  .pr@{infix}-0 {
+    padding-right: 0 !important;
+  }
+  .pr@{infix}-6 {
+    padding-right: @spacer * @spacing-6 !important;
+  }
+  .pr@{infix}-7 {
+    padding-right: @spacer * @spacing-7 !important;
+  }
+  .pr@{infix}-8 {
+    padding-right: @spacer * @spacing-8 !important;
+  }
+  .pr@{infix}-9 {
+    padding-right: @spacer * @spacing-9 !important;
+  }
+  .pr@{infix}-10 {
+    padding-right: @spacer * @spacing-10 !important;
+  }
+  .pr@{infix}-11 {
+    padding-right: @spacer * @spacing-11 !important;
+  }
+  .pr@{infix}-12 {
+    padding-right: @spacer * @spacing-12 !important;
+  }
+
+  .pb@{infix}-0 {
+    padding-bottom: 0 !important;
+  }
+  .pb@{infix}-6 {
+    padding-bottom: @spacer * @spacing-6 !important;
+  }
+  .pb@{infix}-7 {
+    padding-bottom: @spacer * @spacing-7 !important;
+  }
+  .pb@{infix}-8 {
+    padding-bottom: @spacer * @spacing-8 !important;
+  }
+  .pb@{infix}-9 {
+    padding-bottom: @spacer * @spacing-9 !important;
+  }
+  .pb@{infix}-10 {
+    padding-bottom: @spacer * @spacing-10 !important;
+  }
+  .pb@{infix}-11 {
+    padding-bottom: @spacer * @spacing-11 !important;
+  }
+  .pb@{infix}-12 {
+    padding-bottom: @spacer * @spacing-12 !important;
+  }
+
+  .pl@{infix}-0 {
+    padding-left: 0 !important;
+  }
+  .pl@{infix}-6 {
+    padding-left: @spacer * @spacing-6 !important;
+  }
+  .pl@{infix}-7 {
+    padding-left: @spacer * @spacing-7 !important;
+  }
+  .pl@{infix}-8 {
+    padding-left: @spacer * @spacing-8 !important;
+  }
+  .pl@{infix}-9 {
+    padding-left: @spacer * @spacing-9 !important;
+  }
+  .pl@{infix}-10 {
+    padding-left: @spacer * @spacing-10 !important;
+  }
+  .pl@{infix}-11 {
+    padding-left: @spacer * @spacing-11 !important;
+  }
+  .pl@{infix}-12 {
+    padding-left: @spacer * @spacing-12 !important;
+  }
+}

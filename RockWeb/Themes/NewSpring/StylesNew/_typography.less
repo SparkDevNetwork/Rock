@@ -1,0 +1,311 @@
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+  font-weight: 700;
+  margin-top: 0;
+  font-family: @font-family-headings;
+}
+
+.display-1,
+.display-2,
+.display-3 {
+  line-height: 1;
+  letter-spacing: -1.7px;
+  font-weight: 900;
+}
+
+.display-1 {
+  font-size: @font-size-display-1;
+}
+
+.display-2 {
+  font-size: @font-size-display-2;
+}
+
+.display-3 {
+  font-size: @font-size-display-3;
+  letter-spacing: -1.4px;
+}
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4 {
+  line-height: 1.08;
+}
+
+h5,
+.h5,
+h6,
+.h6 {
+  line-height: 1.12;
+}
+
+h1,
+.h1 {
+  letter-spacing: -1.75px;
+}
+h2,
+.h2 {
+  letter-spacing: -1.45px;
+}
+h3,
+.h3 {
+  letter-spacing: -1.4px;
+}
+h4,
+.h4 {
+  letter-spacing: -1.1px;
+}
+h5,
+.h5 {
+  letter-spacing: -0.9px;
+}
+h6,
+.h6 {
+  letter-spacing: -0.7px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+ol,
+p,
+blockquote {
+  margin-top: 0;
+  margin-bottom: (@spacer*6);
+}
+
+.pretitle {
+  font-family: @font-family-headings;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 4px;
+  line-height: 1.4;
+  color: @gray;
+}
+
+blockquote {
+  padding: 0;
+  border: none;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  line-height: 1.08;
+  font-size: @font-size-blockquote;
+
+  footer {
+    font-size: @font-size-base;
+    letter-spacing: 0;
+    font-weight: 500;
+  }
+}
+
+.lead {
+  font-size: @font-size-lead;
+  line-height: 1.24;
+  letter-spacing: -0.5px;
+  font-style: italic;
+  color: @gray;
+}
+
+small {
+  font-size: 80%;
+}
+
+.font-sans {
+  font-family: @font-family-headings;
+}
+.font-serif {
+  font-family: @font-family-sans-serif;
+}
+.italic {
+  font-style: italic;
+}
+.not-italic {
+  font-style: normal;
+}
+.font-thin {
+  font-weight: 100;
+}
+.font-extralight {
+  font-weight: 200;
+}
+.font-light {
+  font-weight: 300;
+}
+.font-normal {
+  font-weight: 400;
+}
+.font-medium {
+  font-weight: 500;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.font-bold {
+  font-weight: 700;
+}
+.font-extrabold {
+  font-weight: 800;
+}
+.font-black {
+  font-weight: 900;
+}
+.font-underline {
+ text-decoration: underline;
+}
+
+mark {
+  background-color: #fff14f;
+}
+
+a {
+  text-decoration: underline;
+}
+
+.list-none {
+  list-style-type: none;
+}
+
+.text-decoration-none a {
+  text-decoration: none;
+}
+
+@media @sm {
+  .display-1 {
+    font-size: ceil(@font-size-display-1 * 1.18); // 76px
+    letter-spacing: -2px;
+  }
+
+  .display-2 {
+    font-size: ceil(@font-size-display-2 * 1.2); // 68px
+    letter-spacing: -1.4px;
+  }
+
+  .display-3 {
+    font-size: ceil(@font-size-display-3 * 1.25); // 60px
+    letter-spacing: -1.2px;
+  }
+
+  h1,
+  .h1 {
+    font-size: ceil(@font-size-h1 * 1.1); // 44px
+    letter-spacing: -2.3px;
+  }
+
+  h2,
+  .h2 {
+    font-size: ceil(@font-size-h2 * 1.1); // 40px
+    letter-spacing: -2px;
+  }
+
+  h3,
+  .h3 {
+    font-size: ceil(@font-size-h3 * 1.1); // 36px
+    letter-spacing: -1.8px;
+  }
+
+  h4,
+  .h4 {
+    font-size: ceil(@font-size-h4 * 1.13); // 32px
+    letter-spacing: -1.3px;
+  }
+
+  h5,
+  .h5 {
+    font-size: ceil(@font-size-h5 * 1.13); // 28px
+    letter-spacing: -1.15px;
+  }
+
+  h6,
+  .h6 {
+    font-size: ceil(@font-size-h6 * 1.17); // 24px
+    letter-spacing: -1px;
+  }
+}
+
+@media @md {
+  .display-1 {
+    font-size: ceil(@font-size-display-1 * 1.43); // 92px
+    letter-spacing: -3px;
+  }
+
+  .display-2 {
+    font-size: ceil(@font-size-display-2 * 1.5); // 84px
+    letter-spacing: -2.7px;
+  }
+
+  .display-3 {
+    font-size: ceil(@font-size-display-3 * 1.4); // 68px
+    letter-spacing: -2px;
+  }
+
+  h1,
+  .h1 {
+    font-size: ceil(@font-size-h1 * 1.5); // 60px
+    letter-spacing: -2.6px;
+  }
+
+  h2,
+  .h2 {
+    font-size: ceil(@font-size-h2 * 1.43); // 52px
+    letter-spacing: -2.4px;
+  }
+
+  h3,
+  .h3 {
+    font-size: ceil(@font-size-h3 * 1.35); // 44px
+    letter-spacing: -2.4px;
+  }
+
+  h4,
+  .h4 {
+    font-size: ceil(@font-size-h4 * 1.4); // 40px
+    letter-spacing: -1.8px;
+  }
+
+  h5,
+  .h5 {
+    font-size: ceil(@font-size-h5 * 1.3); // 32px
+    letter-spacing: -1.45px;
+  }
+
+  h6,
+  .h6 {
+    font-size: ceil(@font-size-h6); // 26px
+  }
+
+  .pretitle {
+    font-size: ceil(@font-size-base * 1.05); // 21px
+    line-height: 1.16;
+    letter-spacing: 5px;
+  }
+
+  blockquote {
+    font-size: ceil(@font-size-blockquote * 1.1); // 36px
+    line-height: 1.16;
+    letter-spacing: -1.1px;
+  }
+
+  .lead {
+    font-size: ceil(@font-size-lead * 1.15); // 28px
+  }
+}

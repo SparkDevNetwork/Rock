@@ -201,7 +201,7 @@ Main Campus;Stepping Stone;
             var lavaScript = @"{% sql timeout:'10' %}
 
             WAITFOR DELAY '00:00:20';
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -229,7 +229,7 @@ Main Campus;Stepping Stone;
             var lavaScript = @"{% sql timeout:'40' %}
 
             WAITFOR DELAY '00:00:35';
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -255,7 +255,7 @@ Main Campus;Stepping Stone;
         {
             var lavaScript = @"{% sql %}
 
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -283,7 +283,7 @@ Main Campus;Stepping Stone;
             var lavaScript = @"{% sql %}
 
             WAITFOR DELAY '00:00:35';
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 

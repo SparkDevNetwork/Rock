@@ -1,0 +1,132 @@
+{% assign useNewStyles = CurrentPage | Attribute:'UseNewStyles' %}
+{% assign hideNav = 'Global' | Page:'QueryString' | Property:'hidenav' %}
+{% assign navItemCount = 0 %}
+
+{% if useNewStyles == 'Yes' %}
+<section
+	class="p-0 w-100 bg-white d-grid grid-cols-2 justify-content-between align-content-center drop-shadow">
+	<div class="d-grid align-content-center">
+		<a href="/" class="px-3 mb-0">
+			<img src="/Themes/NewSpring/assets/SVG/logo.svg"
+				alt="NewSpring Church Logo"
+				style="width: 160px; max-width: 160px" />
+		</a>
+	</div>
+	<div class="d-flex justify-content-end overflow-hidden text-right">
+		<a href="#" data-toggle="modal" data-target="#navigation-modal"
+			class="nav-icon d-inline-block no-underline p-3 p-md-3 text-gray-darker border-solid border-l border-gray-lighter">
+			<i class="fal fa-fw fa-lg fa-bars"></i>
+		</a>
+
+		<span class="hidden-xs hidden-sm" style="height:75px;">
+			<a href="/locations"
+				class="nav-icon d-inline-block no-underline p-3 p-md-3 text-gray-darker border-solid border-l border-gray-lighter">
+				<i class="fal fa-fw fa-lg fa-map-marker-alt"></i>
+			</a>
+
+			<a href="/search"
+				class="nav-icon d-inline-block no-underline p-3 p-md-3 text-gray-darker border-solid border-l border-gray-lighter">
+				<i class="fal fa-fw fa-lg fa-search"></i>
+			</a>
+		</span>
+		{% assign personPhoto = CurrentPerson.PhotoUrl %}
+		{% if CurrentPerson != null %}
+		<a href="/account" title="My Profile"
+			class="nav-icon position-relative d-inline-block no-underline p-3 p-md-3 text-gray-darker border-solid border-l border-gray-lighter">
+			{% if personPhoto != null %}
+			<i class="position-absolute d-inline-block circular background-cover"
+				style="background-image:url('{{ personPhoto }}'); border-radius: 1000px;">
+			</i>
+			{% else %}
+			<i class="fal fa-fw fa-lg fa-user-circle"></i>
+			{% endif %}
+		</a>
+		{% else %}
+		<a href="/sign-in"
+			class="nav-icon d-inline-block no-underline p-3 p-md-3 text-gray-darker border-solid border-l border-gray-lighter">
+			<i class="fal fa-fw fa-lg fa-user-circle"></i>
+		</a>
+		{% endif %}
+	</div>
+</section>
+
+<style>
+	.nav-icon {
+		position: relative;
+		width: 75px;
+		height: 75px;
+	}
+
+	.nav-icon:hover, .nav-icon:focus {
+		color: #1c1c1c;
+	}
+
+	.nav-icon i {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		height: 30px;
+		width: 30px;
+		line-height: 30px;
+		margin-top: -15px;
+		margin-left: -15px;
+	}
+
+</style>
+{% else %}
+<ul
+	class="nav-primary sans-serif strong text-decoration-none hard flush {% if hideNav == 'true' %}hidden{% endif %}">
+	<li>
+		<a href="/" class="nav-logo">
+			<img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png"
+				alt="{{ organizationname }}" class="nav-icon  nav-logo-regular">
+			<span>{{ organizationname }}</span>
+		</a>
+	</li><span class="pull-right">{% if menu == 'true' %}<li>
+			{% assign navItemCount = navItemCount | Plus:1 %}
+			<a href="#" data-toggle="modal" data-target="#navigation-modal"
+				title="Menu"><i class="fal fa-fw fa-lg fa-bars"></i></a>
+		</li>{% endif %}{% if locations == 'true' %}<li class="hidden-xs">
+			{% assign navItemCount = navItemCount | Plus:1 %}
+			<a href="/locations?utm_source=newspring&utm_campaign=locations&utm_medium=main-nav"
+				title="Locations"><i
+					class="fal fa-fw fa-lg fa-map-marker-alt"></i></a>
+		</li>{% endif %}{% if search == 'true' %}<li class="hidden-xs">
+			{% assign navItemCount = navItemCount | Plus:1 %}
+			<a href="/search" title="Search"><i
+					class="fal fa-fw fa-lg fa-search"></i></a>
+		</li>{% endif %}{% if account == 'true' %}<li>
+			{% assign navItemCount = navItemCount | Plus:1 %}
+			{% assign personPhoto = CurrentPerson.PhotoUrl %}
+			{% if CurrentPerson != null %}
+			<a href="/account" title="My Profile">
+				{% if personPhoto != null %}
+				<div class="position-relative display-inline-block nav-icon circular background-cover"
+					style="top: 12px; width: 35px; height: 35px; background-image:url('{{ personPhoto }}'); border: 2px solid rgba(255,255,255,1);">
+				</div>
+				{% else %}
+				<i class="fal fa-fw fa-lg fa-user-circle"></i>
+				{% endif %}
+			</a>
+			{% else %}
+			<a href="/sign-in" title="Sign In">
+				<i class="fal fa-fw fa-lg fa-user-circle"></i>
+			</a>
+			{% endif %}
+		</li>{% endif %}</span>
+</ul>
+{% assign navItemCountDesk = navItemCount | Plus:1 %}
+{% assign navItemCountMobile = navItemCount %}
+{% assign navItemWidthDesk = 100 | DividedBy:navItemCountDesk,3 %}
+{% assign navItemWidthMobile = 100 | DividedBy:navItemCountMobile,3 %}
+
+<style>
+	@media (min-width: 669px) {
+		.nav-primary li {
+			width: {{ navItemWidthMobile }}%;
+		}
+	}
+
+</style>
+
+{% endif %}

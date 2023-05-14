@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
-using Rock.Model; 
+using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {

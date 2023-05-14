@@ -1,0 +1,40 @@
+//
+// Utilities for padding/margin values
+//
+
+.ns-util-mix-sizing(@breakpoint:"base") {
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .sizing-breakpoints(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .sizing-breakpoints(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+// stylelint-disable declaration-block-single-line-max-declarations
+.sizing-breakpoints(@infix) {
+  .w@{infix}-auto {
+    width: auto !important;
+  }
+  .w@{infix}-0 {
+    width: 0% !important;
+  }
+  .w@{infix}-25 {
+    width: 25% !important;
+  }
+  .w@{infix}-50 {
+    width: 50% !important;
+  }
+  .w@{infix}-75 {
+    width: 75% !important;
+  }
+  .w@{infix}-100 {
+    width: 100% !important;
+  }
+}

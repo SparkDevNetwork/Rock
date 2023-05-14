@@ -1,0 +1,293 @@
+{% assign businessIdParam = 'Global' | PageParameter:'BusinessId' %}
+{% assign pageId = 'Global' | Page:'Id' %}
+{% assign CurrentPersonCanEdit = pageId | HasRightsTo:'Edit','Rock.Model.Page'
+%}
+
+{% sql return:'businessIds' %}
+SELECT gm2.PersonId
+FROM GroupMember gm2
+WHERE gm2.GroupId IN (
+SELECT g.Id
+FROM GroupMember gm
+JOIN [Group] g
+ON gm.GroupId = g.Id
+JOIN GroupType gt
+ON g.GroupTypeId = gt.Id
+WHERE gm.PersonId = {{ CurrentPerson.Id }}
+AND gt.Id = 11
+AND gm.GroupRoleId = 25
+)
+AND gm2.PersonId != {{ CurrentPerson.Id }}
+AND gm2.GroupRoleId = 5
+{% endsql %}
+
+{% assign businessesCount = businessIds | Size %}
+{% if businessIdParam and businessIdParam != empty %}
+{% assign businessId = businessIds | Where:'PersonId',businessIdParam | First |
+Property:'PersonId' %}
+{% endif %}
+
+{% assign businessProfile = businessId | PersonById %}
+
+{%- comment -%}
+Redirect to 404 if current person isn't connected to the
+business that matches the ID in query string
+{%- endcomment -%}
+{% if businessId and businessId == empty %}
+{% if CurrentPersonCanEdit %}
+<p class="alert alert-danger">If you did not have edit rights to this page, you
+    would be redirected to <a href="/page-not-found">/page-not-found</a>.</p>
+{% else %}
+{{ '/page-not-found' | PageRedirect }}
+{% endif %}
+{% endif %}
+
+<section id="history"
+    class="soft bg-gray-lighter xs-soft-half-sides soft-half-bottom clearfix flush">
+    <h2>Giving History</h2>
+
+    {%- comment -%}Setting up date range variables{%- endcomment -%}
+    {% capture startDate %}1/1/{{ 'Now' | Date:'yyyy' }}{% endcapture %}
+    {% assign endDate = 'Now' | Date:'M/d/yyyy' %}
+
+    {%- comment -%}Overwrite date range variables if present as query string
+    params{%- endcomment -%}
+    {% assign queryParms = 'Global' | Page:'QueryString' %}
+    {% for item in queryParms %}
+    {% assign kvItem = item | PropertyToKeyValue %}
+    {% if kvItem.Key == 'startDate' %}
+    {% assign startDate = kvItem.Value %}
+    {% endif %}
+    {% if kvItem.Key == 'endDate' %}
+    {% assign endDate = kvItem.Value %}
+    {% endif %}
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+
+            {[ accordion ]}
+            [[ item title:'<i class="fas fa-filter"></i> &nbsp;Filters' ]]
+
+            {% if businessIds and businessIds != empty %}
+            <p>
+                <a href="{{ 'Global' | Page:'Path' }}"
+                    class="btn {% if businessId and businessId != empty %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Personal
+                    Contributions</a>
+                {% for businessRow in businessIds %}
+                {% assign business = businessRow.PersonId | PersonById %}
+                <a href="{{ currentUrl }}?BusinessId={{ business.Id }}"
+                    class="btn {% if businessId == businessRow.PersonId %}btn-secondary{% else %}btn-primary{% endif %} btn-sm">{{
+                    business.LastName }}</a>
+                {% endfor %}
+            </p>
+            {% endif %}
+
+            <h3 class="h4 push-half-bottom">Date Range</h3>
+            {% assign now = 'Now' %}
+            {% assign currentMonth = now | Date:'M' %}
+            <p>
+                <a href="#" class="btn btn-primary btn-sm quick-filter"
+                    data-start-date="1/1/{{ now | Date:'yyyy' }}"
+                    data-end-date="{{ now | Date:'M/d/yyyy' }}"
+                    style="margin-bottom: 3px;">YTD</a>
+                <a href="#" class="btn btn-primary btn-sm quick-filter"
+                    data-start-date="{{ now | DateAdd:-1,'M' | Date:'M' }}/1/{% if currentMonth == 1 %}{{ now | DateAdd:-1,'y' | Date:'yyyy' }}{% else %}{{ now | Date:'yyyy' }}{% endif %}"
+                    data-end-date="{{ now | DateAdd:-1,'M' | Date:'M' }}/{{ now | DateAdd:-1,'M' | DaysInMonth }}/{% if currentMonth == 1 %}{{ now | DateAdd:-1,'y' | Date:'yyyy' }}{% else %}{{ now | Date:'yyyy' }}{% endif %}"
+                    style="margin-bottom: 3px;">Last Month</a>
+                <a href="#" class="btn btn-primary btn-sm quick-filter"
+                    data-start-date="1/1/{{ now | DateAdd:-1,'y' | Date:'yyyy' }}"
+                    data-end-date="12/31/{{ now | DateAdd:-1,'y' | Date:'yyyy' }}"
+                    style="margin-bottom: 3px;">Last Year</a>
+                <a href="#" class="btn btn-primary btn-sm quick-filter"
+                    data-start-date="1/1/2000"
+                    data-end-date="{{ now | Date:'M/d/yyyy' }}"
+                    style="margin-bottom: 3px;">All Transactions</a>
+            </p>
+
+
+            <h3 class="h4 push-half-bottom">Custom Dates</h3>
+            <div class="form-group date-picker display-inline-block">
+                <div class="control-wrapper">
+                    <div class="input-group input-width-md js-date-picker date">
+                        <input name="ctl00$main$ctl23$ctl01$ctl06$dpExample"
+                            type="text" id="StartDate"
+                            class="form-control datepicker" value=""><span
+                            class="input-group-addon"><i class="fa fa-calendar"
+                                aria-hidden="true"></i></span>
+                    </div><span id="StartDate_dav"
+                        class="validation-error help-inline"
+                        style="display:none;"></span>
+                </div>
+            </div>
+
+            <div class="form-group date-picker display-inline-block">
+                <div class="control-wrapper">
+                    <div class="input-group input-width-md js-date-picker date">
+                        <input name="ctl00$main$ctl23$ctl01$ctl06$dpExample"
+                            type="text" id="EndDate"
+                            class="form-control datepicker" value=""><span
+                            class="input-group-addon"><i class="fa fa-calendar"
+                                aria-hidden="true"></i></span>
+                    </div><span id="EndDate_dav"
+                        class="validation-error help-inline"
+                        style="display:none;"></span>
+                </div>
+            </div>
+            <p>
+                <a href="#" class="btn btn-primary btn-sm" data-filter>Filter
+                    Transactions</a>
+            </p>
+
+            [[ enditem ]]
+            {[ endaccordion ]}
+
+        </div>
+        <div class="col-xs-12 col-md-6">
+
+            {% comment %}
+            Calculate Sum of Transactions
+            {% endcomment %}
+
+            {% assign sumTotal = 0 %}
+            {% for row in rows %}
+
+            {% assign sumTotal = sumTotal | Plus:row.Amount %}
+            {% endfor %}
+
+            <h3 class="flush">Total <span class="pull-right">{{ sumTotal |
+                    FormatAsCurrency }}</span></h3>
+            <p class="italic text-gray-light">{{ startDate | Date:'MMM d, yyyy'
+                }} - {{ endDate | Date:'MMM d, yyyy' }}</p>
+
+            <p class="push-half-bottom">
+                {% if businessId == null %}
+
+                <a href="{{ 'Global' | Attribute:'PublicApplicationRoot'}}page/651?StatementYear={{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }}"
+                    class="btn btn-primary xs-btn-block push-half-bottom">{{
+                    'Now' | DateAdd:-1,'y' | Date:'yyyy' }} Contributions</a>
+                <a href="{{ 'Global' | Attribute:'PublicApplicationRoot'}}page/651?StatementYear={{ 'Now' | Date:'yyyy' }}"
+                    class="btn btn-primary xs-btn-block push-half-bottom">{{
+                    'Now' | Date:'yyyy' }} Contributions</a>
+                {% else %}
+                <a href="{{ 'Global' | Attribute:'PublicApplicationRoot'}}page/651?rckid={{ businessProfile | PersonActionIdentifier: 'contribution-statement' }}&StatementYear={{ 'Now' | DateAdd:-1,'y' | Date:'yyyy' }}"
+                    class="btn btn-primary xs-btn-block push-half-bottom">{{
+                    'Now' | DateAdd:-1,'y' | Date:'yyyy' }} Contributions</a>
+                <a href="{{ 'Global' | Attribute:'PublicApplicationRoot'}}page/651?rckid={{ businessProfile | PersonActionIdentifier: 'contribution-statement' }}&StatementYear={{ 'Now' | Date:'yyyy' }}"
+                    class="btn btn-primary xs-btn-block push-half-bottom">{{
+                    'Now' | Date:'yyyy' }} Contributions</a>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    {% for row in rows %}
+    {% assign giver = row.PersonId | PersonById %}
+    <div class="bg-white soft push-half-bottom rounded-lg">
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-6">
+                <h3 class="xs-h4 push-half-bottom">{{ row.PublicName1 }}</h3>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-6">
+                <h3 class="xs-h5 push-half-bottom text-right">{{ row.Amount |
+                    FormatAsCurrency }}</h3>
+            </div>
+        </div>
+
+        <p
+            class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom">
+            {{ row.TransactionDateTime | Date:'MMM d, yyyy' }}</p>
+        <p class="push-half-bottom"><span class="circular background-cover"
+                style="position:relative; top: 8px; display: inline-block; width: 30px; height: 30px; background-image:url('{{ giver.PhotoUrl }}');"></span>
+            &nbsp;<span class="stronger">{{ row.NickName }} {{ row.LastName
+                }}</span></p>
+
+        <p class="flush text-right"><a href="/give/transaction/{{ row.Id }}"
+                class="btn btn-sm btn-primary">View Transaction</a></p>
+
+    </div>
+
+    {% endfor %}
+    </div>
+
+    <style>
+        #content {
+            position: relative;
+        }
+
+    </style>
+    <script>
+        var currentUrl = window.location;
+        var params = new URLSearchParams(currentUrl.search.slice(1));
+        var startDate,
+            endDate;
+
+        // Initialize date pickers in filter accordion
+        $('.datepicker').datepicker({
+            container: '#history',
+            autoclose: true,
+            format: 'm/d/yyyy'
+        });
+
+        // Set datepicker dates from defaults/query string
+        $('#StartDate').datepicker('update', '{{ startDate }}');
+        $('#EndDate').datepicker('update', '{{ endDate }}');
+
+        // Show start date datepicker when icon next to input is clicked
+        $('#StartDate').next().on('click', function () {
+            $('#StartDate').datepicker('show');
+        });
+
+        // Show end date datepicker when icon next to input is clicked
+        $('#EndDate').next().on('click', function () {
+            $('#EndDate').datepicker('show');
+        });
+
+        $('.quick-filter').on('click', function (e) {
+            e.preventDefault();
+            startDate = this.getAttribute('data-start-date');
+            endDate = this.getAttribute('data-end-date');
+            showThrobber();
+            buildUrl(startDate, endDate);
+        });
+
+        // Reload page with new dates from datepickers
+        $('[data-filter]').on('click', function (e) {
+            e.preventDefault();
+            startDate = $('#StartDate').val();
+            endDate = $('#EndDate').val();
+            showThrobber();
+            buildUrl(startDate, endDate);
+        });
+
+        // Cover page with throbber/loader
+        function showThrobber() {
+            var throbber = `
+        <div class="position-fixed full-screen" style="z-index: 999999999; background-color: rgba(0,0,0,.8); display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-2x fa-spinner-third text-primary rotating" style="max-width: 50%;"></i>
+        </div>
+        `
+            $('body').append(throbber);
+        }
+
+        // Piece together new url from start/end date range values
+        function buildUrl(startDate, endDate) {
+            if (params.has("startDate")) {
+                params.delete("startDate");
+            }
+            if (startDate != '') {
+                params.set("startDate", startDate);
+            }
+            if (params.has("endDate")) {
+                params.delete("endDate");
+            }
+            if (endDate != '') {
+                params.set("endDate", endDate);
+            }
+            var baseUrl = currentUrl.href.split('?')[0];
+            var paramString = decodeURIComponent(params.toString());
+            var destUrl = baseUrl + (paramString ? "?" + paramString : "");
+            window.location = destUrl;
+        }
+    </script>

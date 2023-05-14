@@ -1,0 +1,118 @@
+{% assign useNewStyles = CurrentPage | Attribute:'UseNewStyles' %}
+{% if useNewStyles == 'Yes' %}
+  <div id="navigation-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-body p-3 soft hard-bottom clearfix">
+          <i class="fa fa-times close" data-dismiss="modal" aria-hidden="true"></i>
+          <h1 class="h4">
+            {% if CurrentPerson != null %}
+              Hello, {{ CurrentPerson.NickName }}!
+            {% else %}
+              Hello!
+            {% endif %}
+          </h1>
+
+          <p>Where would you like to go?</p>
+
+          {% if CurrentPerson != null %}
+            {% assign personCampus = CurrentPerson | Campus %}
+
+            <ul class="list-unstyled hard xs-flush">
+              <li>
+                <a href="/account" class="text-decoration-none">
+                  <h3 class="h6 text-primary push-half-bottom push-half-top">
+                    <div class="position-relative d-inline-block background-cover circular" style="top: 7px; margin-right: 5px; width: 35px; height: 35px; background-image:url('{{ CurrentPerson.PhotoUrl }}'); max-width: 40px; border-radius:1000px;"></div>
+                    <img src="{{ CurrentPerson.PhotoUrl }}" alt="" class="nav-icon circular hidden" style="position: relative; top: -3px; max-width: 36px; border-radius: 1000px;">
+                    My Account
+                  </h3>
+                </a>
+              </li>
+            </ul>
+
+            <hr class="push-ends">
+          {% endif %}
+
+          {% capture siteNavigationString %}{{ CurrentPage.Layout.Site | Attribute:'Navigation' }}{% endcapture %}
+          {% assign siteNavigationLava = CurrentPage.Layout.Site | Attribute:'NavigationLava' %}
+
+          {% if siteNavigationString and siteNavigationString != empty %}
+              {% assign siteNavigationObject = siteNavigationString | FromJSON %}
+
+              <ul class="list-unstyled hard xs-flush">
+              {% for link in siteNavigationObject.Attributes %}
+                  <li><h3 class="h6 text-primary push-half-bottom"><a href="{{ link.URL }}" class="text-decoration-none">{{ link.Title }}</a></h3></li>
+              {% endfor %}
+              </ul>
+
+          {% endif %}
+
+          {% if siteNavigationLava and siteNavigationLava != empty %}
+            <hr class="push-half-ends">
+            {{ siteNavigationLava }}
+        {% endif %}
+
+
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+{% else %}
+  <div id="navigation-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-body soft hard-bottom clearfix">
+          <i class="fa fa-times close" data-dismiss="modal" aria-hidden="true"></i>
+          <h1 class="h2">
+            {% if CurrentPerson != null %}
+              Hello {{ CurrentPerson.NickName }}.
+            {% else %}
+              Hello!
+            {% endif %}
+          </h1>
+
+          <p>Where would you like to go?</p>
+
+          {% if CurrentPerson != null %}
+            {% assign personCampus = CurrentPerson | Campus %}
+
+            <ul class="list-style-none hard xs-flush">
+              <li>
+                <a href="/account" class="text-decoration-none">
+                  <h3 class="text-primary push-half-bottom push-half-top">
+                    <div class="position-relative display-inline-block background-cover circular" style="top: 7px; margin-right: 5px; width: 35px; height: 35px; background-image:url('{{ CurrentPerson.PhotoUrl }}'); max-width: 40px;"></div>
+                    <img src="{{ CurrentPerson.PhotoUrl }}" alt="" class="nav-icon circular hidden" style="position: relative; top: -3px; max-width: 36px;">
+                    My Account
+                  </h3>
+                </a>
+              </li>
+            </ul>
+
+            <hr class="push-ends">
+          {% endif %}
+
+          {% capture siteNavigationString %}{{ CurrentPage.Layout.Site | Attribute:'Navigation' }}{% endcapture %}
+          {% assign siteNavigationLava = CurrentPage.Layout.Site | Attribute:'NavigationLava' %}
+
+          {% if siteNavigationString and siteNavigationString != empty %}
+              {% assign siteNavigationObject = siteNavigationString | FromJSON %}
+
+              <ul class="list-style-none hard xs-flush">
+              {% for link in siteNavigationObject.Attributes %}
+                  <li><h3 class="text-primary push-half-bottom"><a href="{{ link.URL }}"><i class="fal fa-fw fa-map-marker-alt display-none"></i>{{ link.Title }}</a></h3></li>
+              {% endfor %}
+              </ul>
+
+          {% endif %}
+
+          {% if siteNavigationLava and siteNavigationLava != empty %}
+              <hr class="push-half-ends">
+              {{ siteNavigationLava }}
+          {% endif %}
+
+
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+{% endif %}
