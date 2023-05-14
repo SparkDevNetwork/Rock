@@ -56,7 +56,7 @@
                                     </RockButton>
                                 </slot>
                                 <!-- Custom Action Buttons: `customPickerActions` slot allows you to add additional buttons to the right -->
-                                <div v-if="$slots.customPickerActions" class="pull-right">
+                                <div v-if="$slots.customPickerActions" class="ml-auto d-flex align-items-center">
                                     <slot name="customPickerActions" />
                                 </div>
                             </div>
@@ -105,6 +105,11 @@
 .picker-menu.is-fullscreen {
     display: flex !important;
     flex-direction: column;
+}
+
+.picker-header {
+    flex: 0;
+    width: 100%;
 }
 
 .picker-header,
@@ -397,6 +402,6 @@
         emit(`${type}ButtonClicked`);
     }
 
-    // #endregion
+                    // #endregion
 
 </script>

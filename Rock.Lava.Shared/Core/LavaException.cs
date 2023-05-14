@@ -86,35 +86,63 @@ namespace Rock.Lava
         public LavaException( Exception ex )
             : base( _defaultErrorMessage, ex )
         {
-            _message = _defaultErrorMessage;
         }
 
         #endregion
 
         /// <summary>
-        /// Gets a message that describes the current exception.
+        /// Get a user-friendly message that describes the exception.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetUserMessage()
+        {
+            // By default, the user message provides the same level of detail as the diagnostic message.
+            return GetDiagnosticMessage();
+        }
+
+        /// <summary>
+        /// Gets a detailed message that provides diagnostic information for the exception.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetDiagnosticMessage()
+        {
+            if ( string.IsNullOrWhiteSpace( _message ) && string.IsNullOrWhiteSpace( _details ) )
+            {
+                if ( this.InnerException is LavaException le )
+                {
+                    return le.GetDiagnosticMessage();
+                }
+
+                return _message ?? _defaultErrorMessage;
+            }
+            else
+            {
+                var message = ( _message == null ) ? _defaultErrorMessage : _message.Trim();
+
+                if ( string.IsNullOrWhiteSpace( _details ) )
+                {
+                    return message;
+                }
+                else if ( message.EndsWith( "." ) || message.EndsWith( ":" ) )
+                {
+                    return $"{message} {_details}";
+                }
+                else
+                {
+                    return $"{message}: {_details}";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the default message that describes the current exception.
         /// </summary>
         public override string Message
         {
             get
             {
-                if ( string.IsNullOrWhiteSpace( _details ) )
-                {
-                    return _message;
-                }
-                else
-                {
-                    var message = _message == null ? string.Empty : _message.Trim();
-
-                    if ( message.EndsWith( "." ) || message.EndsWith( ":" ) )
-                    {
-                        return $"{message} {_details}";
-                    }
-                    else
-                    {
-                        return $"{message}: {_details}";
-                    }
-                }
+                // Return the diagnostic message by default, because this method is called by internal error reporting mechanisms.
+                return GetDiagnosticMessage();
             }
         }
     }

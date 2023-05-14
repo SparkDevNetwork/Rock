@@ -67,9 +67,11 @@ namespace Rock.Event.InteractiveExperiences
         }
 
         /// <summary>
-        /// Gets a value indicating whether this type supports question text.
+        /// Gets or sets a value indicating whether this type supports question
+        /// text. When <c>false</c> certain UI elements related to dealing with
+        /// getting responses will be hidden when editing actions of this type.
         /// </summary>
-        /// <value><c>true</c> if this type supports question text; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if this type supports questions and answers; otherwise, <c>false</c>.</value>
         public virtual bool IsQuestionSupported => true;
 
         /// <summary>

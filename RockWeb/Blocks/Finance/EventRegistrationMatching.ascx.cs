@@ -148,10 +148,11 @@ namespace RockWeb.Blocks.Finance
                 cbHideFullyPaidRegistrations.Checked = true;
 
                 LoadDropDowns();
-                
-                BatchId = this.GetBlockUserPreference( UserPreferenceKey.BatchId ).AsIntegerOrNull();
-                RegistrationTemplateId = this.GetBlockUserPreference( UserPreferenceKey.RegistrationTemplateId ).AsIntegerOrNull();
-                RegistrationInstanceId = this.GetBlockUserPreference( UserPreferenceKey.RegistrationInstanceId ).AsIntegerOrNull();
+
+                var preferences = GetBlockPersonPreferences();
+                BatchId = preferences.GetValue( UserPreferenceKey.BatchId ).AsIntegerOrNull();
+                RegistrationTemplateId = preferences.GetValue( UserPreferenceKey.RegistrationTemplateId ).AsIntegerOrNull();
+                RegistrationInstanceId = preferences.GetValue( UserPreferenceKey.RegistrationInstanceId ).AsIntegerOrNull();
                 ddlBatch.SetValue( BatchId );
                 rtpRegistrationTemplate.SetValue( RegistrationTemplateId );
 
@@ -198,7 +199,11 @@ namespace RockWeb.Blocks.Finance
         protected void ddlBatch_SelectedIndexChanged( object sender, EventArgs e )
         {
             BatchId = ddlBatch.SelectedValue.AsIntegerOrNull();
-            this.SetBlockUserPreference( UserPreferenceKey.BatchId, BatchId.ToStringSafe() );
+
+            var preferences = GetBlockPersonPreferences();
+            preferences.SetValue( UserPreferenceKey.BatchId, BatchId.ToStringSafe() );
+            preferences.Save();
+
             BindHtmlGrid();
             LoadRegistrationDropDowns();
         }
@@ -211,7 +216,11 @@ namespace RockWeb.Blocks.Finance
         protected void ddlRegistrationInstance_SelectedIndexChanged( object sender, EventArgs e )
         {
             RegistrationInstanceId = ddlRegistrationInstance.SelectedValue.AsIntegerOrNull();
-            this.SetBlockUserPreference( UserPreferenceKey.RegistrationInstanceId, RegistrationInstanceId.ToStringSafe() );
+
+            var preferences = GetBlockPersonPreferences();
+            preferences.SetValue( UserPreferenceKey.RegistrationInstanceId, RegistrationInstanceId.ToStringSafe() );
+            preferences.Save();
+
             BindHtmlGrid();
             LoadRegistrationDropDowns();
         }
@@ -235,7 +244,11 @@ namespace RockWeb.Blocks.Finance
         protected void rtpRegistrationTemplate_SelectItem( object sender, EventArgs e )
         {
             RegistrationTemplateId = rtpRegistrationTemplate.SelectedValue.AsIntegerOrNull();
-            this.SetBlockUserPreference( UserPreferenceKey.RegistrationTemplateId, RegistrationTemplateId.ToStringSafe() );
+
+            var preferences = GetBlockPersonPreferences();
+            preferences.SetValue( UserPreferenceKey.RegistrationTemplateId, RegistrationTemplateId.ToStringSafe() );
+            preferences.Save();
+
             RegistrationInstanceId = null;
             var registrationTemplateId = rtpRegistrationTemplate.SelectedValue.AsIntegerOrNull();
             LoadRegistrationInstances();

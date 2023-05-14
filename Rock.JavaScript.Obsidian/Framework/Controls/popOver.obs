@@ -147,7 +147,6 @@
         const boxP = getElementBox(popOverEl.value);
 
         if (props.placement == "top") {
-            console.log("TOP", { boxA, boxP });
             return {
                 left: boxA.left + (boxA.width / 2) - (boxP.width / 2) + "px",
                 top: boxA.top - boxP.height + "px"

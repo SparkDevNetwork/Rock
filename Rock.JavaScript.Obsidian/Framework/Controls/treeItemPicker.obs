@@ -8,7 +8,7 @@
                            :modelValue="internalValues"
                            :fullWidth="fullWidth">
 
-        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
+        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
 
         <template #innerLabel><span class="selected-names">{{ selectedNames }}</span></template>
 
@@ -88,6 +88,14 @@
          */
         autoExpand: {
             type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether to show the number of children a parent node has, if provided
+         */
+        showChildCount: {
+            type: Boolean,
             default: false
         },
 

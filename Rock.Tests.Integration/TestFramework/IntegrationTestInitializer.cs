@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Bus;
 using Rock.Tests.Integration.Core.Lava;
 using Rock.Tests.Shared;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration
@@ -56,6 +57,8 @@ namespace Rock.Tests.Integration
                 TestDatabaseHelper.SampleDataUrl = context.Properties["SampleDataUrl"].ToStringSafe();
 
                 TestDatabaseHelper.InitializeTestDatabase();
+
+                RockInstanceConfig.SetDatabaseIsAvailable( true );
 
                 // Reinitialize the Lava Engine and configure it to load dynamic shortcodes from the test database.
                 LogHelper.Log( $"Initializing Lava Engine (Pass 2)..." );

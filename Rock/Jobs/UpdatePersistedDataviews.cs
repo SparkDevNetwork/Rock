@@ -35,10 +35,32 @@ namespace Rock.Jobs
     [DisplayName( "Update Persisted DataViews" )]
     [Description( "Job to makes sure that persisted data views are updated based on their schedule interval." )]
 
-    [IntegerField( "SQL Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (300 seconds). ", false, 5 * 60, "General", 1, TIMEOUT_KEY )]
+    #region Job Attributes
+
+    [IntegerField(
+        "SQL Command Timeout",
+        Key = AttributeKey.SqlCommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (300 seconds). ",
+        IsRequired = false,
+        DefaultIntegerValue = 5 * 60,
+        Category = "General",
+        Order = 1 )]
+
+    #endregion
+
     public class UpdatePersistedDataviews : RockJob
     {
-        private const string TIMEOUT_KEY = "SqlCommandTimeout";
+        #region Keys
+
+        /// <summary>
+        /// Keys to use for job Attributes.
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string SqlCommandTimeout = "SqlCommandTimeout";
+        }
+
+        #endregion
 
         /// <summary>
         /// Empty constructor for job initialization
@@ -54,7 +76,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            int sqlCommandTimeout = GetAttributeValue( TIMEOUT_KEY ).AsIntegerOrNull() ?? 300;
+            int sqlCommandTimeout = GetAttributeValue( AttributeKey.SqlCommandTimeout ).AsIntegerOrNull() ?? 300;
             StringBuilder results = new StringBuilder();
             int updatedDataViewCount = 0;
             var errors = new List<string>();
@@ -116,6 +138,7 @@ namespace Rock.Jobs
                     {
                         var startDateTime = RockDateTime.Now;
                         var stopwatch = Stopwatch.StartNew();
+                        var errorOccurred = false;
 
                         var dataView = new DataViewService( persistContext ).Get( dataViewId );
                         var name = dataView.Name;
@@ -133,6 +156,7 @@ namespace Rock.Jobs
                         catch ( Exception ex )
                         {
                             stopwatch.Stop();
+                            errorOccurred = true;
 
                             // Capture and log the exception because we're not going to fail this job
                             // unless all the data views fail.
@@ -145,17 +169,14 @@ namespace Rock.Jobs
                         }
                         finally
                         {
-                            RockLogger.Log.Information(
-                                RockLogDomains.Jobs,
-                                "Job ID: {jobId}, Job Name: {jobName} DataView ID: {dataViewId}, DataView Name: {dataViewName}, Start: {startDateTime:o}, Stop: {stopDateTime:o}, Elapsed Ms: {elapsedMs:n0}",
-                                this.GetJobId(),
-                                nameof( UpdatePersistedDataviews ),
+                            this.Log(
+                                RockLogLevel.Info,
+                                "DataView ID: {dataViewId}, DataView Name: {dataViewName}, Error Occurred: {errorOccurred}",
+                                startDateTime,
+                                stopwatch.ElapsedMilliseconds,
                                 dataViewId,
                                 name,
-                                startDateTime,
-                                startDateTime.AddMilliseconds( stopwatch.ElapsedMilliseconds ),
-                                stopwatch.ElapsedMilliseconds
-                            );
+                                errorOccurred );
                         }
                     }
                 }

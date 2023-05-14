@@ -34,6 +34,7 @@ export type PageDebugTiming = {
 const state: State = reactive({
     areSecondaryBlocksShown: true,
     currentPerson: null,
+    isAnonymousVisitor: false,
     pageParameters: {},
     contextEntities: {},
     pageId: 0,
@@ -56,6 +57,7 @@ export class Store {
 
     initialize(pageConfig: PageConfig): void {
         state.currentPerson = pageConfig.currentPerson || null;
+        state.isAnonymousVisitor = pageConfig.isAnonymousVisitor;
         state.pageParameters = pageConfig.pageParameters || {};
         state.contextEntities = pageConfig.contextEntities || {};
         state.pageId = pageConfig.pageId || 0;

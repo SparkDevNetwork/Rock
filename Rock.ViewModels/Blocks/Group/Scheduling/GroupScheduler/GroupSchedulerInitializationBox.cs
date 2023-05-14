@@ -14,21 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 
-using Rock.Attribute;
-
-namespace Rock.Data
+namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
 {
     /// <summary>
-    /// Excludes any default REST controller implementations for the specified model.
+    /// The box that contains all the initialization information for the Group Scheduler block.
     /// </summary>
-    /// <remarks>
-    /// This is used by the code generator tool.
-    /// </remarks>
-    [AttributeUsage( AttributeTargets.Class )]
-    [RockInternal( "1.16", true )]
-    internal class ExcludeDefaultRestControllerAttribute : System.Attribute
+    public class GroupSchedulerInitializationBox : BlockBox
     {
+        /// <summary>
+        /// Gets or sets the applied filters, to limit what is shown on the Group Scheduler.
+        /// </summary>
+        /// <value>
+        /// The applied filters, to limit what is shown on the Group Scheduler.
+        /// </value>
+        public GroupSchedulerAppliedFiltersBag AppliedFilters { get; set; }
     }
 }

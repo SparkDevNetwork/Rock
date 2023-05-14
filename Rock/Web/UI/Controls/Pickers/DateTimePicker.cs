@@ -302,6 +302,26 @@ namespace Rock.Web.UI.Controls
                     _date.Text = value.Value.ToShortDateString();
                     _time.Text = value.Value.ToShortTimeString();
                 }
+                else
+                {
+                    /*
+                     * 4/14/2023 - JPH
+                     * 
+                     * It's sometimes necessary to be able to clear out this property's value; otherwise,
+                     * when reusing the same instance of this control (i.e. within the Sign-Up Detail block's
+                     * opportunity schedule builder), a previously-entered date/time can be prefilled when
+                     * the intention is instead to require the individual to enter a new date/time.
+                     * 
+                     * Note that this same behavior is already in place within the `SelectedTime` property
+                     * setter below, so it makes sense that this property's setter behavior should match.
+                     * 
+                     * Reason: Sign-Up Detail Block Prefills Last Entered Opportunity Schedule
+                     * https://github.com/SparkDevNetwork/Rock/issues/5383
+                     */
+
+                    _date.Text = string.Empty;
+                    _time.Text = string.Empty;
+                }
             }
         }
 

@@ -378,7 +378,7 @@ namespace Rock.Web.Cache
                 var items = itemsQry.ToList();
 
                 // Pre-load all the attributes.
-                if ( typeof( IHasAttributes ).IsAssignableFrom( typeof( TT ) ) )
+                if ( typeof( IHasAttributes ).IsAssignableFrom( typeof( TT ) ) && typeof( T ) != typeof( AttributeCache ) )
                 {
                     items.Cast<IHasAttributes>().LoadAttributes( rockContext );
                 }

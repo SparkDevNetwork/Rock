@@ -914,6 +914,30 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<ContentTopic>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentTopic.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentTopic>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentTopic.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentTopicDomain>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentTopicDomain.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentTopicDomain>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentTopicDomain.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<DataView>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, DataView.FriendlyTypeName );

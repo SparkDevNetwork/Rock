@@ -143,7 +143,7 @@ namespace Rock.Jobs
             {
                 var warning = $"Group Type {groupType.Name} has been configured to send reminders through the \"Send Group Attendance Reminders\" job and this legacy job is no longer required.";
                 results.Append( FormatWarningMessage( warning ) );
-                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
+                this.Log( RockLogLevel.Warning, warning );
                 this.Result = results.ToString();
                 throw new RockJobWarningException( warning );
             }
@@ -152,7 +152,7 @@ namespace Rock.Jobs
             {
                 var warning = $"Group Type {groupType.Name} isn't setup to take attendance.";
                 results.Append( FormatWarningMessage( warning ) );
-                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
+                this.Log( RockLogLevel.Warning, warning );
                 this.Result = results.ToString();
                 throw new RockJobWarningException( warning );
             }
@@ -174,7 +174,7 @@ namespace Rock.Jobs
             {
                 var warning = $"No SMS message found in system communication {systemCommunication.Title}. All attendance reminders were sent via email.";
                 results.Append( FormatWarningMessage( warning ) );
-                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
+                this.Log( RockLogLevel.Warning, warning );
                 jobPreferredCommunicationType = CommunicationType.Email;
             }
 

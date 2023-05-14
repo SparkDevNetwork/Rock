@@ -666,6 +666,17 @@ th[align="right"] {
             padding: 0;
             min-height: 0;
             line-height: 1.5;
+            // force long words to wrap
+            overflow-wrap: break-word;
+
+            // force link attributes to clamp to one line with ellipsis without using block
+            > a {
+              display: inline-block;
+              max-width: 100%;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
           }
         }
 
@@ -769,6 +780,47 @@ th[align="right"] {
 
   .panel-sidebar {
     border-right: 1px solid @panel-border;
+  }
+}
+
+.panel-waterfall {
+  .panel-variant(@panel-border; @panel-heading-text-color; transparent; transparent;);
+  box-shadow: none !important;
+  overflow: hidden;
+
+  .panel-heading {
+    padding-bottom: 8px;
+
+    + .panel-body {
+      border-top: 1px solid @panel-border;
+    }
+  }
+
+  .panel-body {
+    padding: 0 @panel-body-padding;
+
+    > .row {
+      display: flex;
+      flex-wrap: wrap;
+      // Add right border to all but last column
+      > [class*="col-"] {
+        padding-top: @panel-body-padding;
+        padding-bottom: @panel-body-padding;
+        &:not(:last-child),
+        &.show-divider {
+          border-bottom: 1px solid @panel-border;
+
+          @media (min-width: @screen-md-min) {
+            border-bottom-width: 0;
+            border-right: 1px solid @panel-border;
+          }
+        }
+      }
+    }
+  }
+
+  .panel-footer {
+    padding: 0;
   }
 }
 

@@ -270,6 +270,15 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
+                if ( PageParameter( PageParameterKey.GroupId).AsIntegerOrNull() == null )
+                {
+                    var groupId = GetRegistrationGroupId( rockContext );
+                    if ( groupId.HasValue )
+                    {
+                        RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
+                    }
+                }
+
                 var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
@@ -625,7 +634,9 @@ namespace Rock.Blocks.Event
                 Registrants = args.Registrants,
                 Registrar = args.Registrar,
                 RegistrationGuid = context.Registration?.Guid,
-                RegistrationSessionGuid = args.RegistrationSessionGuid
+                RegistrationSessionGuid = args.RegistrationSessionGuid,
+                Slug = PageParameter(PageParameterKey.Slug ),
+                GroupId = PageParameter(PageParameterKey.GroupId ).AsIntegerOrNull()
             };
 
             var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
@@ -916,7 +927,10 @@ namespace Rock.Blocks.Event
 
                 foreach ( var registrantInfo in args.Registrants )
                 {
-                    var forceWaitlist = context.SpotsRemaining < 1;
+                    // Force the waitlist if there are no spots remaining, and this is an existing registration or if the registrant is already on the waitlist.
+                    // Rock should not force the waitlist when existing registrants are making payments
+                    // Rock should force the waitlist if there are no spots remaining and a registrant is being added
+                    var forceWaitlist = context.SpotsRemaining < 1 && ( isNewRegistration == true || registrantInfo.IsOnWaitList == true );
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
                     UpsertRegistrant(
@@ -2300,6 +2314,16 @@ namespace Rock.Blocks.Event
                     RegistrationSessionGuid = session.RegistrationSessionGuid
                 };
 
+                if ( session.GroupId.HasValue )
+                {
+                    RequestContext.PageParameters.Add( PageParameterKey.GroupId, session.GroupId.ToString() );
+                }
+
+                if ( session.Slug.IsNotNullOrWhiteSpace() )
+                {
+                    RequestContext.PageParameters.Add( PageParameterKey.Slug, session.Slug );
+                }
+
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
 
@@ -3376,7 +3400,9 @@ namespace Rock.Blocks.Event
                 Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo>(),
                 Registrar = new RegistrarInfo(),
                 RegistrationGuid = registration.Guid,
-                PreviouslyPaid = alreadyPaid
+                PreviouslyPaid = alreadyPaid,
+                Slug = PageParameter(PageParameterKey.Slug ),
+                GroupId = PageParameter(PageParameterKey.GroupId ).AsIntegerOrNull()
             };
 
             // Add attributes about the registration itself
@@ -3403,7 +3429,8 @@ namespace Rock.Blocks.Event
                     PersonGuid = person?.Guid,
                     FieldValues = GetCurrentValueFieldValues( rockContext, person, registrant, settings.Forms ),
                     FeeItemQuantities = new Dictionary<Guid, int>(),
-                    IsOnWaitList = registrant.OnWaitList
+                    IsOnWaitList = registrant.OnWaitList,
+                    Cost = registrant.Cost
                 };
 
                 // Person fields and person attribute fields are already loaded via GetCurrentValueFieldValues, but we still need

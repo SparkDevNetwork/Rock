@@ -24,6 +24,7 @@ using Newtonsoft.Json;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -73,6 +74,15 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
+            // Find in cache first before performing expensive operations.
+            // (Every asset should have a provider id and a key.)
+            var cacheKey = $"Rock.Field.Types.AssetFieldType:{asset.AssetStorageProviderId}:{asset.Key}";
+            var uri = RockCache.Get( cacheKey, true ) as string;
+            if ( uri != null )
+            {
+                return uri;
+            }
+
             AssetStorageProvider assetStorageProvider = new AssetStorageProvider();
             int? assetStorageId = asset.AssetStorageProviderId;
 
@@ -85,7 +95,10 @@ namespace Rock.Field.Types
 
             var component = assetStorageProvider.GetAssetStorageComponent();
 
-            string uri = component.CreateDownloadLink( assetStorageProvider, asset );
+            uri = component.CreateDownloadLink( assetStorageProvider, asset );
+
+            // Cache for 60 seconds
+            RockCache.AddOrUpdate( cacheKey, null, uri, RockDateTime.Now.AddSeconds( 60 ) );
 
             return uri;
         }

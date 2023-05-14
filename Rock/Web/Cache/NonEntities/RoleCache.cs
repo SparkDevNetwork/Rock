@@ -187,7 +187,7 @@ namespace Rock.Web.Cache
                     role.People.TryAdd( personGuid, true );
                 }
 
-                role.IsSecurityTypeGroup = groupModel.GroupTypeId == securityGroupTypeId;
+                role.IsSecurityTypeGroup = groupModel.IsSecurityRoleOrSecurityGroupType();
 
                 return role;
             }

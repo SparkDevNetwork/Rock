@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fDiscounts_ClearFilterClick( object sender, EventArgs e )
         {
-            fDiscounts.DeleteUserPreferences();
+            fDiscounts.DeleteFilterPreferences();
             tbDiscountCodeSearch.Enabled = true;
             BindDiscountsFilter();
         }
@@ -141,9 +141,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fDiscounts_ApplyFilterClick( object sender, EventArgs e )
         {
-            fDiscounts.SaveUserPreference( UserPreferenceKeyBase.GridFilter_DiscountDateRange, "Discount Date Range", sdrpDiscountDateRange.DelimitedValues );
-            fDiscounts.SaveUserPreference( UserPreferenceKeyBase.GridFilter_DiscountCode, "Discount Code", ddlDiscountCode.SelectedItem.Text );
-            fDiscounts.SaveUserPreference( UserPreferenceKeyBase.GridFilter_DiscountCodeSearch, "Discount Code Search", tbDiscountCodeSearch.Text );
+            fDiscounts.SetFilterPreference( UserPreferenceKeyBase.GridFilter_DiscountDateRange, "Discount Date Range", sdrpDiscountDateRange.DelimitedValues );
+            fDiscounts.SetFilterPreference( UserPreferenceKeyBase.GridFilter_DiscountCode, "Discount Code", ddlDiscountCode.SelectedItem.Text );
+            fDiscounts.SetFilterPreference( UserPreferenceKeyBase.GridFilter_DiscountCodeSearch, "Discount Code Search", tbDiscountCodeSearch.Text );
 
             BindDiscountsGrid();
         }
@@ -183,10 +183,10 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindDiscountsFilter()
         {
-            sdrpDiscountDateRange.DelimitedValues = fDiscounts.GetUserPreference( UserPreferenceKeyBase.GridFilter_DiscountDateRange );
+            sdrpDiscountDateRange.DelimitedValues = fDiscounts.GetFilterPreference( UserPreferenceKeyBase.GridFilter_DiscountDateRange );
             PopulateDiscountCodeList();
-            ddlDiscountCode.SelectedIndex = ddlDiscountCode.Items.IndexOf( ddlDiscountCode.Items.FindByText( fDiscounts.GetUserPreference( UserPreferenceKeyBase.GridFilter_DiscountCode ) ) );
-            tbDiscountCodeSearch.Text = fDiscounts.GetUserPreference( UserPreferenceKeyBase.GridFilter_DiscountCodeSearch );
+            ddlDiscountCode.SelectedIndex = ddlDiscountCode.Items.IndexOf( ddlDiscountCode.Items.FindByText( fDiscounts.GetFilterPreference( UserPreferenceKeyBase.GridFilter_DiscountCode ) ) );
+            tbDiscountCodeSearch.Text = fDiscounts.GetFilterPreference( UserPreferenceKeyBase.GridFilter_DiscountCodeSearch );
         }
 
         /// <summary>
