@@ -109,14 +109,21 @@ namespace Rock.Jobs
                     this.UpdateLastStatusMessage( $"Syncing group {syncInfo.GroupName}" );
 
                     // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
-                    using ( var rockContextReadOnly = new RockContextReadOnly() )
+                    /*  
+                        5/11/2023 - CWR
+
+                        This needs to use the regular RockContext because
+                        the change of group members' archive state versus a RockContextReadOnly version 
+                        attempts a duplicate addition and causes a potential exception.
+                    */
+                    using ( var rockContext = new RockContext() )
                     {
                         // increase the timeout just in case the data view source is slow
-                        rockContextReadOnly.Database.CommandTimeout = commandTimeout;
-                        rockContextReadOnly.SourceOfChange = "Group Sync";
+                        rockContext.Database.CommandTimeout = commandTimeout;
+                        rockContext.SourceOfChange = "Group Sync";
 
                         // Get the Sync
-                        var sync = new GroupSyncService( rockContextReadOnly )
+                        var sync = new GroupSyncService( rockContext )
                             .Queryable()
                             .Include( a => a.Group )
                             .Include( a => a.SyncDataView )
@@ -141,10 +148,10 @@ namespace Rock.Jobs
 
                                 11/28/2022 - CWR
                                 In order to prevent potential context conflicts with allowing a new Rock context being created here,
-                                this DbContext will stay set to the rockContextReadOnly that was passed in.
+                                this DbContext will stay set to the rockContext that was passed in.
 
                              */
-                            DbContext = rockContextReadOnly,
+                            DbContext = rockContext,
                             DatabaseTimeoutSeconds = commandTimeout
                         };
 
@@ -173,7 +180,7 @@ namespace Rock.Jobs
                         // so we don't try to delete anyone who's already archived, and
                         // it must include deceased members so we can remove them if they
                         // are no longer in the data view.
-                        var existingGroupMemberPersonList = new GroupMemberService( rockContextReadOnly )
+                        var existingGroupMemberPersonList = new GroupMemberService( rockContext )
                             .Queryable( true, true ).AsNoTracking()
                             .Where( gm => gm.GroupId == sync.GroupId )
                             .Where( gm => gm.GroupRoleId == sync.GroupTypeRoleId )
@@ -187,7 +194,7 @@ namespace Rock.Jobs
                         var targetPersonIdsToDelete = existingGroupMemberPersonList.Where( t => !sourcePersonIds.Contains( t.PersonId ) && t.IsArchived != true ).ToList();
                         if ( targetPersonIdsToDelete.Any() )
                         {
-                            this.UpdateLastStatusMessage( $"Deleting {targetPersonIdsToDelete.Count()} group records in {syncInfo.GroupName} that are no longer in the sync data view" );
+                            this.UpdateLastStatusMessage( $"Deleting or archiving {targetPersonIdsToDelete.Count()} group records in {syncInfo.GroupName} that are no longer in the sync data view" );
                         }
 
                         int deletedCount = 0;
@@ -199,7 +206,7 @@ namespace Rock.Jobs
                             deletedCount++;
                             if ( deletedCount % 100 == 0 )
                             {
-                                this.UpdateLastStatusMessage( $"Deleted {deletedCount} of {targetPersonIdsToDelete.Count()} group member records for group {syncInfo.GroupName}" );
+                                this.UpdateLastStatusMessage( $"Deleted or archived {deletedCount} of {targetPersonIdsToDelete.Count()} group member records for group {syncInfo.GroupName}" );
                             }
 
                             try
@@ -306,7 +313,7 @@ namespace Rock.Jobs
                                             notAddedCount++;
 
                                             // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
-                                            var ex = new GroupMemberValidationException( string.Join( ",", archivedGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                                            var ex = new GroupMemberValidationException( "Archived group member: " + string.Join( ",", archivedGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
                                             ExceptionLogService.LogException( ex );
                                             continue;
                                         }
@@ -331,7 +338,7 @@ namespace Rock.Jobs
                                             notAddedCount++;
 
                                             // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
-                                            var ex = new GroupMemberValidationException( string.Join( ",", newGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                                            var ex = new GroupMemberValidationException( "New group member: " + string.Join( ",", newGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
                                             ExceptionLogService.LogException( ex );
                                             continue;
                                         }

@@ -126,6 +126,13 @@ namespace Rock.Data
         /// </summary>
         private List<Action> _commitedActions = new List<Action>();
 
+        /// <summary>
+        /// The options currently tracked by this context instance. Options
+        /// can contain anything and are made unique by their Type. Meaning,
+        /// only one instance of a given Type can exist in the options.
+        /// </summary>
+        private readonly Dictionary<Type, object> _options = new Dictionary<Type, object>();
+
         #endregion
 
         /// <summary>
@@ -911,6 +918,62 @@ namespace Rock.Data
             }
 
             return AchievementTypeCache.ProcessAchievements( updatedItem.Entity );
+        }
+
+        /// <summary>
+        /// Gets the options object for the specified type. If it is not found
+        /// in this context then <c>null</c> is returned.
+        /// </summary>
+        /// <typeparam name="T">The type of the options object.</typeparam>
+        /// <returns>An instance of <typeparamref name="T"/> if it was found on the context, otherwise <c>null</c>.</returns>
+        public T GetOptions<T>()
+            where T : class
+        {
+            if ( _options.TryGetValue( typeof( T ), out var options ) )
+            {
+                return ( T ) options;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the options object for the specified type. If it is not found
+        /// in this context a new instance of it will be created and added to
+        /// the context.
+        /// </summary>
+        /// <typeparam name="T">The type of the options object.</typeparam>
+        /// <returns>An instance of <typeparamref name="T"/>.</returns>
+        public T GetOrCreateOptions<T>()
+            where T : class, new()
+        {
+            var options = GetOptions<T>();
+
+            if ( options != null )
+            {
+                return options;
+            }
+
+            options = new T();
+
+            AddOrReplaceOptions( options );
+
+            return options;
+        }
+
+        /// <summary>
+        /// Adds or replaces an existing options object of the given type. If
+        /// the context already has an options object a type of
+        /// <typeparamref name="T"/> then it will be replaced.
+        /// </summary>
+        /// <typeparam name="T">The type of the options object.</typeparam>
+        /// <param name="options">The options to add to the context.</param>
+        public void AddOrReplaceOptions<T>( T options )
+            where T : class
+        {
+            _options.AddOrReplace( typeof( T ), options );
         }
 
         #region Bulk Operations

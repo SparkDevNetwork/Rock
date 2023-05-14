@@ -127,7 +127,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
             var categoriesService = new CategoryService( dataContext );
 
             var helper = new CoreModuleDataFactory( RecordTag.PrayerRequestFeature );
-            
+
             helper.DeleteCategoriesByRecordTag( dataContext );
 
             dataContext.SaveChanges();
@@ -149,15 +149,20 @@ namespace Rock.Tests.Integration.Crm.Prayer
         internal void AddPrayerRequestCommentsEmailTemplate()
         {
             var dataContext = new RockContext();
+            var systemEmailService = new SystemCommunicationService( dataContext );
 
             // Add Email Template
             var systemCategory = CategoryCache.Get( TestGuids.Category.SystemEmailSystem.AsGuid() );
 
-            var systemEmailService = new SystemCommunicationService( dataContext );
+            var template = systemEmailService.Get( TestGuids.SystemEmailGuid.PrayerCommentsNotification.AsGuid() );
+            if ( template == null )
+            {
+                template = new SystemCommunication();
+                template.Guid = TestGuids.SystemEmailGuid.PrayerCommentsNotification.AsGuid();
 
-            var template = new SystemCommunication();
+                systemEmailService.Add( template );
+            }
 
-            template.Guid = TestGuids.SystemEmailGuid.PrayerCommentsNotification.AsGuid();
             template.ForeignKey = RecordTag.PrayerRequestFeature;
             template.Title = "Prayer Request Comments Digest";
             template.Subject = "Prayer Request Update - {{ PrayerRequest.Text | Truncate:50,'...' }}";
@@ -188,9 +193,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}";
-
-
-            systemEmailService.Add( template );
 
             dataContext.SaveChanges();
         }
@@ -283,6 +285,8 @@ namespace Rock.Tests.Integration.Crm.Prayer
         /// </summary>
         private void AddPrayerRequestAllChurchJobsAndFinances()
         {
+            Debug.Print( $"Adding Prayer Request: Jobs and Finances (All Church)..." );
+
             var dataContext = new RockContext();
 
             var noteService = new NoteService( dataContext );
@@ -340,8 +344,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
             noteService.Add( comment3 );
 
             dataContext.SaveChanges();
-
-            Debug.Print( $"Added Prayer Request: Ted Decker." );
         }
 
         /// <summary>
@@ -359,6 +361,8 @@ namespace Rock.Tests.Integration.Crm.Prayer
          */
         private void AddPrayerRequestTedDeckerForJob()
         {
+            Debug.Print( $"Adding Prayer Request: Ted Decker (Job)..." );
+
             var dataContext = new RockContext();
 
             var noteService = new NoteService( dataContext );
@@ -425,8 +429,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
             noteService.Add( comment4 );
 
             dataContext.SaveChanges();
-
-            Debug.Print( $"Added Prayer Request: Ted Decker." );
         }
 
         /// <summary>
@@ -577,7 +579,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         /// </summary>
         private void AddPrayerRequestSarahSimmonsForWisdom()
         {
-            Debug.Print( $"Adding Prayer Request: Sarah Simmons." );
+            Debug.Print( $"Adding Prayer Request: Sarah Simmons..." );
 
             var dataContext = new RockContext();
 

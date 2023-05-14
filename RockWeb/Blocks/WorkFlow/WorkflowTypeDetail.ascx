@@ -263,6 +263,40 @@
                 });
 
             });
-        </script>
+
+            var workflowTypeDetailHelper = (function () {
+                function isValid(validationGroup) {
+                    return typeof Page_ClientValidate === "function" && Page_ClientValidate(validationGroup);
+                }
+
+                return {
+                    onButtonClicked(buttonId, validationGroup, disabledDurationMs) {
+                        const buttonElement = document.getElementById(buttonId);
+
+                        if (!buttonElement) {
+                            // Prevent the click since the button is not accessible.
+                            return false;
+                        }
+
+                        if (buttonElement.getAttribute("disabled") === "disabled" || !isValid(validationGroup)) {
+                            // Prevent the click since the button is disabled or the validation group is invalid.
+                            return false;
+                        }
+
+                        // Disable the button and allow the click.
+                        buttonElement.setAttribute("disabled", "disabled");
+
+                        if (disabledDurationMs && disabledDurationMs > 0) {
+                            // Remove the disabled attribute after a specified duration.<%-- If the server throws an exception during postback, the button would remain disabled without this setTimeout. --%>
+                            setTimeout(() => {
+                                buttonElement.removeAttribute("disabled");
+                            }, disabledDurationMs);
+                        }
+
+                        return true;
+                    }
+                };
+            })();
+        </script> 
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -211,8 +211,8 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( FilterSetting.DateRange, drpDateRange.DelimitedValues );
-            gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
+            gfFilter.SetFilterPreference( FilterSetting.DateRange, drpDateRange.DelimitedValues );
+            gfFilter.SetFilterPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
             BindCommentsGrid();
         }
 
@@ -340,10 +340,10 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindFilter()
         {
-            drpDateRange.DelimitedValues = gfFilter.GetUserPreference( FilterSetting.DateRange );
+            drpDateRange.DelimitedValues = gfFilter.GetFilterPreference( FilterSetting.DateRange );
 
             // Set the category picker's selected value
-            int selectedPrayerCategoryId = gfFilter.GetUserPreference( FilterSetting.PrayerCategory ).AsInteger();
+            int selectedPrayerCategoryId = gfFilter.GetFilterPreference( FilterSetting.PrayerCategory ).AsInteger();
             Category prayerCategory = new CategoryService( new RockContext() ).Get( selectedPrayerCategoryId );
             catpPrayerCategoryFilter.SetValue( prayerCategory );
 

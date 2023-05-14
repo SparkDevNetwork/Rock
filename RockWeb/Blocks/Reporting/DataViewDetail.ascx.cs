@@ -914,6 +914,7 @@ $(document).ready(function() {
             if ( hlblPersisted.Visible )
             {
                 hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedLastRefreshDateTime.ToElapsedString() );
+                hlblPersisted.ToolTip = dataView.PersistedLastRefreshDateTime.Value.ToShortDateTimeString();
             }
 
             // If the dataview has a persisted schedule or interval, include the details in the description.
@@ -1615,14 +1616,15 @@ $(document).ready(function() {
 
         private void SetIntervalVisibility( bool isEnabled )
         {
-            ipPersistedScheduleInterval.Visible = isEnabled;
+            pnlScheduleIntervalControls.Visible = isEnabled;
         }
 
         private void SetScheduleVisibility( bool isEnabled )
         {
-            rblPersistenceSchedule.Visible = isEnabled;
-            sbUniqueSchedule.Visible = isEnabled;
+            divPersistenceSchedule.Visible = isEnabled;
+            divScheduleSelect.Visible = isEnabled;
             ddlNamedSchedule.Visible = isEnabled;
+            sbUniqueSchedule.Visible = isEnabled;
         }
 
         protected void rblPersistenceType_SelectedIndexChanged( object sender, EventArgs e )

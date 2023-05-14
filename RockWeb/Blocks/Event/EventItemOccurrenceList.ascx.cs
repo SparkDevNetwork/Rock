@@ -143,9 +143,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( "DateRange", drpDate.DelimitedValues );
-            rFilter.SaveUserPreference( "Contact", tbContact.Text );
+            rFilter.SetFilterPreference( "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SetFilterPreference( "DateRange", drpDate.DelimitedValues );
+            rFilter.SetFilterPreference( "Contact", tbContact.Text );
 
             BindCampusGrid();
         }
@@ -307,17 +307,17 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void SetFilter()
         {
-            drpDate.DelimitedValues = rFilter.GetUserPreference( "DateRange" );
+            drpDate.DelimitedValues = rFilter.GetFilterPreference( "DateRange" );
 
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
-            string campusValue = rFilter.GetUserPreference( "Campus" );
+            string campusValue = rFilter.GetFilterPreference( "Campus" );
             if ( !string.IsNullOrWhiteSpace( campusValue ) )
             {
                 cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
             }
 
-            tbContact.Text = rFilter.GetUserPreference( "Contact" );
+            tbContact.Text = rFilter.GetFilterPreference( "Contact" );
         }
 
         /// <summary>

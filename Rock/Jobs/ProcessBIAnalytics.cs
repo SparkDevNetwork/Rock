@@ -120,7 +120,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Attribute Keys
         /// </summary>
-        private static class AttributeKey
+        internal static class AttributeKey
         {
             public const string ProcessPersonBIAnalytics = "ProcessPersonBIAnalytics";
             public const string ProcessFamilyBIAnalytics = "ProcessFamilyBIAnalytics";
@@ -622,7 +622,7 @@ UPDATE [{analyticsTableName}]
 
                     if ( recordsDeleted > 0 )
                     {
-                        RockLogger.Log.Debug( RockLogDomains.Jobs, $"(Process BI Analytics) Removed {recordsDeleted} history records that do not correspond to a Person record." );
+                        this.Log( RockLogLevel.Debug, $"Removed {recordsDeleted} history records that do not correspond to a Person record." );
                     }
                 }
 

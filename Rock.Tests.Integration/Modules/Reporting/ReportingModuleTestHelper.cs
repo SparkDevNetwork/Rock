@@ -105,7 +105,22 @@ namespace Rock.Tests.Integration.Reporting
         public int DeleteDataViewsByRecordTag( RockContext dataContext )
         {
             // Remove DataViews associated with the current test record tag.
-            var recordsDeleted = dataContext.Database.ExecuteSqlCommand( $"delete from [DataView] where [ForeignKey] = '{_RecordTag}'" );
+            var dataViewService = new DataViewService( dataContext );
+
+            var dataViewGuidList = dataViewService.Queryable()
+                .Where( dv => dv.ForeignKey == _RecordTag )
+                .Select( dv => dv.Guid )
+                .ToList();
+
+            var recordsDeleted = 0;
+            foreach (var guid in dataViewGuidList )
+            {
+                var success = DeleteDataView( dataContext, guid );
+                if ( success )
+                {
+                    recordsDeleted++;
+                }
+            }
 
             Debug.Print( $"Delete Test Data: {recordsDeleted} DataViews deleted." );
 

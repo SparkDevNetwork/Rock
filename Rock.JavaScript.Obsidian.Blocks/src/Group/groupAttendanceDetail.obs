@@ -138,21 +138,26 @@
                                 <div class="row">
                                     <div class="col-xs-12 col-sm-8 d-sm-flex">
                                         <DidAttendFilter v-model="didAttendFilter" :attendances="attendances" />
-                                        <SearchFilter v-model="searchFilter" class="flex-grow-1 mt-2 mt-sm-0 ml-sm-2 mb-sm-0" />
+                                        <SearchFilter v-model="searchFilter" class="flex-grow-1 mt-2 mt-sm-0 ml-sm-2" />
                                     </div>
                                     <div class="col-xs-12 col-sm-4 d-flex justify-content-end">
-                                        <div class="form-group mb-sm-0">
+                                        <div class="form-group mb-sm-0 btn-group">
                                             <RockButton v-if="!config.isNotesSectionHidden"
                                                         btnSize="sm"
                                                         :btnType="isNotesShown ? 'primary' : 'default'"
                                                         :disabled="!isAutoSaveOn"
                                                         @click="onShowNotesClicked()"><i class="fa fa-pencil-alt"></i> Add Note</RockButton>
+                                            <RockButton v-if="config.isRosterDownloadShown"
+                                                        btnType="default"
+                                                        btnSize="sm"
+                                                        :disabled="!isAutoSaveOn"
+                                                        @click="onPrintAttendanceRosterClicked()"><i class="fa fa-file-download"></i> Roster</RockButton>
                                         </div>
                                     </div>
                                 </div>
 
                                 <TransitionVerticalCollapse speed="fast" v-if="!config.isNotesSectionHidden">
-                                    <div v-show="isNotesShown" class="mt-2">
+                                    <div v-show="isNotesShown">
                                         <TextBox
                                                  v-model="notes"
                                                 :disabled="!isAutoSaveOn"
@@ -164,18 +169,19 @@
                                 </TransitionVerticalCollapse>
 
                                 <InitialsFilter
+                                                v-if="!isLongListDisabled"
                                                 v-model="rosterFilter"
                                                 :attendances="attendances"
                                                 :isFilterByFirstNameInitial="false"
                                                 :isMultiselect="false" />
 
                                 <AttendanceRoster
-                                                  class="form-group"
                                                   :attendances="attendances"
+                                                  class="form-group"
                                                   :disabled="!isAutoSaveOn"
                                                   :filterBy="attendanceFilterByDelegate"
                                                   :groupBy="attendanceGroupByDelegate"
-                                                  :groupWhenFilteredAttendanceCountExceeds="50"
+                                                  :isLongListDisabled="isLongListDisabled"
                                                   :sortBy="attendanceSortByDelegate"
                                                   @attendanceChanged="onAttendanceChanged($event)" />
 
@@ -187,14 +193,6 @@
 
             <template #footerActions>
                 <RockButton v-if="!isBackButtonHidden" @click="onBackClicked()">Back</RockButton>
-            </template>
-            <template #footerSecondaryActions>
-                <RockButton
-                            v-if="config.isRosterDownloadShown"
-                            btnType="default"
-                            btnSize="sm"
-                            :disabled="!isAutoSaveOn"
-                            @click="onPrintAttendanceRosterClicked()"><i class="fa fa-file-download"></i> Roster</RockButton>
             </template>
         </Panel>
     </div>
@@ -353,15 +351,11 @@
         }
     });
     const attendanceGroupByDelegate = computed<AttendanceGroupByDelegate | null>(() => {
-        if (config.value.isLongListDisabled) {
-            // No grouping when long-list is disabled.
-            return null;
-        }
-
         // Always group by last name regardless of sort.
         return (attendance: GroupAttendanceDetailAttendanceBag) => attendance.lastName?.charAt(0) || "?";
     });
     const isBackButtonHidden = computed<boolean>(() => config.value.isBackButtonHidden || !config.value.backPageUrl);
+    const isLongListDisabled = computed<boolean>(() => config.value.isLongListDisabled || attendances.value.length <= 50);
 
     //#endregion
 

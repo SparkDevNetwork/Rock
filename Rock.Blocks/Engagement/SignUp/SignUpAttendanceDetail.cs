@@ -450,7 +450,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
         #endregion
 
-        #region Support Classes
+        #region Supporting Classes
 
         /// <summary>
         /// A runtime object to represent a <see cref="Rock.Model.Group"/>, <see cref="Rock.Model.Location"/> and

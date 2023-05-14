@@ -23,6 +23,7 @@ import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 export type State = {
     areSecondaryBlocksShown: boolean;
     currentPerson: PersonBag | null;
+    isAnonymousVisitor: boolean;
     pageParameters: Record<string, unknown>;
     contextEntities: Record<string, IEntity>;
     pageId: number;

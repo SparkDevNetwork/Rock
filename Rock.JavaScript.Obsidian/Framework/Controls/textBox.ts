@@ -60,6 +60,10 @@ export default defineComponent({
         textMode: {
             type: String as PropType<string>,
             default: ""
+        },
+        size: {
+            type: String as PropType<"small" | "medium" | "large">,
+            default: "medium"
         }
     },
     emits: [
@@ -92,12 +96,26 @@ export default defineComponent({
             return !!ctx.slots.inputGroupPrepend || !!ctx.slots.inputGroupAppend;
         });
 
-        const controlContainerClass = computed((): string => {
-            return isInputGroup.value ? "input-group" : "";
+        const controlContainerClass = computed((): Record<string, boolean> => {
+            return {
+                "input-group": isInputGroup.value,
+                "input-group-sm": isInputGroup.value && props.size == "small",
+                "input-group-lg": isInputGroup.value && props.size == "large"
+            };
+        });
+
+        const formControlClass = computed((): Record<string, boolean> => {
+            return {
+                "form-control": true,
+                [props.inputClasses]: true,
+                "input-sm": props.size == "small",
+                "input-lg": props.size == "large"
+            };
         });
 
         return {
             controlContainerClass,
+            formControlClass,
             internalValue,
             isTextarea,
             charsRemaining,
@@ -120,7 +138,7 @@ export default defineComponent({
             <div :class="controlContainerClass">
                 <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                 <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
-                <input v-else v-model="internalValue" :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" />
+                <input v-else v-model="internalValue" :id="uniqueId" :type="type" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" />
                 <slot name="inputGroupAppend" :isInputGroupSupported="true" />
             </div>
             <slot name="append" :isInputGroupSupported="true" />

@@ -356,13 +356,13 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterKey.FirstName, "First Name", tbFirstName.Text );
-            rFilter.SaveUserPreference( FilterKey.LastName, "Last Name", tbLastName.Text );
-            rFilter.SaveUserPreference( FilterKey.StepStatus, "Status", cblStepStatus.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( FilterKey.DateStarted, "Date Started", drpDateStarted.DelimitedValues );
-            rFilter.SaveUserPreference( FilterKey.DateCompleted, "Date Completed", drpDateCompleted.DelimitedValues );
-            rFilter.SaveUserPreference( FilterKey.Note, "Note", tbNote.Text );
-            rFilter.SaveUserPreference( FilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
+            rFilter.SetFilterPreference( FilterKey.FirstName, "First Name", tbFirstName.Text );
+            rFilter.SetFilterPreference( FilterKey.LastName, "Last Name", tbLastName.Text );
+            rFilter.SetFilterPreference( FilterKey.StepStatus, "Status", cblStepStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SetFilterPreference( FilterKey.DateStarted, "Date Started", drpDateStarted.DelimitedValues );
+            rFilter.SetFilterPreference( FilterKey.DateCompleted, "Date Completed", drpDateCompleted.DelimitedValues );
+            rFilter.SetFilterPreference( FilterKey.Note, "Note", tbNote.Text );
+            rFilter.SetFilterPreference( FilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
 
             // Save filter settings for custom attributes.
             if ( this.AvailableAttributes != null )
@@ -377,7 +377,7 @@ namespace RockWeb.Blocks.Steps
                         {
                             var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
 
-                            rFilter.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                            rFilter.SetFilterPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch
                         {
@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.Steps
                     else
                     {
                         // If this Attribute column is no longer available in the grid, remove the associated user preference.
-                        rFilter.SaveUserPreference( attribute.Key, attribute.Name, null );
+                        rFilter.SetFilterPreference( attribute.Key, attribute.Name, null );
                     }
                 }
             }
@@ -464,7 +464,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
 
             // Recreate the Attribute Filter fields to clear the filter values.
             AddAttributeFilterFields();
@@ -614,7 +614,7 @@ namespace RockWeb.Blocks.Steps
             {
                 if ( _stepType != null )
                 {
-                    rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", _stepType.Id );
+                    rFilter.PreferenceKeyPrefix = string.Format( "{0}-", _stepType.Id );
                 }
             }
 
@@ -684,19 +684,19 @@ namespace RockWeb.Blocks.Steps
                 cblStepStatus.DataBind();
             }
 
-            tbFirstName.Text = rFilter.GetUserPreference( FilterKey.FirstName );
-            tbLastName.Text = rFilter.GetUserPreference( FilterKey.LastName );
-            tbNote.Text = rFilter.GetUserPreference( FilterKey.Note );
-            cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( FilterKey.Campus ).AsIntegerOrNull();
+            tbFirstName.Text = rFilter.GetFilterPreference( FilterKey.FirstName );
+            tbLastName.Text = rFilter.GetFilterPreference( FilterKey.LastName );
+            tbNote.Text = rFilter.GetFilterPreference( FilterKey.Note );
+            cpCampusFilter.SelectedCampusId = rFilter.GetFilterPreference( FilterKey.Campus ).AsIntegerOrNull();
 
-            string statusValue = rFilter.GetUserPreference( FilterKey.StepStatus );
+            string statusValue = rFilter.GetFilterPreference( FilterKey.StepStatus );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
             {
                 cblStepStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
 
-            drpDateStarted.DelimitedValues = rFilter.GetUserPreference( FilterKey.DateStarted );
-            drpDateCompleted.DelimitedValues = rFilter.GetUserPreference( FilterKey.DateCompleted );
+            drpDateStarted.DelimitedValues = rFilter.GetFilterPreference( FilterKey.DateStarted );
+            drpDateCompleted.DelimitedValues = rFilter.GetFilterPreference( FilterKey.DateCompleted );
         }
 
         /// <summary>
@@ -798,7 +798,7 @@ namespace RockWeb.Blocks.Steps
                             phAttributeFilters.Controls.Add( wrapper );
                         }
 
-                        string savedValue = rFilter.GetUserPreference( attribute.Key );
+                        string savedValue = rFilter.GetFilterPreference( attribute.Key );
                         if ( !string.IsNullOrWhiteSpace( savedValue ) )
                         {
                             try

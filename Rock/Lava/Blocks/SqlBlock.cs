@@ -81,13 +81,18 @@ namespace Rock.Lava.Blocks
                 sqlTimeout = parms["timeout"].AsIntegerOrNull();
             }
 
+            var summary = $"[Params]=\"{_markup}\", [Sql]=\"{sql}\"";
+            if ( sqlTimeout != null )
+            {
+                summary += $", [Timeout]={sqlTimeout}s";
+            }
+            Exception queryException = null;
             switch ( parms["statement"] )
             {
                 case "select":
                     var stopWatch = new Stopwatch();
                     DataSet results = null;
-                    Exception queryException = null;
-                    var summary = $"[Params]=\"{_markup}\", [Sql]=\"{sql}\", Timeout={sqlTimeout ?? -1}s";
+
                     try
                     {
                         stopWatch.Start();
@@ -100,11 +105,13 @@ namespace Rock.Lava.Blocks
                     }
                     finally
                     {
-                        summary += $", Elapsed={stopWatch.Elapsed.TotalSeconds}";
+                        summary += $", [Elapsed]={stopWatch.Elapsed.TotalSeconds}";
                     }
                     if ( queryException != null )
                     {
-                        throw new Exception( "SqlBlock Render failed.\n" + summary, queryException );
+                        // Throw the SQL error message as the topmost exception, and include the diagnostic detail as an inner exception for logging purposes.
+                        var detailException = new Exception( "SqlBlock Render failed.\n" + summary, queryException );
+                        throw new Exception( queryException.Message, detailException );
                     }
 
                     context.SetMergeField( parms["return"], results.Tables[0].ToDynamicTypeCollection() );
@@ -140,10 +147,27 @@ namespace Rock.Lava.Blocks
                     {
                         rockContext.Database.CommandTimeout = sqlTimeout;
                     }
-                    int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql, sqlParameters.ToArray() );
 
-                    // Put the command timeout back to the setting before we changed it... there is nothing to see here... move along...
-                    rockContext.Database.CommandTimeout = originalCommandTimeout;
+                    var numOfRowsAffected = 0;
+                    try
+                    {
+                        numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql, sqlParameters.ToArray() );
+                    }
+                    catch ( Exception ex )
+                    {
+                        queryException = ex;
+                    }
+                    finally
+                    {
+                        // Put the command timeout back to the setting before we changed it... there is nothing to see here... move along...
+                        rockContext.Database.CommandTimeout = originalCommandTimeout;
+                    }
+                    if ( queryException != null )
+                    {
+                        // Throw the SQL error message as the topmost exception, and include the diagnostic detail as an inner exception for logging purposes.
+                        var detailException = new Exception( "SqlBlock Render failed.\n" + summary, queryException );
+                        throw new Exception( queryException.Message, detailException );
+                    }
 
                     context.SetMergeField( parms["return"], numOfRowsAffected );
 

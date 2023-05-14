@@ -120,7 +120,7 @@ export class DefinedValueFieldType extends FieldTypeBase {
                 const rawValues = clientValue.value.split(",");
 
                 return values.filter(v => rawValues.includes(v.value))
-                    .map(v => displayDescription ? v.description : v.text)
+                    .map(v => displayDescription && v.description ? v.description : v.text)
                     .join(", ");
             }
             catch {

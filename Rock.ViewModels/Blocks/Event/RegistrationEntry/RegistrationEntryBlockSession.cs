@@ -112,5 +112,21 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The previously paid.
         /// </value>
         public decimal PreviouslyPaid { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the slug used for this RegistrationInstance. Note a RegistrationInstance can have multiple slugs so the one used has to be stored.
+        /// </summary>
+        /// <value>
+        /// The slug.
+        /// </value>
+        public string Slug { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group identifier used for this RegistrationInstance. Note a RegistrationInstance can have multiple GroupIds so the one used (based on the linkage slug) has to be stored.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        public int? GroupId { get; set; }
     }
 }

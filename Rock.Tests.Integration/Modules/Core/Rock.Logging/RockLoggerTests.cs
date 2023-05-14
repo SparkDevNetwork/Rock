@@ -26,7 +26,7 @@ namespace Rock.Tests.Integration.Core.Logging
     public class RockLoggerTests
     {
         [TestMethod]
-        [Ignore("Broken test. File is locked by other tests when run in a set.")]
+        [Ignore("Fix required. File is locked by other tests when run in a set.")]
         public void ConfirmRockLoggerLogsCorrectly()
         {
             var originalLogLevel = RockLogLevel.All;

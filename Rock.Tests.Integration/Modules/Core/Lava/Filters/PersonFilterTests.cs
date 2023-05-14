@@ -24,6 +24,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Tests.Shared;
 using Rock.Utility.Enums;
+using Rock.Tests.Integration;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -447,7 +448,7 @@ Your token is: <token>
         #region IsInSecurityRole
 
         [TestMethod]
-        public void IsInSecurityRole_WithRightGroupId_ReturnsTrue()
+        public void IsInSecurityRole_WithGroupTypeSecurityRole_ReturnsTrue()
         {
             Guid financeAdministrationGroupGuid = Guid.Parse( "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559" );
             var group = new GroupService( new RockContext() ).Queryable().FirstOrDefault( m => m.Guid == financeAdministrationGroupGuid );
@@ -456,8 +457,9 @@ Your token is: <token>
             values.AddOrReplace( "GroupId", group.Id );
             var options = new LavaTestRenderOptions { MergeFields = values };
 
-            const string template = @"{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
-    User is in Role = {{ isInRole }}
+            const string template = @"
+{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+User is in Role = {{ isInRole }}
 ";
             const string outputExpected = "User is in Role = true";
 
@@ -466,44 +468,82 @@ Your token is: <token>
                 options );
         }
 
-        [TestMethod]
-        public void IsInSecurityRole_WithWrongGroupId_ReturnsFalse()
-        {
-            Guid financeAdministrationGroupGuid = Guid.Parse( "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559" );
-            var group = new GroupService( new RockContext() ).Queryable().FirstOrDefault( m => m.Guid == financeAdministrationGroupGuid );
+        private static string _TestSecurityGroupGuid = "A92BC2E7-912F-4538-B5FA-EECFC1D7C68A";
 
-            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+        [TestMethod]
+        public void IsInSecurityRole_WithGroupDesignatedAsSecurityRole_ReturnsTrue()
+        {
+            // Create a new Group with [Security Role] = true.
+            var rockContext = new RockContext();
+            var addGroupArgs = new TestDataHelper.Crm.AddGroupArgs
+            {
+                ReplaceIfExists = true,
+                GroupGuid = _TestSecurityGroupGuid,
+                GroupName = "Test Security Group",
+                ForeignKey = "Test Data",
+                GroupTypeIdentifier = SystemGuid.GroupType.GROUPTYPE_GENERAL,
+            };
+
+            var group = TestDataHelper.Crm.AddGroup( rockContext, addGroupArgs );
+
+            group.IsSecurityRole = true;
+            rockContext.SaveChanges();
+
+            // Add Alisha Marble to the Group.
+            var addGroupMemberArgs = new TestDataHelper.Crm.AddGroupMemberArgs
+            {
+                GroupIdentifier = _TestSecurityGroupGuid,
+                PersonIdentifier = TestGuids.TestPeople.AlishaMarble,
+                GroupRoleIdentifier = "Member"
+            };
+            TestDataHelper.Crm.AddGroupMember( rockContext, addGroupMemberArgs );
+
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlishaMarble.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
             var options = new LavaTestRenderOptions { MergeFields = values };
 
-            const string template = @"{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
-    User is in Role = {{ isInRole }}
+            const string template = @"
+{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+User is in Role = {{ isInRole }}
 ";
-            const string outputExpected = "User is in Role = false";
+            const string outputExpected = "User is in Role = true";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            TestHelper.AssertTemplateOutput( outputExpected, template, options );
         }
 
         [TestMethod]
         public void IsInSecurityRole_WithNonSecurityGroupId_ReturnsFalse()
         {
-            Guid relationShipsGroupGuid= Guid.Parse( "0F16BD3F-4775-4CD1-8F2F-DF576AEAD290" );
+            Guid relationShipsGroupGuid = Guid.Parse( "0F16BD3F-4775-4CD1-8F2F-DF576AEAD290" );
             var group = new GroupService( new RockContext() ).Queryable().FirstOrDefault( m => m.Guid == relationShipsGroupGuid );
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
             var options = new LavaTestRenderOptions { MergeFields = values };
 
-            const string template = @"{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
-    User is in Role = {{ isInRole }}
+            const string template = @"
+{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+User is in Role = {{ isInRole }}
 ";
             const string outputExpected = "User is in Role = false";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            TestHelper.AssertTemplateOutput( outputExpected, template, options );
+        }
+
+        [TestMethod]
+        public void IsInSecurityRole_WithInvalidGroup_ReturnsFalse()
+        {
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            values.AddOrReplace( "GroupId", "-1" );
+            var options = new LavaTestRenderOptions { MergeFields = values };
+
+            const string template = @"
+{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+User is in Role = {{ isInRole }}
+";
+            const string outputExpected = "User is in Role = false";
+
+            TestHelper.AssertTemplateOutput( outputExpected, template, options );
         }
 
         #endregion

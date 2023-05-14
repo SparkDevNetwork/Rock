@@ -25,6 +25,7 @@ export type PageConfig = {
     pageGuid: Guid;
     pageParameters: Record<string, unknown>;
     currentPerson: PersonBag | null;
+    isAnonymousVisitor: boolean;
     contextEntities: Record<string, IEntity>;
     loginUrlWithReturnUrl: string;
 };

@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( UserPreferenceKey.Name, txtFolderName.Text );
+            gfFilter.SetFilterPreference( UserPreferenceKey.Name, txtFolderName.Text );
 
             BindGrid();
         }
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            gfFilter.DeleteUserPreferences();
+            gfFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            txtFolderName.Text = gfFilter.GetUserPreference( UserPreferenceKey.Name );
+            txtFolderName.Text = gfFilter.GetFilterPreference( UserPreferenceKey.Name );
         }
 
         /// <summary>
@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.Cms
             var qry = mediaFolderService.Queryable().AsNoTracking().Where( a => a.MediaAccountId == _mediaAccount.Id );
 
             // name filter
-            string nameFilter = gfFilter.GetUserPreference( UserPreferenceKey.Name );
+            string nameFilter = gfFilter.GetFilterPreference( UserPreferenceKey.Name );
             if ( !string.IsNullOrEmpty( nameFilter ) )
             {
                 qry = qry.Where( a => a.Name.Contains( nameFilter ) );

@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                _entityTypeId = rFilter.GetUserPreference( "Entity Type" ).AsIntegerOrNull();
+                _entityTypeId = rFilter.GetFilterPreference( "Entity Type" ).AsIntegerOrNull();
                 var entityTypeList = new EntityTypeService( new RockContext() ).GetEntities().ToList();
                 ddlEntityType.EntityTypes = entityTypeList;
                 ddlAttrEntityType.EntityTypes = entityTypeList;
@@ -330,12 +330,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Entity Type", ddlEntityType.SelectedValue );
+            rFilter.SetFilterPreference( "Entity Type", ddlEntityType.SelectedValue );
             _entityTypeId = ddlEntityType.SelectedValue.AsIntegerOrNull();
             if ( IsEntityTypeValid() )
             {
                 // Clear out any old saved Categories since they are not compatible with a new Entity Type
-                rFilter.SaveUserPreference( "Categories", string.Empty );
+                rFilter.SetFilterPreference( "Categories", string.Empty );
                 BindFilterForSelectedEntityType();
                 BindGrid();
             }
@@ -354,9 +354,9 @@ namespace RockWeb.Blocks.Core
                 .ToList()
                 .AsDelimited( "," );
 
-            rFilter.SaveUserPreference( "Categories", categoryFilterValue );
-            rFilter.SaveUserPreference( "Analytics Enabled", ddlAnalyticsEnabled.SelectedValue );
-            rFilter.SaveUserPreference( "Active", ddlActiveFilter.SelectedValue );
+            rFilter.SetFilterPreference( "Categories", categoryFilterValue );
+            rFilter.SetFilterPreference( "Analytics Enabled", ddlAnalyticsEnabled.SelectedValue );
+            rFilter.SetFilterPreference( "Active", ddlActiveFilter.SelectedValue );
 
             BindGrid();
         }
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -744,7 +744,7 @@ namespace RockWeb.Blocks.Core
         private void BindFilter()
         {
             ddlEntityType.Visible = !_isEntityTypeConfigured;
-            ddlEntityType.SetValue( rFilter.GetUserPreference( "Entity Type" ) );
+            ddlEntityType.SetValue( rFilter.GetFilterPreference( "Entity Type" ) );
             BindFilterForSelectedEntityType();
         }
 
@@ -755,9 +755,9 @@ namespace RockWeb.Blocks.Core
         {
             var entityTypeCache = _isEntityTypeConfigured ? EntityTypeCache.Get( _entityTypeId.Value ) : null;
             ddlAnalyticsEnabled.Visible = entityTypeCache != null && entityTypeCache.IsAnalyticsSupported( null, null );
-            ddlAnalyticsEnabled.SetValue( rFilter.GetUserPreference( "Analytics Enabled" ) );
+            ddlAnalyticsEnabled.SetValue( rFilter.GetFilterPreference( "Analytics Enabled" ) );
 
-            ddlActiveFilter.SetValue( rFilter.GetUserPreference( "Active" ) );
+            ddlActiveFilter.SetValue( rFilter.GetFilterPreference( "Active" ) );
 
             BindCategoryFilter();
         }
@@ -774,11 +774,11 @@ namespace RockWeb.Blocks.Core
             cpCategoriesFilter.EntityTypeQualifierValue = ( _entityTypeId != 0 ) ? _entityTypeId.ToString() : null;
 
             var selectedIDs = new List<int>();
-            var entityTypePreference = rFilter.GetUserPreference( "Entity Type" );
+            var entityTypePreference = rFilter.GetFilterPreference( "Entity Type" );
             // if the entityTypePreference is empty, it may be the default (usable for Global Attributes)
             if ( ( _entityTypeId ?? 0 ).ToString() == entityTypePreference || entityTypePreference.IsNullOrWhiteSpace() )
             {
-                foreach ( var idVal in rFilter.GetUserPreference( "Categories" ).SplitDelimitedValues() )
+                foreach ( var idVal in rFilter.GetFilterPreference( "Categories" ).SplitDelimitedValues() )
                 {
                     int id = int.MinValue;
                     if ( int.TryParse( idVal, out id ) )
@@ -852,7 +852,7 @@ namespace RockWeb.Blocks.Core
             }
 
             var selectedCategoryIds = new List<int>();
-            rFilter.GetUserPreference( "Categories" ).SplitDelimitedValues().ToList().ForEach( s => selectedCategoryIds.Add( int.Parse( s ) ) );
+            rFilter.GetFilterPreference( "Categories" ).SplitDelimitedValues().ToList().ForEach( s => selectedCategoryIds.Add( int.Parse( s ) ) );
             if ( selectedCategoryIds.Any() )
             {
                 query = query.Where( a => a.Categories.Any( c => selectedCategoryIds.Contains( c.Id ) ) );
@@ -893,7 +893,7 @@ namespace RockWeb.Blocks.Core
                 if ( !_isEntityTypeConfigured )
                 {
                     int entityTypeId = int.MinValue;
-                    if ( int.TryParse( rFilter.GetUserPreference( "Entity Type" ), out entityTypeId ) && entityTypeId > 0 )
+                    if ( int.TryParse( rFilter.GetFilterPreference( "Entity Type" ), out entityTypeId ) && entityTypeId > 0 )
                     {
                         attributeModel.EntityTypeId = entityTypeId;
                     }

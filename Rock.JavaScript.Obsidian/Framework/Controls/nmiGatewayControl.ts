@@ -149,7 +149,7 @@ async function loadCollectJSAsync(tokenizationKey: string): Promise<boolean> {
     if (window.CollectJS === undefined) {
         const script = document.createElement("script");
         script.type = "text/javascript";
-        script.src = "https://secure.tnbcigateway.com/token/Collect.js";
+        script.src = "https://secure.nmi.com/token/Collect.js";
         script.setAttribute("data-tokenization-key", tokenizationKey);
         script.setAttribute("data-variant", "inline");
         document.getElementsByTagName("head")[0].appendChild(script);

@@ -1336,6 +1336,30 @@ namespace Rock.Client.Enums.Blocks.Engagement.SignUp
 
 }
 
+namespace Rock.Client.Enums.Blocks.Group.Scheduling
+{
+    /// <summary>
+    /// </summary>
+    public enum ResourceListSourceType
+    {
+        GroupMembers = 0x0,
+        GroupMatchingPreference = 0x1,
+        AlternateGroup = 0x2,
+        ParentGroup = 0x3,
+        DataView = 0x4,
+        GroupMatchingAssignment = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UpdateSchedulePreferenceMode
+    {
+        ReplacePreference = 0x0,
+        AddToPreference = 0x1,
+    }
+
+}
+
 namespace Rock.Client.Enums.Group
 {
     /// <summary>

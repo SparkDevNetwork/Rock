@@ -54,12 +54,6 @@ svg,
 .text-blue-dark {
   color: var(--blue-dark);
 }
-
-.easter a.text-blue:hover,
-.easter a.text-blue:focus {
-  color: var(--blue-dark);
-}
-
 .swiper-pagination-bullet-active {
   background-color: var(--pink) !important;
 }
@@ -102,29 +96,4 @@ svg,
 .easter .btn-pink:hover,
 .easter .btn-pink:focus {
   background-color: #e84cb4;
-}
-
-.easter .btn-orange {
-  background-color: var(--orange);
-  color: #fff;
-}
-.easter .btn-orange:hover,
-.easter .btn-orange:focus {
-  background-color: #D9511A;
-}
-
-.easter .display-miles {
-  display: inline-block;
-  margin-top: 16px;
-  margin-bottom: 16px;
-  font-family: "proxima-nova", sans-serif;
-  text-transform: uppercase;
-}
-
-.easter .label-info {
-  background-color: var(--blue-dark);
-}
-
-.visibility-hidden {
-  visibility: hidden;
 }

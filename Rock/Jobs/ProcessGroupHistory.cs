@@ -271,8 +271,7 @@ namespace Rock.Jobs
                         || ( a.GroupLocation.GroupLocationTypeValueId.HasValue && a.GroupLocation.GroupLocationTypeValue.Value != a.GroupLocationHistorical.GroupLocationTypeName )
                         || a.GroupLocation.LocationId != a.GroupLocationHistorical.LocationId
                         || a.GroupLocation.Location.ModifiedDateTime != a.GroupLocationHistorical.LocationModifiedDateTime
-                        || ( a.GroupLocation.Schedules.Select( s => new { ScheduleId = s.Id, s.ModifiedDateTime } ).Except( a.GroupLocationHistorical.GroupLocationHistoricalSchedules.Select( hs => new { hs.ScheduleId, ModifiedDateTime = hs.ScheduleModifiedDateTime } ) ) ).Any()
-                    );
+                        );
 
             var effectiveExpireDateTime = RockDateTime.Now;
             int groupLocationsLoggedToHistory = 0;
@@ -298,35 +297,7 @@ namespace Rock.Jobs
 
                 groupLocationsSaveToHistoryCurrent = groupLocationHistoricalCurrentsToInsert.Count();
 
-                // get the current max GroupLocatiionHistorical.Id to help narrow down which ones were inserted
-                int groupLocationHistoricalStartId = groupLocationHistoricalService.Queryable().Max( a => ( int? ) a.Id ) ?? 0;
-
                 rockContext.BulkInsert( groupLocationHistoricalCurrentsToInsert );
-
-                // since we used BulkInsert, we'll need to go back and get the Ids and the associated GroupLocation's Schedules for the GroupLocationHistorical records that we just inserted
-                var insertedGroupLocationHistoricalIdsWithSchedules = groupLocationHistoricalService.Queryable()
-                    .Where( a => a.Id > groupLocationHistoricalStartId && a.GroupLocation.Schedules.Any() ).ToList()
-                    .Select( a => new { GroupLocationHistoricalId = a.Id, a.GroupLocation.Schedules } );
-
-                List<GroupLocationHistoricalSchedule> groupLocationHistoricalScheduleCurrentsToInsert = new List<GroupLocationHistoricalSchedule>();
-                foreach ( var insertedGroupLocationHistoricalIdWithSchedules in insertedGroupLocationHistoricalIdsWithSchedules )
-                {
-                    foreach ( Schedule schedule in insertedGroupLocationHistoricalIdWithSchedules.Schedules )
-                    {
-                        groupLocationHistoricalScheduleCurrentsToInsert.Add( new GroupLocationHistoricalSchedule
-                        {
-                            GroupLocationHistoricalId = insertedGroupLocationHistoricalIdWithSchedules.GroupLocationHistoricalId,
-                            ScheduleId = schedule.Id,
-                            ScheduleName = schedule.ToString(),
-                            ScheduleModifiedDateTime = schedule.ModifiedDateTime
-                        } );
-                    }
-                }
-
-                if ( groupLocationHistoricalScheduleCurrentsToInsert.Any() )
-                {
-                    rockContext.BulkInsert( groupLocationHistoricalScheduleCurrentsToInsert );
-                }
             }
 
             if ( groupLocationsLoggedToHistory > 0 )
