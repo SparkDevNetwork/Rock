@@ -22,10 +22,9 @@ import PanelWidget from "@Obsidian/Controls/panelWidget";
 import TextBox from "@Obsidian/Controls/textBox";
 import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
 import Block from "@Obsidian/Templates/block";
-import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
 
 /**
  * Convert a simpler set of parameters into PublicAttribute
@@ -49,16 +48,16 @@ const getAttributeData = (name: string, fieldTypeGuid: Guid, configValues: Recor
             categories: []
         }),
         "value2": reactive({
-                fieldTypeGuid: fieldTypeGuid,
-                name: `${name} 2`,
-                key: "value2",
-                description: `This is the description of the ${name} with an initial value`,
-                configurationValues,
-                isRequired: false,
-                attributeGuid: "",
-                order: 0,
-                categories: []
-            })
+            fieldTypeGuid: fieldTypeGuid,
+            name: `${name} 2`,
+            key: "value2",
+            description: `This is the description of the ${name} with an initial value`,
+            configurationValues,
+            isRequired: false,
+            attributeGuid: "",
+            order: 0,
+            categories: []
+        })
     };
 };
 
@@ -137,49 +136,25 @@ const getFieldTypeGalleryComponent = (name: string, initialValue: string, fieldT
         name: `${name}Gallery`,
         components: {
             GalleryAndResult: galleryAndResult,
-            TextBox
+            TextBox,
+            FieldTypeEditor
         },
-        data () {
+        data() {
             return {
                 name,
                 values: { "value1": "", "value2": initialValue },
                 configValues: { ...initialConfigValues } as Record<string, string>,
-                attributes: getAttributeData(name, fieldTypeGuid, initialConfigValues)
+                editorValue: { configurationValues: { ...initialConfigValues }, fieldTypeGuid }
             };
         },
         computed: {
-            configKeys(): string[] {
-                const keys: string[] = [];
-
-                for (const attributeKey in this.attributes) {
-                    const attribute = this.attributes[attributeKey];
-                    for (const key in attribute.configurationValues) {
-                        if (keys.indexOf(key) === -1) {
-                            keys.push(key);
-                        }
-                    }
-                }
-
-                return keys;
-            }
-        },
-        watch: {
-            configValues: {
-                deep: true,
-                handler() {
-                    for (const attributeKey in this.attributes) {
-                        const attribute = this.attributes[attributeKey];
-                        for (const key in attribute.configurationValues) {
-                            const value = this.configValues[key] || "";
-                            attribute.configurationValues[key] = value;
-                        }
-                    }
-                }
+            attributes(): Record<string, PublicAttributeBag> {
+                return getAttributeData(name, fieldTypeGuid, this.editorValue.configurationValues);
             }
         },
         template: `
-<GalleryAndResult :title="name" :values="values" :attributes="attributes">
-    <TextBox v-for="configKey in configKeys" :key="configKey" :label="configKey" v-model="configValues[configKey]" />
+<GalleryAndResult :title="name" :values="values" :attributes="attributes" fieldTypeEditor>
+    <FieldTypeEditor v-model="editorValue" showConfigOnly />
 </GalleryAndResult>`
     });
 };
@@ -188,7 +163,7 @@ const galleryComponents: Record<string, Component> = {
     AddressGallery: getFieldTypeGalleryComponent("Address", '{"street1": "3120 W Cholla St", "city": "Phoenix", "state": "AZ", "postalCode": "85029-4113", "country": "US"}', FieldTypeGuids.Address, {
     }),
 
-    BooleanGallery: getFieldTypeGalleryComponent("Boolean", "t", FieldTypeGuids.Boolean, {
+    BooleanGallery: getFieldTypeGalleryComponent("Boolean", "True", FieldTypeGuids.Boolean, {
         truetext: "This is true",
         falsetext: "This is false",
         BooleanControlType: "2"

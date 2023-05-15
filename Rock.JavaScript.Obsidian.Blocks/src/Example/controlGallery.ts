@@ -158,6 +158,7 @@ import BadgePicker from "@Obsidian/Controls/badgePicker";
 import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
 import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
+import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
 import InlineRangeSlider from "@Obsidian/Controls/inlineRangeSlider.obs";
 import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
@@ -5010,7 +5011,15 @@ const fieldTypeEditorGallery = defineComponent({
     },
     setup() {
         return {
-            value: ref({}),
+            value: ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
+                configurationValues: {
+                    truetext: "Yup",
+                    falsetext: "Nah",
+                    BooleanControlType: "2"
+                },
+                defaultValue: "True",
+                fieldTypeGuid: FieldType.Boolean
+            }),
             readOnly: ref(false),
             importCode: getControlImportPath("fieldTypeEditor"),
             exampleCode: `<FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />`
@@ -8087,12 +8096,9 @@ export default defineComponent({
     padding: 20px;
 }
 
-.galleryContent .rock-header {
-    margin: 0 -20px;
-}
-
-.galleryContent .rock-header .title {
-    margin-left: 20px;
+.galleryContent > .rock-header hr {
+    margin-left: -20px;
+    margin-right: -20px;
 }
 </v-style>
 <Panel type="block">
