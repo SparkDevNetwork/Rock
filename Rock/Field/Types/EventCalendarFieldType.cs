@@ -18,9 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -38,23 +39,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.EVENT_CALENDAR )]
     public class EventCalendarFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -65,7 +50,7 @@ namespace Rock.Field.Types
             }
 
             var guids = privateValue.SplitDelimitedValues() ?? new string[0];
-            if ( !guids.Any())
+            if ( !guids.Any() )
             {
                 return privateValue;
             }
@@ -82,6 +67,165 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
+        /// </summary>
+        /// <returns></returns>
+        public override string GetEqualToCompareValue()
+        {
+            return null;
+        }
+
+
+        /// <summary>
+        /// Gets the filters expression.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                int valueCount = selectedValues.Count();
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                if ( valueCount == 0 )
+                {
+                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
+                    return new NoAttributeFilterExpression();
+                }
+                else if ( valueCount == 1 )
+                {
+                    // only one value, so do an Equal instead of Contains which might compile a little bit faster
+                    ComparisonType comparisonType = ComparisonType.EqualTo;
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
+                }
+                else
+                {
+                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                }
+            }
+
+            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                var guids = value.SplitDelimitedValues();
+                var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) );
+                if ( eventCalendars.Any() )
+                {
+                    formattedValue = string.Join( "' OR '", ( from eventCalendar in eventCalendars select eventCalendar.Name ).ToArray() );
+                }
+            }
+
+            return AddQuotes( formattedValue );
+        }
+
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new EventCalendarService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var eventCalenderId = new EventCalendarService( rockContext ).GetId( guid.Value );
+
+                if ( !eventCalenderId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<EventCalendar>().Value, eventCalenderId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<EventCalendar>().Value, nameof( EventCalendar.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -151,10 +295,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
@@ -218,15 +358,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
-        /// </summary>
-        /// <returns></returns>
-        public override string GetEqualToCompareValue()
-        {
-            return null;
-        }
-
-        /// <summary>
         /// Gets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -281,68 +412,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the filters expression.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns>
-        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
-        {
-            if ( filterValues.Count == 1 )
-            {
-                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                int valueCount = selectedValues.Count();
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                if ( valueCount == 0 )
-                {
-                    // No Value specified, so return NoAttributeFilterExpression ( which means don't filter )
-                    return new NoAttributeFilterExpression();
-                }
-                else if ( valueCount == 1 )
-                {
-                    // only one value, so do an Equal instead of Contains which might compile a little bit faster
-                    ComparisonType comparisonType = ComparisonType.EqualTo;
-                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( selectedValues[0] ) );
-                }
-                else
-                {
-                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
-                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
-                }
-            }
-
-            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
-        }
-
-        /// <summary>
-        /// Formats the filter value value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                var guids = value.SplitDelimitedValues();
-                var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) );
-                if ( eventCalendars.Any() )
-                {
-                    formattedValue = string.Join( "' OR '", ( from eventCalendar in eventCalendars select eventCalendar.Name ).ToArray() );
-                }
-            }
-
-            return AddQuotes( formattedValue );
-        }
-
-        #endregion
-
-        #region Entity Methods
-
-        /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
         /// <param name="control">The control.</param>
@@ -372,69 +441,7 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, guidValue );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new EventCalendarService( rockContext ).Get( guid.Value );
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            Guid? guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var eventCalenderId = new EventCalendarService( rockContext ).GetId( guid.Value );
-
-                if ( !eventCalenderId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<EventCalendar>().Value, eventCalenderId.Value )
-                };
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<EventCalendar>().Value, nameof( EventCalendar.Name ) )
-            };
-        }
-
+#endif
         #endregion
 
     }

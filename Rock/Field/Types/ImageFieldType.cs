@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -55,6 +56,151 @@ namespace Rock.Field.Types
         /// The default image tag template
         /// </summary>
         protected const string DefaultImageTagTemplate = "<img src='{{ ImageUrl }}' class='img-responsive' />";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imageGuid = privateValue.AsGuidOrNull();
+
+            if ( !imageGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var imageName = new BinaryFileService( rockContext ).GetSelect( imageGuid.Value, bf => bf.FileName );
+
+                return imageName ?? string.Empty;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imageGuid = privateValue.AsGuidOrNull();
+
+            if ( !imageGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            return GetImageHtml( imageGuid.Value, null, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imageGuid = privateValue.AsGuidOrNull();
+
+            if ( !imageGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            return GetImageHtml( imageGuid.Value, 120, privateConfigurationValues );
+        }
+
+        /// <summary>
+        /// Gets the image HTML that should be used to display the image one
+        /// a web page.
+        /// </summary>
+        /// <param name="imageGuid">The image unique identifier.</param>
+        /// <param name="width">The width to force the image to.</param>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns>A string that contains the HTML used to render the image.</returns>
+        private static string GetImageHtml( Guid imageGuid, int? width, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imagePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx" );
+            var queryParms = string.Empty;
+
+            // Determine image size parameters if they aren't already forced.
+            if ( width.HasValue )
+            {
+                queryParms = $"&width={width}";
+            }
+            else
+            {
+                width = privateConfigurationValues.GetValueOrNull( "width" )?.AsIntegerOrNull();
+                if ( width.HasValue )
+                {
+                    queryParms = $"&width={width}";
+                }
+
+                var height = privateConfigurationValues.GetValueOrNull( "height" )?.AsIntegerOrNull();
+                if ( height.HasValue )
+                {
+                    queryParms += $"&height={height}";
+                }
+            }
+
+            var imageUrl = $"{imagePath}?guid={imageGuid}";
+            var imageTagTemplate = privateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ).ToStringOrDefault( DefaultImageTagTemplate );
+            var formatAsLink = privateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ).AsBoolean();
+            var mergeFields = new Dictionary<string, object>()
+            {
+                ["ImageUrl"] = imageUrl + queryParms,
+                ["ImageGuid"] = imageGuid
+            };
+
+            var imageTag = imageTagTemplate.ResolveMergeFields( mergeFields );
+
+            return formatAsLink
+                ? $"<a href='{imageUrl}'>{imageTag}</a>"
+                : imageTag;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldWidth = oldPrivateConfigurationValues.GetValueOrNull( "width" ) ?? string.Empty;
+            var oldHeight = oldPrivateConfigurationValues.GetValueOrNull( "height" ) ?? string.Empty;
+            var oldImgTagTemplate = oldPrivateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ) ?? string.Empty;
+            var oldFormatAsLink = oldPrivateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ) ?? string.Empty;
+            var newWidth = newPrivateConfigurationValues.GetValueOrNull( "width" ) ?? string.Empty;
+            var newHeight = newPrivateConfigurationValues.GetValueOrNull( "height" ) ?? string.Empty;
+            var newImgTagTemplate = newPrivateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ) ?? string.Empty;
+            var newFormatAsLink = newPrivateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ) ?? string.Empty;
+
+            if ( oldWidth != newWidth )
+            {
+                return true;
+            }
+
+            if ( oldHeight != newHeight )
+            {
+                return true;
+            }
+
+            if ( oldImgTagTemplate != newImgTagTemplate )
+            {
+                return true;
+            }
+
+            if ( oldFormatAsLink != newFormatAsLink )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -151,54 +297,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var imageGuid = privateValue.AsGuidOrNull();
-
-            if ( !imageGuid.HasValue )
-            {
-                return string.Empty;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var imageName = new BinaryFileService( rockContext ).GetSelect( imageGuid.Value, bf => bf.FileName );
-
-                return imageName ?? string.Empty;
-            }
-        }
-
-        /// <inheritdoc/>
-        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var imageGuid = privateValue.AsGuidOrNull();
-
-            if ( !imageGuid.HasValue )
-            {
-                return string.Empty;
-            }
-
-            return GetImageHtml( imageGuid.Value, null, privateConfigurationValues );
-        }
-
-        /// <inheritdoc/>
-        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var imageGuid = privateValue.AsGuidOrNull();
-
-            if ( !imageGuid.HasValue )
-            {
-                return string.Empty;
-            }
-
-            return GetImageHtml( imageGuid.Value, 120, privateConfigurationValues );
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -213,59 +311,6 @@ namespace Rock.Field.Types
                 ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        /// <summary>
-        /// Gets the image HTML that should be used to display the image one
-        /// a web page.
-        /// </summary>
-        /// <param name="imageGuid">The image unique identifier.</param>
-        /// <param name="width">The width to force the image to.</param>
-        /// <param name="privateConfigurationValues">The private configuration values.</param>
-        /// <returns>A string that contains the HTML used to render the image.</returns>
-        private static string GetImageHtml( Guid imageGuid, int? width, Dictionary<string, string> privateConfigurationValues )
-        {
-            var imagePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx" );
-            var queryParms = string.Empty;
-
-            // Determine image size parameters if they aren't already forced.
-            if ( width.HasValue )
-            {
-                queryParms = $"&width={width}";
-            }
-            else
-            {
-                width = privateConfigurationValues.GetValueOrNull( "width" )?.AsIntegerOrNull();
-                if ( width.HasValue )
-                {
-                    queryParms = $"&width={width}";
-                }
-
-                var height = privateConfigurationValues.GetValueOrNull( "height" )?.AsIntegerOrNull();
-                if ( height.HasValue )
-                {
-                    queryParms += $"&height={height}";
-                }
-            }
-
-            var imageUrl = $"{imagePath}?guid={imageGuid}";
-            var imageTagTemplate = privateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ).ToStringOrDefault( DefaultImageTagTemplate );
-            var formatAsLink = privateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ).AsBoolean();
-            var mergeFields = new Dictionary<string, object>()
-            {
-                ["ImageUrl"] = imageUrl + queryParms,
-                ["ImageGuid"] = imageGuid
-            };
-
-            var imageTag = imageTagTemplate.ResolveMergeFields( mergeFields );
-
-            return formatAsLink
-                ? $"<a href='{imageUrl}'>{imageTag}</a>"
-                : imageTag;
-        }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -342,45 +387,7 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldWidth = oldPrivateConfigurationValues.GetValueOrNull( "width" ) ?? string.Empty;
-            var oldHeight = oldPrivateConfigurationValues.GetValueOrNull( "height" ) ?? string.Empty;
-            var oldImgTagTemplate = oldPrivateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ) ?? string.Empty;
-            var oldFormatAsLink = oldPrivateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ) ?? string.Empty;
-            var newWidth = newPrivateConfigurationValues.GetValueOrNull( "width" ) ?? string.Empty;
-            var newHeight = newPrivateConfigurationValues.GetValueOrNull( "height" ) ?? string.Empty;
-            var newImgTagTemplate = newPrivateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ) ?? string.Empty;
-            var newFormatAsLink = newPrivateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ) ?? string.Empty;
-
-            if ( oldWidth != newWidth )
-            {
-                return true;
-            }
-
-            if ( oldHeight != newHeight )
-            {
-                return true;
-            }
-
-            if ( oldImgTagTemplate != newImgTagTemplate )
-            {
-                return true;
-            }
-
-            if ( oldFormatAsLink != newFormatAsLink )
-            {
-                return true;
-            }
-
-            return false;
-        }
-
+#endif
         #endregion
     }
 }

@@ -107,27 +107,6 @@ namespace RockWeb.Blocks.Finance
 
         private List<int> TransactionImagesState { get; set; }
 
-        private Dictionary<int, string> _accountNames = null;
-
-        private Dictionary<int, string> AccountNames
-        {
-            get
-            {
-                if ( _accountNames == null )
-                {
-                    _accountNames = new Dictionary<int, string>();
-                    new FinancialAccountService( new RockContext() ).Queryable()
-                        .OrderBy( a => a.Order )
-                        .Select( a => new { a.Id, a.Name } )
-                        .ToList()
-                        .ForEach( a => _accountNames.Add( a.Id, a.Name ) );
-                    _accountNames.Add( TotalRowAccountId, "<strong>Total</strong>" );
-                }
-
-                return _accountNames;
-            }
-        }
-
         private bool UseSimpleAccountMode
         {
             get
@@ -1452,7 +1431,7 @@ namespace RockWeb.Blocks.Finance
 
                 string rockUrlRoot = ResolveRockUrl( "/" );
 
-                lAuthorizedPerson.Text = new DescriptionList().Add( "Person", ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ? Person.GetPersonPhotoImageTag( txn.AuthorizedPersonAlias, className: "person-photo" ) + " " + txn.AuthorizedPersonAlias.Person.GetAnchorTag( rockUrlRoot ) : string.Empty ).Html;
+                lAuthorizedPerson.Text = new DescriptionList().Add( "Person", ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ? Person.GetPersonPhotoImageTag( txn.AuthorizedPersonAlias, 50, 50, className: "avatar" ) + " " + txn.AuthorizedPersonAlias.Person.GetAnchorTag( rockUrlRoot ) : string.Empty ).Html;
 
                 var detailsLeft = new DescriptionList()
                     .Add( "Date/Time", txn.TransactionDateTime.HasValue ? txn.TransactionDateTime.Value.ToString( "g" ) : string.Empty );
@@ -2255,7 +2234,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( accountId.HasValue )
             {
-                return AccountNames.ContainsKey( accountId.Value ) ? AccountNames[accountId.Value] : string.Empty;
+                return FinancialAccountCache.Get( accountId.Value )?.Name ?? string.Empty;
             }
 
             return string.Empty;

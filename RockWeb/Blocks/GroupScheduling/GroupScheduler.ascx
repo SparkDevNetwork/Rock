@@ -32,7 +32,7 @@
                     </asp:LinkButton>
 
                     <asp:Panel ID="pnlSendNowMultiGroupMode" runat="server" class="btn-group" >
-                        <div class="dropdown-toggle btn btn-xs" data-toggle="dropdown">
+                        <div class="dropdown-toggle btn btn-default btn-xs" data-toggle="dropdown">
                             <i class="fa fa-envelope"></i>
                             Send Now
                         </div>
@@ -55,7 +55,7 @@
                     </asp:LinkButton>
 
                     <asp:Panel ID="pnlAutoScheduleMultiGroupMode" runat="server" class="btn-group" >
-                        <div class="dropdown-toggle btn btn-xs" data-toggle="dropdown">
+                        <div class="dropdown-toggle btn btn-default btn-xs" data-toggle="dropdown">
                             <i class="fa fa-magic"></i>
                             Auto Schedule
                         </div>
@@ -421,13 +421,13 @@
                                                                             <asp:Panel ID="pnlMultiGroupModePanelHeading" runat="server" CssClass="d-flex justify-content-between align-items-center w-100">
                                                                                 <div class="d-flex flex-column">
                                                                                     <asp:Literal ID="lMultiGroupModeLocationTitle" runat="server" />
-                                                                                    <span class="date small text-muted"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduledDate" /></span>
+                                                                                    <span class="date small text-nowrap text-muted"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduledDate" /></span>
                                                                                 </div>
 
-                                                                                <div>
-                                                                                    <span class="board-column-schedule-name" data-toggle="tooltip" data-placement="bottom" title="<%# Eval("Schedule.AbbreviatedName") %>"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduleName" /></span>
+                                                                                <div class="d-flex text-nowrap overflow-hidden ml-2">
+                                                                                    <span class="board-column-schedule-name text-truncate" data-toggle="tooltip" data-placement="bottom" title="<%# Eval("Schedule.AbbreviatedName") %>"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduleName" /></span>
 
-                                                                                    <span class="autoscheduler-warning js-autoscheduler-warning" data-placement="bottom" data-original-title="Auto Schedule requires a desired capacity for this location.">
+                                                                                    <span class="autoscheduler-warning ml-1 js-autoscheduler-warning" data-placement="bottom" data-original-title="Auto Schedule requires a desired capacity for this location.">
                                                                                         <i class="fa fa-exclamation-triangle"></i>
                                                                                     </span>
                                                                                 </div>

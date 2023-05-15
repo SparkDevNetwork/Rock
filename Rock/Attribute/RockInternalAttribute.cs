@@ -19,11 +19,18 @@ using System;
 namespace Rock.Attribute
 {
     /// <summary>
+    /// <para>
     /// Marks an API as internal to Rock. These APIs are not subject to the same
     /// compatibility standards as public APIs. It may be changed or removed
     /// without notice in any release. You should not use such APIs directly in
     /// any plug-ins. Doing so can result in application failures when updating
     /// to a new Rock release.
+    /// </para>
+    /// <para>
+    /// When marking items as RockInternal, provide the version number it was
+    /// introduced in. This allows the team to review these later and decide if
+    /// it is safe to make public now.
+    /// </para>
     /// </summary>
     [AttributeUsage(
         AttributeTargets.Enum
@@ -38,5 +45,36 @@ namespace Rock.Attribute
         | AttributeTargets.Constructor )]
     public sealed class RockInternalAttribute : System.Attribute
     {
+        /// <summary>
+        /// Gets the Rock version this item was introduced in.
+        /// </summary>
+        /// <value>The Rock version this item was introduced in.</value>
+        public string IntroducedInVersion { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the item should stay internal forever.
+        /// </summary>
+        /// <value><c>true</c> if the item should stay internal forever; otherwise, <c>false</c>.</value>
+        public bool KeepInternalForever { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockInternalAttribute"/> class.
+        /// </summary>
+        /// <param name="introducedInVersion">The version this item was introduced in.</param>
+        public RockInternalAttribute( string introducedInVersion )
+        {
+            IntroducedInVersion = introducedInVersion;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockInternalAttribute"/> class.
+        /// </summary>
+        /// <param name="introducedInVersion">The version this item was introduced in.</param>
+        /// <param name="keepInternalForever"><c>true</c> if the item is intended to stay internal forever.</param>
+        public RockInternalAttribute( string introducedInVersion, bool keepInternalForever )
+        {
+            IntroducedInVersion = introducedInVersion;
+            KeepInternalForever = keepInternalForever;
+        }
     }
 }

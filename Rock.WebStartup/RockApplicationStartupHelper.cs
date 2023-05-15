@@ -29,14 +29,9 @@ using System.Web;
 
 using DotLiquid;
 
-using Quartz;
-using Quartz.Impl;
-using Quartz.Impl.Matchers;
-
 using Rock.Bus;
 using Rock.Configuration;
 using Rock.Data;
-using Rock.Jobs;
 using Rock.Lava;
 using Rock.Lava.DotLiquid;
 using Rock.Lava.Fluid;
@@ -67,11 +62,6 @@ namespace Rock.WebStartup
         /// </value>
         public static DateTime StartDateTime { get; private set; }
 
-        /// <summary>
-        /// Global Quartz scheduler for jobs 
-        /// </summary>
-        public static IScheduler QuartzScheduler { get; private set; } = null;
-
         private static Stopwatch _debugTimingStopwatch = Stopwatch.StartNew();
 
         #endregion Properties
@@ -94,6 +84,8 @@ namespace Rock.WebStartup
         internal static void RunApplicationStartup()
         {
             LogStartupMessage( "Application Starting" );
+
+            AppDomain.CurrentDomain.AssemblyResolve += AppDomain_AssemblyResolve;
 
             // Indicate to always log to file during initialization.
             ExceptionLogService.AlwaysLogToFile = true;
@@ -137,6 +129,8 @@ namespace Rock.WebStartup
                 ShowDebugTimingMessage( "Initialize RockContext" );
             }
 
+            RockInstanceConfig.SetDatabaseIsAvailable( true );
+
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
             LogStartupMessage( "Configuring Date Settings" );
@@ -166,8 +160,8 @@ namespace Rock.WebStartup
 
             /* 2020-05-20 MDP
                Plugins use Direct SQL to update data,
-               or other things could have done data updates
-               So, just in case, clear the cache (which could be Redis) since anything that is in there could be stale
+               or other things could have done data updates.
+               So, just in case, clear the cache since anything that is in there could be stale
             */
 
             LogStartupMessage( "Reloading Cache" );
@@ -176,7 +170,7 @@ namespace Rock.WebStartup
             using ( var rockContext = new RockContext() )
             {
                 LogStartupMessage( "Loading Cache From Database" );
-                LoadCacheObjects( rockContext );
+                LoadEarlyCacheObjects( rockContext );
 
                 ShowDebugTimingMessage( "Load Cache Objects" );
 
@@ -224,7 +218,7 @@ namespace Rock.WebStartup
             if ( runJobsInContext )
             {
                 LogStartupMessage( "Initializing Job Scheduler" );
-                InitializeJobScheduler();
+                ServiceJobService.InitializeJobScheduler();
                 ShowDebugTimingMessage( "Job Scheduler Initialized" );
             }
 
@@ -232,6 +226,11 @@ namespace Rock.WebStartup
             LogStartupMessage( "Starting the Web Farm (Stage 2)" );
             RockWebFarm.StartStage2();
             ShowDebugTimingMessage( "Web Farm (stage 2)" );
+
+            // Start the RockQueue fast-queue processing.
+            LogStartupMessage( "Starting the Rock Fast Queue" );
+            Rock.Transactions.RockQueue.StartFastQueue();
+            ShowDebugTimingMessage( "Rock Fast Queue" );
         }
 
         /// <summary>
@@ -293,68 +292,14 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// Loads the cache objects.
+        /// Loads the cache objects that are most likely required for basic
+        /// functionality. The rest of the cache will be hydrated on a
+        /// background task.
         /// </summary>
-        private static void LoadCacheObjects( RockContext rockContext )
+        private static void LoadEarlyCacheObjects( RockContext rockContext )
         {
-            // Cache all the entity types
-            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )
-            {
-                EntityTypeCache.Get( entityType );
-            }
-
-            // Cache all the Field Types
-            foreach ( var fieldType in new Rock.Model.FieldTypeService( rockContext ).Queryable().AsNoTracking() )
-            {
-                // improve performance of loading FieldTypeCache by doing LoadAttributes using an existing rockContext before doing FieldTypeCache.Get to avoid calling LoadAttributes with new context per FieldTypeCache
-                fieldType.LoadAttributes( rockContext );
-                FieldTypeCache.Get( fieldType );
-            }
-
-            var all = FieldTypeCache.All();
-
-            // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
-            var qualifiers = new Dictionary<int, Dictionary<string, string>>();
-            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable().AsNoTracking() )
-            {
-                try
-                {
-                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
-                    {
-                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
-                    }
-
-                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
-                }
-                catch ( Exception ex )
-                {
-                    var startupException = new RockStartupException( "Error loading cache objects", ex );
-                    LogError( startupException, null );
-                }
-            }
-
-            // Cache all the attributes, except for user preferences
-            var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" );
-            int? personUserValueEntityTypeId = EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
-            if ( personUserValueEntityTypeId.HasValue )
-            {
-                attributeQuery = attributeQuery.Where( a => !a.EntityTypeId.HasValue || a.EntityTypeId.Value != personUserValueEntityTypeId );
-            }
-
-            foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
-            {
-                // improve performance of loading AttributeCache by doing LoadAttributes using an existing rockContext before doing AttributeCache.Get to avoid calling LoadAttributes with new context per AttributeCache
-                attribute.LoadAttributes( rockContext );
-
-                if ( qualifiers.ContainsKey( attribute.Id ) )
-                {
-                    Rock.Web.Cache.AttributeCache.Get( attribute, qualifiers[attribute.Id] );
-                }
-                else
-                {
-                    Rock.Web.Cache.AttributeCache.Get( attribute, new Dictionary<string, string>() );
-                }
-            }
+            EntityTypeCache.All( rockContext );
+            FieldTypeCache.All( rockContext );
 
             // Force authorizations to be cached
             Rock.Security.Authorization.Get();
@@ -460,12 +405,29 @@ namespace Rock.WebStartup
              * and eliminates the need for a Run.Migration file. Now migrations will run as needed in both dev and prod environments.
              */
 
-            // first see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database
-            bool _migrationHistoryTableExists = DbService.ExecuteScaler(
-                @"SELECT convert(bit, 1) [Exists] 
+            // First see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database.
+            var _migrationHistoryTableExists = false;
+            try
+            {
+                _migrationHistoryTableExists = DbService.ExecuteScaler(
+                    @"SELECT convert(bit, 1) [Exists] 
                     FROM INFORMATION_SCHEMA.TABLES
                     WHERE TABLE_SCHEMA = 'dbo'
                     AND TABLE_NAME = '__MigrationHistory'" ) as bool? ?? false;
+            }
+            catch ( System.Data.SqlClient.SqlException ex )
+            {
+                if ( ex.Message.Contains( "Cannot open database" ) && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    // This pretty much means the database does not exist, so we'll need to assume there are pending migrations
+                    // (such as the create database migration) that need to run first.
+                    _migrationHistoryTableExists = false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             if ( !_migrationHistoryTableExists )
             {
@@ -802,41 +764,43 @@ namespace Rock.WebStartup
 
             // Register the DotLiquid Engine.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
-                        {
-                            var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
+            {
+                var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
 
-                            var engineOptions = new LavaEngineConfigurationOptions
-                            {
-                                FileSystem = new WebsiteLavaFileSystem(),
-                                CacheService = new WebsiteLavaTemplateCacheService(),
-                                DefaultEnabledCommands = defaultEnabledLavaCommands
-                            };
+                var engineOptions = new LavaEngineConfigurationOptions
+                {
+                    FileSystem = new WebsiteLavaFileSystem(),
+                    HostService = new WebsiteLavaHost(),
+                    CacheService = new WebsiteLavaTemplateCacheService(),
+                    DefaultEnabledCommands = defaultEnabledLavaCommands
+                };
 
-                            var dotLiquidEngine = new DotLiquidEngine();
+                var dotLiquidEngine = new DotLiquidEngine();
 
-                            dotLiquidEngine.Initialize( engineOptions );
+                dotLiquidEngine.Initialize( engineOptions );
 
-                            return dotLiquidEngine;
-                        } );
+                return dotLiquidEngine;
+            } );
 
             // Register the Fluid Engine.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
-                        {
-                            var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
+            {
+                var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
 
-                            var engineOptions = new LavaEngineConfigurationOptions
-                            {
-                                FileSystem = new WebsiteLavaFileSystem(),
-                                CacheService = new WebsiteLavaTemplateCacheService(),
-                                DefaultEnabledCommands = defaultEnabledLavaCommands
-                            };
+                var engineOptions = new LavaEngineConfigurationOptions
+                {
+                    FileSystem = new WebsiteLavaFileSystem(),
+                    HostService = new WebsiteLavaHost(),
+                    CacheService = new WebsiteLavaTemplateCacheService(),
+                    DefaultEnabledCommands = defaultEnabledLavaCommands
+                };
 
-                            var fluidEngine = new FluidEngine();
+                var fluidEngine = new FluidEngine();
 
-                            fluidEngine.Initialize( engineOptions );
+                fluidEngine.Initialize( engineOptions );
 
-                            return fluidEngine;
-                        } );
+                return fluidEngine;
+            } );
         }
 
         private static void InitializeRockLiquidLibrary()
@@ -1025,91 +989,6 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// Initialize the job scheduler.
-        /// </summary>
-        private static void InitializeJobScheduler()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                // create scheduler
-                ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-                QuartzScheduler = schedulerFactory.GetScheduler();
-
-                // get list of active jobs
-                ServiceJobService jobService = new ServiceJobService( rockContext );
-                var activeJobList = jobService.GetActiveJobs().OrderBy( a => a.Name ).ToList();
-                foreach ( ServiceJob job in activeJobList )
-                {
-                    const string ErrorLoadingStatus = "Error Loading Job";
-
-                    try
-                    {
-                        IJobDetail jobDetail = jobService.BuildQuartzJob( job );
-                        if ( jobDetail == null )
-                        {
-                            continue;
-                        }
-
-                        ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
-
-                        // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
-                        if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
-                        {
-                            QuartzScheduler.ScheduleJob( jobDetail, jobTrigger );
-                        }
-
-                        //// if the last status was an error, but we now loaded successful, clear the error
-                        // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted
-                        if ( job.LastStatus == ErrorLoadingStatus || job.LastStatus == "Running" )
-                        {
-                            job.LastStatusMessage = string.Empty;
-                            job.LastStatus = string.Empty;
-                            rockContext.SaveChanges();
-                        }
-                    }
-                    catch ( Exception exception )
-                    {
-                        // create a friendly error message
-                        string message = $"Error loading the job: {job.Name}.\n\n{exception.Message}";
-
-                        // log the error
-                        var startupException = new RockStartupException( message, exception );
-
-                        LogError( startupException, null );
-
-                        job.LastStatusMessage = message;
-                        job.LastStatus = ErrorLoadingStatus;
-                        job.LastStatus = ErrorLoadingStatus;
-                        rockContext.SaveChanges();
-
-                        var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                        var jobHistory = new ServiceJobHistory()
-                        {
-                            ServiceJobId = job.Id,
-                            StartDateTime = RockDateTime.Now,
-                            StopDateTime = RockDateTime.Now,
-                            Status = job.LastStatus,
-                            StatusMessage = job.LastStatusMessage
-                        };
-
-                        jobHistoryService.Add( jobHistory );
-                        rockContext.SaveChanges();
-                    }
-                }
-
-                // set up the listener to report back from jobs as they complete
-                QuartzScheduler.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
-
-                // set up a trigger listener that can prevent a job from running if another scheduler is
-                // already running it (i.e., someone running it manually).
-                QuartzScheduler.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<JobKey>.AllTriggers() );
-
-                // start the scheduler
-                // Note, wait to start until Rock is fully started.
-            }
-        }
-
-        /// <summary>
         /// Logs the error to database (or filesystem if database isn't available)
         /// </summary>
         /// <param name="ex">The ex.</param>
@@ -1164,12 +1043,21 @@ namespace Rock.WebStartup
         public static void ShowDebugTimingMessage( string message )
         {
             _debugTimingStopwatch.Stop();
+            ShowDebugTimingMessage( message, _debugTimingStopwatch.Elapsed.TotalMilliseconds );
+            _debugTimingStopwatch.Restart();
+        }
+
+        /// <summary>
+        /// Shows the debug timing message if running in a development environment
+        /// </summary>
+        /// <param name="message">The message describing the operation.</param>
+        /// <param name="duration">The duration of the operation in milliseconds.</param>
+        public static void ShowDebugTimingMessage( string message, double duration )
+        {
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
-                Debug.WriteLine( $"[{_debugTimingStopwatch.Elapsed.TotalMilliseconds,5:#0} ms] {message}" );
+                Debug.WriteLine( $"[{duration,5:#0} ms] {message}" );
             }
-
-            _debugTimingStopwatch.Restart();
         }
 
         /// <summary>
@@ -1206,6 +1094,39 @@ namespace Rock.WebStartup
             {
                 // ignore
             }
+        }
+
+        /// <summary>
+        /// Handles the AssemblyResolve event of the AppDomain.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="args">The <see cref="ResolveEventArgs"/> instance containing the event data.</param>
+        /// <returns>The <see cref="Assembly"/> to use or <c>null</c> if not found.</returns>
+        private static Assembly AppDomain_AssemblyResolve( object sender, ResolveEventArgs args )
+        {
+            // args.Name contains the fully qualified assembly name, including
+            // culture and public key information. Extract just the assembly name.
+            var assemblyName = args.Name.Split( ',' )[0];
+
+            if ( assemblyName.IsNotNullOrWhiteSpace() )
+            {
+                var assemblyFile = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Bin", $"{assemblyName}.dll" );
+
+                // If the assembly file exists, load it.
+                if ( File.Exists( assemblyFile ) )
+                {
+                    try
+                    {
+                        return Assembly.LoadFrom( assemblyFile );
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

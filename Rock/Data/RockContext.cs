@@ -1595,6 +1595,18 @@ namespace Rock.Data
         public DbSet<NoteWatch> NoteWatches { get; set; }
 
         /// <summary>
+        /// Gets or sets the notification message types.
+        /// </summary>
+        /// <value>The notification message types.</value>
+        public DbSet<NotificationMessageType> NotificationMessageTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notification messages.
+        /// </summary>
+        /// <value>The notification messages.</value>
+        public DbSet<NotificationMessage> NotificationMessages { get; set; }
+
+        /// <summary>
         /// Gets or sets the notifications.
         /// </summary>
         /// <value>
@@ -1665,6 +1677,14 @@ namespace Rock.Data
         /// the Person aliases.
         /// </value>
         public DbSet<PersonAlias> PersonAliases { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Preferences.
+        /// </summary>
+        /// <value>
+        /// The Person Preferences.
+        /// </value>
+        public DbSet<PersonPreference> PersonPreferences { get; set; }
 
         /// <summary>
         /// Gets or sets the badges.
@@ -1899,6 +1919,22 @@ namespace Rock.Data
         public DbSet<RelatedEntity> RelatedEntities { get; set; }
 
         /// <summary>
+        /// Gets or sets the reminders.
+        /// </summary>
+        /// <value>
+        /// The reminders.
+        /// </value>
+        public DbSet<Reminder> Reminders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reminder types.
+        /// </summary>
+        /// <value>
+        /// The reminder types.
+        /// </value>
+        public DbSet<ReminderType> ReminderTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the remote authentication sessions.
         /// </summary>
         /// <value>
@@ -2091,18 +2127,6 @@ namespace Rock.Data
         public DbSet<PageShortLink> PageShortLinks { get; set; }
 
         /// <summary>
-        /// Gets or sets the Reminders
-        /// </summary>
-        /// <value>The reminders.</value>
-        public DbSet<Reminder> Reminders { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ReminderTypes
-        /// </summary>
-        /// <value>The reminder types.</value>
-        public DbSet<ReminderType> ReminderTypes { get; set; }
-
-        /// <summary>
         /// Gets or sets the Streaks.
         /// </summary>
         /// <value>
@@ -2133,7 +2157,7 @@ namespace Rock.Data
         /// The system emails.
         /// </value>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use SystemCommunications instead." )]
+        [Obsolete( "Use SystemCommunications instead.", true )]
         public DbSet<SystemEmail> SystemEmails { get; set; }
 
         /// <summary>
@@ -2143,6 +2167,14 @@ namespace Rock.Data
         /// The system emails.
         /// </value>
         public DbSet<SystemCommunication> SystemCommunications { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system phone numbers.
+        /// </summary>
+        /// <value>
+        /// The system phone numbers.
+        /// </value>
+        public DbSet<SystemPhoneNumber> SystemPhoneNumbers { get; set; }
 
         /// <summary>
         /// Gets or sets the Tags.

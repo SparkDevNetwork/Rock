@@ -50,6 +50,14 @@ namespace Rock.ViewModels.Entities
         public int? AnonymousAttendanceCount { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance reminder last sent date time.
+        /// </summary>
+        /// <value>
+        /// The attendance reminder last sent date time.
+        /// </value>
+        public DateTime? AttendanceReminderLastSentDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendance type value identifier.
         /// </summary>
         /// <value>

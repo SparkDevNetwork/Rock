@@ -58,7 +58,7 @@ namespace Rock.Model
         /// <returns><c>true</c> if this instance is persisted; otherwise, <c>false</c>.</returns>
         public bool IsPersisted()
         {
-            return this.PersistedScheduleIntervalMinutes.HasValue;
+            return this.PersistedScheduleIntervalMinutes.HasValue || this.PersistedScheduleId.HasValue;
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace Rock.Model
                 throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"DataViewFilter is null for DataView { this.Name } ({this.Id})." );
             }
 
-            bool usePersistedValues = this.PersistedScheduleIntervalMinutes.HasValue && this.PersistedLastRefreshDateTime.HasValue;
+            var usePersistedValues = this.IsPersisted() && this.PersistedLastRefreshDateTime.HasValue;
             if ( dataViewFilterOverrides != null )
             {
                 // don't use persisted values if this DataView in the list of DataViews that should not be persisted due to override
@@ -250,7 +250,7 @@ namespace Rock.Model
             }
 
             // If dataViewFilterOverrides is null assume true in order to preserve current functionality.
-            RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewFilterOverrides: {@dataViewFilterOverrides} DataviewId: {DataviewId}", nameof( GetExpression ), dataViewFilterOverrides, DataViewFilter.DataViewId );
+            // RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewFilterOverrides: {@dataViewFilterOverrides} DataviewId: {DataviewId}", nameof( GetExpression ), dataViewFilterOverrides, DataViewFilter.DataViewId );
             if ( dataViewFilterOverrides == null || dataViewFilterOverrides.ShouldUpdateStatics )
             {
                 DataViewService.AddRunDataViewTransaction( Id );

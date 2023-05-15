@@ -340,7 +340,7 @@
                     <a id="RangeSlider"></a>
                     <h2>Range Slider</h2>
                     <div runat="server" class="r-example">
-                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" StepValue="5" SelectedValue="200" />
+                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" StepValue="0" SelectedValue="200" />
                         <br />
                     </div>
 
@@ -403,7 +403,7 @@
 
                     <a id="SlidingDateRangePicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:SlidingDateRangePicker ID="sdrpExample" runat="server" Label="Rock:SlidingDateRangePicker" />
+                        <Rock:SlidingDateRangePicker ID="sdrpExample" runat="server" Label="Rock:SlidingDateRangePicker" PreviewLocation="Top" />
                     </div>
 
                     <a id="BirthdayPicker"></a>
@@ -455,6 +455,7 @@
                     <div runat="server" class="r-example">
                         <Rock:DefinedValuesPickerEnhanced ID="dvpDefinedValuesPickerEnhanced" runat="server" Label="Rock:DefinedValuesPickerEnhanced for ConnectionStatus defined type" DefinedTypeId="4" />
                     </div>
+
 
                     <h2>Events</h2>
 
@@ -529,7 +530,7 @@
 
                     <a id="MediaElementPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:MediaElementPicker ID="mediaElementPicker" runat="server" Label="Rock:MediaElementPicker" />
+                        <Rock:MediaElementPicker ID="mediaElementPicker" runat="server" Label="Rock:MediaElementPicker" MediaElementId="3" />
                     </div>
 
                     <h2>Groups and Group Types</h2>
@@ -674,6 +675,20 @@
                     <div runat="server" class="r-example">
                         <Rock:MetricCategoryPicker ID="pMetricCategoryPicker" runat="server" Label="Rock:MetricCategoryPicker (Pick Metric from Category Tree)" EntityTypeId="15"/>
                     </div>
+
+
+                    <h2 runat="server">SystemPhoneNumbers</h2>
+
+                    <a id="SystemPhoneNumberPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:SystemPhoneNumberPicker ID="spnpSystemPhoneNumberPicker" runat="server" Label="Rock:SystemPhoneNumberPicker" />
+                    </div>
+
+                    <a id="SystemPhoneNumbersPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:SystemPhoneNumbersPicker ID="spnpSystemPhoneNumbersPicker" runat="server" Label="Rock:SystemPhoneNumbersPicker" />
+                    </div>
+
 
                     <h2>Workflows</h2>
 

@@ -64,6 +64,138 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
+      <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302072059567_AddSystemPhoneNumberModel.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302072059567_AddSystemPhoneNumberModel.designer.cs">
+      <DependentUpon>202302072059567_AddSystemPhoneNumberModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302072257354_AddShortTermServingProjects.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302072257354_AddShortTermServingProjects.designer.cs">
+      <DependentUpon>202302072257354_AddShortTermServingProjects.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092017050_RemindersUpdates.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092017050_RemindersUpdates.designer.cs">
+      <DependentUpon>202302092017050_RemindersUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092024221_UpdateRemindersNotification.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092024221_UpdateRemindersNotification.designer.cs">
+      <DependentUpon>202302092024221_UpdateRemindersNotification.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092029145_UpdateRemindersSystemCommunication.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092029145_UpdateRemindersSystemCommunication.designer.cs">
+      <DependentUpon>202302092029145_UpdateRemindersSystemCommunication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209.designer.cs">
+      <DependentUpon>202302092033593_Rollup_20230209.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092227141_CodeGenerated_20230209.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302092227141_CodeGenerated_20230209.designer.cs">
+      <DependentUpon>202302092227141_CodeGenerated_20230209.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302101002183_DeleteOrphanedAttributeMatricesSP.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302101002183_DeleteOrphanedAttributeMatricesSP.designer.cs">
+      <DependentUpon>202302101002183_DeleteOrphanedAttributeMatricesSP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302152333004_AddNotificationMessageModels.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302152333004_AddNotificationMessageModels.designer.cs">
+      <DependentUpon>202302152333004_AddNotificationMessageModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302230939197_PopulateReplaceTransactionBlockEntryJob.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302230939197_PopulateReplaceTransactionBlockEntryJob.designer.cs">
+      <DependentUpon>202302230939197_PopulateReplaceTransactionBlockEntryJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.designer.cs">
+      <DependentUpon>202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302231949549_UpdateSecuritySettingsWithWellknownGuid.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302231949549_UpdateSecuritySettingsWithWellknownGuid.designer.cs">
+      <DependentUpon>202302231949549_UpdateSecuritySettingsWithWellknownGuid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302232150265_Rollup_20230223.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302232150265_Rollup_20230223.designer.cs">
+      <DependentUpon>202302232150265_Rollup_20230223.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302232229245_CodeGenerated_20230223.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302232229245_CodeGenerated_20230223.designer.cs">
+      <DependentUpon>202302232229245_CodeGenerated_20230223.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302240038117_UpdateShortTermServingProjects.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302240038117_UpdateShortTermServingProjects.designer.cs">
+      <DependentUpon>202302240038117_UpdateShortTermServingProjects.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302281609572_UpdateSignUpSystemCommunications.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302281609572_UpdateSignUpSystemCommunications.designer.cs">
+      <DependentUpon>202302281609572_UpdateSignUpSystemCommunications.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303091707261_Rollup_20230309.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303091707261_Rollup_20230309.designer.cs">
+      <DependentUpon>202303091707261_Rollup_20230309.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303092116131_CodeGenerated_20230309.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303092116131_CodeGenerated_20230309.designer.cs">
+      <DependentUpon>202303092116131_CodeGenerated_20230309.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303141907072_AddWhoWeArePageAndMetrics.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303141907072_AddWhoWeArePageAndMetrics.designer.cs">
+      <DependentUpon>202303141907072_AddWhoWeArePageAndMetrics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303151734400_AddAgeAndAgeBracketToAnalyticsSourceDateAndPerson.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303151734400_AddAgeAndAgeBracketToAnalyticsSourceDateAndPerson.designer.cs">
+      <DependentUpon>202303151734400_AddAgeAndAgeBracketToAnalyticsSourceDateAndPerson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303171424279_SendAttendanceRemindersRelativeToGroupMeetingTime.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303171424279_SendAttendanceRemindersRelativeToGroupMeetingTime.designer.cs">
+      <DependentUpon>202303171424279_SendAttendanceRemindersRelativeToGroupMeetingTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303172232393_AddDataViewPersistenceSchedule.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303172232393_AddDataViewPersistenceSchedule.designer.cs">
+      <DependentUpon>202303172232393_AddDataViewPersistenceSchedule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303201615387_AddInternalMessageToPersonAlias.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303201615387_AddInternalMessageToPersonAlias.designer.cs">
+      <DependentUpon>202303201615387_AddInternalMessageToPersonAlias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303231713546_Rollup_20230323.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303231713546_Rollup_20230323.designer.cs">
+      <DependentUpon>202303231713546_Rollup_20230323.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303231952517_CodeGenerated_20230323.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303231952517_CodeGenerated_20230323.designer.cs">
+      <DependentUpon>202303231952517_CodeGenerated_20230323.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303241648287_FixMigrationEncoding_Rollup_20230323.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303241648287_FixMigrationEncoding_Rollup_20230323.designer.cs">
+      <DependentUpon>202303241648287_FixMigrationEncoding_Rollup_20230323.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303291513244_PageRateLimiter.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303291513244_PageRateLimiter.designer.cs">
+      <DependentUpon>202303291513244_PageRateLimiter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303291952324_UpdateNullAgeBracketsAndMakeColumnNotNullable.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303291952324_UpdateNullAgeBracketsAndMakeColumnNotNullable.designer.cs">
+      <DependentUpon>202303291952324_UpdateNullAgeBracketsAndMakeColumnNotNullable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303311844075_AddPersonPreferenceModel.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202303311844075_AddPersonPreferenceModel.designer.cs">
+      <DependentUpon>202303311844075_AddPersonPreferenceModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202304032256559_FixSecurityCodeRandomizedFieldType.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202304032256559_FixSecurityCodeRandomizedFieldType.designer.cs">
+      <DependentUpon>202304032256559_FixSecurityCodeRandomizedFieldType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202304042314453_Rollup_20230404.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202304042314453_Rollup_20230404.designer.cs">
+      <DependentUpon>202304042314453_Rollup_20230404.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202304051647024_Rollup_20230405.cs" />
+    <Compile Include="Migrations\Version 15.0\Version 1.15.0\202304051647024_Rollup_20230405.designer.cs">
+      <DependentUpon>202304051647024_Rollup_20230405.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.designer.cs">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
@@ -1486,6 +1618,105 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
+      <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302072059567_AddSystemPhoneNumberModel.resx">
+      <DependentUpon>202302072059567_AddSystemPhoneNumberModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302072257354_AddShortTermServingProjects.resx">
+      <DependentUpon>202302072257354_AddShortTermServingProjects.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302092017050_RemindersUpdates.resx">
+      <DependentUpon>202302092017050_RemindersUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302092024221_UpdateRemindersNotification.resx">
+      <DependentUpon>202302092024221_UpdateRemindersNotification.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302092029145_UpdateRemindersSystemCommunication.resx">
+      <DependentUpon>202302092029145_UpdateRemindersSystemCommunication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209.resx">
+      <DependentUpon>202302092033593_Rollup_20230209.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302092227141_CodeGenerated_20230209.resx">
+      <DependentUpon>202302092227141_CodeGenerated_20230209.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302101002183_DeleteOrphanedAttributeMatricesSP.resx">
+      <DependentUpon>202302101002183_DeleteOrphanedAttributeMatricesSP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302152333004_AddNotificationMessageModels.resx">
+      <DependentUpon>202302152333004_AddNotificationMessageModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302230939197_PopulateReplaceTransactionBlockEntryJob.resx">
+      <DependentUpon>202302230939197_PopulateReplaceTransactionBlockEntryJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.resx">
+      <DependentUpon>202302231535310_AddSqlServer2016VersionCheckToAdminChecklist.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302231949549_UpdateSecuritySettingsWithWellknownGuid.resx">
+      <DependentUpon>202302231949549_UpdateSecuritySettingsWithWellknownGuid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302232150265_Rollup_20230223.resx">
+      <DependentUpon>202302232150265_Rollup_20230223.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302232229245_CodeGenerated_20230223.resx">
+      <DependentUpon>202302232229245_CodeGenerated_20230223.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302240038117_UpdateShortTermServingProjects.resx">
+      <DependentUpon>202302240038117_UpdateShortTermServingProjects.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302281609572_UpdateSignUpSystemCommunications.resx">
+      <DependentUpon>202302281609572_UpdateSignUpSystemCommunications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303091707261_Rollup_20230309.resx">
+      <DependentUpon>202303091707261_Rollup_20230309.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303092116131_CodeGenerated_20230309.resx">
+      <DependentUpon>202303092116131_CodeGenerated_20230309.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303141907072_AddWhoWeArePageAndMetrics.resx">
+      <DependentUpon>202303141907072_AddWhoWeArePageAndMetrics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303151734400_AddAgeAndAgeBracketToAnalyticsSourceDateAndPerson.resx">
+      <DependentUpon>202303151734400_AddAgeAndAgeBracketToAnalyticsSourceDateAndPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303171424279_SendAttendanceRemindersRelativeToGroupMeetingTime.resx">
+      <DependentUpon>202303171424279_SendAttendanceRemindersRelativeToGroupMeetingTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303172232393_AddDataViewPersistenceSchedule.resx">
+      <DependentUpon>202303172232393_AddDataViewPersistenceSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303201615387_AddInternalMessageToPersonAlias.resx">
+      <DependentUpon>202303201615387_AddInternalMessageToPersonAlias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303231713546_Rollup_20230323.resx">
+      <DependentUpon>202303231713546_Rollup_20230323.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303231952517_CodeGenerated_20230323.resx">
+      <DependentUpon>202303231952517_CodeGenerated_20230323.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303241648287_FixMigrationEncoding_Rollup_20230323.resx">
+      <DependentUpon>202303241648287_FixMigrationEncoding_Rollup_20230323.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303291513244_PageRateLimiter.resx">
+      <DependentUpon>202303291513244_PageRateLimiter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303291952324_UpdateNullAgeBracketsAndMakeColumnNotNullable.resx">
+      <DependentUpon>202303291952324_UpdateNullAgeBracketsAndMakeColumnNotNullable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202303311844075_AddPersonPreferenceModel.resx">
+      <DependentUpon>202303311844075_AddPersonPreferenceModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202304032256559_FixSecurityCodeRandomizedFieldType.resx">
+      <DependentUpon>202304032256559_FixSecurityCodeRandomizedFieldType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202304042314453_Rollup_20230404.resx">
+      <DependentUpon>202304042314453_Rollup_20230404.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202304051647024_Rollup_20230405.resx">
+      <DependentUpon>202304051647024_Rollup_20230405.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.1\202301102307054_rollup_20230110.resx">
       <DependentUpon>202301102307054_rollup_20230110.cs</DependentUpon>
     </EmbeddedResource>
@@ -2566,6 +2797,27 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Migrations\Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication.sql">
+      <DependentUpon>202302092033593_Rollup_20230209.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure.sql">
+      <DependentUpon>202302092033593_Rollup_20230209.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 15.0\Version 1.15.0\202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices.sql">
+      <DependentUpon>202302101002183_DeleteOrphanedAttributeMatricesSP.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 15.0\Version 1.15.0\202303231713546_Rollup_20230323_ChartColorUpdate.sql">
+      <DependentUpon>202303231713546_Rollup_20230323.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 15.0\Version 1.15.0\202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars.sql">
+      <DependentUpon>202303231713546_Rollup_20230323.cs</DependentUpon>
+    </Content>
+    <None Include="Migrations\Version 15.0\Version 1.15.0\202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql">
+      <DependentUpon>202302232150265_Rollup_20230223.cs</DependentUpon>
+    </None>
+    <Content Include="Migrations\Version 15.0\Version 1.15.0\202304042314453_Rollup_20230404_updatechartjs.sql">
+      <DependentUpon>202304042314453_Rollup_20230404.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 14.0\Version 1.14.1\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql">
       <DependentUpon>202209291606147_Rollup_20220929.cs</DependentUpon>
     </Content>
@@ -2772,6 +3024,10 @@
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
       <Name>Rock.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61DECE2B-0434-435E-8D65-49A4FDF98365}</Project>
+      <Name>Rock.Enums</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>

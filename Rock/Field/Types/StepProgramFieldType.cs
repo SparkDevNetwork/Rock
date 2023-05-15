@@ -17,11 +17,9 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
 using Rock.Data;
 using Rock.Model;
 using System;
-using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Web.Cache;
 
@@ -31,7 +29,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of step programs and allow a single selection.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "33875369-7D2B-4CD7-BB89-ABC29906CCAE")]
+    [Rock.SystemGuid.FieldTypeGuid( "33875369-7D2B-4CD7-BB89-ABC29906CCAE" )]
     public class StepProgramFieldType : EntitySingleSelectionListFieldTypeBase<Rock.Model.StepProgram>, IEntityReferenceFieldType
     {
         /// <summary>

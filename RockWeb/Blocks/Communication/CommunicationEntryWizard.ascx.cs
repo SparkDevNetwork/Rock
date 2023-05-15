@@ -106,9 +106,8 @@ namespace RockWeb.Blocks.Communication
         DefaultIntegerValue = 600,
         Order = 8 )]
 
-    [DefinedValueField( "Allowed SMS Numbers",
+    [SystemPhoneNumberField( "Allowed SMS Numbers",
         Key = AttributeKey.AllowedSMSNumbers,
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
         Description = "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ",
         IsRequired = false,
         AllowMultiple = true,
@@ -192,9 +191,9 @@ namespace RockWeb.Blocks.Communication
 
         private const string CATEGORY_COMMUNICATION_TEMPLATE = "CategoryCommunicationTemplate";
 
-        private bool _smsTransportEnabled = MediumContainer.HasActiveSmsTransport();
-        private bool _emailTransportEnabled = MediumContainer.HasActiveEmailTransport();
-        private bool _pushTransportEnabled = MediumContainer.HasActivePushTransport();
+        private bool _smsTransportEnabled = false;
+        private bool _emailTransportEnabled = false;
+        private bool _pushTransportEnabled = false;
         #endregion
 
         #region Properties
@@ -254,6 +253,10 @@ namespace RockWeb.Blocks.Communication
             Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
             Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
             Page.Response.Cache.SetNoStore();
+
+            _smsTransportEnabled = MediumContainer.HasActiveAndAuthorizedSmsTransport( CurrentPerson );
+            _emailTransportEnabled = MediumContainer.HasActiveAndAuthorizedEmailTransport( CurrentPerson );
+            _pushTransportEnabled = MediumContainer.HasActiveAndAuthorizedPushTransport( CurrentPerson );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -617,17 +620,17 @@ function onTaskCompleted( resultData )
             UpdateEmailAttachedFiles( false );
 
             // Mobile Text Editor
-            var valueItem = ddlSMSFrom.Items.FindByValue( communication.SMSFromDefinedValueId.ToString() );
-            if ( valueItem == null && communication.SMSFromDefinedValueId != null )
+            var valueItem = ddlSMSFrom.Items.FindByValue( communication.SmsFromSystemPhoneNumberId.ToString() );
+            if ( valueItem == null && communication.SmsFromSystemPhoneNumberId != null )
             {
-                var lookupDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
-                if ( lookupDefinedValue != null && lookupDefinedValue.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                var lookupSystemPhoneNumber = SystemPhoneNumberCache.Get( communication.SmsFromSystemPhoneNumberId.GetValueOrDefault() );
+                if ( lookupSystemPhoneNumber != null && lookupSystemPhoneNumber.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
                 {
-                    ddlSMSFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                    ddlSMSFrom.Items.Add( new ListItem( lookupSystemPhoneNumber.Name, lookupSystemPhoneNumber.Id.ToString() ) );
                 }
             }
 
-            ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
+            ddlSMSFrom.SetValue( communication.SmsFromSystemPhoneNumberId );
             tbSMSTextMessage.Text = communication.SMSMessage;
 
             fupMobileAttachment.BinaryFileId = communication.GetAttachmentBinaryFileIds( CommunicationType.SMS ).FirstOrDefault();
@@ -690,22 +693,22 @@ function onTaskCompleted( resultData )
             UpdateRecipientListCount();
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
-            var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
-            var smsDefinedValues = smsFromDefinedType.DefinedValues.Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).ToList();
+            var systemPhoneNumbers = SystemPhoneNumberCache.All()
+                .Where( spn => spn.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
+                .OrderBy( spn => spn.Order )
+                .ThenBy( spn => spn.Name )
+                .ThenBy( spn => spn.Id )
+                .ToList();
             if ( selectedNumberGuids.Any() )
             {
-                smsDefinedValues = smsDefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
+                systemPhoneNumbers = systemPhoneNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
             }
 
             ddlSMSFrom.Items.Clear();
             ddlSMSFrom.Items.Add( new ListItem() );
-            foreach ( var item in smsDefinedValues )
+            foreach ( var item in systemPhoneNumbers )
             {
-                var description = string.IsNullOrWhiteSpace( item.Description )
-                    ? PhoneNumber.FormattedNumber( string.Empty, item.Value.Replace( "+", string.Empty ) )
-                    : item.Description;
-
-                ddlSMSFrom.Items.Add( new ListItem( description, item.Id.ToString() ) );
+                ddlSMSFrom.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
             }
 
             ddlSMSFrom.SelectedIndex = -1;
@@ -1403,7 +1406,7 @@ function onTaskCompleted( resultData )
             }
 
             // Only add recipient preference if at least two options exists.
-            if ( recipientPreferenceEnabled )
+            if ( recipientPreferenceEnabled && ( emailTransportEnabled || smsTransportEnabled ) )
             {
                 rblCommunicationMedium.Items.Add( new ListItem( "Recipient Preference", CommunicationType.RecipientPreference.ConvertToInt().ToString() ) );
             }
@@ -1692,16 +1695,16 @@ function onTaskCompleted( resultData )
             UpdateEmailAttachedFiles( false );
 
             // SMS Fields
-            if ( communicationTemplate.SMSFromDefinedValueId.HasValue )
+            if ( communicationTemplate.SmsFromSystemPhoneNumberId.HasValue )
             {
-                var valueItem = ddlSMSFrom.Items.FindByValue( communicationTemplate.SMSFromDefinedValueId.ToString() );
+                var valueItem = ddlSMSFrom.Items.FindByValue( communicationTemplate.SmsFromSystemPhoneNumberId.ToString() );
                 if ( valueItem == null )
                 {
-                    var lookupDefinedValue = DefinedValueCache.Get( communicationTemplate.SMSFromDefinedValueId.GetValueOrDefault() );
-                    ddlSMSFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                    var lookupSystemPhoneNumber = SystemPhoneNumberCache.Get( communicationTemplate.SmsFromSystemPhoneNumberId.GetValueOrDefault() );
+                    ddlSMSFrom.Items.Add( new ListItem( lookupSystemPhoneNumber.Name, lookupSystemPhoneNumber.Id.ToString() ) );
                 }
 
-                ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId.Value );
+                ddlSMSFrom.SetValue( communicationTemplate.SmsFromSystemPhoneNumberId.Value );
             }
 
             // only set the SMSMessage if the template has one (just in case they already typed in an SMSMessage for this communication
@@ -2595,13 +2598,13 @@ function onTaskCompleted( resultData )
         /// <param name="sender">The sender.</param>
         public void InitializeSMSFromSender( Person sender )
         {
-            var numbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+            var numbers = SystemPhoneNumberCache.All();
             if ( numbers != null )
             {
-                foreach ( var number in numbers.DefinedValues )
+                foreach ( var number in numbers )
                 {
-                    var personAliasGuid = number.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
-                    if ( personAliasGuid.HasValue && sender.Aliases.Any( a => a.Guid == personAliasGuid.Value ) )
+                    var personAliasId = number.AssignedToPersonAliasId;
+                    if ( personAliasId.HasValue && sender.Aliases.Any( a => a.Id == personAliasId.Value ) )
                     {
                         ddlSMSFrom.SetValue( number.Id );
                         break;
@@ -3225,11 +3228,11 @@ function onTaskCompleted( resultData )
             lblConfirmationSmsMessage.Text = messageText;
             lblConfirmationSmsTo.Text = to;
 
-            var lookupDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
-            if ( lookupDefinedValue != null )
+            var lookupSystemPhoneNumber = SystemPhoneNumberCache.Get( communication.SmsFromSystemPhoneNumberId.GetValueOrDefault() );
+            if ( lookupSystemPhoneNumber != null )
             {
                 litConfirmationSmsFromNumber.Visible = true;
-                litConfirmationSmsFromNumber.Text = string.Format( "{0} ({1})", lookupDefinedValue.Description, lookupDefinedValue.Value );
+                litConfirmationSmsFromNumber.Text = string.Format( "{0} ({1})", lookupSystemPhoneNumber.Name, lookupSystemPhoneNumber.Number );
             }
         }
 
@@ -3350,7 +3353,7 @@ function onTaskCompleted( resultData )
             details.CCEmails = ebCCList.Text;
             details.BCCEmails = ebBCCList.Text;
 
-            details.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
+            details.SmsFromSystemPhoneNumberId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
             details.SMSMessage = tbSMSTextMessage.Text;
 
             // Get Push notification settings.
@@ -3560,7 +3563,7 @@ function onTaskCompleted( resultData )
                 communication.Subject = settings.Details.Subject.TrimForMaxLength( communication, "Subject" );
                 communication.Message = settings.Details.Message;
 
-                communication.SMSFromDefinedValueId = settings.Details.SMSFromDefinedValueId;
+                communication.SmsFromSystemPhoneNumberId = settings.Details.SmsFromSystemPhoneNumberId;
                 communication.SMSMessage = settings.Details.SMSMessage;
 
                 communication.FutureSendDateTime = settings.FutureSendDateTime;

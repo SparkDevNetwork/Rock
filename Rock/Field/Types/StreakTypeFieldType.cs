@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Model;
 using System;
-using System.Web.UI.WebControls;
 using Rock.Web.Cache;
 using Rock.Attribute;
 using Rock.Data;
@@ -29,7 +28,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of streak types and allow a single selection.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "F1411F4A-BD4B-4F80-9A83-94026C009F4D")]
+    [Rock.SystemGuid.FieldTypeGuid( "F1411F4A-BD4B-4F80-9A83-94026C009F4D" )]
     public class StreakTypeFieldType : EntitySingleSelectionListFieldTypeBase<StreakType>, IEntityReferenceFieldType
     {
         /// <summary>

@@ -16,12 +16,12 @@
 //
 
 import { useSecurityGrantToken } from "@Obsidian/Utility/block";
-import { standardAsyncPickerProps, updateRefValue } from "@Obsidian/Utility/component";
+import { standardAsyncPickerProps, updateRefValue, useStandardAsyncPickerProps } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
 import { WorkflowTypeTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import RockFormField from "./rockFormField";
-import TreeItemPicker from "./treeItemPicker";
+import TreeItemPicker from "./treeItemPicker.obs";
 
 export default defineComponent({
     name: "WorkflowTypePicker",
@@ -54,6 +54,7 @@ export default defineComponent({
 
         const internalValue = ref(props.modelValue ?? null);
         const securityGrantToken = useSecurityGrantToken();
+        const standardProps = useStandardAsyncPickerProps(props);
 
         const itemProvider = ref(new WorkflowTypeTreeItemProvider());
         itemProvider.value.includeInactiveItems = props.includeInactiveItems;
@@ -94,11 +95,13 @@ export default defineComponent({
 
         return {
             internalValue,
-            itemProvider
+            itemProvider,
+            standardProps
         };
     },
     template: `
 <TreeItemPicker v-model="internalValue"
+    v-bind="standardProps"
     formGroupClasses="category-picker"
     iconCssClass="fa fa-cogs"
     :provider="itemProvider"

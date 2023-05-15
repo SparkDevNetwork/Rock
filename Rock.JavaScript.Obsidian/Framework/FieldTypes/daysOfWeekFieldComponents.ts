@@ -14,69 +14,36 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
+import { defineComponent, computed } from "vue";
 import { getFieldEditorProps } from "./utils";
-import { DayOfWeek } from "./dayOfWeekField.partial";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import { toNumber } from "@Obsidian/Utility/numberUtils";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
 
 export const EditComponent = defineComponent({
     name: "DaysOfWeekField.Edit",
     components: {
-        CheckBoxList
+        DayOfWeekPicker
     },
     props: getFieldEditorProps(),
 
-    data() {
-        return {
-            /** The currently selected values. */
-            internalValue: [] as Array<string>,
-        };
+    emits: {
+        "update:modelValue": (_value: string) => true
     },
 
-    methods: {
-        /**
-         * Builds a list of the drop down options that are used to display
-         * in the drop down list.
-         */
-        options(): Array<ListItemBag> {
-            return [
-                { text: "Sunday", value: DayOfWeek.Sunday.toString() },
-                { text: "Monday", value: DayOfWeek.Monday.toString() },
-                { text: "Tuesday", value: DayOfWeek.Tuesday.toString() },
-                { text: "Wednesday", value: DayOfWeek.Wednesday.toString() },
-                { text: "Thursday", value: DayOfWeek.Thursday.toString() },
-                { text: "Friday", value: DayOfWeek.Friday.toString() },
-                { text: "Saturday", value: DayOfWeek.Saturday.toString() }
-            ];
-        },
-    },
-
-    watch: {
-        /**
-         * Watch for changes to internalValue and emit the new value out to
-         * the consuming component.
-         */
-        internalValue(): void {
-            this.$emit("update:modelValue", this.internalValue.sort((a, b) => toNumber(a) - toNumber(b)).join(","));
-        },
-
-        /**
-         * Watch for changes to modelValue which indicate the component
-         * using us has given us a new value to work with.
-         */
-        modelValue: {
-            immediate: true,
-            handler(): void {
-                const value = this.modelValue ?? "";
-
-                this.internalValue = value !== "" ? value.split(",") : [];
+    setup(props, { emit }) {
+        const internalValue = computed<string[]>({
+            get() {
+                const value = props.modelValue ?? "";
+                return value !== "" ? value.split(",") : [];
+            },
+            set(newVal) {
+                emit("update:modelValue", newVal.sort().join(","));
             }
-        }
+        });
+
+        return { internalValue };
     },
     template: `
-<CheckBoxList v-model="internalValue" :items="options()" />
+<DayOfWeekPicker v-model="internalValue" multiple />
 `
 });
 

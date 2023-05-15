@@ -778,6 +778,16 @@ namespace RockWeb.Blocks.Groups
             var qryGroups = groupService.Queryable()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
 
+            var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
+            if ( rootGroupGuid.HasValue )
+            {
+                var parentGroup = groupService.Get( rootGroupGuid.Value );
+                if ( parentGroup != null )
+                {
+                    qryGroups = qryGroups.Where( g => g.ParentGroupId == parentGroup.Id );
+                }
+            }
+
             string limitToActiveStatus = GetAttributeValue( "LimittoActiveStatus" );
 
             bool showActive = true;
@@ -895,6 +905,9 @@ namespace RockWeb.Blocks.Groups
                 // load with groups that have Group History
                 _groupsWithGroupHistory = new HashSet<int>( new GroupHistoricalService( rockContext ).Queryable().Where( a => qryGroups.Any( g => g.Id == a.GroupId ) ).Select( a => a.GroupId ).ToList() );
 
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupSyncService = new GroupSyncService( rockContext );
+
                 groupList = qryGroups
                     .AsEnumerable()
                     .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
@@ -914,8 +927,8 @@ namespace RockWeb.Blocks.Groups
                         ElevatedSecurityLevel = g.ElevatedSecurityLevel,
                         IsSecurityRole = g.IsSecurityRole,
                         DateAdded = DateTime.MinValue,
-                        IsSynced = g.GroupSyncs.Any(),
-                        MemberCount = g.Members.Count()
+                        IsSynced = groupSyncService.Queryable().Any( gs => gs.GroupId == g.Id ),
+                        MemberCount = groupMemberService.Queryable().Count( gm => gm.GroupId == g.Id )
                     } )
                     .AsQueryable()
                     .Sort( sortProperty )

@@ -68,6 +68,26 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this reminder is active.
+        /// </summary>
+        public bool IsActive
+        {
+            get
+            {
+                if ( this.IsComplete )
+                {
+                    return false;
+                }
+                else if ( this.ReminderDate >= RockDateTime.Now )
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
         #endregion Properties
 
         #region Public Methods
@@ -89,16 +109,10 @@ namespace Rock.Model
                     this.RenewCurrentCount++;
                 }
             }
-
-            // If this reminder is completed (and doesn't have a future occurrence) then the Person's reminder count should be decremented.
-            if ( this.IsComplete )
-            {
-                this.PersonAlias.Person.ReminderCount -= 1;
-            }
         }
 
         /// <summary>
-        /// 
+        /// Reset a completed reminder.
         /// </summary>
         public void ResetCompletedReminder()
         {
@@ -107,11 +121,14 @@ namespace Rock.Model
             this.RenewCurrentCount = 0;
             if ( this.ReminderDate < currentDate )
             {
-                this.ReminderDate = this.GetNextDate( currentDate ).Value;
-            }
+                var nextDate = this.GetNextDate( currentDate );
+                if ( nextDate == null )
+                {
+                    nextDate = currentDate;
+                }
 
-            // Add this reminder back to the Person's reminder count.
-            this.PersonAlias.Person.ReminderCount += 1;
+                this.ReminderDate = nextDate.Value;
+            }
         }
 
         /// <summary>
@@ -119,7 +136,7 @@ namespace Rock.Model
         /// </summary>
         public void CancelReoccurrence()
         {
-            this.RenewMaxCount = null;
+            this.RenewMaxCount = 0;
         }
 
         /// <summary>

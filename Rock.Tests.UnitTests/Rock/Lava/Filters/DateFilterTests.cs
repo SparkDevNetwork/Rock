@@ -1337,7 +1337,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void HumanizeDateTime_CompareDayEarlier_YieldsYesterday()
         {
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -1 ).ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -1 ).ToString( "dd-MMM-yyyy tt" ) );
 
             TestHelper.AssertTemplateOutput( "yesterday", template );
         }
@@ -1362,7 +1362,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void HumanizeDateTime_CompareDaysEarlier_YieldsDaysAgo()
         {
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss" ) );
+            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
 
             TestHelper.AssertTemplateOutput( "2 days ago", template );
         }
@@ -1374,7 +1374,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void HumanizeDateTime_CompareMonthsEarlier_YieldsMonthsAgo()
         {
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddMonths( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss" ) );
+            template = template.Replace( "<compareDate>", RockDateTime.Now.AddMonths( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
 
             TestHelper.AssertTemplateOutput( "2 months ago", template );
         }
@@ -1856,15 +1856,20 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void SundayDate_WithDateTimeOffsetAsInput_YieldsNextSundayDate()
         {
-            var datetimeInput = LavaDateTime.NewDateTimeOffset( 2021, 10, 11, 10, 0, 0 );
-
-            // Add the input DateTimeOffset object to the Lava context.
-            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
-
             LavaTestHelper.ExecuteForTimeZones( tz =>
             {
-                TestHelper.AssertTemplateOutput( "2021-10-17",
-                "{{ dateTimeInput | SundayDate | Date:'yyyy-MM-dd' }}", mergeValues );
+                var baseDate = LavaDateTime.NewDateTime( 2021, 10, 11, 10, 0, 0 );
+
+                // Add the input DateTimeOffset object to the Lava context.
+                var mergeValues = new LavaDataDictionary() { { "dateTimeInput", baseDate } };
+
+                // Get the next Sunday date in the active Rock time zone.
+                var nextSundayDate = LavaDateTime.ConvertToRockDateTime( baseDate.GetNextWeekday( DayOfWeek.Sunday ).Date );
+
+                TestHelper.AssertTemplateOutputDate( nextSundayDate,
+                "{{ dateTimeInput | SundayDate | Date:'yyyy-MM-dd' }}",
+                maximumDelta: null,
+                mergeValues );
             } );
         }
 

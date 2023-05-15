@@ -17,22 +17,23 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType } from "vue";
-import AddressControl, { getDefaultAddressControlModel } from "@Obsidian/Controls/addressControl";
+import AddressControl from "@Obsidian/Controls/addressControl.obs";
+import { getDefaultAddressControlModel } from "@Obsidian/Utility/address";
 import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
-import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
+import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import ComponentFromUrl from "@Obsidian/Controls/componentFromUrl";
-import Alert from "@Obsidian/Controls/alert.vue";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
-import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types";
+import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.RegistrantPersonField",
     components: {
-        Alert,
+        NotificationBox,
         ComponentFromUrl
     },
     props: {
@@ -99,6 +100,12 @@ export default defineComponent({
 
                 case RegistrationPersonFieldType.MobilePhone:
                     return PhoneNumberBox;
+
+                case RegistrationPersonFieldType.Race:
+                    return DropDownList;
+
+                case RegistrationPersonFieldType.Ethnicity:
+                    return DropDownList;
             }
         });
 
@@ -143,6 +150,7 @@ export default defineComponent({
                     break;
 
                 case RegistrationPersonFieldType.Address:
+                    componentProps.label = "Address";
                     break;
 
                 case RegistrationPersonFieldType.MaritalStatus:
@@ -170,6 +178,16 @@ export default defineComponent({
 
                 case RegistrationPersonFieldType.MobilePhone:
                     componentProps.label = "Mobile Phone";
+                    break;
+
+                case RegistrationPersonFieldType.Race:
+                    componentProps.label = "Race";
+                    componentProps.items = [...registrationEntryState.viewModel.races];
+                    break;
+
+                case RegistrationPersonFieldType.Ethnicity:
+                    componentProps.label = "Ethnicity";
+                    componentProps.items = [...registrationEntryState.viewModel.ethnicities];
                     break;
             }
 
@@ -207,6 +225,6 @@ export default defineComponent({
 
     template: `
 <component v-if="component" :is="component" v-bind="fieldControlComponentProps" v-model="fieldValues[field.guid]" />
-<Alert v-else alertType="danger">Could not load the control for person field {{ fieldType }}.</Alert>
+<NotificationBox v-else alertType="danger">Could not load the control for person field {{ fieldType }}.</NotificationBox>
 `
 });

@@ -66,42 +66,10 @@ namespace Rock.Web.Cache
         /// Gets the active segments with an option to include Segments that have a DataView that is not persisted.
         /// Note that Segments that have a DataView that is not persisted are considered inactive.
         /// </summary>
-        /// <param name="includeSegmentsWithNonPersistedDataViews">if set to <c>true</c> [include segments with non persisted data views].</param>
         /// <returns></returns>
-        public static IEnumerable<PersonalizationSegmentCache> GetActiveSegments( bool includeSegmentsWithNonPersistedDataViews )
+        public static IEnumerable<PersonalizationSegmentCache> GetActiveSegments()
         {
-            var activeSegments = All().Where( a => a.IsActive );
-            if ( includeSegmentsWithNonPersistedDataViews )
-            {
-                return activeSegments;
-            }
-
-            var segmentFilterDataViewIds = activeSegments.Where( a => a.FilterDataViewId.HasValue ).Select( a => a.FilterDataViewId.Value ).ToList();
-            if ( !segmentFilterDataViewIds.Any() )
-            {
-                return activeSegments;
-            }
-
-            var nonPersistedDataFilterDataViewIds = new DataViewService( new RockContext() ).GetByIds( segmentFilterDataViewIds )
-                .Where( a => a.PersistedScheduleIntervalMinutes == null ).Select( a => a.Id );
-
-            if ( nonPersistedDataFilterDataViewIds.Any() )
-            {
-                /* 06/22/2022 MP
-
-                Personalization Segments require that if it has a DataView, it must be a persisted DataView.
-                The UI will prevent saving the configurion if the the selected Dataview is not persisted,
-                but in case the DataView is changed to not persisted after they configured the segment filter,
-                we should treat the segment filter as inactive/disabled.
-
-                See discussion at https://app.asana.com/0/0/1202399967339503/f
-
-                */
-
-                activeSegments = activeSegments.Where( a => !a.FilterDataViewId.HasValue || !nonPersistedDataFilterDataViewIds.Contains( a.FilterDataViewId.Value ) );
-            }
-
-            return activeSegments;
+            return All().Where( a => a.IsActive );
         }
 
         /// <summary>

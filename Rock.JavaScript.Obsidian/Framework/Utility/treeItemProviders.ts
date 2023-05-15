@@ -20,10 +20,24 @@ import { emptyGuid } from "./guid";
 import { post } from "./http";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
-import { LocationPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationPickerGetActiveChildrenOptionsBag";
+import { LocationItemPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationItemPickerGetActiveChildrenOptionsBag";
 import { DataViewPickerGetDataViewsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataViewPickerGetDataViewsOptionsBag";
 import { WorkflowTypePickerGetWorkflowTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowTypePickerGetWorkflowTypesOptionsBag";
+import { PagePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetChildrenOptionsBag";
+import { PagePickerGetSelectedPageHierarchyOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetSelectedPageHierarchyOptionsBag";
+import { ConnectionRequestPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/connectionRequestPickerGetChildrenOptionsBag";
 import { GroupPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupPickerGetChildrenOptionsBag";
+import { MergeTemplatePickerGetMergeTemplatesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeTemplatePickerGetMergeTemplatesOptionsBag";
+import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
+import { MetricCategoryPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/metricCategoryPickerGetChildrenOptionsBag";
+import { MetricItemPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/metricItemPickerGetChildrenOptionsBag";
+import { RegistrationTemplatePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/registrationTemplatePickerGetChildrenOptionsBag";
+import { ReportPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/reportPickerGetChildrenOptionsBag";
+import { SchedulePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/schedulePickerGetChildrenOptionsBag";
+import { WorkflowActionTypePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowActionTypePickerGetChildrenOptionsBag";
+import { MergeFieldPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeFieldPickerGetChildrenOptionsBag";
+import { flatten } from "./arrayUtils";
+import { toNumberOrNull } from "./numberUtils";
 
 /**
  * The methods that must be implemented by tree item providers. These methods
@@ -146,12 +160,12 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
      * @returns A collection of TreeItem objects as an asynchronous operation.
      */
     private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
-        const options: Partial<LocationPickerGetActiveChildrenOptionsBag> = {
+        const options: Partial<LocationItemPickerGetActiveChildrenOptionsBag> = {
             guid: parentGuid ?? emptyGuid,
             rootLocationGuid: emptyGuid,
             securityGrantToken: this.securityGrantToken
         };
-        const url = "/api/v2/Controls/LocationPickerGetActiveChildren";
+        const url = "/api/v2/Controls/LocationItemPickerGetActiveChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
@@ -295,6 +309,185 @@ export class WorkflowTypeTreeItemProvider implements ITreeItemProvider {
     }
 }
 
+
+
+/**
+ * Tree Item Provider for retrieving pages from the server and displaying
+ * them inside a tree list.
+ */
+export class PageTreeItemProvider implements ITreeItemProvider {
+    /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
+     * List of GUIDs or pages to exclude from the list.
+     */
+    public hidePageGuids?: Guid[] | null;
+
+    /**
+     * Currently selected page
+     */
+    public selectedPageGuids?: Guid[] | null;
+
+    /**
+     * Gets the child items of the given parent (or root if no parent given) from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+        let result: TreeItemBag[];
+
+        const options: Partial<PagePickerGetChildrenOptionsBag> = {
+            guid: parentGuid ?? emptyGuid,
+            rootPageGuid: null,
+            hidePageGuids: this.hidePageGuids ?? [],
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/PagePickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            result = response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+
+        // If we're getting child nodes or if there is no selected page
+        if (parentGuid || !this.selectedPageGuids) {
+            return result;
+        }
+
+        // If we're getting the root elements and we have a selected page, we also want to grab
+        // all the parent pages so we can pre-load the entire hierarchy to the selected page
+        return this.getHierarchyToSelectedPage(result);
+    }
+
+    /**
+     * Get the hierarchical list of parent pages of the selectedPageGuid
+     *
+     * @returns A list of GUIDs of the parent pages
+     */
+    private async getParentList(): Promise<Guid[]> {
+        const options: PagePickerGetSelectedPageHierarchyOptionsBag = {
+            selectedPageGuids: this.selectedPageGuids,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/PagePickerGetSelectedPageHierarchy";
+        const response = await post<Guid[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * Fill in pages to the depth of the selected page
+     *
+     * @param rootLayer The bottom layer of pages that we'll build depth upon
+     *
+     * @return The augmented `rootLayer` with the child pages
+     */
+    private async getHierarchyToSelectedPage(rootLayer: TreeItemBag[]): Promise<TreeItemBag[]> {
+        const parents = await this.getParentList();
+
+        if (!parents || parents.length == 0) {
+            // Selected page has no parents, so we're done.
+            return rootLayer;
+        }
+
+        const childLists = await Promise.all(parents.map(guid => this.getItems(guid)));
+        const allPages = rootLayer.concat(flatten(childLists));
+
+        parents.forEach((parentGuid, i) => {
+            const parentPage: TreeItemBag | undefined = allPages.find(page => page.value == parentGuid);
+            if (parentPage) {
+                parentPage.children = childLists[i];
+            }
+        });
+
+        return rootLayer;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+
+/**
+ * Tree Item Provider for retrieving connection requests from the server and displaying
+ * them inside a tree list.
+ */
+export class ConnectionRequestTreeItemProvider implements ITreeItemProvider {
+    /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+        const options: Partial<ConnectionRequestPickerGetChildrenOptionsBag> = {
+            parentGuid,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/ConnectionRequestPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
 /**
  * Tree Item Provider for retrieving groups from the server and displaying
  * them inside a tree list.
@@ -352,6 +545,507 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
      */
     async getRootItems(): Promise<TreeItemBag[]> {
         return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving merge templates from the server and displaying
+ * them inside a tree list.
+ */
+export class MergeTemplateTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** Filter for which merge templates to include in results: Global, Public, or Both */
+    public mergeTemplateOwnership: MergeTemplateOwnership = MergeTemplateOwnership.Global;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<MergeTemplatePickerGetMergeTemplatesOptionsBag> = {
+            parentGuid,
+            mergeTemplateOwnership: this.mergeTemplateOwnership,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/MergeTemplatePickerGetMergeTemplates";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving merge templates from the server and displaying
+ * them inside a tree list.
+ */
+export class MetricCategoryTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<MetricCategoryPickerGetChildrenOptionsBag> = {
+            parentGuid,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/MetricCategoryPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+/**
+ * Tree Item Provider for retrieving merge templates from the server and displaying
+ * them inside a tree list.
+ */
+export class MetricItemTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** A list of category GUIDs to filter the results */
+    public includeCategoryGuids: Guid[] | null = null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<MetricItemPickerGetChildrenOptionsBag> = {
+            parentGuid,
+            includeCategoryGuids: this.includeCategoryGuids,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/MetricItemPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving registration templates from the server and displaying
+ * them inside a tree list.
+ */
+export class RegistrationTemplateTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<RegistrationTemplatePickerGetChildrenOptionsBag> = {
+            parentGuid,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/RegistrationTemplatePickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving reports from the server and displaying
+ * them inside a tree list.
+ */
+export class ReportTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** A list of category GUIDs to filter the results. */
+    public includeCategoryGuids: Guid[] | null = null;
+
+    /** Guid of an Entity Type to filter results by the reports that relate to this entity type. */
+    public entityTypeGuid: Guid | null = null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<ReportPickerGetChildrenOptionsBag> = {
+            parentGuid,
+            includeCategoryGuids: this.includeCategoryGuids,
+            entityTypeGuid: this.entityTypeGuid,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/ReportPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving reports from the server and displaying
+ * them inside a tree list.
+ */
+export class ScheduleTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** Whether to include inactive schedules in the results. */
+    public includeInactive: boolean = false;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<SchedulePickerGetChildrenOptionsBag> = {
+            parentGuid,
+            includeInactiveItems: this.includeInactive,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/SchedulePickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving reports from the server and displaying
+ * them inside a tree list.
+ */
+export class WorkflowActionTypeTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** Whether to include inactive schedules in the results. */
+    public includeInactive: boolean = false;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentId: string | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<WorkflowActionTypePickerGetChildrenOptionsBag> = {
+            parentId: toNumberOrNull(parentId) ?? 0,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/WorkflowActionTypePickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+/**
+     * Tree Item Provider for retrieving merge fields from the server and displaying
+     * them inside a tree list.
+     */
+export class MergeFieldTreeItemProvider implements ITreeItemProvider {
+    /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
+     * Currently selected page
+     */
+    public selectedIds?: string[] | string | null;
+
+    /**
+     * Root Level Merge Fields
+     */
+    public additionalFields: string = "";
+
+    /**
+     * Gets the child items of the given parent (or root if no parent given) from the server.
+     *
+     * @param parentId The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentId?: string | null): Promise<TreeItemBag[]> {
+        let result: TreeItemBag[];
+
+        const options: Partial<MergeFieldPickerGetChildrenOptionsBag> = {
+            id: parentId || "0",
+            additionalFields: this.additionalFields
+        };
+        const url = "/api/v2/Controls/MergeFieldPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            result = response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+
+        // If we're getting child nodes or if there is no selected page
+        if (parentId || !this.selectedIds || this.selectedIds.length == 0) {
+            return result;
+        }
+
+        // If we're getting the root elements and we have a selected page, we also want to grab
+        // all the parent pages so we can pre-load the entire hierarchy to the selected page
+        return this.getHierarchyToSelectedMergeField(result);
+    }
+
+    /**
+     * Fill in pages to the depth of the selected page
+     *
+     * @param rootLayer The bottom layer of pages that we'll build depth upon
+     *
+     * @return The augmented `rootLayer` with the child pages
+     */
+    private async getHierarchyToSelectedMergeField(rootLayer: TreeItemBag[]): Promise<TreeItemBag[]> {
+        const parents = this.getParentList();
+
+        if (!parents || parents.length == 0) {
+            // Selected page has no parents, so we're done.
+            return rootLayer;
+        }
+
+        const childLists = await Promise.all(parents.map(id => this.getItems(id)));
+        const allMergeFields = rootLayer.concat(flatten(childLists));
+
+        parents.forEach((parentGuid, i) => {
+            const parentMergeField: TreeItemBag | undefined = allMergeFields.find(page => page.value == parentGuid);
+            if (parentMergeField) {
+                parentMergeField.children = childLists[i];
+            }
+        });
+
+        return rootLayer;
+    }
+
+    /**
+     * Get the hierarchical list of parent merge fields of the selected merge fields
+     *
+     * @returns A list of IDs of the parent merge fields
+     */
+    private getParentList(): string[] | null {
+        if (!this.selectedIds || this.selectedIds.length == 0) {
+            return null;
+        }
+
+        // If it's a single selection, grab the parents by splitting on "|",
+        // e.g. "Grand|Parent|Child" will give ["Grand", "Parent"] as the parents
+        if (typeof this.selectedIds == "string") {
+            return this.splitSelectionIntoParents(this.selectedIds);
+        }
+
+        // Not null/empty nor a single selection, so must be an array of selections
+        return flatten(this.selectedIds.map(sel => this.splitSelectionIntoParents(sel)));
+    }
+
+    /**
+     * Split the given selected ID up and get a list of the parent IDs
+     *
+     * @param selection a string denoted one of the selected values
+     */
+    private splitSelectionIntoParents(selection: string): string[] {
+        const parentIds: string[] = [];
+
+        // grab the parents by splitting on "|",
+        // e.g. "Grand|Parent|Child" will give ["Grand", "Parent"] as the parents
+        const splitList = selection.split("|");
+        splitList.pop();
+
+        // Now we need to make sure each item further in the list contains it's parents' names
+        // e.g. ["Grand", "Parent"] => ["Grand", "Grand|Parent"]
+        while (splitList.length >= 1) {
+            parentIds.unshift(splitList.join("|"));
+            splitList.pop();
+        }
+
+        return parentIds;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems();
     }
 
     /**

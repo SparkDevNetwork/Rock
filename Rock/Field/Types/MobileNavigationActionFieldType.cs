@@ -20,6 +20,10 @@ using Rock.Attribute;
 using Rock.Mobile;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+#if WEBFORMS
+using System.Web.UI;
+using System.Web.UI.WebControls;
+#endif
 
 namespace Rock.Field.Types
 {
@@ -35,7 +39,7 @@ namespace Rock.Field.Types
     /// <seealso cref="Rock.Field.FieldType" />
     [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8")]
+    [Rock.SystemGuid.FieldTypeGuid( "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8" )]
     public sealed class MobileNavigationActionFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Formatting
@@ -77,53 +81,13 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <inheritdoc/>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion
 
         #region Edit Control
 
-        /// <inheritdoc/>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            return new MobileNavigationActionEditor { ID = id };
-        }
-
-        /// <inheritdoc/>
-        public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( control is MobileNavigationActionEditor actionEditor )
-            {
-                return actionEditor.NavigationAction.ToJson();
-            }
-
-            return string.Empty;
-        }
-
-        /// <inheritdoc/>
-        public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            if ( control is MobileNavigationActionEditor actionEditor )
-            {
-                actionEditor.NavigationAction = value.FromJsonOrNull<MobileNavigationAction>();
-            }
-        }
-
         #endregion
 
         #region Filter Control
-
-        /// <inheritdoc/>
-        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
-        {
-            return null;
-        }
 
         /// <inheritdoc/>
         public override bool HasFilterControl()
@@ -170,5 +134,52 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <inheritdoc/>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            return new MobileNavigationActionEditor { ID = id };
+        }
+
+        /// <inheritdoc/>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( control is MobileNavigationActionEditor actionEditor )
+            {
+                return actionEditor.NavigationAction.ToJson();
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( control is MobileNavigationActionEditor actionEditor )
+            {
+                actionEditor.NavigationAction = value.FromJsonOrNull<MobileNavigationAction>();
+            }
+        }
+
+        /// <inheritdoc/>
+        public override Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
+        {
+            return null;
+        }
+
+#endif
+        #endregion
+
     }
 }

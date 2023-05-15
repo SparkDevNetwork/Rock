@@ -64,7 +64,7 @@ namespace Rock.RealTime.Topics
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.14.1" )]
     [RealTimeTopic]
     internal class InteractiveExperienceParticipantTopic : Topic<IInteractiveExperienceParticipant>
     {
@@ -82,7 +82,7 @@ namespace Rock.RealTime.Topics
             var token = Security.Encryption.DecryptString( experienceToken ).FromJsonOrNull<ExperienceToken>();
             var occurrenceId = IdHasher.Instance.GetId( token?.OccurrenceId ?? string.Empty );
 
-            if ( token == null || !occurrenceId.HasValue )
+            if ( token == null || !occurrenceId.HasValue || occurrenceId.Value == 0 )
             {
                 throw new RealTimeException( "Invalid experience token." );
             }
@@ -104,7 +104,12 @@ namespace Rock.RealTime.Topics
                     .Queryable()
                     .Include( o => o.CurrentlyShownAction )
                     .Where( o => o.Id == occurrenceId.Value )
-                    .Single();
+                    .SingleOrDefault();
+
+                if ( occurrence == null )
+                {
+                    throw new RealTimeException( "Requested occurrence was not found." );
+                }
 
                 response.OccurrenceIdKey = occurrence.IdKey;
                 response.CurrentActionIdKey = occurrence.CurrentlyShownAction?.IdKey;

@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
@@ -36,7 +36,6 @@ namespace Rock.Jobs
     [Description( "Charge future transactions where the FutureProcessingDateTime is now or has passed." )]
 
     #region Job Attributes
-
     [SystemCommunicationField( "Receipt Email",
         Key = AttributeKey.ReceiptEmail,
         Description = "The system email to use to send the receipt.",
@@ -46,8 +45,7 @@ namespace Rock.Jobs
 
     #endregion Job Attributes
 
-    [DisallowConcurrentExecution]
-    public class ChargeFutureTransactions : IJob
+    public class ChargeFutureTransactions : RockJob
     {
         #region Attribute Keys
 
@@ -69,14 +67,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            Guid? receiptEmail = dataMap.GetString( AttributeKey.ReceiptEmail ).AsGuidOrNull();
+            Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
 
             var rockContext = new RockContext();
             var transactionService = new FinancialTransactionService( rockContext );
@@ -100,7 +94,7 @@ namespace Rock.Jobs
                 }
             }
 
-            context.Result = string.Format( "{0} future transactions charged", successCount );
+            UpdateLastStatusMessage( string.Format( "{0} future transactions charged", successCount ) );
 
             if ( errors.Any() )
             {
@@ -110,7 +104,8 @@ namespace Rock.Jobs
                 errors.ForEach( e => sb.AppendLine( e ) );
 
                 var errorMessage = sb.ToString();
-                context.Result += errorMessage;
+
+                this.Result += errorMessage;
 
                 var exception = new Exception( errorMessage );
                 var context2 = HttpContext.Current;

@@ -79,6 +79,11 @@ namespace Rock.Model
                 return null;
             }
 
+            if ( person.PrimaryFamily == null || person.PrimaryFamily.GroupLocations == null )
+            {
+                return null;
+            }
+
             // Get the most recent location for the primary family, preferring a mapped location if it exists.
             return person.PrimaryFamily.GroupLocations
             .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id )
@@ -347,6 +352,10 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Person> WhereAgeRange( this IQueryable<Person> personQry, int? minAge, int? maxAge, bool includePeopleWithNoAge = true )
         {
+            /*
+             * K.A - 3/21/2023
+             * Not updated to use the Age property on Person in case this job is run in between updates from the Cleanup job which could result in a birthday being skipped.
+             */
             var currentDate = RockDateTime.Today;
             var qryWithAge = personQry.Select(
                       p => new

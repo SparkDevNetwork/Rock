@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -83,12 +83,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         DefaultBooleanValue = false,
         Order = 3 )]
 
+    [CustomDropdownListField(
+        "Race",
+        Key = AttributeKey.RaceOption,
+        Description = "Allow Race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Order = 4 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.EthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Order = 5 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "0A15F28C-4828-4B38-AF66-58AC5BDE48E0" )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
-
         #region Attribute Keys and Values
 
         private static class AttributeKey
@@ -97,6 +114,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string HideAnniversaryDate = "HideAnniversaryDate";
             public const string SearchKeyTypes = "SearchKeyTypes";
             public const string RequireCompleteBirthDate = "RequireCompleteBirthDate";
+            public const string RaceOption = "RaceOption";
+            public const string EthnicityOption = "EthnicityOption";
         }
 
         private static class ListSource
@@ -120,6 +139,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         AND AV.[Id] IS NULL
         ORDER BY V.[Order]
 ";
+
+            public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
         }
 
         #endregion Attribute Keys and Values
@@ -243,6 +264,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 familyNameWithFirstNames = string.Format( "{0} (no family members)", familyName );
             }
+
             return familyNameWithFirstNames;
         }
 
@@ -258,6 +280,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 ShowDetails();
             }
+
+            ShowOrHideEthnicityAndRace();
         }
 
         /// <summary>
@@ -276,6 +300,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 bpBirthDay.RequireYear = false;
             }
+
+            ShowOrHideEthnicityAndRace();
         }
 
         #region View State related stuff
@@ -356,7 +382,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            bool showInactiveReason = ( dvpRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
+            bool showInactiveReason = dvpRecordStatus.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
             dvpReason.Visible = showInactiveReason && canEditRecordStatus;
@@ -383,7 +409,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void dvpReason_SelectedIndexChanged( object sender, EventArgs e )
         {
-            bool isDeceased = ( dvpReason.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id );
+            bool isDeceased = dvpReason.SelectedValueAsInt() == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
             bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
             dpDeceasedDate.Visible = isDeceased && canEditRecordStatus;
             lDeceasedDateReadOnly.Visible = isDeceased && !canEditRecordStatus;
@@ -407,7 +433,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var personService = new PersonService( rockContext );
 
                         var person = personService.Get( Person.Id );
-
                         int? orphanedPhotoId = null;
                         if ( person.PhotoId != imgPhoto.BinaryFileId )
                         {
@@ -450,12 +475,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             graduationYear = ypGraduation.SelectedYear.Value;
                         }
+
                         person.GraduationYear = graduationYear;
 
                         person.MaritalStatusValueId = dvpMaritalStatus.SelectedValueAsInt();
                         person.AnniversaryDate = person.MaritalStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id ? dpAnniversaryDate.SelectedDate : null;
                         person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
                         person.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
+
+                        if ( rpRace.Visible )
+                        {
+                            person.RaceValueId = rpRace.SelectedValueAsId();
+                        }
+
+                        if ( epEthnicity.Visible )
+                        {
+                            person.EthnicityValueId = epEthnicity.SelectedValueAsId();
+                        }
 
                         var phoneNumberTypeIds = new List<int>();
 
@@ -511,15 +547,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                         }
 
-                        // Remove any blank numbers
-                        var phoneNumberService = new PhoneNumberService( rockContext );
-                        foreach ( var phoneNumber in person.PhoneNumbers
-                            .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
-                            .ToList() )
-                        {
-                            person.PhoneNumbers.Remove( phoneNumber );
-                            phoneNumberService.Delete( phoneNumber );
-                        }
+                        // Remove any duplicates and blank numbers
+                        personService.RemoveEmptyAndDuplicatePhoneNumbers( person, phoneNumberTypeIds, rockContext );
 
                         person.Email = tbEmail.Text.Trim();
                         person.IsEmailActive = cbIsEmailActive.Checked;
@@ -622,10 +651,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var reasonDeceasedId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
 
                         int? newRecordStatusId = dvpRecordStatus.SelectedValueAsInt();
+
                         // Is the person's record status changing?
                         if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId != newRecordStatusId )
                         {
-                            //  If it was inactive OR if the new status is inactive, flag this for use later below.
+                            // If it was inactive OR if the new status is inactive, flag this for use later below.
                             if ( person.RecordStatusValueId == recordStatusInactiveId || newRecordStatusId == recordStatusInactiveId )
                             {
                                 recordStatusChangedToOrFromInactive = true;
@@ -639,6 +669,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             newRecordStatusReasonId = dvpReason.SelectedValueAsInt();
                         }
+
                         person.RecordStatusReasonValueId = newRecordStatusReasonId;
                         person.InactiveReasonNote = tbInactiveReasonNote.Text.Trim();
 
@@ -657,6 +688,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 deceasedDate = dpDeceasedDate.SelectedDate;
                             }
                         }
+
                         person.DeceasedDate = deceasedDate;
 
                         // Save any Removed/Added Previous Names
@@ -801,8 +833,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             return searchKeyTypes;
-
         }
+
         /// <summary>
         /// Handles the Click event of the btnCancel control.
         /// </summary>
@@ -906,6 +938,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbInactiveReasonNote.Text = Person.InactiveReasonNote;
             lReasonNoteReadOnly.Text = Person.InactiveReasonNote;
 
+            rpRace.SetValue( Person.RaceValueId );
+            epEthnicity.SetValue( Person.EthnicityValueId );
+
             ddlRecordStatus_SelectedIndexChanged( null, null );
             dvpReason_SelectedIndexChanged( null, null );
 
@@ -981,6 +1016,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 values = values.Where( s => s.SearchTypeValueId == dv.Id && !s.IsValuePrivate ).ToList();
             }
+
             gAlternateIds.DataKeyNames = new string[] { "Guid" };
             gAlternateIds.DataSource = values;
             gAlternateIds.DataBind();
@@ -997,6 +1033,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 values = values.Where( s => s.SearchTypeValueId != dv.Id ).ToList();
             }
+
             gSearchKeys.DataKeyNames = new string[] { "Guid" };
             gSearchKeys.DataSource = values;
             gSearchKeys.DataBind();
@@ -1036,6 +1073,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 this.PersonSearchKeysState.Add( new PersonSearchKey { SearchValue = tbAlternateId.Text, SearchTypeValueId = dv.Id, Guid = Guid.NewGuid() } );
             }
+
             BindPersonAlternateIdsGrid();
             mdAlternateId.Hide();
         }
@@ -1063,7 +1101,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlSearchValueType.Items.Insert( 0, new ListItem() );
             mdSearchKey.Show();
         }
-
 
         /// <summary>
         /// Handles the SaveClick event of the mdSearchKey control.
@@ -1208,6 +1245,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     args.IsValid = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Shows or hides the RacePicker and EthnicityPicker according to settings and business rules.
+        /// </summary>
+        protected void ShowOrHideEthnicityAndRace()
+        {
+            var raceOptionAttributeValue = GetAttributeValue( AttributeKey.RaceOption );
+            var ethnicityOptionAttributeValue = GetAttributeValue( AttributeKey.EthnicityOption );
+
+            rpRace.Visible = raceOptionAttributeValue != "Hide";
+            rpRace.Required = raceOptionAttributeValue == "Required";
+
+            epEthnicity.Visible = ethnicityOptionAttributeValue != "Hide";
+            epEthnicity.Required = ethnicityOptionAttributeValue == "Required";
         }
     }
 }

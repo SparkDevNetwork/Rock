@@ -33,6 +33,7 @@ using Rock.ElectronicSignature;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Pdf;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
@@ -267,6 +268,15 @@ namespace Rock.Blocks.Event
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
                     return ActionBadRequest( errorMessage );
+                }
+
+                if ( PageParameter( PageParameterKey.GroupId).AsIntegerOrNull() == null )
+                {
+                    var groupId = GetRegistrationGroupId( rockContext );
+                    if ( groupId.HasValue )
+                    {
+                        RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
+                    }
                 }
 
                 var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
@@ -523,7 +533,7 @@ namespace Rock.Blocks.Event
                 // be used later to validate the document after signing.
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var unencryptedSecurityToken = new[] { RockDateTime.Now.ToString( "o" ), GetSha256Hash( fieldHashToken + html ) }.ToJson();
-                var encryptedSecurityToken = Security.Encryption.EncryptString( unencryptedSecurityToken );
+                var encryptedSecurityToken = Encryption.EncryptString( unencryptedSecurityToken );
 
                 return ActionOk( new RegistrationEntrySignatureDocument
                 {
@@ -570,7 +580,7 @@ namespace Rock.Blocks.Event
                 }
 
                 // Validate they did not modify any of the fields or the signed HTML.
-                var unencryptedSecurityToken = Security.Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
+                var unencryptedSecurityToken = Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var hash = GetSha256Hash( fieldHashToken + documentHtml );
 
@@ -591,7 +601,7 @@ namespace Rock.Blocks.Event
                     SignedByEmail = signature.SignedByEmail
                 };
 
-                return ActionOk( Security.Encryption.EncryptString( signedData.ToJson() ) );
+                return ActionOk( Encryption.EncryptString( signedData.ToJson() ) );
             }
         }
 
@@ -624,7 +634,9 @@ namespace Rock.Blocks.Event
                 Registrants = args.Registrants,
                 Registrar = args.Registrar,
                 RegistrationGuid = context.Registration?.Guid,
-                RegistrationSessionGuid = args.RegistrationSessionGuid
+                RegistrationSessionGuid = args.RegistrationSessionGuid,
+                Slug = PageParameter(PageParameterKey.Slug ),
+                GroupId = PageParameter(PageParameterKey.GroupId ).AsIntegerOrNull()
             };
 
             var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
@@ -854,7 +866,7 @@ namespace Rock.Blocks.Event
             // If the Registration Instance linkage specified a group, load it now
             var groupId = GetRegistrationGroupId( rockContext );
 
-            Group group = null;
+            Rock.Model.Group group = null;
 
             if ( groupId.HasValue )
             {
@@ -915,7 +927,10 @@ namespace Rock.Blocks.Event
 
                 foreach ( var registrantInfo in args.Registrants )
                 {
-                    var forceWaitlist = context.SpotsRemaining < 1;
+                    // Force the waitlist if there are no spots remaining, and this is an existing registration or if the registrant is already on the waitlist.
+                    // Rock should not force the waitlist when existing registrants are making payments
+                    // Rock should force the waitlist if there are no spots remaining and a registrant is being added
+                    var forceWaitlist = context.SpotsRemaining < 1 && ( isNewRegistration == true || registrantInfo.IsOnWaitList == true );
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
                     UpsertRegistrant(
@@ -1843,6 +1858,26 @@ namespace Rock.Blocks.Event
 
                                 break;
                             }
+
+                        case RegistrationPersonFieldType.Race:
+                            {
+                                var newRaceValueGuid = fieldValue.ToStringSafe().AsGuidOrNull();
+                                var newRaceValueId = newRaceValueGuid.HasValue ? DefinedValueCache.Get( newRaceValueGuid.Value )?.Id : null;
+                                var oldRaceValueId = person.RaceValueId;
+                                person.RaceValueId = newRaceValueId;
+                                History.EvaluateChange( personChanges, "Race", DefinedValueCache.GetName( oldRaceValueId ), DefinedValueCache.GetName( person.RaceValueId ) );
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.Ethnicity:
+                            {
+                                var newEthnicityValueGuid = fieldValue.ToStringSafe().AsGuidOrNull();
+                                var newEthnicityValueId = newEthnicityValueGuid.HasValue ? DefinedValueCache.Get( newEthnicityValueGuid.Value )?.Id : null;
+                                var oldEthnicityValueId = person.ConnectionStatusValueId;
+                                person.EthnicityValueId = newEthnicityValueId;
+                                History.EvaluateChange( personChanges, "Ethnicity", DefinedValueCache.GetName( oldEthnicityValueId ), DefinedValueCache.GetName( person.EthnicityValueId ) );
+                                break;
+                            }
                     }
                 }
             }
@@ -2134,7 +2169,7 @@ namespace Rock.Blocks.Event
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired && isNewRegistration )
             {
                 var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
-                var signedData = Security.Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
+                var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                 var signedBy = RequestContext.CurrentPerson ?? registrar;
 
                 var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.Person.FullName, context.RegistrationSettings.Name);
@@ -2278,6 +2313,16 @@ namespace Rock.Blocks.Event
                     RegistrationGuid = session.RegistrationGuid, // See engineering note from 9/7/2022 above.
                     RegistrationSessionGuid = session.RegistrationSessionGuid
                 };
+
+                if ( session.GroupId.HasValue )
+                {
+                    RequestContext.PageParameters.Add( PageParameterKey.GroupId, session.GroupId.ToString() );
+                }
+
+                if ( session.Slug.IsNotNullOrWhiteSpace() )
+                {
+                    RequestContext.PageParameters.Add( PageParameterKey.Slug, session.Slug );
+                }
 
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
@@ -2663,6 +2708,24 @@ namespace Rock.Blocks.Event
                     {
                         Value = v.Guid.ToString(),
                         Text = v.GetAttributeValue( "Abbreviation" )
+                    } )
+                    .ToList(),
+                Races = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RACE )
+                    .DefinedValues
+                    .OrderBy( v => v.Order )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
+                    } )
+                    .ToList(),
+                Ethnicities = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_ETHNICITY )
+                    .DefinedValues
+                    .OrderBy( v => v.Order )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
                     } )
                     .ToList(),
 
@@ -3337,7 +3400,9 @@ namespace Rock.Blocks.Event
                 Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo>(),
                 Registrar = new RegistrarInfo(),
                 RegistrationGuid = registration.Guid,
-                PreviouslyPaid = alreadyPaid
+                PreviouslyPaid = alreadyPaid,
+                Slug = PageParameter(PageParameterKey.Slug ),
+                GroupId = PageParameter(PageParameterKey.GroupId ).AsIntegerOrNull()
             };
 
             // Add attributes about the registration itself
@@ -3364,7 +3429,8 @@ namespace Rock.Blocks.Event
                     PersonGuid = person?.Guid,
                     FieldValues = GetCurrentValueFieldValues( rockContext, person, registrant, settings.Forms ),
                     FeeItemQuantities = new Dictionary<Guid, int>(),
-                    IsOnWaitList = registrant.OnWaitList
+                    IsOnWaitList = registrant.OnWaitList,
+                    Cost = registrant.Cost
                 };
 
                 // Person fields and person attribute fields are already loaded via GetCurrentValueFieldValues, but we still need
@@ -3451,12 +3517,6 @@ namespace Rock.Blocks.Event
                 args.AmountToPayNow = 0;
             }
 
-            // Cannot pay more than is owed
-            if ( args.AmountToPayNow > amountDue )
-            {
-                args.AmountToPayNow = amountDue;
-            }
-
             var isNewRegistration = context.Registration == null;
 
             // Validate the charge amount is not too low according to the initial payment amount
@@ -3466,11 +3526,11 @@ namespace Rock.Blocks.Event
                     ? context.RegistrationSettings.PerRegistrantMinInitialPayment.Value * args.Registrants.Count
                     : amountDue;
 
-                if ( args.AmountToPayNow < minimumInitialPayment )
-                {
-                    args.AmountToPayNow = minimumInitialPayment;
-                }
+                args.AmountToPayNow = args.AmountToPayNow < minimumInitialPayment ? minimumInitialPayment : args.AmountToPayNow;
             }
+
+            // Cannot pay more than is owed. This check should be the last one performed regarding payment in this method.
+            args.AmountToPayNow = args.AmountToPayNow > amountDue ? amountDue : args.AmountToPayNow;
 
             return context;
         }
@@ -3604,7 +3664,7 @@ namespace Rock.Blocks.Event
         /// <param name="group">The group the person will be added to.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns>A new <see cref="GroupMember"/> instance.</returns>
-        private GroupMember BuildGroupMember( Person person, Group group, RegistrationSettings settings )
+        private GroupMember BuildGroupMember( Person person, Rock.Model.Group group, RegistrationSettings settings )
         {
             var groupMember = new GroupMember();
             groupMember.GroupId = group.Id;

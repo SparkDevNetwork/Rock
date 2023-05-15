@@ -29,20 +29,6 @@ namespace Rock.Web.UI.Controls
     public class PageBreadCrumbs : Control
     {
         /// <summary>
-        /// Gets or sets the pre text.
-        /// </summary>
-        /// <value>
-        /// The pre text.
-        /// </value>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use PreHTML Instead", true )]
-        public string PreText
-        {
-            get => PreHtml;
-            set => PreHtml = value;
-        }
-
-        /// <summary>
         /// Gets or sets the pre HTML.
         /// </summary>
         /// <value>
@@ -96,7 +82,6 @@ namespace Rock.Web.UI.Controls
                             else
                             {
                                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "breadcrumb-item" );
-                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "active" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.Li );
                                 writer.Write( crumb.Name );
                                 writer.RenderEndTag();

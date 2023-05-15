@@ -42,6 +42,22 @@ namespace Rock.ViewModels.Entities
         public int AccountProtectionProfile { get; set; }
 
         /// <summary>
+        /// Gets the Person's age.
+        /// </summary>
+        /// <value>
+        /// An System.Int32 representing the person's age. Returns null if the birthdate or birthyear is not available.
+        /// </value>
+        public int? Age { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age bracket.
+        /// </summary>
+        /// <value>
+        /// The age range.
+        /// </value>
+        public int AgeBracket { get; set; }
+
+        /// <summary>
         /// Gets or sets the age classification of the Person.
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
@@ -58,6 +74,14 @@ namespace Rock.ViewModels.Entities
         /// A System.DateTime representing the anniversary date of the Person's wedding. If the anniversary date is not known or they are not married this value will be null.
         /// </value>
         public DateTime? AnniversaryDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the birth date key.
+        /// </summary>
+        /// <value>
+        /// The birth date key.
+        /// </value>
+        public int? BirthDateKey { get; set; }
 
         /// <summary>
         /// Gets or sets the day of the month portion of the Person's birth date.

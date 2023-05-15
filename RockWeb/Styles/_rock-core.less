@@ -6,8 +6,11 @@
   4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right
   5. ASP.Net Overrides - Yep they get it wrong too sometimes
 */
+@color-base-primary: red(@brand-primary), green(@brand-primary), blue(@brand-primary);
 
 :root {
+  --color-primary: @brand-primary;
+  --color-base-primary: @color-base-primary;
   --focus-state-border: 1px solid @input-border-focus;
   --focus-state-border-color: @input-border-focus;
   --focus-state-shadow: @input-focus-box-shadow;
@@ -182,6 +185,7 @@ a.warning {
 
 .dropdown-menu {
   .box-shadow(@shadow-overlay);
+  max-height: 85vh;
   overflow-y: auto;
 
   &.datepicker-dropdown {
@@ -546,12 +550,41 @@ th[align="right"] {
     }
   }
 
+  .picker-select-none {
+    margin: 1px 0 0 2px;
+  }
+
   .nav-pills {
     margin: 6px 8px;
 
     > li {
       margin-top: 6px;
       margin-bottom: 6px;
+    }
+  }
+
+  .slidingdaterange-select, 
+  .slidingdaterange-number, 
+  .slidingdaterange-daterange .input-group {
+    margin-bottom: 0;
+  }
+
+  &.panel-toolbar-right {
+    justify-content: flex-end;
+    gap: 4px 30px;
+  }
+}
+
+.panel-toolbar-border {
+  border-bottom: 1px solid #dbdbdb;
+
+  .btn {
+    box-shadow: none;
+    border: 0;
+    background: transparent;
+
+    i {
+      font-size: 75%;
     }
   }
 }
@@ -633,6 +666,17 @@ th[align="right"] {
             padding: 0;
             min-height: 0;
             line-height: 1.5;
+            // force long words to wrap
+            overflow-wrap: break-word;
+
+            // force link attributes to clamp to one line with ellipsis without using block
+            > a {
+              display: inline-block;
+              max-width: 100%;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
           }
         }
 
@@ -654,6 +698,10 @@ th[align="right"] {
       font-weight: @font-weight-semibold;
       color: @gray-600;
       background: @gray-200;
+    }
+
+    .form-group + h4 {
+      margin-top: 24px;
     }
 
     // styles for matrix attributes
@@ -732,6 +780,47 @@ th[align="right"] {
 
   .panel-sidebar {
     border-right: 1px solid @panel-border;
+  }
+}
+
+.panel-waterfall {
+  .panel-variant(@panel-border; @panel-heading-text-color; transparent; transparent;);
+  box-shadow: none !important;
+  overflow: hidden;
+
+  .panel-heading {
+    padding-bottom: 8px;
+
+    + .panel-body {
+      border-top: 1px solid @panel-border;
+    }
+  }
+
+  .panel-body {
+    padding: 0 @panel-body-padding;
+
+    > .row {
+      display: flex;
+      flex-wrap: wrap;
+      // Add right border to all but last column
+      > [class*="col-"] {
+        padding-top: @panel-body-padding;
+        padding-bottom: @panel-body-padding;
+        &:not(:last-child),
+        &.show-divider {
+          border-bottom: 1px solid @panel-border;
+
+          @media (min-width: @screen-md-min) {
+            border-bottom-width: 0;
+            border-right: 1px solid @panel-border;
+          }
+        }
+      }
+    }
+  }
+
+  .panel-footer {
+    padding: 0;
   }
 }
 
@@ -1213,6 +1302,7 @@ div.aspNetDisabled {
   max-width: 100%;
   font-size: 14px;
   border-radius: 4px;
+  color: @text-color;
 
   @media (min-width: 480px) {
     flex-wrap: nowrap;

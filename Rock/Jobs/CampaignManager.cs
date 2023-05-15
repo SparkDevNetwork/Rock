@@ -16,9 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Quartz;
-using Rock;
+using System.Linq;using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -28,8 +26,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to create connection request based on campaign connection configuration and auto assign the request if configured. 
     /// </summary>
-    [DisallowConcurrentExecution]
-    public class CampaignManager : IJob
+    public class CampaignManager : RockJob
     {
         #region Constructor
 
@@ -46,16 +43,13 @@ namespace Rock.Jobs
 
         #endregion Constructor
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             var allCampaignItems = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.CampaignConnectionKey.CAMPAIGN_CONNECTION_CONFIGURATION ).FromJsonOrNull<List<CampaignItem>>() ?? new List<CampaignItem>();
             if ( !allCampaignItems.Any() )
             {
-                context.UpdateLastStatusMessage( $@"No Campaign Connection Configuration found." );
+                this.UpdateLastStatusMessage( $@"No Campaign Connection Configuration found." );
                 return;
             }
 
@@ -67,13 +61,13 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    ProcessCampaignConfigurationEntitySet( context, campaignItem );
-                    createConnectionRequestsResultCount += CreateConnectionRequests( context, campaignItem );
+                    ProcessCampaignConfigurationEntitySet( campaignItem );
+                    createConnectionRequestsResultCount += CreateConnectionRequests( campaignItem );
 
                     if ( createConnectionRequestsResultCount > 0 )
                     {
                         // If records were created, update the EntitySet
-                        ProcessCampaignConfigurationEntitySet( context, campaignItem );
+                        ProcessCampaignConfigurationEntitySet( campaignItem );
                     }
                 }
                 catch ( Exception ex )
@@ -105,7 +99,7 @@ namespace Rock.Jobs
                 }
             }
 
-            context.UpdateLastStatusMessage( $"{createConnectionRequestsResultCount} connection requests were created. " );
+            this.UpdateLastStatusMessage( $"{createConnectionRequestsResultCount} connection requests were created. " );
         }
 
         #region Process Campaign Configuration Entity Set
@@ -113,11 +107,10 @@ namespace Rock.Jobs
         /// <summary>
         /// Processes the campaign configuration entity set.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <param name="campaignItem">The campaign item.</param>
-        private void ProcessCampaignConfigurationEntitySet( IJobExecutionContext context, CampaignItem campaignItem )
+        private void ProcessCampaignConfigurationEntitySet( CampaignItem campaignItem )
         {
-            context.UpdateLastStatusMessage( $"Processing entity set for {campaignItem.Name}." );
+            this.UpdateLastStatusMessage( $"Processing entity set for {campaignItem.Name}." );
 
             campaignItem.EntitySetId = CampaignConnectionHelper.GetEntitySet( campaignItem );
             CampaignConnectionHelper.AddOrUpdateCampaignConfiguration( campaignItem.Guid, campaignItem );
@@ -132,12 +125,11 @@ namespace Rock.Jobs
         /// <summary>
         /// Creates the connection requests.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <param name="campaignItem">The campaign item.</param>
-        /// <returns></returns>
-        private int CreateConnectionRequests( IJobExecutionContext context, CampaignItem campaignItem )
+        /// <returns>System.Int32.</returns>
+        private int CreateConnectionRequests( CampaignItem campaignItem )
         {
-            context.UpdateLastStatusMessage( $"Processing create connection requests for {campaignItem.Name}" );
+            this.UpdateLastStatusMessage( $"Processing create connection requests for {campaignItem.Name}" );
 
             // Skip creating connection requests if set to "AsNeeded" and DailyLimitAssigned is 0 or null
             if ( campaignItem.CreateConnectionRequestOption == CreateConnectionRequestOptions.AsNeeded

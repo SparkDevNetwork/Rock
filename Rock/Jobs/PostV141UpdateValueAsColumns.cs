@@ -43,7 +43,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 1,
         Key = AttributeKey.CommandTimeout )]
-    public class PostV141UpdateValueAsColumns : IJob
+    public class PostV141UpdateValueAsColumns : RockJob
     {
         #region Keys
 
@@ -74,11 +74,10 @@ namespace Rock.Jobs
         /// <summary>
         /// Executes the specified context.
         /// </summary>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
             // get the configured timeout, or default to 3600 minutes if it is blank
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
             var stopWatch = System.Diagnostics.Stopwatch.StartNew();
 
             var jobMigration = new JobMigration( commandTimeout );
@@ -112,10 +111,10 @@ namespace Rock.Jobs
             UpdateAttributeValuesInRange( baseAttributeValueId, null, commandTimeout );
 
             // Log how long it took us to run.
-            var logMessage = $"[{stopWatch.Elapsed.TotalMilliseconds,5:N0} ms] {this.GetType().FullName}";
+            var logMessage = $"{RockDateTime.Now:MM/dd/yyyy HH:mm:ss.fff},[{stopWatch.Elapsed.TotalMilliseconds,5:#} ms],{this.GetType().FullName}";
             WriteToLog( logMessage );
 
-            ServiceJobService.DeleteJob( context.GetJobId() );
+            ServiceJobService.DeleteJob( GetJobId() );
         }
 
         /// <summary>

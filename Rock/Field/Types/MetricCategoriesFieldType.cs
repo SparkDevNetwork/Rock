@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -35,23 +37,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.METRIC_CATEGORIES )]
     public class MetricCategoriesFieldType : FieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
@@ -84,6 +70,82 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( privateValue );
+
+            if ( !guidPairs.Any() )
+            {
+                return null;
+            }
+            var metricGuids = guidPairs.Select( a => a.MetricGuid );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var referencedEntities = new MetricService( rockContext )
+                                    .Queryable()
+                                    .AsNoTracking()
+                                    .Where( m => metricGuids.Contains( m.Guid ) )
+                                    .Select( m => m.Id )
+                                    .ToList()
+                                    .Select( m => new ReferencedEntity( EntityTypeCache.GetId<Metric>().Value, m ) );
+                if ( !referencedEntities.Any() )
+                {
+                    return null;
+                }
+                return referencedEntities.ToList();
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Metric and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Metric>().Value, nameof( Metric.Title ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -165,10 +227,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -183,58 +241,7 @@ namespace Rock.Field.Types
             return null;
         }
 
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( privateValue );
-
-            if ( !guidPairs.Any() )
-            {
-                return null;
-            }
-            var metricGuids = guidPairs.Select( a => a.MetricGuid );
-
-            using ( var rockContext = new RockContext() )
-            {
-                var referencedEntities = new MetricService( rockContext )
-                                    .Queryable()
-                                    .AsNoTracking()
-                                    .Where( m => metricGuids.Contains( m.Guid ) )
-                                    .Select( m => m.Id )
-                                    .ToList()
-                                    .Select( m => new ReferencedEntity( EntityTypeCache.GetId<Metric>().Value, m ) );
-                if ( !referencedEntities.Any() )
-                {
-                    return null;
-                }
-                return referencedEntities.ToList();
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Metric and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<Metric>().Value, nameof( Metric.Title ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

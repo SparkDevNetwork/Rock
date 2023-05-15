@@ -47,6 +47,11 @@ namespace Rock.Lava
         public ILavaFileSystem FileSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets the component that provides access to information about the environment in which the Lava Engine is executing.
+        /// </summary>
+        public ILavaHost HostService { get; set; }
+
+        /// <summary>
         /// The set of Lava commands that are enabled by default when a new context is created.
         /// </summary>
         public List<string> DefaultEnabledCommands { get; set; }
@@ -55,5 +60,10 @@ namespace Rock.Lava
         /// Gets or sets the strategy for handling exceptions encountered during the rendering process.
         /// </summary>
         public ExceptionHandlingStrategySpecifier? ExceptionHandlingStrategy { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if dynamic shortcodes should be imported from the target database.
+        /// </summary>
+        public bool InitializeDynamicShortcodes { get; set; }
     }
 }

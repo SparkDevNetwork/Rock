@@ -22,6 +22,11 @@ export default defineComponent({
     components: {
     },
 
+    emits: [
+         // Explicitly define "update:modelValue" event; otherwise v-bind="$attrs" could attach a duplicate event handler to the underlying checkbox input.
+        "update:modelValue"
+    ],
+
     props: {
         modelValue: {
             type: Boolean as PropType<boolean>,
@@ -59,7 +64,7 @@ export default defineComponent({
     template: `
 <div class="checkbox">
     <label title="">
-        <input type="checkbox" v-model="internalValue" />
+        <input type="checkbox" v-model="internalValue" v-bind="$attrs" />
         <span class="label-text ">{{label}}</span>
     </label>
 </div>

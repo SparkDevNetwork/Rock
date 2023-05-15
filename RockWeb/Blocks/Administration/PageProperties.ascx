@@ -50,7 +50,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" Help="The Site that the page should belong to." AutoPostBack="true" OnSelectedIndexChanged="ddlSite_SelectedIndexChanged" />
-                                        <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout" Required="true"/>
+                                        <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout" Required="true" />
                                         <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Label="Show Icon" Text="Yes" />
                                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
                                     </div>
@@ -63,7 +63,7 @@
                                 </div>
 
                                 <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attribute Values">
-                                    <Rock:DynamicPlaceholder ID="phPageAttributes" runat="server" ></Rock:DynamicPlaceholder>
+                                    <Rock:DynamicPlaceholder ID="phPageAttributes" runat="server"></Rock:DynamicPlaceholder>
                                 </Rock:PanelWidget>
                             </asp:Panel>
 
@@ -121,6 +121,17 @@
                                     <div class="col-md-12">
                                         <Rock:CacheabilityPicker ID="cpCacheSettings" runat="server" Label="" />
                                     </div>
+                                    <div class="col-md-12">
+                                        <Rock:RockCheckBox runat="server" ID="cbEnableRateLimiting" CssClass="js-rate-limit-checkbox" Label="Rate Limiting Enable" Help="Rate Limiting will limit the number of request that can be made to this page. This will help prevent bots from spamming a certain page." />
+                                    </div>
+                                    <asp:Panel runat="server" ID="pnlRateLimitingSettings" CssClass="js-rate-limit-settings d-none">
+                                        <div class="col-md-6">
+                                            <Rock:NumberBox runat="server" ID="nbRequestPerPeriod" Label="Max Request Per Period" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <Rock:NumberBox runat="server" ID="nbRateLimitPeriod" Label="Rate Limit Period" AppendText="seconds" />
+                                        </div>
+                                    </asp:Panel>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
@@ -128,7 +139,6 @@
                                             Help="Additional HTML content to include in the &amp;lt;head&amp;gt; section of the rendered page." />
                                     </div>
                                 </div>
-
                             </asp:Panel>
 
                         </div>
@@ -172,7 +182,7 @@
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">
                             <a title="Child Pages" class="btn btn-default btn-sm btn-square page-child-pages" runat="server" id="aChildPages"><i class="fa fa-sitemap"></i></a>
-                            <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCopy_Click"><i class="fa fa-clone"></i></asp:LinkButton>
+                            <asp:LinkButton ID="btnCopy" runat="server" ToolTip="Copy Page" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCopy_Click"><i class="fa fa-clone"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </div>
                     </asp:Panel>
@@ -180,7 +190,7 @@
 
                 <Rock:ModalDialog ID="mdCopyPage" runat="server" ValidationGroup="vgCopyPage" Title="Copy Page" OnSaveClick="mdCopyPage_SaveClick" SaveButtonText="Copy" Visible="false">
                     <Content>
-                        <Rock:NotificationBox ID="mdCopyWarning" runat="server" NotificationBoxType="Warning" Text="Verify all the block setting's values because they are not duplicates but point to the exact same item. You may want to create copies of certain things like images, so block copies are not referencing the same items."  />
+                        <Rock:NotificationBox ID="mdCopyWarning" runat="server" NotificationBoxType="Warning" Text="Verify all the block setting's values because they are not duplicates but point to the exact same item. You may want to create copies of certain things like images, so block copies are not referencing the same items." />
                         <Rock:RockCheckBox ID="cbCopyPageIncludeChildPages" runat="server" Text="Include Child Pages" Checked="true" />
                     </Content>
                 </Rock:ModalDialog>
@@ -191,7 +201,7 @@
                         <Rock:RockCheckBox ID="cbDeleteInteractions" runat="server" Text="Delete any interactions for this page" Checked="true" />
                     </Content>
                 </Rock:ModalDialog>
-                
+
             </asp:Panel>
         </asp:Panel>
         <script>
@@ -212,7 +222,25 @@
                         }
                     }
                 });
-                
+
+                // toggle rate limiting fields
+                $('.js-rate-limit-checkbox').on('click', function (e) {
+
+                    showHideRateLimitFields($(this));
+                });
+
+                function showHideRateLimitFields(rateLimitCheckbox) {
+                    var isChecked = rateLimitCheckbox.prop('checked');
+
+                    var panel = $(".js-rate-limit-settings")
+                    if (isChecked) {
+                        panel.removeClass('d-none');
+                    } else {
+                        panel.addClass('d-none');
+                    }
+                }
+
+                showHideRateLimitFields($('.js-rate-limit-checkbox'));
             });
         </script>
     </ContentTemplate>

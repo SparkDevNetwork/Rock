@@ -69,7 +69,7 @@ namespace Rock.Web.Cache
 
             // If this model implements IHasAttributes
             var attributeModel = entity as IHasAttributes;
-            if ( attributeModel == null )
+            if ( attributeModel == null || typeof ( T ) == typeof( AttributeCache ) )
             {
                 return;
             }

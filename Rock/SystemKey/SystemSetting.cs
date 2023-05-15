@@ -126,23 +126,31 @@ namespace Rock.SystemKey
         public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";
 
         /// <summary>
-        /// Enable a redis cache cluster
+        /// (Obsolete) Enable a redis cache cluster
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_ENABLE_CACHE_CLUSTER = "EnableRedisCacheCluster";
 
         /// <summary>
-        /// Comma separated list of Redis endpoints (e.g. server.com:6379)
+        /// (Obsolete) Comma separated list of Redis endpoints (e.g. server.com:6379)
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_ENDPOINT_LIST = "RedisEndpointList";
 
         /// <summary>
-        /// The redis password
+        /// (Obsolete) The redis password
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_PASSWORD = "RedisPassword";
 
         /// <summary>
-        /// The redis database index number
+        /// (Obsolete) The redis database index number
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_DATABASE_NUMBER = "RedisDatabaseNumber";
 
         /// <summary>
@@ -174,27 +182,6 @@ namespace Rock.SystemKey
         /// Enable Cache Manager statistics and performance counters.
         /// </summary>
         public const string CACHE_MANAGER_ENABLE_STATISTICS = "CacheManagerEnableStatistics";
-
-        /// <summary>
-        /// Settings for Do Not Disturb Start
-        /// </summary>
-        [Obsolete( "This functionality is no longer used.", true )]
-        [RockObsolete( "1.9" )]
-        public const string DO_NOT_DISTURB_START = "core_DoNotDisturbStart";
-
-        /// <summary>
-        /// Settings for Do Not Disturb End
-        /// </summary>
-        [Obsolete( "This functionality is no longer used.", true )]
-        [RockObsolete( "1.9" )]
-        public const string DO_NOT_DISTURB_END = "core_DoNotDisturbEnd";
-
-        /// <summary>
-        /// Settings for Do Not Disturb Active
-        /// </summary>
-        [Obsolete( "This functionality is no longer used.", true )]
-        [RockObsolete( "1.9" )]
-        public const string DO_NOT_DISTURB_ACTIVE = "core_DoNotDisturbActive";
 
         /// <summary>
         /// The open id connect RSA keys
@@ -287,6 +274,21 @@ namespace Rock.SystemKey
         public const string PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES = "core_PersonalizationSegmentCookieAffinityDurationMinutes";
 
         /// <summary>
+        /// Label text for the PersonRacePicker
+        /// </summary>
+        public const string PERSON_RACE_LABEL = "core_PersonRaceLabel";
+
+        /// <summary>
+        /// Label text for the PersonEthnicityPicker
+        /// </summary>
+        public const string PERSON_ETHNICITY_LABEL = "core_PersonEthnicityLabel";
+
+        /// <summary>
+        /// Label text for the PersonGenderPicker
+        /// </summary>
+        public const string PERSON_GENDER_LABEL = "core_GenderLabel";
+
+        /// <summary>
         /// The name of the standard Rock Context.
         /// </summary>
         public const string ROCK_CONTEXT = "RockContext";
@@ -295,5 +297,15 @@ namespace Rock.SystemKey
         /// The name of the standard Rock Context for Read Only queries.
         /// </summary>
         public const string ROCK_CONTEXT_READ_ONLY = "RockContextReadOnly";
+
+        /// <summary>
+        /// The Captcha site key.
+        /// </summary>
+        public const string CAPTCHA_SITE_KEY = "core_CaptchaSiteKey";
+
+        /// <summary>
+        /// The Captcha secret key.
+        /// </summary>
+        public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
     }
 }

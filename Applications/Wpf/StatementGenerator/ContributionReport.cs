@@ -234,7 +234,7 @@ namespace Rock.Apps.StatementGenerator
 
                 // Get Recipients from Rock REST Endpoint
                 UpdateProgress( "Getting Statement Recipients...", 0, 0 );
-                recipientList = GetRecipients( restClient );
+                recipientList = GetRecipients( restClient, rockConfig );
                 SaveGeneratorConfig( _currentDayTemporaryDirectory, incrementRunAttempts: false, reportsCompleted: false );
             }
 
@@ -282,7 +282,7 @@ namespace Rock.Apps.StatementGenerator
 
                 UpdateProgress( "Generating Individual Documents...", recipientProgressPosition + progressOffset, recipientProgressMax, true );
 
-                StartGenerateStatementForRecipient( recipient, restClient, enablePageCountPredetermination );
+                StartGenerateStatementForRecipient( recipient, restClient, enablePageCountPredetermination, rockConfig );
                 SaveRecipientListStatus( recipientList, _currentDayTemporaryDirectory, true );
             }
 
@@ -540,14 +540,15 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         /// <param name="recipient">The recipient.</param>
         /// <param name="restClient">The rest client.</param>
-        private void StartGenerateStatementForRecipient( FinancialStatementGeneratorRecipient recipient, RestClient restClient, bool enablePageCountPredetermination )
+        /// <param name="rockConfig">The rock configuration.</param>
+        private void StartGenerateStatementForRecipient( FinancialStatementGeneratorRecipient recipient, RestClient restClient, bool enablePageCountPredetermination, RockConfig rockConfig )
         {
             const int AssumedRenderedPageCount = 1;
 
             // Make an assumption that the RenderedPageCount is one.
             // The actual rendered page count will be updated after the Render is complete.
             recipient.RenderedPageCount = AssumedRenderedPageCount;
-            FinancialStatementGeneratorRecipientResult financialStatementGeneratorRecipientResult = GetFinancialStatementGeneratorRecipientResult( restClient, recipient );
+            FinancialStatementGeneratorRecipientResult financialStatementGeneratorRecipientResult = GetFinancialStatementGeneratorRecipientResult( restClient, recipient, rockConfig );
 
             recipient.OptedOut = financialStatementGeneratorRecipientResult.OptedOut;
             recipient.ContributionTotal = financialStatementGeneratorRecipientResult.ContributionTotal;
@@ -577,7 +578,7 @@ namespace Rock.Apps.StatementGenerator
                 // we don't need to do the 2nd pass if the 1st pass's rendered page count matches what we assumed it would be.l
                 if ( enablePageCountPredetermination && AssumedRenderedPageCount != recipient.RenderedPageCount )
                 {
-                    financialStatementGeneratorRecipientResult = GetFinancialStatementGeneratorRecipientResult( restClient, recipient );
+                    financialStatementGeneratorRecipientResult = GetFinancialStatementGeneratorRecipientResult( restClient, recipient, rockConfig );
                     generatePdfStopWatch.Start();
                     pdfDocument = RenderPDFDocument( financialStatementGeneratorRecipientResult );
                     recipient.RenderedPageCount = pdfDocument.PageCount;
@@ -916,8 +917,9 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
         /// </summary>
         /// <param name="restClient">The rest client.</param>
         /// <param name="recipient">The recipient.</param>
+        /// <param name="rockConfig">The rock configuration.</param>
         /// <returns></returns>
-        private FinancialStatementGeneratorRecipientResult GetFinancialStatementGeneratorRecipientResult( RestClient restClient, FinancialStatementGeneratorRecipient recipient )
+        private FinancialStatementGeneratorRecipientResult GetFinancialStatementGeneratorRecipientResult( RestClient restClient, FinancialStatementGeneratorRecipient recipient, RockConfig rockConfig )
         {
             FinancialStatementGeneratorRecipientRequest financialStatementGeneratorRecipientRequest = new FinancialStatementGeneratorRecipientRequest()
             {
@@ -925,12 +927,16 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                 FinancialStatementGeneratorRecipient = recipient
             };
 
-            var financialStatementGeneratorRecipientResultRequest = new RestRequest( "api/FinancialGivingStatement/GetStatementGeneratorRecipientResult", Method.POST );
+            var financialStatementGeneratorRecipientResultRequest = new RestRequest( rockConfig.GetStatementGeneratorRecipientResultEndpoint, Method.POST );
             financialStatementGeneratorRecipientResultRequest.AddJsonBody( financialStatementGeneratorRecipientRequest );
 
             Stopwatch getStatementHtml = Stopwatch.StartNew();
 
             var financialStatementGeneratorRecipientResultResponse = restClient.Execute<Client.FinancialStatementGeneratorRecipientResult>( financialStatementGeneratorRecipientResultRequest );
+            if ( financialStatementGeneratorRecipientResultResponse.StatusCode == System.Net.HttpStatusCode.NotFound )
+            {
+                throw new ApplicationException( @"Please provide a valid value for ""GetStatementGeneratorRecipientResult Endpoint"" on the options page, or leave it blank to use the default endpoint." );
+            }
             if ( financialStatementGeneratorRecipientResultResponse.ErrorException != null )
             {
                 throw financialStatementGeneratorRecipientResultResponse.ErrorException;
@@ -971,13 +977,18 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
         /// Gets the recipients.
         /// </summary>
         /// <param name="restClient">The rest client.</param>
+        /// <param name="rockConfig">The rock configuration.</param>
         /// <returns></returns>
-        private List<Client.FinancialStatementGeneratorRecipient> GetRecipients( RestClient restClient )
+        private List<Client.FinancialStatementGeneratorRecipient> GetRecipients( RestClient restClient, RockConfig rockConfig )
         {
-            var financialStatementGeneratorRecipientsRequest = new RestRequest( "api/FinancialGivingStatement/GetFinancialStatementGeneratorRecipients", Method.POST );
+            var financialStatementGeneratorRecipientsRequest = new RestRequest( rockConfig.GetFinancialStatementGeneratorRecipientsEndpoint, Method.POST );
             financialStatementGeneratorRecipientsRequest.AddJsonBody( this.Options );
             var financialStatementGeneratorRecipientsResponse = restClient.Execute<List<Client.FinancialStatementGeneratorRecipient>>( financialStatementGeneratorRecipientsRequest );
-            if ( financialStatementGeneratorRecipientsResponse.ErrorException != null )
+            if ( financialStatementGeneratorRecipientsResponse.StatusCode == System.Net.HttpStatusCode.NotFound )
+            {
+                throw new ApplicationException( @"Please provide a valid value for ""GetFinancialStatementGeneratorRecipients Endpoint"" on the options page, or leave it blank to use the default endpoint." );
+            }
+            else if ( financialStatementGeneratorRecipientsResponse.ErrorException != null )
             {
                 throw financialStatementGeneratorRecipientsResponse.ErrorException;
             }

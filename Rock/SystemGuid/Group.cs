@@ -37,6 +37,11 @@ namespace Rock.SystemGuid
         public const string GROUP_EVENT_REGISTRATION_ADMINISTRATORS = "2A92086B-DFF0-4B9C-46CB-4DAD805615AF";
 
         /// <summary>
+        /// RSR - Mobile Application Users
+        /// </summary>
+        public const string GROUP_MOBILE_APPLICATION_USERS = "42175217-1BA4-401B-AA4E-21EC4F1F0AB4";
+
+        /// <summary>
         /// The Calendar Administrators Group guid
         /// </summary>
         public const string GROUP_CALENDAR_ADMINISTRATORS = "FDA9D63F-B0B1-43E8-8B82-0255E5D99F26";
@@ -64,6 +69,8 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The security group used by mobile app
         /// </summary>
+        /// <remarks>Use <see cref="GROUP_MOBILE_APPLICATION_USERS"/></remarks>
+        [RockObsolete( "1.15" )]
         public const string GROUP_MOBILE_APP = "EDD336D5-1429-41D9-8D41-2581A05F0E16";
 
         /// <summary>
@@ -105,5 +112,10 @@ namespace Rock.SystemGuid
         /// RSR - Prayer Access
         /// </summary>
         public const string GROUP_RSR_PRAYER_ACCESS = "9E17621E-F559-44E9-8C40-E8CF44CF8FCF";
+
+        /// <summary>
+        /// A parent Group for all Sign-up Groups
+        /// </summary>
+        public const string GROUP_SIGNUP_GROUPS = "D649638A-EF91-42D8-9B38-32172D614A5F";
     }
 }

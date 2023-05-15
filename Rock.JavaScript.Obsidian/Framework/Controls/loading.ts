@@ -26,11 +26,17 @@ export default defineComponent({
         isLoading: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+
+        /** Whether or not to show a smaller version of the loading spinner */
+        isSmall: {
+            type: Boolean,
+            default: false
         }
     },
     template: `
 <div>
     <slot v-if="!isLoading" />
-    <LoadingIndicator v-else />
+    <LoadingIndicator v-else :isSmall="isSmall" />
 </div>`
 });

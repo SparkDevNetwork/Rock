@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -116,6 +117,22 @@ namespace Rock.RealTime
             {
                 throw new ArgumentException( "Invalid proxy type.", nameof( proxy ) );
             }
+        }
+
+        /// <inheritdoc/>
+        protected override async Task RemoveFromTopicChannelsAsync( object realTimeHub, string connectionIdentifier, string topicIdentifier, IEnumerable<string> channelNames )
+        {
+            if ( !( realTimeHub is RealTimeHub hub ) )
+            {
+                throw new ArgumentException( "Invalid hub object.", nameof( realTimeHub ) );
+            }
+
+            foreach ( var channelName in channelNames )
+            {
+                await hub.Groups.Remove( connectionIdentifier, GetQualifiedChannelName( topicIdentifier, channelName ) );
+            }
+
+            await hub.Groups.Remove( connectionIdentifier, GetQualifiedAllChannelName( topicIdentifier ) );
         }
 
         #endregion

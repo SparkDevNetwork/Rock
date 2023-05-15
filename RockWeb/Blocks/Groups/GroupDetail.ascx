@@ -110,7 +110,7 @@
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                     <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" Visible="false" />
                                     <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0" />
-                                    <Rock:PersonPicker ID="ppAdministrator" runat="server" />
+                                    <Rock:PersonPicker ID="ppAdministrator" runat="server" EnableSelfSelection="true" />
                                 </div>
                                 <div class="col-md-6">
                                     <asp:Panel runat="server" ID="pnlElevatedSecurity">
@@ -251,6 +251,7 @@
                                     <Rock:Grid ID="gGroupTypeGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Group Requirements for Group Type">
                                         <Columns>
                                             <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
+                                            <Rock:RockBoundField DataField="GroupRole.Name" HeaderText="Role" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>

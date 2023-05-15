@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -35,7 +36,7 @@ namespace Rock.Field.Types
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M6.07,3.57a.39.39,0,0,1,.39-.4H7.65a.4.4,0,0,1,.39.4V4.75a.4.4,0,0,1-.39.4H6.46a.39.39,0,0,1-.39-.4Zm4.73-.4a.4.4,0,0,1,.4.4V4.75a.4.4,0,0,1-.4.4H9.62a.39.39,0,0,1-.39-.4V3.57a.39.39,0,0,1,.39-.4ZM6.07,6.73a.39.39,0,0,1,.39-.4H7.65a.4.4,0,0,1,.39.4V7.91a.4.4,0,0,1-.39.4H6.46a.39.39,0,0,1-.39-.4Zm4.73-.4a.4.4,0,0,1,.4.4V7.91a.4.4,0,0,1-.4.4H9.62a.39.39,0,0,1-.39-.4V6.73a.39.39,0,0,1,.39-.4ZM3.89,2.58A1.58,1.58,0,0,1,5.47,1h6.32a1.58,1.58,0,0,1,1.58,1.58v9.48a1.58,1.58,0,0,1-1.58,1.58H5.47a1.58,1.58,0,0,1-1.58-1.58Zm1.19,0v9.48a.4.4,0,0,0,.39.39h2V10.87a1.19,1.19,0,0,1,2.37,0v1.58h2a.4.4,0,0,0,.4-.39V2.58a.4.4,0,0,0-.4-.4H5.47A.4.4,0,0,0,5.08,2.58Z""/><path d=""M2.63,12.5A2.5,2.5,0,0,0,5.13,15H9.79a.4.4,0,0,0,.4-.4v-.11a.4.4,0,0,0-.4-.4H5.05a1.5,1.5,0,0,1-1.5-1.5V3.73a.4.4,0,0,0-.4-.4H3a.4.4,0,0,0-.4.4Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CAMPUSES )]
-    public class CampusesFieldType : SelectFromListFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType
+    public class CampusesFieldType : SelectFromListFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType
     {
         #region Configuration
 
@@ -48,20 +49,6 @@ namespace Rock.Field.Types
         private const string CAMPUSES_PROPERTY_KEY = "campuses";
         private const string CAMPUS_TYPES_PROPERTY_KEY = "campusTypes";
         private const string CAMPUS_STATUSES_PROPERTY_KEY = "campusStatuses";
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( INCLUDE_INACTIVE_KEY );
-            configKeys.Add( FILTER_CAMPUS_TYPES_KEY );
-            configKeys.Add( FILTER_CAMPUS_STATUS_KEY );
-            configKeys.Add( SELECTABLE_CAMPUSES_KEY );
-            return configKeys;
-        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
@@ -161,6 +148,123 @@ namespace Rock.Field.Types
             privateConfigurationValues[FILTER_CAMPUS_STATUS_KEY] = ConvertDelimitedGuidsToIds( campusStatus, v => DefinedValueCache.Get( v )?.Id );
 
             return privateConfigurationValues;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the list source.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var allCampuses = CampusCache.All();
+
+            if ( configurationValues == null )
+            {
+                return allCampuses.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+            }
+
+            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+            List<int> campusTypesFilter = configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) ? configurationValues[FILTER_CAMPUS_TYPES_KEY].Value.SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> campusStatusFilter = configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) ? configurationValues[FILTER_CAMPUS_STATUS_KEY].Value.SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> selectableCampuses = configurationValues.ContainsKey( SELECTABLE_CAMPUSES_KEY ) && configurationValues[SELECTABLE_CAMPUSES_KEY].Value.IsNotNullOrWhiteSpace()
+                ? configurationValues[SELECTABLE_CAMPUSES_KEY].Value.SplitDelimitedValues( false ).AsIntegerList()
+                : null;
+
+            var campusList = allCampuses
+                .Where( c => ( !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
+                    && campusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
+                    && campusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
+                    && selectableCampuses.ContainsOrEmpty( c.Id ) )
+                .ToList();
+
+            return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+        }
+
+        /// <summary>
+        /// Gets the cached entities as a list.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public List<IEntityCache> GetCachedEntities( string value )
+        {
+            var guids = value.SplitDelimitedValues().AsGuidList();
+            var result = new List<IEntityCache>();
+
+            result.AddRange( guids.Select( g => CampusCache.Get( g ) ) );
+
+            return result;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
+            var ids = valueGuidList
+                .Select( guid => CampusCache.GetId( guid ) )
+                .Where( id => id.HasValue )
+                .ToList();
+
+            var campusEntityTypeId = EntityTypeCache.GetId<Campus>().Value;
+
+            return ids
+                .Select( id => new ReferencedEntity( campusEntityTypeId, id.Value ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Campus and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Campus>().Value, nameof( Campus.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region ISplitMultiValueFieldType
+
+        /// <inheritdoc/>
+        public ICollection<string> SplitMultipleValues( string privateValue )
+        {
+            return privateValue.Split( ',' );
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( INCLUDE_INACTIVE_KEY );
+            configKeys.Add( FILTER_CAMPUS_TYPES_KEY );
+            configKeys.Add( FILTER_CAMPUS_STATUS_KEY );
+            configKeys.Add( SELECTABLE_CAMPUSES_KEY );
+            return configKeys;
         }
 
         /// <summary>
@@ -319,7 +423,7 @@ namespace Rock.Field.Types
                     }
                 }
 
-                if (cblSelectableValues != null )
+                if ( cblSelectableValues != null )
                 {
                     var selectableValues = configurationValues.GetValueOrNull( SELECTABLE_CAMPUSES_KEY )?.SplitDelimitedValues( false );
 
@@ -338,94 +442,7 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the list source.
-        /// </summary>
-        /// <value>
-        /// The list source.
-        /// </value>
-        internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var allCampuses = CampusCache.All();
-
-            if ( configurationValues == null )
-            {
-                return allCampuses.ToDictionary( c => c.Guid.ToString(), c => c.Name );
-            }
-
-            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
-            List<int> campusTypesFilter = configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) ? configurationValues[FILTER_CAMPUS_TYPES_KEY].Value.SplitDelimitedValues( false ).AsIntegerList() : null;
-            List<int> campusStatusFilter = configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) ? configurationValues[FILTER_CAMPUS_STATUS_KEY].Value.SplitDelimitedValues( false ).AsIntegerList() : null;
-            List<int> selectableCampuses = configurationValues.ContainsKey( SELECTABLE_CAMPUSES_KEY ) && configurationValues[SELECTABLE_CAMPUSES_KEY].Value.IsNotNullOrWhiteSpace()
-                ? configurationValues[SELECTABLE_CAMPUSES_KEY].Value.SplitDelimitedValues( false ).AsIntegerList()
-                : null;
-
-            var campusList = allCampuses
-                .Where( c => ( !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
-                    && campusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
-                    && campusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
-                    && selectableCampuses.ContainsOrEmpty( c.Id ) )
-                .ToList();
-
-            return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
-        }
-
-        /// <summary>
-        /// Gets the cached entities as a list.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public List<IEntityCache> GetCachedEntities( string value )
-        {
-            var guids = value.SplitDelimitedValues().AsGuidList();
-            var result = new List<IEntityCache>();
-
-            result.AddRange( guids.Select( g => CampusCache.Get( g ) ) );
-
-            return result;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( privateValue.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-
-            var ids = valueGuidList
-                .Select( guid => CampusCache.GetId( guid ) )
-                .Where( id => id.HasValue )
-                .ToList();
-
-            var campusEntityTypeId = EntityTypeCache.GetId<Campus>().Value;
-
-            return ids
-                .Select( id => new ReferencedEntity( campusEntityTypeId, id.Value ) )
-                .ToList();
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Campus and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<Campus>().Value, nameof( Campus.Name ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

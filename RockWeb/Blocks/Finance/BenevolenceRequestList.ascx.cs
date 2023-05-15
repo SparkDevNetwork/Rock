@@ -527,7 +527,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gPledges control.
+        /// Handles the GridRebind event of the gList control.
         /// </summary>
         private void gList_GridRebind( object sender, EventArgs e )
         {

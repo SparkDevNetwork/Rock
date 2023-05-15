@@ -15,11 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
 using Newtonsoft.Json;
-
+using Rock.Attribute;
 using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Web.Cache
@@ -84,7 +85,7 @@ namespace Rock.Web.Cache
             }
 
             // Clear object cache keys
-            _objectCacheKeyReferences = new List<CacheKeyReference>();
+            _objectConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
         }
 
         #endregion
@@ -109,34 +110,16 @@ namespace Rock.Web.Cache
 
         #region Public Static Properties
 
-        private static bool? _isCacheSerialized = null;
-
         /// <summary>
-        /// Gets an indicator of whether cache manager is configured in a way that items will be serialized (i.e. if using Redis)
+        /// Gets an indicator of whether cache manager is configured in a way that items will be serialized.
+        /// This will always return false since we no longer support cache managers that require serialization.
         /// </summary>
         /// <value>
         /// Flag indicating if cache items are serialized
         /// </value>
-        public static bool IsCacheSerialized
-        {
-            get
-            {
-                if ( _isCacheSerialized == null )
-                {
-                    if ( Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() == true )
-                    {
-                        _isCacheSerialized = true;
-                    }
-                    else
-                    {
-                        // not using Redis, so it is safe to cache non-serializable things (like CacheLavaTemplate)
-                        _isCacheSerialized = false;
-                    }
-                }
-
-                return _isCacheSerialized.Value;
-            }
-        }
+        [Obsolete( "Rock Cache doesn't have a requirement to be serializable anymore. However, we should try to keep it serializable." )]
+        [RockObsolete( "1.15" )]
+        public static bool IsCacheSerialized => false;
 
         /// <summary>
         /// Gets or sets the keys for items stored in the object cache. The region is optional, but the key
@@ -147,6 +130,8 @@ namespace Rock.Web.Cache
         /// <value>
         /// The object cache key references.
         /// </value>
+        [Obsolete("Use thread safe StringConcurrentCacheKeyReferences instead.")]
+        [RockObsolete("1.14")]
         public static List<CacheKeyReference> ObjectCacheKeyReferences
         {
             get
@@ -162,7 +147,7 @@ namespace Rock.Web.Cache
             {
                 _objectCacheKeyReferences = value;
             }
-        } 
+        }
         private static List<CacheKeyReference> _objectCacheKeyReferences = new List<CacheKeyReference>();
 
         /// <summary>
@@ -174,6 +159,8 @@ namespace Rock.Web.Cache
         /// <value>
         /// The string cache key references.
         /// </value>
+        [Obsolete("Use thread safe StringConcurrentCacheKeyReferences instead.")]
+        [RockObsolete("1.14")]
         public static List<CacheKeyReference> StringCacheKeyReferences
         {
             get
@@ -184,10 +171,62 @@ namespace Rock.Web.Cache
                 }
                 return _stringCacheKeyReferences;
             }
-            set {
-                _stringCacheKeyReferences = value;            }
+            set
+            {
+                _stringCacheKeyReferences = value;
+            }
         }
         private static List<CacheKeyReference> _stringCacheKeyReferences = new List<CacheKeyReference>();
+
+        /// <summary>
+        /// Gets or sets the keys for items stored in the object cache. The region is optional, but the key
+        /// is required. This list of keys is not guaranteed to be up to date. Some of the items represented
+        /// by the keys could have expired and therefore not be available any longer. All item keys though should
+        /// be in the list.
+        /// </summary>
+        /// <value>
+        /// The object cache key references.
+        /// </value>
+        [RockInternal( "1.14" )]
+        internal static ConcurrentDictionary<string,CacheKeyReference> ObjectConcurrentCacheKeyReferences
+        {
+            get
+            {
+                if ( _objectConcurrentCacheKeyReferences == null )
+                {
+                    _objectConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
+                }
+                
+                return _objectConcurrentCacheKeyReferences;
+            }
+        }
+
+        private static ConcurrentDictionary<string,CacheKeyReference> _objectConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
+
+        /// <summary>
+        /// Gets or sets the keys for items stored in the string cache. The region is optional, but the key
+        /// is required. This list of keys is not guaranteed to be up to date. Some of the items represented
+        /// by the keys could have expired and therefore not be available any longer. All item keys though should
+        /// be in the list.
+        /// </summary>
+        /// <value>
+        /// The string cache key references.
+        /// </value>
+        [RockInternal( "1.14" )]
+        internal static ConcurrentDictionary<string, CacheKeyReference> StringConcurrentCacheKeyReferences
+        {
+            get
+            {
+                if ( _stringConcurrentCacheKeyReferences == null )
+                {
+                    _stringConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
+                }
+                
+                return _stringConcurrentCacheKeyReferences;
+            }
+        }
+
+        private static ConcurrentDictionary<string, CacheKeyReference> _stringConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
 
         #endregion
 
@@ -276,8 +315,8 @@ namespace Rock.Web.Cache
                 Expiration = expiration,
                 AllowCacheBypass = false
             };
-            
-            return GetOrAddExisting(args);
+
+            return GetOrAddExisting( args );
         }
 
         /// <summary>
@@ -426,12 +465,11 @@ namespace Rock.Web.Cache
                     }
 
                     var value = RockCacheManager<List<string>>.Instance.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
-                    if ( !value.Contains(key) )
+                    if ( !value.Contains( key ) )
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
-
-                        _stringCacheKeyReferences.Add( new CacheKeyReference { Key = cacheTag, Region = region } );
+                        _stringConcurrentCacheKeyReferences.AddOrIgnore( $"{cacheTag}{region}", new CacheKeyReference { Key = cacheTag, Region = region } );
                     }
                 }
             }
@@ -539,7 +577,7 @@ namespace Rock.Web.Cache
 
             if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return ClearCachedItemsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
+                return ClearCachedItemsForType( Type.GetType( cacheTypeName ) );
             }
 
             return ClearCachedItemsForSystemType( cacheTypeName );
@@ -579,7 +617,7 @@ namespace Rock.Web.Cache
                     RockCacheManager<List<string>>.Instance.Clear();
 
                     // Clear string cache keys
-                    _stringCacheKeyReferences = new List<CacheKeyReference>();
+                    _stringConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
 
                     return $"Cache for {cacheTypeName} cleared.";
 
@@ -591,7 +629,7 @@ namespace Rock.Web.Cache
                     RockCacheManager<object>.Instance.Clear();
 
                     // Clear object cache keys
-                    _objectCacheKeyReferences = new List<CacheKeyReference>();
+                    _objectConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
 
                     return $"Cache for {cacheTypeName} cleared.";
 
@@ -642,7 +680,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatisticsForType( Type cacheType )
         {
-            var cacheStats = new CacheItemStatistics( string.Empty );
+            var cacheStats = new CacheItemStatistics( string.Empty, string.Empty );
             if ( _allManagers == null )
             {
                 return cacheStats;
@@ -669,7 +707,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatForSystemType( string cacheTypeName )
         {
-            var cacheStats = new CacheItemStatistics( string.Empty );
+            var cacheStats = new CacheItemStatistics( string.Empty, string.Empty );
             if ( _allManagers == null )
             {
                 return cacheStats;
@@ -700,7 +738,7 @@ namespace Rock.Web.Cache
         {
             if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return GetStatisticsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
+                return GetStatisticsForType( Type.GetType( cacheTypeName ) );
             }
 
             return GetStatForSystemType( cacheTypeName );
@@ -714,26 +752,11 @@ namespace Rock.Web.Cache
         /// <returns>
         ///   <c>true</c> if [is end point available] [the specified socket]; otherwise, <c>false</c>.
         /// </returns>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public static bool IsEndPointAvailable( string socket, string password )
         {
-            try
-            {
-                var configurationOptions = StackExchange.Redis.ConfigurationOptions.Parse( socket );
-                configurationOptions.ConnectRetry = 1;
-                configurationOptions.ConnectTimeout = 500;
-
-                if ( password.IsNotNullOrWhiteSpace() )
-                {
-                    configurationOptions.Password = password;
-                }
-                
-                var redisConnection = StackExchange.Redis.ConnectionMultiplexer.Connect( configurationOptions );
-                return redisConnection.IsConnected;
-            }
-            catch(Exception)
-            {
-                return false;
-            }
+            return false;
         }
 
         /// <summary>
@@ -759,12 +782,7 @@ namespace Rock.Web.Cache
         private static void AddOrUpdateObjectCacheKey( string region, string key )
         {
             var objectCacheReference = new CacheKeyReference { Region = region, Key = key };
-            if ( _objectCacheKeyReferences.Contains( objectCacheReference ) )
-            {
-                return;
-            }
-
-            _objectCacheKeyReferences.Add( objectCacheReference );
+            _objectConcurrentCacheKeyReferences.AddOrIgnore( objectCacheReference.ToString(), objectCacheReference );
         }
 
         /// <summary>
@@ -775,7 +793,7 @@ namespace Rock.Web.Cache
         private static void RemoveObjectCacheKey( string region, string key )
         {
             var objectCacheReference = new CacheKeyReference { Region = region, Key = key };
-            _objectCacheKeyReferences.Remove( objectCacheReference );
+            _objectConcurrentCacheKeyReferences.TryRemove( objectCacheReference.ToString(), out _ );
         }
         #endregion
 
@@ -800,6 +818,17 @@ namespace Rock.Web.Cache
             /// The key.
             /// </value>
             public string Key { get; set; } = string.Empty;
+
+            /// <summary>
+            /// Concatenates key and region into a string without seperation.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="System.String" /> that represents this instance.
+            /// </returns>
+            public override string ToString()
+            {
+                return $"{Region}{Key}";
+            }
         }
 
         /// <summary>

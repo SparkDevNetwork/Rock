@@ -16,10 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -35,23 +35,7 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( "F56DED5E-C135-42B2-A529-878CB30436B5" )]
     public class RegistrationTemplatesFieldType : FieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -85,6 +69,83 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
+
+            if ( !guids.Any() )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationTemplateIds = new RegistrationTemplateService( rockContext )
+                    .Queryable()
+                    .Where( rt => guids.Contains( rt.Guid ) )
+                    .Select( rt => rt.Id )
+                    .ToList();
+
+                if ( !registrationTemplateIds.Any() )
+                {
+                    return null;
+                }
+
+                return registrationTemplateIds
+                    .Select( id => new ReferencedEntity( EntityTypeCache.GetId<RegistrationTemplate>().Value, id ) )
+                    .ToList();
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Registration Template and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<RegistrationTemplate>().Value, nameof( RegistrationTemplate.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -159,10 +220,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -171,65 +228,13 @@ namespace Rock.Field.Types
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
+        public override Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
         {
             // This field type does not support filtering
             return null;
         }
 
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guids = privateValue.SplitDelimitedValues().AsGuidList();
-
-            if ( !guids.Any() )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var registrationTemplateIds = new RegistrationTemplateService( rockContext )
-                    .Queryable()
-                    .Where( rt => guids.Contains( rt.Guid ) )
-                    .Select( rt => rt.Id )
-                    .ToList();
-
-                if ( !registrationTemplateIds.Any() )
-                {
-                    return null;
-                }
-
-                return registrationTemplateIds
-                    .Select( id => new ReferencedEntity( EntityTypeCache.GetId<RegistrationTemplate>().Value, id ) )
-                    .ToList();
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Registration Template and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<RegistrationTemplate>().Value, nameof( RegistrationTemplate.Name ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

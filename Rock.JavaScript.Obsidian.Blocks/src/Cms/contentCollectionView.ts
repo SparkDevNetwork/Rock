@@ -15,8 +15,8 @@
 // </copyright>
 //
 
-import { defineComponent, onMounted, ref, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import { defineComponent, onMounted, ref, shallowRef, watch } from "vue";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import TextBox from "@Obsidian/Controls/textBox";
 import { dispatchBlockEvent, getSecurityGrant, provideSecurityGrant, useBlockGuid, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -30,7 +30,7 @@ import { Guid } from "@Obsidian/Types";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { emptyGuid } from "@Obsidian/Utility/guid";
-import { SortOrdersKey } from "./ContentCollectionView/types";
+import { SortOrdersKey } from "./ContentCollectionView/types.partial";
 
 
 /**
@@ -223,7 +223,7 @@ export default defineComponent({
     name: "Cms.ContentCollectionView",
 
     components: {
-        Alert,
+        NotificationBox,
         DropDownList,
         FiltersContainer,
         TextBox
@@ -241,8 +241,8 @@ export default defineComponent({
 
         const blockError = ref(config.errorMessage);
         const filters = config.filters ?? [];
-        const searchContainerElement = ref<HTMLElement | null>(null);
-        const searchResultContainerElement = ref<HTMLElement | null>(null);
+        const searchContainerElement = shallowRef<HTMLElement | null>(null);
+        const searchResultContainerElement = shallowRef<HTMLElement | null>(null);
         const query = ref(urlSearchParams.get("q") || urlSearchParams.get("Q") || "");
         const filterValues = ref<Record<string, string>>(getQueryStringFilterValues(filters.map(f => f.label ?? "")));
         const sortOrder = ref(urlSearchParams.get("s") || urlSearchParams.get("S") || SearchOrder.Relevance.toString());
@@ -273,7 +273,7 @@ export default defineComponent({
                 filters: filterValues.value,
                 sourceGuid: sourceGuid,
                 offset: offset,
-                order: toNumber(sortOrder.value)
+                order: toNumber(sortOrder.value) as SearchOrder
             };
 
             const data = {
@@ -410,19 +410,19 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+<NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
 
 <div v-if="!blockError" class="collectionsearch">
     <div v-if="showFullTextSearch" class="collectionsearch-fulltext">
         <div ref="searchContainerElement" class="content">
             <div class="search-fulltext">
                 <TextBox v-model="query" placeholder="What can we help you find?">
-                    <template #prepend>
+                    <template #inputGroupPrepend>
                         <div class="input-group-addon">
                             <i class="fa fa-search"></i>
                         </div>
                     </template>
-                    <template #append>
+                    <template #inputGroupAppend>
                         <div v-if="query" class="input-group-addon">
                             <i class="fa fa-times clickable" @click="onClearClick"></i>
                         </div>

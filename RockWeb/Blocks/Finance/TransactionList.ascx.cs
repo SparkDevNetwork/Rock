@@ -1266,8 +1266,8 @@ namespace RockWeb.Blocks.Finance
             var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
             if ( accountIds.Any() )
             {
-                var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).ToList();
-                apAccount.SetValues( accounts );
+                var accounts = FinancialAccountCache.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).ToList();
+                apAccount.SetValuesFromCache( accounts );
             }
             else
             {
@@ -1624,7 +1624,7 @@ namespace RockWeb.Blocks.Finance
                         AccountId = a.AccountId,
                         Amount = a.Amount,
                         EntityId = a.EntityId,
-                        EntityTypeId = a.EntityId
+                        EntityTypeId = a.EntityTypeId
                     },
                     Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
                     FinancialPaymentDetail = new PaymentDetailInfo

@@ -42,11 +42,7 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataViewItemPicker ID="dvpFilterDataView" runat="server" Label="Filter Data View" OnSelectItem="dvpFilterDataView_SelectItem" />
-                                <Rock:NotificationBox ID="nbFilterDataViewError" runat="server" NotificationBoxType="Danger"
-                                    Text="Segments only support data views that have been configured to persist. Please update the configuration of the selected dataview." />
-                                <Rock:NotificationBox ID="nbFilterDataViewWarning" runat="server" NotificationBoxType="Warning"
-                                    Text="The DataView filter must be a persisted dataview. Because this data view is no longer persisted, this Segment Filter is essentially inactive." />
+                                <Rock:DataViewItemPicker ID="dvpFilterDataView" runat="server" Label="Filter Data View" />
                             </div>
 
                             <div class="col-md-6">
@@ -61,7 +57,7 @@
                 <%-- Session Filters --%>
                 <asp:Panel ID="pnlSessionCountFilters" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <h1 class="panel-title pull-left">Session Filters</h1>
+                        <h1 class="panel-title">Session Filters</h1>
                         <div class="panel-labels">
                             <Rock:Toggle ID="tglSessionCountFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
                         </div>
@@ -82,7 +78,7 @@
                 <%-- Page View Filters --%>
                 <asp:Panel ID="pnlPageViewFilters" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <h1 class="panel-title pull-left">Page View Filters</h1>
+                        <h1 class="panel-title">Page View Filters</h1>
                         <Rock:Toggle ID="tglPageViewFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
                     </div>
                     <div class="panel-body">
@@ -102,7 +98,7 @@
                 <%-- Interaction Filters --%>
                 <asp:Panel ID="pnlInteractionFilters" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <h1 class="panel-title pull-left">Interaction Filters</h1>
+                        <h1 class="panel-title">Interaction Filters</h1>
                         <Rock:Toggle ID="tglInteractionFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
                     </div>
                     <div class="panel-body">
@@ -222,6 +218,55 @@
                             <Rock:PagePicker ID="ppPageViewFilterPages" runat="server" AllowMultiSelect="true" ValidationGroup="vgPageViewFilterConfiguration" Label=""/>
                         </div>
                     </div>
+
+                    <div class="row form-row mt-3">
+                        <asp:LinkButton ID="lbPageViewAdvancedOptions" runat="server" Text="Advanced Options" CausesValidation="false" OnClick="lbPageViewAdvancedOptions_Click" />
+                    </div>
+
+                    <asp:Panel ID="pnlAdvancedOptions" runat="server" Visible="false">
+
+                        <div class="row form-row d-flex flex-wrap align-items-center form-group mt-3">
+
+                            <div class="col flex-sm-grow-0">
+                            <div class="form-group"><span class="text-nowrap">where the URL</span></div>
+                        </div>
+
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                            <Rock:RockDropDownList ID="ddlPageUrlFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                            </div>
+                        </div>
+
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:RockTextBox ID="rtbPageUrlCompareValue" runat="server" Required="false" CssClass="input-width-xxl js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                            </div>
+                        </div>
+
+                        </div>
+
+                        <div class="row form-row d-flex flex-wrap align-items-center form-group">
+
+                            <div class="col flex-sm-grow-0">
+                                <div class="form-group"><span class="text-nowrap">and the referrer</span></div>
+                            </div>
+
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockDropDownList ID="ddlPageReferrerFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+
+                            <div class="col flex-grow-0">
+                                <div class="form-group">
+                                    <Rock:RockTextBox ID="rtbPageReferrerCompareValue" runat="server" Required="false" CssClass="input-width-xxl js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </asp:Panel>
+
                 </Content>
             </Rock:ModalDialog>
 

@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -33,8 +31,7 @@ namespace Rock.Jobs
     [Description( "This job launches the specified workflow." )]
 
     [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
-    [DisallowConcurrentExecution]
-    public class LaunchWorkflow : RockBlock, IJob
+    public class LaunchWorkflow : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -49,22 +46,17 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job that will launch a workflow.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            string workflowName = dataMap.GetString( "Workflow" );
-            LaunchTheWorkflow( workflowName, context );
+            string workflowName = GetAttributeValue( "Workflow" );
+            LaunchTheWorkflow( workflowName);
         }
 
         /// <summary>
         /// Launch the workflow
         /// </summary>
-        protected void LaunchTheWorkflow( string workflowName, IJobExecutionContext context )
+        protected void LaunchTheWorkflow( string workflowName )
         {
             Guid workflowTypeGuid = Guid.NewGuid();
             if ( Guid.TryParse( workflowName, out workflowTypeGuid ) )
@@ -76,7 +68,7 @@ namespace Rock.Jobs
 
                     List<string> workflowErrors;
                     var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
-                    context.Result = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
+                    this.Result = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
                 }
             }
         }

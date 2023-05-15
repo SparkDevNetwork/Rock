@@ -318,7 +318,8 @@ namespace Rock.Crm.ConnectionStatusChangeReport
                             Gender = x.Gender,
                             BirthDate = x.BirthDate,
                             DeceasedDate = x.DeceasedDate,
-                            RecordTypeValueGuid = x.RecordTypeValue.Guid
+                            RecordTypeValueGuid = x.RecordTypeValue.Guid,
+                            RecordTypeValueId = x.RecordTypeValue.Id,
                         } );
 
             var eventsData = eventsQuery.ToList();

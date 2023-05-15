@@ -17,7 +17,7 @@
 
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "./rockField";
-import Alert from "./alert.vue";
+import NotificationBox from "./notificationBox.obs";
 import DropDownList from "./dropDownList";
 import StaticFormControl from "./staticFormControl";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
@@ -34,7 +34,7 @@ export default defineComponent({
     name: "FieldTypeEditor",
 
     components: {
-        Alert,
+        NotificationBox,
         DropDownList,
         RockField,
         StaticFormControl
@@ -241,7 +241,7 @@ export default defineComponent({
         /**
          * Called when the field type configuration control has updated one of
          * the configuration values that does not require a full reload.
-         * 
+         *
          * @param key The key of the configuration value that was changed.
          * @param value The new value of the configuration value.
          */
@@ -309,11 +309,11 @@ export default defineComponent({
 <div>
     <template v-if="isFieldTypesReady">
         <StaticFormControl v-if="isFieldTypeReadOnly" label="Field Type" v-model="fieldTypeName" />
-        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" />
+        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" enhanceForLongLists />
     </template>
-    <Alert v-if="fieldErrorMessage" alertType="warning">
+    <NotificationBox v-if="fieldErrorMessage" alertType="warning">
         {{ fieldErrorMessage }}
-    </Alert>
+    </NotificationBox>
     <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
     <RockField v-if="hasDefaultValue" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode />
 </div>

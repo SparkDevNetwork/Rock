@@ -121,7 +121,11 @@ namespace Rock.Migrations
         private void AddAdminChecklistItemForRedis()
         {
             // Now check to see if Redis is enabled and create a checklist item if it is.
-            if ( Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBoolean() )
+#pragma warning disable CS0618 // Type or member is obsolete
+            var redisEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBoolean();
+#pragma warning restore CS0618 // Type or member is obsolete
+            
+            if ( redisEnabled )
             {
                 Sql( @"
 

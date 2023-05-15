@@ -18,9 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -42,20 +43,6 @@ namespace Rock.Field.Types
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
 
         #region Configuration
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( "valueprompt" );
-            configKeys.Add( "definedtype" );
-            configKeys.Add( "customvalues" );
-            configKeys.Add( "allowhtml" );
-            return configKeys;
-        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
@@ -142,6 +129,178 @@ namespace Rock.Field.Types
             }
 
             return privateConfigurationValues;
+        }
+
+        /// <summary>
+        /// Gets the custom values that have been defined. These reflect either the
+        /// defined type values or the custom options entered into the custom values
+        /// text box.
+        /// </summary>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        private Dictionary<string, string> GetCustomValues( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var definedTypeId = configurationValues.GetConfigurationValueAsString( "definedtype" ).AsIntegerOrNull();
+
+            if ( definedTypeId.HasValue )
+            {
+                var definedType = DefinedTypeCache.Get( definedTypeId.Value );
+
+                if ( definedType != null )
+                {
+                    return definedType.DefinedValues
+                        .ToDictionary( v => v.Id.ToString(), v => v.Value );
+                }
+            }
+
+            return Helper.GetConfiguredValues( configurationValues, "customvalues" );
+        }
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
+            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
+            if ( privateConfigurationValues != null && privateConfigurationValues.ContainsKey( "definedtype" ) )
+            {
+                if ( Int32.TryParse( privateConfigurationValues["definedtype"], out int definedTypeId ) )
+                {
+                    for ( int i = 0; i < values.Length; i++ )
+                    {
+                        var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
+                        if ( definedValue != null )
+                        {
+                            values[i] = definedValue.Value;
+                        }
+                    }
+                }
+            }
+
+            return values.ToList().AsDelimited( ", " );
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
+            return values.ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = publicValue.FromJsonOrNull<List<string>>();
+
+            if ( values == null )
+            {
+                return string.Empty;
+            }
+
+            var customValues = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
+
+            // If there are any custom values, then ensure that all values we
+            // got from the public device are valid. If not, ignore them.
+            if ( customValues.Any() )
+            {
+                values = values
+                    .Where( v => customValues.ContainsKey( v ) )
+                    .ToList();
+            }
+
+            return values.JoinStrings( "|" );
+        }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDefinedtype = oldPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
+            var newDefinedtype = newPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
+
+            return oldDefinedtype != newDefinedtype;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
+            if ( privateConfigurationValues != null && privateConfigurationValues.ContainsKey( "definedtype" ) )
+            {
+                if ( Int32.TryParse( privateConfigurationValues["definedtype"], out int definedTypeId ) )
+                {
+                    return values.Select( v => v.AsIntegerOrNull() )
+                        .Where( id => id.HasValue )
+                        .Select( id => DefinedValueCache.Get( id.Value ) )
+                        .Where( dv => dv != null )
+                        .Select( dv => new ReferencedEntity( EntityTypeCache.GetId<DefinedValue>().Value, dv.Id ) )
+                        .ToList();
+                }
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Defined Value and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( "valueprompt" );
+            configKeys.Add( "definedtype" );
+            configKeys.Add( "customvalues" );
+            configKeys.Add( "allowhtml" );
+            return configKeys;
         }
 
         /// <summary>
@@ -256,48 +415,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the custom values that have been defined. These reflect either the
-        /// defined type values or the custom options entered into the custom values
-        /// text box.
-        /// </summary>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        private Dictionary<string, string> GetCustomValues( Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var definedTypeId = configurationValues.GetConfigurationValueAsString( "definedtype" ).AsIntegerOrNull();
-
-            if ( definedTypeId.HasValue )
-            {
-                var definedType = DefinedTypeCache.Get( definedTypeId.Value );
-
-                if ( definedType != null )
-                {
-                    return definedType.DefinedValues
-                        .ToDictionary( v => v.Id.ToString(), v => v.Value );
-                }
-            }
-
-            return Helper.GetConfiguredValues( configurationValues, "customvalues" );
-        }
-
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldDefinedtype = oldPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
-            var newDefinedtype = newPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
-
-            return oldDefinedtype != newDefinedtype;
-        }
-
-        #endregion
-
-        #region Formatting
-
-        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -308,67 +425,6 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
-            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
-
-            if ( privateConfigurationValues != null && privateConfigurationValues.ContainsKey( "definedtype" ) )
-            {
-                if ( Int32.TryParse( privateConfigurationValues["definedtype"], out int definedTypeId ) )
-                {
-                    for ( int i = 0; i < values.Length; i++ )
-                    {
-                        var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
-                        if ( definedValue != null )
-                        {
-                            values[i] = definedValue.Value;
-                        }
-                    }
-                }
-            }
-
-            return values.ToList().AsDelimited( ", " );
-        }
-
-        #endregion
-
-        #region Edit Control
-
-        /// <inheritdoc/>
-        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
-            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
-
-            return values.ToCamelCaseJson( false, true );
-        }
-
-        /// <inheritdoc/>
-        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var values = publicValue.FromJsonOrNull<List<string>>();
-
-            if ( values == null )
-            {
-                return string.Empty;
-            }
-
-            var customValues = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
-
-            // If there are any custom values, then ensure that all values we
-            // got from the public device are valid. If not, ignore them.
-            if ( customValues.Any() )
-            {
-                values = values
-                    .Where( v => customValues.ContainsKey( v ) )
-                    .ToList();
-            }
-
-            return values.JoinStrings( "|" );
         }
 
         /// <summary>
@@ -454,10 +510,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -472,52 +524,7 @@ namespace Rock.Field.Types
             return null;
         }
 
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
-            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
-
-            if ( privateConfigurationValues != null && privateConfigurationValues.ContainsKey( "definedtype" ) )
-            {
-                if ( Int32.TryParse( privateConfigurationValues["definedtype"], out int definedTypeId ) )
-                {
-                    return values.Select( v => v.AsIntegerOrNull() )
-                        .Where( id => id.HasValue )
-                        .Select( id => DefinedValueCache.Get( id.Value ) )
-                        .Where( dv => dv != null )
-                        .Select( dv => new ReferencedEntity( EntityTypeCache.GetId<DefinedValue>().Value, dv.Id ) )
-                        .ToList();
-                }
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Defined Value and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

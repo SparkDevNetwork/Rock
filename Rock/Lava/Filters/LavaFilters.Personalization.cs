@@ -115,7 +115,7 @@ namespace Rock.Lava
             }
 
             // Map the segment names to identifiers.
-            var newSegmentIdList = PersonalizationSegmentCache.GetActiveSegments( includeSegmentsWithNonPersistedDataViews: true )
+            var newSegmentIdList = PersonalizationSegmentCache.GetActiveSegments()
                 .Where( s => s.SegmentKey != null && segmentKeys.Contains( s.SegmentKey.ToLower() ) )
                 .Select( s => s.Id )
                 .ToList();

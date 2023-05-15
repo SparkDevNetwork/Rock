@@ -21,8 +21,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -48,8 +46,7 @@ namespace Rock.Jobs
     [BooleanField( "Send To Descendant Groups",
         Description = "Determines if the email will be sent to descendant groups.",
         Key = AttributeKey.SendToDescendantGroups )]
-    [DisallowConcurrentExecution]
-    public class SendGroupEmail : IJob
+    public class SendGroupEmail : RockJob
     {
         private class AttributeKey
         {
@@ -65,16 +62,12 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var emailTemplateGuid = dataMap.Get( AttributeKey.SystemCommunication ).ToString().AsGuid();
-            var groupGuid = dataMap.Get( AttributeKey.Group ).ToString().AsGuid();
-            var sendToDescendants = dataMap.Get( AttributeKey.SendToDescendantGroups ).ToString().AsBoolean();
+            var emailTemplateGuid = this.GetAttributeValue( AttributeKey.SystemCommunication ).AsGuid();
+            var groupGuid = this.GetAttributeValue( AttributeKey.Group ).ToString().AsGuid();
+            var sendToDescendants = this.GetAttributeValue( AttributeKey.SendToDescendantGroups ).AsBoolean();
 
             var rockContext = new RockContext();
             var systemCommunication = new SystemCommunicationService( rockContext ).Get( emailTemplateGuid );
@@ -127,7 +120,7 @@ namespace Rock.Jobs
                     warnings.ForEach( w => { jobResults.AppendLine( w ); } );
                 }
 
-                context.Result = jobResults.ToString();
+                this.Result = jobResults.ToString();
                 if ( errors.Any() )
                 {
                     StringBuilder sb = new StringBuilder();
@@ -135,7 +128,7 @@ namespace Rock.Jobs
                     sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
                     errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errorMessage = sb.ToString();
-                    context.Result += errorMessage;
+                    this.Result += errorMessage;
                     var exception = new Exception( errorMessage );
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( exception, context2 );

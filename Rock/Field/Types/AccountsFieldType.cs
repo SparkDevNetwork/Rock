@@ -18,9 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -43,6 +44,114 @@ namespace Rock.Field.Types
         private const string DISPLAY_CHILD_ITEM_COUNTS = "displaychilditemcounts";
         private const string DISPLAY_ACTIVE_ONLY = "displayactiveitemsonly";
         private const string ENHANCED_FOR_LONG_LISTS = "enhancedforlonglists";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDisplayPublicName = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
+            var newDisplayPublicName = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
+
+            return oldDisplayPublicName != newDisplayPublicName;
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                bool displayPublicName = true;
+
+                if ( privateConfigurationValues != null &&
+                     privateConfigurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                {
+                    displayPublicName = privateConfigurationValues[DISPLAY_PUBLIC_NAME].AsBoolean();
+                }
+
+                var guids = privateValue.SplitDelimitedValues();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
+                    if ( accounts.Any() )
+                    {
+                        return string.Join( ", ", ( from account in accounts select displayPublicName && account.PublicName != null && account.PublicName != string.Empty ? account.PublicName : account.Name ).ToArray() );
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
+
+        #region Edit Control 
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.SplitDelimitedValues();
+
+            if ( guids.Length == 0 )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var accountIds = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) ).Select( a => a.Id );
+                if ( accountIds.Any() )
+                {
+                    var referencedEntities = new List<ReferencedEntity>();
+                    foreach ( var accountId in accountIds )
+                    {
+                        referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<FinancialAccount>().Value, accountId ) );
+                    }
+
+                    return referencedEntities;
+                }
+            }
+
+            return null;
+        }
+
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.PublicName ) ),
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -188,47 +297,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldDisplayPublicName = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
-            var newDisplayPublicName = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
-
-            return oldDisplayPublicName != newDisplayPublicName;
-        }
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( !string.IsNullOrWhiteSpace( privateValue ) )
-            {
-                bool displayPublicName = true;
-
-                if ( privateConfigurationValues != null &&
-                     privateConfigurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
-                {
-                    displayPublicName = privateConfigurationValues[DISPLAY_PUBLIC_NAME].AsBoolean();
-                }
-
-                var guids = privateValue.SplitDelimitedValues();
-
-                using ( var rockContext = new RockContext() )
-                {
-                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
-                    if ( accounts.Any() )
-                    {
-                        return string.Join( ", ", ( from account in accounts select displayPublicName && account.PublicName != null && account.PublicName != string.Empty ? account.PublicName : account.Name ).ToArray() );
-                    }
-                }
-            }
-
-            return string.Empty;
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -243,10 +311,6 @@ namespace Rock.Field.Types
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        #endregion
-
-        #region Edit Control 
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -359,24 +423,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override ComparisonType FilterComparisonType
-        {
-            get
-            {
-                return ComparisonHelper.ContainsFilterComparisonTypes;
-            }
-        }
-
         /// <summary>
         /// Gets the filter value control.
         /// </summary>
@@ -397,46 +443,7 @@ namespace Rock.Field.Types
             return control;
         }
 
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guids = privateValue.SplitDelimitedValues();
-
-            if ( guids.Length == 0 )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var accountIds = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) ).Select( a => a.Id );
-                if ( accountIds.Any() )
-                {
-                    var referencedEntities = new List<ReferencedEntity>();
-                    foreach ( var accountId in accountIds )
-                    {
-                        referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<FinancialAccount>().Value, accountId ) );
-                    }
-
-                    return referencedEntities;
-                }
-            }
-
-            return null;
-        }
-
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.Name ) ),
-                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.PublicName ) ),
-            };
-        }
-
+#endif
         #endregion
     }
 }

@@ -24,8 +24,8 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.Blocks.Groups;
-using Rock.ViewModels.Blocks.Groups.GroupScheduleSignup;
+using Rock.ViewModels.Blocks.Group;
+using Rock.ViewModels.Blocks.Group.GroupScheduleSignup;
 using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Groups
@@ -433,7 +433,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionBadRequest( "Failed to remove attendance." );
                 }
 
-                attendanceService.ScheduledPersonRemove( attendance.Id );
+                attendanceService.ScheduledPersonClear( attendance.Id );
                 rockContext.SaveChanges();
 
                 return ActionOk();

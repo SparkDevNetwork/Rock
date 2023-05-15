@@ -15,6 +15,7 @@
 // </copyright>
 using Rock.Data;
 using Rock.Tasks;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -32,7 +33,50 @@ namespace Rock.Model
             {
                 var updateAchievementAttemptMsg = GetUpdateAchievementAttemptMessage( this.Entry );
                 updateAchievementAttemptMsg.SendWhen( this.DbContext.WrappedTransactionCompletedTask );
+
+                // If we need to send a real-time notification then do so after
+                // this change has been committed to the database.
+                if ( ShouldSendCompletedRealTimeMessage() )
+                {
+                    RockContext.ExecuteAfterCommit( () =>
+                    {
+                        // Use the fast queue for this because it is real-time.
+                        new SendAchievementCompletedRealTimeNotificationsTransaction( Entity.Guid )
+                            .Enqueue( true );
+                    } );
+                }
+
                 base.PreSave();
+            }
+
+            /// <summary>
+            /// Determines if we need to send an achievement completed real-time
+            /// message for the changes made to this entity.
+            /// </summary>
+            /// <returns><c>true</c> if a message should be sent, <c>false</c> otherwise.</returns>
+            private bool ShouldSendCompletedRealTimeMessage()
+            {
+                if ( !RockContext.IsRealTimeEnabled )
+                {
+                    return false;
+                }
+
+                if ( PreSaveState == EntityContextState.Added )
+                {
+                    if ( Entity.IsSuccessful )
+                    {
+                        return true;
+                    }
+                }
+                else if ( PreSaveState == EntityContextState.Modified )
+                {
+                    if ( Entity.IsSuccessful && !( bool ) OriginalValues[nameof( Entity.IsSuccessful )] )
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
             /// <summary>

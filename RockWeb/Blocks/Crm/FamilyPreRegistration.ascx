@@ -52,7 +52,7 @@
                         <h4 class="heading-individual">First Adult</h4>
                         <div class="row">
                                 <%-- Special input with rock-fullname class --%>
-                                <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                                <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" autocomplete="new-password" />
                                 <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
 
                                 <div class="<%= GetColumnStyle(3) %>">
@@ -86,6 +86,12 @@
                                         <asp:ListItem Text="Email" Value="1" />
                                         <asp:ListItem Text="SMS" Value="2" />
                                     </Rock:RockRadioButtonList>
+                                </asp:Panel>
+                                <asp:Panel ID="pnlRace1" runat="server">
+                                    <Rock:RacePicker ID="rpRace1" runat="server" />
+                                </asp:Panel>
+                                <asp:Panel ID="pnlEthnicity1" runat="server">
+                                    <Rock:EthnicityPicker ID="epEthnicity1" runat="server" />
                                 </asp:Panel>
                             </div>
 
@@ -136,6 +142,8 @@
                             <asp:HiddenField ID="hfEmailRequired" runat="server" />
                             <asp:HiddenField ID="hfProfileRequired" runat="server" />
                             <asp:HiddenField ID="hfCreateFirstAdultAccountIsRequired" runat="server" />
+                            <asp:HiddenField ID="hfRaceIsRequired" runat="server" />
+                            <asp:HiddenField ID="hfEthnicityIsRequired" runat="server" />
 
                             <div class="row">
                                 <div class="<%= GetColumnStyle(3) %>">
@@ -169,6 +177,12 @@
                                         <asp:ListItem Text="Email" Value="1" />
                                         <asp:ListItem Text="SMS" Value="2" />
                                     </Rock:RockRadioButtonList>
+                                </asp:Panel>
+                                <asp:Panel ID="pnlRace2" runat="server">
+                                    <Rock:RacePicker ID="rpRace2" runat="server" />
+                                </asp:Panel>
+                                <asp:Panel ID="pnlEthnicity2" runat="server">
+                                    <Rock:EthnicityPicker ID="epEthnicity2" runat="server" />
                                 </asp:Panel>
                             </div>
 

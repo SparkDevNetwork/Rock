@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -37,6 +38,15 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string REPEAT_COLUMNS = "repeatColumns";
+
+        #endregion Configuration
+
+        #region Edit Control
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -78,7 +88,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
 
             string description = $"Select how many columns the list should use before going to the next row. If blank {LavaCommandsPicker.DefaultRepeatColumns} is used.";
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, LavaCommandsPicker.DefaultRepeatColumns.ToString() ) );
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, LavaCommandsPicker.DefaultRepeatColumns.ToString() ) );
 
             if ( controls != null && controls.Count > 0 )
             {
@@ -104,11 +114,6 @@ namespace Rock.Field.Types
                 tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : LavaCommandsPicker.DefaultRepeatColumns.ToString();
             }
         }
-
-        #endregion Configuration
-
-
-        #region Edit Control
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -162,6 +167,7 @@ namespace Rock.Field.Types
             }
         }
 
+#endif
         #endregion
     }
 }

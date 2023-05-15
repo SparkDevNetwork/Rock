@@ -442,7 +442,7 @@ namespace Rock
         /// <param name="dt">The date to check.</param>
         /// <param name="startOfWeek">The start of week.</param>
         /// <returns></returns>
-        [Obsolete( "Use SundayDate without the firstDayOfWeek parameter" )]
+        [Obsolete( "Use SundayDate without the firstDayOfWeek parameter", true )]
         [RockObsolete( "1.10" )]
         public static DateTime SundayDate( this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
         {

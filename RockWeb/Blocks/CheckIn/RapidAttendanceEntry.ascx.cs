@@ -135,6 +135,7 @@ namespace RockWeb.Blocks.CheckIn
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         Order = 1,
         IsRequired = true )]
+
     [DefinedValueField(
         "Adult Phone Types",
         Key = AttributeKey.AdultPhoneTypes,
@@ -144,6 +145,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 2,
         IsRequired = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE )]
+
     [AttributeField(
         "Adult Person Attributes",
         Key = AttributeKey.AdultPersonAttributes,
@@ -153,6 +155,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 3,
         AllowMultiple = true,
         IsRequired = false )]
+
     [BooleanField(
         "Show Communication Preference(Adults)",
         Key = AttributeKey.ShowCommunicationPreference,
@@ -161,6 +164,7 @@ namespace RockWeb.Blocks.CheckIn
         DefaultBooleanValue = true,
         IsRequired = false,
         Order = 4 )]
+
     [DefinedValueField(
         "Child Phone Types",
         AllowMultiple = true,
@@ -170,6 +174,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 5,
         IsRequired = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE )]
+
     [AttributeField(
         "Child Person Attributes",
         Key = AttributeKey.ChildPersonAttributes,
@@ -179,6 +184,7 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         AllowMultiple = true,
         Order = 6 )]
+
     [BooleanField(
         "Child Allow Email Edit",
         Key = AttributeKey.ChildAllowEmailEdit,
@@ -187,6 +193,26 @@ namespace RockWeb.Blocks.CheckIn
         DefaultBooleanValue = true,
         IsRequired = false,
         Order = 7 )]
+
+    [CustomDropdownListField(
+        "Race",
+        Key = AttributeKey.RaceOption,
+        Description = "Allow race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = "Individual",
+        Order = 8 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.EthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = "Individual",
+        Order = 9 )]
     #endregion Individual Block Attribute Settings
 
     #region Prayer Block Attribute Settings
@@ -417,13 +443,22 @@ namespace RockWeb.Blocks.CheckIn
             public const string DisplayToPublic = "DisplayToPublic";
             public const string DefaultAllowComments = "DefaultAllowComments";
             public const string EnableCategorySelection = "CategorySelection";
+            public const string RaceOption = "RaceOption";
+            public const string EthnicityOption = "EthnicityOption";
         }
 
         #endregion Attribute Keys
 
+        #region List Source
+        private static class ListSource
+        {
+            public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
+        }
+        #endregion
+
         #region Properties
 
-        private List<CampusCache> CachedCampuses => CampusCache.All( false);
+        private List<CampusCache> CachedCampuses => CampusCache.All( false );
 
         #endregion Properties
 
@@ -496,7 +531,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( !IsPostBack )
             {
                 _personInputsState = new List<PersonInput>();
-                
+
                 if ( showCampus )
                 {
                     cpCampus.Visible = true;
@@ -1270,6 +1305,8 @@ namespace RockWeb.Blocks.CheckIn
                     groupMember.Person.FirstName = tbFirstName.Text;
                     groupMember.Person.LastName = tbLastName.Text;
                     groupMember.Person.SuffixValueId = dvpSuffix.SelectedValueAsId();
+                    groupMember.Person.RaceValueId = rpRace.SelectedValueAsId();
+                    groupMember.Person.EthnicityValueId = epEthnicity.SelectedValueAsId();
 
                     var role = group.GroupType.Roles.Where( r => r.Id == ( rblRole.SelectedValueAsInt() ?? 0 ) ).FirstOrDefault();
                     if ( role != null )
@@ -1322,6 +1359,8 @@ namespace RockWeb.Blocks.CheckIn
                     person.LastName = tbLastName.Text;
                     person.SuffixValueId = dvpSuffix.SelectedValueAsInt();
                     person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
+                    person.RaceValueId = rpRace.SelectedValueAsId();
+                    person.EthnicityValueId = epEthnicity.SelectedValueAsId();
 
                     if ( pnlEmail.Visible )
                     {
@@ -1447,15 +1486,8 @@ namespace RockWeb.Blocks.CheckIn
                         }
                     }
 
-                    // Remove any blank numbers
-                    var phoneNumberService = new PhoneNumberService( rockContext );
-                    foreach ( var phoneNumber in person.PhoneNumbers
-                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) && selectedPhoneTypeGuids.Contains( n.NumberTypeValue.Guid ) )
-                        .ToList() )
-                    {
-                        person.PhoneNumbers.Remove( phoneNumber );
-                        phoneNumberService.Delete( phoneNumber );
-                    }
+                    // Remove any duplicates and blank numbers
+                    personService.RemoveEmptyAndDuplicatePhoneNumbers( person, phoneNumberTypeIds, rockContext );
 
                     /* 2020-10-06 MDP
                      To help prevent a person from setting their communication preference to SMS, even if they don't have an SMS number,
@@ -2297,6 +2329,8 @@ namespace RockWeb.Blocks.CheckIn
                     dvpSuffix.SetValue( person.SuffixValueId );
                     bpBirthDay.SelectedDate = person.BirthDate;
                     rblGender.SelectedValue = person.Gender.ConvertToString();
+                    rpRace.SetValue( person.RaceValueId );
+                    epEthnicity.SetValue( person.EthnicityValueId );
                 }
 
                 BindPersonDetailByRole( person, !isChild );
@@ -2392,6 +2426,14 @@ namespace RockWeb.Blocks.CheckIn
                     cbIsEmailActive.Checked = person.IsEmailActive;
                 }
             }
+
+            rpRace.Visible = GetAttributeValue( AttributeKey.RaceOption ) != "Hide";
+            rpRace.Required = GetAttributeValue( AttributeKey.RaceOption ) == "Required";
+            rpRace.SetValue( person.RaceValueId );
+
+            epEthnicity.Visible = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
+            epEthnicity.Required = GetAttributeValue( AttributeKey.EthnicityOption ) == "Required";
+            epEthnicity.SetValue( person.EthnicityValueId );
 
             BindPhoneNumbers( isAdult, person );
             var attributeList = GetPersonAttributeGuids( isAdult );

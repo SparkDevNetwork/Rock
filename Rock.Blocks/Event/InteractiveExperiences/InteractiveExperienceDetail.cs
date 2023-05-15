@@ -25,6 +25,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail;
 using Rock.ViewModels.Event.InteractiveExperiences;
@@ -65,7 +66,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.vue";
+        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 
@@ -135,8 +136,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 return;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -514,7 +515,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${InteractiveExperience.FriendlyTypeName}." );
                 return false;
@@ -604,7 +605,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                     schedule.Schedule.iCalendarContent = scheduleBag.Schedule.Value;
                     schedule.DataViewId = scheduleBag.DataView.GetEntityId<DataView>( rockContext );
-                    schedule.GroupId = scheduleBag.Group.GetEntityId<Group>( rockContext );
+                    schedule.GroupId = scheduleBag.Group.GetEntityId<Rock.Model.Group>( rockContext );
 
                     // Force the cache to refresh if the only thing that
                     // changed was the schedule content.
@@ -1019,6 +1020,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new InteractiveExperienceService( rockContext );
+                var interactiveExperienceAnswerService = new InteractiveExperienceAnswerService( rockContext );
 
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -1030,8 +1032,18 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     return ActionBadRequest( errorMessage );
                 }
 
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
+                var answers = interactiveExperienceAnswerService.Queryable()
+                    .Where( a => a.InteractiveExperienceAction.InteractiveExperienceId == entity.Id )
+                    .ToList();
+
+                rockContext.WrapTransaction( () =>
+                {
+                    interactiveExperienceAnswerService.DeleteRange( answers );
+                    rockContext.SaveChanges();
+
+                    entityService.Delete( entity );
+                    rockContext.SaveChanges();
+                } );
 
                 return ActionOk( this.GetParentPageUrl() );
             }

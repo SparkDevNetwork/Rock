@@ -17,8 +17,9 @@
 using System;
 using System.Linq;
 using System.Text;
-using DotLiquid;
 using Quartz;
+
+using DotLiquid;
 
 using Rock.Communication;
 using Rock.Data;
@@ -51,16 +52,17 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Called by the <see cref="IScheduler"/> when a <see cref="IJobDetail"/>
-        /// is about to be executed (an associated <see cref="ITrigger"/>
+        /// Called by the <see cref="IScheduler" /> when a <see cref="IJobDetail" />
+        /// is about to be executed (an associated <see cref="ITrigger" />
         /// has occurred).
         /// <para>
         /// This method will not be invoked if the execution of the Job was vetoed
-        /// by a <see cref="ITriggerListener"/>.
+        /// by a <see cref="ITriggerListener" />.
         /// </para>
         /// </summary>
-        /// <param name="context"></param>
-        /// <seealso cref="JobExecutionVetoed(IJobExecutionContext)"/>
+        /// <param name="context">The context.</param>
+        /// <returns>Task.</returns>
+        /// <seealso cref="M:Quartz.IJobListener.JobExecutionVetoed(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
         public void JobToBeExecuted( IJobExecutionContext context )
         {
             StringBuilder message = new StringBuilder();
@@ -80,19 +82,23 @@ namespace Rock.Jobs
                 rockContext.SaveChanges();
             }
 
+#pragma warning disable CS0612 // Type or member is obsolete
             context.JobDetail.JobDataMap.LoadFromJobAttributeValues( job );
+#pragma warning restore CS0612 // Type or member is obsolete
         }
 
         /// <summary>
-        /// Called by the <see cref="IScheduler"/> when a <see cref="IJobDetail"/>
-        /// was about to be executed (an associated <see cref="ITrigger"/>
-        /// has occurred), but a <see cref="ITriggerListener"/> vetoed its
+        /// Called by the <see cref="IScheduler" /> when a <see cref="IJobDetail" />
+        /// was about to be executed (an associated <see cref="ITrigger" />
+        /// has occurred), but a <see cref="ITriggerListener" /> vetoed its
         /// execution.
         /// </summary>
-        /// <param name="context"></param>
-        /// <seealso cref="JobToBeExecuted(IJobExecutionContext)"/>
+        /// <param name="context">The context.</param>
+        /// <returns>Task.</returns>
+        /// <seealso cref="M:Quartz.IJobListener.JobToBeExecuted(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
         public void JobExecutionVetoed( IJobExecutionContext context )
         {
+            return;
         }
 
         /// <summary>
@@ -112,21 +118,27 @@ namespace Rock.Jobs
                 StatusMessage = job.LastStatusMessage,
                 ServiceWorker = Environment.MachineName.ToLower()
             };
+
             jobHistoryService.Add( jobHistory );
             rockContext.SaveChanges();
         }
 
         /// <summary>
-        /// Called by the <see cref="IScheduler"/> after a <see cref="IJobDetail"/>
-        /// has been executed, and before the associated <see cref="Quartz.Spi.IOperableTrigger"/>'s
-        /// <see cref="Quartz.Spi.IOperableTrigger.Triggered"/> method has been called.
+        /// Called by the <see cref="IScheduler" /> after a <see cref="IJobDetail" />
+        /// has been executed, and before the associated <see cref="Quartz.Spi.IOperableTrigger" />'s
+        /// <see cref="Quartz.Spi.IOperableTrigger.Triggered" /> method has been called.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="jobException"></param>
+        /// <param name="context">The context.</param>
+        /// <param name="jobException">The job exception.</param>
+        /// <returns>Task.</returns>
         public void JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException )
         {
             // get job id
+#pragma warning disable CS0612 // Type or member is obsolete
             int jobId = context.GetJobId();
+#pragma warning restore CS0612 // Type or member is obsolete
+
+            var rockJobInstance = context.JobInstance as RockJob;
 
             // load job
             var rockContext = new RockContext();
@@ -149,7 +161,7 @@ namespace Rock.Jobs
             job.LastRunDurationSeconds = Convert.ToInt32( context.JobRunTime.TotalSeconds );
 
             // set the scheduler name
-            job.LastRunSchedulerName = context.Scheduler.SchedulerName;
+            job.LastRunSchedulerName = rockJobInstance?.Scheduler?.SchedulerName ?? context.Scheduler.SchedulerName;
 
             // determine if an error occurred
             if ( jobException == null )
@@ -157,7 +169,7 @@ namespace Rock.Jobs
                 job.LastSuccessfulRunDateTime = job.LastRunDateTime;
                 job.LastStatus = "Success";
 
-                var result = context.Result as string;
+                var result = rockJobInstance?.Result ?? context.Result as string;
                 job.LastStatusMessage = result ?? string.Empty;
 
                 // determine if message should be sent
@@ -193,9 +205,9 @@ namespace Rock.Jobs
                 }
                 else
                 {
-                    // if the context.Result hasn't been set, use the warningException.Message
+                    // if the this.Result hasn't been set, use the warningException.Message
                     job.LastStatus = "Warning";
-                    job.LastStatusMessage = context.Result?.ToString() ?? warningException.Message;
+                    job.LastStatusMessage = rockJobInstance?.Result ?? context.Result?.ToString() ?? warningException.Message;
                 }
 
                 if ( job.NotificationStatus == JobNotificationStatus.Error )
@@ -275,5 +287,7 @@ namespace Rock.Jobs
 
             return exceptionToLog;
         }
+
+
     }
 }

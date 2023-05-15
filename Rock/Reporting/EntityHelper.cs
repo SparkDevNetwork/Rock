@@ -431,7 +431,7 @@ namespace Rock.Reporting
         /// <param name="entityFields">The entity fields.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
-        [Obsolete( "Use AddEntityFieldsForAttributeList instead" )]
+        [Obsolete( "Use AddEntityFieldsForAttributeList instead", true )]
         [RockObsolete( "1.10" )]
         public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes = true )
         {

@@ -16,11 +16,14 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using AngleSharp.Dom;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Web;
 
 namespace Rock.Field.Types
 {
@@ -33,6 +36,40 @@ namespace Rock.Field.Types
     public class CaptchaFieldType : FieldType
     {
         #region Configuration
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            bool? boolValue = privateValue.AsBooleanOrNull();
+
+            if ( boolValue == true )
+            {
+                return "Verified";
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <summary>
+        /// Gets a value indicating whether this field has a control to configure the default value
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has default control; otherwise, <c>false</c>.
+        /// </value>
+        public override bool HasDefaultControl => false;
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -60,8 +97,8 @@ namespace Rock.Field.Types
             };
             controls.Add( infoBox );
 
-            var siteKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSiteKey" );
-            var secretKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSecretKey" );
+            var siteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
+            var secretKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
 
             if ( siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace() )
             {
@@ -97,22 +134,6 @@ namespace Rock.Field.Types
         {
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            bool? boolValue = privateValue.AsBooleanOrNull();
-
-            if ( boolValue == true )
-            {
-                return "Verified";
-            }
-
-            return string.Empty;
-        }
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -152,18 +173,6 @@ namespace Rock.Field.Types
             // return ValueAsFieldType which returns the value as a double
             return this.ValueAsFieldType( parentControl, value, configurationValues );
         }
-
-        #endregion
-
-        #region Edit Control
-
-        /// <summary>
-        /// Gets a value indicating whether this field has a control to configure the default value
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance has default control; otherwise, <c>false</c>.
-        /// </value>
-        public override bool HasDefaultControl => false;
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -207,6 +216,7 @@ namespace Rock.Field.Types
         {
         }
 
+#endif
         #endregion
     }
 }

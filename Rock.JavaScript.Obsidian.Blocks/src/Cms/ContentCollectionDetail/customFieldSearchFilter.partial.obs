@@ -1,0 +1,74 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SearchFilter :isEnabled="isEnabled"
+                  :title="title"
+                  :description="description"
+                  :values="values"
+                  @edit="onEdit" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
+    import { CustomFieldFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/customFieldFilterBag";
+    import SearchFilter from "./searchFilter.partial";
+
+    const props = defineProps({
+        /** The custom field filter to be displayed. */
+        modelValue: {
+            type: Object as PropType<CustomFieldFilterBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "edit", value: CustomFieldFilterBag): void
+    }>();
+
+    // #region Computed Values
+
+    const isEnabled = computed((): boolean => {
+        return props.modelValue.isEnabled;
+    });
+
+    const title = computed((): string => {
+        return props.modelValue.title ?? "";
+    });
+
+    const description = computed((): string => {
+        return `Sources Using: ${props.modelValue.sourceNames?.join(", ")}`;
+    });
+
+    const values = computed((): ListItemBag[] => {
+        const values: ListItemBag[] = [
+            {
+                text: "Filter Label",
+                value: props.modelValue.filterLabel
+            }
+        ];
+
+        values.push({
+            text: "Filter Control",
+            value: props.modelValue.filterControl === ContentCollectionFilterControl.Dropdown ? "Dropdown" : "Pills"
+        });
+
+        values.push({
+            text: "Filter Mode",
+            value: props.modelValue.isMultipleSelection ? "Multi-Select" : "Single-Select"
+        });
+
+        return values;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Event handler for the edit event of the SearchFilter control. */
+    function onEdit(): void {
+        emit("edit", props.modelValue);
+    }
+
+    // #endregion
+</script>

@@ -112,6 +112,21 @@ namespace Rock.Model
         [DataMember]
         public virtual Schedule Schedule { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.Person"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        [NotMapped]
+        public virtual int? PersonId
+        {
+            get
+            {
+                return GroupMember?.PersonId;
+            }
+        }
+
         #endregion
 
         #region Public Methods

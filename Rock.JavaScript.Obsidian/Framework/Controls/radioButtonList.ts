@@ -38,6 +38,17 @@ export default defineComponent({
             default: ""
         },
 
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        formGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         repeatColumns: {
             type: Number as PropType<number>,
             default: 0
@@ -97,7 +108,7 @@ export default defineComponent({
         });
 
         function isItemDisabled(item: ListItemBag): boolean {
-            return item.category === "disabled";
+            return item.category === "disabled" || props.disabled;
         }
 
         const getItemUniqueId = (uniqueId: Guid, item: ListItemBag): string => {
@@ -144,8 +155,11 @@ export default defineComponent({
     },
 
     template: `
-<RockFormField formGroupClasses="rock-radio-button-list" #default="{uniqueId}" name="radiobuttonlist" v-model="internalValue">
+<RockFormField
+    :formGroupClasses="'rock-radio-button-list ' + formGroupClasses"
+     #default="{uniqueId}" name="radiobuttonlist" v-model="internalValue">
     <div class="control-wrapper">
+        <slot name="prepend" :isInputGroupSupported="false" />
         <div class="controls rockradiobuttonlist" :class="containerClasses">
             <span>
                 <template v-if="horizontal">
@@ -164,6 +178,7 @@ export default defineComponent({
                 </template>
             </span>
         </div>
+        <slot name="append" :isInputGroupSupported="false" />
     </div>
 </RockFormField>`
 });

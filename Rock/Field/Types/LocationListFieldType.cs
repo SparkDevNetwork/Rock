@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -66,6 +67,157 @@ namespace Rock.Field.Types
             /// </summary>
             public const string AddressRequired = "AddressRequired";
         }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var locationGuid = privateValue.AsGuid();
+            var location = GetLocationByGuid( locationGuid );
+            if ( location == null )
+            {
+                return string.Empty;
+            }
+
+            if ( privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShowCityState ).AsBoolean() )
+            {
+                privateValue = $"{location.Name} ({location.City}, {location.State})";
+            }
+            else
+            {
+                privateValue = location.Name;
+            }
+
+            return privateValue;
+        }
+        #endregion
+
+        #region IEntityFieldType implementation
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldShowCityState = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShowCityState ) ?? string.Empty;
+            var newShowCityState = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShowCityState ) ?? string.Empty;
+            return newShowCityState != oldShowCityState;
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public IEntity GetEntity( string value )
+        {
+            var guid = value.AsGuid();
+            return GetLocationByGuid( guid );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            var guid = value.AsGuid();
+            return GetLocationByGuid( guid, rockContext );
+        }
+        #endregion
+
+        private Location GetLocationByGuid( Guid guid )
+        {
+            if ( guid.IsEmpty() )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                return GetLocationByGuid( guid, rockContext );
+            }
+        }
+
+        private Location GetLocationByGuid( Guid guid, RockContext rockContext )
+        {
+            if ( guid.IsEmpty() )
+            {
+                return null;
+            }
+
+            var locationService = new LocationService( rockContext );
+            return locationService.Get( guid );
+        }
+
+        private Location GetLocationById( int id )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return GetLocationById( id, rockContext );
+            }
+        }
+
+        private Location GetLocationById( int id, RockContext rockContext )
+        {
+            var locationService = new LocationService( rockContext );
+            return locationService.Get( id );
+        }
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var locationId = new LocationService( rockContext ).GetId( guid.Value );
+
+                if ( !locationId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<Location>().Value, locationId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Location List and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.City ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.State ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -214,9 +366,7 @@ namespace Rock.Field.Types
                 }
             }
         }
-        #endregion
 
-        #region Edit Control
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -292,9 +442,7 @@ namespace Rock.Field.Types
                 locationList.SelectedValue = location.Id.ToString();
             }
         }
-        #endregion
 
-        #region Formatting
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -310,30 +458,7 @@ namespace Rock.Field.Types
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var locationGuid = privateValue.AsGuid();
-            var location = GetLocationByGuid( locationGuid );
-            if ( location == null )
-            {
-                return string.Empty;
-            }
 
-            if ( privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShowCityState ).AsBoolean() )
-            {
-                privateValue = $"{location.Name} ({location.City}, {location.State})";
-            }
-            else
-            {
-                privateValue = location.Name;
-            }
-
-            return privateValue;
-        }
-        #endregion
-
-        #region IEntityFieldType implementation
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -352,14 +477,6 @@ namespace Rock.Field.Types
             }
 
             return location.Id;
-        }
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
-        {
-            var oldShowCityState = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShowCityState ) ?? string.Empty;
-            var newShowCityState = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShowCityState ) ?? string.Empty;
-            return newShowCityState != oldShowCityState;
         }
 
         /// <summary>
@@ -384,111 +501,7 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, locationEditValue );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public IEntity GetEntity( string value )
-        {
-            var guid = value.AsGuid();
-            return GetLocationByGuid( guid );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            var guid = value.AsGuid();
-            return GetLocationByGuid( guid, rockContext );
-        }
-        #endregion
-
-        private Location GetLocationByGuid( Guid guid )
-        {
-            if ( guid.IsEmpty() )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                return GetLocationByGuid( guid, rockContext );
-            }
-        }
-
-        private Location GetLocationByGuid( Guid guid, RockContext rockContext )
-        {
-            if ( guid.IsEmpty() )
-            {
-                return null;
-            }
-
-            var locationService = new LocationService( rockContext );
-            return locationService.Get( guid );
-        }
-
-        private Location GetLocationById( int id )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                return GetLocationById( id, rockContext );
-            }
-        }
-
-        private Location GetLocationById( int id, RockContext rockContext )
-        {
-            var locationService = new LocationService( rockContext );
-            return locationService.Get( id );
-        }
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            Guid? guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var locationId = new LocationService( rockContext ).GetId( guid.Value );
-
-                if ( !locationId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<Location>().Value, locationId.Value )
-                };
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Location List and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.Name ) ),
-                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.City ) ),
-                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.State ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

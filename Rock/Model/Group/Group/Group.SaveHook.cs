@@ -166,6 +166,15 @@ namespace Rock.Model
                                 rockContext.BulkDelete( attendancesToDelete );
                             }
 
+                            // This should eventually be accomplished with a cascade delete within the GroupMemberAssignmentConfiguration, once the migration token moves back to the develop branch.
+                            var groupMemberAssignmentsToDelete = new GroupMemberAssignmentService( rockContext )
+                                .Queryable()
+                                .Where( a => a.GroupMember.GroupId == Entity.Id );
+                            if ( groupMemberAssignmentsToDelete.Any() )
+                            {
+                                rockContext.BulkDelete( groupMemberAssignmentsToDelete );
+                            }
+
                             break;
                         }
                 }

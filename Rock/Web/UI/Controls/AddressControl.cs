@@ -1184,8 +1184,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void BindCountries()
         {
-            var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) );
-            var countryValues = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
+            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() );
+            var countryValues = DefinedTypeCache.Get( SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
                 .DefinedValues
                 .OrderBy( v => v.Order )
                 .ThenBy( v => v.Value )

@@ -141,7 +141,7 @@ namespace Rock.Tests.UnitTests.Rock.Utility
                     new object[] { "Upcoming|3|Year||", StandardReferenceDateTime, new DateTime( 2023, 1, 1, 0, 0, 0 ), new DateTime( 2025, 12, 31, 23, 59, 59, 999 ) },
 
                     // Between
-                    new object[] { "DateRange|||11/3/2022 12:00:00 AM|11/22/2022 12:00:00 AM", StandardReferenceDateTime, new DateTime( 2022, 11, 3, 0, 0, 0 ), new DateTime( 2022, 11, 22, 23, 59, 59, 999 ) },
+                    new object[] { "DateRange|||2022-11-3 12:00:00 AM|2022-11-22 12:00:00 AM", StandardReferenceDateTime, new DateTime( 2022, 11, 3, 0, 0, 0 ), new DateTime( 2022, 11, 22, 23, 59, 59, 999 ) },
 
                     // Alternative format: Current Week.
                     new object[] { "Current|1|Week||", StandardReferenceDateTime, new DateTime( 2022, 10, 31, 0, 0, 0 ), new DateTime( 2022, 11, 6, 23, 59, 59, 999 ) },

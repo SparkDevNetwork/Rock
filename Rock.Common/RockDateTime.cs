@@ -178,13 +178,29 @@ namespace Rock
         /// <returns></returns>
         public static DateTime? New( int year, int month, int day )
         {
+            return New( year, month, day, 0, 0, 0, 0 );
+        }
+
+        /// <summary>
+        /// Creates a new datetime based on year, month, day, and handles 2/29 for non leap years (returns 2/28 in this case)
+        /// </summary>
+        /// <param name="year">The year.</param>
+        /// <param name="month">The month.</param>
+        /// <param name="day">The day.</param>
+        /// <param name="hour">The year.</param>
+        /// <param name="minute">The minute.</param>
+        /// <param name="second">The second.</param>
+        /// <param name="millisecond">The millisecond.</param>
+        /// <returns></returns>
+        public static DateTime? New( int year, int month, int day, int hour, int minute, int second, int millisecond )
+        {
             try
             {
                 if ( !DateTime.IsLeapYear( year ) && month == 2 && day == 29 )
                 {
-                    return new DateTime( year, 2, 28 );
+                    return new DateTime( year, 2, 28, hour, minute, second, millisecond );
                 }
-                return new DateTime( year, month, day );
+                return new DateTime( year, month, day, hour, minute, second, millisecond );
             }
             catch { }
 

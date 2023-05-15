@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -41,8 +39,7 @@ namespace Rock.Jobs
 
     [SystemCommunicationField( "Following Suggestion Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following suggestions", true, order: 1 )]
-    [DisallowConcurrentExecution]
-    public class SendFollowingSuggestions : IJob
+    public class SendFollowingSuggestions : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -55,17 +52,13 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             var exceptionMsgs = new List<string>();
 
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            Guid? groupGuid = dataMap.GetString( "EligibleFollowers" ).AsGuidOrNull();
-            Guid? systemEmailGuid = dataMap.GetString( "EmailTemplate" ).AsGuidOrNull();
+            Guid? groupGuid = GetAttributeValue( "EligibleFollowers" ).AsGuidOrNull();
+            Guid? systemEmailGuid = GetAttributeValue( "EmailTemplate" ).AsGuidOrNull();
             int followingSuggestionsEmailsSent = 0;
             int followingSuggestionsSuggestionsTotal = 0;
 
@@ -275,7 +268,7 @@ namespace Rock.Jobs
                                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                                     emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                     var errors = new List<string>();
-                                    emailMessage.Send(out errors);
+                                    emailMessage.Send( out errors );
                                     exceptionMsgs.AddRange( errors );
 
                                     followingSuggestionsEmailsSent += 1;
@@ -294,7 +287,7 @@ namespace Rock.Jobs
                 }
             }
 
-            context.Result = string.Format( "A total of {0} following suggestions sent to {1} people", followingSuggestionsSuggestionsTotal, followingSuggestionsEmailsSent );
+            this.Result = string.Format( "A total of {0} following suggestions sent to {1} people", followingSuggestionsSuggestionsTotal, followingSuggestionsEmailsSent );
 
             if ( exceptionMsgs.Any() )
             {
@@ -409,7 +402,7 @@ namespace Rock.Jobs
             bool addSuggestion;
             ProcessFollowingSuggestionAndPersonAliasEntity( followerPersonId, suggestionTypeComponent, entityIdToBeSavedAsSuggestions, entityTypeId, suggestionContext, followedEntityId, out addSuggestion );
         }
-        
+
         /// <summary>
         /// Checks to see if the PersonAlias entity should be added to the FollowingSuggestion table. If the entity is not a PersonAlias then addSuggestion will be true.
         /// If the Entity is a PersonAlias then this method will check if the associated Person has another PersonAlias that is being followed.

@@ -212,6 +212,7 @@ namespace RockWeb.Blocks.Connection
         #region Fields
 
         private const string CAMPUS_SETTING = "ConnectionRequestDetail_Campus";
+        
         #endregion
 
         #region Properties
@@ -223,6 +224,14 @@ namespace RockWeb.Blocks.Connection
         /// The search attributes.
         /// </value>
         public List<AttributeCache> SearchAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the flag indicating whether or not the edit is allowed.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the edit is allowed; otherwise <c>false</c>.
+        /// </value>
+        public bool? IsEditAllowed { get; set; }
 
         #endregion
 
@@ -247,6 +256,8 @@ namespace RockWeb.Blocks.Connection
                 ViewState["PlacementGroupRoleId"] as int?,
                 ViewState["PlacementGroupStatus"] as GroupMemberStatus?,
                 false );
+
+            IsEditAllowed = ViewState["IsEditAllowed"] as bool?;
         }
 
         /// <summary>
@@ -326,6 +337,11 @@ namespace RockWeb.Blocks.Connection
             {
                 ShowDetail( PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger(), PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
             }
+            else if ( IsEditAllowed.HasValue && IsEditAllowed.Value )
+            {
+                gConnectionRequestActivities.IsDeleteEnabled = true;
+                gConnectionRequestActivities.Actions.ShowAdd = true;
+            }
 
             var connectionRequest = GetConnectionRequest();
             if ( connectionRequest != null )
@@ -357,6 +373,8 @@ namespace RockWeb.Blocks.Connection
                 ViewState["PlacementGroupRoleId"] = ( int? ) null;
                 ViewState["PlacementGroupStatus"] = ( GroupMemberStatus? ) null;
             }
+
+            ViewState["IsEditAllowed"] = IsEditAllowed;
 
             return base.SaveViewState();
         }
@@ -645,6 +663,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectorPersonAliasId = newConnectorPersonAliasId;
                     connectionRequest.PersonAlias = personAliasService.Get( ppRequestor.PersonAliasId.Value );
 
+                    var oldState = connectionRequest.ConnectionState;
                     var state = rblState.SelectedValueAsEnumOrNull<ConnectionState>();
 
                     // If a value is selected in the radio button list, use it, otherwise use "Active".
@@ -660,12 +679,14 @@ namespace RockWeb.Blocks.Connection
 
                     connectionRequest.ConnectionStatusId = rblStatus.SelectedValueAsId().Value;
 
-                    connectionRequest.CampusId = cpCampus.SelectedCampusId;
-
-                    connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
-                    connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
-                    connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
-                    connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
+                    if ( oldState != ConnectionState.Connected )
+                    {
+                        connectionRequest.CampusId = cpCampus.SelectedCampusId;
+                        connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
+                        connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
+                        connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
+                        connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
+                    }
 
                     connectionRequest.Comments = tbComments.Text.SanitizeHtml();
 
@@ -2006,7 +2027,7 @@ namespace RockWeb.Blocks.Connection
                 rConnectorSelect.Visible = editAllowed;
                 gConnectionRequestActivities.IsDeleteEnabled = editAllowed;
                 gConnectionRequestActivities.Actions.ShowAdd = editAllowed;
-
+                IsEditAllowed = editAllowed;
                 // Only show transfer if there are other Opportunities
                 if ( connectionOpportunity.ConnectionType.ConnectionOpportunities.Count > 1 )
                 {
@@ -2594,7 +2615,16 @@ namespace RockWeb.Blocks.Connection
             }
 
             CheckGroupRequirement();
-            BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+            var enableConnectionRelatedControl = connectionRequest.ConnectionState != ConnectionState.Connected;
+            ddlPlacementGroup.Enabled = enableConnectionRelatedControl;
+            ddlPlacementGroupStatus.Enabled = enableConnectionRelatedControl;
+            ddlPlacementGroupRole.Enabled = enableConnectionRelatedControl;
+            phGroupMemberAttributes.Visible = enableConnectionRelatedControl;
+            cpCampus.Enabled = enableConnectionRelatedControl;
+            if ( enableConnectionRelatedControl )
+            {
+                BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+            }
         }
 
         private void CheckGroupRequirement()
@@ -2645,7 +2675,6 @@ namespace RockWeb.Blocks.Connection
         {
             phGroupMemberAttributes.Controls.Clear();
             phGroupMemberAttributesView.Controls.Clear();
-
             if ( groupId.HasValue && groupMemberRoleId.HasValue && groupMemberStatus != null )
             {
                 using ( var rockContext = new RockContext() )

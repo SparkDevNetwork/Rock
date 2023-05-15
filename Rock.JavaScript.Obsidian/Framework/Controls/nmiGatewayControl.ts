@@ -17,7 +17,8 @@
 import { computed, defineComponent, onMounted, PropType, ref } from "vue";
 import LoadingIndicator from "./loadingIndicator";
 import { newGuid } from "@Obsidian/Utility/guid";
-import { GatewayEmitStrings, onSubmitPayment } from "./gatewayControl";
+import { onSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+import { GatewayEmitStrings } from "@Obsidian/Enums/Controls/gatewayEmitStrings";
 import { CollectJSOptions, InputField, ResponseCallback, TimeoutCallback, TokenResponse, ValidationCallback } from "./nmiGatewayControlTypes";
 import { FormError } from "@Obsidian/Utility/form";
 
@@ -141,14 +142,14 @@ const standardStyling = `
 
 /**
  * Ensures the CollectJS script is loaded into the browser.
- * 
+ *
  * @param tokenizationKey The tokenization key that will be used to initialize the script.
  */
 async function loadCollectJSAsync(tokenizationKey: string): Promise<boolean> {
     if (window.CollectJS === undefined) {
         const script = document.createElement("script");
         script.type = "text/javascript";
-        script.src = "https://secure.tnbcigateway.com/token/Collect.js";
+        script.src = "https://secure.nmi.com/token/Collect.js";
         script.setAttribute("data-tokenization-key", tokenizationKey);
         script.setAttribute("data-variant", "inline");
         document.getElementsByTagName("head")[0].appendChild(script);
@@ -169,7 +170,7 @@ async function loadCollectJSAsync(tokenizationKey: string): Promise<boolean> {
 
 /**
  * Ensures the CollectJS script is loaded into the browser.
- * 
+ *
  * @param tokenizationKey The tokenization key that will be used to initialize the script.
  */
 async function loadStandardStyleTagAsync(): Promise<void> {
@@ -188,7 +189,7 @@ async function loadStandardStyleTagAsync(): Promise<void> {
 /**
  * Get the standard CollectJS options. This is primarily all the custom CSS
  * and control references.
- * 
+ *
  * @param controlId The identifier of the parent control that contains all the input fields.
  * @param inputStyleHook The element that will be used for standard styling information.
  * @param inputInvalidStyleHook The element that will be used for invalid styling information.
@@ -303,7 +304,7 @@ function getCollectJSOptions(controlId: string, inputStyleHook: HTMLElement | nu
 
 /**
  * Translates the NMI field name into a user friendly one.
- * 
+ *
  * @param field The field name as provided by NMI.
  *
  * @returns A user friendly name for the field.
@@ -510,7 +511,7 @@ export default defineComponent({
         /**
          * Callback function that handles field validation results from the
          * CollectJS back-end.
-         * 
+         *
          * @param field The name of the field being validated.
          * @param validated true if the field is valid; otherwise false.
          * @param message A message that describes the reason for the validation failure.
@@ -561,7 +562,7 @@ export default defineComponent({
 
         /**
          * Callback method when we receive a validated token from NMI.
-         * 
+         *
          * @param tokenResponse The response data that contains the token.
          */
         const handleTokenResponse: ResponseCallback = (tokenResponse: TokenResponse): void => {

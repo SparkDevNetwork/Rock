@@ -133,6 +133,19 @@ namespace RockWeb.Blocks.Event
             ddlCampus.DataSource = CampusCache.All();
             ddlCampus.DataBind();
             ddlCampus.Items.Insert( 0, new ListItem( All.Text, string.Empty ) );
+
+            string deleteScript = @"
+    $('a.js-delete-event').on('click', function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this event occurrence? All of the content channels will also be deleted!', function (result) {
+            if (result) {
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteInstanceScript", deleteScript, true );
+
         }
 
         /// <summary>
@@ -526,7 +539,11 @@ namespace RockWeb.Blocks.Event
             {
                 // clone the workflow type
                 eventItemOccurrence = oldOccurrence.CloneWithoutIdentity();
-                eventItemOccurrence.Schedule = oldOccurrence.Schedule;
+                if ( oldOccurrence.Schedule != null )
+                {
+                    eventItemOccurrence.ScheduleId = null;
+                    eventItemOccurrence.Schedule = oldOccurrence.Schedule.CloneWithoutIdentity();
+                }
                 eventItemOccurrence.EventItem = oldOccurrence.EventItem;
                 eventItemOccurrence.ContactPersonAlias = oldOccurrence.ContactPersonAlias;
 
@@ -695,7 +712,13 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            NavigateToParentPage();
+            var qryParams = new Dictionary<string, string>
+            {
+                { "EventCalendarId", PageParameter("EventCalendarId") },
+                { "EventItemId", PageParameter("EventItemId") }
+            };
+
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>
