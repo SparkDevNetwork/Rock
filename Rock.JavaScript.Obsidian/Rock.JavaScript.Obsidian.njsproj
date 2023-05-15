@@ -77,6 +77,7 @@
     <Content Include="Framework\Controls\slidingDateRangePicker.obs" />
     <Content Include="Framework\Controls\reminderTypePicker.obs" />
     <Content Include="Framework\Controls\scheduleBuilder.obs" />
+    <Content Include="Framework\Controls\structuredContentEditor.obs" />
     <Content Include="Framework\Controls\timeIntervalPicker.obs" />
     <Content Include="Framework\Controls\timePicker.obs" />
     <Content Include="Framework\Controls\treeItemPicker.obs" />
@@ -586,6 +587,7 @@
     <TypeScriptCompile Include="Framework\Utility\popover.ts" />
     <TypeScriptCompile Include="Framework\Utility\promiseUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\realTime.ts" />
+    <TypeScriptCompile Include="Framework\Utility\structuredContentEditor.ts" />
     <TypeScriptCompile Include="Framework\Utility\suspense.ts" />
     <TypeScriptCompile Include="Framework\Utility\tooltip.ts" />
     <TypeScriptCompile Include="Framework\Utility\validationRules.ts" />
@@ -1107,6 +1109,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\schedulePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepStatusPickerGetStepStatusesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepTypePickerGetStepTypesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorGetConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowActionTypePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowTypePickerGetWorkflowTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesAccessedOptionsBag.d.ts" />

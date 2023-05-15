@@ -119,6 +119,7 @@ import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterG
 import { AssessmentType } from "@Obsidian/SystemGuids/assessmentType";
 import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
 import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { SlidingDateRange, rangeTypeOptions } from "@Obsidian/Utility/slidingDateRange";
@@ -214,6 +215,7 @@ import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
 import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
 
 // #region Gallery Support
 
@@ -7661,6 +7663,59 @@ const accountPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates structured content editor */
+const structuredContentEditorGallery = defineComponent({
+    name: "StructuredContentEditorGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DefinedValuePicker,
+        StructuredContentEditor
+    },
+    setup() {
+        const required = ref(false);
+        const toolsItemBag = ref<ListItemBag | undefined>({
+            value: DefinedValue.StructureContentEditorDefault
+        });
+        const toolsGuid = computed(() => toolsItemBag.value?.value);
+        const toolsTypeGuid = DefinedType.StructuredContentEditorTools;
+
+        return {
+            value: ref("{}"),
+            required,
+            importCode: getSfcControlImportPath("structuredContentEditor"),
+            exampleCode: computed(() => `<StructuredContentEditor v-model="value" label="StructuredContent Editor" :toolsGuid="${toolsGuid.value}" ${required.value ? 'rules="required" ' : ""}/>`),
+            toolsGuid,
+            toolsItemBag,
+            toolsTypeGuid
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <StructuredContentEditor
+        v-model="value"
+        label="Structured Content Editor"
+        :toolsGuid="toolsGuid"
+        :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <DefinedValuePicker v-model="toolsItemBag" :definedTypeGuid="toolsTypeGuid" label="Structured Content Editor Tools Value" lazyMode="eager" :multiple="false" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -7802,6 +7857,7 @@ const controlGalleryComponents: Record<string, Component> = [
     registryEntryGallery,
     groupTypeGroupPickerGallery,
     accountPickerGallery,
+    structuredContentEditorGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

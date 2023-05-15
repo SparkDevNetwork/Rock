@@ -5009,6 +5009,46 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Structured Content Editor
+
+        /// <summary>
+        /// Gets the structured content editor configuration.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>The structured content editor configuration.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "StructuredContentEditorGetConfiguration" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "71AD8E7A-3B38-4FC0-A4C7-95DB77F070F6" )]
+        public IHttpActionResult StructuredContentEditorGetConfiguration( [FromBody] StructuredContentEditorGetConfigurationOptionsBag options )
+        {
+            var structuredContentToolsConfiguration = string.Empty;
+            if ( options.StructuredContentToolsValueGuid.HasValue )
+            {
+                var structuredContentToolsValue = DefinedValueCache.Get( options.StructuredContentToolsValueGuid.Value );
+                if ( structuredContentToolsValue != null )
+                {
+                    structuredContentToolsConfiguration = structuredContentToolsValue.Description;
+                }
+            }
+
+            if ( structuredContentToolsConfiguration.IsNullOrWhiteSpace() )
+            {
+                var structuredContentToolsValue = DefinedValueCache.Get( SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_DEFAULT );
+                if ( structuredContentToolsValue != null )
+                {
+                    structuredContentToolsConfiguration = structuredContentToolsValue.Description;
+                }
+            }
+
+            return Ok( new StructuredContentEditorConfigurationBag
+            {
+                ToolsScript = structuredContentToolsConfiguration
+            } );
+        }
+
+        #endregion
+
         #region Workflow Action Type Picker
 
         /// <summary>

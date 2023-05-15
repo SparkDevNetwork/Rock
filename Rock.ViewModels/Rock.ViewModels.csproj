@@ -235,6 +235,8 @@
     <Compile Include="Rest\Controls\CategorizedValuePickerGetTreeResultsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerNodeBag.cs" />
+    <Compile Include="Rest\Controls\StructuredContentEditorConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\StructuredContentEditorGetConfigurationOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailGetGroupLocationSchedulesRequestBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailGetGroupLocationsRequestBag.cs" />
