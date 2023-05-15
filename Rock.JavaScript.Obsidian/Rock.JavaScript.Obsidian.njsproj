@@ -131,7 +131,9 @@
     <Folder Include="Framework\Enums\Communication\" />
     <Folder Include="Framework\Enums\Connection\" />
     <Folder Include="Framework\Enums\Controls\" />
+    <Folder Include="Framework\Enums\Controls\Grid\" />
     <Folder Include="Framework\Enums\Core\" />
+    <Folder Include="Framework\Enums\Core\Grid\" />
     <Folder Include="Framework\Enums\Crm\" />
     <Folder Include="Framework\Enums\Engagement\" />
     <Folder Include="Framework\Enums\Event\" />
@@ -204,6 +206,7 @@
     <Folder Include="Framework\ViewModels\Connection\" />
     <Folder Include="Framework\ViewModels\Controls\" />
     <Folder Include="Framework\ViewModels\Core\" />
+    <Folder Include="Framework\ViewModels\Core\Grid\" />
     <Folder Include="Framework\ViewModels\Crm\" />
     <Folder Include="Framework\ViewModels\Engagement\" />
     <Folder Include="Framework\ViewModels\Entities\" />
@@ -348,6 +351,11 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\detailPanelMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\gatewayEmitStrings.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\dateFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\numberFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\pickExistingFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\stringFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\textFilterMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mergeTemplateOwnership.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\modalAlertType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\pickerDisplayStyle.ts" />
@@ -362,6 +370,7 @@
     <TypeScriptCompile Include="Framework\Enums\Core\colorDepth.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\followingSuggestedStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\format.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\Grid\columnPositionAnchor.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\jobNotificationStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\kioskType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\matchFlag.ts" />
@@ -686,6 +695,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\landingPageContentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\listBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AccountEntry\accountEntryAccountInfoBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AccountEntry\accountEntryCompletedStepBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AccountEntry\accountEntryConfirmationSentStepBag.d.ts" />
@@ -741,6 +751,15 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthYearValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customColumnDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\fieldDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridCommunicationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridEntitySetBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridEntitySetItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\notificationMessageActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\personPreferenceValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Crm\renderedBadgeBag.d.ts" />

@@ -26,6 +26,13 @@ namespace Rock.Web.UI.Controls
     public class CustomActionConfig
     {
         /// <summary>
+        /// Gets or sets the name of the action. This should be one or two words
+        /// that quickly describe the action.
+        /// </summary>
+        /// <value>The name of the action.</value>
+        public string Name { get; set; }
+
+        /// <summary>
         /// Gets or sets the route. This will be formatted using an EntitySetId in position {0}. If position {0} is not included in this value,
         /// then the EntitySetId will be included as a query parameter.
         /// Example: /CustomLaunchRoute/{0}

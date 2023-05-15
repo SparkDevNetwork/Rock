@@ -31,7 +31,7 @@
 </script>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, watch, ref } from "vue";
+    import { computed, onMounted, PropType, watch, ref, nextTick } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
@@ -84,6 +84,15 @@
         startView: {
             type: Number as PropType<0 | 1 | 2>,
             default: 0
+        },
+
+        /**
+         * The container to attach the popup to, if not specified it will
+         * default to the document body.
+         */
+        container: {
+            type: HTMLElement as PropType<HTMLElement | null>,
+            required: false
         }
     });
 
@@ -130,6 +139,32 @@
 
     // #endregion
 
+    // #region Functions
+
+    function initializePopup(): void {
+        const input = inputEl.value;
+
+        if (!input) {
+            return;
+        }
+
+        window.Rock.controls.datePicker.initialize({
+            ...(dateLimiterOptions.value),
+            id: input.id,
+            startView: props.startView,
+            showOnFocus: !props.disableShowOnFocus,
+            format: "mm/dd/yyyy",
+            todayHighlight: !props.disableHighlightToday,
+            forceParse: !props.disableForceParse,
+            onChangeScript: () => {
+                internalValue.value = input.value;
+            },
+            container: props.container ?? "body"
+        });
+    }
+
+    // #endregion
+
     // #region Watchers
 
     watch(() => props.modelValue, () => {
@@ -158,22 +193,12 @@
     // #region Lifecycle
 
     onMounted(() => {
-        const input = inputEl.value as HTMLInputElement;
-
-        window.Rock.controls.datePicker.initialize({
-            ...(dateLimiterOptions.value),
-            id: input.id,
-            startView: props.startView,
-            showOnFocus: !props.disableShowOnFocus,
-            format: "mm/dd/yyyy",
-            todayHighlight: !props.disableHighlightToday,
-            forceParse: !props.disableForceParse,
-            onChangeScript: () => {
-                internalValue.value = input.value;
-            }
+        // Bit of a back to make sure all our props are set correctly.
+        nextTick(() => {
+            initializePopup();
         });
     });
 
-    // #endregion
+        // #endregion
 
 </script>

@@ -285,6 +285,12 @@ function defineFileConfig(input, output, options) {
 
             // If we are building a library, always bundle all externals.
             if (options.lib) {
+                // Except these special cases that are handled by our global
+                // imports and need to be standard.
+                if (target === "vue") {
+                    return true;
+                }
+
                 return false;
             }
 
