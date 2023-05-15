@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Provides a Captcha control that verifies the user is a real person.
     /// </summary>
-    public class Captcha : WebControl, IRockControl
+    public class Captcha : WebControl, IRockControl, IPostBackEventHandler
     {
         #region Fields
 
@@ -117,6 +117,11 @@ namespace Rock.Web.UI.Controls
                 return !string.IsNullOrWhiteSpace( SiteKey ) && !string.IsNullOrWhiteSpace( SecretKey );
             }
         }
+
+        /// <summary>
+        /// Occurs when a file is uploaded.
+        /// </summary>
+        public event EventHandler<TokenReceivedEventArgs> TokenReceived;
 
         #endregion
 
@@ -365,32 +370,41 @@ namespace Rock.Web.UI.Controls
             base.OnPreRender( e );
 
             var rockPage = Page as RockPage;
+            var postBackScript = string.Empty;
 
             if ( rockPage != null && SiteKey.IsNotNullOrWhiteSpace() )
             {
-                string script = @"
-function onloadTurnstileCallback(token) {
+                postBackScript = this.TokenReceived != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "TokenReceived" ), false ) : "";
+                postBackScript = postBackScript.Replace( '\'', '"' );
 
+                string script = $@"
+function onloadTurnstileCallback(token) {{
     let retryCount = 3;
     const hfToken = document.querySelector('.js-captchaToken');
     // The callback is sometimes triggered before the element is loaded on the page, hence the retry after a second to try and give it time to load.
-    if (!hfToken) {
-        if (retryCount > 0) {
+    if (!hfToken) {{
+        if (retryCount > 0) {{
             retryCount--;
             setTimeout(() => onloadTurnstileCallback(token), 1000);
-        }
-    } else {
+        }}
+    }} else {{
         hfToken.value = token;
         // Hide control after captcha is solved and we get the token so it is not re-rendered for every post back.
         // Give it a 1 sec delay so success message is displayed to the user.
         const captcha = document.querySelector('.js-captcha');
-        if(captcha && token){
-            setTimeout(() => {
+        if(captcha && token) {{
+            setTimeout(() => {{
                 captcha.style.display = 'none';  
-            }, 1000);       
-        }
-    }
-}
+            }}, 1000);       
+        }}
+    }}
+
+    const postbackScript = '{postBackScript}';
+
+    if (token && postbackScript) {{
+        window.location = ""javascript:"" + postbackScript;
+    }}
+}}
 ";
                 // Add a script src tag to head. Note that if this is a Partial Postback, we'll have to load it manually in our captcha.js script
                 rockPage.AddScriptSrcToHead( "captchaScriptId", "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" );
@@ -401,9 +415,13 @@ function onloadTurnstileCallback(token) {
             {
                 string script = string.Format( @"
 ;(function () {{
-    Rock.controls.captcha.initialize({{id: '{0}', key: '{1}'}});
+    Rock.controls.captcha.initialize({{
+        id: '{0}',
+        key: '{1}',
+        postbackScript: '{2}'
+    }});
 }})();
-", ClientID, SiteKey );
+", ClientID, SiteKey, postBackScript );
 
                 ScriptManager.RegisterStartupScript( this, GetType(), "captcha-" + ClientID, script, true );
             }
@@ -418,6 +436,19 @@ function onloadTurnstileCallback(token) {
             if ( this.Visible )
             {
                 RockControlHelper.RenderControl( this, writer );
+            }
+        }
+
+        /// <summary>
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
+        /// </summary>
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
+        public void RaisePostBackEvent( string eventArgument )
+        {
+            if ( eventArgument == "TokenReceived" && TokenReceived != null )
+            {
+                var token = HttpContext.Current.Request.Form[$"{UniqueID}_hfToken"];
+                TokenReceived( this, new TokenReceivedEventArgs { Token = token, IsValid = IsResponseValid() } );
             }
         }
 
@@ -557,6 +588,29 @@ function onloadTurnstileCallback(token) {
 
             [JsonProperty( "cdata" )]
             public string CustomerData { get; set; }
+        }
+
+        /// <summary>
+        /// Event argument for the TokenReceivedEvent
+        /// </summary>
+        /// <seealso cref="System.EventArgs" />
+        public class TokenReceivedEventArgs : EventArgs
+        {
+            /// <summary>
+            /// Gets or sets the token.
+            /// </summary>
+            /// <value>
+            /// The token.
+            /// </value>
+            public string Token { get; set; }
+
+            /// <summary>
+            /// Returns true if ... is valid.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsValid { get; set; }
         }
 
         #endregion

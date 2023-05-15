@@ -52,6 +52,10 @@
                                     }, 1000);
                                 }
                             }
+
+                            if (options.postbackScript && token) {
+                                window.location = "javascript:" + options.postbackScript;
+                            }
                         },
                     });
                 }

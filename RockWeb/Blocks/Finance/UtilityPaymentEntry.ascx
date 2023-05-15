@@ -128,7 +128,7 @@
                                                     DataTextField="Value" DataValueField="Id" AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" />
                                                 <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" AutoPostBack="true" AllowPastDateSelection="false" OnTextChanged="btnFrequency_SelectionChanged" />
                                             </div>
-
+                                            
                                             <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />
 
                                         </fieldset>
@@ -155,8 +155,6 @@
                                     </asp:Panel>
                                     <div class="panel-body">
                                         <fieldset>
-                                            <%-- Special input with rock-fullname class --%>
-                                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" autocomplete="new-password" />
 
                                             <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
                                                 <div class="row">
@@ -237,7 +235,7 @@
                                     { %>
                             </div>
                         </div>
-                        <% } %>
+                        <% } %>                      
 
                     </asp:Panel>
 
@@ -246,10 +244,12 @@
                 <div class="panel panel-default no-border">
                     <div class="panel-body">
                         <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false"></Rock:NotificationBox>
-
+                        
                         <div class="actions clearfix">
                             <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();">Previous</a>
-                             
+
+                            <Rock:Captcha ID="cpCaptcha" runat="server" CssClass="pull-left" />
+                            <Rock:HiddenFieldWithClass ID="hfHostPaymentInfoSubmitScript" runat="server" CssClass="js-hosted-payment-script" />
                             <Rock:BootstrapButton ID="btnSavedAccountPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" DataLoadingText="Processing..." Visible="false" OnClick="btnSavedAccountPaymentInfoNext_Click" />
 
                             <%-- NOTE: btnHostedPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
@@ -316,8 +316,6 @@
                     </div>
                 </div>
 
-
-
             </asp:Panel>
 
             <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
@@ -376,7 +374,8 @@
                     // Prevent the btnHostedPaymentInfoNext autopostback event from firing by doing stopImmediatePropagation and returning false
                     e.stopImmediatePropagation();
 
-                    <%=HostPaymentInfoSubmitScript%>
+                    const hfHostedPaymentScript = document.querySelector(".js-hosted-payment-script");
+                    window.location = "javascript: " + hfHostedPaymentScript.value;
 
                     return false;
                 });
