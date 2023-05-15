@@ -1223,7 +1223,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="forms">The forms.</param>
         /// <returns></returns>
-        private Dictionary<Guid, object> GetCurrentValueFieldValues( RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms )
+        private Dictionary<Guid, object> GetCurrentValueFieldValues( RegistrationContext registrationContext, RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms )
         {
             var fieldValues = new Dictionary<Guid, object>();
 
@@ -1232,6 +1232,9 @@ namespace Rock.Blocks.Event
                 return fieldValues;
             }
 
+            var familySelection = registrationContext?.RegistrationSettings.AreCurrentFamilyMembersShown ?? true;
+
+                    
             foreach ( var form in forms )
             {
                 var fields = form.Fields.Where( f =>
@@ -1241,7 +1244,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( f.ShowCurrentValue && f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName
                             || f.PersonFieldType == RegistrationPersonFieldType.LastName;
@@ -2386,7 +2389,7 @@ namespace Rock.Blocks.Event
                         Guid = gm.Person.Guid,
                         FamilyGuid = gm.FamilyGuid,
                         FullName = gm.Person.FullName,
-                        FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, null, formModels )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels )
                     } )
                     .ToList() :
                     new List<RegistrationEntryBlockFamilyMemberViewModel>();
@@ -2617,7 +2620,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = currentPerson.Guid,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, null, formModels )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels )
                     } );
                 }
                 else
@@ -2631,7 +2634,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = null,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( rockContext, currentPerson, null, formModels ) : new Dictionary<Guid, object>()
+                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels ) : new Dictionary<Guid, object>()
                     } );
                 }
             }
@@ -3430,7 +3433,7 @@ namespace Rock.Blocks.Event
                     FamilyGuid = person?.GetFamily( rockContext )?.Guid,
                     Guid = registrant.Guid,
                     PersonGuid = person?.Guid,
-                    FieldValues = GetCurrentValueFieldValues( rockContext, person, registrant, settings.Forms ),
+                    FieldValues = GetCurrentValueFieldValues( null, rockContext, person, registrant, settings.Forms ),
                     FeeItemQuantities = new Dictionary<Guid, int>(),
                     IsOnWaitList = registrant.OnWaitList,
                     Cost = registrant.Cost
