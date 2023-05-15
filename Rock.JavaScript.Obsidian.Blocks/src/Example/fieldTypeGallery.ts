@@ -308,6 +308,10 @@ const galleryComponents: Record<string, Component> = {
     PhoneNumberGallery: getFieldTypeGalleryComponent("PhoneNumber", "(321) 456-7890", FieldTypeGuids.PhoneNumber, {
     }),
 
+    PersonGallery: getFieldTypeGalleryComponent("Person", "996c8b72-c255-40e6-bb98-b1d5cf345f3b", FieldTypeGuids.Person, {
+        EnableSelfSelection: "T"
+    }),
+
     RatingGallery: getFieldTypeGalleryComponent("Rating", '{"value":3,"maxValue":5}', FieldTypeGuids.Rating, {
         max: "5"
     }),

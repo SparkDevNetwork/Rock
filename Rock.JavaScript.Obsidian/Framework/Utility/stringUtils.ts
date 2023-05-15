@@ -134,7 +134,7 @@ export function padLeft(str: string | undefined | null, length: number, padChara
     }
 
     if (!str) {
-        return Array(length).join(padCharacter);
+        return Array(length + 1).join(padCharacter);
     }
 
     if (str.length >= length) {

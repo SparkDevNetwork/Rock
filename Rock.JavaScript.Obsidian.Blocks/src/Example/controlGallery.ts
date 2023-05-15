@@ -85,7 +85,7 @@ import NumberBox from "@Obsidian/Controls/numberBox";
 import NumberRangeBox from "@Obsidian/Controls/numberRangeBox";
 import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
 import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox";
-import TimePicker from "@Obsidian/Controls/timePicker";
+import TimePicker from "@Obsidian/Controls/timePicker.obs";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import Rating from "@Obsidian/Controls/rating";
@@ -155,7 +155,7 @@ import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
-import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
+import BasicTimePicker from "@Obsidian/Controls/basicTimePicker.obs";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
 import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
 import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
@@ -1681,12 +1681,14 @@ const timePickerGallery = defineComponent({
     name: "TimePickerGallery",
     components: {
         GalleryAndResult,
-        TimePicker
+        TimePicker,
+        CheckBox
     },
     setup() {
         return {
             value: ref({ hour: 14, minute: 15 }),
-            importCode: getControlImportPath("timePicker"),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("timePicker"),
             exampleCode: `<TimePicker label="Time" v-model="value" />`
         };
     },
@@ -1696,9 +1698,12 @@ const timePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <TimePicker label="Time" v-model="value" />
+    <TimePicker label="Time" v-model="value" :disabled="disabled" />
 
     <template #settings>
+        <div>
+            <CheckBox v-model="disabled" label="Disabled" />
+        </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
@@ -4864,11 +4869,13 @@ const basicTimePickerGallery = defineComponent({
     name: "BasicTimePickerGallery",
     components: {
         GalleryAndResult,
-        BasicTimePicker
+        BasicTimePicker,
+        CheckBox
     },
     setup() {
         return {
             value: ref({}),
+            disabled: ref(false),
             importCode: getControlImportPath("basicTimePicker"),
             exampleCode: `<BasicTimePicker label="Time" v-model="value" />`
         };
@@ -4879,9 +4886,12 @@ const basicTimePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <BasicTimePicker label="Time" v-model="value" />
+    <BasicTimePicker label="Time" v-model="value" :disabled="disabled" />
 
     <template #settings>
+        <div>
+            <CheckBox v-model="disabled" label="Disabled" />
+        </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>

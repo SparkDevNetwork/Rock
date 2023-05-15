@@ -33,7 +33,9 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
+    <Content Include="Framework\Controls\accountPicker.obs" />
     <Content Include="Framework\Controls\addressControl.obs" />
+    <Content Include="Framework\Controls\basicTimePicker.obs" />
     <Content Include="Framework\Controls\groupTypeGroupPicker.obs" />
     <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
@@ -76,6 +78,7 @@
     <Content Include="Framework\Controls\reminderTypePicker.obs" />
     <Content Include="Framework\Controls\scheduleBuilder.obs" />
     <Content Include="Framework\Controls\timeIntervalPicker.obs" />
+    <Content Include="Framework\Controls\timePicker.obs" />
     <Content Include="Framework\Controls\treeItemPicker.obs" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Controls\wordCloud.obs" />
@@ -433,12 +436,6 @@
     <TypeScriptCompile Include="Framework\FieldTypes\imageFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListFieldComponents.ts" />
-    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryField.partial.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryFieldComponents.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypesField.partial.ts" />
@@ -809,8 +806,6 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentChannelTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentCollectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentCollectionSourceBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Entities\contentTopicBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Entities\contentTopicDomainBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\dataViewBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\dataViewFilterBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\definedTypeBag.d.ts" />
