@@ -2646,6 +2646,9 @@ namespace Rock.Blocks.Event
             var startAtBeginning = !isExistingRegistration ||
                 ( allowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
 
+            // Adjust the spots remaining if this is an existing registration. Add to the Spots remaining the number of registrants that are not on the waitlist.
+            var adjustedSpotsRemaining = isExistingRegistration ? context.SpotsRemaining + session.Registrants.Where( r => r.IsOnWaitList == false ).Count() : context.SpotsRemaining;
+
             var viewModel = new RegistrationEntryBlockViewModel
             {
                 RegistrationAttributesStart = beforeAttributes,
@@ -2671,7 +2674,7 @@ namespace Rock.Blocks.Event
                     Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, null ) ?? new object()
                 },
                 IsRedirectGateway = isRedirectGateway,
-                SpotsRemaining = context.SpotsRemaining,
+                SpotsRemaining = adjustedSpotsRemaining,
                 WaitListEnabled = context.RegistrationSettings.IsWaitListEnabled,
                 InstanceName = context.RegistrationSettings.Name,
                 PluralRegistrationTerm = pluralRegistrationTerm,
