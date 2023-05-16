@@ -329,6 +329,8 @@ namespace RockWeb.Blocks.CheckIn
 
                 lNoOptionTitle.Text = GetAttributeValue( AttributeKey.NoOptionTitle );
                 lNoOptionCaption.Text = GetAttributeValue( AttributeKey.NoOptionCaption );
+
+                lbBack.Visible = false;
             }
             else
             {
