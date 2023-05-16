@@ -147,7 +147,14 @@ namespace Rock.Jobs
                             this.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
                             dataView.PersistResult( sqlCommandTimeout );
 
-                            persistContext.SaveChanges();
+                            /*
+                                5/11/2023 - KA
+                                We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
+                                because the PersistedLastRefreshDateTime and PersistedLastRunDurationMilliseconds properties
+                                of the DataView is updated above. If we don't disable these hooks, the [ModifiedDateTime]
+                                value will also be updated every time a DataView result is persisted, which is not what we want here.
+                            */
+                            persistContext.SaveChanges( true );
 
                             updatedDataViewCount++;
 
