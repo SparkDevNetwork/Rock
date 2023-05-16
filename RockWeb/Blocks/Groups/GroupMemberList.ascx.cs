@@ -14,18 +14,8 @@
 // limitations under the License.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-
+using Fluid.Parser;
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -34,6 +24,16 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -1256,6 +1256,16 @@ namespace RockWeb.Blocks.Groups
                 gGroupMemberRequirements.Actions.InvokeCommunicateClick( sender, e );
             }
         }
+
+        protected void lbGroupSync_Click( object sender, EventArgs e )
+        {
+            var groupSyncService = new GroupSyncService( new RockContext() );
+            var task = Task.Run( () =>
+                groupSyncService.SyncGroup( _group.Id )
+            );
+            mdGridWarning.Show( "The group is scheduled to be synchronized and it may take several minutes to complete.", ModalAlertType.Information );
+        }
+
         #endregion
 
         #region Internal Methods
