@@ -357,7 +357,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( CustomValidator );
 
             _hfToken.ID = ID + "_hfToken";
-            _hfToken.CssClass = "js-captchaToken";
+            _hfToken.CssClass = "js-captcha-token";
             Controls.Add( _hfToken );
         }
 
@@ -379,15 +379,9 @@ namespace Rock.Web.UI.Controls
 
                 string script = $@"
 function onloadTurnstileCallback(token) {{
-    let retryCount = 3;
-    const hfToken = document.querySelector('.js-captchaToken');
-    // The callback is sometimes triggered before the element is loaded on the page, hence the retry after a second to try and give it time to load.
-    if (!hfToken) {{
-        if (retryCount > 0) {{
-            retryCount--;
-            setTimeout(() => onloadTurnstileCallback(token), 1000);
-        }}
-    }} else {{
+    $( document ).ready(function() {{
+
+        const hfToken = document.querySelector('.js-captcha-token');
         hfToken.value = token;
         // Hide control after captcha is solved and we get the token so it is not re-rendered for every post back.
         // Give it a 1 sec delay so success message is displayed to the user.
@@ -397,13 +391,13 @@ function onloadTurnstileCallback(token) {{
                 captcha.style.display = 'none';  
             }}, 1000);       
         }}
-    }}
 
-    const postbackScript = '{postBackScript}';
+        const postbackScript = '{postBackScript}';
 
-    if (token && postbackScript) {{
-        window.location = ""javascript:"" + postbackScript;
-    }}
+        if (token && postbackScript) {{
+            window.location = ""javascript:"" + postbackScript;
+        }}
+    }});
 }}
 ";
                 // Add a script src tag to head. Note that if this is a Partial Postback, we'll have to load it manually in our captcha.js script
@@ -413,15 +407,15 @@ function onloadTurnstileCallback(token) {{
 
             if ( SiteKey.IsNotNullOrWhiteSpace() )
             {
-                string script = string.Format( @"
+                string script = $@"
 ;(function () {{
     Rock.controls.captcha.initialize({{
-        id: '{0}',
-        key: '{1}',
-        postbackScript: '{2}'
+        id: '{ClientID}',
+        key: '{SiteKey}',
+        postbackScript: '{postBackScript}'
     }});
 }})();
-", ClientID, SiteKey, postBackScript );
+";
 
                 ScriptManager.RegisterStartupScript( this, GetType(), "captcha-" + ClientID, script, true );
             }
