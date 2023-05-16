@@ -113,7 +113,7 @@
                             <div class="navigation actions">
                                 <asp:LinkButton ID="btnGetPaymentInfoBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnGetPaymentInfoBack_Click" />
 
-
+                                <Rock:HiddenFieldWithClass ID="hfHostPaymentInfoSubmitScript" runat="server" CssClass="js-hosted-payment-script" />
                                 <%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
                                		Even though this is a LinkButton, btnGetPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
                                 --%>
@@ -320,7 +320,8 @@
                     // Prevent the btnGetPaymentInfoNext autopostback event from firing by doing stopImmediatePropagation and returning false
                     e.stopImmediatePropagation();
 
-                    <%=HostPaymentInfoSubmitScript%>
+                    const hfHostedPaymentScript = document.querySelector(".js-hosted-payment-script");
+                    window.location = "javascript: " + hfHostedPaymentScript.value;
 
                     return false;
                 });
