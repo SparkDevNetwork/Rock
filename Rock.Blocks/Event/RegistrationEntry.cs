@@ -2647,7 +2647,9 @@ namespace Rock.Blocks.Event
                 ( allowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
 
             // Adjust the spots remaining if this is an existing registration. Add to the Spots remaining the number of registrants that are not on the waitlist.
-            var adjustedSpotsRemaining = isExistingRegistration ? context.SpotsRemaining + session.Registrants.Where( r => r.IsOnWaitList == false ).Count() : context.SpotsRemaining;
+            var adjustedSpotsRemaining = isExistingRegistration && session != null
+                ? context.SpotsRemaining + session.Registrants.Where( r => r.IsOnWaitList == false ).Count()
+                : context.SpotsRemaining;
 
             var viewModel = new RegistrationEntryBlockViewModel
             {
