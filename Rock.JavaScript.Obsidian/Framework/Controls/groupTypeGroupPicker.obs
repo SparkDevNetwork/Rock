@@ -13,7 +13,7 @@
         <BaseAsyncPicker v-model="internalGroupValue"
                          v-bind="standardProps"
                          :label="groupLabel"
-                         :displayStyle="displayStyle"
+                         :displayStyle="PickerDisplayStyle.Condensed"
                          :items="actualGroupItems"
                          showBlankItem
                          :multiple="false" />

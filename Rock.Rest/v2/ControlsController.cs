@@ -2441,6 +2441,39 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group and Role Picker
+
+        /// <summary>
+        /// Gets the roles that can be displayed in the group and role picker for the specified group.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupAndRolePickerGetRoles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "285de6f4-0bf0-47e4-bda5-bcaa5a18b990" )]
+        public IHttpActionResult GroupAndRolePickerGetRoles( [FromBody] GroupAndRolePickerGetRolesOptionsBag options )
+        {
+            using( var rockContext = new RockContext() )
+            {
+                var groupRoles = new List<ListItemBag>();
+                if ( options.GroupTypeGuid != Guid.Empty )
+                {
+                    var groupTypeRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
+                    groupRoles = groupTypeRoleService.Queryable()
+                        .Where( r => r.GroupType.Guid == options.GroupTypeGuid )
+                        .OrderBy( r => r.Order )
+                        .ThenBy( r => r.Name )
+                        .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
+                        .ToList();
+                }
+
+                return Ok( groupRoles );
+            }
+        }
+
+        #endregion
+
         #region Group Member Picker
 
         /// <summary>

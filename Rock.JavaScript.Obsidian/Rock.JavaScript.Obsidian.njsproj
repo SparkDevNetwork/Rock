@@ -36,6 +36,7 @@
     <Content Include="Framework\Controls\accountPicker.obs" />
     <Content Include="Framework\Controls\addressControl.obs" />
     <Content Include="Framework\Controls\basicTimePicker.obs" />
+    <Content Include="Framework\Controls\groupAndRolePicker.obs" />
     <Content Include="Framework\Controls\groupTypeGroupPicker.obs" />
     <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
@@ -474,7 +475,6 @@
     <TypeScriptCompile Include="Framework\Controls\saveFinancialAccountForm.ts" />
     <TypeScriptCompile Include="Framework\Controls\secondaryBlock.ts" />
     <TypeScriptCompile Include="Framework\Controls\testGatewayControl.ts" />
-    <TypeScriptCompile Include="Framework\Controls\basicTimePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\birthdayPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\checkBox.ts" />
     <TypeScriptCompile Include="Framework\Controls\checkBoxList.ts" />
@@ -507,7 +507,6 @@
     <TypeScriptCompile Include="Framework\Controls\socialSecurityNumberBox.ts" />
     <TypeScriptCompile Include="Framework\Controls\staticFormControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\textBox.ts" />
-    <TypeScriptCompile Include="Framework\Controls\timePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\toggle.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\addressField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\addressFieldComponents.ts" />
@@ -1070,6 +1069,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\geoPickerGoogleMapSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\geoPickerSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\gradePickerGetGradesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupAndRolePickerGetRolesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetAllForGroupRoleOptionsBag.d.ts" />

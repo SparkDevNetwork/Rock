@@ -51,6 +51,8 @@
 
                     <h1 runat="server">General Information</h1>
 
+                    <Rock:GroupAndRolePicker ID="grpick" runat="server" Label="MY LABEL" Required="true" />
+
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">

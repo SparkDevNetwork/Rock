@@ -214,6 +214,7 @@ import PopOver from "@Obsidian/Controls/popOver.obs";
 import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
 import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
+import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
 import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
 
@@ -7580,7 +7581,7 @@ const groupTypeGroupPickerGallery = defineComponent({
             required: ref(false),
             glabel: ref("Group"),
             importCode: getSfcControlImportPath("groupTypeGroupPicker"),
-            exampleCode: `<GroupTypeGroupPicker label="Group Type and TypeGroup" groupLabel="Group" v-model="value" v-model:groupType="groupType" />`
+            exampleCode: `<GroupTypeGroupPicker label="Group Type and Group" groupLabel="Group" v-model="value" v-model:groupType="groupType" />`
         };
     },
     template: `
@@ -7591,12 +7592,58 @@ const groupTypeGroupPickerGallery = defineComponent({
     hasMultipleValues
     enableReflection >
 
-    <GroupTypeGroupPicker label="Group Type and TypeGroup" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" :rules="required ? 'required' : ''" />
+    <GroupTypeGroupPicker label="Group Type and Group" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" :rules="required ? 'required' : ''" />
 
     <template #settings>
         <div class="row">
             <div class="col-md-4">
                 <TextBox label="Group Label" v-model="glabel" help="The label for the 2nd dropdown. The label for the first dropdown is not customizable" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates group and role picker */
+const groupAndRolePickerGallery = defineComponent({
+    name: "GroupAndRolePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        GroupAndRolePicker,
+        TextBox,
+        RockButton
+    },
+    setup() {
+        return {
+            value: ref(null),
+            groupType: ref(null),
+            group: ref(null),
+            required: ref(false),
+            glabel: ref("Group"),
+            importCode: getSfcControlImportPath("groupAndRolePicker"),
+            exampleCode: `<GroupAndRolePicker label="Group and Role" groupLabel="Group" v-model="value" v-model:groupType="groupType" v-model:group="group" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{groupType, group, value}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+    <GroupAndRolePicker label="Group and Role" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" v-model:group="group" :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Group Label" v-model="glabel" help="The label for the 2nd dropdown. The main label is also customizable, but the group type and role labels are not." />
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
@@ -7856,6 +7903,7 @@ const controlGalleryComponents: Record<string, Component> = [
     rockLiteralGallery,
     registryEntryGallery,
     groupTypeGroupPickerGallery,
+    groupAndRolePickerGallery,
     accountPickerGallery,
     structuredContentEditorGallery,
 ]

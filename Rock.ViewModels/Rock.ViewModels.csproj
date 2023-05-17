@@ -225,6 +225,7 @@
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetContentChannelItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupAndRolePickerGetRolesOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PersonLinkGetPopupHtmlOptionsBag.cs" />
