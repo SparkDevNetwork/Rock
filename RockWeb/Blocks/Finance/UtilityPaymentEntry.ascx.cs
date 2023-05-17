@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Finance
 
     [BooleanField( "Enable Account Hierarchy for Additional Accounts",
         Key = AttributeKey.EnableAccountHierarchy,
-        Description = "When enabled this will group accounts under their parents. This allows a person to keep the current behavior if desired. Note: This setting is not compatible with the \"Use Account Campus Mapping Logic\" setting.",
+        Description = "When \"Additional Accounts\" is enabled, this setting allows for the grouping of accounts under their respective parents, creating an account hierarchy. However, please note that if the \"Use Account Campus Mapping Logic\" setting is enabled, accounts mapped to campuses WILL BE displayed within the Account Hierarchy.",
         TrueText = "Enable",
         FalseText = "Disable",
         DefaultBooleanValue = false,
@@ -1167,7 +1167,7 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="rockContext">The rock context.</param>
         private void ConfigureAvailableAccounts( RockContext rockContext )
         {
-            // If there no SelectableAccountIds on the CampusAccountAmountPicker, then all the available accounts will be displayed
+            // If there are no SelectableAccountIds on the CampusAccountAmountPicker, then all the available accounts will be displayed
             // so there is no need to configure the add account button
             if ( caapPromptForAccountAmounts.SelectableAccountIds.Length == 0 )
             {
