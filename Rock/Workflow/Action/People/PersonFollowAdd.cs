@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -139,56 +138,42 @@ namespace Rock.Workflow.Action
 
             // Get the entity or entities that should be in Following.
             List<IEntity> entitiesToFollow = GetEntities( entityType, rockContext, action );
-            if ( entitiesToFollow != null && entitiesToFollow.Any() )
-            {
-                foreach ( var entityToFollow in entitiesToFollow )
-                {
-                    // Query the FollowingService to find whether the requested Following already exists.
-                    var following = followingService.Queryable()
-                        .FirstOrDefault( f =>
-                            f.EntityTypeId == entityType.Id &&
-                            f.EntityId == entityToFollow.Id &&
-
-                            // The result must have a null / empty PurposeKey in Following & null / empty PurposeKey text field
-                            // or have a Following PurposeKey that matches the value in the PurposeKey text field.
-                            ( ( string.IsNullOrEmpty( f.PurposeKey ) && string.IsNullOrEmpty( purposeKey ) ) || f.PurposeKey == purposeKey ) &&
-                            f.PersonAlias.Person.Id == personAlias.PersonId );
-
-                    if ( following == null )
-                    {
-                        following = new Following();
-                        following.EntityTypeId = entityType.Id;
-                        following.EntityId = entityToFollow.Id;
-                        following.PersonAliasId = personAlias.Id;
-                        /*
-                            8/10/2021 - CWR
-                            If the Workflow creator wants to include a custom purpose text value for a Following add, they can add text to this "Purpose Key" TextField.
-                            Some components (such as SendFollowingEvents) expect the PurposeKey to be blank, so be aware.
-                            
-                            See here for the introduction of PurposeKey to Following:
-                            https://github.com/SparkDevNetwork/Rock/commit/f92f4502772f6a19edc945b5c021115ad11d48a9
-                        */
-
-                        // If the PurposeKey is not null or empty, add a PurposeKey to the Following.
-                        if ( !string.IsNullOrEmpty( purposeKey ) )
-                        {
-                            following.PurposeKey = purposeKey;
-                        }
-
-                        followingService.Add( following );
-                    }
-                }
-
-                rockContext.SaveChanges();
-
-                return true;
-            }
-            else
+            if ( entitiesToFollow == null || !entitiesToFollow.Any() )
             {
                 action.AddLogEntry( "Invalid Value for Entity attribute" );
-
                 return false;
             }
+
+            var isPersonFollow = ( entityType.Guid == SystemGuid.EntityType.PERSON.AsGuid() );
+
+            /*
+                8/10/2021 - CWR
+                If the Workflow creator wants to include a custom purpose text value for a Following add, they can add text to this "Purpose Key" TextField.
+                Some components (such as SendFollowingEvents) expect the PurposeKey to be blank, so be aware.
+
+                See here for the introduction of PurposeKey to Following:
+                https://github.com/SparkDevNetwork/Rock/commit/f92f4502772f6a19edc945b5c021115ad11d48a9
+            */
+
+            foreach ( var entityToFollow in entitiesToFollow )
+            {
+                if ( isPersonFollow )
+                {
+                    // Followings for a Person entity are processed as a special case.
+                    // They must be stored as a following for the PersonAlias to operate correctly.
+                    var personToFollow = entityToFollow as Person;
+                    var followedPersonAliasId = personToFollow?.PrimaryAliasId;
+                    followingService.GetOrAddPersonFollowing( followedPersonAliasId.GetValueOrDefault(), personAlias.Id, purposeKey );
+                }
+                else
+                {
+                    followingService.GetOrAddFollowing( entityType.Id, entityToFollow.Id, personAlias.Id, purposeKey );
+                }
+            }
+
+            rockContext.SaveChanges();
+
+            return true;
         }
 
         /// <summary>

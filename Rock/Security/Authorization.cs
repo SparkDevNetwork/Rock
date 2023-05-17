@@ -724,18 +724,30 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Sets the auth cookie.
+        /// Gets the auth cookie.
         /// </summary>
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
         private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
+            return GetAuthCookie( userName, isPersisted, isImpersonated, FormsAuthentication.Timeout );
+        }
+
+        /// <summary>
+        /// Gets the auth cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
+        /// <param name="expiresIn">The cookie expiration.</param>
+        private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated, TimeSpan expiresIn )
+        {
             var ticket = new FormsAuthenticationTicket(
                 1,
                 userName,
                 RockInstanceConfig.SystemDateTime,
-                RockInstanceConfig.SystemDateTime.Add( FormsAuthentication.Timeout ),
+                RockInstanceConfig.SystemDateTime.Add( expiresIn ),
                 isPersisted,
                 isImpersonated.ToString(),
                 FormsAuthentication.FormsCookiePath );
@@ -782,7 +794,19 @@ namespace Rock.Security
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
         public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
-            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated );
+            SetAuthCookie( userName, isPersisted, isImpersonated, FormsAuthentication.Timeout );
+        }
+
+        /// <summary>
+        /// Sets the auth cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
+        /// <param name="expiresIn">The cookie expiration.</param>
+        internal static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated, TimeSpan expiresIn )
+        {
+            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, expiresIn );
             RockPage.AddOrUpdateCookie( authCookie );
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly

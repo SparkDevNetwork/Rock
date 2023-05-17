@@ -1606,7 +1606,7 @@ END:VCALENDAR
             _dpSpecificDate.AddCssClass( "specific-date" );
             _dpSpecificDate.RenderControl( writer );
             writer.Write( @"
-                <div class='actions'>
+                <div class='control-actions'>
                     <a class='btn btn-primary btn-xs add-specific-date-ok'>
                         <span>OK</span>
                     </a>
@@ -1817,7 +1817,7 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dpExclusionDateRange.RenderControl( writer );
             writer.Write( @"
-                <div class='actions'>
+                <div class='control-actions'>
                     <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'>
                         <span>OK</span>
                     </a>

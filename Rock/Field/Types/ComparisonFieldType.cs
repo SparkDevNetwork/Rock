@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -42,6 +43,28 @@ namespace Rock.Field.Types
             return privateValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo ).ConvertToString();
         }
 
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -56,10 +79,6 @@ namespace Rock.Field.Types
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -112,10 +131,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -130,15 +145,7 @@ namespace Rock.Field.Types
             return null;
         }
 
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
+#endif
         #endregion
     }
 }

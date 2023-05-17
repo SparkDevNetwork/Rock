@@ -35,6 +35,12 @@ export default defineComponent({
             default: []
         },
 
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
         items: {
             type: Array as PropType<Array<ListItemBag>>,
             required: true
@@ -79,7 +85,7 @@ export default defineComponent({
                 }
             }
             else {
-                classes.push("rockcheckboxlist-vertical");
+                classes.push("rockcheckboxlist-vertical input-group");
             }
 
             return classes.join(" ");
@@ -124,22 +130,24 @@ export default defineComponent({
     name="check-box-list">
     <template #default="{uniqueId}">
         <div class="control-wrapper">
+            <slot name="prepend" :isInputGroupSupported="false" />
             <div class="controls rockcheckboxlist" :class="containerClasses">
                 <template v-if="horizontal">
                     <label v-for="item in items" class="checkbox-inline" :for="uniqueIdForItem(uniqueId, item)">
-                        <input :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
+                        <input :disabled="disabled" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                         <span class="label-text">{{textForItem(item)}}</span>
                     </label>
                 </template>
                 <template v-else>
                     <div v-for="item in items" class="checkbox">
                         <label :for="uniqueIdForItem(uniqueId, item)">
-                            <input :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
+                            <input :disabled="disabled" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                             <span class="label-text">{{textForItem(item)}}</span>
                         </label>
                     </div>
                 </template>
             </div>
+            <slot name="append" :isInputGroupSupported="false" />
         </div>
     </template>
 </RockFormField>

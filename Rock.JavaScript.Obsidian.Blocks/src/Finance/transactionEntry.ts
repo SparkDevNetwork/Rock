@@ -19,18 +19,20 @@ import { Guid } from "@Obsidian/Types";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import { defineComponent } from "vue";
-import DatePicker from "@Obsidian/Controls/datePicker";
+import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import Alert from "@Obsidian/Controls/alert.vue";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import Toggle from "@Obsidian/Controls/toggle";
 import { useStore } from "@Obsidian/PageState";
 import TextBox from "@Obsidian/Controls/textBox";
 import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
-import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "@Obsidian/Controls/gatewayControl";
+import GatewayControl from "@Obsidian/Controls/gatewayControl";
+import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import RockValidation from "@Obsidian/Controls/rockValidation";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
@@ -72,7 +74,7 @@ export default defineComponent({
         DropDownList,
         DatePicker,
         RockButton,
-        Alert,
+        NotificationBox,
         Toggle,
         TextBox,
         GatewayControl,
@@ -80,7 +82,7 @@ export default defineComponent({
     },
 
     setup() {
-        const submitPayment = prepareSubmitPayment();
+        const submitPayment = provideSubmitPayment();
 
         return {
             submitPayment,
@@ -145,8 +147,8 @@ export default defineComponent({
             return `$${asFormattedString(this.totalAmount, 2)}`;
         },
 
-        gatewayControlModel(): GatewayControlModel {
-            return this.configurationValues["gatewayControl"] as GatewayControlModel;
+        gatewayControlModel(): GatewayControlBag {
+            return this.configurationValues["gatewayControl"] as GatewayControlBag;
         },
 
         currentPerson(): PersonBag | null {
@@ -295,9 +297,7 @@ export default defineComponent({
 
     template: `
 <div class="transaction-entry-v2">
-    <Alert v-if="criticalError" danger>
-        {{criticalError}}
-    </Alert>
+    <NotificationBox v-if="criticalError" danger>{{criticalError}}</NotificationBox>
     <template v-else-if="!gatewayControlModel || !gatewayControlModel.fileUrl">
         <h4>Welcome to Rock's On-line Giving Experience</h4>
         <p>
@@ -312,7 +312,7 @@ export default defineComponent({
         <DropDownList label="Campus" v-model="args.campusGuid" :showBlankItem="false" :items="campuses" />
         <DropDownList label="Frequency" v-model="args.frequencyValueGuid" :showBlankItem="false" :items="frequencies" />
         <DatePicker label="Process Gift On" v-model="args.giftDate" />
-        <Alert alertType="validation" v-if="page1Error">{{page1Error}}</Alert>
+        <NotificationBox alertType="validation" v-if="page1Error">{{page1Error}}</NotificationBox>
         <RockButton btnType="primary" @click="onPageOneSubmit">Give Now</RockButton>
     </template>
     <template v-else-if="pageIndex === 2">
@@ -325,7 +325,7 @@ export default defineComponent({
             </div>
         </div>
         <div>
-            <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
+            <NotificationBox v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</NotificationBox>
             <RockValidation :errors="gatewayValidationFields" />
             <div class="hosted-payment-control">
                 <GatewayControl

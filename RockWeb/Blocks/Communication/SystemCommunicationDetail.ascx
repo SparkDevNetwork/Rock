@@ -138,7 +138,7 @@
                 <Rock:PanelWidget ID="pnlSMSTemplate" Title="SMS" TitleIconCssClass="fa fa-comments" CssClass="js-sms-template" runat="server">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DefinedValuePicker ID="dvpSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers)." />
+                            <Rock:SystemPhoneNumberPicker ID="spnpSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)." />
                             <Rock:RockControlWrapper ID="rcwSMSMessage" runat="server" Label="Message" Help="<span class='tip tip-lava'></span>">
                                 <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem" />
                                 <asp:HiddenField ID="hfSMSCharLimit" runat="server" />

@@ -36,6 +36,11 @@ namespace Rock.Field
     [Serializable]
     public abstract class FieldType : IFieldType
     {
+        /// <summary>
+        /// The condensed truncate length
+        /// </summary>
+        public static readonly int CondensedTruncateLength = 100;
+
         #region Constructors
 
         /// <summary>
@@ -59,7 +64,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.4" )]
         public virtual Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
         {
             // Create a new dictionary to protect against the passed dictionary
@@ -68,6 +73,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
+        [RockInternal( "1.13.4" )]
         public virtual Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
             // Create a new dictionary to protect against the passed dictionary
@@ -104,6 +110,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
+        [RockInternal( "1.13.4" )]
         public virtual Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
             return new Dictionary<string, string>();
@@ -126,7 +133,7 @@ namespace Rock.Field
         ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
         /// </remarks>
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return privateValue;
@@ -137,7 +144,7 @@ namespace Rock.Field
         ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
         /// </remarks>
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetTextValue( privateValue, privateConfigurationValues )?.EncodeHtml();
@@ -148,10 +155,10 @@ namespace Rock.Field
         ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
         /// </remarks>
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues )?.Truncate( 100 );
+            return GetTextValue( privateValue, privateConfigurationValues )?.Truncate( CondensedTruncateLength );
         }
 
         /// <remarks>
@@ -159,7 +166,7 @@ namespace Rock.Field
         ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
         /// </remarks>
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetHtmlValue( privateValue, privateConfigurationValues );
@@ -177,7 +184,7 @@ namespace Rock.Field
         {
             if ( condensed )
             {
-                return value.Truncate( 100 );
+                return value.Truncate( CondensedTruncateLength );
             }
 
             return value;
@@ -288,21 +295,21 @@ namespace Rock.Field
         public virtual bool HasDefaultControl => true;
 
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return privateValue;
         }
 
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetPublicValue( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>
-        [RockInternal]
+        [RockInternal( "1.13.2" )]
         public virtual string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             return publicValue;
@@ -449,6 +456,7 @@ namespace Rock.Field
         #region Filter Control
 
         /// <inheritdoc/>
+        [RockInternal( "1.13.2" )]
         public virtual ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             var values = privateValue.FromJsonOrNull<List<string>>();
@@ -478,6 +486,7 @@ namespace Rock.Field
         }
 
         /// <inheritdoc/>
+        [RockInternal( "1.13.2" )]
         public virtual string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             var values = new List<string>();

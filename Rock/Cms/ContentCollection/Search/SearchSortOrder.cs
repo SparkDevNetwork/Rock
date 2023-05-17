@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection.Search
 {
     /// <summary>
     /// The ordering of the results from a search request.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal enum SearchSortOrder
     {
         /// <summary>

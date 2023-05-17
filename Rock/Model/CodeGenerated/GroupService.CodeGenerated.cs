@@ -162,6 +162,12 @@ namespace Rock.Model
 
             // ignoring Registration,GroupId
 
+            if ( new Service<SystemPhoneNumber>( Context ).Queryable().Any( a => a.SmsNotificationGroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, SystemPhoneNumber.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, WorkflowActivity.FriendlyTypeName );

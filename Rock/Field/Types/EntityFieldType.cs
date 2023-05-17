@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -43,70 +44,6 @@ namespace Rock.Field.Types
         /// 
         /// </summary>
         private const string ENTITY_CONTROL_HELP_TEXT_FORMAT = "entityControlHelpTextFormat";
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            List<string> configKeys = new List<string>();
-            configKeys.Add( ENTITY_CONTROL_HELP_TEXT_FORMAT );
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            List<Control> controls = new List<Control>();
-
-            var tbHelpText = new RockTextBox();
-            controls.Add( tbHelpText );
-            tbHelpText.Label = "Entity Control Help Text Format";
-            tbHelpText.Help = "Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included and a {1} in places where you want the pluralized EntityType name (Campuses, Groups, etc) to be included.";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( ENTITY_CONTROL_HELP_TEXT_FORMAT, new ConfigurationValue( "Entity Control Help Text Format", "", "" ) );
-
-            if ( controls != null && controls.Count == 1 )
-            {
-                if ( controls[0] != null && controls[0] is RockTextBox )
-                {
-                    configurationValues[ENTITY_CONTROL_HELP_TEXT_FORMAT].Value = ( (RockTextBox)controls[0] ).Text;
-                }
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && controls.Count == 1 && configurationValues != null )
-            {
-                if ( controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( ENTITY_CONTROL_HELP_TEXT_FORMAT ) )
-                {
-                    ( (RockTextBox)controls[0] ).Text = configurationValues[ENTITY_CONTROL_HELP_TEXT_FORMAT].Value;
-                }
-            }
-        }
 
         #endregion
 
@@ -137,128 +74,13 @@ namespace Rock.Field.Types
             return $"{entityType.FriendlyName}|EntityId:{entityId}";
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion
 
         #region Edit Control
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var entityPicker = new EntityPicker { ID = id };
-            if ( configurationValues != null )
-            {
-                if ( configurationValues.ContainsKey( ENTITY_CONTROL_HELP_TEXT_FORMAT ) )
-                {
-                    entityPicker.EntityControlHelpTextFormat = configurationValues[ENTITY_CONTROL_HELP_TEXT_FORMAT].Value;
-                }
-            }
-            
-            return entityPicker;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field ( as Guid) 
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            EntityPicker entityPicker = control as EntityPicker;
-            if ( entityPicker != null && entityPicker.EntityTypeId.HasValue )
-            {
-                var entityType = EntityTypeCache.Get( entityPicker.EntityTypeId.Value );
-                if ( entityType != null )
-                {
-                    return $"{entityType.Guid}|{entityPicker.EntityId}";
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value ( as Guid )
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            EntityPicker entityPicker = control as EntityPicker;
-            if ( entityPicker != null )
-            {
-                int? entityId = GetEntityId( value, out EntityTypeCache entityType );
-
-                if ( entityType != null )
-                {
-                    entityPicker.EntityTypeId = entityType.Id;
-                }
-                else
-                {
-                    entityPicker.EntityTypeId = null;
-
-                }
-
-                entityPicker.EntityId = entityId;
-            }
-        }
-
         #endregion
 
         #region Entity Methods
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            string editValue = GetEditValue( control, configurationValues );
-
-            if ( string.IsNullOrEmpty( editValue ))
-            {
-                return null;
-            }
-
-            // we can return the EntityId itself, but it won't do the caller any good unless they already know what the EntityType is
-            return GetEntityId( editValue, out _ );
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier of the entity.</param>
-        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
-        {
-            // nothing to do here, as we don't know the EntityType
-        }
 
         /// <summary>
         /// Gets the entity.
@@ -336,6 +158,191 @@ namespace Rock.Field.Types
             return values[1].AsIntegerOrNull();
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( ENTITY_CONTROL_HELP_TEXT_FORMAT );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var tbHelpText = new RockTextBox();
+            controls.Add( tbHelpText );
+            tbHelpText.Label = "Entity Control Help Text Format";
+            tbHelpText.Help = "Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included and a {1} in places where you want the pluralized EntityType name (Campuses, Groups, etc) to be included.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ENTITY_CONTROL_HELP_TEXT_FORMAT, new ConfigurationValue( "Entity Control Help Text Format", "", "" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                if ( controls[0] != null && controls[0] is RockTextBox )
+                {
+                    configurationValues[ENTITY_CONTROL_HELP_TEXT_FORMAT].Value = ( ( RockTextBox ) controls[0] ).Text;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( ENTITY_CONTROL_HELP_TEXT_FORMAT ) )
+                {
+                    ( ( RockTextBox ) controls[0] ).Text = configurationValues[ENTITY_CONTROL_HELP_TEXT_FORMAT].Value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var entityPicker = new EntityPicker { ID = id };
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( ENTITY_CONTROL_HELP_TEXT_FORMAT ) )
+                {
+                    entityPicker.EntityControlHelpTextFormat = configurationValues[ENTITY_CONTROL_HELP_TEXT_FORMAT].Value;
+                }
+            }
+
+            return entityPicker;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field ( as Guid) 
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            EntityPicker entityPicker = control as EntityPicker;
+            if ( entityPicker != null && entityPicker.EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( entityPicker.EntityTypeId.Value );
+                if ( entityType != null )
+                {
+                    return $"{entityType.Guid}|{entityPicker.EntityId}";
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value ( as Guid )
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            EntityPicker entityPicker = control as EntityPicker;
+            if ( entityPicker != null )
+            {
+                int? entityId = GetEntityId( value, out EntityTypeCache entityType );
+
+                if ( entityType != null )
+                {
+                    entityPicker.EntityTypeId = entityType.Id;
+                }
+                else
+                {
+                    entityPicker.EntityTypeId = null;
+
+                }
+
+                entityPicker.EntityId = entityId;
+            }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            string editValue = GetEditValue( control, configurationValues );
+
+            if ( string.IsNullOrEmpty( editValue ) )
+            {
+                return null;
+            }
+
+            // we can return the EntityId itself, but it won't do the caller any good unless they already know what the EntityType is
+            return GetEntityId( editValue, out _ );
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier of the entity.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            // nothing to do here, as we don't know the EntityType
+        }
+
+#endif
         #endregion
     }
 }

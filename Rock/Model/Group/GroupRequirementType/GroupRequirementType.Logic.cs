@@ -30,7 +30,7 @@ namespace Rock.Model
         /// <param name="group">The group.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use GetMergeObjects(group, person) instead" )]
+        [Obsolete( "Use GetMergeObjects(group, person) instead", true )]
         public Dictionary<string, object> GetMergeObjects( Group group )
         {
             Dictionary<string, object> mergeObjects = new Dictionary<string, object>();

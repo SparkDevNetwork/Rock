@@ -171,7 +171,7 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if [Show Inactive Tags]; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use ShowInactiveTags instead." )]
+        [Obsolete( "Use ShowInactiveTags instead.", true )]
         public bool ShowInActiveTags
         {
             get { return ShowInactiveTags; }

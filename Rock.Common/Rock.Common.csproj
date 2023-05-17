@@ -65,6 +65,7 @@
     <Compile Include="ExtensionMethods\DictionaryExtensions.cs" />
     <Compile Include="ExtensionMethods\EnumExtensions.cs" />
     <Compile Include="ExtensionMethods\JsonExtensions.cs" />
+    <Compile Include="ExtensionMethods\NameValueCollectionExtensions.cs" />
     <Compile Include="ExtensionMethods\ObjectExtensions.cs" />
     <Compile Include="ExtensionMethods\StreamExtensionMethods.cs" />
     <Compile Include="ExtensionMethods\StringExtensions.cs" />

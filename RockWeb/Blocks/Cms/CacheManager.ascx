@@ -42,7 +42,6 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-tachometer"></i>Cache Manager</h1>
                 <div class="panel-labels">
-                    <span id="spRedisStatus" runat="server"></span>
                     <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs" OnClick="btnClearCache_Click" CausesValidation="false">
                         <i class="fa fa-repeat"></i> Clear Cache
                     </asp:LinkButton>
@@ -83,50 +82,6 @@
                         </table>
 
                         <br />
-                        <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Redis Backplane Settings" Expanded="false" >
-                            <Rock:NotificationBox ID="nbRedisSettings" runat="server" Visible="false" Dismissable="true" />
-
-                            <div id="redisView" runat="server">
-
-                                <div id="redisEnabled" runat="server">
-                                    <div class="row"><div class="col-md-12"><Rock:RockCheckBox ID="cbEnabled" runat="server" Text="Enabled" Enabled="false" /></div></div>
-                                    <br />
-                                    <div class="row"><div class="col-md-12">End Points<br /><asp:Literal ID="lEndPointList" runat="server"></asp:Literal></div></div>
-                                    <br />
-                                    <div class="row"><div class="col-md-12">Password<br /><asp:Label ID="lblPassword" runat="server"></asp:Label></div></div>
-                                    <br />
-                                    <div class="row"><div class="col-md-12">Database Number<br /><asp:Label ID="lblDatabaseNumber" runat="server"></asp:Label></div></div>
-                                </div>
-
-                                <div class="actions">
-                                    <asp:LinkButton ID="btnEditRedis" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit Settings" CssClass="btn btn-primary" OnClick="btnEditRedis_Click" CausesValidation="false" />
-                                </div>
-
-                            </div>
-                            <div id="redisEdit" runat="server">
-
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <%--<div class="alert alert-info">Clicking save will cause the current cache to clear and the configurations to reload. This will cause Rock to be unavailable for several minutes</div>--%>
-                                        <Rock:RockCheckBox ID="cbEnabledEdit" runat="server" Text="Enable" />
-                                        <Rock:ListItems ID="liEndPoints" runat="server" Help="List of Redis endpoints (e.g. server.com:6379) to connect to." Label="End Points"></Rock:ListItems>
-                                        <Rock:RockTextBox ID="tbPassword" runat="server" TextMode="Password" Help="The password used to connect. The need for a password is dependent on your Redis server configuration." Label="Password" ></Rock:RockTextBox>
-                                        <Rock:RockTextBox ID="tbDatabaseNumber" runat="server" TextMode="Number" Help="The database index number (the default is 0)" Label="Database Number"></Rock:RockTextBox>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="actions">
-                                            <asp:LinkButton ID="btnSaveRedis" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveRedis_Click" />
-                                            <asp:LinkButton ID="btnCancelRedis" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelRedis_Click" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                        </Rock:PanelWidget>
                     </div>
                 </div>
 

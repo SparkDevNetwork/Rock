@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,9 @@
 //
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
+#if WEBFORMS
+using System.Web.UI;
+#endif
 
 namespace Rock.Field.Types
 {
@@ -33,19 +36,6 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            return new PhoneNumberBox { ID = id };
-        }
 
         /*/// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
@@ -78,7 +68,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override object ValueAsFieldType( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             return value.AsDecimalOrNull();
         }
@@ -90,7 +80,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             // return ValueAsFieldType which returns the value as a Decimal
             return this.ValueAsFieldType( parentControl, value, configurationValues );
@@ -116,5 +106,23 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            return new PhoneNumberBox { ID = id };
+        }
+
+#endif
+        #endregion
     }
 }

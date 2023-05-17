@@ -20,7 +20,7 @@ import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
 export const enum ConfigurationValueKey {
     Values = "values",

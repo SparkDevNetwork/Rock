@@ -1,0 +1,248 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div style="margin-left: calc(var(--slider-handle-height) / 2); margin-right: calc(var(--slider-handle-height) / 2);">
+        <div v-if="showValueBar" class="d-flex align-items-center position-relative justify-content-between mb-1">
+            <span v-if="showMinValue" class="text-muted">{{ min }}</span>
+            <span></span>
+            <span v-if="showMaxValue" class="text-muted">{{ max }}</span>
+
+            <span class="position-absolute top-0" :style="thumbStyle">
+                <span class="d-block position-absolute" style="background: var(--slider-progress-bg); border-radius: 3px; padding: 1px 5px; color: #fff; font-size: 14px; transform: translateX(-50%);">
+                    {{ internalValue }}
+                </span>
+            </span>
+        </div>
+
+        <div ref="sliderElement" class="d-flex" style="height: var(--slider-handle-height); align-items: center; position: relative;" @mousedown="onMouseDown" @touchdown="onTouchDown">
+            <span class="flex-grow-1" :style="leftSliderStyle" style="background-color: var(--slider-progress-bg); height: var(--slider-height); border-top-left-radius: calc(var(--slider-height) / 2); border-bottom-left-radius: calc(var(--slider-height) / 2);"></span>
+            <span class="flex-grow-1" :style="rightSliderStyle" style="background-color: var(--slider-bg); height: var(--slider-height); border-top-right-radius: calc(var(--slider-height) / 2); border-bottom-right-radius: calc(var(--slider-height) / 2);"></span>
+
+            <span :style="thumbStyle" style="position: absolute; width: var(--slider-handle-height); height: var(--slider-handle-height); margin-left: calc(0px - calc(var(--slider-handle-height) / 2)); cursor: pointer; background: var(--slider-handle-bg); border: 1px solid var(--slider-handle-border-color); border-radius: var(--slider-handle-height);" @mousedown="onMouseDown" @mouseup="onMouseUp"></span>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Number,
+            default: 0
+        },
+
+        step: {
+            type: Number,
+            default: 1
+        },
+
+        min: {
+            type: Number,
+            default: 0
+        },
+
+        max: {
+            type: Number,
+            default: 100
+        },
+
+        showValueBar: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", v: number): void
+    }>();
+
+    /** Contains our current value reflected in the UI. */
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    /** The slider track HTML Element in the DOM. */
+    const sliderElement = ref<HTMLElement | null>(null);
+
+    /** The computed styles for the thumb knob. */
+    const thumbStyle = computed((): Record<string, string> => {
+        return {
+            left: `${percentValue.value * 100}%`
+        };
+    });
+
+    /** Ensure the max is at least as large as the min */
+    const max = computed((): number => {
+        return Math.max(props.min, props.max);
+    });
+
+    /** The percentage representation of the value, between 0 and 1. */
+    const percentValue = computed((): number => {
+        if (props.min < max.value) {
+            return (internalValue.value - props.min) / (max.value - props.min);
+        }
+
+        return 0;
+    });
+
+    /** The computed styles for the left slider track. */
+    const leftSliderStyle = computed((): Record<string, string> => {
+        const value = Math.round(percentValue.value * 10000);
+
+        return {
+            flexBasis: `${value / 100}%`
+        };
+    });
+
+    /** The computed styles for the right slider track. */
+    const rightSliderStyle = computed((): Record<string, string> => {
+        const value = Math.round(percentValue.value * 10000);
+
+        return {
+            flexBasis: `${100 - (value / 100)}%`
+        };
+    });
+
+    /** True if the minimum value should be shown in the value bar. */
+    const showMinValue = computed((): boolean => percentValue.value >= 0.1);
+
+    /** True if the maximum value should be shown in the value bar. */
+    const showMaxValue = computed((): boolean => percentValue.value <= 0.9);
+
+    /** When the value prop or the constraining props change, constrain the current value */
+    watch(() => [props.modelValue, props.max, props.min, props.step], constrainInternalValueAndUpdate);
+
+    /**
+     * Constrains the value to ensure it is valid for our configuration.
+     *
+     * @param value The value to be constrained.
+     *
+     * @returns The value after any constraints have been applied.
+     */
+    function constrainValue(value: number): number {
+        if (props.step != 0) {
+            value = Math.round(value / props.step) * props.step;
+
+            // If the step has a decimal in it, we need to round to the same number of decimal places
+            // in order to account for JS's bad decimal math
+            const decimalPlaces = ("" + props.step).split(".")[1]?.length ?? 0;
+            if (decimalPlaces > 0) {
+                value = Math.round(Math.pow(10, decimalPlaces) * value) / Math.pow(10, decimalPlaces);
+            }
+        }
+
+        if (value < props.min) {
+            value = props.min;
+        }
+        else if (value > max.value) {
+            value = max.value;
+        }
+
+        return value;
+    }
+
+    /**
+     * Constrains the internalValue property and if it needs to change then
+     * it is updated automatically.
+     */
+    function constrainInternalValueAndUpdate(): void {
+        const value = constrainValue(internalValue.value);
+
+        if (value !== internalValue.value) {
+            internalValue.value = value;
+        }
+    }
+
+    /**
+     * Calculates the new value from the drag position in the DOM.
+     *
+     * @param clientX The position of the event in the DOM.
+     */
+    function calculateDragValue(clientX: number): void {
+        if (sliderElement.value) {
+            const rect = sliderElement.value.getBoundingClientRect();
+            const xPosition = clientX - rect.left;
+            const xConstrained = Math.min(Math.max(xPosition, 0), rect.width);
+            const percent = xConstrained / rect.width;
+            const valueRange = max.value - props.min;
+
+            const value = constrainValue((valueRange * percent) + props.min);
+
+            if (value !== internalValue.value) {
+                internalValue.value = value;
+            }
+        }
+    }
+
+    /**
+     * Event handler for when a mouse button is pressed down.
+     *
+     * @param ev The event that was triggered.
+     */
+    function onMouseDown(ev: MouseEvent): void {
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        if (ev.button === 0) {
+            calculateDragValue(ev.clientX);
+            window.addEventListener("mousemove", onMouseMove);
+            window.addEventListener("mouseup", onMouseUp);
+        }
+    }
+
+    /**
+     * Event handler for when a finger has touched the display.
+     *
+     * @param ev The event that was triggered.
+     */
+    function onTouchDown(ev: TouchEvent): void {
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        if (ev.touches.length === 1) {
+            calculateDragValue(ev.touches[0].clientX);
+            window.addEventListener("touchmove", onTouchMove);
+            window.addEventListener("touchup", onTouchUp);
+        }
+    }
+
+    /**
+     * Event handler for when the mouse has moved while we are tracking
+     * the position.
+     *
+     * @param ev The event that was triggered.
+     */
+    function onMouseMove(ev: MouseEvent): void {
+        calculateDragValue(ev.clientX);
+    }
+
+    /**
+     * Event handler for when as mouse button has been released while we
+     * are tracking the position.
+     */
+    function onMouseUp(): void {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+    }
+
+    /**
+     * Event handler for when a touch has moved while we are tracking the
+     * position.
+     *
+     * @param ev The event that was triggered.
+     */
+    function onTouchMove(ev: TouchEvent): void {
+        calculateDragValue(ev.touches[0].clientX);
+    }
+
+    /**
+     * Event handler for when a touch has been lifted off the display while
+     * we are tracking the position.
+     */
+    function onTouchUp(): void {
+        window.removeEventListener("touchmove", onTouchMove);
+        window.removeEventListener("touchup", onTouchUp);
+    }
+
+    // Force the internal value to be constrained and update if necessary.
+    constrainInternalValueAndUpdate();
+</script>

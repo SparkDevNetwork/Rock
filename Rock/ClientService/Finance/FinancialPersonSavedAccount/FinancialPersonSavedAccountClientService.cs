@@ -121,9 +121,19 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
                     }
 
                     // Determine the descriptive text to associate with this account.
-                    string description = a.AccountNumberMasked != null && a.AccountNumberMasked.Length >= 4
-                        ? $"Ending in {a.AccountNumberMasked.Right( 4 )} and Expires {expirationDate}"
-                        : $"Expires {expirationDate}";
+                    string description = string.Empty;
+                    if ( expirationDate != null )
+                    {
+                        description = a.AccountNumberMasked != null && a.AccountNumberMasked.Length >= 4
+                            ? $"Ending in {a.AccountNumberMasked.Right( 4 )} and Expires {expirationDate}"
+                            : $"Expires {expirationDate}";
+                    }
+                    else
+                    {
+                        description = a.AccountNumberMasked != null && a.AccountNumberMasked.Length >= 4
+                            ? $"Ending in {a.AccountNumberMasked.Right( 4 )}"
+                            : string.Empty;
+                    }
 
                     // Determine the image to use for this account.
                     if ( a.CreditCardTypeValueId.HasValue )

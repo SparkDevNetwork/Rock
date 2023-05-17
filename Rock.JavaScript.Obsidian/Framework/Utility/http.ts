@@ -19,7 +19,7 @@ import { Guid } from "@Obsidian/Types";
 import axios, { AxiosResponse } from "axios";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { HttpBodyData, HttpMethod, HttpFunctions, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { inject } from "vue";
+import { inject, provide } from "vue";
 
 
 // #region HTTP Requests
@@ -45,7 +45,7 @@ async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlPara
  * Make an API call.  This is a special use function that should not
  * normally be used. Instead call useHttp() to get the HTTP functions that
  * can be used.
- * 
+ *
  * @param {string} method The HTTP method, such as GET
  * @param {string} url The endpoint to access, such as /api/campuses/
  * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
@@ -99,7 +99,7 @@ export async function doApiCall<T>(method: HttpMethod, url: string, params: Http
  * Make a GET HTTP request. This is a special use function that should not
  * normally be used. Instead call useHttp() to get the HTTP functions that
  * can be used.
- * 
+ *
  * @param {string} url The endpoint to access, such as /api/campuses/
  * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
  */
@@ -111,7 +111,7 @@ export async function get<T>(url: string, params: HttpUrlParams = undefined): Pr
  * Make a POST HTTP request. This is a special use function that should not
  * normally be used. Instead call useHttp() to get the HTTP functions that
  * can be used.
- * 
+ *
  * @param {string} url The endpoint to access, such as /api/campuses/
  * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
  * @param {any} data This will be the body of the request
@@ -125,11 +125,11 @@ const httpFunctionsSymbol = Symbol("http-functions");
 /**
  * Provides the HTTP functions that child components will use. This is an
  * internal API and should not be used by third party components.
- * 
+ *
  * @param functions The functions that will be made available to child components.
  */
 export function provideHttp(functions: HttpFunctions): void {
-    inject(httpFunctionsSymbol, functions);
+    provide(httpFunctionsSymbol, functions);
 }
 
 /**
@@ -182,7 +182,7 @@ export type UploadOptions = {
 /**
  * Uploads a file in the form data into Rock. This is an internal function and
  * should not be exported.
- * 
+ *
  * @param url The URL to use for the POST request.
  * @param data The form data to send in the request body.
  * @param progress The optional callback to use to report progress.
@@ -219,7 +219,7 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
 
 /**
  * Uploads a file to the Rock file system, usually inside the ~/Content directory.
- * 
+ *
  * @param file The file to be uploaded to the server.
  * @param encryptedRootFolder The encrypted root folder specified by the server,
  * this specifies the jail the upload operation is limited to.
@@ -249,7 +249,7 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
 /**
  * Uploads a BinaryFile into Rock. The specific storage location is defined by
  * the file type.
- * 
+ *
  * @param file The file to be uploaded into Rock.
  * @param binaryFileTypeGuid The unique identifier of the BinaryFileType to handle the upload.
  * @param options The options ot use when uploading the file.

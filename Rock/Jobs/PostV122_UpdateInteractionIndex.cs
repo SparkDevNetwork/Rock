@@ -16,8 +16,6 @@
 //
 using System.ComponentModel;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -27,8 +25,6 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job for V11.0
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.2 - Adds PersonalDeviceId to Interaction Index." )]
     [Description( "This job will update the index. After all the operations are done, this job will delete itself." )]
 
@@ -39,7 +35,7 @@ namespace Rock.Jobs
         IsRequired = false,
         DefaultIntegerValue = AttributeDefaultValue.CommandTimeout )]
 
-    public class PostV122_UpdateInteractionIndex : IJob
+    public class PostV122_UpdateInteractionIndex : RockJob
     {
         private static class AttributeKey
         {
@@ -51,11 +47,8 @@ namespace Rock.Jobs
             public const int CommandTimeout = 60 * 60 * 2; // 2 hours
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             /* MDP 07-22-2021
 
@@ -64,10 +57,8 @@ namespace Rock.Jobs
 
              */
 
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the configured timeout, or default if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
 
             using ( var rockContext = new RockContext() )
             {
@@ -94,7 +85,7 @@ namespace Rock.Jobs
             }
 
             // This is a one time job
-            DeleteJob( context.GetJobId() );
+            DeleteJob( this.ServiceJobId );
         }
 
         /// <summary>

@@ -313,6 +313,22 @@ namespace RockWeb.Blocks.CheckIn.Config
                     Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN,
                     ddlRegistrationDisplayGradeOnChildren.SelectedValue );
 
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONADULTS,
+                    ddlRegistrationDisplayRaceOnAdults.SelectedValue );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS,
+                    ddlRegistrationDisplayEthnicityOnAdults.SelectedValue );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN,
+                    ddlRegistrationDisplayRaceOnChildren.SelectedValue );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN,
+                    ddlRegistrationDisplayEthnicityOnChildren.SelectedValue );
+
                 Guid? defaultPersonConnectionStatusValueGuid = null;
                 var defaultPersonConnectionStatusValueId = dvpRegistrationDefaultPersonConnectionStatus.SelectedValue.AsIntegerOrNull();
                 if ( defaultPersonConnectionStatusValueId.HasValue )
@@ -568,6 +584,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                 ddlRegistrationDisplayBirthdateOnChildren.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN ) );
                 ddlRegistrationDisplayBirthdateOnAdults.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS ) );
                 ddlRegistrationDisplayGradeOnChildren.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN ) );
+
+                ddlRegistrationDisplayRaceOnAdults.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONADULTS ) );
+                ddlRegistrationDisplayEthnicityOnAdults.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS ) );
+                ddlRegistrationDisplayRaceOnChildren.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN ) );
+                ddlRegistrationDisplayEthnicityOnChildren.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN ) );
 
                 int? defaultPersonConnectionStatusValueId = null;
                 Guid? defaultPersonConnectionStatusValueGuid = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS ).AsGuidOrNull();
@@ -900,6 +921,26 @@ namespace RockWeb.Blocks.CheckIn.Config
             ddlRegistrationDisplayGradeOnChildren.Items.Add( ControlOptions.HIDE );
             ddlRegistrationDisplayGradeOnChildren.Items.Add( ControlOptions.OPTIONAL );
             ddlRegistrationDisplayGradeOnChildren.Items.Add( ControlOptions.REQUIRED );
+
+            ddlRegistrationDisplayRaceOnChildren.Items.Clear();
+            ddlRegistrationDisplayRaceOnChildren.Items.Add( ControlOptions.HIDE );
+            ddlRegistrationDisplayRaceOnChildren.Items.Add( ControlOptions.OPTIONAL );
+            ddlRegistrationDisplayRaceOnChildren.Items.Add( ControlOptions.REQUIRED );
+
+            ddlRegistrationDisplayEthnicityOnChildren.Items.Clear();
+            ddlRegistrationDisplayEthnicityOnChildren.Items.Add( ControlOptions.HIDE );
+            ddlRegistrationDisplayEthnicityOnChildren.Items.Add( ControlOptions.OPTIONAL );
+            ddlRegistrationDisplayEthnicityOnChildren.Items.Add( ControlOptions.REQUIRED );
+
+            ddlRegistrationDisplayRaceOnAdults.Items.Clear();
+            ddlRegistrationDisplayRaceOnAdults.Items.Add( ControlOptions.HIDE );
+            ddlRegistrationDisplayRaceOnAdults.Items.Add( ControlOptions.OPTIONAL );
+            ddlRegistrationDisplayRaceOnAdults.Items.Add( ControlOptions.REQUIRED );
+
+            ddlRegistrationDisplayEthnicityOnAdults.Items.Clear();
+            ddlRegistrationDisplayEthnicityOnAdults.Items.Add( ControlOptions.HIDE );
+            ddlRegistrationDisplayEthnicityOnAdults.Items.Add( ControlOptions.OPTIONAL );
+            ddlRegistrationDisplayEthnicityOnAdults.Items.Add( ControlOptions.REQUIRED );
         }
 
         #endregion

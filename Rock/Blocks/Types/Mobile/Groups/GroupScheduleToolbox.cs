@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModels.Blocks.Groups.GroupScheduleToolbox;
+using Rock.ViewModels.Blocks.Group.GroupScheduleToolbox;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 

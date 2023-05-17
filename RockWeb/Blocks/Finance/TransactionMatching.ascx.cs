@@ -1103,11 +1103,11 @@ namespace RockWeb.Blocks.Finance
             string keyPrefix = GetUserPreferenceKeyPrefix();
 
             var selectedAccountIdList = apDisplayedPersonalAccounts.SelectedValuesAsInt().ToList();
-            var selectedAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
+            var selectedAccountGuidList = FinancialAccountCache.GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
             this.SetUserPreference( keyPrefix + "account-list", selectedAccountGuidList.AsDelimited( "," ) );
 
             var optionalAccountIdList = apOptionalPersonalAccounts.SelectedValuesAsInt().ToList();
-            var optionalAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( optionalAccountIdList ).Select( a => a.Guid ).ToList();
+            var optionalAccountGuidList = FinancialAccountCache.GetByIds( optionalAccountIdList ).Select( a => a.Guid ).ToList();
             this.SetUserPreference( keyPrefix + "optional-account-list", optionalAccountGuidList.AsDelimited( "," ) );
 
             this.SetUserPreference( keyPrefix + "only-show-selected-accounts", cbOnlyShowSelectedAccounts.Checked.ToString() );
@@ -1163,18 +1163,18 @@ namespace RockWeb.Blocks.Finance
             string keyPrefix = GetUserPreferenceKeyPrefix();
 
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
-            var personalAccountList = new FinancialAccountService( new RockContext() )
+            var personalAccountList = FinancialAccountCache
                 .GetByGuids( personalAccountGuidList )
                 .Where( a => a.IsActive )
                 .ToList();
-            apDisplayedPersonalAccounts.SetValues( personalAccountList );
+            apDisplayedPersonalAccounts.SetValuesFromCache( personalAccountList );
 
             var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
-            var optionalAccountList = new FinancialAccountService( new RockContext() )
+            var optionalAccountList = FinancialAccountCache
                 .GetByGuids( optionalAccountGuidList )
                 .Where( a => a.IsActive )
                 .ToList();
-            apOptionalPersonalAccounts.SetValues( optionalAccountList );
+            apOptionalPersonalAccounts.SetValuesFromCache( optionalAccountList );
 
             cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
             cbIncludeChildAccounts.Checked = this.GetUserPreference( keyPrefix + "include-child-accounts" ).AsBoolean();

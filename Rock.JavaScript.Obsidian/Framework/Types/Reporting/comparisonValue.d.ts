@@ -14,7 +14,7 @@
 // </copyright>
 //
 
-import { ComparisonType } from "./comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
 /**
  * The comparison value for custom filtering.

@@ -1,0 +1,39 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockErrorMessage" alertType="warning">
+        {{ blockErrorMessage }}
+    </NotificationBox>
+
+    <div v-if="!blockErrorMessage" ref="signUpDetailElement"></div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { SignUpDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpDetail/signUpDetailInitializationBox";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+
+    const config = useConfigurationValues<SignUpDetailInitializationBox>();
+
+    // #region Values
+
+    const signUpDetailElement = ref<HTMLElement | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const blockErrorMessage = computed((): string | undefined | null => {
+        return config.errorMessage;
+    });
+
+    // #endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    onMounted(() => {
+        if (signUpDetailElement.value && config.signUpDetailHtml) {
+            signUpDetailElement.value.innerHTML = config.signUpDetailHtml;
+        }
+    });
+</script>

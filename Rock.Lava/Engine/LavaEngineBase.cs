@@ -43,6 +43,8 @@ namespace Rock.Lava
                 options = new LavaEngineConfigurationOptions();
             }
 
+            _hostService = options.HostService;
+
             // Initialize the cache service for the current Lava Engine type.
             _cacheService = options.CacheService;
 
@@ -175,6 +177,9 @@ namespace Rock.Lava
             return NewRenderContext( ( ILavaDataDictionary ) mergeFields, enabledCommands );
         }
 
+        private static string _contextKeyLavaEngine = LavaUtilityHelper.GetContextKeyFromType( typeof( ILavaEngine ) );
+        private static string _contextKeyHostService = LavaUtilityHelper.GetContextKeyFromType( typeof( ILavaHost ) );
+
         /// <summary>
         /// Initializes a new template context.
         /// </summary>
@@ -192,7 +197,8 @@ namespace Rock.Lava
             }
 
             // Set a reference to the current Lava Engine.
-            context.SetInternalField( LavaUtilityHelper.GetContextKeyFromType( typeof( ILavaEngine ) ), this );
+            context.SetInternalField( _contextKeyLavaEngine, this );
+            context.SetInternalField( _contextKeyHostService, _hostService );
         }
 
         /// <summary>
@@ -212,6 +218,20 @@ namespace Rock.Lava
             get
             {
                 return _cacheService;
+            }
+        }
+
+        private ILavaHost _hostService;
+
+        /// <summary>
+        /// Gets the current Host service for the Lava Engine.
+        /// </summary>
+        /// <returns>A reference to the current host service.</returns>
+        public ILavaHost LavaHostService
+        {
+            get
+            {
+                return _hostService;
             }
         }
 

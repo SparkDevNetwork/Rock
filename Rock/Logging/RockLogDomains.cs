@@ -81,6 +81,12 @@ namespace Rock.Logging
         /// The other
         /// </summary>
         public const string Other = "OTHER";
+
+        /// <summary>
+        /// The domain used to log RealTime related messages.
+        /// </summary>
+        public const string RealTime = "REALTIME";
+
         /// <summary>
         /// The lava
         /// </summary>

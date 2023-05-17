@@ -81,9 +81,14 @@ namespace Rock.Model
             foreach ( var sourceEntity in sourceEntitiesQuery )
             {
                 // Process each streak in it's own data context to avoid the data context changes getting too big and slow
-                var rockContext = new RockContext();
-                achievementComponent.Process( rockContext, achievementTypeCache, sourceEntity );
-                rockContext.SaveChanges();
+                using ( var rockContext = new RockContext() )
+                {
+                    // This is a bulk process, so don't send real-time events.
+                    rockContext.IsRealTimeEnabled = false;
+
+                    achievementComponent.Process( rockContext, achievementTypeCache, sourceEntity );
+                    rockContext.SaveChanges();
+                }
             }
         }
 

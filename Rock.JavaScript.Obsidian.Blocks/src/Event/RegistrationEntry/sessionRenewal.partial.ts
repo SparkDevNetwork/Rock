@@ -22,7 +22,7 @@ import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { toWord } from "@Obsidian/Utility/numberUtils";
 import { pluralConditional } from "@Obsidian/Utility/stringUtils";
-import { SessionRenewalResult, RegistrationEntryState } from "./types";
+import { SessionRenewalResult, RegistrationEntryState } from "./types.partial";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
 export default defineComponent({
@@ -194,7 +194,7 @@ export default defineComponent({
             Due to high demand there is no longer space available for all your registrants.
             Only {{nonWaitlistRegistrantCountWord}} {{pluralConditional(nonWaitlistRegistrantCount, 'spot is', 'spots are')}} available.
             Your registration has been updated to only allow
-            {{nonWaitlistRegistrantCountWord}} {{pluralConditional(nonWaitlistRegistrantCount, 'registrant', 'registrants')}}. 
+            {{nonWaitlistRegistrantCountWord}} {{pluralConditional(nonWaitlistRegistrantCount, 'registrant', 'registrants')}}.
             Do you wish to continue with the registration?
         </template>
         <template v-else>

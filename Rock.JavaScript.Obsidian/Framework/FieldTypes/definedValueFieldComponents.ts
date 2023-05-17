@@ -82,25 +82,13 @@ export const EditComponent = defineComponent({
 
         const displayDescription = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayDescription]));
 
-        /** The options to choose from in the drop down list */
+        /** The options to choose from */
         const options = computed((): ListItemBag[] => {
-            const providedOptions: ListItemBag[] = valueOptions.value.map(v => {
-                return {
-                    text: displayDescription.value ? v.description : v.text,
-                    value: v.value
-                };
-            });
-
-            return providedOptions;
-        });
-
-        /** The options to choose from in the checkbox list */
-        const optionsMultiple = computed((): ListItemBag[] => {
             return valueOptions.value.map(v => {
                 return {
-                    text: displayDescription.value ? v.description : v.text,
+                    text: displayDescription.value ? (v.description || v.text) : v.text,
                     value: v.value
-                } as ListItemBag;
+                };
             });
         });
 
@@ -148,14 +136,13 @@ export const EditComponent = defineComponent({
             isMultiple,
             isRequired: inject("isRequired") as boolean,
             options,
-            optionsMultiple,
             repeatColumns
         };
     },
 
     template: `
-<DropDownList v-if="!isMultiple" v-model="internalValue" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired" />
-<CheckBoxList v-else v-model="internalValues" :items="optionsMultiple" horizontal :repeatColumns="repeatColumns" />
+<DropDownList v-if="!isMultiple || configAttributes.enhanceForLongLists" v-model="internalValue" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired" />
+<CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns" />
 `
 });
 
@@ -284,7 +271,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */
@@ -331,6 +318,7 @@ export const ConfigurationComponent = defineComponent({
             allowMultipleValues,
             definedTypeValue,
             definedTypeOptions,
+            definedTypeItems,
             definedValueOptions,
             displayDescriptions,
             enhanceForLongLists,

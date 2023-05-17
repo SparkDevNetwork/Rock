@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -35,15 +33,13 @@ namespace Rock.Jobs
     /// <summary>
     /// Send note watch and note approval notifications.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Send Note Notifications" )]
     [Description( "Send note watch and note approval notifications." )]
 
-    [DisallowConcurrentExecution]
     [SystemCommunicationField( "Note Watch Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_WATCH_NOTIFICATION, required: false, order: 1 )]
     [SystemCommunicationField( "Note Approval Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_APPROVAL_NOTIFICATION, required: false, order: 2 )]
     [IntegerField( "Cutoff Days", "Just in case the Note Notification service hasn't run for a while, this is the max number of days between the note edited date and the notification.", required: true, defaultValue: 7, order: 3 )]
-    public class SendNoteNotifications : IJob
+    public class SendNoteNotifications : RockJob
     {
         /// <summary>
         /// Empty constructor for job initialization
@@ -153,25 +149,21 @@ namespace Rock.Jobs
         /// </summary>
         private int _noteApprovalNotificationsSent = 0;
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             // get the job dataMap
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            int oldestDaysOld = dataMap.GetString( "CutoffDays" ).AsIntegerOrNull() ?? 7;
+            int oldestDaysOld = GetAttributeValue( "CutoffDays" ).AsIntegerOrNull() ?? 7;
             _cutoffNoteEditDateTime = RockDateTime.Now.AddDays( -oldestDaysOld );
             _defaultMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-            _noteWatchNotificationEmailGuid = dataMap.GetString( "NoteWatchNotificationEmail" ).AsGuidOrNull();
-            _noteApprovalNotificationEmailGuid = dataMap.GetString( "NoteApprovalNotificationEmail" ).AsGuidOrNull();
+            _noteWatchNotificationEmailGuid = GetAttributeValue( "NoteWatchNotificationEmail" ).AsGuidOrNull();
+            _noteApprovalNotificationEmailGuid = GetAttributeValue( "NoteApprovalNotificationEmail" ).AsGuidOrNull();
             var errors = new List<string>();
 
-            errors.AddRange( SendNoteWatchNotifications( context ) );
-            context.UpdateLastStatusMessage( $"{_noteWatchNotificationsSent} note watch notifications sent..." );
-            errors.AddRange( SendNoteApprovalNotifications( context ) );
-            context.UpdateLastStatusMessage( $"{_noteWatchNotificationsSent} note watch notifications sent, and {_noteApprovalNotificationsSent} note approval notifications sent" );
+            errors.AddRange( SendNoteWatchNotifications() );
+            this.UpdateLastStatusMessage( $"{_noteWatchNotificationsSent} note watch notifications sent..." );
+            errors.AddRange( SendNoteApprovalNotifications() );
+            this.UpdateLastStatusMessage( $"{_noteWatchNotificationsSent} note watch notifications sent, and {_noteApprovalNotificationsSent} note approval notifications sent" );
 
             if ( errors.Any() )
             {
@@ -180,7 +172,7 @@ namespace Rock.Jobs
                 sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
                 errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                 string errorMessage = sb.ToString();
-                context.Result += errorMessage;
+                this.Result += errorMessage;
                 var exception = new Exception( errorMessage );
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );
@@ -191,8 +183,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Sends the note approval notifications.
         /// </summary>
-        /// <param name="context">The context.</param>
-        private List<string> SendNoteApprovalNotifications( IJobExecutionContext context )
+        private List<string> SendNoteApprovalNotifications()
         {
             var errors = new List<string>();
             List<int> noteIdsToProcessApprovalsList = new List<int>();
@@ -309,8 +300,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Sends the note watch notifications.
         /// </summary>
-        /// <param name="context">The context.</param>
-        private List<string> SendNoteWatchNotifications( IJobExecutionContext context )
+        private List<string> SendNoteWatchNotifications()
         {
             var errors = new List<string>();
             List<int> noteIdsToProcessNoteWatchesList = new List<int>();
@@ -377,7 +367,7 @@ namespace Rock.Jobs
                             var mergeFields = new Dictionary<string, object>( _defaultMergeFields );
                             mergeFields.Add( "Person", personToNotify );
                             mergeFields.Add( "NoteList", noteList );
-                            recipients.Add( new RockEmailMessageRecipient( personToNotify, mergeFields ) );    
+                            recipients.Add( new RockEmailMessageRecipient( personToNotify, mergeFields ) );
                         }
 
                         if ( _noteWatchNotificationEmailGuid.HasValue )

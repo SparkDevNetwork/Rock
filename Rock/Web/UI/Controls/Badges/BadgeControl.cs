@@ -106,9 +106,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the server control content.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var personBadgeCache = new PersonBadgeCache( BadgeCache );
-#pragma warning restore CS0618 // Type or member is obsolete
             var badgeComponent = BadgeCache?.BadgeComponent;
 
             if ( badgeComponent == null )
@@ -141,7 +138,6 @@ namespace Rock.Web.UI.Controls
                 badgeComponent.Entity = entity;
                 badgeComponent.Render( BadgeCache, writer );
 
-                badgeComponent.Render( personBadgeCache, writer );
 #pragma warning restore CS0618 // Type or member is obsolete
 
                 var script = badgeComponent.GetWrappedJavaScript( BadgeCache, entity );

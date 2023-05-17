@@ -59,5 +59,11 @@ namespace Rock.ViewModels.Blocks.Cms.ContentCollectionDetail
         /// and indexing on the content collection.
         /// </summary>
         public List<AttributeFilterBag> AttributeFilters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom field filters.
+        /// </summary>
+        /// <value>The custom field filters.</value>
+        public List<CustomFieldFilterBag> CustomFieldFilters { get; set; }
     }
 }

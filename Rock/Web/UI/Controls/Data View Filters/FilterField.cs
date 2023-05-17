@@ -147,6 +147,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the filterType dropdownlist should allow a search when used for single select
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enhance for long list]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFilterTypeEnhancedForLongLists
+        {
+            get { return ViewState["IsFilterTypeEnhancedForLongLists"] as bool? ?? false; }
+            set { ViewState["IsFilterTypeEnhancedForLongLists"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the data view filter unique identifier.
         /// </summary>
         /// <value>
@@ -535,6 +547,7 @@ namespace Rock.Web.UI.Controls
             ddlFilterType = new RockDropDownList();
             Controls.Add( ddlFilterType );
             ddlFilterType.ID = this.ID + "_ddlFilter";
+            ddlFilterType.EnhanceForLongLists = IsFilterTypeEnhancedForLongLists;
 
             nbFilterError = new NotificationBox();
             nbFilterError.ID = this.ID + "_nbFilterError";

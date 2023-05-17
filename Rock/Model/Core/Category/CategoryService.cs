@@ -346,9 +346,23 @@ namespace Rock.Model
                     else
                     {
                         var categoryIdPropertyExpression = Expression.Property( paramExpression, "CategoryId" );
-                        var nullConstant = Expression.Constant( null, typeof( int? ) );
 
-                        whereExpression = Expression.Equal( categoryIdPropertyExpression, nullConstant );
+                        if ( categoryIdPropertyExpression.Type == typeof( int ) )
+                        {
+                            // Some models, like MergeTemplate, actually use a non-nullable
+                            // column and then a special C# property to map the nullable
+                            // ICategorized.CategoryId to the real property. This handles
+                            // those situations.
+                            var zeroConstant = Expression.Constant( 0, typeof( int ) );
+
+                            whereExpression = Expression.Equal( categoryIdPropertyExpression, zeroConstant );
+                        }
+                        else
+                        {
+                            var nullConstant = Expression.Constant( null, typeof( int? ) );
+
+                            whereExpression = Expression.Equal( categoryIdPropertyExpression, nullConstant );
+                        }
                     }
 
                     // Exclude any inactive items. This value is only set if we

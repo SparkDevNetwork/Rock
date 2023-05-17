@@ -4,5 +4,8 @@
     "composite": true,
     "module": "ESNext"
   },
-  "include": [ "./*.ts" ]
+  "include": [ "./*.ts" ],
+  "references": [
+    { "path": "../Enums" }
+  ]
 }

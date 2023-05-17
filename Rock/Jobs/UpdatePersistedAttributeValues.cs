@@ -23,8 +23,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Net;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
@@ -57,8 +55,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
-    public class UpdatePersistedAttributeValues : IJob
+    public class UpdatePersistedAttributeValues : RockJob
     {
         #region Keys
 
@@ -93,19 +90,15 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            var dataMap = context.JobDetail.JobDataMap;
-            var rebuildPercentage = dataMap.GetString( AttributeKey.RebuildPercentage ).AsInteger();
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsInteger();
+            var rebuildPercentage = GetAttributeValue( AttributeKey.RebuildPercentage ).AsInteger();
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsInteger();
             var updatedCount = 0;
 
             // Update the last status message at most every 2.5 seconds.
-            var statusMessage = new ThrottleLogger( 2500, msg => context.UpdateLastStatusMessage( msg ) );
+            var statusMessage = new ThrottleLogger( 2500, msg => UpdateLastStatusMessage( msg ) );
 
             CreateIndex( commandTimeout );
 
@@ -135,7 +128,7 @@ namespace Rock.Jobs
                 message += $"\nEncounted errors:\n{string.Join( "\n", errorMessages )}";
             }
 
-            context.Result = message;
+            this.Result = message;
         }
 
         /// <summary>
@@ -648,7 +641,7 @@ namespace Rock.Jobs
         {
             var attributeIds = new List<int>( 1000 );
 
-            foreach ( var attribute in AttributeCache.All().Where( a => a.Id == 7434 ) )
+            foreach ( var attribute in AttributeCache.All() )
             {
                 try
                 {

@@ -1,0 +1,173 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="fieldProps" :modelValue="internalGroupValue" name="group-type-group-picker">
+        <GroupTypePicker v-bind="standardProps"
+                         v-model="internalTypeValue"
+                         label="Group Type"
+                         showBlankItem
+                         :displayStyle="PickerDisplayStyle.Condensed"
+                         :multiple="false"
+                         rules=""
+                         onlyGroupListItems
+                         formGroupClasses="mt-0" />
+        <BaseAsyncPicker v-model="internalGroupValue"
+                         v-bind="standardProps"
+                         :label="groupLabel"
+                         :displayStyle="displayStyle"
+                         :items="actualGroupItems"
+                         showBlankItem
+                         :multiple="false" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { standardAsyncPickerProps, updateRefValue, useStandardAsyncPickerProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, computed, nextTick, ref, watch } from "vue";
+    import BaseAsyncPicker from "./baseAsyncPicker";
+    import GroupTypePicker from "./groupTypePicker.obs";
+    import RockFormField from "./rockFormField";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { GroupTypeGroupPickerGetGroupsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupTypeGroupPickerGetGroupsOptionsBag";
+    import { GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupTypeGroupPickerGetGroupTypeOfGroupOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: true
+        },
+
+        /** V-model for the group type so you can get/set it */
+        groupType: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** Label for the group picker */
+        groupLabel: {
+            type: String,
+            default: "Group"
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:groupType", value: ListItemBag | null): void
+        (e: "update:modelValue", value: ListItemBag | null): void
+    }>();
+
+    // #region Values
+
+    const standardProps = useStandardAsyncPickerProps(props);
+    const fieldProps = useStandardRockFormFieldProps(props);
+    const http = useHttp();
+
+    const internalTypeValue = ref<ListItemBag | null>(props.groupType);
+
+    const internalGroupValue = ref(props.modelValue);
+    const loadedGroupItems = ref<ListItemBag[] | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualGroupItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedGroupItems.value || loadGroupOptions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the group items from the server.
+     */
+    async function loadGroupOptions(): Promise<ListItemBag[]> {
+        if (!internalTypeValue.value) {
+            return [];
+        }
+
+        const options: GroupTypeGroupPickerGetGroupsOptionsBag = {
+            groupTypeGuid: internalTypeValue.value?.value
+        };
+
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupTypeGroupPickerGetGroups", null, options);
+
+        if (result.isSuccess && result.data) {
+            loadedGroupItems.value = result.data ?? null;
+
+            return loadedGroupItems.value ?? [];
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedGroupItems.value = [];
+            return [];
+        }
+    }
+
+    /**
+     * Gets all the data needed to fill in the pickers when we're given a value to start
+     */
+    async function loadGroupTypeFromGroup(): Promise<void> {
+        const options: GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag = {
+            groupGuid: props.modelValue?.value
+        };
+
+        const result = await http.post<ListItemBag>("/api/v2/Controls/GroupTypeGroupPickerGetGroupTypeOfGroup", null, options);
+
+        if (result.isSuccess && result.data) {
+            const currentValue = internalGroupValue.value;
+            internalTypeValue.value = result.data ?? null;
+
+            // Wait for watchers of the group type to fire so we don't undo the next line
+            await nextTick();
+
+            internalGroupValue.value = currentValue;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    /** If the value is changed from the outside, fill in all the required data */
+    watch(() => props.modelValue, () => {
+        if (updateRefValue(internalGroupValue, props.modelValue)) {
+            loadGroupTypeFromGroup();
+        }
+    });
+
+    /** If the groupType value is changed from the outside, fill in all the required data */
+    watch(() => props.groupType, () => {
+        updateRefValue(internalTypeValue, props.groupType);
+    });
+
+    watch(internalGroupValue, () => {
+        emit("update:modelValue", internalGroupValue.value);
+    });
+
+    /** Reload Roles if the type or excluded roles list change */
+    watch(internalTypeValue, () => {
+        emit("update:groupType", internalTypeValue.value);
+        internalGroupValue.value = null;
+
+        loadedGroupItems.value = null;
+        loadGroupOptions();
+    });
+
+    // #endregion
+
+    if (props.modelValue) {
+        // Load the type and list of items based on the selected value
+        loadGroupTypeFromGroup();
+    }
+</script>

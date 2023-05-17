@@ -44,6 +44,8 @@ namespace Rock.Web.UI.Controls
         private RockRadioButtonList _rblCommunicationPreference;
         private LinkButton _lbDelete;
         private ImageEditor _imgProfile;
+        private RacePicker _rpRace;
+        private EthnicityPicker _epEthnicity;
 
         /// <summary>
         /// Gets or sets the caption.
@@ -334,6 +336,86 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _imgProfile.Required = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show race].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show race]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowRace
+        {
+            get
+            {
+                EnsureChildControls();
+                return _rpRace.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _rpRace.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show ethnicity].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show ethnicity]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowEthnicity
+        {
+            get
+            {
+                EnsureChildControls();
+                return _epEthnicity.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _epEthnicity.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [require race].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require race]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequireRace
+        {
+            get
+            {
+                EnsureChildControls();
+                return _rpRace.Required;
+            }
+            set
+            {
+                EnsureChildControls();
+                _rpRace.Required = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [require ethnicity].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require ethnicity]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequireEthnicity
+        {
+            get
+            {
+                EnsureChildControls();
+                return _epEthnicity.Required;
+            }
+            set
+            {
+                EnsureChildControls();
+                _epEthnicity.Required = value;
             }
         }
 
@@ -671,6 +753,46 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the Race value identifier.
+        /// </summary>
+        /// <value>
+        /// The RaceValue identifier.
+        /// </value>
+        public int? RaceValueId
+        {
+            get
+            {
+                EnsureChildControls();
+                return _rpRace.SelectedValueAsId();
+            }
+            set
+            {
+                EnsureChildControls();
+                _rpRace.SetValue( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the EthnicityValue identifier.
+        /// </summary>
+        /// <value>
+        /// The EthnicityValue identifier.
+        /// </value>
+        public int? EthnicityValueId
+        {
+            get
+            {
+                EnsureChildControls();
+                return _epEthnicity.SelectedValueAsId();
+            }
+            set
+            {
+                EnsureChildControls();
+                _epEthnicity.SetValue( value );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the validation group.
         /// </summary>
         /// <value>
@@ -695,6 +817,8 @@ namespace Rock.Web.UI.Controls
                 _ebEmail.ValidationGroup = value;
                 _rblCommunicationPreference.ValidationGroup = value;
                 _ddlRelationshipType.ValidationGroup = value;
+                _rpRace.ValidationGroup = value;
+                _epEthnicity.ValidationGroup = value;
                 foreach ( var ctrl in _phAttributes.Controls )
                 {
                     var rockCtrl = ctrl as IRockControl;
@@ -735,12 +859,12 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 ValidationErrors.Clear();
 
-                if( _tbNickName.Required && _tbNickName.Text.IsNullOrWhiteSpace())
+                if( _tbNickName.Required && _tbNickName.Text.IsNullOrWhiteSpace() )
                 {
                     return false;
                 }
 
-                if( _tbLastName.Required && _tbLastName.Text.IsNullOrWhiteSpace())
+                if( _tbLastName.Required && _tbLastName.Text.IsNullOrWhiteSpace() )
                 {
                     return false;
                 }
@@ -750,12 +874,12 @@ namespace Rock.Web.UI.Controls
                     return false;
                 }
 
-                if ( _bpBirthdate.Required && _bpBirthdate.SelectedDate == null)
+                if ( _bpBirthdate.Required && _bpBirthdate.SelectedDate == null )
                 {
                     return false;
                 }
 
-                if( _ddlGradePicker.Required && _ddlGradePicker.SelectedIndex == 0)
+                if( _ddlGradePicker.Required && _ddlGradePicker.SelectedIndex == 0 )
                 {
                     return false;
                 }
@@ -776,6 +900,16 @@ namespace Rock.Web.UI.Controls
                 }
 
                 if ( _imgProfile.Required && _imgProfile.BinaryFileId == null )
+                {
+                    return false;
+                }
+
+                if ( _rpRace.Required && _rpRace.SelectedIndex == 0 )
+                {
+                    return false;
+                }
+
+                if ( _epEthnicity.Required && _epEthnicity.SelectedIndex == 0 )
                 {
                     return false;
                 }
@@ -819,6 +953,8 @@ namespace Rock.Web.UI.Controls
             _lbDelete = new LinkButton();
             _rblCommunicationPreference = new RockRadioButtonList();
             _imgProfile = new ImageEditor() { RequiredErrorMessage = "Profile photo is required for the child." };
+            _rpRace = new RacePicker();
+            _epEthnicity = new EthnicityPicker();
         }
 
         /// <summary>
@@ -844,6 +980,8 @@ namespace Rock.Web.UI.Controls
             _lbDelete.ID = "_lbDelete";
             _rblCommunicationPreference.ID = "_rblCommunicationPreference";
             _imgProfile.ID = "_imgProfile";
+            _rpRace.ID = "_rpRace";
+            _epEthnicity.ID = "_epEthnicity";
 
             Controls.Add( _lNickName );
             Controls.Add( _lLastName );
@@ -860,6 +998,8 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _phAttributes );
             Controls.Add( _lbDelete );
             Controls.Add( _imgProfile );
+            Controls.Add( _rpRace );
+            Controls.Add( _epEthnicity );
 
             _lNickName.Label = "First Name";
 
@@ -1050,6 +1190,22 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _rblCommunicationPreference.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
+
+                if ( this.ShowRace )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _rpRace.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
+
+                if ( this.ShowRace )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _epEthnicity.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
@@ -1306,6 +1462,22 @@ namespace Rock.Web.UI.Controls
         public int? ProfilePhotoId { get; set; }
 
         /// <summary>
+        /// Gets or sets RaceValue identifier.
+        /// </summary>
+        /// <value>
+        /// The profile RaceValue identifier.
+        /// </value>
+        public int? RaceValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the EthnicityValue identifier.
+        /// </summary>
+        /// <value>
+        /// The profile EthnicityValue identifier.
+        /// </value>
+        public int? EthnicityValueId { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PreRegistrationChild"/> class.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -1322,6 +1494,8 @@ namespace Rock.Web.UI.Controls
             Age = person.Age;
             CommunicationPreference = person.CommunicationPreference;
             ProfilePhotoId = person.PhotoId;
+            RaceValueId = person.RaceValueId;
+            EthnicityValueId = person.EthnicityValueId;
 
             var mobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             MobilePhoneNumber = mobilePhone?.Number;

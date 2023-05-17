@@ -1,0 +1,164 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="internalValue"
+                   v-bind="fieldProps"
+                   :formGroupClasses="'registry-entry ' + formGroupClasses"
+                   :rules="fieldRules"
+                   name="textbox">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <slot name="prepend" :isInputGroupSupported="false" />
+                <div class="form-control-group row form-row">
+                    <div class="col-sm-4">
+                        <input v-model="volume" :id="uniqueId" type="text" class="form-control" v-bind="field" placeholder="Volume" inputmode="numeric" pattern="[0-9]*" />
+                    </div>
+                    <div class="col-sm-4">
+                        <input v-model="page" :id="uniqueId + '-page'" type="text" class="form-control" v-bind="field" placeholder="Page" inputmode="numeric" pattern="[0-9]*" />
+                    </div>
+                    <div class="col-sm-4">
+                        <input v-model="line" :id="uniqueId + '-line'" type="text" class="form-control" v-bind="field" placeholder="Line" inputmode="numeric" pattern="[0-9]*" />
+                    </div>
+                </div>
+                <slot name="append" :isInputGroupSupported="false" />
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import { toNumberOrNull, toNumber } from "@Obsidian/Utility/numberUtils";
+    import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import RockFormField from "./rockFormField";
+    import { normalizeRules, ValidationResult } from "@Obsidian/ValidationRules";
+
+    const props = defineProps({
+        /**
+         * String value containing 3 numbers separated by commas, e.g. "1,2,3", representing the volume,
+         * page, and line number of the registry entry
+         **/
+        modelValue: {
+            type: String,
+            required: true
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", val: string | null): void
+    }>();
+
+    // #region Values
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    const volume = ref("");
+    const page = ref("");
+    const line = ref("");
+
+    watch(volume, () => console.log("volume changed", volume.value));
+    watch(page, () => console.log("page changed", page.value));
+    watch(line, () => console.log("line changed", line.value));
+
+    // #endregion
+
+    // #region Computed Values
+
+    const internalValue = computed({
+        get() {
+            console.log("get internal", internalValue);
+            return volume.value + "," + page.value + "," + line.value;
+        },
+        set(value: string) {
+            console.log("set internal", value);
+            const parts = value.split(",");
+            volume.value = toNumberOrNull(parts[0])?.toString() ?? "";
+            page.value = toNumberOrNull(parts[1])?.toString() ?? "";
+            line.value = toNumberOrNull(parts[2])?.toString() ?? "";
+        }
+    });
+
+    /** Convert the `required` rule to more accurately validate if this control is filled out */
+    const fieldRules = computed(() => {
+        let rules = normalizeRules(props.rules);
+        rules = rules.map(rule => {
+            if (rule == "required") {
+                return validateRequired;
+            }
+
+            return rule;
+        });
+
+        rules.push(validateNumeric, validateAllFieldsFilled);
+
+        return rules;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        console.log("prop changed", props.modelValue);
+        updateRefValue(internalValue, props.modelValue);
+    });
+
+    watch(internalValue, () => {
+        console.log("internalvalue changes", internalValue.value);
+        emit("update:modelValue", internalValue.value);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** If the field is required, make sure all 3 inputs are filled */
+    function validateRequired(): ValidationResult {
+        return !!volume.value.trim() && !!page.value.trim() && !!line.value.trim() || "is required.";
+    }
+
+    /** If any part of the field is filled out, it all needs to be filled out to be valid */
+    function validateAllFieldsFilled(): ValidationResult {
+        // Either none of them should be filled out, or all of them should be
+        if ((volume.value.trim() || page.value.trim() || line.value.trim())
+            && !(volume.value.trim() && page.value.trim() && line.value.trim())) {
+            return "is invalid. Please fill out Volume, Page, and Line.";
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate if all the filled inputs are numbers. This is really only necessary for older browsers
+     * that can't use the `pattern` attribute on inputs.
+     */
+    function validateNumeric(): ValidationResult {
+        const errs: string[] = [];
+
+        // Each field should either be empty, or a number
+        console.log("validate volume numberic", !!volume.value.trim(), !toNumberOrNull(volume.value.trim()));
+        if (volume.value.trim() && toNumber(volume.value.trim()) == 0) {
+            errs.push("Volume");
+        }
+
+        console.log("validate page numberic", !!page.value.trim(), !toNumberOrNull(page.value.trim()));
+        if (page.value.trim() && toNumber(page.value.trim()) == 0) {
+            errs.push("Page");
+        }
+
+        console.log("validate line numberic", !!line.value.trim(), !toNumberOrNull(line.value.trim()));
+        if (line.value.trim() && toNumber(line.value.trim()) == 0) {
+            errs.push("Line");
+        }
+
+        if (errs.length == 0) {
+            return true;
+        }
+
+        return "is invalid. " + errs.join(" and ") + " should be " + (errs.length == 1 ? "a number" : "numbers") + " greater than zero.";
+    }
+
+    // #endregion
+
+</script>

@@ -508,7 +508,7 @@ namespace Rock.Model
             }
 
             var views = qry
-                .SelectMany( t => t.TransactionDetails.Select( td => new
+                .SelectMany( t => t.TransactionDetails.Where(td => td.Account.IsTaxDeductible == true).Select( td => new
                 {
                     TransactionDateTime = t.TransactionDateTime.Value,
                     td.AccountId,

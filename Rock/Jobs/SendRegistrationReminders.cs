@@ -21,8 +21,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -39,8 +37,7 @@ namespace Rock.Jobs
     [Description( "Send any registration reminders that are due to be sent." )]
 
     [IntegerField( "Expire Date", "The number of days past the registration reminder to refrain from sending the email. This would only be used if something went wrong and acts like a safety net to prevent sending the reminder after the fact.", true, 1, key: "ExpireDate" )]
-    [DisallowConcurrentExecution]
-    public class SendRegistrationReminders : IJob
+    public class SendRegistrationReminders : RockJob
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunications"/> class.
@@ -49,15 +46,11 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
-            var expireDays = dataMap.GetString( "ExpireDate" ).AsIntegerOrNull() ?? 1;
+            
+            var expireDays = GetAttributeValue( "ExpireDate" ).AsIntegerOrNull() ?? 1;
             var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
 
             int remindersSent = 0;
@@ -128,15 +121,15 @@ namespace Rock.Jobs
 
                 if ( remindersSent == 0 )
                 {
-                    context.Result = "No reminders to send";
+                    this.Result = "No reminders to send";
                 }
                 else if ( remindersSent == 1 )
                 {
-                    context.Result = "1 reminder was sent";
+                    this.Result = "1 reminder was sent";
                 }
                 else
                 {
-                    context.Result = string.Format( "{0} reminders were sent", remindersSent );
+                    this.Result = string.Format( "{0} reminders were sent", remindersSent );
                 }
 
                 if ( errors.Any() )
@@ -146,7 +139,7 @@ namespace Rock.Jobs
                     sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
                     errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errorMessage = sb.ToString();
-                    context.Result += errorMessage;
+                    this.Result += errorMessage;
                     var exception = new Exception( errorMessage );
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( exception, context2 );

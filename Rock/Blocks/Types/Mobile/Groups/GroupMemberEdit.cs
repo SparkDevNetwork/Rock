@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -68,26 +68,34 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKeys.AllowMemberStatusChange,
         Order = 2 )]
 
+    [BooleanField( "Allow Communication Preference Change",
+        Description = "",
+        IsRequired = true,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.AllowCommunicationPreferenceChange,
+        Order = 3 )]
+
     [BooleanField( "Allow Note Edit",
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowNoteEdit,
-        Order = 3 )]
+        Order = 4 )]
 
     [AttributeCategoryField( "Attribute Category",
         Description = "Category of attributes to show and allow editing on.",
         IsRequired = false,
         EntityType = typeof( GroupMember ),
         Key = AttributeKeys.AttributeCategory,
-        Order = 4 )]
+        Order = 5 )]
 
     [LinkedPage( "Member Detail Page",
         Description = "The group member page to return to, if not set then the edit page is popped off the navigation stack.",
         IsRequired = false,
         Key = AttributeKeys.MemberDetailPage,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField( "Enable Delete",
         Description = "Will show or hide the delete button. This will either delete or archive the member depending on the group type configuration.",
@@ -95,14 +103,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableDelete,
-        Order = 6 )]
+        Order = 7 )]
 
     [MobileNavigationActionField( "Delete Navigation Action",
         Description = "The action to perform after the group member is deleted from the group.",
         IsRequired = false,
         DefaultValue = MobileNavigationActionFieldAttribute.PopSinglePageValue,
         Key = AttributeKeys.DeleteNavigationAction,
-        Order = 7 )]
+        Order = 8 )]
 
     #endregion
 
@@ -134,6 +142,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// The allow note edit
             /// </summary>
             public const string AllowNoteEdit = "AllowNoteEdit";
+
+            /// <summary>
+            /// The allow communication preference change key.
+            /// </summary>
+            public const string AllowCommunicationPreferenceChange = "AllowCommunicationPreferenceChange";
 
             /// <summary>
             /// The attribute category
@@ -184,6 +197,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
         ///   <c>true</c> if [allow role change]; otherwise, <c>false</c>.
         /// </value>
         protected bool AllowRoleChange => GetAttributeValue( AttributeKeys.AllowRoleChange ).AsBoolean();
+
+        /// <summary>
+        /// Gets a value indicating whether to allow communication preference change in the group member edit block.
+        /// </summary>
+        /// <value><c>true</c> if [allow communication preference change]; otherwise, <c>false</c>.</value>
+        protected bool AllowCommunicationPreferenceChange => GetAttributeValue( AttributeKeys.AllowCommunicationPreferenceChange ).AsBoolean();
 
         /// <summary>
         /// Gets a value indicating whether [allow member status change].
@@ -260,7 +279,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             //
             // Indicate that we are a dynamic content providing block.
             //
-            return new
+            return new 
             {
                 // Rock Mobile Shell below v1.2.1
                 Content = ( string ) null,
@@ -268,11 +287,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 // Rock Mobile Shell v1.2.1 and later
                 SupportedFeatures = new[] { "ClientLogic" },
-                AllowRoleChange,
-                AllowMemberStatusChange,
-                AllowNoteEdit,
-                MemberDetailPage,
-                DeleteNavigationAction
+                AllowRoleChange = AllowRoleChange,
+                AllowMemberStatusChange = AllowMemberStatusChange,
+                AllowNoteEdit = AllowNoteEdit,
+                MemberDetailPage = MemberDetailPage,
+                DeleteNavigationAction = DeleteNavigationAction,
+                AllowCommunicationPreferenceChange = AllowCommunicationPreferenceChange
             };
         }
 
@@ -398,6 +418,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     RoleGuid = member.GroupRole.Guid,
                     MemberStatus = member.GroupMemberStatus,
                     Note = member.Note,
+                    CommunicationPreference = member.CommunicationPreference
                 } );
             }
         }
@@ -440,6 +461,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     }
 
                     member.GroupRoleId = groupRole.Id;
+                }
+
+                // Verify and save the communication preference.
+                if( AllowCommunicationPreferenceChange )
+                {
+                    member.CommunicationPreference = groupMemberData.CommunicationPreference;
                 }
 
                 // Verify and save the member status.
@@ -672,7 +699,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             if ( AllowNoteEdit )
             {
-                sb.AppendLine( MobileHelper.GetSingleFieldXaml( MobileHelper.GetTextEditFieldXaml( "note", "Note", member.Note, false, true ) ) );
+                sb.AppendLine( MobileHelper.GetSingleFieldXaml( MobileHelper.GetTextEditFieldXaml( "note", "Note", member.Note, true, false, true ) ) );
                 parameters.Add( "note", "Text" );
             }
             else
@@ -801,18 +828,45 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region Action View Models
 
+        /// <summary>
+        /// Properties describing a successful member data result in the <see cref="GroupMemberEdit" /> block.
+        /// </summary>
         internal class GetMemberDataResult
         {
+            /// <summary>
+            /// Gets or sets the content of the header.
+            /// </summary>
+            /// <value>The content of the header.</value>
             public string HeaderContent { get; set; }
 
+            /// <summary>
+            /// Gets or sets the roles.
+            /// </summary>
+            /// <value>The roles.</value>
             public List<ListItemViewModel> Roles { get; set; }
 
-            public bool CanDelete { get; set; }
-
-            public bool CanArchive { get; set; }
-
+            /// <summary>
+            /// Gets or sets the fields.
+            /// </summary>
+            /// <value>The fields.</value>
             public List<MobileField> Fields { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can delete.
+            /// </summary>
+            /// <value><c>true</c> if this instance can delete; otherwise, <c>false</c>.</value>
+            public bool CanDelete { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can archive.
+            /// </summary>
+            /// <value><c>true</c> if this instance can archive; otherwise, <c>false</c>.</value>
+            public bool CanArchive { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>The name.</value>
             public string Name { get; set; }
 
             /// <summary>
@@ -832,6 +886,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// </summary>
             /// <value>The note.</value>
             public string Note { get; set; }
+
+            /// <summary>
+            /// Gets or sets the communication preference.
+            /// </summary>
+            /// <value>The communication preference.</value>
+            public CommunicationType CommunicationPreference { get; set; }
         }
 
         /// <summary>
@@ -861,8 +921,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// Gets or sets the field values.
             /// </summary>
             /// <value>The field values.</value>
-            /// <remarks>This contains the legacy pre-v13 attribute values.</remarks>
             public Dictionary<string, string> FieldValues { get; set; }
+
+            /// <summary>
+            /// Gets or sets the communication preference.
+            /// </summary>
+            /// <value>The communication preference.</value>
+            public CommunicationType CommunicationPreference { get; set; }
         }
 
         internal class ListItemViewModel

@@ -57,6 +57,14 @@ namespace Rock.ViewModels.Controls
         public string State { get; set; }
 
         /// <summary>
+        /// Gets or sets the locality.
+        /// </summary>
+        /// <value>
+        /// The locality/county.
+        /// </value>
+        public string Locality { get; set; }
+
+        /// <summary>
         /// Gets or sets the postal code.
         /// </summary>
         /// <value>

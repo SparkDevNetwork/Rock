@@ -44,7 +44,7 @@ export default defineComponent({
         rules: rulesPropType,
         modelValue: {
             type: Object as PropType<DatePartsPickerValue>,
-            required: true
+            required: false
         },
         requireYear: {
             type: Boolean as PropType<boolean>,
@@ -53,6 +53,10 @@ export default defineComponent({
         showYear: {
             type: Boolean as PropType<boolean>,
             default: true
+        },
+        hideDay: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
         allowFutureDates: {
             type: Boolean as PropType<boolean>,
@@ -120,16 +124,18 @@ export default defineComponent({
         computedRequireYear(): boolean {
             return this.showYear && this.requireYear;
         },
+
         internalDateKey (): string {
-            if (!this.modelValue.year && !this.computedRequireYear) {
-                const dateKey = DateKey.toNoYearDateKey(this.modelValue.month, this.modelValue.day);
+            if ((!this.modelValue?.year ?? 0) && !this.computedRequireYear) {
+                const dateKey = DateKey.toNoYearDateKey(this.modelValue?.month ?? 0, this.modelValue?.day ?? 0);
+                
                 return dateKey;
             }
 
-            const dateKey = DateKey.toDateKey(this.modelValue.year, this.modelValue.month, this.modelValue.day);
+            const dateKey = DateKey.toDateKey(this.modelValue?.year ?? 0, this.modelValue?.month ?? 0, this.modelValue?.day ?? 0);
             return dateKey;
         },
-        computedRules (): ValidationRule[] {
+        computedRules(): ValidationRule[] {
             const rules = normalizeRules(this.rules);
 
             if (rules.indexOf("required") !== -1 && rules.indexOf("datekey") === -1) {
@@ -138,7 +144,7 @@ export default defineComponent({
 
             return rules;
         },
-        years (): string[] {
+        years(): string[] {
             const years: string[] = [];
             let year = RockDateTime.now().year;
 
@@ -159,9 +165,9 @@ export default defineComponent({
         modelValue: {
             immediate: true,
             handler(): void {
-                this.internalDay = this.modelValue.day.toString();
-                this.internalMonth = this.modelValue.month.toString();
-                this.internalYear = this.modelValue.year.toString();
+                this.internalDay = this.modelValue?.day.toString() ?? "0";
+                this.internalMonth = this.modelValue?.month.toString() ?? "0";
+                this.internalYear = this.modelValue?.year.toString() ?? "0";
                 this.updateDays();
             }
         },
@@ -228,13 +234,13 @@ export default defineComponent({
                     <option value="11">Nov</option>
                     <option value="12">Dec</option>
                 </select>
-                <span class="separator">/</span>
-                <select :id="uniqueId + '-day'" class="form-control input-width-sm" v-model="internalDay">
+                <span v-if="!hideDay" class="separator">/</span>
+                <select v-if="!hideDay" :id="uniqueId + '-day'" class="form-control input-width-sm" :disabled="disabled" v-model="internalDay">
                     <option value="0"></option>
                     <option v-for="day in days" :key="day" :value="day">{{day}}</option>
                 </select>
                 <span v-if="showYear" class="separator">/</span>
-                <select v-if="showYear" :id="uniqueId + '-year'" class="form-control input-width-sm" v-model="internalYear">
+                <select v-if="showYear" :id="uniqueId + '-year'" class="form-control input-width-sm" :disabled="disabled" v-model="internalYear">
                     <option value="0"></option>
                     <option v-for="year in years" :value="year">{{year}}</option>
                 </select>

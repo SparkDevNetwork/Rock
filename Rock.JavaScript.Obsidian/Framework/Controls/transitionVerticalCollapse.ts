@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
+import { computed, defineComponent, PropType } from "vue";
 
 type CollapseState = {
     display: string;
@@ -28,10 +28,17 @@ type CollapseState = {
 export default defineComponent({
     name: "TransitionVerticalCollapse",
 
-    setup() {
+    props: {
+        speed: {
+            type: String as PropType<"normal" | "fast" | "slow">,
+            default: "normal"
+        }
+    },
+
+    setup(props) {
         /**
          * Called before the element begins to enter the DOM.
-         * 
+         *
          * @param element The element that will be entering the DOM.
          */
         const beforeEnter = (element: HTMLElement): void => {
@@ -63,7 +70,7 @@ export default defineComponent({
 
         /**
          * Called when the element has entered the DOM.
-         * 
+         *
          * @param element The element that has entered the DOM.
          */
         const enter = (element: HTMLElement): void => {
@@ -80,7 +87,7 @@ export default defineComponent({
 
         /**
          * Called after the element has entered the DOM and the animation has completed.
-         * 
+         *
          * @param element The element that entered the DOM.
          */
         const afterEnter = (element: HTMLElement): void => {
@@ -131,6 +138,9 @@ export default defineComponent({
             element.style.paddingBottom = "";
         };
 
+        // These transition speeds come from jQuery's hide/show "fast" and "slow" options.
+        const speed = computed<string>(() => props.speed == "fast" ? "0.2s" : props.speed == "slow" ? "0.6s" : "0.35s");
+
         return {
             afterEnter,
             afterLeave,
@@ -138,6 +148,7 @@ export default defineComponent({
             beforeLeave,
             enter,
             leave,
+            speed
         };
     },
 
@@ -147,7 +158,7 @@ export default defineComponent({
         .vertical-collapse-leave-active {
             overflow: hidden;
             transition-property: height, padding-top, padding-bottom;
-            transition-duration: 0.35s;
+            transition-duration: {{ speed }};
             transition-timing-function: ease-in-out;
         }
     </v-style>

@@ -13,7 +13,7 @@
                 <div class="panel-body pt-0">
                     <asp:Panel ID="pnlGiving" runat="server">
                         <div class="d-flex flex-wrap py-2">
-                            <div class="">
+                            <div>
                                 <Rock:Badge ID="bdgFirstGift" runat="server" BadgeType=" align-text-bottom" />
                                 <Rock:Badge ID="bdgLastGift" runat="server" BadgeType="success align-text-bottom" />
                             </div>

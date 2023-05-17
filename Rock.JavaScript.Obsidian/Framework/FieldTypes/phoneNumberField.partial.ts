@@ -16,8 +16,8 @@
 //
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
-import { formatPhoneNumber } from "@Obsidian/Utility/stringUtils";
 import { FieldTypeBase } from "./fieldType";
+import { formatPhoneNumber } from "@Obsidian/Utility/phone";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {

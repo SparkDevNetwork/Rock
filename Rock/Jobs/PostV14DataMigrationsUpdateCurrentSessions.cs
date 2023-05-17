@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
-using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -26,7 +24,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Run once job for v14 to update current sessions
     /// </summary>
-    [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v14.0 - Update current sessions." )]
     [Description( "This job will update the current sessions to have the duration of the session as well as the interaction count." )]
 
@@ -36,23 +33,18 @@ namespace Rock.Jobs
     Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
     IsRequired = false,
     DefaultIntegerValue = 240 * 60 )]
-    public class PostV14DataMigrationsUpdateCurrentSessions : IJob
+    public class PostV14DataMigrationsUpdateCurrentSessions : RockJob
     {
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the configured timeout, or default to 240 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
@@ -166,7 +158,7 @@ INNER JOIN (
 " );
             }
 
-            DeleteJob( context.GetJobId() );
+            DeleteJob( this.GetJobId() );
         }
 
         /// <summary>

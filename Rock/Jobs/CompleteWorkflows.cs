@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -36,8 +34,7 @@ namespace Rock.Jobs
     [WorkflowTypeField("Workflow Types", "The type of workflows to close.", true, true, order: 0 )]
     [TextField("Close Status", "The status to set the workflow to when closed.", true, "Completed", order: 1)]
     [IntegerField("Expiration Age", "The age in minutes that a workflow needs to be in order to close them.", false, order: 2)]
-    [DisallowConcurrentExecution]
-    public class CompleteWorkflows : IJob
+    public class CompleteWorkflows : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -50,20 +47,12 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Job that will close workflows.
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
-            var workflowTypeGuids = dataMap.GetString( "WorkflowTypes" ).Split(',').Select(Guid.Parse).ToList();
-            int? expirationAge = dataMap.GetString( "ExpirationAge" ).AsIntegerOrNull();
-            string closeStatus = dataMap.GetString( "CloseStatus" );
+            var workflowTypeGuids = GetAttributeValue( "WorkflowTypes" ).Split(',').Select(Guid.Parse).ToList();
+            int? expirationAge = GetAttributeValue( "ExpirationAge" ).AsIntegerOrNull();
+            string closeStatus = GetAttributeValue( "CloseStatus" );
 
             var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
@@ -100,7 +89,7 @@ namespace Rock.Jobs
                 rockContext.SaveChanges();
             }
 
-            context.Result = string.Format("{0} workflows were closed", workflowIds.Count);
+            this.Result = string.Format("{0} workflows were closed", workflowIds.Count);
         }
 
     }

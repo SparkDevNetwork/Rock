@@ -242,10 +242,41 @@ public class Lava : IHttpHandler
             .ToDictionary( h => h, h => request.Headers[h] );
         dictionary.Add( "Headers", headers );
 
-        // Add the cookies
         try
         {
-            dictionary.Add( "Cookies", request.Cookies.Cast<string>().ToDictionary( q => q, q => request.Cookies[q].Value ) );
+            // Add the cookies. We need to check each cookie before adding in case there is more than one cookie with the same name.
+            List<HttpCookie> cookies = new List<HttpCookie>();
+            for (var i = 0; i < request.Cookies.Count; i++)
+            {
+                cookies.Add( request.Cookies[i] );
+            }
+
+            var cookieDictionary = new Dictionary<string, HttpCookie>();
+
+            foreach( var cookie in cookies )
+            {
+                if ( cookieDictionary.ContainsKey( cookie.Name ) )
+                {
+                    // log error
+                    var cookieFromDictionary = cookieDictionary.GetValueOrNull( cookie.Name );
+                    WriteToLog( $"Cookie Name {cookie.Name} has a duplicate. The cookies should be cleared on the requester." );
+                    if ( cookie.Value == cookieFromDictionary.Value )
+                    {
+                        WriteToLog( "The duplicate cookies have the same value." );
+                    }
+                    else
+                    {
+                        WriteToLog( $"Cookie with path {cookieFromDictionary.Path} and value {cookieFromDictionary.Value} was used " );
+                        WriteToLog( $"Cookie with path {cookie.Path} and value {cookie.Value} was not used." );
+                    }
+
+                    continue;
+                }
+
+                cookieDictionary.Add( cookie.Name, cookie );
+            }
+
+            dictionary.Add( "Cookies", cookieDictionary );
         }
         catch { }
 

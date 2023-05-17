@@ -100,7 +100,6 @@ namespace Rock.Tests.UnitTests.Lava
         /// Serializing and Deserializing a type derived from RockDynamic should produce a consistent result.
         /// </summary>
         [TestMethod]
-        [Ignore( "RockDynamic does not correctly handle round-tripping for dynamically-defined members." )]
         public void RockDynamicType_SerializeDeserialize_CanRoundtrip()
         {
             var dynamicObject = RockDynamicObjectWithCustomPropertyAccess.NewWithData();

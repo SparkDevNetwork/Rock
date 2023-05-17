@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Communication;
@@ -71,8 +69,7 @@ namespace Rock.Jobs
         Order = 4
         )]
 
-    [DisallowConcurrentExecution]
-    public class SendCreditCardExpirationNotices : IJob
+    public class SendCreditCardExpirationNotices : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -96,19 +93,16 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            context.Result = string.Empty;
+            this.Result = string.Empty;
             StringBuilder jobSummaryBuilder = new StringBuilder();
             jobSummaryBuilder.AppendLine( "Summary:" );
             jobSummaryBuilder.AppendLine( string.Empty );
 
             // Send emails.
-            SendExpiredCreditCardNoticesResult sendExpiredCreditCardNoticesResult = SendExpiredCreditCardNotices( context );
+            SendExpiredCreditCardNoticesResult sendExpiredCreditCardNoticesResult = SendExpiredCreditCardNotices();
             jobSummaryBuilder.AppendLine( $"{sendExpiredCreditCardNoticesResult.ExaminedCount} scheduled credit card transaction(s) were examined." );
 
             // Report any email send successes.
@@ -117,7 +111,7 @@ namespace Rock.Jobs
                 jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {sendExpiredCreditCardNoticesResult.NoticesSentCount } notice(s) sent." );
             }
 
-            context.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
+            this.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
 
             // Combine all Exceptions encoutered along the way; we'll roll them into an AggregateException below.
             var innerExceptions = new List<Exception>();
@@ -126,26 +120,26 @@ namespace Rock.Jobs
             if ( sendExpiredCreditCardNoticesResult.EmailSendExceptions.Any() )
             {
                 jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {sendExpiredCreditCardNoticesResult.EmailSendExceptions.Count()} error(s) occurred when sending expired credit card notice(s). See exception log for details." );
-                context.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
+                this.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
 
                 innerExceptions.AddRange( sendExpiredCreditCardNoticesResult.EmailSendExceptions );
             }
 
             // Remove expired, saved accounts.
-            var removeExpiredSavedAccountsResult = RemoveExpiredSavedAccounts( context );
+            var removeExpiredSavedAccountsResult = RemoveExpiredSavedAccounts();
 
             // Report any account removal successes.
             if ( removeExpiredSavedAccountsResult.AccountsDeletedCount > 0 )
             {
                 jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {removeExpiredSavedAccountsResult.AccountsDeletedCount} saved account(s) that expired before {removeExpiredSavedAccountsResult.DeleteIfExpiredBeforeDate.ToShortDateString()} removed." );
-                context.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
+                this.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
             }
 
             // Report any account removal failures.
             if ( removeExpiredSavedAccountsResult.AccountRemovalExceptions.Any() )
             {
                 jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {removeExpiredSavedAccountsResult.AccountRemovalExceptions.Count()} error(s) occurred when removing saved, expired account(s). See exception log for details." );
-                context.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
+                this.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
 
                 innerExceptions.AddRange( removeExpiredSavedAccountsResult.AccountRemovalExceptions );
             }
@@ -160,13 +154,12 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Removes any expired saved accounts (if <see cref="AttributeKey.RemovedExpiredSavedAccountDays"/> is set)
+        /// Removes any expired saved accounts (if <see cref="AttributeKey.RemovedExpiredSavedAccountDays" /> is set)
         /// </summary>
-        /// <param name="context">The context.</param>
-        private FinancialPersonSavedAccountService.RemoveExpiredSavedAccountsResult RemoveExpiredSavedAccounts( IJobExecutionContext context )
+        /// <returns>FinancialPersonSavedAccountService.RemoveExpiredSavedAccountsResult.</returns>
+        private FinancialPersonSavedAccountService.RemoveExpiredSavedAccountsResult RemoveExpiredSavedAccounts()
         {
-            var dataMap = context.JobDetail.JobDataMap;
-            int? removedExpiredSavedAccountDays = dataMap.GetString( AttributeKey.RemovedExpiredSavedAccountDays ).AsIntegerOrNull();
+            int? removedExpiredSavedAccountDays = GetAttributeValue( AttributeKey.RemovedExpiredSavedAccountDays ).AsIntegerOrNull();
 
             if ( !removedExpiredSavedAccountDays.HasValue )
             {
@@ -180,16 +173,14 @@ namespace Rock.Jobs
         /// <summary>
         /// Sends the expired credit card notices.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="Exception">Expiring credit card email is missing.</exception>
-        private SendExpiredCreditCardNoticesResult SendExpiredCreditCardNotices( IJobExecutionContext context )
+        private SendExpiredCreditCardNoticesResult SendExpiredCreditCardNotices()
         {
-            var dataMap = context.JobDetail.JobDataMap;
             var rockContext = new RockContext();
 
             // Get the details for the email that we'll be sending out.
-            Guid? systemEmailGuid = dataMap.GetString( AttributeKey.ExpiringCreditCardEmail ).AsGuidOrNull();
+            Guid? systemEmailGuid = GetAttributeValue( AttributeKey.ExpiringCreditCardEmail ).AsGuidOrNull();
             SystemCommunication systemCommunication = null;
 
             if ( systemEmailGuid.HasValue )
@@ -199,7 +190,7 @@ namespace Rock.Jobs
             }
 
             // Fetch the configured Workflow once if one was set, we'll use it later.
-            Guid? workflowGuid = dataMap.GetString( AttributeKey.Workflow ).AsGuidOrNull();
+            Guid? workflowGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
             WorkflowTypeCache workflowType = null;
             WorkflowService workflowService = new WorkflowService( rockContext );
             if ( workflowGuid != null )
@@ -233,7 +224,7 @@ namespace Rock.Jobs
             };
 
             // get attibute value, so we don't have to keep calling it for every person,
-            bool enableSendingEvent = dataMap.GetString( AttributeKey.EnableSendingBusEvent ).AsBoolean();
+            bool enableSendingEvent = GetAttributeValue( AttributeKey.EnableSendingBusEvent ).AsBoolean();
 
             foreach ( ScheduledTransactionInfo scheduledTransactionInfo in scheduledTransactionInfoList.OrderByDescending( a => a.Id ) )
             {

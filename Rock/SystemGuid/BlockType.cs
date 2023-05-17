@@ -401,6 +401,30 @@ namespace Rock.SystemGuid
 
         #endregion Reporting Block Types
 
+        #region Reminder Block Types
+
+        /// <summary>
+        /// The reminder edit block.
+        /// </summary>
+        public const string REMINDER_EDIT = "7CE0E052-1400-4AC1-8AE0-ABF770A1B11E";
+
+        /// <summary>
+        /// The reminder links block.
+        /// </summary>
+        public const string REMINDER_LINKS = "EC59B6D6-5CA1-4367-9109-CDDC92357D35";
+
+        /// <summary>
+        /// The reminder list block.
+        /// </summary>
+        public const string REMINDER_LIST = "FC8DC018-C702-4A23-81BA-DF9DD6008CB6";
+
+        /// <summary>
+        /// The reminder types block.
+        /// </summary>
+        public const string REMINDER_TYPES = "E4161700-6882-4A50-B362-8E4C8F37C79D";
+
+        #endregion Reminder Block Types
+
         /// <summary>
         /// The contribution statement lava (Legacy)
         /// </summary>

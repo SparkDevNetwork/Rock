@@ -86,6 +86,7 @@ namespace Rock.Model
                 IdKey = model.IdKey,
                 AcceptConfirmationMessage = model.AcceptConfirmationMessage,
                 AnonymousAttendanceCount = model.AnonymousAttendanceCount,
+                AttendanceReminderLastSentDateTime = model.AttendanceReminderLastSentDateTime,
                 AttendanceTypeValueId = model.AttendanceTypeValueId,
                 DeclineConfirmationMessage = model.DeclineConfirmationMessage,
                 DeclineReasonValueIds = model.DeclineReasonValueIds,
@@ -170,6 +171,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AcceptConfirmationMessage = source.AcceptConfirmationMessage;
             target.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
+            target.AttendanceReminderLastSentDateTime = source.AttendanceReminderLastSentDateTime;
             target.AttendanceTypeValueId = source.AttendanceTypeValueId;
             target.DeclineConfirmationMessage = source.DeclineConfirmationMessage;
             target.DeclineReasonValueIds = source.DeclineReasonValueIds;

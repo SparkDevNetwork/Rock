@@ -22,7 +22,7 @@ namespace Rock.PersonProfile
     /// MEF Container class for Badge Components
     /// </summary>
     [RockObsolete( "1.10" )]
-    [Obsolete( "Rock.PersonProfile namespace will be removed, use the Rock.Badge namespace instead.", false )]
+    [Obsolete( "Rock.PersonProfile namespace will be removed, use the Rock.Badge namespace instead.", true )]
     public class BadgeContainer : Rock.Badge.BadgeContainer
     {
     }

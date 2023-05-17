@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Threading.Tasks;
@@ -549,6 +550,7 @@ namespace Rock.Model
 
             // Load all occurrences in a single query.
             var occurrences = Queryable()
+                .Include( o => o.InteractiveExperienceSchedule )
                 .Where( o => occurrenceIds.Contains( o.Id ) )
                 .ToList();
 
@@ -568,6 +570,7 @@ namespace Rock.Model
                 // occurrences. So to make sure we don't perform requirements
                 // checks those additional times, group by the schedule id.
                 var scheduleGroups = occurrences
+                    .Where( o => o.InteractiveExperienceSchedule.InteractiveExperienceId == experience.Id )
                     .GroupBy( o => o.InteractiveExperienceScheduleId )
                     .ToList();
 

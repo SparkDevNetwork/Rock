@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System.Collections.Concurrent;
-
 using Rock.Net;
 
 namespace Rock.RealTime
@@ -32,7 +30,7 @@ namespace Rock.RealTime
         /// to inform topics when a client disconnects.
         /// </summary>
         /// <value>The topics this connection has connected to.</value>
-        public ConcurrentDictionary<string, bool> ConnectedTopics { get; } = new ConcurrentDictionary<string, bool>();
+        public ConcurrentTopicChannels ConnectedTopics { get; } = new ConcurrentTopicChannels();
 
         /// <summary>
         /// Gets or sets the request representing the original connection.

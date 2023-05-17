@@ -78,7 +78,7 @@ namespace Rock.ViewModels.Entities
         /// 
         /// <item>
         ///     <term>Page Views</term>
-        ///     <description><see cref="T:Rock.Model.Site" /> Id</description></item>
+        ///     <description><see cref="T:Rock.Model.Page" /> Id</description></item>
         /// <item>
         ///     <term>Communication Recipient Activity</term>
         ///     <description><see cref="T:Rock.Model.Communication" /> Id</description></item>

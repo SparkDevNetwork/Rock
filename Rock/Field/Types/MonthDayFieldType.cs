@@ -16,8 +16,9 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -32,7 +33,8 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MONTH_DAY )]
     public class MonthDayFieldType : FieldType
     {
-        #region Edit Control
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -103,6 +105,7 @@ namespace Rock.Field.Types
             }
         }
 
+#endif
         #endregion
     }
 }

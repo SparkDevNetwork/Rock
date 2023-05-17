@@ -16,7 +16,7 @@
 //
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";

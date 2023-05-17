@@ -29,7 +29,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets or sets the person id.
         /// </summary>
-        /// <value>
+        /// <value>-
         /// The person id.
         /// </value>
         public int PersonId
@@ -124,6 +124,7 @@ namespace Rock.Web.UI.Controls
         trigger: 'manual',
         delay: 500,
         html: true,
+        sanitize: false,
         content: function() {
             var dataUrl = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  $(this).attr('personid');
 
@@ -149,7 +150,7 @@ namespace Rock.Web.UI.Controls
         var _this = this;
         setTimeout(function () {
             if (!$('.popover:hover').length) {
-                $(_this).popover('hide')
+                //$(_this).popover('hide')
             }
         }, 100);
     });

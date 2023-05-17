@@ -210,10 +210,20 @@ namespace Rock.Lava
         /// <returns></returns>
         public static DateTime ConvertToRockDateTime( DateTime dateTime )
         {
-            var rockDateTime = TimeZoneInfo.ConvertTime( dateTime, RockDateTime.OrgTimeZoneInfo );
+            DateTime rockDateTime;
 
-            // Return the Rock datetime with a kind of Unspecified, because it does not necessarily correspond to local system time.
-            rockDateTime = DateTime.SpecifyKind( rockDateTime, DateTimeKind.Unspecified );
+            if ( dateTime.Kind == DateTimeKind.Utc || dateTime.Kind == DateTimeKind.Local )
+            {
+                rockDateTime = TimeZoneInfo.ConvertTime( dateTime, RockDateTime.OrgTimeZoneInfo );
+
+                // Return the Rock datetime with a kind of Unspecified, because it does not necessarily correspond to local system time.
+                rockDateTime = DateTime.SpecifyKind( rockDateTime, DateTimeKind.Unspecified );
+            }
+            else
+            {
+                // Assume an Unspecified Date Kind refers to the Rock timezone.
+                rockDateTime = dateTime;
+            }
 
             return rockDateTime;
         }

@@ -19,16 +19,22 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Http;
+using Rock.Attribute;
 using Rock.Badge;
 using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Extension;
+using Rock.Field.Types;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Controls;
@@ -36,7 +42,9 @@ using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 using Rock.Utility;
+using Rock.Workflow;
 
 namespace Rock.Rest.v2
 {
@@ -74,6 +82,211 @@ namespace Rock.Rest.v2
 
                 return Ok( items );
             }
+        }
+
+        #endregion
+
+        #region Address Control
+
+        /// <summary>
+        /// Validates the given address and returns the string representation of the address
+        /// </summary>
+        /// <param name="options">Address details to validate</param>
+        /// <returns>Validation information and a single string representation of the address</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AddressControlGetConfiguration" )]
+        [Rock.SystemGuid.RestActionGuid( "b477fb6d-4a35-45ec-ac98-b6b5c3727375" )]
+        public IHttpActionResult AddressControlGetConfiguration( [FromBody] AddressControlGetConfigurationOptionsBag options )
+        {
+            var globalAttributesCache = GlobalAttributesCache.Get();
+            var showCountrySelection = globalAttributesCache.GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull() ?? false;
+
+            var orgCountryCode = globalAttributesCache.OrganizationCountry;
+            var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
+            var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? "US" : options.CountryCode;
+
+            var orgStateCode = globalAttributesCache.OrganizationState;
+            var defaultStateCode = countryCode == orgCountryCode ? orgStateCode : string.Empty;
+
+
+            // Generate List of Countries
+            var countries = new List<ListItemBag>();
+            if (showCountrySelection)
+            {
+                var countryValues = DefinedTypeCache.Get( SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
+                    .DefinedValues
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .ToList();
+
+                // Move default country to the top of the list
+                if ( !string.IsNullOrWhiteSpace( defaultCountryCode ) )
+                {
+                    var defaultCountry = countryValues
+                        .Where( v => v.Value.Equals( defaultCountryCode, StringComparison.OrdinalIgnoreCase ) )
+                        .FirstOrDefault();
+                    if ( defaultCountry != null )
+                    {
+                        countries.Add( new ListItemBag { Text = "Countries", Value = string.Empty } );
+                        countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, Value = defaultCountry.Value } );
+                        countries.Add( new ListItemBag { Text = "------------------------", Value = "------------------------" } );
+                    }
+                }
+
+                foreach ( var country in countryValues )
+                {
+                    countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? country.Value : country.Description, Value = country.Value } );
+                }
+            }
+
+            // Generate List of States
+            string countryGuid = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                .DefinedValues
+                .Where( v => v.Value.Equals( countryCode, StringComparison.OrdinalIgnoreCase ) )
+                .Select( v => v.Guid )
+                .FirstOrDefault()
+                .ToString();
+
+            List<ListItemBag> states = null;
+            var hasStateList = false;
+
+            if ( countryGuid.IsNotNullOrWhiteSpace() )
+            {
+                var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
+
+                states = definedType
+                    .DefinedValues
+                    .Where( v =>
+                        (
+                            v.AttributeValues.ContainsKey( "Country" ) &&
+                            v.AttributeValues["Country"] != null &&
+                            v.AttributeValues["Country"].Value.Equals( countryGuid, StringComparison.OrdinalIgnoreCase )
+                        ) ||
+                        (
+                            ( !v.AttributeValues.ContainsKey( "Country" ) || v.AttributeValues["Country"] == null ) &&
+                            v.Attributes.ContainsKey( "Country" ) &&
+                            v.Attributes["Country"].DefaultValue.Equals( countryGuid, StringComparison.OrdinalIgnoreCase )
+                        ) )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .Select( v => new ListItemBag { Value = v.Value, Text = v.Value } )
+                    .ToList();
+
+                hasStateList = states.Any();
+            }
+
+            // Get Labels and Validation Rules
+            string cityLabel = null;
+            string localityLabel = null;
+            string stateLabel = null;
+            string postalCodeLabel = null;
+            DataEntryRequirementLevelSpecifier addressLine1Requirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier addressLine2Requirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier cityRequirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier localityRequirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier stateRequirement = DataEntryRequirementLevelSpecifier.Optional;
+            DataEntryRequirementLevelSpecifier postalCodeRequirement = DataEntryRequirementLevelSpecifier.Optional;
+
+
+            var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                .DefinedValues
+                .Where( v => v.Value.Equals( countryCode, StringComparison.OrdinalIgnoreCase ) )
+                .FirstOrDefault();
+
+            if (countryValue != null)
+            {
+                cityLabel = countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressCityLabel ).ToStringOrDefault( "City" );
+                localityLabel = countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressLocalityLabel ).ToStringOrDefault( "Locality" );
+                stateLabel = countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressStateLabel ).ToStringOrDefault( "State" );
+                postalCodeLabel = countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressPostalCodeLabel ).ToStringOrDefault( "Postal Code" );
+
+                var requirementField = new DataEntryRequirementLevelFieldType();
+
+                addressLine1Requirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressLine1Requirement ), DataEntryRequirementLevelSpecifier.Optional );
+                addressLine2Requirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressLine2Requirement ), DataEntryRequirementLevelSpecifier.Optional );
+                cityRequirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressCityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                localityRequirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressLocalityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                stateRequirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressStateRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                postalCodeRequirement = requirementField.GetDeserializedValue(countryValue.GetAttributeValue(SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+            }
+
+            return Ok( new AddressControlConfigurationBag
+            {
+                ShowCountrySelection = showCountrySelection,
+                DefaultCountry = defaultCountryCode,
+                DefaultState = defaultStateCode,
+                Countries = countries,
+                States = states,
+
+                HasStateList = hasStateList,
+                SelectedCountry = countryCode,
+
+                CityLabel = cityLabel,
+                LocalityLabel = localityLabel,
+                StateLabel = stateLabel,
+                PostalCodeLabel = postalCodeLabel,
+
+                AddressLine1Requirement = (RequirementLevel) addressLine1Requirement,
+                AddressLine2Requirement = ( RequirementLevel ) addressLine2Requirement,
+                CityRequirement = (RequirementLevel) cityRequirement,
+                LocalityRequirement = (RequirementLevel) localityRequirement,
+                StateRequirement = (RequirementLevel) stateRequirement,
+                PostalCodeRequirement = (RequirementLevel) postalCodeRequirement,
+            } );
+        }
+
+        /// <summary>
+        /// Validates the given address and returns the string representation of the address
+        /// </summary>
+        /// <param name="options">Address details to validate</param>
+        /// <returns>Validation information and a single string representation of the address</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AddressControlValidateAddress" )]
+        [Rock.SystemGuid.RestActionGuid( "ff879ea7-07dd-43ec-a5de-26f55e9f073a" )]
+        public IHttpActionResult AddressControlValidateAddress( [FromBody] AddressControlValidateAddressOptionsBag options )
+        {
+            var editedLocation = new Location();
+            string errorMessage = null;
+            string addressString = null;
+
+            editedLocation.Street1 = options.Street1;
+            editedLocation.Street2 = options.Street2;
+            editedLocation.City = options.City;
+            editedLocation.State = options.State;
+            editedLocation.PostalCode = options.PostalCode;
+            editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : "US";
+
+            var locationService = new LocationService( new RockContext() );
+
+            string validationMessage;
+
+            var isValid = LocationService.ValidateLocationAddressRequirements( editedLocation, out validationMessage );
+
+            if ( !isValid )
+            {
+                errorMessage = validationMessage;
+            }
+            else
+            {
+                editedLocation = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
+                addressString = editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+            }
+
+            return Ok( new AddressControlValidateAddressResultsBag
+            {
+                ErrorMessage = errorMessage,
+                IsValid = isValid,
+                AddressString = addressString,
+                Address = new AddressControlBag
+                {
+                    Street1 = editedLocation.Street1,
+                    Street2 = editedLocation.Street2,
+                    City = editedLocation.City,
+                    State = editedLocation.State,
+                    PostalCode = editedLocation.PostalCode,
+                    Country = editedLocation.Country
+                }
+            } );
         }
 
         #endregion
@@ -424,6 +637,184 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Categorized Value Picker
+
+        /// <summary>
+        /// Gets the child items that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "CategorizedValuePickerGetTree" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9294f070-e8c8-48da-bd50-076f26200d75" )]
+        public IHttpActionResult CategorizedValuePickerGetTree( [FromBody] CategorizedValuePickerGetTreeOptionsBag options )
+        {
+
+            // NO Parent -> get roots using DefinedTypeGuid
+            // Parent -> get children of ParentGuid
+            // Eliminate values not in the LimitTo list
+
+            if ( options.DefinedTypeGuid == null )
+            {
+                return BadRequest( "Please provide a Defined Type GUID" );
+            }
+
+            // Get the Defined Type and associated values.
+            var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+
+            if ( definedType == null || !definedType.IsActive )
+            {
+                return BadRequest( "Please provide a valid Defined Type GUID" );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+
+                var definedValueService = new DefinedValueService( rockContext );
+                var definedValues = definedValueService.GetByDefinedTypeGuid( options.DefinedTypeGuid )
+                    .Where( x => x.IsActive )
+                    .OrderBy( x => x.Order )
+                    .ToList();
+
+                // Filter the selectable values.
+                if ( options.OnlyIncludeGuids != null && options.OnlyIncludeGuids.Any() )
+                {
+                    definedValues = definedValues.Where( x => options.OnlyIncludeGuids.Contains( x.Guid ) ).ToList();
+                }
+
+                if ( !definedValues.Any() )
+                {
+                    return NotFound();
+                }
+
+                // Get a list of the Categories associated with the Defined Values.
+                var categories = new Dictionary<int, Category>();
+                var definedValueCategoryIdList = new List<int>();
+
+                foreach ( var definedValue in definedValues )
+                {
+                    if ( definedValue.CategoryId != null )
+                    {
+                        if ( !definedValueCategoryIdList.Contains( definedValue.CategoryId.Value ) )
+                        {
+                            definedValueCategoryIdList.Add( definedValue.CategoryId.Value );
+                        }
+                    }
+                }
+
+                // Retrieve the Category details, including any parent categories required to build the selection tree.
+                var categoryService = new CategoryService( rockContext );
+
+                foreach ( var categoryId in definedValueCategoryIdList )
+                {
+                    // If this category already exists in the categories list, ignore it as an ancestor of a previous category.
+                    if ( categories.ContainsKey( categoryId ) )
+                    {
+                        continue;
+                    }
+
+                    var ancestors = categoryService.GetAllAncestors( categoryId ).ToList();
+                    foreach ( var ancestor in ancestors )
+                    {
+                        if ( !categories.ContainsKey( ancestor.Id ) )
+                        {
+                            categories.Add( ancestor.Id, ancestor );
+                        }
+                    }
+                }
+
+                var categoryItems = new List<CategorizedValuePickerNodeBag>();
+
+                // Create a selection tree structure from the Categories.
+                // Categories are created with a placeholder label which will be replaced by applying the naming rules.
+                foreach ( var category in categories.Values )
+                {
+                    var listItem = new CategorizedValuePickerNodeBag
+                    {
+                        Value = category.Guid.ToString(),
+                        Text = category.Name,
+                        ChildCategories = new List<CategorizedValuePickerNodeBag>(),
+                        ChildValues = new List<CategorizedValuePickerNodeBag>()
+                    };
+
+                    categoryItems.Add( listItem );
+                }
+
+                var root = new CategorizedValuePickerNodeBag
+                {
+                    Value = null,
+                    Text = definedType.Name,
+                    ChildCategories = new List<CategorizedValuePickerNodeBag>(),
+                    ChildValues = new List<CategorizedValuePickerNodeBag>()
+                };
+
+                // Go through the categories and add child categories as children of their parents
+                foreach ( var category in categories.Values )
+                {
+                    var listItem = categoryItems.Find( c => c.Value == category.Guid.ToString() );
+
+                    // No parent? Throw it at the root of the list
+                    if ( category.ParentCategory == null )
+                    {
+                        root.ChildCategories.Add( listItem );
+                    }
+                    // Has a parent. Add it as a child of its parent
+                    else
+                    {
+                        var parent = categoryItems.Find( c => c.Value == category.ParentCategory.Guid.ToString() );
+
+                        parent.ChildCategories.Add( listItem );
+                    }
+                }
+
+                // Go through the defined values and add them as children of their categories
+                foreach ( var definedValue in definedValues )
+                {
+                    var listItem = new CategorizedValuePickerNodeBag
+                    {
+                        Value = definedValue.Guid.ToString(),
+                        Text = definedValue.Value
+                    };
+
+                    // No category? Throw it at the root of the list
+                    if ( definedValue.Category == null )
+                    {
+                        AddDefinedValueToCategoryAndChildCategories( listItem, root );
+                    }
+                    // Has a category. Add it as a child of its category
+                    else
+                    {
+                        var category = categoryItems.Find( c => c.Value == definedValue.Category.Guid.ToString() );
+                        AddDefinedValueToCategoryAndChildCategories( listItem, category );
+                    }
+                }
+
+                return Ok( new CategorizedValuePickerGetTreeResultsBag {
+                    Tree = root,
+                    DefinedType = definedType.Name
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Adds the defined value to its category and all child categories of that category. It's added to the children
+        /// to facilitate the picker showing values from ancestors.
+        /// </summary>
+        /// <param name="definedValue">The defined value.</param>
+        /// <param name="category">The category node.</param>
+        private void AddDefinedValueToCategoryAndChildCategories( CategorizedValuePickerNodeBag definedValue, CategorizedValuePickerNodeBag category )
+        {
+            category.ChildValues.Add( definedValue );
+            foreach ( var childCat in category.ChildCategories )
+            {
+                AddDefinedValueToCategoryAndChildCategories( definedValue, childCat );
+            }
+        }
+
+        #endregion
+
         #region Category Picker
 
         private static readonly Regex QualifierValueLookupRegex = new Regex( "^{EL:((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12})):((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12}))}$", RegexOptions.IgnoreCase );
@@ -526,6 +917,251 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Connection Request Picker
+
+        /// <summary>
+        /// Gets the data views and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which data views to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of data views.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ConnectionRequestPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "5316914b-cf47-4dac-9e10-71767fdf1eb9" )]
+        public IHttpActionResult ConnectionRequestPickerGetChildren( [FromBody] ConnectionRequestPickerGetChildrenOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            using ( var rockContext = new RockContext() )
+            {
+                string service = null;
+
+                /*
+                 * Determine what type of resource the GUID we received is so we know what types of 
+                 * children to query for.
+                 */
+                if (options.ParentGuid == null)
+                {
+                    // Get the root Connection Types
+                    service = "type";
+                }
+                else
+                {
+                    var conOpp = new ConnectionOpportunityService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( op => op.Guid == options.ParentGuid )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    if (conOpp.Any())
+                    {
+                        // Get the Connection Requests
+                        service = "request";
+                    }
+                    else
+                    {
+                        var conType = new ConnectionTypeService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( t => t.Guid == options.ParentGuid )
+                            .ToList()
+                            .Where( t => t.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( t, Authorization.VIEW ) == true );
+
+                        if (conType.Any() )
+                        {
+                            // Get the Connection Opportunities
+                            service = "opportunity";
+                        }
+                    }
+                }
+
+                /*
+                 * Fetch the children
+                 */
+                var list = new List<TreeItemBag>();
+
+                if (service == "type")
+                {
+                    // Get the Connection Types
+                    var connectionTypes = new ConnectionTypeService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .OrderBy( ct => ct.Name )
+                        .ToList()
+                        .Where( ct => ct.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( ct, Authorization.VIEW ) == true );
+
+                    foreach ( var connectionType in connectionTypes)
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = connectionType.Guid.ToString();
+                        item.Text = connectionType.Name;
+                        item.HasChildren = connectionType.ConnectionOpportunities.Any();
+                        item.IconCssClass = connectionType.IconCssClass;
+                        list.Add( item );
+                    }
+                }
+                else if (service == "opportunity")
+                {
+                    // Get the Connection Opportunities
+                    var opportunities = new ConnectionOpportunityService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( op => op.ConnectionType.Guid == options.ParentGuid )
+                        .OrderBy( op => op.Name )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    foreach ( var opportunity in opportunities )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = opportunity.Guid.ToString();
+                        item.Text = opportunity.Name;
+                        item.HasChildren = opportunity.ConnectionRequests
+                            .Any( r =>
+                                r.ConnectionState == ConnectionState.Active ||
+                                r.ConnectionState == ConnectionState.FutureFollowUp );
+                        item.IconCssClass = opportunity.IconCssClass;
+                        list.Add( item );
+                    }
+                }
+                else if ( service == "request" )
+                {
+                    var requests = new ConnectionRequestService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( r =>
+                            r.ConnectionOpportunity.Guid == options.ParentGuid &&
+                            r.PersonAlias != null &&
+                            r.PersonAlias.Person != null )
+                        .OrderBy( r => r.PersonAlias.Person.LastName )
+                        .ThenBy( r => r.PersonAlias.Person.NickName )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    foreach ( var request in requests )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = request.Guid.ToString();
+                        item.Text = request.PersonAlias.Person.FullName;
+                        item.HasChildren = false;
+                        item.IconCssClass = "fa fa-user";
+                        list.Add( item );
+                    }
+                }
+                else
+                {
+                    // service type wasn't set, so we don't know where to look
+                    return NotFound();
+                }
+
+                return Ok( list );
+            }
+        }
+
+        #endregion
+
+        #region Content Channel Item Picker
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannels" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2182388d-ccae-44df-a0de-597b8d123666" )]
+        public IHttpActionResult ContentChannelItemPickerGetContentChannels()
+        {
+            var contentChannels = ContentChannelCache.All()
+                .OrderBy( cc => cc.Name )
+                .Select( cc => new ListItemBag { Text = cc.Name, Value = cc.Guid.ToString() } )
+                .ToList();
+
+            return Ok( contentChannels );
+        }
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannelItems" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "e1f6ad6b-c3f5-4a1a-abc2-46726732daee" )]
+        public IHttpActionResult ContentChannelItemPickerGetContentChannelItems( [FromBody] ContentChannelItemPickerGetContentChannelItemsOptionsBag options )
+        {
+            return Ok( ContentChannelItemPickerGetContentChannelItemsForContentChannel( options.ContentChannelGuid, options.ExcludeContentChannelItems ) );
+        }
+
+        /// <summary>
+        /// Gets the content channel items and content channel information based on a selected content channel item.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>All the data for the selected role, selected type, and all of the content channel items</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ContentChannelItemPickerGetAllForContentChannelItem" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "ef6d055f-38b1-4225-b95f-cfe703f4d425" )]
+        public IHttpActionResult ContentChannelItemPickerGetAllForContentChannelItem( [FromBody] ContentChannelItemPickerGetAllForContentChannelItemOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                List<Guid> excludeContentChannelItems = options.ExcludeContentChannelItems;
+
+                var contentChannelItemService = new Rock.Model.ContentChannelItemService( rockContext );
+                var contentChannelItem = contentChannelItemService.Queryable()
+                    .Where( cc => cc.Guid == options.ContentChannelItemGuid )
+                    .First();
+
+                var contentChannel = contentChannelItem.ContentChannel;
+
+                var contentChannelItems = ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannel.Guid, excludeContentChannelItems, rockContext );
+
+                return Ok( new ContentChannelItemPickerGetAllForContentChannelItemResultsBag
+                {
+                    SelectedContentChannelItem = new ListItemBag { Text = contentChannelItem.Title, Value = contentChannelItem.Guid.ToString() },
+                    SelectedContentChannel = new ListItemBag { Text = contentChannel.Name, Value = contentChannel.Guid.ToString() },
+                    ContentChannelItems = contentChannelItems
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="contentChannelGuid">Load content channel items of this type</param>
+        /// <param name="excludeContentChannelItems">Do not include these items in the result</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        private List<ListItemBag> ContentChannelItemPickerGetContentChannelItemsForContentChannel( Guid contentChannelGuid, List<Guid> excludeContentChannelItems )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return ContentChannelItemPickerGetContentChannelItemsForContentChannel( contentChannelGuid, excludeContentChannelItems, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the content channel items that can be displayed in the content channel item picker.
+        /// </summary>
+        /// <param name="contentChannelGuid">Load content channel items of this type</param>
+        /// <param name="excludeContentChannelItems">Do not include these items in the result</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the content channel items.</returns>
+        private List<ListItemBag> ContentChannelItemPickerGetContentChannelItemsForContentChannel( Guid contentChannelGuid, List<Guid> excludeContentChannelItems, RockContext rockContext )
+        {
+            var contentChannelItemService = new Rock.Model.ContentChannelItemService( rockContext );
+            
+            var contentChannelitems = contentChannelItemService.Queryable()
+                .Where( r =>
+                    r.ContentChannel.Guid == contentChannelGuid &&
+                    !excludeContentChannelItems.Contains( r.Guid ) )
+                .OrderBy( a => a.Title )
+                .Select( r => new ListItemBag { Text = r.Title, Value = r.Guid.ToString() } )
+                .ToList();
+
+            return contentChannelitems;
+        }
+
+        #endregion
+
         #region Data View Picker
 
         /// <summary>
@@ -602,6 +1238,98 @@ namespace Rock.Rest.v2
                     .ToList();
 
                 return Ok( definedValues );
+            }
+        }
+
+        /// <summary>
+        /// Get the attributes for the given Defined Type
+        /// </summary>
+        /// <param name="options">The options needed to find the attributes for the defined type</param>
+        /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DefinedValuePickerGetAttributes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "10b3fa87-756e-4dde-bf67-fb102037ddc3" )]
+        public IHttpActionResult DefinedValuePickerGetAttributes( DefinedValuePickerGetAttributesOptionsBag options )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+            var definedValue = new DefinedValue
+            {
+                Id = 0,
+                DefinedTypeId = definedType.Id
+            };
+
+            return Ok( GetAttributes( definedValue ));
+        }
+
+        /// <summary>
+        /// Save a new Defined Value
+        /// </summary>
+        /// <param name="options">The options the new defined value</param>
+        /// <returns>A <see cref="ListItemBag"/> representing the new defined value.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DefinedValuePickerSaveNewValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2a10eb70-cc9a-48be-8ed7-d9104fd9fdca" )]
+        public IHttpActionResult DefinedValuePickerSaveNewValue( DefinedValuePickerSaveNewValueOptionsBag options )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+                var definedValue = new DefinedValue
+                {
+                    Id = 0,
+                    DefinedTypeId = definedType.Id,
+                    IsSystem = false,
+                    Value = options.Value,
+                    Description = options.Description
+                };
+
+                DefinedValueService definedValueService = new DefinedValueService( rockContext );
+                var orders = definedValueService.Queryable()
+                    .Where( d => d.DefinedTypeId == definedType.Id )
+                    .Select( d => d.Order )
+                    .ToList();
+
+                definedValue.Order = orders.Any() ? orders.Max() + 1 : 0;
+
+                // Assign Attributes
+                Attribute.Helper.LoadAttributes( definedValue );
+
+                foreach(KeyValuePair<string, AttributeValueCache> attr in definedValue.AttributeValues)
+                {
+                    definedValue.AttributeValues[attr.Key].Value = options.AttributeValues.GetValueOrNull( attr.Key );
+                }
+
+                if ( !definedValue.IsValid )
+                {
+                    return InternalServerError();
+                }
+
+                // Save the new value
+                rockContext.WrapTransaction( () =>
+                {
+                    if ( definedValue.Id.Equals( 0 ) )
+                    {
+                        definedValueService.Add( definedValue );
+                    }
+
+                    rockContext.SaveChanges();
+
+                    definedValue.SaveAttributeValues( rockContext );
+                } );
+
+                return Ok( new ListItemBag { Text = definedValue.Value, Value = definedValue.Guid.ToString() } );
             }
         }
 
@@ -904,6 +1632,60 @@ namespace Rock.Rest.v2
                     .ToList();
 
                 return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Ethnicity Picker
+
+        /// <summary>
+        /// Gets the ethnicities that can be displayed in the ethnicity picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the ethnicities and the label for the control.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EthnicityPickerGetEthnicities" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "a04bddf8-4169-47f8-8b03-ee8e2f110b35" )]
+        public IHttpActionResult EthnicityPickerGetEthnicities()
+        {
+            var ethnicities = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_ETHNICITY ).DefinedValues
+                .Select(e => new ListItemBag { Text = e.Value, Value = e.Guid.ToString() })
+                .ToList();
+
+            return Ok( new EthnicityPickerGetEthnicitiesResultsBag
+            {
+                Ethnicities = ethnicities,
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+            } );
+        }
+
+        #endregion
+
+        #region Event Calendar Picker
+
+        /// <summary>
+        /// Gets the event calendars that can be displayed in the event calendar picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag" /> objects that represent the event calendars.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EventCalendarPickerGetEventCalendars" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "92d88be0-2971-441a-b582-eec304ce4bc9" )]
+        public IHttpActionResult EventCalendarPickerGetEventCalendars( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+
+                var calendars = EventCalendarCache.All();
+                var calendarList = new List<ListItemBag>();
+
+                foreach ( EventCalendarCache eventCalendar in calendars )
+                {
+                    calendarList.Add( new ListItemBag { Text = eventCalendar.Name, Value = eventCalendar.Guid.ToString() } );
+                }
+
+                return Ok( calendarList );
             }
         }
 
@@ -1295,6 +2077,68 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Geo Picker
+
+        /// <summary>
+        /// Retrieve the Google API key for Google Maps.
+        /// </summary>
+        /// <returns>The Google API key as a string</returns>
+        [HttpPost]
+        [Authenticate]
+        [System.Web.Http.Route( "GeoPickerGetGoogleMapSettings" )]
+        [Rock.SystemGuid.RestActionGuid( "a3e0af9b-36d3-4ec8-a983-0087488c553d" )]
+        public IHttpActionResult GeoPickerGetGoogleMapSettings( [FromBody] GeoPickerGetGoogleMapSettingsOptionsBag options )
+        {
+            // Map Styles
+            Guid MapStyleValueGuid = options.MapStyleValueGuid == null || options.MapStyleValueGuid.IsEmpty() ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() : options.MapStyleValueGuid;
+            string mapStyle = "null";
+            string markerColor = "";
+
+            try
+            {
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Get( MapStyleValueGuid );
+                if ( dvcMapStyle != null )
+                {
+                    mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    var colors = dvcMapStyle.GetAttributeValue( "Colors" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    if ( colors.Any() )
+                    {
+                        markerColor = colors.First().Replace( "#", "" );
+                    }
+                }
+            }
+            catch { } // oh well...
+
+            // Google API Key
+            string googleApiKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
+
+            // Default map location
+            double? centerLatitude = null;
+            double? centerLongitude = null;
+            Guid guid = GlobalAttributesCache.Get().GetValue( "OrganizationAddress" ).AsGuid();
+
+            if ( !guid.Equals( Guid.Empty ) )
+            {
+                var location = new Rock.Model.LocationService( new Rock.Data.RockContext() ).Get( guid );
+                if ( location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Longitude != null )
+                {
+                    centerLatitude = location.GeoPoint.Latitude;
+                    centerLongitude = location.GeoPoint.Longitude;
+                }
+            }
+
+            return Ok( new GeoPickerGoogleMapSettingsBag
+            {
+                MapStyle = mapStyle,
+                MarkerColor = markerColor,
+                GoogleApiKey = googleApiKey,
+                CenterLatitude = centerLatitude,
+                CenterLongitude = centerLongitude
+            } );
+        }
+
+        #endregion
+
         #region Grade Picker
 
         /// <summary>
@@ -1330,7 +2174,7 @@ namespace Rock.Rest.v2
                     listItem.Text = schoolGrade.Description;
                 }
 
-                listItem.Value = options.UseGradeOffsetAsValue ? schoolGrade.Value : schoolGrade.Guid.ToString();
+                listItem.Value = options.UseGuidAsValue ? schoolGrade.Guid.ToString() : schoolGrade.Value;
 
                 list.Add( listItem );
             }
@@ -1351,7 +2195,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "GroupMemberPickerGetGroupMembers" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
-        public IHttpActionResult GroupMemberPickerGetGroupMembers( GroupMemberPickerGetGroupMembersOptionsBag options )
+        public IHttpActionResult GroupMemberPickerGetGroupMembers( [FromBody] GroupMemberPickerGetGroupMembersOptionsBag options )
         {
             Rock.Model.Group group;
 
@@ -1362,7 +2206,7 @@ namespace Rock.Rest.v2
 
             group = new GroupService( new RockContext() ).Get( options.GroupGuid.Value );
 
-            if ( group == null && !group.Members.Any() )
+            if ( group == null || !group.Members.Any() )
             {
                 return NotFound();
             }
@@ -1380,6 +2224,117 @@ namespace Rock.Rest.v2
             }
 
             return Ok( list );
+        }
+
+        #endregion
+
+        #region Group Type Group Picker
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group type group picker for the specified group type.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypeGroupPickerGetGroups" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "f07ac6f8-128c-4881-a4ec-c245b8f10f9e" )]
+        public IHttpActionResult GroupTypeGroupPickerGetGroups( [FromBody] GroupTypeGroupPickerGetGroupsOptionsBag options )
+        {
+            var groups = new List<ListItemBag>();
+            if ( options.GroupTypeGuid != Guid.Empty )
+            {
+                var groupService = new Rock.Model.GroupService( new RockContext() );
+                groups = groupService.Queryable()
+                    .Where( g => g.GroupType.Guid == options.GroupTypeGuid )
+                    .OrderBy( g => g.Name )
+                    .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                    .ToList();
+            }
+
+            return Ok( groups );
+        }
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group type group picker for the specified group type.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypeGroupPickerGetGroupTypeOfGroup" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "984ce064-6073-4b8d-b670-338a3049e13b" )]
+        public IHttpActionResult GroupTypeGroupPickerGetGroupTypeOfGroup( [FromBody] GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag options )
+        {
+            if ( options.GroupGuid != Guid.Empty )
+            {
+                var groupService = new Rock.Model.GroupService( new RockContext() );
+                var group = groupService.Get( options.GroupGuid );
+
+                if (group == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = group.GroupType.Name, Value = group.GroupType.Guid.ToString() } );
+            }
+
+            return NotFound();
+
+        }
+
+        #endregion
+
+        #region Group Type Picker
+
+        /// <summary>
+        /// Gets the group types that can be displayed in the group type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupTypePickerGetGroupTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "b0e07419-0e3c-4235-b5d4-4262fd63e050" )]
+        public IHttpActionResult GroupTypePickerGetGroupTypes( [FromBody] GroupTypePickerGetGroupTypesOptionsBag options )
+        {
+            var groupTypes = new List<GroupTypeCache>();
+            var results = new List<ListItemBag>();
+
+            if (options.GroupTypes == null || options.GroupTypes.Count < 1)
+            {
+                groupTypes = GroupTypeCache.All();
+            }
+            else
+            {
+                foreach ( var groupTypeGuid in options.GroupTypes )
+                {
+                    var groupType = GroupTypeCache.Get( groupTypeGuid );
+                    groupTypes.Add( groupType );
+                }
+            }
+
+            if (options.OnlyGroupListItems)
+            {
+                // get all group types that have the ShowInGroupList flag set
+                groupTypes = groupTypes.Where( a => a.ShowInGroupList ).ToList();
+            }
+
+            if ( options.IsSortedByName )
+            {
+                groupTypes = groupTypes.OrderBy( gt => gt.Name ).ToList();
+            }
+            else
+            {
+                groupTypes = groupTypes.OrderBy( gt => gt.Order ).ThenBy( gt => gt.Name ).ToList();
+            }
+
+            foreach(var gt in groupTypes)
+            {
+                results.Add( new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } );
+            }
+
+            return Ok( results );
         }
 
         #endregion
@@ -1567,6 +2522,118 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Role Picker
+
+        /// <summary>
+        /// Gets the group types that can be displayed in the group role picker.
+        /// </summary>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupRolePickerGetGroupTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "56891c9b-f714-4083-8252-4c73b358aa02" )]
+        public IHttpActionResult GroupRolePickerGetGroupTypes( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupTypeService = new Rock.Model.GroupTypeService( rockContext );
+
+                // get all group types that have at least one role
+                var groupTypes = groupTypeService.Queryable()
+                    .Where( a => a.Roles.Any() )
+                    .OrderBy( a => a.Name )
+                    .Select(g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                    .ToList();
+
+                return Ok( groupTypes );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group roles that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupRolePickerGetGroupRoles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "968033ab-2596-4b0c-b06e-2c9cf59949c5" )]
+        public IHttpActionResult GroupRolePickerGetGroupRoles( [FromBody] GroupRolePickerGetGroupRolesOptionsBag options )
+        {
+            return Ok( GroupRolePickerGetGroupRolesForGroupType( options.GroupTypeGuid, options.ExcludeGroupRoles ) );
+        }
+
+        /// <summary>
+        /// Gets the group roles and group type information based on a selected group role.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>All the data for the selected role, selected type, and all of the group roles</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupRolePickerGetAllForGroupRole" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "e55374dd-7715-4392-a162-c40f09d25fc9" )]
+        public IHttpActionResult GroupRolePickerGetAllForGroupRole( [FromBody] GroupRolePickerGetAllForGroupRoleOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                List<Guid> excludeGroupRoles = options.ExcludeGroupRoles;
+
+                var groupRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
+                var groupRole = groupRoleService.Queryable()
+                    .Where( r => r.Guid == options.GroupRoleGuid )
+                    .First();
+
+                var groupType = groupRole.GroupType;
+
+                var groupRoles = GroupRolePickerGetGroupRolesForGroupType( groupType.Guid, excludeGroupRoles, rockContext );
+
+                return Ok( new GroupRolePickerGetAllForGroupRoleResultsBag
+                {
+                    SelectedGroupRole = new ListItemBag { Text = groupRole.Name, Value = groupRole.Guid.ToString()},
+                    SelectedGroupType = new ListItemBag { Text = groupType.Name, Value = groupType.Guid.ToString()},
+                    GroupRoles = groupRoles
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group roles that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="groupTypeGuid">Load group roles of this type</param>
+        /// <param name="excludeGroupRoles">Do not include these roles in the result</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        private List<ListItemBag> GroupRolePickerGetGroupRolesForGroupType( Guid groupTypeGuid, List<Guid> excludeGroupRoles )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return GroupRolePickerGetGroupRolesForGroupType( groupTypeGuid, excludeGroupRoles, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group roles that can be displayed in the group role picker.
+        /// </summary>
+        /// <param name="groupTypeGuid">Load group roles of this type</param>
+        /// <param name="excludeGroupRoles">Do not include these roles in the result</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the group roles.</returns>
+        private List<ListItemBag> GroupRolePickerGetGroupRolesForGroupType( Guid groupTypeGuid, List<Guid> excludeGroupRoles, RockContext rockContext )
+        {
+            var groupRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
+
+            var groupRoles = groupRoleService.Queryable()
+                .Where( r =>
+                    r.GroupType.Guid == groupTypeGuid &&
+                    !excludeGroupRoles.Contains( r.Guid ) )
+                .OrderBy( r => r.Name )
+                .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
+                .ToList();
+
+            return groupRoles;
+        }
+
+        #endregion
+
         #region Interaction Channel Picker
 
         /// <summary>
@@ -1678,7 +2745,7 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Location Picker
+        #region Location Item Picker
 
         /// <summary>
         /// Gets the child locations, excluding inactive items.
@@ -1687,9 +2754,9 @@ namespace Rock.Rest.v2
         /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the child locations.</returns>
         [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route( "LocationPickerGetActiveChildren" )]
+        [System.Web.Http.Route( "LocationItemPickerGetActiveChildren" )]
         [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
-        public IHttpActionResult LocationPickerGetActiveChildren( [FromBody] LocationPickerGetActiveChildrenOptionsBag options )
+        public IHttpActionResult LocationItemPickerGetActiveChildren( [FromBody] LocationItemPickerGetActiveChildrenOptionsBag options )
         {
             IQueryable<Location> qry;
 
@@ -1762,6 +2829,1327 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Location List
+
+        /// <summary>
+        /// Gets the child locations, excluding inactive items.
+        /// </summary>
+        /// <param name="options">The options that describe which child locations to retrieve.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the child locations.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "LocationListGetLocations" )]
+        [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
+        public IHttpActionResult LocationListGetLocations( [FromBody] LocationListGetLocationsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                List<ListItemBag> locations = null;
+                var locationService = new LocationService( rockContext );
+                int parentLocationId = 0;
+                int locationTypeValueId = 0;
+
+                if (options.ParentLocationGuid != null)
+                {
+                    var parentLocation = locationService.Get( options.ParentLocationGuid );
+                    parentLocationId = parentLocation == null ? 0 : parentLocation.Id;
+                }
+
+                if (options.LocationTypeValueGuid != null)
+                {
+                    var locationTypeDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() );
+                    var locationTypeValue = DefinedValueCache.Get( options.LocationTypeValueGuid );
+
+                    // Verify the given GUID is a LocationType GUID
+                    if ( locationTypeValue != null && locationTypeDefinedType.Equals(locationTypeValue.DefinedType))
+                    {
+                        locationTypeValueId = locationTypeValue.Id;
+                    }
+                }
+
+                var locationQuery = locationService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( l => l.IsActive )
+                    .Where( l => locationTypeValueId == 0 || l.LocationTypeValueId == locationTypeValueId )
+                    .Where( l => parentLocationId == 0 || l.ParentLocationId == parentLocationId )
+                    .Select( l => new { l.Name, l.City, l.State, l.Guid } )
+                    .ToList()
+                    .OrderBy( l => l.Name );
+
+                if ( options.ShowCityState )
+                {
+                    locations = locationQuery
+                        .Select( l => new ListItemBag { Text = $"{l.Name} ({l.City}, {l.State})", Value = l.Guid.ToString() } )
+                        .ToList();
+                }
+                else
+                {
+                    locations = locationQuery
+                        .Where( l => l.Name.IsNotNullOrWhiteSpace() )
+                        .Select( l => new ListItemBag { Text = $"{l.Name}", Value = l.Guid.ToString() } )
+                        .ToList();
+                }
+
+                return Ok( locations );
+            }
+
+        }
+
+        /// <summary>
+        /// Get the attributes for Locations
+        /// </summary>
+        /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "LocationListGetAttributes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "e2b28b2f-a46d-40cd-a48d-7e5351383de5" )]
+        public IHttpActionResult LocationListGetAttributes( /*LocationListGetAttributesOptionsBag options*/ )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            return Ok( GetAttributes( new Location { Id = 0 } ) );
+        }
+
+        /// <summary>
+        /// Save a new Location
+        /// </summary>
+        /// <param name="options">The data for the new Location</param>
+        /// <returns>A <see cref="ListItemBag"/> representing the new Location.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "LocationListSaveNewLocation" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "f8342fdb-3e19-4f17-804c-c14fdee87a2b" )]
+        public IHttpActionResult LocationListSaveNewLocation( LocationListSaveNewLocationOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var locationService = new LocationService( rockContext );
+
+                // Create and save new location with data from client
+                var location = new Location
+                {
+                    Name = options.Name,
+                    IsActive = true,
+                };
+
+                if ( options.Address != null )
+                {
+                    location.Street1 = options.Address.Street1;
+                    location.Street2 = options.Address.Street2;
+                    location.City = options.Address.City;
+                    location.County = options.Address.Locality;
+                    location.State = options.Address.State;
+                    location.Country = options.Address.Country;
+                    location.PostalCode = options.Address.PostalCode;
+                }
+
+                if ( options.ParentLocationGuid != null )
+                {
+                    Location parentLocation = locationService.Get( options.ParentLocationGuid );
+                    location.ParentLocation = parentLocation;
+                }
+
+                if ( options.LocationTypeValueGuid != null )
+                {
+                    var locationTypeDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() );
+                    var locationTypeValue = DefinedValueCache.Get( options.LocationTypeValueGuid );
+
+                    // Verify the given GUID is a LocationType GUID
+                    if ( locationTypeValue != null && locationTypeDefinedType.Equals( locationTypeValue.DefinedType ) )
+                    {
+                        location.LocationTypeValueId = locationTypeValue.Id;
+                    }
+                }
+
+                locationService.Add( location );
+
+                rockContext.SaveChanges();
+
+                // Load up the new location's attributes and save those
+                location.LoadAttributes();
+
+                foreach ( KeyValuePair<string, AttributeValueCache> attr in location.AttributeValues )
+                {
+                    location.AttributeValues[attr.Key].Value = options.AttributeValues.GetValueOrNull( attr.Key );
+                }
+
+                if ( !location.IsValid )
+                {
+                    return InternalServerError();
+                }
+
+                location.SaveAttributeValues( rockContext );
+
+                // Return a representation of the location so it can be used right away on the client
+                return Ok( new ListItemBag
+                {
+                    Text = options.ShowCityState ? $"{location.Name} ({location.City}, {location.State})" : location.Name,
+                    Value = location.Guid.ToString()
+                } );
+            }
+        }
+
+        #endregion
+
+        #region Media Element Picker
+
+        /// <summary>
+        /// Gets the media accounts that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <returns>A List of <see cref="TreeItemBag" /> objects that represent media accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaElementPickerGetMediaAccounts" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "849e3ac3-f1e1-4efa-b0c8-1a79c4a666c7" )]
+        public IHttpActionResult MediaElementPickerGetMediaAccounts( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Ok( GetMediaAccounts(rockContext) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the media folders that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which media folders to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent media folders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaElementPickerGetMediaFolders" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "a68493aa-8f41-404f-90dd-fbb2df0309a0" )]
+        public IHttpActionResult MediaElementPickerGetMediaFolders( [FromBody] MediaElementPickerGetMediaFoldersOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaAccount = GetMediaAccountByGuid( options.MediaAccountGuid, rockContext );
+
+                if ( mediaAccount == null )
+                {
+                    return NotFound();
+                }
+
+                return Ok( GetMediaFoldersForAccount(mediaAccount, rockContext ));
+            }
+        }
+
+        /// <summary>
+        /// Gets the media elements that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which media elements to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent media elements.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaElementPickerGetMediaElements" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9b922b7e-95b4-4ecf-a6ec-f61b45f5e210" )]
+        public IHttpActionResult MediaElementPickerGetMediaElements( [FromBody] MediaElementPickerGetMediaElementsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaFolder = GetMediaFolderByGuid( options.MediaFolderGuid, rockContext );
+
+                if ( mediaFolder == null )
+                {
+                    return NotFound();
+                }
+
+                return Ok( GetMediaElementsForFolder( mediaFolder, rockContext ) );
+            }
+        }
+
+        /// <summary>
+        /// Get all of the list items and the account/folder/element, depending on what the deepest given item is.
+        /// </summary>
+        /// <param name="options">The options that describe which media element picker data to load.</param>
+        /// <returns>All of the picker lists (as List&lt;ListItemBag&gt;), and individual picker selections that could be derived from the given options</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaElementPickerGetMediaTree" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2cc15018-201e-4f22-b116-06846c70ad0b" )]
+        public IHttpActionResult MediaElementPickerGetMediaTree( [FromBody] MediaElementPickerGetMediaTreeOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var accounts = new List<ListItemBag>();
+                var folders = new List<ListItemBag>();
+                var elements = new List<ListItemBag>();
+
+                MediaAccount mediaAccount = null;
+                MediaFolder mediaFolder = null;
+                MediaElement mediaElement = null;
+
+                ListItemBag mediaAccountItem = null;
+                ListItemBag mediaFolderItem = null;
+                ListItemBag mediaElementItem = null;
+
+                // If a media element is specified, get everything based on that
+                if (options.MediaElementGuid.HasValue)
+                {
+                    mediaElement = GetMediaElementByGuid( ( Guid ) options.MediaElementGuid, rockContext );
+                    mediaFolder = mediaElement.MediaFolder;
+                    mediaAccount = mediaFolder.MediaAccount;
+
+                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+                    mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
+                    mediaElementItem = new ListItemBag { Text = mediaElement.Name, Value = mediaElement.Guid.ToString() };
+
+                    accounts = GetMediaAccounts( rockContext );
+                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                    elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                }
+                // Otherwise, if a media folder is specified, get everything based on that, not getting a media element
+                else if (options.MediaFolderGuid.HasValue)
+                {
+                    mediaFolder = GetMediaFolderByGuid( ( Guid ) options.MediaFolderGuid, rockContext );
+                    mediaAccount = mediaFolder.MediaAccount;
+
+                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+                    mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
+
+                    accounts = GetMediaAccounts( rockContext );
+                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                    elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                }
+                // Otherwise, if a media account is specified, get the account and the lists of accounts and folders
+                else if (options.MediaAccountGuid.HasValue)
+                {
+                    mediaAccount = GetMediaAccountByGuid( ( Guid ) options.MediaAccountGuid, rockContext );
+
+                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+
+                    accounts = GetMediaAccounts( rockContext );
+                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                }
+
+                // Some things might be null, but we pass back everything we have
+                return Ok( new MediaElementPickerGetMediaTreeResultsBag
+                {
+                    MediaAccount = mediaAccountItem,
+                    MediaFolder = mediaFolderItem,
+                    MediaElement = mediaElementItem,
+
+                    MediaAccounts = accounts,
+                    MediaFolders = folders,
+                    MediaElements = elements
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a MediaAccount object based on its Guid
+        /// </summary>
+        /// <param name="guid">The Media Account's Guid</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>The MediaAccount with that Guid</returns>
+        private MediaAccount GetMediaAccountByGuid (Guid guid, RockContext rockContext)
+        {
+                // Get the media folder from the given GUID so we can filter elements by folder
+                var mediaAccountService = new Rock.Model.MediaAccountService( rockContext );
+                var mediaAccount = mediaAccountService.Queryable()
+                    .Where( a => a.Guid == guid )
+                    .First();
+
+                return mediaAccount;
+        }
+
+        /// <summary>
+        /// Retrieve a MediaFolder object based on its Guid
+        /// </summary>
+        /// <param name="guid">The Media Folder's Guid</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>The MediaFolder with that Guid</returns>
+        private MediaFolder GetMediaFolderByGuid( Guid guid, RockContext rockContext )
+        {
+            // Get the media folder from the given GUID so we can filter elements by folder
+            var mediaFolderService = new Rock.Model.MediaFolderService( rockContext );
+                var mediaFolder = mediaFolderService.Queryable()
+                    .Where( a => a.Guid == guid )
+                    .First();
+
+                return mediaFolder;
+        }
+
+        /// <summary>
+        /// Retrieve a MediaElement object based on its Guid
+        /// </summary>
+        /// <param name="guid">The Media Element's Guid</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>The MediaElement with that Guid</returns>
+        private MediaElement GetMediaElementByGuid( Guid guid, RockContext rockContext )
+        {
+            // Get the media folder from the given GUID so we can filter elements by folder
+            var mediaElementService = new Rock.Model.MediaElementService( rockContext );
+                var mediaElement = mediaElementService.Queryable()
+                    .Where( a => a.Guid == guid )
+                    .First();
+
+                return mediaElement;
+        }
+
+        /// <summary>
+        /// Get a list of all the Media Accounts
+        /// </summary>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>List of ListItemBags representing all of the Media Accounts</returns>
+        private List<ListItemBag> GetMediaAccounts( RockContext rockContext )
+        {
+            var mediaAccountService = new Rock.Model.MediaAccountService( rockContext );
+
+            // Get all media accounts that are active.
+            var mediaAccounts = mediaAccountService.Queryable()
+                .Where( ma => ma.IsActive )
+                .OrderBy( ma => ma.Name )
+                .Select( ma => new ListItemBag { Text = ma.Name, Value = ma.Guid.ToString() } )
+                .ToList();
+
+            return mediaAccounts;
+        }
+
+        /// <summary>
+        /// Get a list of all the Media Folders for the given Media Account
+        /// </summary>
+        /// <param name="mediaAccount">MediaAccount object we want to get the child Media Folders of</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>List of ListItemBags representing all of the Media Folders for the given Media Account</returns>
+        private List<ListItemBag> GetMediaFoldersForAccount( MediaAccount mediaAccount, RockContext rockContext )
+        {
+            // Get all media folders
+            var mediaFolderService = new Rock.Model.MediaFolderService( rockContext );
+            var mediaFolders = mediaFolderService.Queryable()
+                .Where( mf => mf.MediaAccountId == mediaAccount.Id )
+                .OrderBy( mf => mf.Name )
+                .Select( mf => new ListItemBag
+                {
+                    Text = mf.Name,
+                    Value = mf.Guid.ToString()
+                } )
+                .ToList();
+
+            return mediaFolders;
+        }
+
+        /// <summary>
+        /// Get a list of all the Media Elements for the given Media Account
+        /// </summary>
+        /// <param name="mediaFolder">The media folder.</param>
+        /// <param name="rockContext">DB context</param>
+        /// <returns>List of ListItemBags representing all of the Media Elements for the given Media Folder</returns>
+        private List<ListItemBag> GetMediaElementsForFolder( MediaFolder mediaFolder, RockContext rockContext )
+        {
+            var mediaElementService = new Rock.Model.MediaElementService( rockContext );
+            var mediaElements = mediaElementService.Queryable()
+                .Where( me => me.MediaFolderId == mediaFolder.Id )
+                .OrderBy( me => me.Name )
+                .Select( me => new ListItemBag
+                {
+                    Text = me.Name,
+                    Value = me.Guid.ToString()
+                } )
+                .ToList();
+
+            return mediaElements;
+        }
+
+        #endregion
+
+        #region Merge Field Picker
+
+        /// <summary>
+        /// Gets the merge fields and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which merge fields to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of merge fields.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MergeFieldPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "f6722f7a-64ed-401a-9dea-c64fa9738b75" )]
+        public IHttpActionResult MergeFieldPickerGetChildren( [FromBody] MergeFieldPickerGetChildrenOptionsBag options )
+        {
+            var children = MergeFieldPickerGetChildren( options.Id, options.AdditionalFields, RockRequestContext.CurrentPerson );
+
+            var treeItemChildren = children?.Select( convertTreeViewItemToTreeItemBag ).ToList();
+
+            return Ok( treeItemChildren );
+        }
+
+        /// <summary>
+        /// Formats a selected Merge Field value as Lava
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// ***NOTE***: Also implemented in Rock.Web.UI.Controls.MergeFieldPicker's FormatSelectedValue method.
+        /// Any changes here should also be made there
+        /// </summary>
+        /// <param name="options">The options that contain the selected value</param>
+        /// <returns>A string of Lava</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MergeFieldPickerFormatSelectedValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "ffe018c4-c088-4057-b28b-4980541f16d5" )]
+        public IHttpActionResult MergeFieldPickerFormatSelectedValue( [FromBody] MergeFieldPickerFormatSelectedValueOptionsBag options )
+        {
+            if (options.SelectedValue == null)
+            {
+                return BadRequest();
+            }
+
+            var idParts = options.SelectedValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            if ( idParts.Count > 0 )
+            {
+                if ( idParts.Count == 2 && idParts[0] == "GlobalAttribute" )
+                {
+                    return Ok(string.Format( "{{{{ 'Global' | Attribute:'{0}' }}}}", idParts[1] ));
+                }
+
+                if ( idParts.Count == 1 && idParts[0].StartsWith( "AdditionalMergeField" ) )
+                {
+                    string mFields = idParts[0].Replace( "AdditionalMergeField_", "" ).Replace( "AdditionalMergeFields_", "" );
+                    if ( mFields.IsNotNullOrWhiteSpace() )
+                    {
+                        string beginFor = "{% for field in AdditionalFields %}";
+                        string endFor = "{% endfor %}";
+                        var mergeFields = String.Join( "", mFields.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries )
+                            .Select( f => "{{ field." + f + "}}" ) );
+
+                        return Ok( $"{beginFor}{mergeFields}{endFor}");
+                    }
+                }
+
+                if ( idParts.Count == 1 )
+                {
+                    if ( idParts[0] == "Campuses" )
+                    {
+                        return Ok( @"
+{% for campus in Campuses %}
+<p>
+    Name: {{ campus.Name }}<br/>
+    Description: {{ campus.Description }}<br/>
+    Is Active: {{ campus.IsActive }}<br/>
+    Short Code: {{ campus.ShortCode }}<br/>
+    Url: {{ campus.Url }}<br/>
+    Phone Number: {{ campus.PhoneNumber }}<br/>
+    Service Times:
+    {% for serviceTime in campus.ServiceTimes %}
+        {{ serviceTime.Day }} {{ serviceTime.Time }},
+    {% endfor %}
+    <br/>
+{% endfor %}
+");
+                    }
+
+                    if ( idParts[0] == "Date" )
+                    {
+                        return Ok( "{{ 'Now' | Date:'MM/dd/yyyy' }}");
+                    }
+
+                    if ( idParts[0] == "Time" )
+                    {
+                        return Ok("{{ 'Now' | Date:'hh:mm:ss tt' }}");
+                    }
+
+                    if ( idParts[0] == "DayOfWeek" )
+                    {
+                        return Ok("{{ 'Now' | Date:'dddd' }}");
+                    }
+
+                    if ( idParts[0] == "PageParameter" )
+                    {
+                        return Ok("{{ PageParameter.[Enter Page Parameter Name Here] }}");
+                    }
+
+                }
+
+                var workingParts = new List<string>();
+
+                // Get the root type
+                int pathPointer = 0;
+                EntityTypeCache entityType = null;
+                while ( entityType == null && pathPointer < idParts.Count() )
+                {
+                    string item = idParts[pathPointer];
+                    string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+
+                    string itemName = itemParts.Length > 1 ? itemParts[0] : string.Empty;
+                    string mergeFieldId = itemParts.Length > 1 ? itemParts[1] : item;
+
+                    var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeFieldId );
+                    entityType = entityTypeInfo?.EntityType;
+
+                    workingParts.Add( entityType != null ?
+                        ( itemName != string.Empty ? itemName : entityType.FriendlyName.Replace( " ", string.Empty ) ) :
+                        idParts[pathPointer] );
+                    pathPointer++;
+                }
+
+                if ( entityType != null )
+                {
+                    Type type = entityType.GetEntityType();
+
+                    var formatString = "{0}";
+
+                    // Traverse the Property path
+                    bool itemIsCollection = false;
+                    bool lastItemIsProperty = true;
+
+                    while ( idParts.Count > pathPointer )
+                    {
+                        string propertyName = idParts[pathPointer];
+                        workingParts.Add( propertyName );
+
+                        var childProperty = type.GetProperty( propertyName );
+                        if ( childProperty != null )
+                        {
+                            lastItemIsProperty = true;
+                            type = childProperty.PropertyType;
+
+                            if ( type.IsGenericType &&
+                                type.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                                type.GetGenericArguments().Length == 1 )
+                            {
+                                string propertyNameSingularized = propertyName.Singularize();
+                                string forString = string.Format( "<% for {0} in {1} %> {{0}} <% endfor %>", propertyNameSingularized, workingParts.AsDelimited( "." ) );
+                                workingParts.Clear();
+                                workingParts.Add( propertyNameSingularized );
+                                formatString = string.Format( formatString, forString );
+
+                                type = type.GetGenericArguments()[0];
+
+                                itemIsCollection = true;
+                            }
+                            else
+                            {
+                                itemIsCollection = false;
+                            }
+                        }
+                        else
+                        {
+                            lastItemIsProperty = false;
+                        }
+
+                        pathPointer++;
+                    }
+
+                    string itemString = string.Empty;
+                    if ( !itemIsCollection )
+                    {
+                        if ( lastItemIsProperty )
+                        {
+                            itemString = string.Format( "<< {0} >>", workingParts.AsDelimited( "." ) );
+                        }
+                        else
+                        {
+                            string partPath = workingParts.Take( workingParts.Count - 1 ).ToList().AsDelimited( "." );
+                            var partItem = workingParts.Last();
+                            if ( type == typeof( Rock.Model.Person ) && partItem == "Campus" )
+                            {
+                                itemString = string.Format( "{{{{ {0} | Campus | Property:'Name' }}}}", partPath );
+                            }
+                            else
+                            {
+
+                                itemString = string.Format( "{{{{ {0} | Attribute:'{1}' }}}}", partPath, partItem );
+                            }
+
+                        }
+
+                    }
+
+                    return Ok( string.Format( formatString, itemString ).Replace( "<", "{" ).Replace( ">", "}" ));
+                }
+
+                return Ok(string.Format( "{{{{ {0} }}}}", idParts.AsDelimited( "." ) ));
+
+            }
+
+            return Ok(string.Empty);
+        }
+
+        /// <summary>
+        /// Gets the child merge fields available to the given user.
+        /// NOTE: This is used by the legacy MergeFieldsController and was copied from there
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="additionalFields">The additional fields.</param>
+        /// <param name="person">The current user</param>
+        /// <returns></returns>
+        internal static IQueryable<TreeViewItem> MergeFieldPickerGetChildren( string id, string additionalFields, Person person )
+        {
+            List<TreeViewItem> items = new List<TreeViewItem>();
+
+            switch ( id )
+            {
+                case "0":
+                    {
+                        if ( !string.IsNullOrWhiteSpace( additionalFields ) )
+                        {
+                            foreach ( string fieldInfo in additionalFields.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                            {
+                                string[] parts = fieldInfo.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+                                string fieldId = parts.Length > 0 ? parts[0] : string.Empty;
+
+                                if ( fieldId == "AdditionalMergeFields" )
+                                {
+                                    if ( parts.Length > 1 )
+                                    {
+                                        var fieldsTv = new TreeViewItem
+                                        {
+                                            Id = $"AdditionalMergeFields_{parts[1]}",
+                                            Name = "Additional Fields",
+                                            HasChildren = true,
+                                            Children = new List<TreeViewItem>()
+                                        };
+
+                                        foreach ( string fieldName in parts[1].Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries ) )
+                                        {
+                                            fieldsTv.Children.Add( new TreeViewItem
+                                            {
+                                                Id = $"AdditionalMergeField_{fieldName}",
+                                                Name = fieldName.SplitCase(),
+                                                HasChildren = false
+                                            } );
+                                        }
+                                        items.Add( fieldsTv );
+                                    }
+                                }
+                                else
+                                {
+                                    string[] idParts = fieldId.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+
+                                    string mergeFieldId = idParts.Length > 1 ? idParts[1] : fieldId;
+
+                                    var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeFieldId );
+                                    if ( entityTypeInfo?.EntityType != null )
+                                    {
+                                        items.Add( new TreeViewItem
+                                        {
+                                            Id = fieldId.UrlEncode(),
+                                            Name = parts.Length > 1 ? parts[1] : entityTypeInfo.EntityType.FriendlyName,
+                                            HasChildren = true
+                                        } );
+                                    }
+                                    else
+                                    {
+                                        items.Add( new TreeViewItem
+                                        {
+                                            Id = fieldId,
+                                            Name = parts.Length > 1 ? parts[1] : mergeFieldId.SplitCase(),
+                                            HasChildren = mergeFieldId == "GlobalAttribute"
+                                        } );
+                                    }
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+
+                case "GlobalAttribute":
+                    {
+                        var globalAttributes = GlobalAttributesCache.Get();
+
+                        foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
+                        {
+                            if ( attributeCache.IsAuthorized( Authorization.VIEW, person ) )
+                            {
+                                items.Add( new TreeViewItem
+                                {
+                                    Id = "GlobalAttribute|" + attributeCache.Key,
+                                    Name = attributeCache.Name,
+                                    HasChildren = false
+                                } );
+                            }
+                        }
+
+                        break;
+                    }
+
+                default:
+                    {
+                        // In this scenario, the id should be a concatenation of a root qualified entity name and then the property path
+                        var idParts = id.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                        if ( idParts.Count > 0 )
+                        {
+                            // Get the root type
+                            int pathPointer = 0;
+                            EntityTypeCache entityType = null;
+                            MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier[] entityTypeQualifiers = null;
+                            while ( entityType == null && pathPointer < idParts.Count() )
+                            {
+                                string item = idParts[pathPointer];
+                                string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                string entityTypeMergeFieldId = itemParts.Length > 1 ? itemParts[1] : item;
+                                MergeFieldPicker.EntityTypeInfo entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( entityTypeMergeFieldId );
+                                entityType = entityTypeInfo?.EntityType;
+                                entityTypeQualifiers = entityTypeInfo?.EntityTypeQualifiers;
+                                pathPointer++;
+                            }
+
+                            if ( entityType != null )
+                            {
+                                Type type = entityType.GetEntityType();
+
+                                // Traverse the Property path
+                                while ( idParts.Count > pathPointer )
+                                {
+                                    var childProperty = type.GetProperty( idParts[pathPointer] );
+                                    if ( childProperty != null )
+                                    {
+                                        type = childProperty.PropertyType;
+
+                                        if ( type.IsGenericType &&
+                                            type.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                                            type.GetGenericArguments().Length == 1 )
+                                        {
+                                            type = type.GetGenericArguments()[0];
+                                        }
+                                    }
+
+                                    pathPointer++;
+                                }
+
+                                entityType = EntityTypeCache.Get( type );
+
+                                // Add the tree view items
+                                foreach ( var propInfo in Rock.Lava.LavaHelper.GetLavaProperties( type ) )
+                                {
+
+                                    var treeViewItem = new TreeViewItem
+                                    {
+                                        Id = id + "|" + propInfo.Name,
+                                        Name = propInfo.Name.SplitCase()
+                                    };
+
+                                    Type propertyType = propInfo.PropertyType;
+
+                                    if ( propertyType.IsGenericType &&
+                                        propertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                                        propertyType.GetGenericArguments().Length == 1 )
+                                    {
+                                        treeViewItem.Name += " (Collection)";
+                                        propertyType = propertyType.GetGenericArguments()[0];
+                                    }
+
+                                    bool hasChildren = false;
+                                    if ( EntityTypeCache.Get( propertyType.FullName, false ) != null )
+                                    {
+                                        hasChildren = Rock.Lava.LavaHelper.GetLavaProperties( propertyType ).Any();
+                                    }
+
+                                    treeViewItem.HasChildren = hasChildren;
+
+                                    items.Add( treeViewItem );
+                                }
+
+                                if ( type == typeof( Rock.Model.Person ) )
+                                {
+                                    items.Add( new TreeViewItem
+                                    {
+                                        Id = id + "|" + "Campus",
+                                        Name = "Campus"
+                                    } );
+                                }
+
+                                if ( entityType.IsEntity )
+                                {
+                                    var attributeList = new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id, false ).ToAttributeCacheList();
+                                    if ( entityTypeQualifiers?.Any() == true )
+                                    {
+                                        var qualifiedAttributeList = new List<AttributeCache>();
+                                        foreach ( var entityTypeQualifier in entityTypeQualifiers )
+                                        {
+                                            var qualifierAttributes = attributeList.Where( a =>
+                                                 a.EntityTypeQualifierColumn.Equals( entityTypeQualifier.Column, StringComparison.OrdinalIgnoreCase )
+                                                 && a.EntityTypeQualifierValue.Equals( entityTypeQualifier.Value, StringComparison.OrdinalIgnoreCase ) ).ToList();
+
+                                            qualifiedAttributeList.AddRange( qualifierAttributes );
+                                        }
+
+                                        attributeList = qualifiedAttributeList;
+                                    }
+                                    else
+                                    {
+                                        // Only include attributes without a qualifier since we weren't specified a qualifiercolumn/value
+                                        attributeList = attributeList.Where( a => a.EntityTypeQualifierColumn.IsNullOrWhiteSpace() && a.EntityTypeQualifierValue.IsNullOrWhiteSpace() ).ToList();
+                                    }
+
+                                    foreach ( var attribute in attributeList )
+                                    {
+
+                                        if ( attribute.IsAuthorized( Authorization.VIEW, person ) )
+                                        {
+                                            items.Add( new TreeViewItem
+                                            {
+                                                Id = id + "|" + attribute.Key,
+                                                Name = attribute.Name
+                                            } );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+            }
+
+            return items.OrderBy( i => i.Name ).AsQueryable();
+        }
+
+        #endregion
+
+        #region Merge Template Picker
+
+        /// <summary>
+        /// Gets the merge templates and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which merge templates to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of merge templates.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MergeTemplatePickerGetMergeTemplates" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2e486da8-927f-4474-8ba8-00a68d261403" )]
+        public IHttpActionResult MergeTemplatePickerGetMergeTemplates( [FromBody] MergeTemplatePickerGetMergeTemplatesOptionsBag options )
+        {
+            List<Guid> include = null;
+            List<Guid> exclude = null;
+
+            if ( options.MergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Global )
+            {
+                exclude = new List<Guid>();
+                exclude.Add( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() );
+            }
+            else if ( options.MergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Personal )
+            {
+                include = new List<Guid>();
+                include.Add( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<MergeTemplate>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeCategoryGuids = include,
+                    ExcludeCategoryGuids = exclude,
+                    DefaultIconCssClass = options.DefaultIconCssClass,
+                    ItemFilterPropertyName = null,
+                    ItemFilterPropertyValue = "",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Metric Category Picker
+
+        /// <summary>
+        /// Gets the metric categories and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which metric categories to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of metric categories.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MetricCategoryPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "92a11376-6bcd-4299-a54d-946cbde7566b" )]
+        public IHttpActionResult MetricCategoryPickerGetChildren( [FromBody] MetricCategoryPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<MetricCategory>().Guid,
+                    IncludeUnnamedEntityItems = true,
+                    IncludeCategoriesWithoutChildren = false,
+                    DefaultIconCssClass = options.DefaultIconCssClass,
+                    ItemFilterPropertyName = null,
+                    ItemFilterPropertyValue = "",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Metric Item Picker
+
+        /// <summary>
+        /// Gets the metric items and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which metric items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of metric items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MetricItemPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "c8e8f26e-a7cd-445a-8d72-6d4484a8ee59" )]
+        public IHttpActionResult MetricItemPickerGetChildren( [FromBody] MetricItemPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = GetMetricItemPickerChildren( options, rockContext );
+
+                if (items == null || items.Count == 0)
+                {
+                    return NotFound();
+                }
+
+                return Ok( items );
+            }
+        }
+
+        /// <summary>
+        /// Gets the metric items and their categories that match the options given.
+        /// </summary>
+        /// <param name="options">The options that describe which metric items to load.</param>
+        /// <param name="rockContext">Context for performing DB queries.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of metric items.</returns>
+        private List<TreeItemBag> GetMetricItemPickerChildren( [FromBody] MetricItemPickerGetChildrenOptionsBag options, RockContext rockContext )
+        {
+            var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var queryOptions = new CategoryItemTreeOptions
+            {
+                ParentGuid = options.ParentGuid,
+                GetCategorizedItems = options.ParentGuid.HasValue,
+                EntityTypeGuid = EntityTypeCache.Get<MetricCategory>().Guid,
+                IncludeUnnamedEntityItems = true,
+                IncludeCategoriesWithoutChildren = false,
+                DefaultIconCssClass = options.DefaultIconCssClass,
+                LazyLoad = true,
+                SecurityGrant = grant,
+                IncludeCategoryGuids = options.IncludeCategoryGuids
+            };
+
+            var metricCategories = clientService.GetCategorizedTreeItems( queryOptions );
+            var metricCategoryService = new MetricCategoryService( new RockContext() );
+            var convertedMetrics = new List<TreeItemBag>();
+
+            // Translate from MetricCategory to Metric.
+            foreach ( var categoryItem in metricCategories )
+            {
+                if ( !categoryItem.IsFolder )
+                {
+                    // Load the MetricCategory.
+                    var metricCategory = metricCategoryService.Get( categoryItem.Value.AsGuid() );
+                    if ( metricCategory != null )
+                    {
+                        // Swap the Id to the Metric Guid (instead of MetricCategory.Guid).
+                        categoryItem.Value = metricCategory.Guid.ToString();
+                    }
+                }
+
+                if (categoryItem.HasChildren)
+                {
+                    categoryItem.Children = new List<TreeItemBag>();
+                    categoryItem.Children.AddRange( GetMetricItemPickerChildren( new MetricItemPickerGetChildrenOptionsBag
+                    {
+                        ParentGuid = categoryItem.Value.AsGuid(),
+                        DefaultIconCssClass = options.DefaultIconCssClass,
+                        SecurityGrantToken = options.SecurityGrantToken,
+                        IncludeCategoryGuids = options.IncludeCategoryGuids
+                    }, rockContext ) );
+                }
+
+
+                convertedMetrics.Add( categoryItem );
+            }
+
+            return convertedMetrics;
+        }
+
+        #endregion
+
+        #region Page Picker
+
+        /// <summary>
+        /// Gets the tree list of pages
+        /// </summary>
+        /// <param name="options">The options that describe which pages to retrieve.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the pages.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PagePickerGetChildren" )]
+        [Rock.SystemGuid.RestActionGuid( "EE9AB2EA-EE01-4D0F-B626-02D1C8D1ABF4" )]
+        public IHttpActionResult PagePickerGetChildren( [FromBody] PagePickerGetChildrenOptionsBag options )
+        {
+            var service = new Service<Page>( new RockContext() ).Queryable().AsNoTracking();
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            IQueryable<Page> qry;
+
+            if ( options.Guid.IsEmpty() )
+            {
+                qry = service.Where( a => a.ParentPage.Guid == options.RootPageGuid );
+            }
+            else
+            {
+                qry = service.Where( a => a.ParentPage.Guid == options.Guid );
+            }
+
+            if ( options.SiteType != null )
+            {
+                qry = qry.Where( p => ( int ) p.Layout.Site.SiteType == options.SiteType.Value );
+            }
+
+            var hidePageGuids = options.HidePageGuids ?? new List<Guid>();
+
+            List<Page> pageList = qry
+                .Where( p => !hidePageGuids.Contains( p.Guid ))
+                .OrderBy( p => p.Order )
+                .ThenBy( p => p.InternalName )
+                .ToList()
+                .Where( p => p.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( p, Authorization.VIEW ) == true )
+                .ToList();
+            List<TreeItemBag> pageItemList = new List<TreeItemBag>();
+            foreach ( var page in pageList )
+            {
+                var pageItem = new TreeItemBag();
+                pageItem.Value = page.Guid.ToString();
+                pageItem.Text = page.InternalName;
+
+                pageItemList.Add( pageItem );
+            }
+
+            // try to quickly figure out which items have Children
+            List<int> resultIds = pageList.Select( a => a.Id ).ToList();
+
+            var qryHasChildren = service
+                .Where( p =>
+                    p.ParentPageId.HasValue &&
+                    resultIds.Contains( p.ParentPageId.Value ) )
+                .Select( p => p.ParentPage.Guid )
+                .Distinct()
+                .ToList();
+
+            foreach ( var g in pageItemList )
+            {
+                var hasChildren = qryHasChildren.Any( a => a.ToString() == g.Value );
+                g.HasChildren = hasChildren;
+                g.IsFolder = hasChildren;
+                g.IconCssClass = "fa fa-file-o";
+            }
+
+            return Ok(pageItemList.AsQueryable());
+        }
+
+        /// <summary>
+        /// Gets the list of pages in the hierarchy going from the root to the given page
+        /// </summary>
+        /// <param name="options">The options that describe which pages to retrieve.</param>
+        /// <returns>A collection of <see cref="Guid"/> that represent the pages.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PagePickerGetSelectedPageHierarchy" )]
+        [Rock.SystemGuid.RestActionGuid( "e74611a0-1711-4a0b-b3bd-df242d344679" )]
+        public IHttpActionResult PagePickerGetSelectedPageHierarchy( [FromBody] PagePickerGetSelectedPageHierarchyOptionsBag options )
+        {
+            var parentPageGuids = new List<string>();
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            foreach ( Guid pageGuid in options.SelectedPageGuids )
+            {
+                var page = PageCache.Get( pageGuid );
+
+                if (page == null)
+                {
+                    continue;
+                }
+
+                var parentPage = page.ParentPage;
+
+                while ( parentPage != null )
+                {
+                    if ( !parentPageGuids.Contains( parentPage.Guid.ToString() ) && ( parentPage.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant?.IsAccessGranted( parentPage, Authorization.VIEW ) == true )) )
+                    {
+                        parentPageGuids.Insert( 0, parentPage.Guid.ToString() );
+                    }
+                    else
+                    {
+                        // infinite recursion
+                        break;
+                    }
+
+                    parentPage = parentPage.ParentPage;
+                }
+            }
+
+            return Ok( parentPageGuids );
+        }
+
+        /// <summary>
+        /// Gets the internal name of the page with the given Guid
+        /// </summary>
+        /// <param name="options">The options that contains the Guid of the page</param>
+        /// <returns>A string internal name of the page with the given Guid.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PagePickerGetPageName" )]
+        [Rock.SystemGuid.RestActionGuid( "20d219bd-3635-4cbc-b79f-250972ae6b97" )]
+        public IHttpActionResult PagePickerGetPageName( [FromBody] PagePickerGetPageNameOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var page = PageCache.Get( options.PageGuid );
+
+            if (page == null)
+            {
+                return NotFound();
+            }
+
+            var isAuthorized = page.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( page, Authorization.VIEW ) == true;
+
+            if ( !isAuthorized )
+            {
+                return Unauthorized();
+            }
+
+            return Ok( page.InternalName );
+        }
+
+        /// <summary>
+        /// Gets the list of routes to the given page
+        /// </summary>
+        /// <param name="options">The options that describe which routes to retrieve.</param>
+        /// <returns>A collection of <see cref="ListItemBag"/> that represent the routes.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PagePickerGetPageRoutes" )]
+        [Rock.SystemGuid.RestActionGuid( "858209a4-7715-43e6-aff5-00b82773f241" )]
+        public IHttpActionResult PagePickerGetPageRoutes( [FromBody] PagePickerGetPageRoutesOptionsBag options )
+        {
+            var page = PageCache.Get( options.PageGuid );
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            var isAuthorized = page.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( page, Authorization.VIEW ) == true;
+
+            if ( !isAuthorized )
+            {
+                return Unauthorized();
+            }
+
+            var routes = page.PageRoutes
+                .Select( r => new ListItemBag
+                {
+                    Text = r.Route,
+                    Value = r.Guid.ToString()
+                } )
+                .ToList();
+
+            return Ok( routes );
+        }
+
+        #endregion
+
+        #region Person Link
+
+        /// <summary>
+        /// Gets the popup HTML for the selected person
+        /// </summary>
+        /// <param name="options">The data needed to get the person's popup HTML</param>
+        /// <returns>A string containing the popup markups</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PersonLinkGetPopupHtml" )]
+        [Rock.SystemGuid.RestActionGuid( "39f44203-9944-4dbd-87ca-d23657e0daa5" )]
+        public IHttpActionResult PersonLinkGetPopupHtml( [FromBody] PersonLinkGetPopupHtmlOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var result = "No Details Available";
+                var html = new StringBuilder();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // Create new service (need ProxyServiceEnabled)
+                var person = new PersonService( rockContext ).Queryable( "ConnectionStatusValue, PhoneNumbers" )
+                    .Where( p => p.Id == options.PersonId )
+                    .FirstOrDefault();
+
+                if ( person != null )
+                {
+                    // If the entity can be secured, ensure the person has access to it.
+                    if ( person is ISecured securedEntity )
+                    {
+                        var isAuthorized = securedEntity.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                            || grant?.IsAccessGranted( person, Authorization.VIEW ) == true;
+
+                        if ( !isAuthorized )
+                        {
+                            return Unauthorized();
+                        }
+                    }
+
+                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                    html.AppendFormat(
+                        "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
+                        Person.GetPersonPhotoImageTag( person, 65, 65 ),
+                        person.FullName,
+                        person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
+
+                    html.Append( "<div class='body'>" );
+
+                    var spouse = person.GetSpouse( rockContext );
+                    if ( spouse != null )
+                    {
+                        html.AppendFormat(
+                            "<div><strong>Spouse</strong> {0}</div>",
+                            spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                    }
+
+                    int? age = person.Age;
+                    if ( age.HasValue )
+                    {
+                        html.AppendFormat( "<div><strong>Age</strong> {0}</div>", age );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( VirtualPathUtility.ToAbsolute( "~/" ) ) );
+                    }
+
+                    foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false && n.NumberTypeValueId.HasValue ).OrderBy( n => n.NumberTypeValue.Order ) )
+                    {
+                        html.AppendFormat( "<div><strong>{0}</strong> {1}</div>", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
+                    }
+
+                    html.Append( "</div>" );
+
+                    result = html.ToString();
+                }
+
+                return Ok( result );
+            }
+        }
+
+        #endregion
+
         #region Person Picker
 
         /// <summary>
@@ -1781,6 +4169,159 @@ namespace Rock.Rest.v2
 
             // Chain to the v1 controller.
             return Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
+        }
+
+        #endregion
+
+        #region Phone Number Box
+
+        /// <summary>
+        /// Get the phone number configuration related to country codes and number formats
+        /// </summary>
+        /// <returns>The configurations in the form of <see cref="ViewModels.Rest.Controls.PhoneNumberBoxGetConfigurationResultsBag"/>.</returns>
+        [Authenticate]
+        [HttpPost]
+        [System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
+        [Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
+        public IHttpActionResult PhoneNumberBoxGetConfiguration()
+        {
+            var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            string defaultCountryCode = null;
+
+            if ( definedType != null )
+            {
+                var definedValues = definedType.DefinedValues;
+
+                foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct() )
+                {
+                    var rules = new List<PhoneNumberCountryCodeRulesConfigurationBag>();
+
+                    if (defaultCountryCode == null)
+                    {
+                        defaultCountryCode = countryCode;
+                    }
+
+                    foreach ( var definedValue in definedValues.Where( v => v.Value == countryCode ).OrderBy( v => v.Order ) )
+                    {
+                        string match = definedValue.GetAttributeValue( "MatchRegEx" );
+                        string replace = definedValue.GetAttributeValue( "FormatRegEx" );
+                        if ( !string.IsNullOrWhiteSpace( match ) && !string.IsNullOrWhiteSpace( replace ) )
+                        {
+                            rules.Add( new PhoneNumberCountryCodeRulesConfigurationBag { Match = match, Format = replace } );
+                        }
+                    }
+
+                    countryCodeRules.Add( countryCode, rules );
+                }
+            }
+
+            return Ok( new PhoneNumberBoxGetConfigurationResultsBag
+            {
+                Rules = countryCodeRules,
+                DefaultCountryCode = defaultCountryCode
+            } );
+        }
+
+        #endregion
+
+        #region Race Picker
+
+        /// <summary>
+        /// Gets the races that can be displayed in the race picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the races and the label for the control.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RacePickerGetRaces" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "126eec10-7a19-49af-9646-909bd92ea516" )]
+        public IHttpActionResult RacePickerGetRaces()
+        {
+            var races = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RACE ).DefinedValues
+                .Select( e => new ListItemBag { Text = e.Value, Value = e.Guid.ToString() } )
+                .ToList();
+
+            return Ok( new RacePickerGetRacesResultsBag
+            {
+                Races = races,
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+            } );
+        }
+
+        #endregion
+
+        #region Registration Template Picker
+
+        /// <summary>
+        /// Gets the registration templates and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which registration templates to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of registration templates.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RegistrationTemplatePickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "41eac873-20f3-4456-9fb4-746a1363807e" )]
+        public IHttpActionResult RegistrationTemplatePickerGetChildren( [FromBody] RegistrationTemplatePickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<RegistrationTemplate>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Reminder Type Picker
+
+        /// <summary>
+        /// Gets the reminder types that can be displayed in the reminder type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the reminder types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReminderTypePickerGetReminderTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "c1c338d2-6364-4217-81ec-7fc34e9218b6" )]
+        public IHttpActionResult ReminderTypePickerGetReminderTypes( [FromBody] ReminderTypePickerGetReminderTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderTypesQuery = new ReminderTypeService( rockContext ).Queryable();
+
+                if ( options.EntityTypeGuid != null )
+                {
+                    reminderTypesQuery = reminderTypesQuery.Where(t => t.EntityType.Guid == options.EntityTypeGuid );
+                }
+
+                var orderedReminderTypes = reminderTypesQuery
+                    .OrderBy( t => t.EntityType.FriendlyName )
+                    .ThenBy( t => t.Name )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.EntityType.FriendlyName + " - " + t.Name
+                    } )
+                    .ToList();
+
+                return Ok( orderedReminderTypes );
+            }
         }
 
         #endregion
@@ -1814,6 +4355,47 @@ namespace Rock.Rest.v2
             }
 
             return Ok( items );
+        }
+
+        #endregion
+
+        #region Report Picker
+
+        /// <summary>
+        /// Gets the reports and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which reports to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of reports.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReportPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "59545f7f-a27b-497c-8376-c85dfc360c11" )]
+        public IHttpActionResult ReportPickerGetChildren( [FromBody] ReportPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Report>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeCategoryGuids = options.IncludeCategoryGuids == null || options.IncludeCategoryGuids.Count == 0 ? null : options.IncludeCategoryGuids,
+                    ItemFilterPropertyName = options.EntityTypeGuid.HasValue ? "EntityTypeId" : null,
+                    ItemFilterPropertyValue = options.EntityTypeGuid.HasValue ? EntityTypeCache.Get(options.EntityTypeGuid.Value).Id.ToString() : "",
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
         }
 
         #endregion
@@ -1986,6 +4568,45 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Schedule Picker
+
+        /// <summary>
+        /// Gets the schedules and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which schedules to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of schedules.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "SchedulePickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "60447abf-18f5-4ad1-a191-3a614408653b" )]
+        public IHttpActionResult SchedulePickerGetChildren( [FromBody] SchedulePickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Schedule>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeInactiveItems = options.IncludeInactiveItems,
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Step Program Picker
 
         /// <summary>
@@ -2131,6 +4752,95 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Workflow Action Type Picker
+
+        /// <summary>
+        /// Gets the workflow action types and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which workflow action types to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent a tree of workflow action types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "WorkflowActionTypePickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "4275ae7f-16ab-4720-a79f-bf7b5ca979e8" )]
+        public IHttpActionResult WorkflowActionTypePickerGetChildren( [FromBody] WorkflowActionTypePickerGetChildrenOptionsBag options )
+        {
+            var list = new List<TreeItemBag>();
+
+            // Folders
+            if ( options.ParentId == 0 )
+            {
+                // Root
+                foreach ( var category in ActionContainer.Instance.Categories )
+                {
+                    var item = new TreeItemBag();
+                    item.Value = category.Key.ToString();
+                    item.Text = category.Value;
+                    item.HasChildren = true;
+                    item.IconCssClass = "fa fa-folder";
+                    list.Add( item );
+                }
+            }
+            // Action Types
+            else if ( options.ParentId < 0 && ActionContainer.Instance.Categories.ContainsKey( options.ParentId ) )
+            {
+                string categoryName = ActionContainer.Instance.Categories[options.ParentId];
+                var categorizedActions = GetCategorizedWorkflowActions();
+                if ( categorizedActions.ContainsKey( categoryName ) )
+                {
+                    foreach ( var entityType in categorizedActions[categoryName].OrderBy( e => e.FriendlyName ) )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = entityType.Guid.ToString();
+                        item.Text = ActionContainer.GetComponentName( entityType.Name );
+                        item.HasChildren = false;
+                        item.IconCssClass = "fa fa-cube";
+                        list.Add( item );
+                    }
+                }
+            }
+
+            return Ok(list.OrderBy( i => i.Text ));
+        }
+
+        /// <summary>
+        /// Gets the categorized workflow actions.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, List<EntityTypeCache>> GetCategorizedWorkflowActions()
+        {
+            var categorizedActions = new Dictionary<string, List<EntityTypeCache>>();
+
+            foreach ( var action in ActionContainer.Instance.Dictionary.Select( d => d.Value.Value ) )
+            {
+                string categoryName = "Uncategorized";
+
+                var actionType = action.GetType();
+                var obj = actionType.GetCustomAttributes( typeof( ActionCategoryAttribute ), true ).FirstOrDefault();
+                if ( obj != null )
+                {
+                    var actionCategory = obj as ActionCategoryAttribute;
+                    if ( actionCategory != null )
+                    {
+                        categoryName = actionCategory.CategoryName;
+                    }
+                }
+
+                // "HideFromUser" is a special category name that is used to hide
+                // workflow actions from showing up to the user. System user only.
+                if ( !categoryName.Equals( "HideFromUser", System.StringComparison.OrdinalIgnoreCase ) )
+                {
+                    categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
+                    categorizedActions[categoryName].Add( action.EntityType );
+                }
+            }
+
+            return categorizedActions;
+        }
+
+        #endregion
+
         #region Workflow Type Picker
 
         /// <summary>
@@ -2241,6 +4951,119 @@ namespace Rock.Rest.v2
 
 
             return items;
+        }
+
+        /// <summary>
+        /// Get the attributes for the given object
+        /// </summary>
+        /// <param name="model">The object to find the attributes of</param>
+        /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
+        private List<PublicAttributeBag> GetAttributes( IHasInheritedAttributes model )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+
+                Type entityType = model.GetType();
+                if ( entityType.IsDynamicProxyType() )
+                {
+                    entityType = entityType.BaseType;
+                }
+
+                var attributes = new List<Rock.Web.Cache.AttributeCache>();
+
+                var entityTypeCache = EntityTypeCache.Get( entityType );
+
+                List<Rock.Web.Cache.AttributeCache> allAttributes = null;
+                Dictionary<int, List<int>> inheritedAttributes = null;
+
+                //
+                // If this entity can provide inherited attribute information then
+                // load that data now. If they don't provide any then generate empty lists.
+                //
+                if ( model is Rock.Attribute.IHasInheritedAttributes entityWithInheritedAttributes )
+                {
+                    allAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
+                    inheritedAttributes = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
+                }
+
+                allAttributes = allAttributes ?? new List<AttributeCache>();
+                inheritedAttributes = inheritedAttributes ?? new Dictionary<int, List<int>>();
+
+                //
+                // Get all the attributes that apply to this entity type and this entity's
+                // properties match any attribute qualifiers.
+                //
+                var entityTypeId = entityTypeCache?.Id;
+
+                if ( entityTypeCache != null )
+                {
+                    var entityTypeAttributesList = AttributeCache.GetByEntityType( entityTypeCache.Id );
+                    if ( entityTypeAttributesList.Any() )
+                    {
+                        var entityTypeQualifierColumnPropertyNames = entityTypeAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
+                        Dictionary<string, object> propertyValues = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+                        foreach ( var propertyName in entityTypeQualifierColumnPropertyNames )
+                        {
+                            System.Reflection.PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                            if ( propertyInfo != null )
+                            {
+                                propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( model, null ) );
+                            }
+                        }
+
+                        var entityTypeAttributesForQualifier = entityTypeAttributesList.Where( x =>
+                          string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) ||
+                                 ( propertyValues.ContainsKey( x.EntityTypeQualifierColumn ) &&
+                                 ( string.IsNullOrEmpty( x.EntityTypeQualifierValue ) ||
+                                 ( propertyValues[x.EntityTypeQualifierColumn] ?? "" ).ToString() == x.EntityTypeQualifierValue ) ) );
+
+                        attributes.AddRange( entityTypeAttributesForQualifier );
+                    }
+                }
+
+                //
+                // Append these attributes to our inherited attributes, in order.
+                //
+                foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
+                {
+                    allAttributes.Add( attribute );
+                }
+                var attributeList = allAttributes
+                    .Where( a => a.IsActive )
+                    .Select( a => new PublicAttributeBag
+                    {
+                        AttributeGuid = a.Guid,
+                        FieldTypeGuid = FieldTypeCache.Get( a.FieldTypeId ).Guid,
+                        Name = a.Name,
+                        Key = a.Key,
+                        Description = a.Description,
+                        IsRequired = a.IsRequired,
+                        Order = a.Order,
+                        ConfigurationValues = a.ConfigurationValues
+                    } )
+                    .ToList();
+
+                return attributeList;
+            }
+        }
+
+        /// <summary>
+        /// Converts the TreeViewItem to TreeItemBag.
+        /// </summary>
+        /// <param name="item">The TreeViewItem to be converted.</param>
+        /// <returns>The item as a TreeItemBag</returns>
+        private TreeItemBag convertTreeViewItemToTreeItemBag (TreeViewItem item)
+        {
+            return new TreeItemBag
+            {
+                Value = item.Id,
+                Text = item.Name,
+                IsFolder = item.HasChildren,
+                HasChildren = item.HasChildren,
+                IconCssClass = item.IconCssClass,
+                IsActive = item.IsActive,
+                Children = item.Children?.Select( convertTreeViewItemToTreeItemBag ).ToList()
+            };
         }
 
         #endregion

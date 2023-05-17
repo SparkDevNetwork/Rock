@@ -17,19 +17,19 @@
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-import Alert from "@Obsidian/Controls/alert.vue";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import InlineSwitch from "@Obsidian/Controls/inlineSwitch";
 import TextBox from "@Obsidian/Controls/textBox";
 import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
-import { EntityType } from "@Obsidian/SystemGuids";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import EmailSource from "../Shared/emailSource";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
-import { FormGeneral } from "../Shared/types";
-import { FormTemplateListItem } from "./types";
+import { FormGeneral } from "../Shared/types.partial";
+import { FormTemplateListItem } from "./types.partial";
 import { useFormSources } from "./utils.partial";
 
 /**
@@ -39,7 +39,7 @@ export default defineComponent({
     name: "Workflow.FormBuilderDetail.GeneralSettings",
 
     components: {
-        Alert,
+        NotificationBox,
         CategoryPicker,
         CheckBox,
         DateTimePicker,
@@ -149,9 +149,9 @@ export default defineComponent({
         label="Is Login Required"
         help="Determines if a person needs to be logged in to complete the form." />
 
-    <Alert v-else alertType="info">
+    <NotificationBox v-else alertType="info">
         The template has enforced the login required setting.
-    </Alert>
+    </NotificationBox>
 
     <div class="row">
         <div class="col-md-6">

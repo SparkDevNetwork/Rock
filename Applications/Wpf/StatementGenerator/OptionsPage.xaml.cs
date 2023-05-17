@@ -49,6 +49,8 @@ namespace Rock.Apps.StatementGenerator
 
             txtRockUrl.Text = rockConfig.RockBaseUrl;
             txtTemporaryDirectory.Text = rockConfig.TemporaryDirectory;
+            txtGetFinancialStatementGeneratorRecipientsEndpoint.Text = rockConfig.GetFinancialStatementGeneratorRecipientsEndpoint;
+            txtGetStatementGeneratorRecipientResultEndpoint.Text = rockConfig.GetStatementGeneratorRecipientResultEndpoint;
         }
 
         /// <summary>
@@ -97,6 +99,22 @@ namespace Rock.Apps.StatementGenerator
             }
 
             rockConfig.TemporaryDirectory = txtTemporaryDirectory.Text;
+
+            var recipientsEndpoint = txtGetFinancialStatementGeneratorRecipientsEndpoint.Text;
+            if ( recipientsEndpoint.IsNullOrWhiteSpace() )
+            {
+                recipientsEndpoint = RockConfig.DefaultGetFinancialStatementGeneratorRecipientsEndpoint;
+            }
+
+            rockConfig.GetFinancialStatementGeneratorRecipientsEndpoint = recipientsEndpoint;
+
+            var resultEndpoint = txtGetStatementGeneratorRecipientResultEndpoint.Text;
+            if ( resultEndpoint.IsNullOrWhiteSpace() )
+            {
+                resultEndpoint = RockConfig.DefaultGetStatementGeneratorRecipientResultEndpoint;
+            }
+
+            rockConfig.GetStatementGeneratorRecipientResultEndpoint = resultEndpoint;
 
             rockConfig.Save();
 

@@ -22,7 +22,7 @@ import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import HelpBlock from "@Obsidian/Controls/helpBlock";
 import { ValidationRule } from "@Obsidian/ValidationRules";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-import { RegistrationEntryBlockArgs, RegistrationEntryState } from "./types";
+import { RegistrationEntryBlockArgs, RegistrationEntryState } from "./types.partial";
 
 enum RegistrationCostSummaryType {
     Cost = 0,
@@ -200,7 +200,7 @@ export default defineComponent({
             const rules: ValidationRule[] = [];
             let min = this.amountDueToday;
             const max = this.maxAmountCanBePaid;
-            
+
             if (min > max) {
                 min = max;
             }

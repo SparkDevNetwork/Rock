@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -54,8 +52,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 7 )]
 
-    [DisallowConcurrentExecution]
-    public class StepsAutomation : IJob
+    public class StepsAutomation : RockJob
     {
         #region Keys
 
@@ -102,13 +99,10 @@ namespace Rock.Jobs
 
         #endregion Constructors
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            _sqlCommandTimeoutSeconds = context.JobDetail.JobDataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+            _sqlCommandTimeoutSeconds = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
 
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();
@@ -119,12 +113,12 @@ namespace Rock.Jobs
             var stepTypeViews = GetStepTypeViews().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
             // Get the day threshold for adding new steps
-            var minDaysBetweenSteps = GetDuplicatePreventionDayRange( context );
+            var minDaysBetweenSteps = GetDuplicatePreventionDayRange();
 
             // Loop through each step type and create steps based on what is in the dataview
             foreach ( var stepTypeView in stepTypeViews )
             {
-                ProcessStepType( context, stepTypeView, minDaysBetweenSteps, addedResults, updatedResults, out var errorsFromThisStepType );
+                ProcessStepType( stepTypeView, minDaysBetweenSteps, addedResults, updatedResults, out var errorsFromThisStepType );
                 if ( errorsFromThisStepType != null && errorsFromThisStepType.Any() )
                 {
                     errorsFromThisStepType.ForEach( errors.Add );
@@ -134,11 +128,11 @@ namespace Rock.Jobs
             // Set the results for the job log
             var totalAdded = addedResults.Sum();
             var totalUpdated = updatedResults.Sum();
-            context.Result = $"{totalAdded} step{( totalAdded == 1 ? "" : "s" )} added. {totalUpdated} step{( totalUpdated == 1 ? "" : "s" )} updated.";
+            this.Result = $"{totalAdded} step{( totalAdded == 1 ? "" : "s" )} added. {totalUpdated} step{( totalUpdated == 1 ? "" : "s" )} updated.";
 
             if ( errors.Any() )
             {
-                ThrowErrors( context, errors );
+                ThrowErrors( errors );
             }
         }
 
@@ -147,14 +141,12 @@ namespace Rock.Jobs
         /// <summary>
         /// Processes the step type. Add steps for everyone in the dataview
         /// </summary>
-        /// <param name="jobContext">The job context.</param>
         /// <param name="stepTypeView">The step type view.</param>
         /// <param name="minDaysBetweenSteps">The minimum days between steps.</param>
         /// <param name="addedResults">The added results.</param>
         /// <param name="updatedResults">The updated results.</param>
         /// <param name="errorMessages">The error message.</param>
         private void ProcessStepType(
-            IJobExecutionContext jobContext,
             StepTypeView stepTypeView,
             int minDaysBetweenSteps,
             ConcurrentBag<int> addedResults,
@@ -310,7 +302,7 @@ namespace Rock.Jobs
                 {
                     try
                     {
-                        jobContext.UpdateLastStatusMessage( $"Processing {stepTypeView.Name } steps : {progressCount}/{totalCount}" );
+                        this.UpdateLastStatusMessage( $"Processing {stepTypeView.Name } steps : {progressCount}/{totalCount}" );
                     }
                     catch ( Exception ex )
                     {
@@ -453,24 +445,22 @@ namespace Rock.Jobs
         /// <summary>
         /// Gets the duplicate prevention day range.
         /// </summary>
-        /// <param name="jobExecutionContext">The job execution context.</param>
-        /// <returns></returns>
-        private int GetDuplicatePreventionDayRange( IJobExecutionContext jobExecutionContext )
+        /// <returns>System.Int32.</returns>
+        private int GetDuplicatePreventionDayRange()
         {
-            var days = jobExecutionContext.JobDetail.JobDataMap.GetString( AttributeKey.DuplicatePreventionDayRange ).AsInteger();
+            var days = GetAttributeValue( AttributeKey.DuplicatePreventionDayRange ).AsInteger();
             return days;
         }
 
         /// <summary>
         /// Throws the errors.
         /// </summary>
-        /// <param name="jobExecutionContext">The job execution context.</param>
         /// <param name="errors">The errors.</param>
-        private void ThrowErrors( IJobExecutionContext jobExecutionContext, IEnumerable<string> errors )
+        private void ThrowErrors( IEnumerable<string> errors )
         {
             var sb = new StringBuilder();
 
-            if ( !jobExecutionContext.Result.ToStringSafe().IsNullOrWhiteSpace() )
+            if ( !this.Result.IsNullOrWhiteSpace() )
             {
                 sb.AppendLine();
             }
@@ -483,7 +473,7 @@ namespace Rock.Jobs
             }
 
             var errorMessage = sb.ToString();
-            jobExecutionContext.Result += errorMessage;
+            this.Result += errorMessage;
 
             var exception = new Exception( errorMessage );
             var httpContext = HttpContext.Current;

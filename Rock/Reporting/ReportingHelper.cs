@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter;
@@ -260,7 +261,9 @@ namespace Rock.Reporting
                 }
                 else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
                 {
-                    Guid? attributeGuid = reportField.Selection.AsGuidOrNull();
+                    var fieldInfo = ReportingHelper.GetAttributeReportFieldInfo( reportField.Selection, rockContext );
+
+                    var attributeGuid = fieldInfo.AttributeGuid;
                     if ( attributeGuid == null )
                     {
                         // if an attribute guid is not specified, just ignore this field
@@ -288,6 +291,8 @@ namespace Rock.Reporting
                     }
                     else
                     {
+                        var maximumLength = fieldInfo.MaximumLength;
+
                         boundField = new CallbackField();
                         boundField.HtmlEncode = false;
                         ( boundField as CallbackField ).OnFormatDataValue += ( sender, e ) =>
@@ -296,8 +301,13 @@ namespace Rock.Reporting
                             var attributeValue = e.DataValue ?? attribute.DefaultValueAsType;
                             if ( attributeValue != null )
                             {
-                                bool condensed = true;
+                                // If the field has no maximum length specified, show the default condensed value.
+                                var condensed = !maximumLength.HasValue;
                                 resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, attributeValue.ToString(), attribute.QualifierValues, condensed );
+                                if ( maximumLength.HasValue )
+                                {
+                                    resultHtml = resultHtml.TruncateHtml( maximumLength.Value );
+                                }
                             }
 
                             e.FormattedValue = resultHtml ?? string.Empty;
@@ -671,7 +681,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="filterField">The filter field.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "No Longer Needed" )]
+        [Obsolete( "No Longer Needed", true )]
         public static void RegisterJavascriptInclude( FilterField filterField )
         {
             // no longer needed since the required javascript is now bundled
@@ -820,7 +830,7 @@ namespace Rock.Reporting
             /// The filter list.
             /// </value>
             [RockObsolete( "1.10" )]
-            [Obsolete( "Changed to internal property" )]
+            [Obsolete( "Changed to internal property", true )]
             public List<FilterInfo> FilterList
             {
                 get => AllFilterList;
@@ -862,7 +872,7 @@ namespace Rock.Reporting
             /// From other data view.
             /// </value>
             [RockObsolete( "1.10" )]
-            [Obsolete( "Use FromOtherDataViewName instead" )]
+            [Obsolete( "Use FromOtherDataViewName instead", true )]
             public string FromOtherDataView
             {
                 get => FromDataView?.Name;
@@ -1082,5 +1092,129 @@ namespace Rock.Reporting
         }
 
         #endregion
+
+        /// <summary>
+        /// Creates an Attribute report field configuration settings object from a settings string.
+        /// </summary>
+        /// <param name="configurationString"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static AttributeReportFieldInfo GetAttributeReportFieldInfo( string configurationString, RockContext rockContext )
+        {
+            var info = new AttributeReportFieldInfo();
+
+            if ( string.IsNullOrWhiteSpace( configurationString ) )
+            {
+                return info;
+            }
+
+            // If this is a packed string, remove the first parameter.
+            if ( configurationString.StartsWith( "Attribute|", StringComparison.OrdinalIgnoreCase ) )
+            {
+                configurationString = configurationString.Substring( 10 );
+            }
+
+            // Try to parse the configuration as a simple Guid.
+            var attributeGuid = configurationString.AsGuidOrNull();
+            if ( attributeGuid == null )
+            {
+                // Try to deserialize the field settings from Json.
+                var config = configurationString.FromJsonOrNull<AttributeReportFieldConfig>();
+                if ( config != null )
+                {
+                    info.MaximumLength = config.MaximumLength;
+                    attributeGuid = config.AttributeGuid;
+                }
+            }
+
+            if ( attributeGuid != null )
+            {
+                info.AttributeGuid = attributeGuid;
+
+                var attribute = AttributeCache.Get( attributeGuid.Value, rockContext );
+                if ( attribute != null && attribute.IsActive )
+                {
+                    var hasMaxLength = !attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
+                        && !attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() );
+                    info.HasMaximumLength = hasMaxLength;
+                }
+            }
+
+            return info;
+        }
+
+        /// <summary>
+        /// A data entry view model for an instance of an Attribute Report Field.
+        /// </summary>
+        public class AttributeReportFieldInfo
+        {
+            /// <summary>
+            /// Gets or sets the Attribute identifier.
+            /// </summary>
+            public Guid? AttributeGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the column header displayed on the report.
+            /// </summary>
+            public string ColumnHeader { get; set; }
+
+            /// <summary>
+            /// Gets or sets if the field is visible in the report.
+            /// </summary>
+            public bool ShowInGrid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the maxiumum length of the field text.
+            /// </summary>
+            /// <remarks>
+            /// This flag is only supported for specific fields.
+            /// </remarks>
+            public int? MaximumLength { get; set; }
+
+            /// <summary>
+            /// Gets a flag indicating if the field content supports a maximum length.
+            /// </summary>
+            public bool HasMaximumLength { get; set; }
+
+            /// <summary>
+            /// Gets the serialized configuration for the report field settings.
+            /// </summary>
+            /// <returns>
+            /// A simple string representing an attribute guid, or a JSON string if the field supports multiple configuration properties.
+            /// </returns>
+            public string SerializeConfiguration()
+            {
+                // If only the Attribute Guid is set, return a simple string.
+                if ( this.MaximumLength == null )
+                {
+                    if ( this.AttributeGuid.HasValue )
+                    {
+                        return this.AttributeGuid.Value.ToString( "N" );
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                var config = new AttributeReportFieldConfig
+                {
+                    AttributeGuid = this.AttributeGuid.Value,
+                    MaximumLength = this.MaximumLength.Value
+                };
+                var json = JsonConvert.SerializeObject( config );
+                return json;
+            }
+        }
+
+        /// <summary>
+        /// The configuration settings for a report field containing an Attribute.
+        /// </summary>
+        private class AttributeReportFieldConfig
+        {
+            public Guid? AttributeGuid { get; set; }
+
+            public int? MaximumLength { get; set; }
+        }
     }
 }

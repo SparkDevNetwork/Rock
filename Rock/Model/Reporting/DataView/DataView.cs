@@ -186,6 +186,17 @@ namespace Rock.Model
         [DataMember]
         public bool DisableUseOfReadOnlyContext { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Persisted Schedule Id.
+        /// If this is null, then the DataView does not have a persisted schedule.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Schedule"/> for this DataView.
+        /// If it does not have a persisted schedule, this value will be null.
+        /// </value>
+        [DataMember]
+        public int? PersistedScheduleId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -226,6 +237,15 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType TransformEntityType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the persisted <see cref="Rock.Model.Schedule"/> that belongs to this DataView.
+        /// </summary>
+        /// <value>
+        /// The persisted <see cref="Rock.Model.Schedule"/> that belongs to this DataView.
+        /// </value>
+        [DataMember]
+        public virtual Schedule PersistedSchedule { get; set; }
+
         #endregion
     }
 
@@ -245,6 +265,7 @@ namespace Rock.Model
             this.HasOptional( v => v.DataViewFilter ).WithMany().HasForeignKey( v => v.DataViewFilterId ).WillCascadeOnDelete( true );
             this.HasRequired( v => v.EntityType ).WithMany().HasForeignKey( v => v.EntityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( e => e.TransformEntityType ).WithMany().HasForeignKey( e => e.TransformEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( s => s.PersistedSchedule ).WithMany().HasForeignKey( s => s.PersistedScheduleId ).WillCascadeOnDelete( false );
         }
     }
 

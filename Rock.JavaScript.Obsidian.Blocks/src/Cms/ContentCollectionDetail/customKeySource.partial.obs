@@ -1,0 +1,175 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <tr v-if="!isEditMode">
+        <td>{{ key }}</td>
+        <td>{{ title }}</td>
+        <td><i class="fa fa-check"></i></td>
+        <td class="grid-columncommand" align="center">
+            <a class="btn btn-default btn-sm" @click="onEditClick">
+                <i class="fa fa-pencil"></i>
+            </a>
+        </td>
+        <td class="grid-columncommand" align="center">
+            <a class="btn btn-danger btn-sm" @click="onRemoveClick">
+                <i class="fa fa-times"></i>
+            </a>
+        </td>
+    </tr>
+
+    <tr v-else>
+        <td colspan="3">
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox v-model="key"
+                             label="Key"
+                             rules="required"
+                             help="The key in the index to use for this custom value." />
+                </div>
+
+                <div class="col-md-4">
+                    <TextBox v-model="title"
+                             label="Title"
+                             rules="required"
+                             help="The title of the custom value, this is used if filtering is enabled." />
+                </div>
+
+                <div class="col-md-4">
+                    <CheckBox v-model="isMultiple"
+                              label="Multiple Values"
+                              help="If enabled, then the content will be split by a comma as a multi-value field." />
+                </div>
+            </div>
+
+            <CodeEditor v-model="template"
+                        mode="lava"
+                        rules="required"
+                        label="Template" />
+        </td>
+
+        <td class="grid-columncommand" align="center">
+            <a class="btn btn-success btn-sm" :class="{disabled: isSaveDisabled}" @click="onAcceptClick">
+                <i class="fa fa-check"></i>
+            </a>
+        </td>
+
+        <td class="grid-columncommand" align="center">
+            <a class="btn btn-default btn-sm" @click="onCancelClick">
+                <i class="fa fa-minus"></i>
+            </a>
+        </td>
+    </tr>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
+    import { useFormState } from "@Obsidian/Utility/form";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { computed, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ContentCollectionCustomFieldBag>,
+            required: false
+        },
+
+        editMode: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ContentCollectionCustomFieldBag): void,
+        (e: "update:editMode", value: boolean): void,
+        (e: "remove"): void
+    }>();
+
+    let validationId = newGuid();
+    const formState = useFormState();
+    const key = ref(props.modelValue?.key ?? "");
+    const title = ref(props.modelValue?.title ?? "");
+    const isMultiple = ref(props.modelValue?.isMultiple ?? false);
+    const template = ref(props.modelValue?.template ?? "");
+    const isEditMode = ref(props.editMode);
+
+    const isSaveDisabled = computed((): boolean => {
+        return !key.value || !title.value || !template.value;
+    });
+
+    /**
+     * Updates the custom validation error. If we are in edit mode then do
+     * not allow the form to be saved.
+     */
+    function updateValidation(): void {
+        if (isEditMode.value) {
+            formState?.setError(validationId, "Custom Value", "must not be in edit mode.");
+        }
+        else {
+            formState?.setError(validationId, "Custom Value", "");
+        }
+    }
+
+    /**
+     * Event Handler for when the edit button is clicked. Switch into edit
+     * mode.
+     */
+    function onEditClick(): void {
+        isEditMode.value = true;
+        emit("update:editMode", isEditMode.value);
+    }
+
+    /**
+     * Event Handler for when the remove button is clicked. Emit an event to
+     * the parent component that we should be removed.
+     */
+    function onRemoveClick(): void {
+        emit("remove");
+    }
+
+    /**
+     * Event Handler for when the Accept Changes button is clicked. Update
+     * the model to match what they entered.
+     */
+    function onAcceptClick(): void {
+        emit("update:modelValue", {
+            key: key.value.replace(/ /g, ""),
+            title: title.value,
+            isMultiple: isMultiple.value,
+            template: template.value
+        });
+        isEditMode.value = false;
+        emit("update:editMode", isEditMode.value);
+    }
+
+    /**
+     * Event Handler for when the cancel button is clicked while in edit mode.
+     */
+    function onCancelClick(): void {
+        key.value = props.modelValue?.key ?? "";
+        title.value = props.modelValue?.title ?? "";
+        isMultiple.value = props.modelValue?.isMultiple ?? false;
+        template.value = props.modelValue?.template ?? "";
+        isEditMode.value = false;
+        emit("update:editMode", isEditMode.value);
+    }
+
+    watch(() => props.modelValue, () => {
+        key.value = props.modelValue?.key ?? "";
+        title.value = props.modelValue?.title ?? "";
+        isMultiple.value = props.modelValue?.isMultiple ?? false;
+        template.value = props.modelValue?.template ?? "";
+    });
+
+    watch(() => props.editMode, () => {
+        isEditMode.value = props.editMode;
+    });
+
+    watch(isEditMode, () => {
+        updateValidation();
+    });
+
+    updateValidation();
+</script>

@@ -199,6 +199,10 @@
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayBirthdateOnAdults" runat="server" Label="Display Birthdate on Adults" Help="How should Birthdate be displayed for adults?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayBirthdateOnChildren" runat="server" Label="Display Birthdate on Children" Help="How should Birthdate be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayGradeOnChildren" runat="server" Label="Display Grade on Children" Help="How should Grade be displayed for children?" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayRaceOnAdults" runat="server" Label="Display Race on Adults" Help="How should race be displayed for adults?" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayEthnicityOnAdults" runat="server" Label="Display Ethnicity on Adults" Help="How should ethnicity be displayed for adults?" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayRaceOnChildren" runat="server" Label="Display Race on Children" Help="How should race be displayed for children?" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayEthnicityOnChildren" runat="server" Label="Display Ethnicity on Children" Help="How should ethnicity be displayed for children?" />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

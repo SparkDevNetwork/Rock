@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -41,8 +39,7 @@ namespace Rock.Jobs
     [IntegerField( "Alert Period", "The number of minutes to allow for communications to be sent before sending an alert.", false, 120, "", 0 )]
     [SystemCommunicationField( "Alert Email", "The system email to use for sending an alert", true, "2fc7d3e3-d85b-4265-8983-970345215dea", "", 1 )]
     [TextField( "Alert Recipients", "A comma-delimited list of recipients that should receive the alert", true, "", "", 2 )]
-    [DisallowConcurrentExecution]
-    public class CommunicationQueueAlert : IJob
+    public class CommunicationQueueAlert : RockJob
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunications"/> class.
@@ -51,16 +48,12 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            int alertPeriod = dataMap.GetInt( "AlertPeriod" );
-            Guid? systemEmailGuid = dataMap.GetString( "AlertEmail" ).AsGuidOrNull();
-            List<string> recipientEmails = dataMap.GetString( "AlertRecipients" ).SplitDelimitedValues().ToList();
+            int alertPeriod = GetAttributeValue( "AlertPeriod" ).AsInteger();
+            Guid? systemEmailGuid = GetAttributeValue( "AlertEmail" ).AsGuidOrNull();
+            List<string> recipientEmails = GetAttributeValue( "AlertRecipients" ).SplitDelimitedValues().ToList();
 
             if ( systemEmailGuid.HasValue && recipientEmails.Any() )
             {
@@ -91,7 +84,7 @@ namespace Rock.Jobs
                     var errors = new List<string>();
                     emailMessage.Send( out errors );
 
-                    context.Result = string.Format( "Notified about {0} queued communications. {1} errors encountered.", communications.Count, errors.Count );
+                    this.Result = string.Format( "Notified about {0} queued communications. {1} errors encountered.", communications.Count, errors.Count );
                     if ( errors.Any() )
                     {
                         StringBuilder sb = new StringBuilder();
@@ -99,7 +92,7 @@ namespace Rock.Jobs
                         sb.Append( "Errors: " );
                         errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                         string errorMessage = sb.ToString();
-                        context.Result += errorMessage;
+                        this.Result += errorMessage;
                         throw new Exception( errorMessage );
                     }
                 }

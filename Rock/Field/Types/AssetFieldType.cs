@@ -16,8 +16,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Newtonsoft.Json;
 
 using Rock.Attribute;
@@ -32,7 +33,7 @@ namespace Rock.Field.Types
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "4E4E8692-23B4-49EA-88B4-2AB07899E0EE")]
+    [Rock.SystemGuid.FieldTypeGuid( "4E4E8692-23B4-49EA-88B4-2AB07899E0EE" )]
     public class AssetFieldType : FieldType
     {
         /// <summary>
@@ -57,66 +58,6 @@ namespace Rock.Field.Types
 </div>";
 
         #region Edit Control
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The id.</param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var pickerControl = new ItemFromBlockPicker
-            {
-                ID = id,
-                BlockTypePath = "~/Blocks/CMS/AssetManager.ascx",
-                ShowInModal = true,
-                SelectControlCssClass = "imageupload-group",
-                CssClass = "picker-asset",
-                ModalSaveButtonText = "Select",
-                ModalSaveButtonCssClass = "js-singleselect aspNetDisabled",
-                ModalCssClass = "js-AssetManager-modal", 
-                ButtonTextTemplate = "Select Asset",
-                PickerButtonTemplate = pickerButtonTemplate,
-                ModalTitle = "Asset Manager"
-            };
-
-            return pickerControl;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var picker = ( ItemFromBlockPicker ) control;
-            if ( picker != null )
-            {
-                return picker.SelectedValue;
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var picker = ( ItemFromBlockPicker ) control;
-            if ( picker != null )
-            {
-                picker.SelectedValue = value;
-            }
-        }
 
         #endregion
 
@@ -171,21 +112,6 @@ namespace Rock.Field.Types
             return $"<a href=\"{encodedUrl}\">{encodedUrl}</a>";
         }
 
-        /// <summary>
-        /// Overridden to take JSON input of AssetStorageID and Key and create a URL. If the asset is using Amazon then a presigned URL is
-        /// created.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            // Original implementation always returns non-condensed and did not HTML format.
-            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion
 
         /// <summary>
@@ -215,6 +141,87 @@ namespace Rock.Field.Types
             return true;
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The id.</param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var pickerControl = new ItemFromBlockPicker
+            {
+                ID = id,
+                BlockTypePath = "~/Blocks/CMS/AssetManager.ascx",
+                ShowInModal = true,
+                SelectControlCssClass = "imageupload-group",
+                CssClass = "picker-asset",
+                ModalSaveButtonText = "Select",
+                ModalSaveButtonCssClass = "js-singleselect aspNetDisabled",
+                ModalCssClass = "js-AssetManager-modal",
+                ButtonTextTemplate = "Select Asset",
+                PickerButtonTemplate = pickerButtonTemplate,
+                ModalTitle = "Asset Manager"
+            };
+
+            return pickerControl;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var picker = ( ItemFromBlockPicker ) control;
+            if ( picker != null )
+            {
+                return picker.SelectedValue;
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var picker = ( ItemFromBlockPicker ) control;
+            if ( picker != null )
+            {
+                picker.SelectedValue = value;
+            }
+        }
+
+        /// <summary>
+        /// Overridden to take JSON input of AssetStorageID and Key and create a URL. If the asset is using Amazon then a presigned URL is
+        /// created.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // Original implementation always returns non-condensed and did not HTML format.
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+#endif
         #endregion
     }
 }

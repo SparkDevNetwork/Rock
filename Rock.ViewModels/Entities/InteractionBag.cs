@@ -78,16 +78,16 @@ namespace Rock.ViewModels.Entities
         /// 
         /// <item>
         ///     <term>Page Views</term>
-        ///     <description>null, Page is the Component, Site is the Channel</description></item>
+        ///     <description>EntityId is left null, Page is the Component, Site is the Channel</description></item>
         /// <item>
         ///     <term>Communication Recipient Activity</term>
-        ///     <description><see cref="T:Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description></item>
+        ///     <description>EntityId is the <see cref="T:Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description></item>
         /// <item>
         ///     <term>Content Channel Activity</term>
-        ///     <description>null, ContentChannel is the Component, single Channel</description></item>
+        ///     <description>EntityId is left null, ContentChannel is the Component, single Channel</description></item>
         /// <item>
         ///     <term>Workflow Form Entry</term>
-        ///     <description><see cref="T:Rock.Model.Workflow" /> Id, WorkflowType is the Component, single Channel </description></item>
+        ///     <description>EntityId is the <see cref="T:Rock.Model.Workflow" /> Id, WorkflowType is the Component, single Channel </description></item>
         /// </summary>
         /// <value>
         /// A System.Int32 representing the Id of the entity (object) that this interaction component is related to.

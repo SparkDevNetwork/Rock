@@ -31,22 +31,27 @@ namespace Rock.Model
             /// <inheritdoc/>
             protected override void PreSave()
             {
-                var rockContext = ( RockContext ) DbContext;
-
-                switch ( Entry.State )
-                {
-                    case EntityContextState.Deleted:
-                        {
-                            // If a FinancialPaymentDetail was linked to this FinancialPersonSavedAccount and is now orphaned, delete it.
-                            var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                            financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
-
-                            break;
-                        }
-                }
-
                 base.PreSave();
             }
+
+            protected override void PostSave()
+            {
+                if ( Entry.State == EntityContextState.Deleted || Entry.State == EntityContextState.Modified )
+                {
+                    // If a FinancialPaymentDetail was linked to this FinancialScheduledTransaction and is now orphaned, delete it
+                    var originalFinancialPaymentDetailId = Entry.OriginalValues[nameof( FinancialPersonSavedAccount.FinancialPaymentDetailId )] as int?;
+                    if ( originalFinancialPaymentDetailId.HasValue && Entity.FinancialPaymentDetailId != originalFinancialPaymentDetailId.Value )
+                    {
+                        var rockContext = this.RockContext;
+                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( Entry );
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                base.PostSave();
+            }
+
 
             /* 2022-07-22 ED
              * Circular references will result in an error when trying to perform an operation on both items, such as delete.

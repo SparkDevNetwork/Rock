@@ -118,8 +118,8 @@ export type CommunicationTemplateBag = {
     /** Gets or sets the PersonId of the Rock.Model.Person who is the sender of the Communication */
     senderPersonAliasId?: number | null;
 
-    /** Gets or sets from number. */
-    sMSFromDefinedValueId?: number | null;
+    /** Gets or sets the system phone number identifier used for SMS sending. */
+    smsFromSystemPhoneNumberId?: number | null;
 
     /** Gets or sets the message. */
     sMSMessage?: string | null;

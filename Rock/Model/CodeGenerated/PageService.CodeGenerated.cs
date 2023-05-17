@@ -165,6 +165,8 @@ namespace Rock.Model
                 PageDisplayTitle = model.PageDisplayTitle,
                 PageTitle = model.PageTitle,
                 ParentPageId = model.ParentPageId,
+                RateLimitPeriod = model.RateLimitPeriod,
+                RateLimitRequestPerPeriod = model.RateLimitRequestPerPeriod,
                 RequiresEncryption = model.RequiresEncryption,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -266,6 +268,8 @@ namespace Rock.Model
             target.PageDisplayTitle = source.PageDisplayTitle;
             target.PageTitle = source.PageTitle;
             target.ParentPageId = source.ParentPageId;
+            target.RateLimitPeriod = source.RateLimitPeriod;
+            target.RateLimitRequestPerPeriod = source.RateLimitRequestPerPeriod;
             target.RequiresEncryption = source.RequiresEncryption;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

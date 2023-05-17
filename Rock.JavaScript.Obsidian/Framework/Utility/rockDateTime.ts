@@ -1,18 +1,11 @@
 import { DateTime, FixedOffsetZone, Zone } from "luxon";
 import { formatAspDate } from "./aspDateFormat";
+import { DayOfWeek } from "@Obsidian/Enums/Controls/dayOfWeek";
 
 /**
  * The days of the week that are used by RockDateTime.
  */
-export const enum DayOfWeek {
-    Sunday = 0,
-    Monday = 1,
-    Tuesday = 2,
-    Wednesday = 3,
-    Thursday = 4,
-    Friday = 5,
-    Saturday = 6
-}
+export { DayOfWeek } from "@Obsidian/Enums/Controls/dayOfWeek";
 
 /**
  * The various date and time formats supported by the formatting methods.
@@ -675,6 +668,28 @@ export class RockDateTime {
      */
     public isEqualTo(otherDateTime: RockDateTime): boolean {
         return this.dateTime.toMillis() === otherDateTime.dateTime.toMillis();
+    }
+
+    /**
+     * Checks if this instance is later than another RockDateTime instance.
+     *
+     * @param otherDateTime The other RockDateTime to be compared against.
+     *
+     * @returns True if this instance represents a point in time that occurred after another point in time, regardless of time zone.
+     */
+    public isLaterThan(otherDateTime: RockDateTime): boolean {
+        return this.dateTime.toMillis() > otherDateTime.dateTime.toMillis();
+    }
+
+    /**
+     * Checks if this instance is earlier than another RockDateTime instance.
+     *
+     * @param otherDateTime The other RockDateTime to be compared against.
+     *
+     * @returns True if this instance represents a point in time that occurred before another point in time, regardless of time zone.
+     */
+    public isEarlierThan(otherDateTime: RockDateTime): boolean {
+        return this.dateTime.toMillis() < otherDateTime.dateTime.toMillis();
     }
 
     // #endregion

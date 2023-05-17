@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -34,13 +35,94 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.WORKFLOW_TEXT_OR_ATTRIBUTE )]
     public class WorkflowTextOrAttributeFieldType : FieldType
     {
-
         #region Configuration
 
         private const string ATTRIBUTE_FIELD_TYPES_KEY = "attributefieldtypes";
         private const string TEXTBOX_ROWS_KEY = "textboxRows";
         private const string WORKFLOW_TYPE_ATTRIBUTES_KEY = "WorkflowTypeAttributes";
         private const string ACTIVITY_TYPE_ATTRIBUTES_KEY = "ActivityTypeAttributes";
+
+        #endregion
+
+        #region Formating
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = privateValue;
+
+            Guid guid = privateValue.AsGuid();
+            if ( !guid.IsEmpty() )
+            {
+                var attributes = GetContextAttributes();
+                if ( attributes != null && attributes.ContainsKey( guid ) )
+                {
+                    formattedValue = attributes[guid].Name;
+                }
+
+                if ( string.IsNullOrWhiteSpace( formattedValue ) )
+                {
+                    var attributeCache = AttributeCache.Get( guid );
+                    if ( attributeCache != null )
+                    {
+                        formattedValue = attributeCache.Name;
+                    }
+                }
+            }
+
+            return formattedValue;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        private Dictionary<Guid, Rock.Model.Attribute> GetContextAttributes()
+        {
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext != null && httpContext.Items != null )
+            {
+                var workflowAttributes = httpContext.Items[WORKFLOW_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, Rock.Model.Attribute>;
+                var activityAttributes = httpContext.Items[ACTIVITY_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, Rock.Model.Attribute>;
+
+                if ( workflowAttributes != null && activityAttributes != null )
+                {
+                    return workflowAttributes.Concat( activityAttributes ).ToDictionary( x => x.Key, x => x.Value );
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This a special field type that only works within the workflow type
+            // editor. Persistence would not work well in this situation.
+            return false;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -98,14 +180,14 @@ namespace Rock.Field.Types
                 {
                     if ( controls[0] != null && controls[0] is RockTextBox )
                     {
-                        configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value = ( (RockTextBox)controls[0] ).Text;
+                        configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value = ( ( RockTextBox ) controls[0] ).Text;
                     }
                 }
                 if ( controls.Count >= 2 )
                 {
                     if ( controls[1] != null && controls[1] is NumberBox )
                     {
-                        configurationValues[TEXTBOX_ROWS_KEY].Value = ( (NumberBox)controls[1] ).Text;
+                        configurationValues[TEXTBOX_ROWS_KEY].Value = ( ( NumberBox ) controls[1] ).Text;
                     }
                 }
             }
@@ -124,44 +206,13 @@ namespace Rock.Field.Types
             {
                 if ( controls.Count >= 1 && controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( ATTRIBUTE_FIELD_TYPES_KEY ) )
                 {
-                    ( (RockTextBox)controls[0] ).Text = configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value;
+                    ( ( RockTextBox ) controls[0] ).Text = configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value;
                 }
                 if ( controls.Count >= 2 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( TEXTBOX_ROWS_KEY ) )
                 {
-                    ( (NumberBox)controls[1] ).Text = configurationValues[TEXTBOX_ROWS_KEY].Value;
+                    ( ( NumberBox ) controls[1] ).Text = configurationValues[TEXTBOX_ROWS_KEY].Value;
                 }
             }
-        }
-
-        #endregion
-
-        #region Formating
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            string formattedValue = privateValue;
-
-            Guid guid = privateValue.AsGuid();
-            if ( !guid.IsEmpty() )
-            {
-                var attributes = GetContextAttributes();
-                if ( attributes != null && attributes.ContainsKey( guid ) )
-                {
-                    formattedValue = attributes[guid].Name;
-                }
-
-                if ( string.IsNullOrWhiteSpace( formattedValue ) )
-                {
-                    var attributeCache = AttributeCache.Get( guid );
-                    if ( attributeCache != null )
-                    {
-                        formattedValue = attributeCache.Name;
-                    }
-                }
-            }
-
-            return formattedValue;
         }
 
         /// <summary>
@@ -178,10 +229,6 @@ namespace Rock.Field.Types
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -261,27 +308,6 @@ namespace Rock.Field.Types
             }
         }
 
-        private Dictionary<Guid, Rock.Model.Attribute> GetContextAttributes()
-        {
-            var httpContext = System.Web.HttpContext.Current;
-            if ( httpContext != null && httpContext.Items != null )
-            {
-                var workflowAttributes = httpContext.Items[WORKFLOW_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, Rock.Model.Attribute>;
-                var activityAttributes = httpContext.Items[ACTIVITY_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, Rock.Model.Attribute>;
-
-                if ( workflowAttributes != null && activityAttributes != null )
-                {
-                    return workflowAttributes.Concat( activityAttributes ).ToDictionary( x => x.Key, x => x.Value );
-                }
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -296,27 +322,7 @@ namespace Rock.Field.Types
             return null;
         }
 
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This a special field type that only works within the workflow type
-            // editor. Persistence would not work well in this situation.
-            return false;
-        }
-
+#endif
         #endregion
     }
 }

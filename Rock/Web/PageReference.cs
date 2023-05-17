@@ -622,7 +622,7 @@ namespace Rock.Web
                                     parentPageReference.BreadCrumbs.Add( new BreadCrumb( bcName, parentPageReference.BuildUrl() ) );
                                 }
 
-                                foreach ( var block in page.Blocks.Where( b => b.BlockLocation == Model.BlockLocation.Page ) )
+                                foreach ( var block in page.Blocks.Where( b => b.BlockLocation == Model.BlockLocation.Page && b.BlockType.Path.IsNotNullOrWhiteSpace() ) )
                                 {
                                     try
                                     {

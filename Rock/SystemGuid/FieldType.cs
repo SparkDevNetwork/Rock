@@ -49,13 +49,6 @@ namespace Rock.SystemGuid
         public const string ATTRIBUTE = "99B090AA-4D7E-46D8-B393-BF945EA1BA8B";
 
         /// <summary>
-        /// Audio field type
-        /// </summary>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use AUDIO_FILE or AUDIO_URL instead", true )]
-        public const string AUDIO = "0D842975-7439-4D2E-BB94-BAD8DDF22260";
-
-        /// <summary>
         /// Audio File field type
         /// </summary>
         public const string AUDIO_FILE = "9772CB1F-3BC4-432E-80DD-D635CDB2DA32";
@@ -561,6 +554,16 @@ namespace Rock.SystemGuid
         public const string REGISTRATION_TEMPLATE = "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620";
 
         /// <summary>
+        /// Registration Template field type
+        /// </summary>
+        public const string REMINDER_TYPE = "94A5DF3C-A7E0-451E-9DBA-86A6CFD5DF70";
+
+        /// <summary>
+        /// Registration Template field type
+        /// </summary>
+        public const string REMINDER_TYPES = "C66E6BF9-4A73-4429-ACAD-D94D5E3A89B7";
+
+        /// <summary>
         /// Remote Auths field type
         /// </summary>
         public const string REMOTE_AUTHS = "ECA90666-E7A0-4406-8559-0153DCB908FD";
@@ -621,6 +624,11 @@ namespace Rock.SystemGuid
         public const string SYSTEM_COMMUNICATION = "72ED40C7-4D64-4D60-9411-4FFB2B9E833E";
 
         /// <summary>
+        /// System Phone Number field type.
+        /// </summary>
+        public const string SYSTEM_PHONE_NUMBER = "B8C35BA7-85E9-4512-B99C-12DE697DE14E";
+
+        /// <summary>
         /// Text field type
         /// </summary>
         public const string TEXT = "9C204CD0-1233-41C5-818A-C5DA439445AA";
@@ -644,13 +652,6 @@ namespace Rock.SystemGuid
         /// Value List field type
         /// </summary>
         public const string VALUE_LIST = "7BDAE237-6E49-47AC-9961-A45AFB69E240";
-
-        /// <summary>
-        /// Video field type
-        /// </summary>
-        [RockObsolete( "1.9" )]
-        [Obsolete("Use VIDEO_FILE or VIDEO_URL Instead", true )]
-        public const string VIDEO = "FA398F9D-5B01-41EA-9A93-112F910A277D";
 
         /// <summary>
         /// Video File field type

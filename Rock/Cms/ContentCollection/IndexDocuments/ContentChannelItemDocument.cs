@@ -17,6 +17,7 @@
 
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -27,6 +28,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
     /// The indexed details of a content channel item.
     /// </summary>
     /// <seealso cref="IndexDocumentBase" />
+    [RockInternal( "1.14" )]
     internal class ContentChannelItemDocument : IndexDocumentBase
     {
         #region Methods
@@ -60,9 +62,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
             var yearValue = document.Year.ToString();
             FieldValueHelper.AddFieldValue( source.ContentCollectionId, nameof( document.Year ), yearValue, yearValue );
 
-            document.AddPersonalizationData( contentChannelItem, source );
-            document.AddIndexableAttributes( contentChannelItem, source );
-            await document.AddExistingTrendingDataAsync( source );
+            await document.AddStandardFieldsAsync( contentChannelItem, source );
 
             return document;
         }

@@ -37,6 +37,7 @@ using Rock.Web.Cache;
 using Rock.Tv.Classes;
 using Rock.Logging;
 using Rock.Workflow.Action;
+using Rock.Utility;
 
 namespace Rock.Rest.v2.Controllers
 {
@@ -577,7 +578,7 @@ namespace Rock.Rest.v2.Controllers
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
             // Get client IP
-            var clientIp = GetClientIp( Request );
+            var clientIp = WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
 
             var expireDateTime = RockDateTime.Now.AddMinutes( _codeReusePeriodInMinutes );
 
@@ -622,7 +623,7 @@ namespace Rock.Rest.v2.Controllers
                 return response;
             }
 
-            // Create authenication session
+            // Create authentication session
             var remoteSession = new RemoteAuthenticationSession();
             remoteAuthenticationSessionService.Add( remoteSession );
 
@@ -671,7 +672,7 @@ namespace Rock.Rest.v2.Controllers
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
             // Get client Ip address
-            var clientIp = GetClientIp( Request );
+            var clientIp = WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
 
             var expireDateTime = RockDateTime.Now.AddMinutes( _codeReusePeriodInMinutes );
 
@@ -757,7 +758,9 @@ namespace Rock.Rest.v2.Controllers
         /// Gets the client ip.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <remarks>We now utilize the global method on the <see cref="WebRequestHelper" /> class.</remarks>
         /// <returns></returns>
+        [RockObsolete("1.15")]
         private string GetClientIp( HttpRequestMessage request )
         {
             // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net

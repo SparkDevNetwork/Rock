@@ -34,7 +34,11 @@ namespace Rock.Tests.Integration
         /// </summary>
         /// <param name="isValid"></param>
         /// <param name="stateMessage">A message describing the reasons for a failure state.</param>
-        protected abstract void OnValidateTestData( out bool isValid, out string stateMessage );
+        protected virtual void OnValidateTestData( out bool isValid, out string stateMessage )
+        {
+            isValid = true;
+            stateMessage = null;
+        }
 
         /// <summary>
         /// Verify that the preconditions necessary for a test to execute are valid.

@@ -22,7 +22,7 @@ import TextBox from "@Obsidian/Controls/textBox";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import SegmentedPicker from "./segmentedPicker";
-import { FormEmailSource, FormEmailSourceType } from "./types";
+import { FormEmailSource, FormEmailSourceType } from "./types.partial";
 
 const emailSourceOptions: ListItemBag[] = [
     {

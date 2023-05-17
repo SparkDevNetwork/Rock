@@ -327,7 +327,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="streakTypeId"></param>
         /// <param name="errorMessage"></param>
-        [Obsolete( "Use the overload with Progress instead" )]
+        [Obsolete( "Use the overload with Progress instead", true )]
         [RockObsolete( "1.10" )]
         public static void RebuildStreakTypeFromAttendance( int streakTypeId, out string errorMessage )
         {
@@ -401,7 +401,7 @@ namespace Rock.Model
         /// <param name="progress">The progress.</param>
         /// <param name="streakTypeId">The streak type identifier.</param>
         /// <param name="errorMessage">The error message.</param>
-        [Obsolete( "Use the RebuildStreakType method instead" )]
+        [Obsolete( "Use the RebuildStreakType method instead", true )]
         [RockObsolete( "1.10" )]
         public static void RebuildStreakTypeFromAttendance( IProgress<int?> progress, int streakTypeId, out string errorMessage )
         {
@@ -2043,7 +2043,6 @@ namespace Rock.Model
             var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
 
             // Get the account identifier(s) for this transaction
-            var accountService = new FinancialAccountService( rockContext );
             var transactionAccountIds = transaction.TransactionDetails.Where( a => a.Amount > 0.00M ).Select( t => t.AccountId ).ToList();
             var accountAncestorIds = FinancialAccountCache.GetByIds( transactionAccountIds ).SelectMany( s => s.GetAncestorFinancialAccountIds() ).Distinct().ToList();
 
@@ -2259,7 +2258,7 @@ namespace Rock.Model
         /// context and saves the changes when complete.
         /// </summary>
         /// <param name="attendance"></param>
-        [Obsolete( "Use the HandleAttendanceRecord method instead" )]
+        [Obsolete( "Use the HandleAttendanceRecord method instead", true )]
         [RockObsolete( "1.10" )]
         public static void HandleAttendanceRecordAsync( Attendance attendance )
         {
@@ -2286,7 +2285,7 @@ namespace Rock.Model
         /// This method creates it's own data context and any changes will be saved automatically.
         /// </summary>
         /// <param name="occurrenceId"></param>
-        [Obsolete( "Use the HandleAttendanceRecord method instead" )]
+        [Obsolete( "Use the HandleAttendanceRecord method instead", true )]
         [RockObsolete( "1.10" )]
         public static void HandleAttendanceRecordsAsync( int occurrenceId )
         {
@@ -2308,7 +2307,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="occurrenceId"></param>
         /// <param name="errorMessage"></param>
-        [Obsolete( "Use HandleAttendanceRecord method instead" )]
+        [Obsolete( "Use HandleAttendanceRecord method instead", true )]
         [RockObsolete( "1.10" )]
         public void HandleAttendanceRecords( int occurrenceId, out string errorMessage )
         {
@@ -2373,8 +2372,7 @@ namespace Rock.Model
                         .FirstOrDefault( ic => ic.Id == structureEntityId.Value );
                     return $"{interactionComponent?.InteractionChannel?.Name} / {interactionComponent?.Name}";
                 case StreakStructureType.FinancialTransaction:
-                    var accountService = new FinancialAccountService( rockContext );
-                    return accountService.GetSelect( structureEntityId.Value, a => a.Name );
+                    return FinancialAccountCache.Get( structureEntityId.Value )?.Name;
                 default:
                     throw new NotImplementedException( string.Format( "Getting structure name for the StreakStructureType '{0}' is not implemented", structureType ) );
             }
@@ -2393,7 +2391,7 @@ namespace Rock.Model
         /// <param name="streakOccurrenceFrequency">The streak occurrence frequency.</param>
         /// <param name="unitCount">The unit count.</param>
         /// <returns></returns>
-        [Obsolete( "Downgrading the visibility of this method and renaming to GetMostRecentOccurrences" )]
+        [Obsolete( "Downgrading the visibility of this method and renaming to GetMostRecentOccurrences", true )]
         [RockObsolete( "1.10" )]
         public static OccurrenceEngagement[] GetMostRecentEngagementBits( byte[] engagementMap, byte[] occurrenceMap, DateTime mapStartDate, StreakOccurrenceFrequency streakOccurrenceFrequency, int unitCount = 24 )
         {
@@ -2474,7 +2472,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="streakTypeId"></param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use the HandlePostSaveChanges method instead.", false )]
+        [Obsolete( "Use the HandlePostSaveChanges method instead.", true )]
         public static void UpdateEnrollmentStreakPropertiesAsync( int streakTypeId )
         {
             Task.Run( () =>
@@ -2524,7 +2522,7 @@ namespace Rock.Model
         /// <param name="errorMessage"></param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use the override with StreakTypeCache instead.", false )]
+        [Obsolete( "Use the override with StreakTypeCache instead.", true )]
         public static bool IsBitSet( byte[] map, DateTime mapStartDate, DateTime bitDate, StreakOccurrenceFrequency occurrenceFrequency, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -2605,7 +2603,7 @@ namespace Rock.Model
         /// <param name="errorMessage"></param>
         /// <param name="newValue"></param>
         /// <returns></returns>
-        [Obsolete( "Use the override with StreakTypeCache param instead" )]
+        [Obsolete( "Use the override with StreakTypeCache param instead", true )]
         [RockObsolete( "1.10" )]
         public static byte[] SetBit( byte[] map, DateTime mapStartDate, DateTime bitDate, StreakOccurrenceFrequency occurrenceFrequency, bool newValue, out string errorMessage )
         {
@@ -2828,7 +2826,7 @@ namespace Rock.Model
         /// <param name="occurrenceFrequency">The occurrence frequency.</param>
         /// <param name="isInclusive">if set to <c>true</c> [is inclusive].</param>
         /// <returns></returns>
-        [Obsolete( "Use the override with StreakTypeCache param instead" )]
+        [Obsolete( "Use the override with StreakTypeCache param instead", true )]
         [RockObsolete( "1.10" )]
         public static int GetFrequencyUnitDifference( DateTime startDate, DateTime endDate, StreakOccurrenceFrequency occurrenceFrequency, bool isInclusive )
         {
@@ -2936,7 +2934,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="streakOccurrenceFrequency"></param>
         /// <returns></returns>
-        [Obsolete( "Use the override with StreakTypeCache param instead" )]
+        [Obsolete( "Use the override with StreakTypeCache param instead", true )]
         [RockObsolete( "1.10" )]
         public static DateTime GetMaxDateForStreakBreaking( StreakOccurrenceFrequency streakOccurrenceFrequency )
         {

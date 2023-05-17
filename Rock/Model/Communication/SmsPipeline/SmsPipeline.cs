@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -77,6 +77,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<SmsAction> SmsActions { get; set; } = new Collection<SmsAction>();
+
+        #endregion
+
+        #region Methods
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return Name;
+        }
 
         #endregion
     }

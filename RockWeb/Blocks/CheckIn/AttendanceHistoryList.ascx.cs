@@ -416,7 +416,7 @@ namespace RockWeb.Blocks.Checkin
             // Filter out attendance records where the current user does not have View permission for the Group.
             var securedAttendanceItems = qryAttendanceListItems
                 .ToList()
-                .Where( a => a.Group.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
+                .Where( a => ( a.Group != null && a.Group.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ) || a.Group == null )
                 .ToList();
 
             // build a lookup for _checkinAreaPaths for OnRowDatabound

@@ -274,6 +274,14 @@
                                         <Rock:GradePicker ID="gpGradePicker" runat="server" Label="Grade" UseAbbreviation="true" UseGradeOffsetAsValue="true" Visible="false" ValidationGroup="vgEditMember" />
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RacePicker ID="rpRace" runat="server" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:EthnicityPicker ID="epEthnicity" runat="server" />
+                                    </div>
+                                </div>
                                 <hr />
                                 <asp:Panel ID="pnlPersonAttributes" runat="server">
                                     <h4>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -219,6 +219,13 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.CHECK_IN_ATTENDANCE_TYPES )]
         public int? AttendanceTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance reminder last sent date time.
+        /// </summary>
+        /// <value>The attendance reminder last sent date time.</value>
+        [DataMember]
+        public DateTime? AttendanceReminderLastSentDateTime { get; set; }
 
         #endregion
 

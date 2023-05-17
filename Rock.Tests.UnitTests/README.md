@@ -1,11 +1,27 @@
 # Testing in Rock
 
-Rock includes two types of tests; tests that require a database and tests that don't require a database.
+The Rock test projects cover a number of different testing scenarios, namely:
+1. Unit Tests
+The Rock.Tests.UnitTests project contains tests that cover the fundamentals of the Rock codebase.
+These tests are designed to verify the behavior of small and isolated pieces of code that are the fundamental building blocks of the Rock application.
+Unit tests should be self-contained - they should not depend on any resources that are external to the Rock codebase, such as third-party applications or services, and network or database access.
+Unit tests should also be independent of one another - that is, the order in which the tests are executed should not affect the result.
 
-This project is for tests that do NOT require a database.
+2. Integration Tests
+The Rock.Tests.Integration project holds tests that verify the processes and transactions that constitute the business logic of the Rock application.
+Tests in this project are categorized into modules that represent the major areas of Rock functionality - for example, Core, CRM, Groups, Security, Events, etc.
+These tests often require access to an initialized database containing the standard Rock sample data set, and may also interact with external applications and services.
 
-If your test(s) requires a database, a Data.RockContext(), or SqlServerTypes library move over to the `Rock.Tests.Integration` project.
+3. Performance Tests
+The Rock.Tests.Performance project stores tests that are intended to measure the performance of some critical components of the Rock application.
+These tests are specifically used for benchmarking changes to parts of the codebase where speed and efficiency are important.
 
+## Integration Test or Unit Test?
+
+Determining the appropriate test type for the circumstances is not always easy, but here are some guidelines to keep in mind:
+1. Always prefer unit tests.
+Unit tests are faster to execute, and require little or no configuration so they can be executed more often. Wherever possible, code components should be designed in a way that allows them to be unit tested. If the code has external dependencies, try to design the component so that the dependencies can be replaced with a mock for testing purposes.
+2. If your tests require a database, a RockContext, or access to the SqlServerTypes library, the test belongs in the `Rock.Tests.Integration` project.
 
 ## MS Test
 

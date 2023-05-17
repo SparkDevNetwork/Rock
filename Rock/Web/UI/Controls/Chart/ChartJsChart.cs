@@ -43,49 +43,23 @@ namespace Rock.Web.UI.Controls
         private Label _lblChartSubtitle;
         private Panel _pnlChartPlaceholder;
         private HelpBlock _hbChartOptions;
-
+        private NotificationBox _nbRenderNotification;
+            
         // if this chart is used for a metric
-        private HiddenField _hfMetricId;
+        //private HiddenField _hfMetricId;
+
+        /// <summary>
+        /// Gets the container control for the chart.
+        /// </summary>
+        protected Panel ChartContainerControl
+        {
+            get
+            {
+                return _pnlChartPlaceholder;
+            }
+        }
 
         #endregion
-
-        /// <summary>
-        /// Gets or sets the start date.
-        /// </summary>
-        /// <value>
-        /// The start date.
-        /// </value>
-        public DateTime? StartDate
-        {
-            get
-            {
-                return ViewState["StartDate"] as DateTime?;
-            }
-
-            set
-            {
-                ViewState["StartDate"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the end date.
-        /// </summary>
-        /// <value>
-        /// The end date.
-        /// </value>
-        public DateTime? EndDate
-        {
-            get
-            {
-                return ViewState["EndDate"] as DateTime?;
-            }
-
-            set
-            {
-                ViewState["EndDate"] = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the title.
@@ -277,6 +251,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Javascript that will format the tooltip.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// function (event, pos, item) {
+        ///     var activePoints = _chart.getElementsAtEvent(event);
+        ///     var chartData = activePoints[0]['_chart'].config.data;
+        ///     var dataset = chartData.datasets[activePoints[0]['_datasetIndex']];
+        ///     var dataItem = dataset.data[activePoints[0]['_index']];
+        ///     var customData = dataItem.customData;
+        ///     if (dataItem) {
+        ///         postbackArg = 'SeriesId=' + customData.SeriesName
+        ///             + ';DateStamp=' + customData.DateTimeStamp
+        ///             + ';YValue=' + ( customData.hasOwnProperty('YValue') ? customData.YValue : customData.Value );
+        ///     }
+        ///     else
+        ///     {
+        ///         // no point was clicked
+        ///         postbackArg =  'DateStamp=;YValue=;SeriesId=';
+        ///     }
+        ///     window.location = ""javascript:__doPostBack('{_pnlChartPlaceholder.UniqueID}', '"" +  postbackArg + ""')"";
+        /// } );
+        /// </code>
+        /// </example>
+        /// <value>
+        /// The tooltip formatter.
+        /// </value>
+        /// <remarks>
+        /// The customData variable in this script refers to a chart data item which must conform to the IChartData interface.
+        /// </remarks>
+        public string ChartClickScript { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show debug].
         /// </summary>
         /// <value>
@@ -363,10 +370,12 @@ namespace Rock.Web.UI.Controls
         /// https://www.chartjs.org/docs/latest/general/data-structures.html
         /// </summary>
         /// <param name="sourceData"></param>
+        /// <param name="defaultSeriesName"></param>
         /// <returns></returns>
-        protected abstract string OnGenerateChartJson( object sourceData );
+        protected abstract string OnGenerateChartJson( object sourceData, string defaultSeriesName = null );
 
         private object _chartDataSource = null;
+        private string _defaultSeriesName = null;
 
         /// <summary>
         /// Set the data items to be displayed by the chart, and generate the ChartData used to construct the ChartJS chart. 
@@ -374,7 +383,18 @@ namespace Rock.Web.UI.Controls
         /// <param name="chartDataItems"></param>
         public void SetChartDataItems( IEnumerable<IChartData> chartDataItems )
         {
+            this.SetChartDataItems( chartDataItems, null );
+        }
+
+        /// <summary>
+        /// Set the data items to be displayed by the chart, and generate the ChartData used to construct the ChartJS chart. 
+        /// </summary>
+        /// <param name="chartDataItems"></param>
+        /// <param name="defaultSeriesName"></param>
+        public void SetChartDataItems( IEnumerable<IChartData> chartDataItems, string defaultSeriesName )
+        {
             _chartDataSource = chartDataItems;
+            _defaultSeriesName = defaultSeriesName;
 
             // Reset the chart data.
             _hfChartData.Value = null;
@@ -398,10 +418,19 @@ namespace Rock.Web.UI.Controls
             _hfChartData.Value = null;
         }
 
+        /// <summary>
+        /// Gets or sets the dataset that will be displayed in the chart.
+        /// </summary>
+        public void SetChartDataItems( ChartJsCategorySeriesDataset dataset )
+        {
+            _chartDataSource = dataset;
+            _hfChartData.Value = null;
+        }
+
         #region Events
 
         /// <summary>
-        /// Occurs when [chart click].
+        /// Occurs when the chart is clicked.
         /// </summary>
         public event EventHandler<ChartClickArgs> ChartClick;
 
@@ -417,8 +446,28 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
+            this.ChartClickScript = @"function (event, pos, item) {{
+    var activePoints = _chart.getElementsAtEvent(event);
+    var chartData = activePoints[0]['_chart'].config.data;
+    var dataset = chartData.datasets[activePoints[0]['_datasetIndex']];
+    var dataItem = dataset.data[activePoints[0]['_index']];
+    var customData = dataItem.customData;
+    if (dataItem) {{
+        postbackArg = 'SeriesId=' + customData.SeriesName
+            + ';DateStamp=' + customData.DateTimeStamp
+            + ';YValue=' + ( customData.hasOwnProperty('YValue') ? customData.YValue : customData.Value );
+    }}
+    else
+    {{
+        // no point was clicked
+        postbackArg =  'DateStamp=;YValue=;SeriesId=';
+    }}
+    window.location = ""javascript:__doPostBack('{_pnlChartPlaceholder.UniqueID}', '"" +  postbackArg + ""')"";
+}}";
+
             RockPage.AddScriptLink( this.Page, "~/Scripts/moment.min.js" );
             RockPage.AddScriptLink( this.Page, "~/Scripts/Chartjs/Chart.min.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/Chartjs/Chart.plugin.datalabels.min.js" );
 
             EnsureChildControls();
         }
@@ -456,7 +505,23 @@ namespace Rock.Web.UI.Controls
             base.OnPreRender( e );
 
             // Generate the chart script here, because we now have access to the ChartData if it has been loaded from ViewState.
-            RegisterJavaScript();
+            string chartData;
+            try
+            {
+                chartData = GetChartDataJson();
+            }
+            catch (Exception ex)
+            {
+                SetRenderError( ex.Message );
+                chartData = "[]";
+            }
+
+            RegisterJavaScript( chartData );
+        }
+
+        private void SetRenderError( string message )
+        {
+            _nbRenderNotification.Text = message;
         }
 
         /// <summary>
@@ -472,8 +537,8 @@ namespace Rock.Web.UI.Controls
             _hfChartData.ID = string.Format( "hfChartData_{0}", this.ID );
             _hfChartData.CssClass = "js-chart-data";
 
-            _hfMetricId = new HiddenField();
-            _hfMetricId.ID = string.Format( "hfMetricId_{0}", this.ID );
+            //_hfMetricId = new HiddenField();
+            //_hfMetricId.ID = string.Format( "hfMetricId_{0}", this.ID );
 
             _hfXAxisLabel = new HiddenFieldWithClass();
             _hfXAxisLabel.ID = string.Format( "hfXAxisLabel_{0}", this.ID );
@@ -501,6 +566,10 @@ namespace Rock.Web.UI.Controls
             _lblChartSubtitle = new Label();
             _lblChartSubtitle.ID = string.Format( "lblChartSubtitle_{0}", this.ID );
 
+            _nbRenderNotification = new NotificationBox();
+            _nbRenderNotification.ID = "nbRenderNotification";
+            _nbRenderNotification.NotificationBoxType = NotificationBoxType.Danger;
+
             _pnlChartPlaceholder = new Panel();
             _pnlChartPlaceholder.CssClass = "chart-placeholder js-chart-placeholder";
             _pnlChartPlaceholder.ID = string.Format( "pnlChartPlaceholder_{0}", this.ID );
@@ -509,7 +578,6 @@ namespace Rock.Web.UI.Controls
             _hbChartOptions.ID = string.Format( "hbChartOptions_{0}", this.ID );
 
             Controls.Add( _hfChartData );
-            Controls.Add( _hfMetricId );
             Controls.Add( _hfXAxisLabel );
             Controls.Add( _hfYAxisLabel );
             Controls.Add( _hfRestUrlParams );
@@ -540,7 +608,6 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _hfChartData.RenderControl( writer );
-            _hfMetricId.RenderControl( writer );
             _hfRestUrlParams.RenderControl( writer );
             _hfRestUrl.RenderControl( writer );
             _hfSeriesPartitionNameUrl.RenderControl( writer );
@@ -578,10 +645,15 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
+            _nbRenderNotification.RenderControl( writer );
+            
             if ( this.ShowDebug )
             {
                 _hbChartOptions.RenderControl( writer );
             }
+
+            var showChart = string.IsNullOrWhiteSpace( _nbRenderNotification.Text );
+            _pnlChartPlaceholder.Visible = showChart;
 
             _pnlChartPlaceholder.RenderControl( writer );
 
@@ -663,7 +735,7 @@ namespace Rock.Web.UI.Controls
         protected virtual string GetPlotChartJavaScript()
         {
             var script = @"
-function plotChart (chartData, chartOptions, plotSelector, yaxisLabelText)
+function plotChart (chartData, plotSelector, yaxisLabelText)
 {
     if (chartData && chartData.data && chartData.data.datasets && chartData.data.datasets.length > 0)
     {
@@ -681,83 +753,30 @@ function plotChart (chartData, chartOptions, plotSelector, yaxisLabelText)
         }
 
         /// <summary>
-        /// Create a category series of data values from a collection of Rock Chart Data Items.
-        /// </summary>
-        /// <param name="chartDataItems"></param>
-        /// <returns></returns>
-        public List<ChartJsCategorySeriesDataset> GetCategorySeriesFromChartData( IEnumerable<IChartData> chartDataItems )
-        {
-            // Show a bar chart to summarize the data for a single date.
-            var exceptionsByCategory = chartDataItems.GroupBy( k => k.SeriesName, v => v );
-
-            var datasets = new List<ChartJsCategorySeriesDataset>();
-            foreach ( var exceptionCategory in exceptionsByCategory )
-            {
-                var categoryName = exceptionCategory.Key;
-                if ( string.IsNullOrWhiteSpace( categoryName ) )
-                {
-                    categoryName = "(unknown)";
-                }
-
-                datasets.Add( new ChartJsCategorySeriesDataset
-                {
-                    Name = exceptionCategory.Key,
-                    DataPoints = new List<IChartJsCategorySeriesDataPoint>()
-                        {
-                            new ChartJsCategorySeriesDataPoint
-                            {
-                                Category = categoryName,
-                                Value = exceptionCategory.Sum(x => x.YValue ?? 0)
-                            }
-                        }
-                } );
-            }
-
-            return datasets;
-        }
-
-        /// <summary>
-        /// Create a time series of data values from a collection of Rock Chart Data Items.
-        /// </summary>
-        /// <param name="chartDataItems"></param>
-        /// <returns></returns>
-        public List<ChartJsTimeSeriesDataset> GetTimeSeriesFromChartData( IEnumerable<IChartData> chartDataItems )
-        {
-            var itemsBySeries = chartDataItems.GroupBy( k => k.SeriesName, v => v );
-            var timeDatasets = new List<ChartJsTimeSeriesDataset>();
-            foreach ( var series in itemsBySeries )
-            {
-                timeDatasets.Add( new ChartJsTimeSeriesDataset
-                {
-                    Name = series.Key,
-                    DataPoints = chartDataItems.Where( x => x.SeriesName == series.Key )
-                        .Select( x => ( IChartJsTimeSeriesDataPoint ) new ChartJsTimeSeriesDataPoint
-                        {
-                            DateTime = GetDateTimeFromJavascriptMilliseconds( x.DateTimeStamp ),
-                            Value = x.YValue ?? 0,
-                        } ).ToList()
-                } );
-            }
-
-            return timeDatasets;
-        }
-
-        /// <summary>
         /// Gets the chart data as a JSON string.
-        /// Override this method to generate the chart data.
         /// </summary>
         /// <returns></returns>
         protected string GetChartDataJson()
         {
+            string json;
             if ( string.IsNullOrWhiteSpace( _hfChartData.Value )
                  && _chartDataSource != null )
             {
-                var chartDataJson = OnGenerateChartJson( _chartDataSource );
+                json = OnGenerateChartJson( _chartDataSource, _defaultSeriesName );
 
                 // Store the data as Base64 encoded in a hidden field on the page.
-                _hfChartData.Value = Convert.ToBase64String( Encoding.UTF8.GetBytes( chartDataJson ) );
+                _hfChartData.Value = Convert.ToBase64String( Encoding.UTF8.GetBytes( json ) );
             }
-            var json = Encoding.UTF8.GetString( Convert.FromBase64String( _hfChartData.Value ) );
+            else
+            {
+                json = Encoding.UTF8.GetString( Convert.FromBase64String( _hfChartData.Value ) );
+            }
+
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                json = "[]";
+            }
+
             return json;
         }
 
@@ -769,7 +788,7 @@ function plotChart (chartData, chartOptions, plotSelector, yaxisLabelText)
         /// <summary>
         /// Registers the java script used to produce the chart.
         /// </summary>
-        protected virtual void RegisterJavaScript()
+        protected virtual void RegisterJavaScript( string chartData = "[]" )
         {
             var scriptFormat = new StringBuilder();
 
@@ -806,19 +825,9 @@ $.ajax({
             }
             else
             {
-                var chartData = GetChartDataJson();
-
-                if ( string.IsNullOrWhiteSpace( chartData ) )
-                {
-                    if ( string.IsNullOrEmpty( chartData ) )
-                    {
-                        chartData = "[]";
-                    }
-                }
-
                 scriptFormat.Append( @"
-var _chartData = <chartData>;
 $(function() {
+var _chartData = <chartData>;
 " )
                     .Replace( "<chartData>", chartData );
             }
@@ -833,7 +842,7 @@ var yaxisLabelText = $('#{0} .js-yaxis-value').val();
 
             scriptFormat.Append( $@"
 // Create the Chart
-var _chart = plotChart(_chartData, chartOptions, plotSelector, yaxisLabelText);
+var _chart = plotChart(_chartData, plotSelector, yaxisLabelText);
 { plotScript }
 " );
 
@@ -865,31 +874,16 @@ var _chart = plotChart(_chartData, chartOptions, plotSelector, yaxisLabelText);
         #endregion
 
         /// <summary>
-        /// Gets the chart click script.
+        /// Create the client script to generate a click event for the chart.
         /// </summary>
         /// <returns></returns>
-        private string GetChartClickScript()
-        {
-            string chartClickScript = null;
-            if ( ChartClick != null )
+        protected virtual string GetChartClickScript()
+       {
+            var chartClickScript = string.Empty;
+
+            if ( ChartClick != null && !string.IsNullOrWhiteSpace( this.ChartClickScript ) )
             {
-                chartClickScript = $@"
-$('#{this.ClientID}').find('.js-chart-placeholder').bind('click', function (event, pos, item) {{
-    var activePoints = _chart.getElementsAtEvent(event);
-    var chartData = activePoints[0]['_chart'].config.data;
-    var dataset = chartData.datasets[activePoints[0]['_datasetIndex']];
-    var dataItem = dataset.data[activePoints[0]['_index']];
-    var customData = dataItem.customData;
-    if (dataItem) {{
-        postbackArg = 'SeriesId=' + customData.SeriesName + ';DateStamp=' + customData.DateTimeStamp + ';YValue=' + customData.YValue;
-    }}
-    else
-    {{
-        // no point was clicked
-        postbackArg =  'DateStamp=;YValue=;SeriesId=';
-    }}
-    window.location = ""javascript:__doPostBack('{_pnlChartPlaceholder.UniqueID}', '"" +  postbackArg + ""')"";
-}});";
+                chartClickScript = $@"$('#{this.ClientID}').find('.js-chart-placeholder').bind('click',{ this.ChartClickScript });";
             }
 
             return chartClickScript;
@@ -916,21 +910,6 @@ $('#{this.ClientID}').find('.js-chart-placeholder').bind('click', function (even
                 _lblChartTitle.Font.Size = new FontUnit( format.FontSize.Value );
             }
 
-        }
-
-        /// <summary>
-        /// Get a ChartStyle object that encapsulates the settings for this chart.
-        /// </summary>
-        /// <returns></returns>
-        public ChartStyle GetChartStyle()
-        {
-            var chartStyle = new ChartStyle();
-
-            chartStyle.Legend = new LegendStyle();
-            chartStyle.Legend.Show = this.ShowLegend;
-            chartStyle.Legend.Position = this.LegendPosition;
-
-            return chartStyle;
         }
 
         /// <summary>
@@ -972,6 +951,135 @@ $('#{this.ClientID}').find('.js-chart-placeholder').bind('click', function (even
         {
             return new DateTime( 1970, 1, 1 ).AddTicks( millisecondsAfterEpoch * 10000 );
         }
+
+        #region Obsolete
+
+        /// <summary>
+        /// Get a ChartStyle object that encapsulates the settings for this chart.
+        /// </summary>
+        /// <returns></returns>
+        [Obsolete( "The ChartStyle is no longer used to format charts. Reference the equivalent properties on derived controls instead." )]
+        [RockObsolete( "1.15" )]
+        public ChartStyle GetChartStyle()
+        {
+            var chartStyle = new ChartStyle();
+
+            chartStyle.Legend = new LegendStyle();
+            chartStyle.Legend.Show = this.ShowLegend;
+            chartStyle.Legend.Position = this.LegendPosition;
+
+            return chartStyle;
+        }
+
+        /// <summary>
+        /// Gets or sets the start date.
+        /// </summary>
+        /// <value>
+        /// The start date.
+        /// </value>
+        [Obsolete( "This property has no effect. Use equivalent properties on derived controls instead." )]
+        [RockObsolete( "1.14" )]
+        public DateTime? StartDate
+        {
+            get
+            {
+                return ViewState["StartDate"] as DateTime?;
+            }
+
+            set
+            {
+                ViewState["StartDate"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the end date.
+        /// </summary>
+        /// <value>
+        /// The end date.
+        /// </value>
+        [Obsolete( "This property has no effect. Use equivalent properties on derived controls instead." )]
+        [RockObsolete( "1.14" )]
+        public DateTime? EndDate
+        {
+            get
+            {
+                return ViewState["EndDate"] as DateTime?;
+            }
+
+            set
+            {
+                ViewState["EndDate"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Create a category series of data values from a collection of Rock Chart Data Items.
+        /// </summary>
+        /// <param name="chartDataItems"></param>
+        /// <returns></returns>
+        [Obsolete( "Use the GetChartDataJson() method instead." )]
+        [RockObsolete( "1.14" )]
+        public List<ChartJsCategorySeriesDataset> GetCategorySeriesFromChartData( IEnumerable<IChartData> chartDataItems )
+        {
+            // Show a bar chart to summarize the data for a single date.
+            var exceptionsByCategory = chartDataItems.GroupBy( k => k.SeriesName, v => v );
+
+            var datasets = new List<ChartJsCategorySeriesDataset>();
+            foreach ( var exceptionCategory in exceptionsByCategory )
+            {
+                var categoryName = exceptionCategory.Key;
+                if ( string.IsNullOrWhiteSpace( categoryName ) )
+                {
+                    categoryName = "(unknown)";
+                }
+
+                datasets.Add( new ChartJsCategorySeriesDataset
+                {
+                    Name = exceptionCategory.Key,
+                    DataPoints = new List<IChartJsCategorySeriesDataPoint>()
+                        {
+                            new ChartJsCategorySeriesDataPoint
+                            {
+                                Category = categoryName,
+                                Value = exceptionCategory.Sum(x => x.YValue ?? 0)
+                            }
+                        }
+                } );
+            }
+
+            return datasets;
+        }
+
+        /// <summary>
+        /// Create a time series of data values from a collection of Rock Chart Data Items.
+        /// </summary>
+        /// <param name="chartDataItems"></param>
+        /// <returns></returns>
+        [Obsolete( "Use the GetChartDataJson() method instead." )]
+        [RockObsolete( "1.14" )]
+        public List<ChartJsTimeSeriesDataset> GetTimeSeriesFromChartData( IEnumerable<IChartData> chartDataItems )
+        {
+            var itemsBySeries = chartDataItems.GroupBy( k => k.SeriesName, v => v );
+            var timeDatasets = new List<ChartJsTimeSeriesDataset>();
+            foreach ( var series in itemsBySeries )
+            {
+                timeDatasets.Add( new ChartJsTimeSeriesDataset
+                {
+                    Name = series.Key,
+                    DataPoints = chartDataItems.Where( x => x.SeriesName == series.Key )
+                        .Select( x => ( IChartJsTimeSeriesDataPoint ) new ChartJsTimeSeriesDataPoint
+                        {
+                            DateTime = GetDateTimeFromJavascriptMilliseconds( x.DateTimeStamp ),
+                            Value = x.YValue ?? 0,
+                        } ).ToList()
+                } );
+            }
+
+            return timeDatasets;
+        }
+
+        #endregion
     }
 
     #region Support classes

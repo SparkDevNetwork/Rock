@@ -59,7 +59,7 @@ namespace Rock.Field.Types
 
             if ( repeatColumns == 0 )
             {
-                repeatColumns = 4;
+                clientValues[REPEAT_COLUMNS] = "4";
             }
 
             var values = GetListSource( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )

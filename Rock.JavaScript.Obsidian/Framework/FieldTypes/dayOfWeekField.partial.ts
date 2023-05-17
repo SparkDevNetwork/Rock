@@ -19,17 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
-
-export const enum DayOfWeek {
-    Sunday = 0,
-    Monday = 1,
-    Tuesday = 2,
-    Wednesday = 3,
-    Thursday = 4,
-    Friday = 5,
-    Saturday = 6
-}
-
+import { DayOfWeek } from "@Obsidian/Enums/Controls/dayOfWeek";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {

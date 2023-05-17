@@ -33,7 +33,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [DisplayName( "Prayer Request Entry - Kiosk" )]
+    [DisplayName( "Prayer Request Entry - Kiosk (deprecated)" )]
+    [RockObsolete( "1.15" )]
+    [Obsolete( "This block type has been deprecated." )]
     [Category( "Prayer" )]
     [Description( "Allows prayer requests to be added from a kiosk." )]
 

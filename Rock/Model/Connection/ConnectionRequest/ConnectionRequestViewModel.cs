@@ -270,6 +270,12 @@ namespace Rock.Model
         ///   <c>true</c> if [current person can edit]; otherwise, <c>false</c>.
         /// </value>
         public bool CanCurrentUserEdit { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attributes of this instance
+        /// </summary>
+        public string RequestAttributes { get; set; }
+
         #endregion Properties
 
         #region Computed
@@ -392,7 +398,7 @@ namespace Rock.Model
                 else
                 {
                     Person person = new PersonService( new RockContext() ).Get( PersonId );
-                    return Person.GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue?.Guid, person.AgeClassification );
+                    return Person.GetPersonPhotoUrl( person.Initials, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification );
                 }
             }
         }
@@ -413,7 +419,7 @@ namespace Rock.Model
                     if ( ConnectorPersonId.HasValue )
                     {
                         Person person = new PersonService( new RockContext() ).Get( ConnectorPersonId.Value );
-                        return Person.GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue?.Guid, person.AgeClassification );
+                        return Person.GetPersonPhotoUrl( person.Initials, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification );
                     }
                     else
                     {

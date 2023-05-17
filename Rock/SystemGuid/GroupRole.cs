@@ -194,5 +194,19 @@ namespace Rock.SystemGuid
         public const string GROUPROLE_CAMPUS_TEAM_PASTOR = "F8C6289B-0E68-4121-A595-A51369404EBA";
 
         #endregion
+
+        #region GROUPTYPE_SIGNUP_GROUP
+
+        /// <summary>
+        /// The Leader group member role for Sign-Up Group
+        /// </summary>
+        public const string GROUPROLE_SIGNUP_GROUP_LEADER = "9F063DA9-CB3D-49EB-B4EC-BC909A00FDD4";
+
+        /// <summary>
+        /// The Member group member role for Sign-Up Group
+        /// </summary>
+        public const string GROUPROLE_SIGNUP_GROUP_MEMBER = "3849B594-C079-4AB3-869A-E1DEC6790A34";
+
+        #endregion
     }
 }

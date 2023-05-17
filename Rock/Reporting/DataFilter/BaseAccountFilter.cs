@@ -23,6 +23,7 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter
@@ -112,7 +113,7 @@ function() {
             if ( selectionValues.Length >= 1 )
             {
                 var accountGuids = selectionValues[0].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                var accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
+                var accountNames = FinancialAccountCache.GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
 
                 if ( accountNames != null )
                 {
@@ -164,7 +165,7 @@ function() {
         {
             var accountIdList = ( controls[0] as AccountPicker ).SelectedValuesAsInt().ToList();
             string accountGuids = string.Empty;
-            var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIdList );
+            var accounts = FinancialAccountCache.GetByIds( accountIdList );
             if ( accounts != null && accounts.Any() )
             {
                 accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( "," );
@@ -185,10 +186,10 @@ function() {
             if ( selectionValues.Length >= 1 )
             {
                 var accountGuids = selectionValues[0].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids );
+                var accounts = FinancialAccountCache.GetByGuids( accountGuids );
                 if ( accounts != null && accounts.Any() )
                 {
-                    ( controls[0] as AccountPicker ).SetValues( accounts );
+                    ( controls[0] as AccountPicker ).SetValuesFromCache( accounts );
                 }
             }
         }

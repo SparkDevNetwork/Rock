@@ -1,6 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonGroupHistory.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.PersonGroupHistory" %>
 
 <style>
+.swimlanes {
+  min-width: 100%;
+}
 .swimlanes .grid-background {
   fill: none; }
 
@@ -124,6 +127,10 @@
                     Group History
                 </h1>
                 <div class="panel-labels">
+                <div class="btn-group btn-toggle js-view-toggle">
+                  <a class="btn btn-default btn-xs" href="#" data-view="Month">Month</a>
+                  <a class="btn btn-default btn-xs js-view-year btn-primary active" href="#" data-view="Year">Year</a>
+                </div>
                   <a class="btn btn-xs btn-default btn-square" onclick="javascript: toggleOptions()">
                       <i title="Options" class="fa fa-gear"></i>
                   </a>
@@ -193,8 +200,9 @@
                     restUrl += '&groupTypeIds=' + groupTypeIds
                 }
 
-                var $swimlanesContainer = $('#<%=groupHistorySwimlanes.ClientID%>');
+                var $swimlanesContainer = $('#<%= groupHistorySwimlanes.ClientID %>');
                 var $noGroupHistory = $('.js-no-group-history');
+                var $viewToggle = $('#<%= upnlContent.ClientID %> .js-view-toggle');
 
                 $.ajax({
                     url: restUrl,
@@ -202,11 +210,22 @@
                     contentType: 'application/json'
                 }).done(function (data) {
                     if (data.length) {
-                        var swimlanes_vis = new Swimlanes($swimlanesContainer[0], data);
+                        var swimlanes_vis = new Swimlanes($swimlanesContainer[0], data, { view_mode: "Year" });
                         $swimlanesContainer.show();
                         $noGroupHistory.hide();
+
+                        $viewToggle.on('click', '.btn', function() {
+                          if ($(this).hasClass('active')) {
+                              return;
+                          }
+                          $(this).addClass('btn-primary active');
+                          $(this).siblings().removeClass('btn-primary active');
+                          var view = $(this).data('view');
+                          swimlanes_vis.change_view_mode(view)
+                        });
                     } else {
                         $swimlanesContainer.hide();
+                        $viewToggle.hide();
                         $noGroupHistory.show();
                     }
                 });

@@ -65,8 +65,11 @@ export type CommunicationResponseBag = {
     /** Gets or sets the related medium entity type identifier. */
     relatedMediumEntityTypeId: number;
 
-    /** Gets or sets the related SMS from defined value identifier. */
-    relatedSmsFromDefinedValueId?: number | null;
+    /**
+     * Gets or sets the related SMS system phone number identifier this
+     * response was received on.
+     */
+    relatedSmsFromSystemPhoneNumberId?: number | null;
 
     /** Gets or sets the related transport entity type identifier. */
     relatedTransportEntityTypeId: number;

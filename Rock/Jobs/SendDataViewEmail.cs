@@ -23,8 +23,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -42,8 +40,7 @@ namespace Rock.Jobs
     [SystemCommunicationField( "System Email", "The email template that will be sent.", true, "" )]
     [DataViewField( "DataView", "The dataview the email will be sent to.", true, "", "Rock.Model.Person" )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
-    [DisallowConcurrentExecution]
-    public class SendDataViewEmail : IJob
+    public class SendDataViewEmail : RockJob
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendGroupEmail"/> class.
@@ -52,15 +49,11 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()" />
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var emailTemplateGuid = dataMap.GetString( "SystemEmail" ).AsGuidOrNull();
-            var dataViewGuid = dataMap.GetString( "DataView" ).AsGuidOrNull();
+            var emailTemplateGuid = GetAttributeValue( "SystemEmail" ).AsGuidOrNull();
+            var dataViewGuid = GetAttributeValue( "DataView" ).AsGuidOrNull();
 
             if ( dataViewGuid == null || emailTemplateGuid == null )
             {
@@ -76,7 +69,7 @@ namespace Rock.Jobs
             {
                 var dataViewGetQueryArgs = new DataViewGetQueryArgs
                 {
-                    DatabaseTimeoutSeconds = dataMap.GetString( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180
+                    DatabaseTimeoutSeconds = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180
                 };
 
                 var qry = dataView.GetQuery( dataViewGetQueryArgs );
@@ -90,12 +83,12 @@ namespace Rock.Jobs
                 if ( sqlTimeoutException != null )
                 {
                     var exceptionMessage = $"The dataview did not complete in a timely manner. You can try again or adjust the timeout setting of this job.";
-                    dataViewException = new RockDataViewFilterExpressionException( dataView.DataViewFilter, exceptionMessage, sqlTimeoutException ); 
+                    dataViewException = new RockDataViewFilterExpressionException( dataView.DataViewFilter, exceptionMessage, sqlTimeoutException );
                 }
 
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( dataViewException, context2 );
-                context.Result = dataViewException.Message;
+                this.Result = dataViewException.Message;
                 throw dataViewException;
             }
 
@@ -121,7 +114,7 @@ namespace Rock.Jobs
             var emailSendErrors = new List<string>();
             emailMessage.Send( out emailSendErrors );
 
-            context.Result = string.Format( "{0} emails sent", recipients.Count() );
+            this.Result = string.Format( "{0} emails sent", recipients.Count() );
 
             if ( emailSendErrors.Any() )
             {
@@ -130,7 +123,7 @@ namespace Rock.Jobs
                 sb.Append( string.Format( "{0} Errors: ", emailSendErrors.Count() ) );
                 emailSendErrors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                 string errorMessage = sb.ToString();
-                context.Result += errorMessage;
+                this.Result += errorMessage;
                 var exception = new Exception( errorMessage );
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );

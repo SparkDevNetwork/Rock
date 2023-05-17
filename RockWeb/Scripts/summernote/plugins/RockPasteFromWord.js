@@ -23,7 +23,7 @@
             imagePlaceholder: 'https://via.placeholder.com/200'
         }
     }
-    var stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")? ^p)/g;
+    var stringStripper = /( class=(")?Mso[a-zA-Z]+(")? ^p)/g;
     var output = txt.replace(stringStripper, '');
     var commentSripper = new RegExp('<!--(.*?)-->', 'g');
     var output = output.replace(commentSripper, '');

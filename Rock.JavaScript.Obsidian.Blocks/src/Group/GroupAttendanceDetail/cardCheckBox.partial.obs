@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+        :modelValue="modelValue"
+        :formGroupClasses="'rock-check-box ' + formGroupClasses"
+        name="checkbox">
+        <template #default="{uniqueId, field}">
+            <div :class="'control-wrapper ' + controlWrapperClasses">
+                <div :class="internalCardCheckBoxClasses">
+                    <input
+                           v-bind="field"
+                           v-model="internalValue"
+                           :disabled="disabled"
+                           :id="uniqueId"
+                           style="display: none"
+                           type="checkbox" />
+                    <label v-if="html" class="checkbox-card-label" :for="uniqueId" v-html="html"></label>
+                    <label v-else class="checkbox-card-label" :for="uniqueId">
+                        <slot></slot>
+                    </label>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<style>
+.checkbox-card {
+    --checked-border-color: var(--color-primary, #EE7525);
+    --checked-background-color: rgba(var(--color-base-primary), 0.1);
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--border-color,var(--input-border));
+    border-radius: 5px;
+    background-color: var(--background-color);
+}
+
+.checkbox-card.checked {
+    --border-color: var(--checked-border-color);
+    --background-color: var(--checked-background-color);
+    outline: 2px solid var(--checked-border-color);
+    outline-offset: -2px;
+}
+
+.checkbox-card-label {
+    padding: 12px !important;
+    width: 100%;
+    height: 100%;
+}
+
+.checkbox-card-data {
+    position: relative;
+    height: 100%;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        html: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        formGroupClasses: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        cardCheckBoxClasses: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        controlWrapperClasses: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", newValue: boolean): void
+    }>();
+
+    //#region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const internalCardCheckBoxClasses = computed<string>(() =>
+        `checkbox checkbox-card ${internalValue.value ? "checked " : ""} ${props.cardCheckBoxClasses || ""}`
+    );
+
+    //#endregion
+
+</script>

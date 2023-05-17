@@ -142,8 +142,8 @@ export type CommunicationBag = {
     /** Gets or sets the sender Rock.Model.PersonAlias identifier. */
     senderPersonAliasId?: number | null;
 
-    /** Gets or sets the SMS from number. */
-    sMSFromDefinedValueId?: number | null;
+    /** Gets or sets the system phone number identifier used for SMS sending. */
+    smsFromSystemPhoneNumberId?: number | null;
 
     /** Gets or sets the message. */
     sMSMessage?: string | null;

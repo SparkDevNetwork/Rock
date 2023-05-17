@@ -108,7 +108,9 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 // Get a list of locations that have not reached their threshold.
                 var locationListQuery = checkinGroup.Locations
-                    .Where( l => l.Location.SoftRoomThreshold == null || KioskLocationAttendance.Get( l.Location.Id ).CurrentCount < l.Location.SoftRoomThreshold.Value );
+                    .Where( l => l.ExcludedByFilter == false
+                        && ( l.Location.SoftRoomThreshold == null
+                            || KioskLocationAttendance.Get( l.Location.Id ).CurrentCount < l.Location.SoftRoomThreshold.Value ) );
 
                 List<CheckInLocation> locationList = new List<CheckInLocation>();
 

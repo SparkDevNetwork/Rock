@@ -14,73 +14,57 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
+import { defineComponent, computed } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
-import DatePartsPicker, { DatePartsPickerValue } from "@Obsidian/Controls/datePartsPicker";
+import { MonthDayValue } from "@Obsidian/ViewModels/Controls/monthDayValue";
+import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.obs";
 
 export const EditComponent = defineComponent({
     name: "MonthDayField.Edit",
 
     components: {
-        DatePartsPicker
+        MonthDayPicker
     },
 
     props: getFieldEditorProps(),
 
-    data() {
-        return {
-            /** The user input value. */
-            internalValue: {
-                year: 0,
-                month: 0,
-                day: 0
-            } as DatePartsPickerValue
-        };
+    emit: {
+        "update:modelValue": (_value: string) => true
     },
 
-    watch: {
-        /**
-         * Watch for changes to internalValue and emit the new value out to
-         * the consuming component.
-         */
-        internalValue(): void {
-            const value = this.internalValue.month !== 0 && this.internalValue.day !== 0
-                ? `${this.internalValue.month}/${this.internalValue.day}`
-                : "";
-
-            this.$emit("update:modelValue", value);
-        },
-
-        /**
-         * Watch for changes to modelValue which indicate the component
-         * using us has given us a new value to work with.
-         */
-        modelValue: {
-            immediate: true,
-            handler(): void {
-                const components = (this.modelValue || "").split("/");
+    setup(props, { emit }) {
+        const internalValue = computed<MonthDayValue>({
+            get() {
+                const components = (props.modelValue || "").split("/");
 
                 if (components.length == 2) {
-                    this.internalValue = {
-                        year: 0,
+                    return {
                         month: toNumber(components[0]),
                         day: toNumber(components[1])
                     };
                 }
                 else {
-                    this.internalValue = {
-                        year: 0,
+                    return {
                         month: 0,
                         day: 0
                     };
                 }
+            },
+            set(newVal: MonthDayValue) {
+                const value = newVal.month !== 0 && newVal.day !== 0
+                    ? `${newVal.month}/${newVal.day}`
+                    : "";
+
+                emit("update:modelValue", value);
             }
-        }
+        });
+
+        return { internalValue };
     },
 
     template: `
-<DatePartsPicker v-model="internalValue" :showYear="false" />
+<MonthDayPicker v-model="internalValue" :showYear="false" />
 `
 });
 

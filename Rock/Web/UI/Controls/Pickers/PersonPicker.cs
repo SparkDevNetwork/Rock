@@ -282,6 +282,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the placeholder text to display inside textbox when it is empty
+        /// </summary>
+        /// <value>
+        /// The placeholder text
+        /// </value>
+        public string Placeholder
+        {
+            get { return ViewState["Placeholder"] as string ?? string.Empty; }
+            set { ViewState["Placeholder"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to include businesses (default false).
         /// </summary>
         /// <value>
@@ -674,6 +686,13 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // Determine what text to display in the control. If there is no selection then show the placeholder.
+            var selectedText = this.Placeholder;
+            if (this.PersonName.IsNotNullOrWhiteSpace())
+            {
+                selectedText = this.PersonName;
+            }
+
             if ( this.Enabled )
             {
                 var rockBlock = this.RockBlock();
@@ -706,7 +725,7 @@ namespace Rock.Web.UI.Controls
                     $@"
             <a class='picker-label js-personpicker-toggle' href='#'>
                 <i class='fa fa-user'></i>
-                <span class='js-personpicker-selectedperson-label picker-selectedperson'>{this.PersonName}</span>
+                <span class='js-personpicker-selectedperson-label picker-selectedperson'>{selectedText}</span>
                 <b class='fa fa-caret-down pull-right'></b>
             </a>
 " );
@@ -802,7 +821,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";
-                linkButton.Text = $"<i class='fa fa-user'></i><span>{this.PersonName}</span>";
+                linkButton.Text = $"<i class='fa fa-user'></i><span>{selectedText}</span>";
                 linkButton.Enabled = false;
                 linkButton.RenderControl( writer );
                 writer.WriteLine();

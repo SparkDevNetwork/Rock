@@ -254,7 +254,8 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
             using ( var rockContext = new RockContext() )
             {
                 var interactiveExperienceService = new InteractiveExperienceService( rockContext );
-                var interactiveExperience = interactiveExperienceService.Get( e.RowKeyId );
+                var interactiveExperienceAnswerService = new InteractiveExperienceAnswerService( rockContext );
+                var interactiveExperience = interactiveExperienceService.Get( e.RowKeyValue.ToString() );
 
                 if ( interactiveExperience != null )
                 {
@@ -264,8 +265,18 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
                         return;
                     }
 
-                    interactiveExperienceService.Delete( interactiveExperience );
-                    rockContext.SaveChanges();
+                    var answers = interactiveExperienceAnswerService.Queryable()
+                        .Where( a => a.InteractiveExperienceAction.InteractiveExperienceId == interactiveExperience.Id )
+                        .ToList();
+
+                    rockContext.WrapTransaction( () =>
+                    {
+                        interactiveExperienceAnswerService.DeleteRange( answers );
+                        rockContext.SaveChanges();
+
+                        interactiveExperienceService.Delete( interactiveExperience );
+                        rockContext.SaveChanges();
+                    } );
                 }
             }
 

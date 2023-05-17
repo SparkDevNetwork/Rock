@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -153,7 +153,7 @@ namespace Rock.Rest.Controllers
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
 
-            attendanceService.ScheduledPersonRemove( attendanceId );
+            attendanceService.ScheduledPersonClear( attendanceId );
             rockContext.SaveChanges();
         }
 
@@ -380,7 +380,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/RegisterRSVPRecipients" )]
         [HttpPost]
-        [Obsolete( "Use the method which accepts a List<string> parameter instead." )]
+        [Obsolete( "Use the method which accepts a List<string> parameter instead.", true )]
         [RockObsolete( "1.10.4" )]
         [Rock.SystemGuid.RestActionGuid( "5A9F9DA7-D669-4D0D-8914-1DC1F21BB0FA" )]
         public void RegisterRSVPRecipients( int occurrenceId, string personIds )

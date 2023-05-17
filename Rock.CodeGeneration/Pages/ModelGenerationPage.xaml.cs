@@ -391,7 +391,9 @@ namespace Rock.CodeGeneration.Pages
                 {
                     if ( rootFolder != null )
                     {
-                        if ( IsClientChecked )
+                        bool allModelsAreSelected = _modelItems.Count == _modelItems.Count( i => i.IsChecked );
+
+                        if ( IsClientChecked && allModelsAreSelected )
                         {
                             var codeGenFolder = Path.Combine( ClientFolder, "CodeGenerated" );
                             if ( Directory.Exists( codeGenFolder ) )
@@ -402,7 +404,7 @@ namespace Rock.CodeGeneration.Pages
                             Directory.CreateDirectory( Path.Combine( ClientFolder, "CodeGenerated" ) );
                         }
 
-                        if ( IsServiceChecked && _modelItems.Count == _modelItems.Count( i => i.IsChecked ) )
+                        if ( IsServiceChecked && allModelsAreSelected )
                         {
                             var codeGenFolder = Path.Combine( NamespaceFolder( ServiceFolder, "Rock.Model" ).FullName, "CodeGenerated" );
                             if ( Directory.Exists( codeGenFolder ) )
@@ -413,7 +415,7 @@ namespace Rock.CodeGeneration.Pages
                             Directory.CreateDirectory( codeGenFolder );
                         }
 
-                        if ( IsRestChecked && _modelItems.Count == _modelItems.Count( i => i.IsChecked ) )
+                        if ( IsRestChecked && allModelsAreSelected )
                         {
                             // var filePath1 = Path.Combine( rootFolder, "Controllers" );
                             // var file = new FileInfo( Path.Combine( filePath1, "CodeGenerated", pluralizedName + "Controller.CodeGenerated.cs" ) );
@@ -438,6 +440,7 @@ namespace Rock.CodeGeneration.Pages
                                 if ( IsServiceChecked )
                                 {
                                     WriteServiceFile( ServiceFolder, type );
+                                    EnsureEntityTypeSystemGuid( ServiceFolder, type );
                                 }
 
                                 if ( IsRestChecked )
@@ -944,6 +947,45 @@ GO
             {
                 _modelItems[i].IsChecked = selected;
             }
+        }
+
+        /// <summary>
+        /// Ensures the entity type Guid is in SystemGuid\EntityType
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        /// <param name="type">The type.</param>
+        private void EnsureEntityTypeSystemGuid( string rootFolder, Type type )
+        {
+            var entityTypeSystemGuid = type.GetCustomAttribute<SystemGuid.EntityTypeGuidAttribute>( inherit: false )?.Guid;
+            if ( !entityTypeSystemGuid.HasValue )
+            {
+                return;
+            }
+
+            var guidString = entityTypeSystemGuid.ToString();
+
+            var entityTypeSystemGuidFileName = new FileInfo( Path.Combine( rootFolder, "SystemGuid\\EntityType.cs" ) );
+
+            var fileLines = File.ReadAllLines( entityTypeSystemGuidFileName.FullName );
+            if ( fileLines.Any( x => x.IndexOf( guidString, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+            {
+                // already in there
+                return;
+            }
+
+            var entityTypeConstName = type.Name.SplitCase().Replace( " ", "_" ).ToUpper();
+
+            string newEntityTypeGuidCode = $@"
+        /// <summary>
+        /// The EntityType Guid for <see cref=""{type.FullName}""/> 
+        /// </summary>
+        public const string {entityTypeConstName} = ""{guidString.ToUpper()}"";";
+
+            var updatedFileLines = fileLines.Where( a => a != "}" && a != "    }");
+            updatedFileLines = updatedFileLines.Append( newEntityTypeGuidCode );
+            updatedFileLines = updatedFileLines.Append( "    }");
+            updatedFileLines = updatedFileLines.Append( "}");
+            File.WriteAllLines( entityTypeSystemGuidFileName.FullName, updatedFileLines.ToArray() );
         }
 
         /// <summary>
@@ -1689,6 +1731,11 @@ namespace Rock.ViewModels.Entities
             var fullClassName = $"{restNamespace}.{pluralizedName}Controller";
             var restControllerType = Type.GetType( $"{fullClassName}, {typeof( Rock.Rest.ApiControllerBase ).Assembly.FullName}" );
             var restControllerGuid = restControllerType?.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
+
+            if ( type.GetCustomAttribute<Rock.Data.ExcludeDefaultRestControllerAttribute>() != null )
+            {
+                return;
+            }
 
             if ( restControllerGuid == null )
             {
@@ -2547,6 +2594,7 @@ namespace Rock.ViewModels.Entities
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
 
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.ViewModels\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
         }

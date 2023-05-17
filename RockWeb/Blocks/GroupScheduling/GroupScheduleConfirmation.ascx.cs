@@ -128,9 +128,9 @@ namespace RockWeb.Blocks.GroupScheduling
 
         protected class PageParameterKey
         {
-            public const string AttendanceId = "attendanceId";
-            public const string AttendanceIds = "attendanceIds";
-            public const string IsConfirmed = "isConfirmed";
+            public const string AttendanceId = "AttendanceId";
+            public const string AttendanceIds = "AttendanceIds";
+            public const string IsConfirmed = "IsConfirmed";
             public const string ReturnUrl = "ReturnUrl";
             public const string Person = "Person";
         }
@@ -535,7 +535,11 @@ namespace RockWeb.Blocks.GroupScheduling
                 // Make sure each attendance is for the selected in person.
                 foreach ( var attendanceId in attendanceIds )
                 {
-                    var attendance = attendanceService.Queryable().Where( a => a.Id == attendanceId && a.PersonAlias.PersonId == _selectedPerson.Id ).FirstOrDefault();
+                    var attendance = attendanceService.Queryable()
+                        .Where( a => a.Id == attendanceId && a.PersonAlias.PersonId == _selectedPerson.Id )
+                        .Include( a => a.PersonAlias.Person )
+                        .Include( a => a.ScheduledByPersonAlias.Person )
+                        .FirstOrDefault();
 
                     if ( attendance == null )
                     {
@@ -598,7 +602,12 @@ namespace RockWeb.Blocks.GroupScheduling
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var attendance = new AttendanceService( rockContext ).Queryable().Where( a => a.Id == attendanceId && a.PersonAlias.PersonId == _selectedPerson.Id ).FirstOrDefault();
+                        var attendance = new AttendanceService( rockContext ).Queryable()
+                            .Where( a => a.Id == attendanceId && a.PersonAlias.PersonId == _selectedPerson.Id )
+                            .Include( a => a.PersonAlias.Person )
+                            .Include( a => a.ScheduledByPersonAlias.Person )
+                            .FirstOrDefault();
+
                         if ( attendance != null )
                         {
                             var declineResonId = ddlDeclineReason.SelectedItem.Value.AsInteger();
@@ -781,9 +790,9 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <summary>
         /// Populates the merge fields.
         /// </summary>
-        /// <param name="attendance">The attendance.</param>
+        /// <param name="attendanceList">The attendance list.</param>
         /// <param name="recipientPerson">The recipient person.</param>
-        /// <returns></returns>
+        /// <returns>Dictionary&lt;System.String, System.Object&gt;.</returns>
         private Dictionary<string, object> MergeFields( List<Attendance> attendanceList, Person recipientPerson )
         {
             var attendance = attendanceList.FirstOrDefault(); // use first attendance to get Person and Scheduler.

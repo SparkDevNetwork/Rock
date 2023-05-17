@@ -13,9 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using System.Text;
 
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
@@ -69,14 +71,17 @@ namespace Rock.UniversalSearch.IndexModels
                 {
                     return "fa fa-users";
                 }
+
                 return _iconCssClass;
             }
+
             set
             {
                 _iconCssClass = value;
             }
         }
-        private string _iconCssClass = "";
+
+        private string _iconCssClass = string.Empty;
 
         /// <summary>
         /// Gets or sets the name.
@@ -121,16 +126,16 @@ namespace Rock.UniversalSearch.IndexModels
         /// <returns></returns>
         public static GroupIndex LoadByModel( Group group )
         {
-            var groupIndex = new GroupIndex();
-            groupIndex.SourceIndexModel = "Rock.Model.Group";
-
-            groupIndex.Id = group.Id;
-            groupIndex.Name = group.Name;
-            groupIndex.Description = group.Description;
-            groupIndex.GroupTypeId = group.GroupTypeId;
-            groupIndex.DocumentName = group.Name;
-
-            groupIndex.ModelOrder = 5;
+            var groupIndex = new GroupIndex
+            {
+                SourceIndexModel = "Rock.Model.Group",
+                Id = group.Id,
+                Name = group.Name,
+                Description = group.Description,
+                GroupTypeId = group.GroupTypeId,
+                DocumentName = group.Name,
+                ModelOrder = 5
+            };
 
             if ( group.GroupType != null )
             {
@@ -138,12 +143,54 @@ namespace Rock.UniversalSearch.IndexModels
                 groupIndex.GroupTypeName = group.GroupType.Name;
             }
 
-            if (group.Members != null )
-            {
-                groupIndex.MemberList = string.Join( ", ", group.Members.Where( m => m.GroupRole.IsLeader != true ).Select( m => m.Person.FullName ) );
-                groupIndex.LeaderList = string.Join( ", ", group.Members.Where( m => m.GroupRole.IsLeader == true ).Select( m => m.Person.FullName ) );
-            }
+            var rockContext = new Rock.Data.RockContext();
+            rockContext.Configuration.AutoDetectChangesEnabled = false;
+            
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMembers = groupMemberService
+                .Queryable()
+                .AsNoTracking()
+                .Where( gm => gm.GroupId == group.Id
+                    && gm.IsArchived == false
+                    && gm.GroupMemberStatus == GroupMemberStatus.Active );
 
+            var groupMemberCount = rockContext.GroupMembers.Count( gm => gm.GroupId == group.Id && gm.IsArchived == false && gm.GroupMemberStatus == GroupMemberStatus.Active );
+            if ( groupMemberCount > 10000 )
+            {
+                Rock.Logging.RockLogger.Log.Debug( Logging.RockLogDomains.Bus, $"Skipping universal search index of Group {group.Name} becauses the number of active users {groupMemberCount} exceeds the limit of 10K." );
+            }
+            else if ( groupMemberCount > 0 )
+            {
+                var memberListStringBuilder = new StringBuilder();
+                var leaderListStringBuilder = new StringBuilder();
+
+                foreach ( var groupMember in groupMembers )
+                {
+                    if ( groupMember.GroupRole.IsLeader != true )
+                    {
+                        memberListStringBuilder.Append( $"{groupMember.Person.FullName}," );
+                    }
+                    else
+                    {
+                        leaderListStringBuilder.Append( $"{groupMember.Person.FullName}," );
+                    }
+                }
+
+                // Trim the trailing commas from the string builders
+                if ( memberListStringBuilder.Length > 0 )
+                {
+                    memberListStringBuilder.Length--;
+                }
+
+                if ( leaderListStringBuilder.Length > 0 )
+                {
+                    leaderListStringBuilder.Length--;
+                }
+
+                groupIndex.MemberList = memberListStringBuilder.ToString();
+                groupIndex.LeaderList = leaderListStringBuilder.ToString();
+            }
+            
             AddIndexableAttributes( groupIndex, group );
 
             return groupIndex;

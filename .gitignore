@@ -30,6 +30,7 @@ RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging
 RockWeb/App_Data/MobileAppBundles
 RockWeb/Obsidian/
+RockWeb/Scripts/Rock/UI/structuredcontenteditor/
 /scaffolding.config
 *.sln.GhostDoc.xml
 .vs/

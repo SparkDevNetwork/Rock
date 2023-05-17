@@ -55,6 +55,11 @@ namespace Rock.Bus
         /// </summary>
         private static bool _isBusStarted = false;
 
+        /// <summary>
+        /// Wait lock for the startup process.
+        /// </summary>
+        private static SemaphoreSlim _initSemaphore = new SemaphoreSlim( 1, 1 );
+
         private static TaskCompletionSource<bool> _busStartupCompleted = new TaskCompletionSource<bool>();
 
         /// <summary>
@@ -295,38 +300,52 @@ namespace Rock.Bus
         /// <returns></returns>
         private async static Task ConfigureAndStartBusAsync()
         {
-            if ( _transportComponent == null )
+            // If the startup process is being executed, wait here.
+            await _initSemaphore.WaitAsync();
+            try
             {
-                throw new Exception( "An active transport component is required for Rock to run correctly" );
+                // If the bus has been initialized by an awaited caller, exit now.
+                if ( IsReady() )
+                {
+                    return;
+                }
+                if ( _transportComponent == null )
+                {
+                    throw new Exception( "An active transport component is required for Rock to run correctly" );
+                }
+
+                _bus = _transportComponent.GetBusControl( RockConsumer.ConfigureRockConsumers );
+                _bus.ConnectConsumeObserver( _statObserver );
+                _bus.ConnectReceiveObserver( _receiveFaultObserver );
+
+                // Allow the bus to try to connect for some seconds at most
+                var cancelToken = new CancellationTokenSource();
+                var task = _bus.StartAsync( cancelToken.Token );
+
+                var delay = Task.Delay( TimeSpan.FromSeconds( maxStartupWaitTimeSeconds ) );
+
+                if ( await Task.WhenAny( task, delay ) == task )
+                {
+                    // Task completed within timeout.
+                    // Consider that the task may have faulted or been canceled.
+                    // We re-await the task so that any exceptions/cancellation is rethrown.
+                    // https://stackoverflow.com/a/11191070/13215483
+                    await task;
+                }
+                else
+                {
+                    // The bus did not connect after some seconds
+                    cancelToken.Cancel();
+                    throw new Exception( $"The bus failed to connect using {_transportComponent.GetType().Name} within {maxStartupWaitTimeSeconds} seconds" );
+                }
+
+                _isBusStarted = true;
+                _busStartupCompleted.SetResult( true );
             }
-
-            _bus = _transportComponent.GetBusControl( RockConsumer.ConfigureRockConsumers );
-            _bus.ConnectConsumeObserver( _statObserver );
-            _bus.ConnectReceiveObserver( _receiveFaultObserver );
-
-            // Allow the bus to try to connect for some seconds at most
-            var cancelToken = new CancellationTokenSource();
-            var task = _bus.StartAsync( cancelToken.Token );
-
-            var delay = Task.Delay( TimeSpan.FromSeconds( maxStartupWaitTimeSeconds ) );
-
-            if ( await Task.WhenAny( task, delay ) == task )
+            finally
             {
-                // Task completed within timeout.
-                // Consider that the task may have faulted or been canceled.
-                // We re-await the task so that any exceptions/cancellation is rethrown.
-                // https://stackoverflow.com/a/11191070/13215483
-                await task;
+                _initSemaphore.Release();
             }
-            else
-            {
-                // The bus did not connect after some seconds
-                cancelToken.Cancel();
-                throw new Exception( $"The bus failed to connect using {_transportComponent.GetType().Name} within {maxStartupWaitTimeSeconds} seconds" );
-            }
-
-            _isBusStarted = true;
-            _busStartupCompleted.SetResult( true );
         }
 
         /// <summary>

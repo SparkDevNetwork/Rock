@@ -38,6 +38,7 @@ using Ical.Net;
 using ImageResizer;
 using Rock;
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -1052,33 +1053,17 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string SundayDate( object input )
         {
-            if ( input == null )
+            var startDto = GetDateTimeOffsetFromInputParameter( input, null );
+            if ( startDto == null )
             {
                 return null;
             }
 
-            DateTime date = DateTime.MinValue;
+            var rockStartDate = LavaDateTime.ConvertToRockDateTime( startDto.Value );
+            var nextSundayDate =  RockDateTime.GetSundayDate( rockStartDate );
+            var output = nextSundayDate.ToShortDateString();
 
-            if ( input.ToString() == "Now" )
-            {
-                date = RockDateTime.Now;
-            }
-            else
-            {
-                if ( !DateTime.TryParse( input.ToString(), out date ) )
-                {
-                    return null;
-                }
-            }
-
-            if ( date != DateTime.MinValue )
-            {
-                return date.SundayDate().ToShortDateString();
-            }
-            else
-            {
-                return null;
-            }
+            return output;
         }
 
         /// <summary>
@@ -2077,6 +2062,30 @@ namespace Rock.Lava
                         return rawValue;
                     }
 
+                    // Check qualifer for "TextValue" and if true return PersistedTextValue
+                    if (qualifier.Equals( "TextValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                    }
+
+                    // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
+                    if (qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                    }
+
+                    // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
+                    if (qualifier.Equals( "CondensedTextValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedCondensedTextValue;
+                    }
+
+                    // Check qualifer for "CondensedHtmlValue" and if true return PersistedTextValue
+                    if (qualifier.Equals( "CondensedHtmlValue", StringComparison.OrdinalIgnoreCase ))
+                    {
+                        return item.AttributeValues[attributeKey].PersistedCondensedHtmlValue;
+                    }
+
                     // Check qualifier for 'Url' and if present and attribute's field type is a ILinkableFieldType, then return the formatted url value
                     var field = attribute.FieldType.Field;
                     if ( qualifier.Equals( "Url", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ILinkableFieldType )
@@ -2515,13 +2524,21 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input, context );
-
+            var person = GetPerson( input, context );
             if ( person != null )
             {
-                Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-                var parents = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == adultGuid ).Select( a => a.Person );
-                return parents.ToList();
+                var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                var parents = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) )
+                    .GetFamilyMembers( person.Id, includeSelf: true )
+                    .Where( m => m.GroupRole.Guid == adultGuid )
+                    .Select( a => a.Person )
+                    .ToList();
+
+                // If the list includes the target Person, they are a parent themselves.
+                if ( !parents.Any( c => c.Id == person.Id ) )
+                {
+                    return parents.ToList();
+                }
             }
 
             return new List<Person>();
@@ -2535,13 +2552,22 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input, context );
-
+            var person = GetPerson( input, context );
             if ( person != null )
             {
-                Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                var children = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == childGuid ).Select( a => a.Person );
-                return children.ToList();
+                var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+
+                var children = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) )
+                    .GetFamilyMembers( person.Id, includeSelf: true )
+                    .Where( m => m.GroupRole.Guid == childGuid )
+                    .Select( a => a.Person )
+                    .ToList();
+
+                // If the list includes the target Person, they are a child themselves.
+                if ( !children.Any( c => c.Id == person.Id ) )
+                {
+                    return children.ToList();
+                }
             }
 
             return new List<Person>();
@@ -3767,30 +3793,20 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Resolves the rock address.
+        /// Resolves a relative URL to an absolute URL for the current Rock environment.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
         /// <returns></returns>
-        public static string ResolveRockUrl( string input )
+        public static string ResolveRockUrl( ILavaRenderContext context, string input )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var url = input;
 
-            if ( input.StartsWith( "~~" ) )
+            var host = context.GetService<ILavaHost>();
+            if ( host != null )
             {
-                string theme = "Rock";
-                if ( page.Theme.IsNotNullOrWhiteSpace() )
-                {
-                    theme = page.Theme;
-                }
-                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhiteSpace() )
-                {
-                    theme = page.Site.Theme;
-                }
-
-                input = "~/Themes/" + theme + ( input.Length > 2 ? input.Substring( 2 ) : string.Empty );
+                url = host.ResolveUrl( input );
             }
-
-            var url = page.ResolveUrl( input );
 
             return url;
         }
@@ -4371,7 +4387,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddMetaTagToHead( string input, string attributeName, string attributeValue )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -4393,7 +4409,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
         {
-            var page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -4428,7 +4444,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string SetPageTitle( string input, string titleLocation = "All" )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -4467,15 +4483,17 @@ namespace Rock.Lava
         /// <summary>
         /// Adds the script link.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
         /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
         /// <returns></returns>
-        public static string AddScriptLink( string input, bool fingerprintLink = false )
+        public static string AddScriptLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
-            if ( HttpContext.Current != null )
+            var page = HttpContext.Current?.Handler as RockPage;
+
+            if ( page != null )
             {
-                RockPage page = HttpContext.Current.Handler as RockPage;
-                RockPage.AddScriptLink( page, ResolveRockUrl( input ), fingerprintLink );
+                RockPage.AddScriptLink( page, ResolveRockUrl( context, input ), fingerprintLink );
             }
 
             return string.Empty;
@@ -4484,15 +4502,17 @@ namespace Rock.Lava
         /// <summary>
         /// Adds the CSS link.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
         /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
         /// <returns></returns>
-        public static string AddCssLink( string input, bool fingerprintLink = false )
+        public static string AddCssLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
-            if ( HttpContext.Current != null )
+            var page = HttpContext.Current?.Handler as RockPage;
+
+            if ( page != null )
             {
-                RockPage page = HttpContext.Current.Handler as RockPage;
-                RockPage.AddCSSLink( page, ResolveRockUrl( input ), fingerprintLink );
+                RockPage.AddCSSLink( page, ResolveRockUrl( context, input ), fingerprintLink );
             }
 
             return string.Empty;
@@ -4667,7 +4687,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Page( string input, string parm )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
 
             if ( page != null )
             {
@@ -4783,7 +4803,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object PageParameter( string input, string parm )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
+            if ( page == null )
+            {
+                return null;
+            }
 
             var parmReturn = page.PageParameter( parm );
 
@@ -5315,11 +5339,14 @@ namespace Rock.Lava
         /// <param name="typeOrder">The type order.</param>
         public static void AddQuickReturn( string input, string typeName, int typeOrder = 0 )
         {
-            RockPage rockPage = HttpContext.Current.Handler as RockPage;
+            var rockPage = HttpContext.Current?.Handler as RockPage;
+            if ( rockPage == null )
+            {
+                return;
+            }
 
             if ( input.IsNotNullOrWhiteSpace() )
             {
-
                 /* 08-16-2021 MDP
                  * This is only supported for pages that have the PersonalLinks block on it.
                  * 
@@ -5353,6 +5380,21 @@ namespace Rock.Lava
                     RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
                 }
             }
+        }
+
+        /// <summary>
+        /// Converts structured blocks designed with the <see cref="StructureContentEditor"/> control from JSON to HTML.
+        /// <para>
+        /// Note that this only works with JSON produced by the <see cref="StructureContentEditor"/> control as it
+        /// contains metadata used in converting the JSON content to HTML.
+        /// </para>
+        /// </summary>
+        /// <param name="content">JSON formatted string produced by the <see cref="StructureContentEditor"/> control.</param>
+        /// <returns></returns>
+        public static string RenderStructuredContentAsHtml( string content )
+        {
+            var helper = new StructuredContentHelper( content );
+            return helper.Render();
         }
 
         #endregion Misc Filters
@@ -5902,7 +5944,10 @@ namespace Rock.Lava
                 noteTypeIds = ( ( string ) noteType ).Split( ',' ).Select( Int32.Parse ).ToList();
             }
 
-            var notes = new NoteService( LavaHelper.GetRockContextFromLavaContext( context ) ).Queryable().AsNoTracking().Where( n => n.EntityId == entityId );
+            var notes = new NoteService( LavaHelper.GetRockContextFromLavaContext( context ) )
+                .Queryable().AsNoTracking()
+                .Include( n => n.CreatedByPersonAlias )
+                .Where( n => n.EntityId == entityId );
 
             if ( noteTypeIds.Count > 0 )
             {
@@ -6484,6 +6529,61 @@ namespace Rock.Lava
             }
 
             return color.ToRGBA();
+        }
+
+        /// <summary>Gets the hue from the provided color.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Hue( string input )
+        {
+            var color = new RockColor( input );
+            
+            return Convert.ToInt32( color.Hue );
+        }
+
+        /// <summary>Saturations the specified input.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Saturation( string input )
+        {
+            var color = new RockColor( input );
+
+            return Convert.ToInt32( color.Saturation * 100 );
+        }
+
+        /// <summary>Luminosities the specified input.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>System.Double.</returns>
+        public static int Luminosity( string input )
+        {
+            var color = new RockColor( input );
+
+            return Convert.ToInt32( color.Luminosity * 100 );
+        }
+
+        /// <summary>Calculates the contrast ratio.</summary>
+        /// <param name="inputColor1">The input color1.</param>
+        /// <param name="inputColor2">The input color2.</param>
+        /// <returns>System.Double.</returns>
+        public static double CalculateContrastRatio( string inputColor1, string inputColor2 )
+        {
+            if ( inputColor2.IsNullOrWhiteSpace() )
+            {
+                inputColor2 = "#ffffff";
+            }
+
+            var color1 = new RockColor( inputColor1 );
+            var color2 = new RockColor( inputColor2 );
+
+            return RockColor.CalculateContrastRatio( color1, color2 );
+        }
+
+        /// <summary>Ases the color.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>RockColor.</returns>
+        public static RockColor AsColor( string input )
+        {
+            return new RockColor( input );
         }
 
         #endregion Color Filters

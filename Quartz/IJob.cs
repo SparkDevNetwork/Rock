@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 /* 
  * All content copyright Terracotta, Inc., unless otherwise indicated. All rights reserved. 
  * 
@@ -16,6 +16,8 @@
  * 
  */
 #endregion
+
+using System;
 
 namespace Quartz
 {
@@ -36,7 +38,8 @@ namespace Quartz
 	/// <seealso cref="IScheduler" />
 	/// <author>James House</author>
 	/// <author>Marko Lahma (.NET)</author>
-	public interface IJob
+    [Obsolete("Use RockJob instead")]
+    public interface IJob
 	{
 		/// <summary>
 		/// Called by the <see cref="IScheduler" /> when a <see cref="ITrigger" />

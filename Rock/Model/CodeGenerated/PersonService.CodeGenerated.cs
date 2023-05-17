@@ -95,8 +95,11 @@ namespace Rock.Model
             {
                 IdKey = model.IdKey,
                 AccountProtectionProfile = ( int ) model.AccountProtectionProfile,
+                Age = model.Age,
+                AgeBracket = ( int ) model.AgeBracket,
                 AgeClassification = ( int ) model.AgeClassification,
                 AnniversaryDate = model.AnniversaryDate,
+                BirthDateKey = model.BirthDateKey,
                 BirthDay = model.BirthDay,
                 BirthMonth = model.BirthMonth,
                 BirthYear = model.BirthYear,
@@ -211,8 +214,11 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AccountProtectionProfile = source.AccountProtectionProfile;
+            target.Age = source.Age;
+            target.AgeBracket = source.AgeBracket;
             target.AgeClassification = source.AgeClassification;
             target.AnniversaryDate = source.AnniversaryDate;
+            target.BirthDateKey = source.BirthDateKey;
             target.BirthDay = source.BirthDay;
             target.BirthMonth = source.BirthMonth;
             target.BirthYear = source.BirthYear;

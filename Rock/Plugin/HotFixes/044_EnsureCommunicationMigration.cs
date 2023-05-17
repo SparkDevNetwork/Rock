@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,7 +23,7 @@ namespace Rock.Plugin.HotFixes
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 44, "1.7.0" )]
-    [Obsolete( "The Communication.MediumDataJson and CommunicationTemplate.MediumDataJson fields will be removed in Rock 1.10. So the plugin will be changed to do nothing starting in Rock 1.10" )]
+    [Obsolete( "The Communication.MediumDataJson and CommunicationTemplate.MediumDataJson fields will be removed in Rock 1.10. So the plugin will be changed to do nothing starting in Rock 1.10", true )]
     [RockObsolete( "1.10" )]
     public class EnsureCommunicationMigration : Migration
     {

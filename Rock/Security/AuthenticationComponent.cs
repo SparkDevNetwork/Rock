@@ -15,10 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Specialized;
 using System.Web;
-using Rock.Web.Cache;
 using Rock.Extension;
 using Rock.Model;
+using Rock.Attribute;
 
 namespace Rock.Security
 {
@@ -42,7 +43,7 @@ namespace Rock.Security
         /// <value>
         /// The requires remote authentication.
         /// </value>
-        public abstract Boolean RequiresRemoteAuthentication { get; }
+        public abstract bool RequiresRemoteAuthentication { get; }
 
         /// <summary>
         /// Authenticates the user based on user name and password. If the attempt is a failure,
@@ -90,7 +91,7 @@ namespace Rock.Security
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns></returns>
-        public abstract Boolean Authenticate( UserLogin user, string password );
+        public abstract bool Authenticate( UserLogin user, string password );
 
         /// <summary>
         /// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.
@@ -99,7 +100,7 @@ namespace Rock.Security
         /// <param name="userName">Name of the user.</param>
         /// <param name="returnUrl">The return URL.</param>
         /// <returns></returns>
-        public abstract Boolean Authenticate( HttpRequest request, out string userName, out string returnUrl );
+        public abstract bool Authenticate( HttpRequest request, out string userName, out string returnUrl );
 
         /// <summary>
         /// Encodes the password.
@@ -107,7 +108,7 @@ namespace Rock.Security
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns></returns>
-        public abstract String EncodePassword( UserLogin user, string password );
+        public abstract string EncodePassword( UserLogin user, string password );
 
         /// <summary>
         /// Generates the log in URL.
@@ -122,13 +123,13 @@ namespace Rock.Security
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
-        public abstract Boolean IsReturningFromAuthentication( HttpRequest request );
+        public abstract bool IsReturningFromAuthentication( HttpRequest request );
 
         /// <summary>
         /// Gets the URL of an image that should be displayed.
         /// </summary>
         /// <returns></returns>
-        public abstract String ImageUrl();
+        public abstract string ImageUrl();
 
         /// <summary>
         /// Gets a value indicating whether [supports change password].
@@ -136,7 +137,7 @@ namespace Rock.Security
         /// <value>
         /// <c>true</c> if [supports change password]; otherwise, <c>false</c>.
         /// </value>
-        public abstract Boolean SupportsChangePassword { get; }
+        public abstract bool SupportsChangePassword { get; }
 
         /// <summary>
         /// Changes the password.

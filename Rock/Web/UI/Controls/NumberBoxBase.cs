@@ -41,13 +41,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the behavior mode of the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to number.
+        /// Gets or sets the group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server.
         /// </summary>
-        public override TextBoxMode TextMode
+        /// <returns>The group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server. The default value is an empty string ("").</returns>
+        public override string ValidationGroup
         {
             get
             {
-                return TextBoxMode.Number;
+                return base.ValidationGroup;
+            }
+
+            set
+            {
+                base.ValidationGroup = value;
+
+                EnsureChildControls();
+
+                if ( _customValidator != null )
+                {
+                    _customValidator.ValidationGroup = value;
+                }
             }
         }
 
@@ -60,9 +73,16 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                // An input type of Number (or currency) will not render the value correctly if it contains a comma 
-                // ( or any other character besides numbers and decimals), so strip those characters out first
-                base.Text = value == null ? string.Empty : System.Text.RegularExpressions.Regex.Replace( value, @"[^-0-9.]", "" );
+                if ( NumberType == ValidationDataType.Double || NumberType == ValidationDataType.Currency )
+                {
+                    // An input type of Number (or currency) will not render the value correctly if it contains a comma 
+                    // ( or any other character besides numbers and decimals), so strip those characters out first
+                    base.Text = value == null ? string.Empty : System.Text.RegularExpressions.Regex.Replace( value, @"[^-0-9.]", "" );
+                }
+                else
+                {
+                    base.Text = value;
+                }
             }
         }
 
@@ -149,17 +169,53 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the validation message display mode for the control.
+        /// </summary>
+        /// <remarks>
+        /// The default behavior is:
+        /// Client-side validation shows visual feedback only, no error messages.
+        /// Server-side validation shows detailed error messages in the validation summary.
+        /// </remarks>
+        public ValidatorDisplay ValidationDisplay
+        {
+            get { return ViewState["ValidationDisplay"].ToStringSafe().ConvertToEnum<ValidatorDisplay>( ValidatorDisplay.None ); }
+            set { ViewState["ValidationDisplay"] = value; }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
+            /*
+             * The input field is intentionally rendered as type='text' rather type='number'.
+             * This avoids the validation issues caused by the different type='number' implementations for various browsers.
+             * To set the appropriate onscreen keyboard for browers that support this feature,
+             * we specify the inputmode attribute instead.
+             */
+            string inputmode;
+            if ( this.NumberType == ValidationDataType.Integer )
+            {
+                inputmode = "numeric";
+            }
+            else if ( this.NumberType == ValidationDataType.Double || this.NumberType == ValidationDataType.Currency )
+            {
+                inputmode = "decimal";
+            }
+            else
+            {
+                inputmode = "text";
+            }
+
+            this.Attributes.Add( "inputmode", inputmode );
+            this.FormGroupCssClass = "js-number-box";
             base.CreateChildControls();
 
             _customValidator = new CustomValidator();
             _customValidator.ID = this.ID + nameof( _customValidator );
             _customValidator.ControlToValidate = this.ID;
-            _customValidator.Display = ValidatorDisplay.Dynamic;
-            _customValidator.CssClass = "validation-error help-inline";
+            _customValidator.Display = this.ValidationDisplay;
+            _customValidator.CssClass = "validation-error help-inline js-number-box-validator";
             _customValidator.ClientValidationFunction = "Rock.controls.numberBox.clientValidate";
             _customValidator.ServerValidate += ServerValidation;
             Controls.Add( _customValidator );
@@ -167,18 +223,71 @@ namespace Rock.Web.UI.Controls
 
         private void ServerValidation( object source, ServerValidateEventArgs args )
         {
-            var min = MinimumValue.IsNotNullOrWhiteSpace() ? Convert.ToDecimal( MinimumValue ) : int.MinValue;
-            var max = MaximumValue.IsNotNullOrWhiteSpace() ? Convert.ToDecimal( MaximumValue ) : int.MaxValue;
+            string validationMessage = null;
+            var controlName = this.Label ?? "Numeric Value";
+            var value = args.Value;
 
-            var value = args.Value.AsDecimalInvariantCultureOrNull();
-
-            if ( value == null )
+            if ( string.IsNullOrWhiteSpace( value ) )
             {
-                args.IsValid = false;
-                return;
+                // Check if a required value is missing.
+                if ( this.Required )
+                {
+                    validationMessage = $"{controlName} is required.";
+                }
+            }
+            else
+            {
+                // Validate input is numeric.
+                var decimalValue = value.AsDecimalInvariantCultureOrNull();
+                if ( decimalValue == null )
+                {
+                    validationMessage = $"{controlName} must be a valid number.";
+                }
+                else
+                {
+                    // Validate number.
+                    if ( NumberType == ValidationDataType.Integer )
+                    {
+                        // Validate integer type.
+                        if ( !string.IsNullOrWhiteSpace( value ) )
+                        {
+                            var intValue = args.Value.AsIntegerOrNull();
+                            if ( intValue == null )
+                            {
+                                validationMessage = $"{controlName} must be an integer value.";
+                            }
+                        }
+                    }
+                }
+
+                // Validate range.
+                if ( validationMessage == null )
+                {
+                    var min = MinimumValue.IsNotNullOrWhiteSpace() ? Convert.ToDecimal( MinimumValue ) : int.MinValue;
+                    var max = MaximumValue.IsNotNullOrWhiteSpace() ? Convert.ToDecimal( MaximumValue ) : int.MaxValue;
+
+                    if ( decimalValue > max || decimalValue < min )
+                    {
+                        if ( min == int.MinValue )
+                        {
+                            validationMessage = string.Format( $"{controlName} must have a value of {max} or less." );
+                        }
+                        else if ( max == int.MaxValue )
+                        {
+                            validationMessage = string.Format( $"{controlName} must have a value of {min} or more." );
+                        }
+                        else
+                        {
+                            validationMessage = string.Format( $"{controlName} must have a value between {min} and {max}." );
+                        }
+                    }
+                }
             }
 
-            args.IsValid = value <= max && value >= min;
+            _customValidator.Text = null;
+            _customValidator.ErrorMessage = validationMessage;
+
+            args.IsValid = ( validationMessage == null );
         }
 
         /// <summary>
@@ -187,61 +296,23 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         protected override void RenderDataValidator( HtmlTextWriter writer )
         {
-            _customValidator.Attributes.Add( "min", MinimumValue ?? int.MinValue.ToString() );
-            _customValidator.Attributes.Add( "max", MaximumValue ?? int.MaxValue.ToString() );
             _customValidator.Attributes.Add( "control", ClientID );
+            _customValidator.Attributes.Add( "type", this.NumberType.ToString().ToLower() );
 
-            decimal minValue = MinimumValue.AsDecimalOrNull() ?? decimal.MinValue;
-            decimal maxValue = MaximumValue.AsDecimalOrNull() ?? decimal.MaxValue;
-
-            string rangeMessageFormat = null;
-
-            // if they are in the valid range, but not an integer, they'll see this message
-            switch ( NumberType )
+            var minValue = MinimumValue.AsDecimalOrNull();
+            if ( minValue != null )
             {
-                case ValidationDataType.Integer:
-                    rangeMessageFormat = "{0} must be an integer";
-                    break;
-                case ValidationDataType.Double:
-                    rangeMessageFormat = "{0} must be a decimal amount";
-                    break;
-                case ValidationDataType.Currency:
-                    rangeMessageFormat = "{0} must be a currency amount";
-                    break;
-                case ValidationDataType.Date:
-                    rangeMessageFormat = "{0} must be a date";
-                    break;
-                case ValidationDataType.String:
-                    rangeMessageFormat = "{0} must be a string";
-                    break;
+                _customValidator.Attributes.Add( "min", minValue.ToString() );
             }
-
-            if ( minValue > decimal.MinValue )
+            var maxValue = MaximumValue.AsDecimalOrNull();
+            if ( maxValue != null )
             {
-                rangeMessageFormat = "{0} must be at least " + MinimumValue;
+                _customValidator.Attributes.Add( "max", maxValue.ToString() );
             }
-
-            if ( maxValue < decimal.MaxValue )
-            {
-                rangeMessageFormat = "{0} must be at most " + MaximumValue;
-            }
-
-            if ( ( minValue > decimal.MinValue ) && ( maxValue < decimal.MaxValue ) )
-            {
-                rangeMessageFormat = string.Format( "{{0}} must be between {0} and {1} ", MinimumValue, MaximumValue );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( rangeMessageFormat ) )
-            {
-                _customValidator.ErrorMessage = string.Format( rangeMessageFormat, string.IsNullOrWhiteSpace( FieldName ) ? "Value" : FieldName );
-            }
-
-            _customValidator.Attributes.Add( "ErrorMessage", _customValidator.ErrorMessage );
 
             _customValidator.ValidationGroup = this.ValidationGroup;
+
             _customValidator.RenderControl( writer );
         }
-
-
     }
 }

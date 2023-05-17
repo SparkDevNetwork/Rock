@@ -69,7 +69,8 @@ namespace Rock.Model
         public int? CommunicationResponseId { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the recipient person alias identifier.
+        /// Gets or sets the recipient person alias identifier. This is the
+        /// individual outside of Rock that is being communicated with.
         /// </summary>
         /// <value>
         /// The recipient person alias identifier.
@@ -77,7 +78,25 @@ namespace Rock.Model
         public int? RecipientPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the message key.
+        /// Gets or sets the recipient person unique identifier. This is
+        /// the individual outside of Rock that is being communicated with.
+        /// </summary>
+        /// <value>
+        /// The recipient person unique identifier.
+        /// </value>
+        public Guid? RecipientPersonGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the conversation key. All messages that are part of the
+        /// same conversation will share a common ConversationKey.
+        /// </summary>
+        /// <value>
+        /// The conversation key.
+        /// </value>
+        public string ConversationKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message key. This uniquely identifiers a single message.
         /// </summary>
         /// <value>
         /// The message key.
@@ -85,12 +104,40 @@ namespace Rock.Model
         public string MessageKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the full name.
+        /// Gets or sets the contact key of the recipient. This would contain
+        /// a phone number, e-mail address, or other transport specific key
+        /// to allow communication.
+        /// </summary>
+        /// <value>The contact key of the recipient.</value>
+        public string ContactKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full name of the person that send the message from
+        /// Rock. This is only valid if <see cref="IsOutbound"/> is true.
+        /// </summary>
+        /// <value>
+        /// The full name of the person that sent the message from Rock.
+        /// </value>
+        public string OutboundSenderFullName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full name. This represents the individual outside
+        /// of Rock that is being communicated with.
         /// </summary>
         /// <value>
         /// The full name.
         /// </value>
         public string FullName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the recipient person photo identifier. This is
+        /// the photo of the individual outside of Rock that is being
+        /// communicated with.
+        /// </summary>
+        /// <value>
+        /// The recipient person photo identifier.
+        /// </value>
+        public int? RecipientPhotoId { get; set; }
 
         /// <summary>
         /// Gets or sets the created date time.

@@ -878,8 +878,81 @@ namespace RockWeb.Blocks.CheckIn
                 .Select( p => p.PersonId )
                 .Distinct();
 
+            var peopleCheckInIds = RetrievePeopleCanCheckIn( personIds.ToList(), rockContext );
+
+            personIds = personIds.AsQueryable().Concat( peopleCheckInIds );
+
             return personIds;
         }
+
+        private IQueryable<int> RetrievePeopleCanCheckIn(List<int> familyMemberIds, RockContext rockContext)
+        {
+            IQueryable<int> personIds = null;
+
+            var roles = GetRoles( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            if ( knownRelationshipGroupType != null )
+            {
+                var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
+                if ( ownerRole != null )
+                {
+                    // Get the Known Relationship group id's for each person in the family
+                    var relationshipGroupIds = groupMemberService
+                        .Queryable().AsNoTracking()
+                        .Where( g =>
+                            g.GroupRoleId == ownerRole.Id &&
+                            familyMemberIds.Contains( g.PersonId ) )
+                        .Select( g => g.GroupId );
+
+                    personIds = groupMemberService
+                        .Queryable().AsNoTracking()
+                        .Where( g =>
+                            relationshipGroupIds.Contains( g.GroupId ) &&
+                            roles.Contains( g.GroupRoleId ) )
+                        .Select( g => g.PersonId );
+                }
+            }
+            
+            return personIds;
+        }
+
+        /// <summary>
+        /// Gets the roles.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static List<int> GetRoles( RockContext rockContext )
+        {
+            string cacheKey = "Rock.FindRelationships.Roles";
+
+            List<int> roles = RockCache.Get( cacheKey ) as List<int>;
+
+            if ( roles == null )
+            {
+                roles = new List<int>();
+
+                foreach ( var role in new GroupTypeRoleService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( r => r.GroupType.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ) ) ) )
+                {
+                    role.LoadAttributes( rockContext );
+                    if ( role.Attributes.ContainsKey( "CanCheckin" ) )
+                    {
+                        bool canCheckIn = false;
+                        if ( bool.TryParse( role.GetAttributeValue( "CanCheckin" ), out canCheckIn ) && canCheckIn )
+                        {
+                            roles.Add( role.Id );
+                        }
+                    }
+                }
+
+                RockCache.AddOrUpdate( cacheKey, null, roles, RockDateTime.Now.AddSeconds( 300 ) );
+            }
+
+            return roles;
+        } 
 
         #endregion
 

@@ -84,15 +84,10 @@ namespace Rock.Update
             // Record the current version to the database
             Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID, _targetVersion.ToString() );
 
-            // register any new REST controllers
-            try
-            {
-                RestControllerService.RegisterControllers();
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex );
-            }
+            /* 
+             * ETD 2023-04-10
+             * Removed logic to register any new REST controllers here. The static collection could still have elements being added. Also this is done on Rock startup anyway and so is not needed here.
+             */
 
             return targetRelease;
         }

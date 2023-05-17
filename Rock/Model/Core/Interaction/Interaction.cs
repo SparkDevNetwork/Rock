@@ -93,16 +93,16 @@ namespace Rock.Model
         /// <list type="bullet">
         /// <item>
         ///     <term>Page Views</term>
-        ///     <description>null, Page is the Component, Site is the Channel</description></item>
+        ///     <description>EntityId is left null, Page is the Component, Site is the Channel</description></item>
         /// <item>
         ///     <term>Communication Recipient Activity</term>
-        ///     <description><see cref="Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description></item>
+        ///     <description>EntityId is the <see cref="Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description></item>
         /// <item>
         ///     <term>Content Channel Activity</term>
-        ///     <description>null, ContentChannel is the Component, single Channel</description></item>
+        ///     <description>EntityId is left null, ContentChannel is the Component, single Channel</description></item>
         /// <item>
         ///     <term>Workflow Form Entry</term>
-        ///     <description><see cref="Workflow"/> Id, WorkflowType is the Component, single Channel </description></item>
+        ///     <description>EntityId is the <see cref="Workflow"/> Id, WorkflowType is the Component, single Channel </description></item>
         /// </list>
         /// </summary>
         /// <value>

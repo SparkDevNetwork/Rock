@@ -92,11 +92,19 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_141_ADD_MISSING_INDEXES.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_VALUEAS_ATTRIBUTE_VALUE_COLUMNS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_SLIDING_DATE_RANGE_VALUE.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_RECREATE_METRIC_ANALYTICS_VIEWS.AsGuid()
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_RECREATE_METRIC_ANALYTICS_VIEWS.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_150_SYSTEM_PHONE_NUMBERS.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_150_REPLACE_TRANSACTION_ENTRY_BLOCKS_WITH_UTILITY_PAYMENT_ENTRY_BLOCK.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_150_MOBILE_APPLICATION_USERS_REST_GROUP.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_150_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS.AsGuid(),
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)
-            var runOnceJobIds = new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable().Where( a => runOnceJobGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
+            var runOnceJobIds = new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable()
+                .Where( a => runOnceJobGuids.Contains( a.Guid ) )
+                .OrderBy( a => a.Id )
+                .Select( a => a.Id )
+                .ToList();
 
             // start a task that will run any incomplete RunOneJobs (one at a time)
             Task.Run( () =>
@@ -108,7 +116,7 @@ namespace Rock.Migrations.RockStartup
                      try
                      {
                          var job = jobService.Get( runOnceJobId );
-                         jobService.RunNow( job, out _ );
+                         jobService.RunNow( job );
                      }
                      catch ( Exception ex )
                      {

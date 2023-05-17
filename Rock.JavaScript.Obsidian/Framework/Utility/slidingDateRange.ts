@@ -182,11 +182,11 @@ export function parseSlidingDateRangeString(value: string): SlidingDateRange | n
     };
 
     // If the range type is one that has time units then parse the time units.
-    if ([RangeType.Current, RangeType.Last, RangeType.Next, RangeType.Previous, RangeType.Upcoming].includes(range.rangeType)) {
-        range.timeUnit = timeUnits.length > 0 ? toNumber(timeUnits[0].value) : TimeUnit.Hour;
+    if (([RangeType.Current, RangeType.Last, RangeType.Next, RangeType.Previous, RangeType.Upcoming] as number[]).includes(range.rangeType)) {
+        range.timeUnit = timeUnits.length > 0 ? toNumber(timeUnits[0].value) as TimeUnit : TimeUnit.Hour;
 
         // If the range type is one that has time values then parse the time value.
-        if ([RangeType.Last, RangeType.Next, RangeType.Previous, RangeType.Upcoming].includes(range.rangeType)) {
+        if (([RangeType.Last, RangeType.Next, RangeType.Previous, RangeType.Upcoming] as number[]).includes(range.rangeType)) {
             range.timeValue = toNumberOrNull(segments[1]) ?? 1;
         }
     }

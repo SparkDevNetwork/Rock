@@ -47,7 +47,7 @@ namespace Rock.Badge
         /// <param name="person">The person.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use the IEntity param instead.", false )]
+        [Obsolete( "Use the IEntity param instead.", true )]
         public virtual HighlightLabel GetLabel( Person person )
         {
             return null;

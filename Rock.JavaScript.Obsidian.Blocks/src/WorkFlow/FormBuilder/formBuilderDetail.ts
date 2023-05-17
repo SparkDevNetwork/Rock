@@ -17,10 +17,10 @@
 
 import { nextTick } from "vue";
 import { computed, defineComponent, ref, watch } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import Panel from "@Obsidian/Controls/panel";
 import RockButton from "@Obsidian/Controls/rockButton";
-import { FieldType } from "@Obsidian/SystemGuids";
+import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { FormError } from "@Obsidian/Utility/form";
 import { areEqual } from "@Obsidian/Utility/guid";
@@ -28,15 +28,15 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import CommunicationsTab from "./FormBuilderDetail/communicationsTab.partial";
 import FormBuilderTab from "./FormBuilderDetail/formBuilderTab.partial";
 import SettingsTab from "./FormBuilderDetail/settingsTab.partial";
-import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types";
+import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types.partial";
 import { provideFormSources } from "./FormBuilderDetail/utils.partial";
-import { FormCompletionAction, FormGeneral } from "./Shared/types";
+import { FormCompletionAction, FormGeneral } from "./Shared/types.partial";
 
 export default defineComponent({
     name: "WorkFlow.FormBuilderDetail",
 
     components: {
-        Alert,
+        NotificationBox,
         CommunicationsTab,
         FormBuilderTab,
         Panel,
@@ -338,9 +338,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning">
+<NotificationBox v-if="blockError" alertType="warning">
     {{ blockError }}
-</Alert>
+</NotificationBox>
 
 <Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconCssClass="fa fa-poll-h">
     <template #default>

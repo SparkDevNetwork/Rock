@@ -12049,6 +12049,7 @@ BEGIN
 			,[MaritalStatusValueId]
             ,[Gender]
             ,[AgeClassification]
+            ,[AgeBracket]
             ,[Email]
             ,[IsEmailActive]
             ,[EmailPreference]
@@ -12070,6 +12071,7 @@ BEGIN
 			,@maritalStatusMarried
             ,@genderInt
             ,@ageClassificationAdult
+            ,0
             ,@email
             ,1
             ,0
@@ -12193,6 +12195,7 @@ BEGIN
             ,[Gender]
             ,[MaritalStatusValueId]
             ,[AgeClassification]
+            ,[AgeBracket]
             ,[Email]
             ,[IsEmailActive]
             ,[EmailPreference]
@@ -12214,6 +12217,7 @@ BEGIN
             ,@genderInt
             ,@maritalStatusMarried
             ,@ageClassificationAdult
+            ,0
             ,@email
             ,1
             ,0
@@ -12391,6 +12395,7 @@ BEGIN
 				,[Gender]
 				,[MaritalStatusValueId]
                 ,[AgeClassification]
+                ,[AgeBracket]
 				,[Email]
 				,[IsEmailActive]
 				,[EmailPreference]
@@ -12412,6 +12417,7 @@ BEGIN
 				,@genderInt
 				,@maritalStatusSingle
                 ,@ageClassificationChild
+                ,0
 				,null
 				,1
 				,0

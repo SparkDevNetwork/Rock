@@ -17,13 +17,13 @@
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";
-import LocationPicker from "@Obsidian/Controls/locationPicker";
+import LocationPicker from "@Obsidian/Controls/locationItemPicker";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import CheckBox from "@Obsidian/Controls/checkBox";
-import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
+import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import TextBox from "@Obsidian/Controls/textBox";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
@@ -31,7 +31,7 @@ import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
 import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { DefinedType } from "@Obsidian/SystemGuids";
+import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 
 export default defineComponent({
     name: "Core.CampusDetail.EditPanel",

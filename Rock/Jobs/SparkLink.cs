@@ -17,8 +17,6 @@
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -32,9 +30,8 @@ namespace Rock.Jobs
     [DisplayName( "Spark Link" )]
     [Description( "This job fetches Rock notifications from the Spark Development Network." )]
 
-    [DisallowConcurrentExecution]
     [GroupField( "Notification Group", "The group that should receive incoming notifications", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS )]
-    public class SparkLink : IJob
+    public class SparkLink : RockJob
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SparkLink"/> class.
@@ -43,14 +40,10 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var groupGuid = dataMap.Get( "NotificationGroup" ).ToString().AsGuid();
+            var groupGuid = this.GetAttributeValue( "NotificationGroup" ).AsGuid();
 
             var rockContext = new RockContext();
             var group = new GroupService( rockContext ).Get( groupGuid );
@@ -63,10 +56,10 @@ namespace Rock.Jobs
                     return;
                 }
 
-                var notificationService = new NotificationService( rockContext);
+                var notificationService = new NotificationService( rockContext );
                 foreach ( var notification in notifications.ToList() )
                 {
-                    if (notificationService.Get(notification.Guid) == null )
+                    if ( notificationService.Get( notification.Guid ) == null )
                     {
                         notificationService.Add( notification );
                     }
@@ -78,7 +71,7 @@ namespace Rock.Jobs
                 rockContext.SaveChanges();
 
                 var notificationRecipientService = new NotificationRecipientService( rockContext );
-                foreach (var notification in notifications )
+                foreach ( var notification in notifications )
                 {
                     foreach ( var member in group.Members )
                     {
@@ -91,8 +84,8 @@ namespace Rock.Jobs
                         }
                     }
                 }
-                rockContext.SaveChanges();                    
-                
+                rockContext.SaveChanges();
+
             }
         }
 

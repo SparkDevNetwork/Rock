@@ -25,15 +25,22 @@
                      <p>As of Rock McKinley v13, Rock requires Microsoft .NET Framework 4.7.2 or greater on the hosting server.
                         This framework version was released by Microsoft on April 30th, 2018.</p>
                 </Rock:NotificationBox>
-                <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Danger" Visible="false">
-                    <h2><i class="fa fa-exclamation-triangle"></i> Microsoft SQL Server Update Required</h2>
+                <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
+                    <strong><i class="fa fa-exclamation-triangle"></i> Microsoft SQL Server Update Required</strong>
                     <p>
-                        As of Rock McKinley v11, Rock requires SQL Server 2014 or greater.
+                        As of Rock McKinley v16, Rock requires Microsoft SQL Azure or SQL Server 2016 or greater.
                         You will need to upgrade your database in order to proceed with that update.
                     </p>
                 </Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbLegacyLavaIssue" runat="server" NotificationBoxType="Warning" Visible="false">
+                    <strong><i class="fa fa-exclamation-triangle"></i> 'Lava Support Level' Change is Needed</strong>
+                    <p>
+                        Rock v16 no longer supports "Legacy" Lava.
+                        In order to upgrade Rock to v16, your <strong> Lava Support Level </strong> Global Attribute must be set to "No Legacy".
+                    </p>
+                </Rock:NotificationBox>
                 <Rock:NotificationBox ID="nbCompileThreadsIssue" runat="server" NotificationBoxType="Warning" Visible="false">
-                    <h2><i class="fa fa-exclamation-triangle"></i> Background Process Running</h2>
+                    <strong><i class="fa fa-exclamation-triangle"></i> Background Process Running</strong>
                     <p>
                         Rock is running one or more processes that may lock files that will be updated. These will be checked again after clicking the update button. If this message appears again wait a minute and try again.
                     </p>

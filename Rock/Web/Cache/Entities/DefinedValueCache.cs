@@ -35,74 +35,38 @@ namespace Rock.Web.Cache
 
         #region Properties
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is system.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.DefinedValue.IsSystem" />
         [DataMember]
         public bool IsSystem { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the defined type identifier.
-        /// </summary>
-        /// <value>
-        /// The defined type identifier.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.DefinedValue.DefinedTypeId" />
         [DataMember]
         public int DefinedTypeId { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the order.
-        /// </summary>
-        /// <value>
-        /// The order.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.DefinedValue.Order" />
         [DataMember]
         public int Order { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the value.
-        /// </summary>
-        /// <value>
-        /// The value.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.DefinedValue.Value" />
         [DataMember]
         public string Value { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the description.
-        /// </summary>
-        /// <value>
-        /// The description.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.DefinedValue.Description" />
         [DataMember]
         public string Description { get; private set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this DefinedValue is active.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.DefinedValue.IsActive" />
         [DataMember]
         public bool IsActive { get; private set; }
+        
+        /// <inheritdoc cref="Rock.Model.DefinedValue.CategoryId" />
+        [DataMember]
+        public int? CategoryId { get; private set; }
 
-        /// <summary>
-        /// Gets the DefinedType of this DefinedValue
-        /// </summary>
-        /// <value>
-        /// The DefinedType
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.DefinedValue.DefinedType" />
         public DefinedTypeCache DefinedType => DefinedTypeCache.Get( DefinedTypeId );
 
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.DefinedValue.ParentAuthority" />
         public override ISecured ParentAuthority => DefinedType;
 
         #endregion
@@ -126,6 +90,7 @@ namespace Rock.Web.Cache
             Value = definedValue.Value;
             Description = definedValue.Description;
             IsActive = definedValue.IsActive;
+            CategoryId = definedValue.CategoryId;
         }
 
         /// <summary>

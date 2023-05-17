@@ -29,6 +29,12 @@ export type PersonBag = {
     /** Gets or sets the person's account protection profile, which is used by the duplication detection and merge processes. */
     accountProtectionProfile: number;
 
+    /** Gets the Person's age. */
+    age?: number | null;
+
+    /** Gets or sets the age bracket. */
+    ageBracket: number;
+
     /**
      * Gets or sets the age classification of the Person.
      * Note: This is computed on save, so any manual changes to this will be ignored.
@@ -43,6 +49,9 @@ export type PersonBag = {
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the birth date key. */
+    birthDateKey?: number | null;
 
     /** Gets or sets the day of the month portion of the Person's birth date. */
     birthDay?: number | null;

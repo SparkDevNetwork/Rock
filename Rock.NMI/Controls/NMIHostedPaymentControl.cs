@@ -127,7 +127,7 @@ namespace Rock.NMI.Controls
             }
         }
 
-        #endregion Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent     
+        #endregion Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent
 
         /// <summary>
         /// Gets or sets the enabled payment types.
@@ -211,11 +211,11 @@ namespace Rock.NMI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            // Script that lets us use the CollectJS API (see https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#cjs_methodology)
+            // Script that lets us use the CollectJS API (see https://secure.nmi.com/merchants/resources/integration/integration_portal.php?#cjs_methodology)
             var additionalAttributes = new Dictionary<string, string>();
             additionalAttributes.Add( "data-tokenization-key", this.TokenizationKey );
             additionalAttributes.Add( "data-variant", "inline" );
-            RockPage.AddScriptSrcToHead( this.Page, "nmiCollectJS", $"https://secure.tnbcigateway.com/token/Collect.js", additionalAttributes );
+            RockPage.AddScriptSrcToHead( this.Page, "nmiCollectJS", $"https://secure.nmi.com/token/Collect.js", additionalAttributes );
             RockPage.AddStyleToHead( this.Page, "nmiCollectJSCSS", Css.gatewayCollect );
 
             // Script that contains the initializeTokenizer scripts for us to use on the client

@@ -23,7 +23,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -546,7 +546,7 @@ namespace Rock.Web.UI
             }
 
             base.OnLoad( e );
-
+            
             if ( this.BlockCache == null ||
                 this.BlockCache.Page == null ||
                 this.BlockCache.Page.Layout == null ||
@@ -1159,6 +1159,17 @@ namespace Rock.Web.UI
         public string GetClientIpAddress()
         {
             return RockPage.GetClientIpAddress();
+        }
+
+        /// <summary>
+        /// Triggers a notification that the block configuration has been updated.
+        /// </summary>
+        protected void NotifyBlockUpdated()
+        {
+            if ( BlockUpdated != null )
+            {
+                BlockUpdated( this, new BlockUpdatedEventArgs( this.BlockId ) );
+            }
         }
 
         #region User Preferences

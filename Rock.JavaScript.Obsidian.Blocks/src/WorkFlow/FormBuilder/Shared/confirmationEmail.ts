@@ -22,7 +22,7 @@ import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCol
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import EmailSource from "./emailSource";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
-import { FormConfirmationEmail, FormEmailSource } from "./types";
+import { FormConfirmationEmail, FormEmailSource } from "./types.partial";
 
 /**
  * Displays the UI for the Confirmation Email component in the Communications

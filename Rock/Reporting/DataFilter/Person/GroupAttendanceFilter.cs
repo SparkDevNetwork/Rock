@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -35,7 +34,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they have attended the selected group(s) a specified number of times" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Group Attendance Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "E69E1FD7-0E03-42A5-A2EB-90C8812CFD47")]
+    [Rock.SystemGuid.EntityTypeGuid( "E69E1FD7-0E03-42A5-A2EB-90C8812CFD47" )]
     public class GroupAttendanceFilter : DataFilterComponent
     {
         private class GroupAttendanceFilterSelection
@@ -50,54 +49,35 @@ namespace Rock.Reporting.DataFilter.Person
 
         #region Properties
 
-        /// <summary>
-        /// Gets the entity type that filter applies to.
-        /// </summary>
-        /// <value>
-        /// The entity that filter applies to.
-        /// </value>
+        /// <inheritdoc/>
         public override string AppliesToEntityType
         {
-            get { return "Rock.Model.Person"; }
+            get
+            {
+                return "Rock.Model.Person";
+            }
         }
 
-        /// <summary>
-        /// Gets the section.
-        /// </summary>
-        /// <value>
-        /// The section.
-        /// </value>
+        /// <inheritdoc/>
         public override string Section
         {
-            get { return "Attendance"; }
+            get
+            {
+                return "Attendance";
+            }
         }
 
         #endregion
 
         #region Public Methods
 
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <param name="entityType"></param>
-        /// <returns></returns>
-        /// <value>
-        /// The title.
-        /// </value>
+        /// <inheritdoc/>
         public override string GetTitle( Type entityType )
         {
             return "Attendance in Groups";
         }
 
-        /// <summary>
-        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
-        /// </summary>
-        /// <value>
-        /// The client format script.
-        /// </value>
+        /// <inheritdoc/>
         public override string GetClientFormatSelection( Type entityType )
         {
             return "'Attended ' + " +
@@ -108,19 +88,14 @@ namespace Rock.Reporting.DataFilter.Person
                 "$('.js-slidingdaterange-text-value', $content).val()";
         }
 
-        /// <summary>
-        /// Formats the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override string FormatSelection( Type entityType, string selection )
         {
             var selectionOutput = "Attendance";
             var groupAttendanceFilterSelection = GetGroupAttendanceFilterSelection( selection );
 
-            var groupsList = "";
-            var selectedSchedules = "";
+            var groupsList = string.Empty;
+            var selectedSchedules = string.Empty;
             using ( var rockContext = new RockContext() )
             {
                 groupsList = new GroupService( rockContext )
@@ -131,7 +106,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 selectedSchedules = new ScheduleService( rockContext )
                     .GetByIds( groupAttendanceFilterSelection.Schedules )
-                    .Select(x => x.Name)
+                    .Select( x => x.Name )
                     .ToList()
                     .AsDelimited( ", ", " or " );
             }
@@ -139,7 +114,8 @@ namespace Rock.Reporting.DataFilter.Person
             if ( groupsList.IsNullOrWhiteSpace() )
             {
                 groupsList = "?";
-            } else if ( groupAttendanceFilterSelection.IncludeChildGroups )
+            }
+            else if ( groupAttendanceFilterSelection.IncludeChildGroups )
             {
                 groupsList += " (or child groups)";
             }
@@ -158,10 +134,7 @@ namespace Rock.Reporting.DataFilter.Person
             return selectionOutput;
         }
 
-        /// <summary>
-        /// Creates the child controls.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var pGroupPicker = new GroupPicker();
@@ -220,13 +193,7 @@ namespace Rock.Reporting.DataFilter.Person
             return controls;
         }
 
-        /// <summary>
-        /// Renders the controls.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
-        /// <param name="writer">The writer.</param>
-        /// <param name="controls">The controls.</param>
+        /// <inheritdoc/>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             var pGroupPicker = controls[0] as GroupPicker;
@@ -291,12 +258,7 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
         }
 
-        /// <summary>
-        /// Gets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override string GetSelection( Type entityType, Control[] controls )
         {
             var pGroupPicker = controls[0] as GroupPicker;
@@ -317,19 +279,15 @@ namespace Rock.Reporting.DataFilter.Person
                 AttendedCount = tbAttendedCount.Text.AsInteger(),
                 SlidingDateRange = slidingDateRangePicker.DelimitedValues,
                 IncludeChildGroups = cbChildGroups.Checked,
+
                 // We have to eliminate zero, because the schedulePicker control adds a zero if no values are selected.
-                Schedules = schedulePicker.SelectedValues.AsIntegerList().Where(x => x != 0).ToList(),
+                Schedules = schedulePicker.SelectedValues.AsIntegerList().Where( x => x != 0 ).ToList(),
             };
 
             return groupAttendanceFilterSelection.ToJson();
         }
 
-        /// <summary>
-        /// Sets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <param name="selection">The selection.</param>
+        /// <inheritdoc/>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
             var groupAttendanceFilterSelection = GetGroupAttendanceFilterSelection( selection );
@@ -388,14 +346,7 @@ namespace Rock.Reporting.DataFilter.Person
             return groupAttendanceFilterSelection;
         }
 
-        /// <summary>
-        /// Gets the expression.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             var groupAttendanceFilterSelection = GetGroupAttendanceFilterSelection( selection );

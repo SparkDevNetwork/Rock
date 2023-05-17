@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Cms.ContentCollection.IndexDocuments;
 using Rock.Cms.ContentCollection.Search;
 using Rock.Extension;
@@ -30,6 +31,7 @@ namespace Rock.Cms.ContentCollection
     /// <summary>
     /// MEF Container class for Binary File Search Components
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class ContentIndexContainer : Container<ContentIndexComponent, IComponentData>
     {
         #region Properties

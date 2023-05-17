@@ -1,0 +1,197 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <fieldset>
+            <legend>Your Information</legend>
+            <TextBox
+                v-model="internalFirstName"
+                :disabled="disabled"
+                label="First Name"
+                rules="required"></TextBox>
+            <TextBox
+                v-model="internalLastName"
+                :disabled="disabled"
+                label="Last Name"
+                rules="required"></TextBox>
+            <EmailBox
+                v-if="!isEmailHidden"
+                v-model="internalEmail"
+                :disabled="disabled"
+                label="Email"
+                rules="required"></EmailBox>
+            <GenderDropDownList
+                v-model="internalGender"
+                :disabled="disabled"></GenderDropDownList>
+            <BirthdayPicker
+                v-model="internalBirthday"
+                :disabled="disabled"
+                label="Birthday"
+                rules="required"></BirthdayPicker>
+        </fieldset>
+
+        <fieldset v-if="internalArePhoneNumbersShown">
+            <legend v-if="internalPhoneNumbers.length > 1">Phone Numbers</legend>
+            <template v-for="(value, key) in internalPhoneNumbers">
+                <PhoneNumberDetails
+                    v-if="!value.isHidden"
+                    v-model="internalPhoneNumbers[key]"
+                    :disabled="disabled"></PhoneNumberDetails>
+            </template>
+        </fieldset>
+
+        <fieldset v-if="isAddressShown">
+            <legend>Address</legend>
+            <Address
+                v-model="internalAddress"
+                :disabled="disabled"
+                :rules="addressRules"></Address>
+        </fieldset>
+
+        <CampusPicker
+            v-if="isCampusPickerShown"
+            :disabled="disabled"
+            :label="campusPickerLabel"
+            @update:modelValue="onCampusChanged"></CampusPicker>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import PhoneNumberDetails from "./phoneNumberDetails.partial.obs";
+    import Address from "@Obsidian/Controls/addressControl.obs";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
+    import EmailBox from "@Obsidian/Controls/emailBox";
+    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
+    import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
+    import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
+    import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AccountEntryPersonInfoBag | null | undefined>,
+            required: true
+        },
+        config: {
+            type: Object as PropType<AccountEntryInitializationBox>,
+            required: true
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AccountEntryPersonInfoBag): void
+    }>();
+
+    // #region Computed Values
+
+    const arePhoneNumbersShown = computed(() => props.config.arePhoneNumbersShown);
+    const campusPickerLabel = computed(() => props.config.campusPickerLabel || "Campus");
+    const isAddressShown = computed(() => props.config.isAddressShown);
+    const isAddressRequired = computed(() => props.config.isAddressRequired);
+    const isCampusPickerShown = computed(() => props.config.isCampusPickerShown);
+    const isEmailHidden = computed(() => props.config.isEmailHidden);
+
+    const internalFirstName = computed<string>({
+        get() {
+            return props.modelValue?.firstName ?? "";
+        },
+        set(newValue: string) {
+            emit("update:modelValue", { ...props.modelValue, firstName: newValue });
+        }
+    });
+
+    const internalLastName = computed<string>({
+        get() {
+            return props.modelValue?.lastName ?? "";
+        },
+        set(newValue: string) {
+            emit("update:modelValue", { ...props.modelValue, lastName: newValue });
+        }
+    });
+
+    const internalEmail = computed<string>({
+        get() {
+            return props.modelValue?.email ?? "";
+        },
+        set(newValue: string) {
+            emit("update:modelValue", { ...props.modelValue, email: newValue });
+        }
+    });
+
+    const internalGender = computed<number>({
+        get() {
+            return props.modelValue?.gender ?? 0;
+        },
+        set(newValue: number) {
+            emit("update:modelValue", { ...props.modelValue, gender: newValue });
+        }
+    });
+
+    const internalBirthday = computed<BirthdayPickerBag>({
+        get() {
+            return props.modelValue?.birthday ?? getDefaultDatePartsPickerModel();
+        },
+        set(newValue: BirthdayPickerBag) {
+            emit("update:modelValue", { ...props.modelValue, birthday: newValue });
+        }
+    });
+
+    const internalPhoneNumbers = computed<AccountEntryPhoneNumberBag[]>({
+        get() {
+            return props.modelValue?.phoneNumbers ?? [];
+        },
+        set(newValue: AccountEntryPhoneNumberBag[]) {
+            emit("update:modelValue", { ...props.modelValue, phoneNumbers: newValue });
+        }
+    });
+
+    const internalAddress = computed<AddressControlBag>({
+        get() {
+            return props.modelValue?.address || {};
+        },
+        set(newValue: AddressControlBag) {
+            emit("update:modelValue", { ...props.modelValue, address: newValue });
+        }
+    });
+
+    const addressRules = computed<string>(() => isAddressRequired.value ? "required" : "");
+
+    const internalArePhoneNumbersShown = computed<boolean>(() => arePhoneNumbersShown.value && internalPhoneNumbers.value.some(p => !p.isHidden));
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Returns truthy if the argument is of type ListItemBag.
+     *
+     * @param object The object to test.
+     */
+    function isListItemBag(object: unknown): object is ListItemBag {
+        return !!object && typeof object === "object" && "value" in object;
+    }
+
+    /**
+     * Updates the person's campus guid whenever the campus picker selection changes.
+     */
+     function onCampusChanged(value: ListItemBag | ListItemBag[] | null): void {
+        if (isListItemBag(value)) {
+            emit("update:modelValue", { ...props.modelValue, campus: value.value });
+        }
+        else {
+            emit("update:modelValue", { ...props.modelValue, campus: null });
+        }
+    }
+
+    // #endregion
+</script>

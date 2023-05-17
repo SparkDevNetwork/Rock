@@ -259,6 +259,12 @@ namespace Rock.Model
 
             var connectionStatusViewModels = connectionStatusQuery.ToList();
 
+            var connectionRequestService = new ConnectionRequestService( rockContext );
+            var requestIds = connectionRequestViewModelQuery.Select( cr => cr.Id );
+            var statusRequests = connectionRequestService.Queryable().Where( cr => requestIds.Contains( cr.Id ) ).ToList();
+            statusRequests.LoadFilteredAttributes( rockContext, attribute => attribute.IsGridColumn );
+            var currentPerson = new PersonAliasService( rockContext ).GetPersonNoTracking( currentPersonAliasId );
+
             foreach ( var statusViewModel in connectionStatusViewModels )
             {
                 var requestsOfStatusQuery = connectionRequestViewModelQuery.Where( cr => cr.StatusId == statusViewModel.Id );
@@ -287,10 +293,28 @@ namespace Rock.Model
                 foreach ( var requestViewModel in statusViewModel.Requests )
                 {
                     requestViewModel.CanConnect = CanConnect( requestViewModel, connectionOpportunity, connectionType );
+
+                    var connectionRequest = statusRequests.First( cr => cr.Id == requestViewModel.Id );
+                    var attributeValues = connectionRequest.AttributeValues
+                        .Where( a => IsAuthorizedToViewAndNotEmpty( a, currentPerson, connectionRequest ) )
+                        .Select( a => $"<strong>{a.Value.AttributeName}:</strong> {connectionRequest.GetAttributeTextValue( a.Key )}" );
+                    requestViewModel.RequestAttributes = string.Join( "<br>", attributeValues );
                 }
             }
 
             return connectionStatusViewModels;
+        }
+
+        /// <summary>
+        /// Checks if the attribute value is not empty, is a grid column and the current person is authorized to view it.
+        /// </summary>
+        /// <param name="a">The attribute value attribute key dictionary</param>
+        /// <param name="currentPerson">The current person</param>
+        /// <param name="connectionRequest">The connection request</param>
+        /// <returns></returns>
+        private static bool IsAuthorizedToViewAndNotEmpty( KeyValuePair<string, AttributeValueCache> a, Person currentPerson, ConnectionRequest connectionRequest )
+        {
+            return !string.IsNullOrWhiteSpace( a.Value.Value ) && connectionRequest.Attributes[a.Key].IsAuthorized( Authorization.VIEW, currentPerson );
         }
 
         /// <summary>
@@ -313,11 +337,12 @@ namespace Rock.Model
             // Set the Connection Request Id here so that the GetConnectionRequestViewModelQuery method can filter correctly.
             args.ConnectionRequestId = connectionRequestId;
 
-            var connectionOpportunity = Queryable()
+            var connectionRequest = Queryable()
+                .Include( cr => cr.ConnectionOpportunity )
                 .AsNoTracking()
                 .Where( cr => cr.Id == connectionRequestId )
-                .Select( cr => cr.ConnectionOpportunity )
                 .FirstOrDefault();
+            var connectionOpportunity = connectionRequest.ConnectionOpportunity;
 
             var query = GetConnectionRequestViewModelQuery( currentPersonAliasId, connectionOpportunity.Id, args );
             var viewModel = query.FirstOrDefault();
@@ -329,6 +354,14 @@ namespace Rock.Model
 
             var connectionType = ConnectionTypeCache.Get( viewModel.ConnectionTypeId );
             viewModel.CanConnect = CanConnect( viewModel, connectionOpportunity, connectionType );
+
+            var rockContext = Context as RockContext;
+            var currentPerson = new PersonAliasService( rockContext ).GetPersonNoTracking( currentPersonAliasId );
+            connectionRequest.LoadAttributes( rockContext );
+            var attributeValues = connectionRequest.AttributeValues
+                .Where( a => connectionRequest.Attributes[a.Key].IsGridColumn && IsAuthorizedToViewAndNotEmpty( a, currentPerson, connectionRequest ) )
+                .Select( a => $"<strong>{a.Value.AttributeName}:</strong> {connectionRequest.GetAttributeTextValue( a.Key )}" );
+            viewModel.RequestAttributes = string.Join( "<br>", attributeValues );
 
             if ( !statusIconsTemplate.IsNullOrWhiteSpace() )
             {

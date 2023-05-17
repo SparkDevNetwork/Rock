@@ -22,8 +22,8 @@ import { areEqual } from "@Obsidian/Utility/guid";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
-import { FormField } from "../Shared/types";
-import { FormValueSources } from "./types";
+import { FormField } from "../Shared/types.partial";
+import { FormValueSources } from "./types.partial";
 
 // Unique key used to track the sources for the FormTemplateDetail block.
 const sourcesKey = Symbol();
@@ -49,7 +49,7 @@ export function useFormSources(): FormValueSources {
 /**
  * Get the friendly formatted title of a filter group. This returns an HTML
  * string.
- * 
+ *
  * @param group The group that contains the comparison type information.
  *
  * @returns An HTML formatted string with the comparison type text.
@@ -75,7 +75,7 @@ export function getFilterGroupTitle(group: FieldFilterGroupBag): string {
 
 /**
  * Get the description of the rule, including the name of the field it depends on.
- * 
+ *
  * @param rule The rule to be represented.
  * @param sources The field filter sources to use when looking up the source field.
  * @param fields The fields that contain the attribute information.
@@ -104,7 +104,7 @@ export function getFilterRuleDescription(rule: FieldFilterRuleBag, sources: Fiel
 
 /**
  * Creates a promise that rejects when the timeout has elapsed.
- * 
+ *
  * @param ms The timeout in milliseconds.
  */
 export function timeoutAsync(ms: number): Promise<void> {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -249,7 +249,7 @@ function()
             }
 
             // Include descendants of the Parent Group.
-            foreach ( int childGroupId in groupService.GetAllDescendentGroupIds( parentGroup.Id, false ) )
+            foreach ( int childGroupId in groupService.GetAllDescendentGroupIds( parentGroup.Id, true ) )
             {
                 groupKeys.Add( childGroupId );
             }

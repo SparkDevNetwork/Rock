@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -30,27 +31,12 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a <see cref="SignatureDocumentTemplate" />. Stored as the SignatureDocumentTemplate's Guid.
     /// </summary>
-    [Rock.SystemGuid.FieldTypeGuid( "258A4AEF-F555-4AF5-8D5D-2D581A982D1C")]
+    [Rock.SystemGuid.FieldTypeGuid( "258A4AEF-F555-4AF5-8D5D-2D581A982D1C" )]
     public class SignatureDocumentTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         private const string SHOW_TEMPLATES_WITH_EXTERNAL_PROVIDERS = "SHOW_TEMPLATES_WITH_EXTERNAL_PROVIDERS";
 
         #region Formatting
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns>System.String.</returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -76,6 +62,99 @@ namespace Rock.Field.Types
         #endregion Formatting
 
         #region EditControl
+
+        #endregion EditControl
+
+        #region IEntityFieldType
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            var guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new SignatureDocumentTemplateService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var signatureDocumentTemplateId = new SignatureDocumentTemplateService( rockContext ).GetId( guid.Value );
+
+                if ( !signatureDocumentTemplateId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<SignatureDocumentTemplate>().Value, signatureDocumentTemplateId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Signature Document Template and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<SignatureDocumentTemplate>().Value, nameof( SignatureDocumentTemplate.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns>System.String.</returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -148,10 +227,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion EditControl
-
-        #region IEntityFieldType
-
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -178,75 +253,7 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, guidValue );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            var guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new SignatureDocumentTemplateService( rockContext ).Get( guid.Value );
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            Guid? guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var signatureDocumentTemplateId = new SignatureDocumentTemplateService( rockContext ).GetId( guid.Value );
-
-                if ( !signatureDocumentTemplateId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<SignatureDocumentTemplate>().Value, signatureDocumentTemplateId.Value )
-                };
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Signature Document Template and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<SignatureDocumentTemplate>().Value, nameof( SignatureDocumentTemplate.Name ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

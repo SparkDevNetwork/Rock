@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gList control.
+        /// Handles the GridRebind event of the gWorkflows control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.GridRebindEventArgs"/> instance containing the event data.</param>

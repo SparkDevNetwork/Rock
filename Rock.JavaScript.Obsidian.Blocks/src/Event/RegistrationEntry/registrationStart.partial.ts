@@ -20,7 +20,7 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { RegistrationEntryState } from "./types";
+import { RegistrationEntryState } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.RegistrationStart",

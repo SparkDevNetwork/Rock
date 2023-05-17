@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.AssessmentTypeDetail;
 
@@ -121,8 +122,8 @@ namespace Rock.Blocks.Crm
 
             if ( entity != null )
             {
-                var isViewable = entity.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+                box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
                 if ( loadAttributes )
                 {
@@ -366,7 +367,7 @@ namespace Rock.Blocks.Crm
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${AssessmentType.FriendlyTypeName}." );
                 return false;

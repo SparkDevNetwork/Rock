@@ -47,6 +47,10 @@ export default defineComponent({
         <slot name="drawer" />
     </template>
 
+    <template v-if="$slots.preBody" #preBody>
+        <slot name="preBody" />
+    </template>
+
     <slot />
 </Panel>`
 });

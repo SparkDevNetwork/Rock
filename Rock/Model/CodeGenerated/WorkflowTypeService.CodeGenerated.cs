@@ -127,6 +127,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, StepWorkflowTrigger.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<SystemPhoneNumber>( Context ).Queryable().Any( a => a.SmsReceivedWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, SystemPhoneNumber.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

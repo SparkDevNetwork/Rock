@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Crm;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -470,6 +471,24 @@ namespace Rock.Model
         /// <value>The sunday date year.</value>
         [DataMember]
         public int SundayDateYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age.
+        /// </summary>
+        /// <value>
+        /// The age.
+        /// </value>
+        [DataMember]
+        public int? Age { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age bracket.
+        /// </summary>
+        /// <value>
+        /// The age bracket.
+        /// </value>
+        [DataMember]
+        public AgeBracket? AgeBracket { get; set; }
 
         #endregion Entity Properties
 

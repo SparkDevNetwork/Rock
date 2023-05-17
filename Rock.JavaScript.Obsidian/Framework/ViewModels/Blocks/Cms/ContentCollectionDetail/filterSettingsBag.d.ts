@@ -23,6 +23,7 @@
 
 import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
 import { AttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/attributeFilterBag";
+import { CustomFieldFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/customFieldFilterBag";
 
 /** Class FilterSettingsBag. */
 export type FilterSettingsBag = {
@@ -31,6 +32,9 @@ export type FilterSettingsBag = {
      * and indexing on the content collection.
      */
     attributeFilters?: AttributeFilterBag[] | null;
+
+    /** Gets or sets the custom field filters. */
+    customFieldFilters?: CustomFieldFilterBag[] | null;
 
     /** Gets or sets a value indicating whether full text search should be enabled. */
     fullTextSearchEnabled: boolean;

@@ -108,6 +108,53 @@
                             CssClass="js-ignored-protection-profile" />
                     </div>
                 </div>
+                <Rock:PanelWidget runat="server" ID="pnlAuthenticationSettings" Title="Authentication Settings" CssClass="mt-3">
+                    <Body>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NumberBox
+                                    runat="server"
+                                    ID="nbPasswordlessSignInDailyIpThrottle"
+                                    NumberType="Integer"
+                                    MinimumValue="1"
+                                    Label="Passwordless Sign In Daily IP Throttle"
+                                    Help="The maxiumum number of passwordless attempts that are allowed from a single IP address in a single day."
+                                    CssClass="input-width-sm" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NumberBox
+                                    runat="server"
+                                    ID="nbPasswordlessSignInSessionDuration"
+                                    NumberType="Integer"
+                                    MinimumValue="1"
+                                    AppendText="minutes"
+                                    Label="Passwordless Session Duration"
+                                    Help="The amount of time in minutes that a passwordless session is valid."
+                                    CssClass="input-width-md" />
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBoxList
+                                    runat="server"
+                                    ID="cblDisablePasswordlessSignInForAccountProtectionProfiles"
+                                    Label="Disable Passwordless Sign In for the Following Protection Profiles"
+                                    Help="Determines which individuals can use passwordless login depending on their protection profile."
+                                    RepeatDirection="Horizontal" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList
+                                    runat="server"
+                                    ID="ddlPasswordlessConfirmationCommunicationTemplate"
+                                    Label="Passwordless Confirmation Communication Template"
+                                    DataTextField="Title"
+                                    DataValueField="Guid"
+                                    EnhanceForLongLists="true"
+                                    Help="The system communication template to use for passwordless confirmations." />
+                            </div>
+                        </div>
+                    </Body>
+                </Rock:PanelWidget>
                 <asp:Panel ID="pnlEditModeActions" runat="server" CssClass="actions">
                     <asp:LinkButton
                         runat="server"

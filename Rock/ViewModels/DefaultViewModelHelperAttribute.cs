@@ -34,7 +34,7 @@ namespace Rock.ViewModels
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.13.2" )]
     [AttributeUsage( AttributeTargets.Class )]
     public class DefaultViewModelHelperAttribute : System.Attribute
     {

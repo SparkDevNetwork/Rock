@@ -17,10 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of achievement types and allow a single selection.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "593132CF-BA5D-462F-97F6-94DCC0BFFE6F")]
+    [Rock.SystemGuid.FieldTypeGuid( "593132CF-BA5D-462F-97F6-94DCC0BFFE6F" )]
     public class AchievementTypeFieldType : EntitySingleSelectionListFieldTypeBase<AchievementType>, IEntityReferenceFieldType
     {
         /// <summary>

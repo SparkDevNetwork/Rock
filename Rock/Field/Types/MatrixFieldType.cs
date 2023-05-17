@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -41,6 +43,138 @@ namespace Rock.Field.Types
         /// The attribute matrix template (stored as AttributeMatrixTemplate.Id)
         /// </summary>
         public const string ATTRIBUTE_MATRIX_TEMPLATE = "attributematrixtemplate";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var attributeMatrixService = new AttributeMatrixService( rockContext );
+                AttributeMatrix attributeMatrix = null;
+                Guid? attributeMatrixGuid = privateValue.AsGuidOrNull();
+                if ( attributeMatrixGuid.HasValue )
+                {
+                    attributeMatrix = attributeMatrixService.GetNoTracking( attributeMatrixGuid.Value );
+                }
+
+                if ( attributeMatrix != null )
+                {
+                    if ( privateConfigurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
+                    {
+                        // set the AttributeMatrixTemplateId just in case it was changed since the last time the attributeMatrix was saved
+                        int attributeMatrixTemplateId = privateConfigurationValues[ATTRIBUTE_MATRIX_TEMPLATE].AsInteger();
+                        if ( attributeMatrix.AttributeMatrixTemplateId != attributeMatrixTemplateId )
+                        {
+                            attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId;
+                            attributeMatrix.AttributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).GetNoTracking( attributeMatrix.AttributeMatrixTemplateId );
+
+                            // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems 
+                            // are referring to attributes from the old template, so wipe them out. All of them.
+                            attributeMatrix.AttributeMatrixItems.Clear();
+                        }
+                    }
+
+                    // make a temp attributeMatrixItem to see what Attributes they have
+                    AttributeMatrixItem tempAttributeMatrixItem = new AttributeMatrixItem();
+                    tempAttributeMatrixItem.AttributeMatrix = attributeMatrix;
+                    tempAttributeMatrixItem.LoadAttributes();
+
+                    var lavaTemplate = attributeMatrix.AttributeMatrixTemplate.FormattedLava;
+                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    mergeFields.Add( "AttributeMatrix", attributeMatrix );
+                    mergeFields.Add( "ItemAttributes", tempAttributeMatrixItem.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
+                    mergeFields.Add( "AttributeMatrixItems", attributeMatrix.AttributeMatrixItems.OrderBy( a => a.Order ) );
+                    return lavaTemplate.ResolveMergeFields( mergeFields );
+                }
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Gets a value indicating whether this field has a control to configure the default value
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance has default control; otherwise, <c>false</c>.
+        /// </value>
+        public override bool HasDefaultControl => false;
+
+        /// <summary>
+        /// Gets the copy value.
+        /// </summary>
+        /// <param name="originalValue">The original value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>string.Empty, which means we don't actually want to copy the linked matrix.</returns>
+        public override string GetCopyValue( string originalValue, RockContext rockContext )
+        {
+            // Don't copy
+            return string.Empty;
+        }
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new AttributeMatrixService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Matrix fields are far too complex for persistence logic.
+            return false;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -127,57 +261,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var attributeMatrixService = new AttributeMatrixService( rockContext );
-                AttributeMatrix attributeMatrix = null;
-                Guid? attributeMatrixGuid = privateValue.AsGuidOrNull();
-                if ( attributeMatrixGuid.HasValue )
-                {
-                    attributeMatrix = attributeMatrixService.GetNoTracking( attributeMatrixGuid.Value );
-                }
-
-                if ( attributeMatrix != null )
-                {
-                    if ( privateConfigurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
-                    {
-                        // set the AttributeMatrixTemplateId just in case it was changed since the last time the attributeMatrix was saved
-                        int attributeMatrixTemplateId = privateConfigurationValues[ATTRIBUTE_MATRIX_TEMPLATE].AsInteger();
-                        if ( attributeMatrix.AttributeMatrixTemplateId != attributeMatrixTemplateId )
-                        {
-                            attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId;
-                            attributeMatrix.AttributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).GetNoTracking( attributeMatrix.AttributeMatrixTemplateId );
-
-                            // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems 
-                            // are referring to attributes from the old template, so wipe them out. All of them.
-                            attributeMatrix.AttributeMatrixItems.Clear();
-                        }
-                    }
-
-                    // make a temp attributeMatrixItem to see what Attributes they have
-                    AttributeMatrixItem tempAttributeMatrixItem = new AttributeMatrixItem();
-                    tempAttributeMatrixItem.AttributeMatrix = attributeMatrix;
-                    tempAttributeMatrixItem.LoadAttributes();
-
-                    var lavaTemplate = attributeMatrix.AttributeMatrixTemplate.FormattedLava;
-                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                    mergeFields.Add( "AttributeMatrix", attributeMatrix );
-                    mergeFields.Add( "ItemAttributes", tempAttributeMatrixItem.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
-                    mergeFields.Add( "AttributeMatrixItems", attributeMatrix.AttributeMatrixItems.OrderBy( a => a.Order ) );
-                    return lavaTemplate.ResolveMergeFields( mergeFields );
-                }
-            }
-
-            return string.Empty;
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -191,16 +274,6 @@ namespace Rock.Field.Types
             // Never return a condensed value.
             return GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        #endregion
-
-        /// <summary>
-        /// Gets a value indicating whether this field has a control to configure the default value
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance has default control; otherwise, <c>false</c>.
-        /// </value>
-        public override bool HasDefaultControl => false;
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -292,7 +365,7 @@ namespace Rock.Field.Types
                     }
 
                     // If the AttributeMatrixTemplateId jwas changed since the last time the attributeMatrix was saved, change it and wipe out the items
-                    if ( attributeMatrix.AttributeMatrixTemplateId != attributeMatrixEditor.AttributeMatrixTemplateId.Value)
+                    if ( attributeMatrix.AttributeMatrixTemplateId != attributeMatrixEditor.AttributeMatrixTemplateId.Value )
                     {
                         attributeMatrix.AttributeMatrixTemplateId = attributeMatrixEditor.AttributeMatrixTemplateId.Value;
 
@@ -300,7 +373,7 @@ namespace Rock.Field.Types
 
                         // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems 
                         // are referring to attributes from the old template, so wipe them out. All of them.
-                        foreach( var attributeMatrixItem in attributeMatrix.AttributeMatrixItems.ToList())
+                        foreach ( var attributeMatrixItem in attributeMatrix.AttributeMatrixItems.ToList() )
                         {
                             attributeMatrixItemService.Delete( attributeMatrixItem );
                         }
@@ -315,20 +388,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the copy value.
-        /// </summary>
-        /// <param name="originalValue">The original value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>string.Empty, which means we don't actually want to copy the linked matrix.</returns>
-        public override string GetCopyValue( string originalValue, RockContext rockContext )
-        {
-            // Don't copy
-            return string.Empty;
-        }
-
-        #region Filter Control
-
-        /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -341,19 +400,6 @@ namespace Rock.Field.Types
             // This field type does not support filtering
             return null;
         }
-
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
-        #endregion
-
-        #region Entity Methods
 
         /// <summary>
         /// Gets the edit value as the IEntity.Id
@@ -381,45 +427,7 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, guidValue );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new AttributeMatrixService( rockContext ).Get( guid.Value );
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
-        {
-            // Matrix fields are far too complex for persistence logic.
-            return false;
-        }
-
+#endif
         #endregion
     }
 }

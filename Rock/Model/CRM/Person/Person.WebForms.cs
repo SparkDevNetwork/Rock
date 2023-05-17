@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Web;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -132,61 +133,64 @@ namespace Rock.Model
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <returns></returns>
+        [RockObsolete( "1.15" )]
+        [System.Obsolete( "Use alternative method for GetPersonPhotoUrl.", true )]
         public static string GetPersonPhotoUrl( int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, AgeClassification? ageClassification, int? maxWidth = null, int? maxHeight = null )
         {
+            
+            int? recordTypeId = null;
+
+            // Convert the record type value guid to an id
+            if ( recordTypeValueGuid.HasValue )
+            {
+                recordTypeId = DefinedValueCache.Get( recordTypeValueGuid.Value ).Id;
+            }
+
+            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
+            int? size = maxWidth;
+
+            if ( maxHeight.HasValue )
+            {
+                if ( size.HasValue && size.Value < maxHeight.Value )
+                {
+                    size = maxHeight.Value;
+                }
+            }
+
+            return GetPersonPhotoUrl( string.Empty, photoId, age, gender, recordTypeId, ageClassification, size );
+        }
+
+        /// <summary>
+        /// Gets the person photo URL.
+        /// </summary>
+        /// <param name="initials"></param>
+        /// <param name="photoId"></param>
+        /// <param name="age"></param>
+        /// <param name="gender"></param>
+        /// <param name="recordTypeValueId"></param>
+        /// <param name="ageClassification"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static string GetPersonPhotoUrl( string initials, int? photoId, int? age, Gender gender, int? recordTypeValueId, AgeClassification? ageClassification, int? size = null )
+        {
             string virtualPath = string.Empty;
-            if ( photoId.HasValue )
+
+            // If there are no initials provided we'll change the style of the avatar to be an icon
+            var stylingOverride = string.Empty;
+            if ( initials.IsNullOrWhiteSpace() )
             {
-                string widthHeightParams = string.Empty;
-                if ( maxWidth.HasValue )
-                {
-                    widthHeightParams += string.Format( "&maxwidth={0}", maxWidth.Value );
-                }
-
-                if ( maxHeight.HasValue )
-                {
-                    widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
-                }
-
-                virtualPath = string.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId );
+                stylingOverride = "&Style=icon";
             }
-            else
+
+            // Determine if we need to provide a size
+            var sizeParamter = string.Empty;
+
+            if ( size.HasValue )
             {
-                if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
-                {
-                    virtualPath = "~/Assets/Images/business-no-photo.svg?";
-                }
-                else if ( age.HasValue && age.Value < 18 )
-                {
-                    // it's a child
-                    virtualPath = $"~/{GetPhotoPath( gender, false )}";
-                }
-                else
-                {
-                    // check age classification
-                    if ( ageClassification == null )
-                    {
-                        if ( personId.HasValue )
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                ageClassification = new PersonService( rockContext ).Queryable( true ).Where( a => a.Id == personId ).Select( a => ( AgeClassification? ) a.AgeClassification ).FirstOrDefault();
-                            }
-                        }
-                    }
-
-                    if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
-                    {
-                        // it's a child
-                        virtualPath = $"~/{GetPhotoPath( gender, false )}";
-                    }
-                    else
-                    {
-                        // it's an adult
-                        virtualPath = $"~/{GetPhotoPath( gender, true )}";
-                    }
-                }
+                sizeParamter = $"&Size={size}";
             }
+
+            virtualPath = $"~/GetAvatar.ashx?PhotoId={photoId}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
 
             if ( System.Web.HttpContext.Current == null )
             {

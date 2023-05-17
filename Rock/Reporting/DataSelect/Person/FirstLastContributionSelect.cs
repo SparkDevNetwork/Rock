@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -232,7 +232,7 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 // accountIds
                 var selectedAccountGuidList = accountIds.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-                var selectedAccountIdList = new FinancialAccountService( context ).GetByGuids( selectedAccountGuidList ).Select( a => a.Id ).ToList();
+                var selectedAccountIdList = FinancialAccountCache.GetByGuids( selectedAccountGuidList ).Select( a => a.Id ).ToList();
 
                 if ( selectedAccountIdList.Count() > 0 )
                 {
@@ -322,7 +322,7 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( accountPicker != null )
                 {
                     var accountIds = accountPicker.SelectedValues.AsIntegerList(); 
-                    var accountGuids = new FinancialAccountService( new RockContext() ).GetByIds( accountIds ).Select( a => a.Guid );
+                    var accountGuids = FinancialAccountCache.GetByIds( accountIds ).Select( a => a.Guid );
                     delimitedAccountGuids = accountGuids.Select( a => a.ToString() ).ToList().AsDelimited( "," );
                 }
 
@@ -359,17 +359,17 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( accountPicker != null )
                 {
                     string[] selectionAccountGuidValues = selections[0].Split( ',' );
-                    var accountList = new List<FinancialAccount>();
+                    var accountList = new List<FinancialAccountCache>();
                     foreach ( string accountGuid in selectionAccountGuidValues )
                     {
-                        var account = new FinancialAccountService( new RockContext() ).Get( accountGuid.AsGuid() );
+                        var account = FinancialAccountCache.Get( accountGuid.AsGuid() );
                         if ( account != null )
                         {
                             accountList.Add( account );
                         }
                     }
 
-                    accountPicker.SetValues( accountList );
+                    accountPicker.SetValuesFromCache( accountList );
                 }
             }
 

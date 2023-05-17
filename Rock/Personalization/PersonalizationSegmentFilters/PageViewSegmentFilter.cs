@@ -67,6 +67,38 @@ namespace Rock.Personalization.SegmentFilters
         /// <value>The sliding date range delimited values.</value>
         public string SlidingDateRangeDelimitedValues { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the page URL comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the page URL comparison.
+        /// </value>
+        public ComparisonType PageUrlComparisonType { get; set; } = ComparisonType.StartsWith;
+
+        /// <summary>
+        /// Gets or sets the page URL comparison value.
+        /// </summary>
+        /// <value>
+        /// The page URL comparison value.
+        /// </value>
+        public string PageUrlComparisonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the page referrer comaprison.
+        /// </summary>
+        /// <value>
+        /// The type of the page referrer comaprison.
+        /// </value>
+        public ComparisonType PageReferrerComparisonType { get; set; } = ComparisonType.StartsWith;
+
+        /// <summary>
+        /// Gets or sets the page referrer comaprison value.
+        /// </summary>
+        /// <value>
+        /// The page referrer comaprison value.
+        /// </value>
+        public string PageReferrerComparisonValue { get; set; }
+
         #endregion Configuration
 
         /// <summary>
@@ -130,7 +162,18 @@ namespace Rock.Personalization.SegmentFilters
                 limitedToPages = $"limited to the {pageNames.AsDelimited( ",", " and " )} pages";
             }
 
-            var description = $"{comparisonPhrase} {onTheSites} {inTheDateRange} {limitedToPages}";
+            string requestDetails = PageUrlComparisonValue.IsNotNullOrWhiteSpace() || PageReferrerComparisonValue.IsNotNullOrWhiteSpace() ? " where " : string.Empty;
+            if ( PageUrlComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                requestDetails += $"page url {PageUrlComparisonType.ConvertToString()} {PageUrlComparisonValue} ";
+            }
+
+            if ( PageReferrerComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                requestDetails += $"and referrer {PageReferrerComparisonType.ConvertToString()} {PageReferrerComparisonValue}";
+            }
+
+            var description = $"{comparisonPhrase} {onTheSites} {inTheDateRange} {limitedToPages} {requestDetails}";
             return description.Trim() + ".";
         }
 
@@ -172,6 +215,68 @@ namespace Rock.Personalization.SegmentFilters
             if ( dateRange?.End != null )
             {
                 pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( a => a.InteractionDateTime < dateRange.End );
+            }
+
+            if ( PageUrlComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                switch ( PageUrlComparisonType )
+                {
+                    case ComparisonType.EqualTo:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.ToUpper() == PageUrlComparisonValue.ToUpper() );
+                        break;
+                    case ComparisonType.NotEqualTo:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.ToUpper() != PageUrlComparisonValue.ToUpper() );
+                        break;
+                    case ComparisonType.StartsWith:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.StartsWith( PageUrlComparisonValue ) );
+                        break;
+                    case ComparisonType.Contains:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.Contains( PageUrlComparisonValue ) );
+                        break;
+                    case ComparisonType.DoesNotContain:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => !i.InteractionData.Contains( PageUrlComparisonValue ) );
+                        break;
+                    case ComparisonType.IsBlank:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => string.IsNullOrWhiteSpace( i.InteractionData ) );
+                        break;
+                    case ComparisonType.IsNotBlank:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => !string.IsNullOrWhiteSpace( i.InteractionData ) );
+                        break;
+                    case ComparisonType.EndsWith:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.EndsWith( PageUrlComparisonValue ) );
+                        break;
+                }
+            }
+
+            if ( PageReferrerComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                switch ( PageReferrerComparisonType )
+                {
+                    case ComparisonType.EqualTo:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.ToUpper() == PageReferrerComparisonValue.ToUpper() );
+                        break;
+                    case ComparisonType.NotEqualTo:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.ToUpper() != PageReferrerComparisonValue.ToUpper() );
+                        break;
+                    case ComparisonType.StartsWith:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.StartsWith( PageReferrerComparisonValue ) );
+                        break;
+                    case ComparisonType.Contains:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.Contains( PageReferrerComparisonValue ) );
+                        break;
+                    case ComparisonType.DoesNotContain:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => !i.ChannelCustomIndexed1.Contains( PageReferrerComparisonValue ) );
+                        break;
+                    case ComparisonType.IsBlank:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => string.IsNullOrWhiteSpace( i.InteractionData ) );
+                        break;
+                    case ComparisonType.IsNotBlank:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => !string.IsNullOrWhiteSpace( i.InteractionData ) );
+                        break;
+                    case ComparisonType.EndsWith:
+                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.EndsWith( PageReferrerComparisonValue ) );
+                        break;
+                }
             }
 
             var personAliasQuery = personAliasService.Queryable();

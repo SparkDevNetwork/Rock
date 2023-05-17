@@ -1,0 +1,112 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="registrarUnmetRequirements.length" class="form-group">
+        We are unable to register you for this project as you don't currently meet the requirement(s) below:
+        <ul>
+            <li v-for="(requirement, i) in registrarUnmetRequirements" :key="`requirement-{i}`">
+                {{ requirement }}
+            </li>
+        </ul>
+    </div>
+
+    <RegisterIndividual v-else v-for="(registrant, i) in registrants" :key="`registrant-{i}`"
+                        :registrant="registrant"
+                        :title="`Registrant #${i + 1}`"
+                        :requireEmail="requireEmail"
+                        :requireMobilePhone="requireMobilePhone"
+                        :disabled="isRegistering"></RegisterIndividual>
+
+    <div v-if="allowAddRegistrants" class="form-group">
+        <RockButton type="button" @click="onAddClick" class="btn-square mr-1">
+            <i class="fa fa-plus"></i>
+        </RockButton>
+        Add Additional Individual
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import RegisterIndividual from "./registerIndividual.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
+
+    const props = defineProps({
+        isRegistering: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        registrants: {
+            type: Array as PropType<SignUpRegistrantBag[]>,
+            required: true
+        },
+
+        projectHasRequiredGroupRequirements: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        requireEmail: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        requireMobilePhone: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const registrarUnmetRequirements = computed((): string[] => {
+        return props.registrants
+            .find((r: SignUpRegistrantBag) => r?.isRegistrar)
+            ?.unmetGroupRequirements ?? [];
+    });
+
+    const allowAddRegistrants = computed((): boolean => {
+        return !props.projectHasRequiredGroupRequirements && !props.isRegistering;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function ensureAtLeastOneRegistrant(): void {
+        if (!props.registrants.length) {
+            addRegistrant();
+        }
+    }
+
+    function addRegistrant(): void {
+        props.registrants.push({
+            allowSms: false,
+            communicationPreference: 0,
+            email: null,
+            firstName: null,
+            fullName: null,
+            isChild: false,
+            isRegistrar: true,
+            lastName: null,
+            mobilePhoneCountryCode: null,
+            mobilePhoneNumber: null,
+            mobilePhoneNumberFormatted: null,
+            personIdKey: null,
+            unmetGroupRequirements: null,
+            willAttend: true
+        });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onAddClick(): void {
+        addRegistrant();
+    }
+
+    // #endregion
+
+    ensureAtLeastOneRegistrant();
+</script>
