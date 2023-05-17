@@ -2030,7 +2030,7 @@ namespace Rock.Blocks.Event
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
-            registrant.Cost = isWaitlist ? 0 : context.RegistrationSettings.PerRegistrantCost;
+            registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
 
             // Check if discount applies
             var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
