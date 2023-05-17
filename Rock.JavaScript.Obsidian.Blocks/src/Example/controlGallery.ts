@@ -7617,7 +7617,8 @@ const groupAndRolePickerGallery = defineComponent({
         CheckBox,
         GroupAndRolePicker,
         TextBox,
-        RockButton
+        RockButton,
+        RockForm
     },
     setup() {
         return {
@@ -7625,7 +7626,9 @@ const groupAndRolePickerGallery = defineComponent({
             groupType: ref(null),
             group: ref(null),
             required: ref(false),
+            disabled: ref(false),
             glabel: ref("Group"),
+            submit: ref(false),
             importCode: getSfcControlImportPath("groupAndRolePicker"),
             exampleCode: `<GroupAndRolePicker label="Group and Role" groupLabel="Group" v-model="value" v-model:groupType="groupType" v-model:group="group" />`
         };
@@ -7638,7 +7641,10 @@ const groupAndRolePickerGallery = defineComponent({
     hasMultipleValues
     enableReflection >
 
-    <GroupAndRolePicker label="Group and Role" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" v-model:group="group" :rules="required ? 'required' : ''" />
+<RockForm v-model:submit="submit">
+    <GroupAndRolePicker label="Group and Role" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" v-model:group="group" :rules="required ? 'required' : ''" :disabled="disabled" />
+    <RockButton @click="submit = true">Submit</RockButton>
+</RockForm>
 
     <template #settings>
         <div class="row">
@@ -7647,6 +7653,9 @@ const groupAndRolePickerGallery = defineComponent({
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
             </div>
         </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>

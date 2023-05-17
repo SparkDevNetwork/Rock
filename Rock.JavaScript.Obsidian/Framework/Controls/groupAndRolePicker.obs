@@ -1,19 +1,22 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-bind="fieldProps" :modelValue="internalGroupValue" name="group-and-role-picker">
+    <RockFormField v-bind="fieldProps" :modelValue="formFieldValue" name="group-and-role-picker" :disabled="disabled">
         <GroupTypeGroupPicker v-bind="standardProps"
                               v-model="internalGroupValue"
                               v-model:groupType="internalTypeValue"
                               :label="undefined"
-                              :rules="typeGroupPickerRules"
-                              :groupLabel="groupLabel" />
+                              :groupLabel="groupLabel"
+                              rules=""
+                              :disabled="disabled" />
         <BaseAsyncPicker v-model="internalRoleValue"
                          v-bind="standardProps"
+                         rules=""
                          label="Role"
                          :displayStyle="PickerDisplayStyle.Condensed"
                          :items="actualRoleItems"
                          showBlankItem
-                         :multiple="false" />
+                         :multiple="false"
+                         :disabled="disabled" />
     </RockFormField>
 </template>
 
@@ -54,6 +57,11 @@
             default: "Group"
         },
 
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
         ...standardAsyncPickerProps
     });
 
@@ -72,6 +80,14 @@
     const internalTypeValue = useVModelPassthrough(props, "groupType", emit);
     const internalGroupValue = useVModelPassthrough(props, "group", emit);
     const internalRoleValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const formFieldValue = computed(() => {
+        if (internalTypeValue.value && internalGroupValue.value && internalRoleValue.value) {
+            return internalRoleValue.value;
+        }
+
+        return null;
+    });
 
     const loadedRoleItems = ref<ListItemBag[] | null>(null);
 
@@ -134,5 +150,5 @@
         loadRoleItems();
     });
 
-    // #endregion
+                    // #endregion
 </script>
