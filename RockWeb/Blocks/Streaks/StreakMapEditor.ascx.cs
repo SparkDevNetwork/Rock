@@ -365,7 +365,26 @@ namespace RockWeb.Blocks.Streaks
             var startDate = StreakTypeService.AlignDate( dateRange.Start.Value, streakTypeCache );
             var endDate = StreakTypeService.AlignDate( dateRange.End.Value, streakTypeCache );
 
-            cblCheckboxes.Label = isDaily ? "Days" : "Weeks";
+            // Change label based on streakTypeCache.OccurrenceFrequency (Days/Weeks/Years)
+            //
+            switch ( streakTypeCache.OccurrenceFrequency )
+            {
+                case StreakOccurrenceFrequency.Daily:
+                    cblCheckboxes.Label = "Days";
+                    break;
+                case StreakOccurrenceFrequency.Weekly:
+                    cblCheckboxes.Label = "Weeks";
+                    break;
+                case StreakOccurrenceFrequency.Monthly:
+                    cblCheckboxes.Label = "Months";
+                    break;
+                case StreakOccurrenceFrequency.Yearly:
+                    cblCheckboxes.Label = "Years";
+                    break;
+                default:
+                    throw new NotImplementedException( string.Format( "StreakOccurrenceFrequency '{0}' is not implemented", streakTypeCache.OccurrenceFrequency ) );
+            }
+
             cblCheckboxes.Items.Clear();
 
             var minDate = GetMinDate();
@@ -374,38 +393,44 @@ namespace RockWeb.Blocks.Streaks
 
             for ( var i = 0; i < checkboxCount; i++ )
             {
-                var representedDate = startDate.AddDays( isDaily ? i : ( i * DaysPerWeek ) );
+                // set representedDate variable as empty date
+                var representedDate = DateTime.MinValue;
+                var checkboxText = string.Empty;
+
+                switch ( streakTypeCache.OccurrenceFrequency )
+                {
+                    case StreakOccurrenceFrequency.Daily:
+                        representedDate = startDate.AddDays( i );
+                        checkboxText = representedDate.ToString( "ddd, MMM dd, yyyy" );
+                        break;
+                    case StreakOccurrenceFrequency.Weekly:
+                        representedDate = startDate.AddDays( ( i * DaysPerWeek ) );
+                        checkboxText = representedDate.ToString( "MMM dd, yyyy" );
+                        break;
+                    case StreakOccurrenceFrequency.Monthly:
+                        representedDate = startDate.AddMonths( i );
+                        // Format representedDate as "MMM yyyy" (ex. Jan 2019)
+                        checkboxText = representedDate.ToString( "MMM yyyy" );
+                        break;
+                    case StreakOccurrenceFrequency.Yearly:
+                        representedDate = startDate.AddYears( i );
+                        // Format representedDate as "yyyy" (ex. 2019)
+                        checkboxText = representedDate.ToString( "yyyy" );
+                        break;
+                    default:
+                        throw new NotImplementedException( string.Format( "StreakOccurrenceFrequency '{0}' is not implemented", streakTypeCache.OccurrenceFrequency ) );
+                }
 
                 cblCheckboxes.Items.Add( new ListItem
                 {
                     Enabled = representedDate >= minDate && representedDate <= maxDate,
                     Selected = StreakTypeService.IsBitSet( streakTypeCache, map, representedDate, out errorMessage ),
-                    Text = GetLabel( isDaily, representedDate ),
+                    Text = checkboxText,
                     Value = representedDate.ToISO8601DateString()
                 } );
             }
 
             cblCheckboxes.DataBind();
-        }
-
-        /// <summary>
-        /// Get the label for the checkbox control
-        /// </summary>
-        /// <param name="isDaily"></param>
-        /// <param name="representedDate"></param>
-        /// <returns></returns>
-        private string GetLabel( bool isDaily, DateTime representedDate )
-        {
-            if ( isDaily )
-            {
-                const string dateFormat = "ddd, MMM dd, yyyy";
-                return representedDate.ToString( dateFormat );
-            }
-            else
-            {
-                const string dateFormat = "MMM dd, yyyy";
-                return representedDate.ToString( dateFormat );
-            }
         }
 
         /// <summary>
