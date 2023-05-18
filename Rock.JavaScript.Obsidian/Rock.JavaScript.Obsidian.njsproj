@@ -371,6 +371,8 @@
     <TypeScriptCompile Include="Framework\Enums\Core\cameraBarcodeConfiguration.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\changeType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\colorDepth.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\colorRecipe.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\colorScheme.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\followingSuggestedStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\format.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\Grid\columnPositionAnchor.ts" />
