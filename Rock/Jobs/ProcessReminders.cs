@@ -571,7 +571,7 @@ namespace Rock.Jobs
         /// <param name="elapsedMs">The optional elapsed time (in milliseconds) for the process described by this message.</param>
         private void WriteLog( string logMessage, DateTime? start = null, long? elapsedMs = null )
         {
-            this.Log( RockLogLevel.Debug, logMessage, start, elapsedMs );
+            Log( RockLogLevel.Debug, logMessage, start, elapsedMs );
         }
 
         /// <summary>

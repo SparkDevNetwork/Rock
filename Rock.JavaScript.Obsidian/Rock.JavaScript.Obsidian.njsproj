@@ -33,7 +33,10 @@
     <Content Include=".eslintrc.js" />
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
+    <Content Include="Framework\Controls\accountPicker.obs" />
     <Content Include="Framework\Controls\addressControl.obs" />
+    <Content Include="Framework\Controls\basicTimePicker.obs" />
+    <Content Include="Framework\Controls\groupAndRolePicker.obs" />
     <Content Include="Framework\Controls\groupTypeGroupPicker.obs" />
     <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
@@ -75,7 +78,9 @@
     <Content Include="Framework\Controls\slidingDateRangePicker.obs" />
     <Content Include="Framework\Controls\reminderTypePicker.obs" />
     <Content Include="Framework\Controls\scheduleBuilder.obs" />
+    <Content Include="Framework\Controls\structuredContentEditor.obs" />
     <Content Include="Framework\Controls\timeIntervalPicker.obs" />
+    <Content Include="Framework\Controls\timePicker.obs" />
     <Content Include="Framework\Controls\treeItemPicker.obs" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Controls\wordCloud.obs" />
@@ -128,7 +133,9 @@
     <Folder Include="Framework\Enums\Communication\" />
     <Folder Include="Framework\Enums\Connection\" />
     <Folder Include="Framework\Enums\Controls\" />
+    <Folder Include="Framework\Enums\Controls\Grid\" />
     <Folder Include="Framework\Enums\Core\" />
+    <Folder Include="Framework\Enums\Core\Grid\" />
     <Folder Include="Framework\Enums\Crm\" />
     <Folder Include="Framework\Enums\Engagement\" />
     <Folder Include="Framework\Enums\Event\" />
@@ -201,6 +208,7 @@
     <Folder Include="Framework\ViewModels\Connection\" />
     <Folder Include="Framework\ViewModels\Controls\" />
     <Folder Include="Framework\ViewModels\Core\" />
+    <Folder Include="Framework\ViewModels\Core\Grid\" />
     <Folder Include="Framework\ViewModels\Crm\" />
     <Folder Include="Framework\ViewModels\Engagement\" />
     <Folder Include="Framework\ViewModels\Entities\" />
@@ -311,6 +319,7 @@
     <TypeScriptCompile Include="Framework\Controls\switch.ts" />
     <TypeScriptCompile Include="Framework\Controls\treeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
+    <TypeScriptCompile Include="Framework\Directives\dragScroll.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Engagement\SignUp\registerMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailDateSelectionMode.ts" />
@@ -345,6 +354,11 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\detailPanelMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\gatewayEmitStrings.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\dateFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\numberFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\pickExistingFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\stringFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\textFilterMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mergeTemplateOwnership.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\modalAlertType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\pickerDisplayStyle.ts" />
@@ -357,8 +371,11 @@
     <TypeScriptCompile Include="Framework\Enums\Core\cameraBarcodeConfiguration.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\changeType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\colorDepth.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\colorRecipe.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\colorScheme.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\followingSuggestedStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\format.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\Grid\columnPositionAnchor.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\jobNotificationStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\kioskType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\matchFlag.ts" />
@@ -433,12 +450,6 @@
     <TypeScriptCompile Include="Framework\FieldTypes\imageFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListFieldComponents.ts" />
-    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryField.partial.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryFieldComponents.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypesField.partial.ts" />
@@ -467,7 +478,6 @@
     <TypeScriptCompile Include="Framework\Controls\saveFinancialAccountForm.ts" />
     <TypeScriptCompile Include="Framework\Controls\secondaryBlock.ts" />
     <TypeScriptCompile Include="Framework\Controls\testGatewayControl.ts" />
-    <TypeScriptCompile Include="Framework\Controls\basicTimePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\birthdayPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\checkBox.ts" />
     <TypeScriptCompile Include="Framework\Controls\checkBoxList.ts" />
@@ -500,7 +510,6 @@
     <TypeScriptCompile Include="Framework\Controls\socialSecurityNumberBox.ts" />
     <TypeScriptCompile Include="Framework\Controls\staticFormControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\textBox.ts" />
-    <TypeScriptCompile Include="Framework\Controls\timePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\toggle.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\addressField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\addressFieldComponents.ts" />
@@ -580,6 +589,7 @@
     <TypeScriptCompile Include="Framework\Utility\popover.ts" />
     <TypeScriptCompile Include="Framework\Utility\promiseUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\realTime.ts" />
+    <TypeScriptCompile Include="Framework\Utility\structuredContentEditor.ts" />
     <TypeScriptCompile Include="Framework\Utility\suspense.ts" />
     <TypeScriptCompile Include="Framework\Utility\tooltip.ts" />
     <TypeScriptCompile Include="Framework\Utility\validationRules.ts" />
@@ -689,6 +699,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\landingPageContentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\listBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AccountEntry\accountEntryAccountInfoBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AccountEntry\accountEntryCompletedStepBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AccountEntry\accountEntryConfirmationSentStepBag.d.ts" />
@@ -744,6 +755,15 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthYearValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customColumnDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\fieldDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridCommunicationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridEntitySetBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridEntitySetItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\notificationMessageActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\personPreferenceValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Crm\renderedBadgeBag.d.ts" />
@@ -809,8 +829,6 @@
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentChannelTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentCollectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\contentCollectionSourceBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Entities\contentTopicBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Entities\contentTopicDomainBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\dataViewBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\dataViewFilterBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\definedTypeBag.d.ts" />
@@ -1054,6 +1072,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\geoPickerGoogleMapSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\geoPickerSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\gradePickerGetGradesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupAndRolePickerGetRolesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetAllForGroupRoleOptionsBag.d.ts" />
@@ -1093,6 +1112,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\schedulePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepStatusPickerGetStepStatusesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepTypePickerGetStepTypesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorGetConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowActionTypePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowTypePickerGetWorkflowTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesAccessedOptionsBag.d.ts" />

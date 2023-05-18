@@ -92,6 +92,14 @@
     <Compile Include="Migrations\202305042020411_CodeGenerated_20230504.designer.cs">
       <DependentUpon>202305042020411_CodeGenerated_20230504.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202305181748412_Rollup_20230518.cs" />
+    <Compile Include="Migrations\202305181748412_Rollup_20230518.designer.cs">
+      <DependentUpon>202305181748412_Rollup_20230518.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202305181819240_CodeGenerated_20230518.cs" />
+    <Compile Include="Migrations\202305181819240_CodeGenerated_20230518.designer.cs">
+      <DependentUpon>202305181819240_CodeGenerated_20230518.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1666,6 +1674,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202305042020411_CodeGenerated_20230504.resx">
       <DependentUpon>202305042020411_CodeGenerated_20230504.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305181748412_Rollup_20230518.resx">
+      <DependentUpon>202305181748412_Rollup_20230518.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305181819240_CodeGenerated_20230518.resx">
+      <DependentUpon>202305181819240_CodeGenerated_20230518.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>

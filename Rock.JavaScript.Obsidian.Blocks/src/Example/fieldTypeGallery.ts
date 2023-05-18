@@ -22,10 +22,9 @@ import PanelWidget from "@Obsidian/Controls/panelWidget";
 import TextBox from "@Obsidian/Controls/textBox";
 import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
 import Block from "@Obsidian/Templates/block";
-import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
 
 /**
  * Convert a simpler set of parameters into PublicAttribute
@@ -49,16 +48,16 @@ const getAttributeData = (name: string, fieldTypeGuid: Guid, configValues: Recor
             categories: []
         }),
         "value2": reactive({
-                fieldTypeGuid: fieldTypeGuid,
-                name: `${name} 2`,
-                key: "value2",
-                description: `This is the description of the ${name} with an initial value`,
-                configurationValues,
-                isRequired: false,
-                attributeGuid: "",
-                order: 0,
-                categories: []
-            })
+            fieldTypeGuid: fieldTypeGuid,
+            name: `${name} 2`,
+            key: "value2",
+            description: `This is the description of the ${name} with an initial value`,
+            configurationValues,
+            isRequired: false,
+            attributeGuid: "",
+            order: 0,
+            categories: []
+        })
     };
 };
 
@@ -137,49 +136,25 @@ const getFieldTypeGalleryComponent = (name: string, initialValue: string, fieldT
         name: `${name}Gallery`,
         components: {
             GalleryAndResult: galleryAndResult,
-            TextBox
+            TextBox,
+            FieldTypeEditor
         },
-        data () {
+        data() {
             return {
                 name,
                 values: { "value1": "", "value2": initialValue },
                 configValues: { ...initialConfigValues } as Record<string, string>,
-                attributes: getAttributeData(name, fieldTypeGuid, initialConfigValues)
+                editorValue: { configurationValues: { ...initialConfigValues }, fieldTypeGuid }
             };
         },
         computed: {
-            configKeys(): string[] {
-                const keys: string[] = [];
-
-                for (const attributeKey in this.attributes) {
-                    const attribute = this.attributes[attributeKey];
-                    for (const key in attribute.configurationValues) {
-                        if (keys.indexOf(key) === -1) {
-                            keys.push(key);
-                        }
-                    }
-                }
-
-                return keys;
-            }
-        },
-        watch: {
-            configValues: {
-                deep: true,
-                handler() {
-                    for (const attributeKey in this.attributes) {
-                        const attribute = this.attributes[attributeKey];
-                        for (const key in attribute.configurationValues) {
-                            const value = this.configValues[key] || "";
-                            attribute.configurationValues[key] = value;
-                        }
-                    }
-                }
+            attributes(): Record<string, PublicAttributeBag> {
+                return getAttributeData(name, fieldTypeGuid, this.editorValue.configurationValues);
             }
         },
         template: `
-<GalleryAndResult :title="name" :values="values" :attributes="attributes">
-    <TextBox v-for="configKey in configKeys" :key="configKey" :label="configKey" v-model="configValues[configKey]" />
+<GalleryAndResult :title="name" :values="values" :attributes="attributes" fieldTypeEditor>
+    <FieldTypeEditor v-model="editorValue" showConfigOnly />
 </GalleryAndResult>`
     });
 };
@@ -188,7 +163,7 @@ const galleryComponents: Record<string, Component> = {
     AddressGallery: getFieldTypeGalleryComponent("Address", '{"street1": "3120 W Cholla St", "city": "Phoenix", "state": "AZ", "postalCode": "85029-4113", "country": "US"}', FieldTypeGuids.Address, {
     }),
 
-    BooleanGallery: getFieldTypeGalleryComponent("Boolean", "t", FieldTypeGuids.Boolean, {
+    BooleanGallery: getFieldTypeGalleryComponent("Boolean", "True", FieldTypeGuids.Boolean, {
         truetext: "This is true",
         falsetext: "This is false",
         BooleanControlType: "2"
@@ -278,6 +253,23 @@ const galleryComponents: Record<string, Component> = {
     GenderGallery: getFieldTypeGalleryComponent("Gender", "2", FieldTypeGuids.Gender, {
     }),
 
+    GroupGallery: getFieldTypeGalleryComponent("Group", "2", FieldTypeGuids.Group, {
+    }),
+
+    GroupLocationTypeGallery: getFieldTypeGalleryComponent("GroupLocationType", "2", FieldTypeGuids.GroupLocationType, {
+        groupTypeGuid: JSON.stringify({ value: "790E3215-3B10-442B-AF69-616C0DCB998E", text: "Family" }),
+        groupTypeLocations: `{"790E3215-3B10-442B-AF69-616C0DCB998E": ${JSON.stringify('[{"value":"8c52e53c-2a66-435a-ae6e-5ee307d9a0dc","text":"Home","category":null},{"value":"e071472a-f805-4fc4-917a-d5e3c095c35c","text":"Work","category":null},{"value":"853d98f1-6e08-4321-861b-520b4106cfe0","text":"Previous","category":null}]')} }`,
+    }),
+
+    GroupMemberGallery: getFieldTypeGalleryComponent("GroupMember", "2", FieldTypeGuids.GroupMember, {
+        allowmultiple: "false",
+        enhancedselection: "false",
+        group: JSON.stringify({ value: "0BA93D66-21B1-4229-979D-F76CEB57666D", text: "A/V Team" })
+    }),
+
+    GroupRoleGallery: getFieldTypeGalleryComponent("GroupRole", "2", FieldTypeGuids.GroupRole, {
+    }),
+
     IntegerGallery: getFieldTypeGalleryComponent("Integer", "20", FieldTypeGuids.Integer, {
     }),
 
@@ -309,11 +301,22 @@ const galleryComponents: Record<string, Component> = {
         values: '[{"value": "pizza", "text": "Pizza"}, {"value": "sub", "text": "Sub"}, {"value": "bagel", "text": "Bagel"}]'
     }),
 
+    PersonGallery: getFieldTypeGalleryComponent("Person", '{ "value": "996c8b72-c255-40e6-bb98-b1d5cf345f3b", "text": "Admin Admin" }', FieldTypeGuids.Person, {
+        includeBusinesses: "false",
+        EnableSelfSelection: "True"
+    }),
+
     PhoneNumberGallery: getFieldTypeGalleryComponent("PhoneNumber", "(321) 456-7890", FieldTypeGuids.PhoneNumber, {
     }),
 
     RatingGallery: getFieldTypeGalleryComponent("Rating", '{"value":3,"maxValue":5}', FieldTypeGuids.Rating, {
         max: "5"
+    }),
+
+    ScheduleGallery: getFieldTypeGalleryComponent("Schedule", "2", FieldTypeGuids.Schedule, {
+    }),
+
+    SchedulesGallery: getFieldTypeGalleryComponent("Schedules", "2", FieldTypeGuids.Schedules, {
     }),
 
     SingleSelectGallery: getFieldTypeGalleryComponent("SingleSelect", "pizza", FieldTypeGuids.SingleSelect, {

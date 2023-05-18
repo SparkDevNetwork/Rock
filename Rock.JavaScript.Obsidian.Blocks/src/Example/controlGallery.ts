@@ -85,7 +85,7 @@ import NumberBox from "@Obsidian/Controls/numberBox";
 import NumberRangeBox from "@Obsidian/Controls/numberRangeBox";
 import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
 import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox";
-import TimePicker from "@Obsidian/Controls/timePicker";
+import TimePicker from "@Obsidian/Controls/timePicker.obs";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import Rating from "@Obsidian/Controls/rating";
@@ -119,6 +119,7 @@ import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterG
 import { AssessmentType } from "@Obsidian/SystemGuids/assessmentType";
 import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
 import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { SlidingDateRange, rangeTypeOptions } from "@Obsidian/Utility/slidingDateRange";
@@ -155,9 +156,10 @@ import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
-import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
+import BasicTimePicker from "@Obsidian/Controls/basicTimePicker.obs";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
 import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
+import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
 import InlineRangeSlider from "@Obsidian/Controls/inlineRangeSlider.obs";
 import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
@@ -212,7 +214,9 @@ import PopOver from "@Obsidian/Controls/popOver.obs";
 import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
 import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
+import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
 
 // #region Gallery Support
 
@@ -1680,12 +1684,14 @@ const timePickerGallery = defineComponent({
     name: "TimePickerGallery",
     components: {
         GalleryAndResult,
-        TimePicker
+        TimePicker,
+        CheckBox
     },
     setup() {
         return {
             value: ref({ hour: 14, minute: 15 }),
-            importCode: getControlImportPath("timePicker"),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("timePicker"),
             exampleCode: `<TimePicker label="Time" v-model="value" />`
         };
     },
@@ -1695,9 +1701,12 @@ const timePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <TimePicker label="Time" v-model="value" />
+    <TimePicker label="Time" v-model="value" :disabled="disabled" />
 
     <template #settings>
+        <div>
+            <CheckBox v-model="disabled" label="Disabled" />
+        </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
@@ -2312,11 +2321,13 @@ const personPickerGallery = defineComponent({
     name: "PersonPickerGallery",
     components: {
         GalleryAndResult,
-        PersonPicker
+        PersonPicker,
+        CheckBox
     },
     setup() {
         return {
             value: ref(null),
+            includeBusinesses: ref(false),
             importCode: getControlImportPath("personPicker"),
             exampleCode: `<PersonPicker v-model="value" label="Person" />`
         };
@@ -2327,8 +2338,14 @@ const personPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <PersonPicker v-model="value" label="Person" />
+    <PersonPicker v-model="value" label="Person" :includeBusinesses="includeBusinesses" />
     <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Include Businesses" v-model="includeBusinesses" />
+            </div>
+        </div>
+
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
@@ -4855,11 +4872,13 @@ const basicTimePickerGallery = defineComponent({
     name: "BasicTimePickerGallery",
     components: {
         GalleryAndResult,
-        BasicTimePicker
+        BasicTimePicker,
+        CheckBox
     },
     setup() {
         return {
             value: ref({}),
+            disabled: ref(false),
             importCode: getControlImportPath("basicTimePicker"),
             exampleCode: `<BasicTimePicker label="Time" v-model="value" />`
         };
@@ -4870,9 +4889,12 @@ const basicTimePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <BasicTimePicker label="Time" v-model="value" />
+    <BasicTimePicker label="Time" v-model="value" :disabled="disabled" />
 
     <template #settings>
+        <div>
+            <CheckBox v-model="disabled" label="Disabled" />
+        </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
@@ -5002,7 +5024,15 @@ const fieldTypeEditorGallery = defineComponent({
     },
     setup() {
         return {
-            value: ref({}),
+            value: ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
+                configurationValues: {
+                    truetext: "Yup",
+                    falsetext: "Nah",
+                    BooleanControlType: "2"
+                },
+                defaultValue: "True",
+                fieldTypeGuid: FieldType.Boolean
+            }),
             readOnly: ref(false),
             importCode: getControlImportPath("fieldTypeEditor"),
             exampleCode: `<FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />`
@@ -7551,7 +7581,7 @@ const groupTypeGroupPickerGallery = defineComponent({
             required: ref(false),
             glabel: ref("Group"),
             importCode: getSfcControlImportPath("groupTypeGroupPicker"),
-            exampleCode: `<GroupTypeGroupPicker label="Group Type and TypeGroup" groupLabel="Group" v-model="value" v-model:groupType="groupType" />`
+            exampleCode: `<GroupTypeGroupPicker label="Group Type and Group" groupLabel="Group" v-model="value" v-model:groupType="groupType" />`
         };
     },
     template: `
@@ -7562,7 +7592,7 @@ const groupTypeGroupPickerGallery = defineComponent({
     hasMultipleValues
     enableReflection >
 
-    <GroupTypeGroupPicker label="Group Type and TypeGroup" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" :rules="required ? 'required' : ''" />
+    <GroupTypeGroupPicker label="Group Type and Group" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" :rules="required ? 'required' : ''" />
 
     <template #settings>
         <div class="row">
@@ -7571,6 +7601,61 @@ const groupTypeGroupPickerGallery = defineComponent({
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates group and role picker */
+const groupAndRolePickerGallery = defineComponent({
+    name: "GroupAndRolePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        GroupAndRolePicker,
+        TextBox,
+        RockButton,
+        RockForm
+    },
+    setup() {
+        return {
+            value: ref(null),
+            groupType: ref(null),
+            group: ref(null),
+            required: ref(false),
+            disabled: ref(false),
+            glabel: ref("Group"),
+            submit: ref(false),
+            importCode: getSfcControlImportPath("groupAndRolePicker"),
+            exampleCode: `<GroupAndRolePicker label="Group and Role" groupLabel="Group" v-model="value" v-model:groupType="groupType" v-model:group="group" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{groupType, group, value}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+<RockForm v-model:submit="submit">
+    <GroupAndRolePicker label="Group and Role" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" v-model:group="group" :rules="required ? 'required' : ''" :disabled="disabled" />
+    <RockButton @click="submit = true">Submit</RockButton>
+</RockForm>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Group Label" v-model="glabel" help="The label for the 2nd dropdown. The main label is also customizable, but the group type and role labels are not." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
             </div>
         </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
@@ -7630,6 +7715,59 @@ const accountPickerGallery = defineComponent({
         </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates structured content editor */
+const structuredContentEditorGallery = defineComponent({
+    name: "StructuredContentEditorGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DefinedValuePicker,
+        StructuredContentEditor
+    },
+    setup() {
+        const required = ref(false);
+        const toolsItemBag = ref<ListItemBag | undefined>({
+            value: DefinedValue.StructureContentEditorDefault
+        });
+        const toolsGuid = computed(() => toolsItemBag.value?.value);
+        const toolsTypeGuid = DefinedType.StructuredContentEditorTools;
+
+        return {
+            value: ref("{}"),
+            required,
+            importCode: getSfcControlImportPath("structuredContentEditor"),
+            exampleCode: computed(() => `<StructuredContentEditor v-model="value" label="StructuredContent Editor" :toolsGuid="${toolsGuid.value}" ${required.value ? 'rules="required" ' : ""}/>`),
+            toolsGuid,
+            toolsItemBag,
+            toolsTypeGuid
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <StructuredContentEditor
+        v-model="value"
+        label="Structured Content Editor"
+        :toolsGuid="toolsGuid"
+        :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <DefinedValuePicker v-model="toolsItemBag" :definedTypeGuid="toolsTypeGuid" label="Structured Content Editor Tools Value" lazyMode="eager" :multiple="false" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -7774,7 +7912,9 @@ const controlGalleryComponents: Record<string, Component> = [
     rockLiteralGallery,
     registryEntryGallery,
     groupTypeGroupPickerGallery,
+    groupAndRolePickerGallery,
     accountPickerGallery,
+    structuredContentEditorGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -8065,6 +8205,7 @@ export default defineComponent({
     border-radius: 0;
     margin: -1px 0 -1px -1px;
     overflow-y: auto;
+    flex-shrink: 0;
 }
 
 .gallerySidebar li.current {
@@ -8078,12 +8219,9 @@ export default defineComponent({
     padding: 20px;
 }
 
-.galleryContent .rock-header {
-    margin: 0 -20px;
-}
-
-.galleryContent .rock-header .title {
-    margin-left: 20px;
+.galleryContent > .rock-header hr {
+    margin-left: -20px;
+    margin-right: -20px;
 }
 </v-style>
 <Panel type="block">

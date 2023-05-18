@@ -1510,7 +1510,7 @@ namespace RockWeb.Blocks.Crm
                 var sb = new StringBuilder();
                 sb.Append( "<p>There are group member attributes that have conflicting values. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please update those attribute values before proceeding with the merge. </p>" );
                 sb.Append( "<p>Conflicting values for:<br>" );
-                var links = conflictingGroupMemberProperties.Select( p => $"<a target='_blank' href='/group/{p.GroupId}'>{p.GroupName}</a>" ).Distinct();
+                var links = conflictingGroupMemberProperties.Select( p => $"<a target='_blank' rel='noopener noreferrer' href='/group/{p.GroupId}'>{p.GroupName}</a>" ).Distinct();
                 sb.Append( string.Join( ", ", links ) );
                 sb.Append( "</p>" );
 

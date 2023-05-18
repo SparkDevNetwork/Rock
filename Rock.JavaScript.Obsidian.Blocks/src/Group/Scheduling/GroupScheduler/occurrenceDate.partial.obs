@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="occurrenceDateElement" class="occurrence-date" :style="inlineStyle">
+    <div ref="occurrenceDateElement" class="occurrence-date js-occurrence-date" :style="inlineStyle">
         <h2 class="occurrence-date-title">{{ title }}</h2>
 
         <NotificationBox v-if="!anySchedules" :alertType="AlertType.Info">
@@ -68,10 +68,8 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        /*
-         * It's assumed that all occurrences provided will belong to the same occurrence date;
-         * just grab the first friendlyOccurrenceDate, since they should all be the same.
-         */
+        // It's assumed that all occurrences provided will belong to the same occurrence date;
+        // just grab the first friendlyOccurrenceDate, since they should all be the same.
         let friendlyOccurrenceDate: string | null | undefined;
         if (props.occurrences?.length) {
             friendlyOccurrenceDate = props.occurrences[0].friendlyOccurrenceDate;

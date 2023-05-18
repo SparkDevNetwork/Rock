@@ -2631,7 +2631,7 @@ namespace RockWeb.Blocks.Event
                 if ( registrant.SignatureDocumentId.HasValue )
                 {
                     links = string.Format(
-                        @"<a href='{0}' target='_blank'>Signed on {1}</a>
+                        @"<a href='{0}' target='_blank' rel='noopener noreferrer'>Signed on {1}</a>
                         <small>Signed by {2}</small>",
                         ResolveRockUrl( string.Format( "~/GetFile.ashx?id={0}", registrant.SignatureDocumentId ?? 0 ) ),
                         registrant.SignatureDocumentSignedDateTime?.ToString( "dddd, MMMM dd, yyyy" ),

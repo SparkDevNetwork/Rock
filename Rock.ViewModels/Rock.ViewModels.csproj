@@ -60,6 +60,7 @@
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailMarkAttendanceRequestBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailAttendanceBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailInitializationBox.cs" />
+    <Compile Include="Blocks\ListBlockBox.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerAppliedFiltersBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerCloneSchedulesResponseBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerCloneSettingsBag.cs" />
@@ -187,6 +188,15 @@
     <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
+    <Compile Include="Core\Grid\CustomActionBag.cs" />
+    <Compile Include="Core\Grid\CustomColumnDefinitionBag.cs" />
+    <Compile Include="Core\Grid\GridCommunicationBag.cs" />
+    <Compile Include="Core\Grid\GridEntitySetBag.cs" />
+    <Compile Include="Core\Grid\GridEntitySetItemBag.cs" />
+    <Compile Include="Core\Grid\AttributeFieldDefinitionBag.cs" />
+    <Compile Include="Core\Grid\FieldDefinitionBag.cs" />
+    <Compile Include="Core\Grid\GridDataBag.cs" />
+    <Compile Include="Core\Grid\GridDefinitionBag.cs" />
     <Compile Include="Core\NotificationMessageActionBag.cs" />
     <Compile Include="Core\PersonPreferenceValueBag.cs" />
     <Compile Include="Entities\ContentTopicBag.cs" />
@@ -215,6 +225,7 @@
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetContentChannelItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupAndRolePickerGetRolesOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PersonLinkGetPopupHtmlOptionsBag.cs" />
@@ -225,6 +236,8 @@
     <Compile Include="Rest\Controls\CategorizedValuePickerGetTreeResultsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerNodeBag.cs" />
+    <Compile Include="Rest\Controls\StructuredContentEditorConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\StructuredContentEditorGetConfigurationOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailGetGroupLocationSchedulesRequestBag.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailGetGroupLocationsRequestBag.cs" />

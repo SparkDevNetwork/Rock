@@ -33,6 +33,7 @@ using Rock.Security;
 using Rock.ViewModels;
 using Rock.ViewModels.Entities;
 using Rock.Web.UI.Controls;
+using Rock.Attribute;
 
 namespace Rock.Web.Cache
 {
@@ -832,6 +833,22 @@ namespace Rock.Web.Cache
         public static List<AttributeCache> GetByEntityTypeQualifier( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, bool includeInactive )
         {
             return EntityTypeAttributesCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, includeInactive ).ToList();
+        }
+
+        /// <summary>
+        /// Gets an ordered list of attributes that match the <paramref name="entityQualifierColumn"/>
+        /// and <paramref name="entityQualifierValue"/> values for the <paramref name="entityTypeId"/>.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        [RockInternal( "1.16" )]
+        internal static List<AttributeCache> GetOrderedGridAttributes( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
+        {
+            return GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, false )
+                .Where( a => a.IsGridColumn )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ThenBy( a => a.Id )
+                .ToList();
         }
 
         /// <summary>

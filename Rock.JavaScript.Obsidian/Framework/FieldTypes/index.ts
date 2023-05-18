@@ -35,6 +35,9 @@ registerFieldType(FieldTypeGuids.Campus, new CampusFieldType());
 import { CampusesFieldType } from "./campusesField.partial";
 registerFieldType(FieldTypeGuids.Campuses, new CampusesFieldType());
 
+import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
+registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
+
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 
@@ -89,6 +92,12 @@ registerFieldType(FieldTypeGuids.GroupRole, new GroupRoleFieldType());
 import { GroupMemberFieldType } from "./groupMemberField.partial";
 registerFieldType(FieldTypeGuids.GroupMember, new GroupMemberFieldType());
 
+import { GroupTypeField } from "./groupTypeField.partial";
+registerFieldType(FieldTypeGuids.GroupType, new GroupTypeField());
+
+import { GroupTypesFieldType } from "./groupTypesField.partial";
+registerFieldType(FieldTypeGuids.GroupTypes, new GroupTypesFieldType());
+
 import { ImageFieldType } from "./imageField.partial";
 registerFieldType(FieldTypeGuids.Image, new ImageFieldType());
 
@@ -113,8 +122,14 @@ registerFieldType(FieldTypeGuids.MonthDay, new MonthDayFieldType());
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());
 
+import { NoteTypesField } from "./noteTypesField.partial";
+registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());
+
 import { PhoneNumberFieldType } from "./phoneNumberField.partial";
 registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
+
+import { PersonFieldType } from "./personField.partial";
+registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
 
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
@@ -145,6 +160,9 @@ registerFieldType(FieldTypeGuids.Text, new TextFieldType());
 
 import { TimeFieldType } from "./timeField.partial";
 registerFieldType(FieldTypeGuids.Time, new TimeFieldType());
+
+import { TimeZoneFieldType } from "./timeZoneField.partial";
+registerFieldType(FieldTypeGuids.TimeZone, new TimeZoneFieldType());
 
 import { UrlLinkFieldType } from "./urlLinkField.partial";
 registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());

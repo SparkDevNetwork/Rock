@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { defineComponent, ref, watch } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
 import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
@@ -35,19 +35,22 @@ export const EditComponent = defineComponent({
 
     setup(props, { emit }) {
         const internalValue = ref({} as ListItemBag[]);
-        const groupValue = ref({});
-        const allowMultipleValues = ref(false);
-        const enhanceForLongLists = ref(false);
 
         watch(() => props.modelValue, () => {
             internalValue.value = JSON.parse(props.modelValue || "{}");
         }, { immediate: true });
 
-        watch(() => props.configurationValues, () => {
-            groupValue.value = JSON.parse(props.configurationValues[ConfigurationValueKey.Group] || "{}");
-            allowMultipleValues.value = asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultipleValues]);
-            enhanceForLongLists.value = asBoolean(props.configurationValues[ConfigurationValueKey.EnhanceForLongLists]);
-        }, { immediate: true });
+        const groupValue = computed((): ListItemBag => {
+            return JSON.parse(props.configurationValues[ConfigurationValueKey.Group] || "{}");
+        });
+
+        const allowMultipleValues = computed((): boolean => {
+            return asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultipleValues]);
+        });
+
+        const enhanceForLongLists = computed((): boolean => {
+            return  asBoolean(props.configurationValues[ConfigurationValueKey.EnhanceForLongLists]);
+        });
 
         watch(() => internalValue.value, () => {
             emit("update:modelValue", JSON.stringify(internalValue.value));
@@ -125,7 +128,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
         * Emits the updateConfigurationValue if the value has actually changed.
-        * 
+        *
         * @param key The key that was possibly modified.
         * @param value The new value.
         */
