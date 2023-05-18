@@ -301,7 +301,7 @@ const galleryComponents: Record<string, Component> = {
         values: '[{"value": "pizza", "text": "Pizza"}, {"value": "sub", "text": "Sub"}, {"value": "bagel", "text": "Bagel"}]'
     }),
 
-    PersonGallery: getFieldTypeGalleryComponent("Person", "996c8b72-c255-40e6-bb98-b1d5cf345f3b", FieldTypeGuids.Person, {
+    PersonGallery: getFieldTypeGalleryComponent("Person", '{ "value": "996c8b72-c255-40e6-bb98-b1d5cf345f3b", "text": "Admin Admin" }', FieldTypeGuids.Person, {
         includeBusinesses: "false",
         EnableSelfSelection: "T"
     }),
