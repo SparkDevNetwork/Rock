@@ -51,12 +51,12 @@ const modifiers = {
 const dataDragScrollId = "dragScrollId";
 const noDragScrollClass = "js-no-drag-scroll";
 
-let target: HTMLElement;
+let hostElement: HTMLElement;
 let startingPosition: IDragScrollPosition;
 let preserveScrollBehavior: IPreserveScrollBehavior;
 
-let scrollableXElement: HTMLElement | null;
-let scrollableYElement: HTMLElement | null;
+let scrollableElementX: HTMLElement | null;
+let scrollableElementY: HTMLElement | null;
 
 // #region Directive Instance Helpers
 
@@ -64,18 +64,18 @@ let scrollableYElement: HTMLElement | null;
  * The options that can be used when defining a drag scroll instance.
  */
 export interface IDragScrollOptions {
-    /** The unique identifier for this drag scroll instance. */
+    /** The unique identifier for this drag scroll instance. Recommended to be a Guid. */
     id: string
 }
 
 /**
- * Service to handle a specific drag scroll instance, since each instance may have different modifiers, Etc.
+ * Service to handle a specific drag scroll instance; each instance may have different modifiers, Etc.
  */
 class DragScrollService {
-    /** The unique identifier for this drag scroll instance. Recommended to be a Guid. */
-    public readonly options: IDragScrollOptions;
+    /** The options for this drag scroll instance. */
+    private readonly options: IDragScrollOptions;
 
-    /** The modifiers - if any - assigned to this drag scroll instance. */
+    /** The modifiers - if any - for this drag scroll instance. */
     private readonly modifiers: Record<string, boolean>;
 
     constructor(options: IDragScrollOptions, modifiers: Record<string, boolean>) {
@@ -84,11 +84,11 @@ class DragScrollService {
     }
 
     /**
-     * Determines whether the button that triggered the `MouseEvent` is allowed
-     * according to any modifiers for this drag scroll instance.
+     * Determines whether the button that raised the `MouseEvent` is allowed,
+     * according to any modifiers assigned to this drag scroll instance.
      *
      * @param ev An object describing the event.
-     * @returns Whether the button that triggered the `MouseEvent` is allowed
+     * @returns Whether the button that raised the `MouseEvent` is allowed
      */
     public isMouseButtonAllowed(ev: MouseEvent): boolean {
         if (!Object.keys(this.modifiers).length) {
@@ -148,13 +148,14 @@ function destroyService(identifier: string): void {
 // #region Functions
 
 /**
- * Determines whether drag scroll should be activated based on modifiers, Etc.
+ * Determines whether drag scroll should be activated based on this drag scroll instance's
+ * modifiers and the target element that raised the `MouseEvent`.
  *
  * @param ev An object describing the event triggering drag scroll behavior.
- * @returns Whether drag scroll should be actived.
+ * @returns Whether drag scroll should be activated.
  */
 function shouldScroll(ev: MouseEvent): boolean {
-    const id = target.dataset[dataDragScrollId];
+    const id = hostElement.dataset[dataDragScrollId];
     if (!id) {
         return false;
     }
@@ -173,28 +174,28 @@ function shouldScroll(ev: MouseEvent): boolean {
 }
 
 /**
- * Sets "grabbing" styles and takes note of scroll behaviors that should be preserved, disabled
- * and later reinstated on the host element.
+ * Sets "grabbing" styles on the host element and takes note of scroll behaviors that should be
+ * preserved, disabled and later reinstated on the element.
  *
- * Note that we need to disable certain scroll behaviors while actively drag-scrolling, for a more
- * pleasant user experience.
+ * Note that we need to disable certain scroll and user-selection behaviors while actively
+ * drag-scrolling, for a more pleasant individual experience.
  */
 function setGrabbingStyles(): void {
-    target.style.setProperty(styleProp.cursor, "grabbing");
-    target.style.setProperty(styleProp.userSelect, "none");
+    hostElement.style.setProperty(styleProp.cursor, "grabbing");
+    hostElement.style.setProperty(styleProp.userSelect, "none");
 
-    const style = window.getComputedStyle(target);
+    const style = window.getComputedStyle(hostElement);
     preserveScrollBehavior = {
         scrollBehavior: style.getPropertyValue(styleProp.scrollBehavior),
         scrollSnapType: style.getPropertyValue(styleProp.scrollSnapType)
     };
 
     if (preserveScrollBehavior.scrollBehavior) {
-        target.style.setProperty(styleProp.scrollBehavior, "auto");
+        hostElement.style.setProperty(styleProp.scrollBehavior, "auto");
     }
 
     if (preserveScrollBehavior.scrollSnapType) {
-        target.style.setProperty(styleProp.scrollSnapType, "none");
+        hostElement.style.setProperty(styleProp.scrollSnapType, "none");
     }
 }
 
@@ -216,14 +217,14 @@ function isScrollableX(el: HTMLElement): boolean {
  * Recursively searches ancestor elements to find the first one that is scrollable along the X axis.
  *
  * @param el The element whose anscestors should be searched.
- * @returns The first ancestor element that is scrollable along the X axis.
+ * @returns The first ancestor element that is scrollable along the X axis, if any.
  */
-function getFirstScrollableXAncestor(el: HTMLElement | null): HTMLElement | null {
+function getFirstScrollableAncestorX(el: HTMLElement | null): HTMLElement | null {
     if (!el || isScrollableX(el)) {
         return el;
     }
 
-    return getFirstScrollableXAncestor(el.parentElement);
+    return getFirstScrollableAncestorX(el.parentElement);
 }
 
 /**
@@ -246,12 +247,12 @@ function isScrollableY(el: HTMLElement): boolean {
  * @param el The element whose anscestors should be searched.
  * @returns The first ancestor element that is scrollable along the Y axis.
  */
-function getFirstScrollableYAncestor(el: HTMLElement | null): HTMLElement | null {
+function getFirstScrollableAncestorY(el: HTMLElement | null): HTMLElement | null {
     if (!el || isScrollableY(el)) {
         return el;
     }
 
-    return getFirstScrollableYAncestor(el.parentElement);
+    return getFirstScrollableAncestorY(el.parentElement);
 }
 
 /**
@@ -259,15 +260,15 @@ function getFirstScrollableYAncestor(el: HTMLElement | null): HTMLElement | null
  * on the host element.
  */
 function removeGrabbingStyles(): void {
-    target.style.setProperty(styleProp.cursor, "grab");
-    target.style.removeProperty(styleProp.userSelect);
+    hostElement.style.setProperty(styleProp.cursor, "grab");
+    hostElement.style.removeProperty(styleProp.userSelect);
 
     if (preserveScrollBehavior.scrollBehavior) {
-        target.style.setProperty(styleProp.scrollBehavior, preserveScrollBehavior.scrollBehavior);
+        hostElement.style.setProperty(styleProp.scrollBehavior, preserveScrollBehavior.scrollBehavior);
     }
 
     if (preserveScrollBehavior.scrollSnapType) {
-        target.style.setProperty(styleProp.scrollSnapType, preserveScrollBehavior.scrollSnapType);
+        hostElement.style.setProperty(styleProp.scrollSnapType, preserveScrollBehavior.scrollSnapType);
     }
 }
 
@@ -278,11 +279,11 @@ function removeGrabbingStyles(): void {
 /**
  * Handles the mouse down event.
  *
- * @param this The element from which the event was fired.
+ * @param this The element that raised the event.
  * @param event An object describing the event.
  */
 function onMouseDown(this: HTMLElement, event: MouseEvent): void {
-    target = this;
+    hostElement = this;
 
     if (!shouldScroll(event)) {
         return;
@@ -293,17 +294,17 @@ function onMouseDown(this: HTMLElement, event: MouseEvent): void {
         event.preventDefault();
     }
     else if (event.button === 2) {
-        target.addEventListener("contextmenu", preventContextMenu);
+        hostElement.addEventListener("contextmenu", preventContextMenu);
     }
 
     setGrabbingStyles();
 
-    scrollableXElement = null;
-    scrollableYElement = null;
+    scrollableElementX = null;
+    scrollableElementY = null;
 
     startingPosition = {
-        left: target.scrollLeft,
-        top: target.scrollTop,
+        left: hostElement.scrollLeft,
+        top: hostElement.scrollTop,
         x: event.clientX,
         y: event.clientY
     };
@@ -315,7 +316,7 @@ function onMouseDown(this: HTMLElement, event: MouseEvent): void {
 /**
  * Prevents the context menu from being displayed.
  *
- * @param this The element from which the event was fired.
+ * @param this The element that raised the event.
  * @param event An object describing the event.
  */
 function preventContextMenu(this: HTMLElement, event: MouseEvent): void {
@@ -325,47 +326,47 @@ function preventContextMenu(this: HTMLElement, event: MouseEvent): void {
 /**
  * Handles the mouse move event.
  *
- * @param this The element from which the event was fired.
+ * @param this The document.
  * @param event An object describing the event.
  */
 function onMouseMove(this: Document, event: MouseEvent): void {
-    if (!scrollableXElement) {
-        if (isScrollableX(target)) {
-            scrollableXElement = target;
+    if (!scrollableElementX) {
+        if (isScrollableX(hostElement)) {
+            scrollableElementX = hostElement;
         }
         else {
-            scrollableXElement = getFirstScrollableXAncestor(target.parentElement);
-            startingPosition.left = scrollableXElement?.scrollLeft ?? 0;
+            scrollableElementX = getFirstScrollableAncestorX(hostElement.parentElement);
+            startingPosition.left = scrollableElementX?.scrollLeft ?? 0;
         }
     }
 
-    if (scrollableXElement) {
+    if (scrollableElementX) {
         const deltaX = event.clientX - startingPosition.x;
         const newX = startingPosition.left - deltaX;
-        scrollableXElement.scrollLeft = newX;
+        scrollableElementX.scrollLeft = newX;
     }
 
-    if (!scrollableYElement) {
-        if (isScrollableY(target)) {
-            scrollableYElement = target;
+    if (!scrollableElementY) {
+        if (isScrollableY(hostElement)) {
+            scrollableElementY = hostElement;
         }
         else {
-            scrollableYElement = getFirstScrollableYAncestor(target.parentElement);
-            startingPosition.top = scrollableYElement?.scrollTop ?? 0;
+            scrollableElementY = getFirstScrollableAncestorY(hostElement.parentElement);
+            startingPosition.top = scrollableElementY?.scrollTop ?? 0;
         }
     }
 
-    if (scrollableYElement) {
+    if (scrollableElementY) {
         const deltaY = event.clientY - startingPosition.y;
         const newY = startingPosition.top - deltaY;
-        scrollableYElement.scrollTop = newY;
+        scrollableElementY.scrollTop = newY;
     }
 }
 
 /**
  * Handles the mouse up event.
  *
- * @param this The element from which the event was fired.
+ * @param this The document.
  * @param ev An object describing the event.
  */
 function onMouseUp(this: Document, _event: MouseEvent): void {
@@ -383,7 +384,7 @@ function onMouseUp(this: Document, _event: MouseEvent): void {
  * If the host element itself is not scrollable in the X or Y direction, its ancestors will be searched
  * to find the first one that is scrollable in each direction.
  *
- * The following modifiers will be respected:
+ * The following [mouse button] modifiers may be used:
  *  "left"
  *  "middle"
  *  "right"
@@ -421,9 +422,9 @@ export const DragScroll: Directive<HTMLElement, IDragScrollOptions> = {
 /**
  * A directive to disable "drag-scroll" behavior for the host element and its descendants.
  *
- * Use this directive on any descendants of an element that
- * has the `DragScroll` directive applied, in order to opt-out of the "drag-scroll" behavior if this element
- * (or any of its descendants) are the target of the `MouseEvent`.
+ * Use this directive on any descendants of an element that has the `DragScroll` directive applied,
+ * in order to opt-out of the "drag-scroll" behavior if this element (or any of its descendants)
+ * are the target of the `MouseEvent`.
  */
 export const NoDragScroll: Directive<HTMLElement> = {
     mounted(el: HTMLElement) {
