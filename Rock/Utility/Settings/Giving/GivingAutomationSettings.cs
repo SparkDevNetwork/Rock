@@ -54,6 +54,9 @@ namespace Rock.Utility.Settings.Giving
             settings.GivingClassificationSettings.GiverBins = settings.GivingClassificationSettings.GiverBins ?? new List<GiverBin>();
             settings.GivingClassificationSettings.RunDays = settings.GivingClassificationSettings.RunDays ?? DayOfWeekFlag.All.AsDayOfWeekList().ToArray();
 
+            // This setting is currently not configurable.
+            settings.GivingJourneySettings.TransactionWindowDurationHours = 24;
+
             return settings;
         }
 
@@ -245,6 +248,14 @@ namespace Rock.Utility.Settings.Giving
         /// </summary>
         /// <value>The consistent giver median less than days.</value>
         public int? ConsistentGiverMedianLessThanDays { get; set; } = 32;
+
+        /// <summary>
+        /// Gets or sets the time period within which transactions will be considered as a single giving event,
+        /// for the purposes of calculating giving frequency and consistency. If not specified, every transactions
+        /// is regarded as a unique giving event.
+        /// </summary>
+        /// <value>A period of time in hours.</value>
+        public int? TransactionWindowDurationHours { get; set; } = 24;
     }
 
     /// <summary>

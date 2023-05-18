@@ -36,6 +36,9 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Lava.Blocks;
+using Rock.Attribute;
+using Rock.Lava.DotLiquid;
+using Rock.Utility.Settings;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -431,6 +434,26 @@ namespace Rock.Lava.RockLiquid.Blocks
 
                             var resultList = queryResult.ToList();
 
+                            // Pre-load attributes
+                            var disableattributeprefetch = parms.GetValueOrDefault( "disableattributeprefetch", "false" ).AsBoolean();
+                            var attributeKeys = parms.GetValueOrDefault( "prefetchattributes", string.Empty )
+                                                    .Split( new string[] { "," }, StringSplitOptions.RemoveEmptyEntries )
+                                                    .ToList();
+
+                            // Determine if we should prefetch attributes. By default we will unless they specifically say not to.
+                            if (!disableattributeprefetch)
+                            {
+                                // If a filtered list of attributes keys are not provided load all attributes otherwise just load the ones for the keys provided.
+                                if (attributeKeys.Count() == 0)
+                                {
+                                    resultList.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadAttributes();
+                                }
+                                else
+                                {
+                                    resultList.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadFilteredAttributes( (RockContext) dbContext, a => attributeKeys.Contains( a.Key ) );
+                                }
+                            }
+
                             // if there is only one item to return set an alternative non-array based variable
                             if ( resultList.Count == 1 )
                             {
@@ -512,6 +535,13 @@ namespace Rock.Lava.RockLiquid.Blocks
         /// </summary>
         public static void RegisterEntityCommands()
         {
+            // If the database is not connected, do not register these commands.
+            // This can occur when the Lava engine is started without an attached database.
+            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            {
+                return;
+            }
+
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
@@ -673,6 +703,8 @@ namespace Rock.Lava.RockLiquid.Blocks
                             case "checksecurity":
                             case "includedeceased":
                             case "securityenabled":
+                            case "prefetchattributes":
+                            case "disableattributeprefetch":
                                 {
                                     parms.AddOrReplace( dynamicParm, dynamicParmValue );
                                     break;
@@ -759,7 +791,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                 }
 
                 // parse the part to get the expression
-                string regexPattern = @"([a-zA-Z]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
+                var regexPattern = @"((?!_=|_!)[a-zA-Z_]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
                 var expressionParts = Regex.Matches( component, regexPattern )
                .Cast<Match>()
                .Select( m => m.Value )
@@ -813,13 +845,20 @@ namespace Rock.Lava.RockLiquid.Blocks
                             filterAttribute = attribute;
                             var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
+                            var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            if ( filterExpression is NoAttributeFilterExpression )
+                            {
+                                // Ignore this filter because it would cause the Where expression to match everything.
+                                continue;
+                            }
+
                             if ( attributeWhereExpression == null )
                             {
-                                attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                                attributeWhereExpression = filterExpression;
                             }
                             else
                             {
-                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
+                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, filterExpression );
                             }
                         }
 

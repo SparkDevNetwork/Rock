@@ -242,7 +242,6 @@ namespace Rock.Model
         /// <param name="persistedLastRunDurationMilliseconds">The time to persist dataview in milliseconds.</param>
         public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunDurationMilliseconds = null, int? persistedLastRunDurationMilliseconds = null )
         {
-            RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewId: {dataViewId} timeToRunDurationMilliseconds: {timeToRunDurationMilliseconds}", nameof( AddRunDataViewTransaction ), dataViewId, timeToRunDurationMilliseconds );
             var updateDataViewStatisticsMsg = new UpdateDataViewStatistics.Message()
             {
                 DataViewId = dataViewId,
@@ -252,6 +251,7 @@ namespace Rock.Model
 
             if ( timeToRunDurationMilliseconds.HasValue )
             {
+                RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewId: {dataViewId} timeToRunDurationMilliseconds: {timeToRunDurationMilliseconds}", nameof( AddRunDataViewTransaction ), dataViewId, timeToRunDurationMilliseconds );
                 updateDataViewStatisticsMsg.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
                 /*
                  * If the run duration is set that means this was called after the expression was

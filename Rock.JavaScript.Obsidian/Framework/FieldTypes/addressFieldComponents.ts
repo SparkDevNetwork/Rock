@@ -16,7 +16,7 @@
 //
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import AddressControl from "@Obsidian/Controls/addressControl";
+import AddressControl from "@Obsidian/Controls/addressControl.obs";
 import { AddressFieldValue } from "./addressField.partial";
 
 export const EditComponent = defineComponent({

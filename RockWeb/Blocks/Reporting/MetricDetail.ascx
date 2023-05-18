@@ -156,7 +156,7 @@
                             <Rock:HighlightLabel ID="hlDataView" runat="server" CssClass="" /> &nbsp;
                             <Rock:ModalAlert ID="mdManualRunInfo" runat="server" />
                             <asp:LinkButton ID="btnManualRun" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnManualRun_Click" ToolTip="Run Now"><i class="fa fa-play"></i></asp:LinkButton>
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security pull-right" />
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </div>
                     </div>
 

@@ -98,15 +98,18 @@
     <Compile Include="TestFramework\AssertExtensions.cs" />
     <Compile Include="TestFramework\CollectionAssertExtensions.cs" />
     <Compile Include="TestFramework\FileAssertExtensions.cs" />
+    <Compile Include="TestFramework\TestHelper.cs" />
     <Compile Include="TestFramework\xUnitAssertExtensions.cs" />
     <Compile Include="Utility\DateTimeTestHelper.cs" />
     <Compile Include="Utility\HttpSimulator.cs" />
     <Compile Include="Utility\TestConfigurationHelper.cs" />
+    <Compile Include="Utility\RandomizerExtensions.cs" />
     <Compile Include="Utility\SampleData.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />
     <Compile Include="Utility\SimulatedHttpRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\ArrayExtensions.cs" />
+    <Compile Include="Utility\LogHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -1,0 +1,209 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-model="internalItemValue" name="content-channel-item" v-bind="standardProps">
+        <BaseAsyncPicker v-if="!contentChannelGuid"
+                         v-model="internalChannelValue"
+                         v-bind="standardAsyncProps"
+                         label="Content Channel"
+                         :displayStyle="displayStyle"
+                         :items="actualChannelItems"
+                         :multiple="false"
+                         rules=""
+                         showBlankItem
+                         enhanceForLongLists />
+        <BaseAsyncPicker v-model="internalItemValue"
+                         v-bind="standardAsyncProps"
+                         label="Content Channel Item"
+                         :displayStyle="displayStyle"
+                         :items="actualItemItems"
+                         :multiple="false"
+                         showBlankItem
+                         enhanceForLongLists />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { standardAsyncPickerProps, updateRefValue, useStandardAsyncPickerProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, computed, nextTick, ref, watch } from "vue";
+    import BaseAsyncPicker from "./baseAsyncPicker";
+    import RockFormField from "./rockFormField";
+    import { Guid } from "@Obsidian/Types";
+    import { ContentChannelItemPickerGetContentChannelItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetContentChannelItemsOptionsBag";
+    import { ContentChannelItemPickerGetAllForContentChannelItemOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemOptionsBag";
+    import { ContentChannelItemPickerGetAllForContentChannelItemResultsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemResultsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: true
+        },
+
+        excludeContentChannelItems: {
+            type: Array as PropType<Guid[]>
+        },
+
+        /** If you specify the channel, the channel picker will be hidden and we'll just show CC Items for this type */
+        contentChannelGuid: {
+            type: String as PropType<Guid>,
+            default: null
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void
+    }>();
+
+    // #region Values
+
+    const standardProps = useStandardRockFormFieldProps(props);
+    const standardAsyncProps = useStandardAsyncPickerProps(props);
+    const http = useHttp();
+
+    const internalChannelValue = ref<ListItemBag | null>(null);
+    const loadedTypeItems = ref<ListItemBag[] | null>(null);
+
+    const internalItemValue = ref(props.modelValue);
+    const loadedContentChannelItemItems = ref<ListItemBag[] | null>(null);
+
+    // #endregion
+
+    // #region Computed
+
+    const contentChannelGuidValue = computed(() => {
+        return props.contentChannelGuid || internalChannelValue.value?.value || null;
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualChannelItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedTypeItems.value || loadTypeOptions;
+    });
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualItemItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedContentChannelItemItems.value || loadContentChannelItemOptions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the content channels from the server.
+     */
+    async function loadTypeOptions(): Promise<ListItemBag[]> {
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/ContentChannelItemPickerGetContentChannels");
+
+        if (result.isSuccess && result.data) {
+            loadedTypeItems.value = result.data ?? null;
+
+            return loadedTypeItems.value ?? [];
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedTypeItems.value = [];
+            return [];
+        }
+    }
+
+    /**
+     * Loads the content channel items from the server.
+     */
+    async function loadContentChannelItemOptions(): Promise<ListItemBag[]> {
+        if (!contentChannelGuidValue.value) {
+            return [];
+        }
+
+        const options: ContentChannelItemPickerGetContentChannelItemsOptionsBag = {
+            contentChannelGuid: contentChannelGuidValue.value,
+            excludeContentChannelItems: props.excludeContentChannelItems
+        };
+
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/ContentChannelItemPickerGetContentChannelItems", null, options);
+
+        if (result.isSuccess && result.data) {
+            loadedContentChannelItemItems.value = result.data ?? null;
+
+            return loadedContentChannelItemItems.value ?? [];
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedContentChannelItemItems.value = [];
+            return [];
+        }
+    }
+
+    /**
+     * Gets all the data needed to fill in the pickers when we're given a value to start
+     */
+    async function loadContentChannelItemOptionsFromValue(): Promise<void> {
+        const options: ContentChannelItemPickerGetAllForContentChannelItemOptionsBag = {
+            contentChannelItemGuid: props.modelValue?.value,
+            excludeContentChannelItems: props.excludeContentChannelItems
+        };
+
+        const result = await http.post<ContentChannelItemPickerGetAllForContentChannelItemResultsBag>("/api/v2/Controls/ContentChannelItemPickerGetAllForContentChannelItem", null, options);
+
+        if (result.isSuccess && result.data) {
+            loadedContentChannelItemItems.value = result.data.contentChannelItems ?? null;
+            internalChannelValue.value = result.data.selectedContentChannel ?? null;
+
+            // Wait for watchers of the content channel to fire so we don't undo the next line
+            await nextTick();
+
+            internalItemValue.value = result.data.selectedContentChannelItem ?? null;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedContentChannelItemItems.value = [];
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    /** If the value is changed from the outside, fill in all the required data */
+    watch(() => props.modelValue, () => {
+        if (updateRefValue(internalItemValue, props.modelValue)) {
+            loadContentChannelItemOptionsFromValue();
+        }
+    });
+
+    watch(internalItemValue, () => emit("update:modelValue", internalItemValue.value));
+
+    /** Reload CC items if the channel or excluded CC items list change */
+    watch([contentChannelGuidValue, () => props.excludeContentChannelItems], () => {
+        internalItemValue.value = null;
+
+        loadedContentChannelItemItems.value = null;
+        loadContentChannelItemOptions();
+    });
+
+    // #endregion
+
+    // #region Initialization
+
+    if (props.modelValue) {
+        // Load the type and list of items based on the selected value
+        loadContentChannelItemOptionsFromValue();
+    }
+    else if (props.contentChannelGuid) {
+        loadContentChannelItemOptions();
+    }
+
+                            // #endregion
+</script>

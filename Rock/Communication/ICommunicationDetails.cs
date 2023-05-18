@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using Rock.Utility;
 
@@ -108,7 +109,17 @@ namespace Rock.Communication
         /// <value>
         /// From number.
         /// </value>
+        [Obsolete( "Use SmsFromSystemPhoneNumberId instead." )]
+        [RockObsolete( "1.15" )]
         int? SMSFromDefinedValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system phone number identifier to use when sending an SMS message.
+        /// </summary>
+        /// <value>
+        /// The system phone number identifier to use when sending an SMS message.
+        /// </value>
+        int? SmsFromSystemPhoneNumberId { get; set; }
 
         /// <summary>
         /// Gets or sets the message.

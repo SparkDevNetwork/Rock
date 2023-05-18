@@ -48,6 +48,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public int ContentCollectionId { get; private set; }
 
+        /// <inheritdoc cref="ContentCollectionSource.AdditionalSettings"/>
+        [DataMember]
+        public string AdditionalSettings { get; private set; }
+
         /// <summary>
         /// Gets the entity type cache object for the source entity.
         /// </summary>
@@ -85,6 +89,7 @@ namespace Rock.Web.Cache
             EntityId = contentCollectionSource.EntityId;
             OccurrencesToShow = contentCollectionSource.OccurrencesToShow;
             ContentCollectionId = contentCollectionSource.ContentCollectionId;
+            AdditionalSettings = contentCollectionSource.AdditionalSettings;
         }
 
         /// <summary>

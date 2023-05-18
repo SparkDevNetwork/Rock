@@ -39,9 +39,6 @@
                         <div class="col-md-6">
                             <h4 class="margin-b-lg"><asp:Literal ID="lPersonHtml" runat="server" /></h4>
                         </div>
-                        <div class="col-md-6 text-right margin-t-md">
-                            <asp:LinkButton runat="server" ID="btnRebuild" CausesValidation="false" OnClick="btnRebuild_Click" CssClass="btn btn-danger" Text="Rebuild" />
-                        </div>
                     </div>
 
                     <div class="row">
@@ -57,6 +54,7 @@
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
+                        <asp:LinkButton runat="server" ID="btnRebuild" CausesValidation="false" OnClick="btnRebuild_Click" CssClass="btn btn-danger pull-right" Text="Rebuild" />
                     </div>
                 </div>
 

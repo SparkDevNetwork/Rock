@@ -120,7 +120,7 @@ namespace Rock.Web.Cache
         public static RoleCache Get( Guid guid )
         {
             // See if the Id is stored in CacheIdFromGuid.
-            int? idFromGuid = IdFromGuidCache.GetId( guid );
+            int? idFromGuid = IdFromGuidCache.GetId<RoleCache>( guid );
             RoleCache roleCache;
             if ( idFromGuid.HasValue )
             {
@@ -138,7 +138,7 @@ namespace Rock.Web.Cache
             roleCache = Get( id.Value );
             if ( roleCache != null )
             {
-                IdFromGuidCache.UpdateCacheItem( guid.ToString(), new IdFromGuidCache( roleCache.Id ) );
+                IdFromGuidCache.UpdateCacheId<RoleCache>( guid, roleCache.Id );
                 UpdateCacheItem( roleCache.Id.ToString(), roleCache );
             }
 

@@ -1,0 +1,80 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TreeItemPicker
+                    v-bind="standardFieldProps"
+                    v-model="internalValue"
+                    formGroupClasses="location-item-picker"
+                    iconCssClass="fa fa-file"
+                    :provider="itemProvider"
+                    :multiple="multiple"
+                    :autoExpand="true">
+    </TreeItemPicker>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthroughWithPropUpdateCheck } from "@Obsidian/Utility/component";
+    import { MergeFieldTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import TreeItemPicker from "./treeItemPicker.obs";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        additionalFields: {
+            type: String,
+            required: true
+        },
+
+        /**
+         * Whether to allow multi-select or single-select
+         */
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void
+    }>();
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+    const [internalValue, watchModelProp] = useVModelPassthroughWithPropUpdateCheck(props, "modelValue", emit);
+    const securityGrantToken = useSecurityGrantToken();
+
+    // Configure the item provider with our settings.
+    const itemProvider = ref(newItemProvider());
+
+    function newItemProvider(): MergeFieldTreeItemProvider {
+        const prov = new MergeFieldTreeItemProvider();
+        prov.securityGrantToken = securityGrantToken.value;
+        prov.additionalFields = props.additionalFields;
+
+        if (internalValue.value) {
+            if (Array.isArray(internalValue.value)) {
+                prov.selectedIds = internalValue.value.map(p => p?.value ?? emptyGuid);
+            }
+            else {
+                prov.selectedIds = [internalValue.value.value ?? emptyGuid];
+            }
+        }
+
+        return prov;
+    }
+
+    watch(() => props.additionalFields, (): void => {
+        itemProvider.value = newItemProvider();
+    });
+
+    watchModelProp((): void => {
+        itemProvider.value = newItemProvider();
+    });
+</script>

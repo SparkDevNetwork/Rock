@@ -335,9 +335,19 @@ internal class SendGridResponseAsync : IAsyncResult
                 status = SendEmailWithEvents.OPENED_STATUS;
                 break;
 
+            case "blocked":
+                /* 2023-02-28 ETD
+                 * Don't process as bounced, this is not permanent like bounce.
+                 * Receiving server could not or would not accept the message temporarily. If a recipient has previously unsubscribed from your emails, the message is dropped.
+                 * Blocks happen when your message was rejected for a reason related to the message, not the recipient address.
+                 * This can happen when your mail server IP address has been added to a deny list, blocked by an ISP, or if the message content is flagged by a filter on the receiving server.
+                */
+
+                status = SendEmailWithEvents.FAILED_STATUS;
+                break;
+
             case "failed":
             case "dropped":
-            case "blocked":
             case "bounce":
             case "bounced":
                 status = SendEmailWithEvents.FAILED_STATUS;

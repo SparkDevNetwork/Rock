@@ -59,16 +59,25 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
+    <Compile Include="Group\GroupAttendanceDetail.cs" />
+    <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
     <Compile Include="Cms\ContentCollectionView.cs" />
     <Compile Include="Cms\MediaAccountDetail.cs" />
     <Compile Include="Cms\MediaFolderDetail.cs" />
     <Compile Include="Cms\PersistedDatasetDetail.cs" />
     <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
+    <Compile Include="Communication\SnippetDetail.cs" />
+    <Compile Include="Communication\SnippetTypeDetail.cs" />
+    <Compile Include="Communication\SystemPhoneNumberDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
+    <Compile Include="Engagement\SignUp\SignUpAttendanceDetail.cs" />
+    <Compile Include="Engagement\SignUp\SignUpFinder.cs" />
+    <Compile Include="Engagement\SignUp\SignUpRegister.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceManager.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceManagerOccurrences.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualizer.cs" />
@@ -79,12 +88,16 @@
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
+    <Compile Include="ExtensionMethods\SettingsExtensions.cs" />
     <Compile Include="IHasCustomActions.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockObsidianDetailBlockType.cs" />
     <Compile Include="Engagement\Steps\StepFlow.cs" />
+    <Compile Include="Security\Login.cs" />
+    <Compile Include="Utility\RealTimeDebugger.cs" />
+    <Compile Include="Utility\SmsTestTransport.cs" />
     <Compile Include="WorkFlow\FormBuilder\ExtensionMethods.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
@@ -126,9 +139,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Finance\" />
-    <Folder Include="Groups\" />
-    <Folder Include="Security\" />
-    <Folder Include="Utility\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DefaultTvApplication.js" />

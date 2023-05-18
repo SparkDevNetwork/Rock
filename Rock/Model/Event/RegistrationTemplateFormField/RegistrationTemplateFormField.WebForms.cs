@@ -310,6 +310,40 @@ namespace Rock.Model
 
                     personFieldControl = dvpConnectionStatus;
                     break;
+
+                case RegistrationPersonFieldType.Race:
+                    var rpRace = new RacePicker
+                    {
+                        ID = "rpRace",
+                        Required = field.IsRequired,
+                        ValidationGroup = validationGroup
+                    };
+
+                    if ( setValue && fieldValue != null )
+                    {
+                        var value = fieldValue.ToString().AsInteger();
+                        rpRace.SetValue( value );
+                    }
+
+                    personFieldControl = rpRace;
+                    break;
+
+                case RegistrationPersonFieldType.Ethnicity:
+                    var epEthnicity = new EthnicityPicker
+                    {
+                        ID = "epEthnicity",
+                        Required = field.IsRequired,
+                        ValidationGroup = validationGroup
+                    };
+
+                    if ( setValue && fieldValue != null )
+                    {
+                        var value = fieldValue.ToString().AsInteger();
+                        epEthnicity.SetValue( value );
+                    }
+
+                    personFieldControl = epEthnicity;
+                    break;
             }
 
             return personFieldControl;

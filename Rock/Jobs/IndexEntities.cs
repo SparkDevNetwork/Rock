@@ -19,8 +19,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -37,8 +35,7 @@ namespace Rock.Jobs
 
     [BooleanField("Index All Entities", "Indexes all entities, the entity filter will be ignored.", true, order: 0)]
     [CustomCheckboxListField("Entity Filter", "Entities to re-index. Not selecting a value will re-index all index enabled entities.", "SELECT CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1 AND [FriendlyName] != 'Site'", false, order: 1 )]
-    [DisallowConcurrentExecution]
-    public class IndexEntities : IJob
+    public class IndexEntities : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -51,18 +48,11 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Re-indexes the selected entity types in Universal Search
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            string selectedEntitiesSetting = dataMap.GetString( "EntityFilter" );
-            bool allEntities = dataMap.GetBoolean( "IndexAllEntities" );
+            string selectedEntitiesSetting = GetAttributeValue( "EntityFilter" );
+            bool allEntities = GetAttributeValue( "IndexAllEntities" ).AsBoolean();
 
             RockContext rockContext = new RockContext();
 
@@ -89,7 +79,7 @@ namespace Rock.Jobs
                 IndexContainer.CreateIndex( entityType.IndexModelType );
 
                 Type type = entityTypeCache.GetEntityType();
-                context.UpdateLastStatusMessage( $"Indexing {entityTypeCache.FriendlyName}..." );
+                this.UpdateLastStatusMessage( $"Indexing {entityTypeCache.FriendlyName}..." );
 
                 if ( type != null )
                 {
@@ -107,7 +97,7 @@ namespace Rock.Jobs
             }
 
             results += $"Total Time: {timerTotal.ElapsedMilliseconds / 1000}s,";
-            context.Result = "Indexing results: " + results.Trim( ',' );
+            this.Result = "Indexing results: " + results.Trim( ',' );
         }
     }
 }

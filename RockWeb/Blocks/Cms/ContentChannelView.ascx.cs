@@ -968,7 +968,7 @@ $(document).ready(function() {
 
                 if ( template == null )
                 {
-                    template = Template.Parse( GetAttributeValue( AttributeKey.Template ) );
+                    template = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( AttributeKey.Template ) );
 
                     LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
 

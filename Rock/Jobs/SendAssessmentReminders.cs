@@ -22,9 +22,7 @@ using System.Threading.Tasks;
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
 using System.Web;
-using Humanizer;
-using Quartz;
-using Rock.Attribute;
+using Humanizer;using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -40,7 +38,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Sends reminders to persons with pending assessments if the created date/time is less than the calculated cut off date and the last reminder date is greater than the calculated reminder date.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Send Assessment Reminders" )]
     [Description( "Sends reminders to persons with pending assessments if the created date/time is less than the calculated cut off date and the last reminder date is greater than the calculated reminder date." )]
 
@@ -67,8 +64,7 @@ namespace Rock.Jobs
 
     #endregion Job Attributes
 
-    [DisallowConcurrentExecution]
-    public class SendAssessmentReminders : IJob
+    public class SendAssessmentReminders : RockJob
     {
         /// <summary>
         /// 
@@ -102,17 +98,13 @@ namespace Rock.Jobs
             // Intentionally left blank
         }
 
-        /// <summary>
-        /// Job that will send out Assessment reminders
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <exception cref="NotImplementedException"></exception>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()" />
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var sendreminderDateTime = RockDateTime.Now.Date.AddDays( -1 * dataMap.GetInt( AttributeKeys.ReminderEveryDays ) );
-            int cutOffDays = dataMap.GetInt( AttributeKeys.CutoffDays );
-            var assessmentSystemEmailGuid = dataMap.GetString( AttributeKeys.AssessmentSystemEmail ).AsGuid();
+            var reminderEveryDays = this.GetAttributeValue( AttributeKeys.ReminderEveryDays ).AsInteger();
+            var sendreminderDateTime = RockDateTime.Now.Date.AddDays( -1 * reminderEveryDays );
+            int cutOffDays = this.GetAttributeValue( AttributeKeys.CutoffDays ).AsInteger();
+            var assessmentSystemEmailGuid = GetAttributeValue( AttributeKeys.AssessmentSystemEmail ).AsGuid();
 
             var currentDate = RockDateTime.Now.Date;
             var result = new SendMessageResult();
@@ -154,7 +146,7 @@ namespace Rock.Jobs
                     results.AppendLine( $"{result.Warnings.Count} {warning}:" );
                     result.Warnings.ForEach( e => { results.AppendLine( e ); } );
                 }
-                context.Result = results.ToString();
+                this.Result = results.ToString();
 
                 if ( result.Errors.Any() )
                 {
@@ -165,7 +157,7 @@ namespace Rock.Jobs
                     sb.AppendLine( $"{result.Errors.Count()} {error}: " );
                     result.Errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errors = sb.ToString();
-                    context.Result += errors;
+                    this.Result += errors;
                     var exception = new Exception( errors );
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( exception, context2 );

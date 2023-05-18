@@ -36,6 +36,9 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         private static RockConfig defaultInstance = ( ( RockConfig ) ( ApplicationSettingsBase.Synchronized( new RockConfig() ) ) );
 
+        public const string DefaultGetFinancialStatementGeneratorRecipientsEndpoint = "api/FinancialGivingStatement/GetFinancialStatementGeneratorRecipients";
+        public const string DefaultGetStatementGeneratorRecipientResultEndpoint = "api/FinancialGivingStatement/GetStatementGeneratorRecipientResult";
+
         /// <summary>
         /// Gets the default.
         /// </summary>
@@ -242,6 +245,48 @@ namespace Rock.Apps.StatementGenerator
             set
             {
                 this["LastReportOptions"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the "get financial statement generator recipients" endpoint.
+        /// </summary>
+        /// <value>
+        /// The "get financial statement generator recipients" endpoint.
+        /// </value>
+        [DefaultSettingValue( DefaultGetFinancialStatementGeneratorRecipientsEndpoint )]
+        [UserScopedSetting]
+        public string GetFinancialStatementGeneratorRecipientsEndpoint
+        {
+            get
+            {
+                return this["GetFinancialStatementGeneratorRecipientsEndpoint"] as string;
+            }
+
+            set
+            {
+                this["GetFinancialStatementGeneratorRecipientsEndpoint"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the "get statement generator recipient result" endpoint.
+        /// </summary>
+        /// <value>
+        /// The "get statement generator recipient result" endpoint.
+        /// </value>
+        [DefaultSettingValue( DefaultGetStatementGeneratorRecipientResultEndpoint )]
+        [UserScopedSetting]
+        public string GetStatementGeneratorRecipientResultEndpoint
+        {
+            get
+            {
+                return this["GetStatementGeneratorRecipientResultEndpoint"] as string;
+            }
+
+            set
+            {
+                this["GetStatementGeneratorRecipientResultEndpoint"] = value;
             }
         }
 

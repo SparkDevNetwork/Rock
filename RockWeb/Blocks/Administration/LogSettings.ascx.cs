@@ -112,6 +112,9 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnEdit_Click( object sender, EventArgs e )
         {
+            // Hide any previous notifications.
+            nbLoggingMessage.Visible = false;
+
             ShowHideEditForm( true, null );
         }
         #endregion

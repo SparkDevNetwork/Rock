@@ -23,7 +23,7 @@ import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import SegmentedPicker from "./segmentedPicker";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
-import { FormCompletionActionType, FormCompletionAction } from "./types";
+import { FormCompletionActionType, FormCompletionAction } from "./types.partial";
 
 const typeOptions: ListItemBag[] = [
     {

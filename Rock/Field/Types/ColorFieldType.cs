@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -34,12 +35,20 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COLOR )]
     public class ColorFieldType : FieldType
     {
-
         #region Configuration
 
         private const string SELECTION_TYPE = "selectiontype";
         private const string COLOR_PICKER = "Color Picker";
         private const string NAMED_COLOR = "Named Color";
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -105,10 +114,6 @@ namespace Rock.Field.Types
                 }
             }
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -240,6 +245,7 @@ namespace Rock.Field.Types
             }
         }
 
+#endif
         #endregion
 
     }

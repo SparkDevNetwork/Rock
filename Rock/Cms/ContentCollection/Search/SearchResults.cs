@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 
+using Rock.Attribute;
 using Rock.Cms.ContentCollection.IndexDocuments;
 
 namespace Rock.Cms.ContentCollection.Search
@@ -23,6 +24,7 @@ namespace Rock.Cms.ContentCollection.Search
     /// <summary>
     /// The results of a content collection search request.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class SearchResults
     {
         /// <summary>

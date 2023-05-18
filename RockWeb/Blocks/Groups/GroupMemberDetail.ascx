@@ -6,6 +6,8 @@
         <asp:HiddenField ID="hfGroupId" runat="server" />
         <asp:HiddenField ID="hfGroupMemberId" runat="server" />
         <asp:HiddenField ID="hfCampusId" runat="server" />
+        <asp:HiddenField ID="hfLocationId" runat="server" />
+        <asp:HiddenField ID="hfScheduleId" runat="server" />
 
         <div class="panel panel-block">
             <div class="panel-heading">

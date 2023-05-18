@@ -5,9 +5,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:rockWpfControls="clr-namespace:Rock.Wpf.Controls;assembly=Rock.Wpf"
-    Title="Check Scanner - Options"
-    d:DesignHeight="680"
-    d:DesignWidth="700"
+    Title="Statement Generator - Options"
+    d:DesignHeight="600"
+    d:DesignWidth="800"
     Loaded="Page_Loaded"
     Style="{StaticResource pageBackground}"
     mc:Ignorable="d">
@@ -16,12 +16,18 @@
         <Grid Background="White">
             <Grid.RowDefinitions>
                 <RowDefinition Height="45" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition />
                 <RowDefinition Height="60" />
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
 
             <Border
                 Grid.Row="0"
+                Grid.ColumnSpan="2"
                 VerticalAlignment="Top"
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,0,0,1">
@@ -35,16 +41,27 @@
                 </Grid>
             </Border>
 
-            <StackPanel Grid.Row="1" Margin="10">
+            <StackPanel Grid.Row="1" Grid.Column="0" Margin="10">
                 <Label Style="{StaticResource labelStyle}">Rock URL</Label>
                 <TextBox Name="txtRockUrl"
-                         Style="{StaticResource textboxStyleUrl}" />
+                         Style="{StaticResource textboxStyleUrl}" Width="Auto" HorizontalAlignment="Stretch" />
 
                 <Label Style="{StaticResource labelStyle}" Margin="0,8,0,0">Temporary Directory</Label>
                 <TextBox Name="txtTemporaryDirectory"
-                         Style="{StaticResource textboxStyle}" Width="420" />
+                         Style="{StaticResource textboxStyle}" Width="Auto" HorizontalAlignment="Stretch" />
+            </StackPanel>
 
+            <StackPanel Grid.Row="1" Grid.Column="1" Margin="10">
+                <Label Style="{StaticResource labelStyle}">GetFinancialStatementGeneratorRecipients Endpoint</Label>
+                <TextBox Name="txtGetFinancialStatementGeneratorRecipientsEndpoint"
+                         Style="{StaticResource textboxStyle}" Width="Auto" HorizontalAlignment="Stretch" />
 
+                <Label Style="{StaticResource labelStyle}" Margin="0,8,0,0">GetStatementGeneratorRecipientResult Endpoint</Label>
+                <TextBox Name="txtGetStatementGeneratorRecipientResultEndpoint"
+                         Style="{StaticResource textboxStyle}" Width="Auto" HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="10">
                 <rockWpfControls:AlertLabel Name="lblAlert"
                        AlertType="Danger"
                        Content="ERROR: "/>

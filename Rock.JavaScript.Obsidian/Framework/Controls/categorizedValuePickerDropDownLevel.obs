@@ -1,0 +1,247 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList v-if="hasCategories" v-bind="formFieldProps" :label="internalRoot?.text + ' Category'" v-model="selectedCategory" :items="categoryOptions" :showBlankItem="!hasValues" :multiple="false" :key="'cats-of-' + (internalRoot?.value || internalRoot?.text)" />
+    <DropDownList v-if="showValues" v-bind="formFieldProps" :label="definedTypeName" v-model="selectedValue" :items="internalRoot?.childValues ?? []" showBlankItem :multiple="false" :key="'vals-of-' + (internalRoot?.value || internalRoot?.text)" />
+    <CategorizedValuePickerDropDownLevel v-if="showNextLevel" v-bind="formFieldProps" v-model="internalValue" :root="fullSelectedCategory" :definedTypeName="definedTypeName" :key="fullSelectedCategory?.value ?? newGuid()" />
+</template>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { CategorizedValuePickerNodeBag } from "@Obsidian/ViewModels/Rest/Controls/categorizedValuePickerNodeBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, updateRefValue } from "@Obsidian/Utility/component";
+    import DropDownList from "./dropDownList";
+    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<ListItemBag | null>,
+            default: ""
+        },
+
+        root: {
+            type: Object as PropType<CategorizedValuePickerNodeBag | null>,
+            required: true
+        },
+
+        definedTypeName: {
+            type: String,
+            required: true
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref(props.modelValue);
+    const selectedCategory = ref<string>("");
+    const selectedValue = ref<string>(internalValue.value?.value ?? "");
+    const formFieldProps = useStandardRockFormFieldProps(props);
+    let willSkipWatchTriggers = false;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const internalRoot = computed(() => {
+        let root = props.root;
+
+        if (!root) {
+            return null;
+        }
+
+        // Collapse empty categories:
+        // If this category has no values and only has one categories, make that category
+        // the current base and keep doing that until we have a category with values
+        while (root && root.childCategories?.length == 1 && (!root.childValues || root.childValues.length == 0)) {
+            root = root.childCategories[0];
+        }
+
+        return root;
+    });
+
+    const hasCategories = computed(() => {
+        return (internalRoot.value?.childCategories && internalRoot.value.childCategories.length > 0) ?? false;
+    });
+
+    const hasValues = computed(() => {
+        return (internalRoot.value?.childValues && internalRoot.value.childValues.length > 0) ?? false;
+    });
+
+    const categoryOptions = computed<ListItemBag[]>(() => {
+        if (hasValues.value) {
+            return [
+                {
+                    text: "All Categories",
+                    value: emptyGuid
+                },
+                ...internalRoot.value?.childCategories ?? []
+            ];
+        }
+        else {
+            return internalRoot.value?.childCategories ?? [];
+        }
+    });
+
+    const fullSelectedCategory = computed(() => {
+        if (selectedCategory.value == "" || selectedCategory.value == emptyGuid) {
+            return null;
+        }
+        else {
+            return internalRoot.value?.childCategories?.find(cat => cat.value == selectedCategory.value) ?? null;
+        }
+    });
+
+    const showValues = computed(() => {
+        return hasValues.value && (selectedCategory.value == emptyGuid || !hasCategories.value);
+    });
+
+    const showNextLevel = computed(() => {
+        return fullSelectedCategory.value !== null;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(selectedCategory, () => {
+        if (willSkipWatchTriggers) {
+            return;
+        }
+
+        // If internalValue was set to a value in a child level and then we change category here,
+        // we need to make sure that internalValue gets reset, because setting selectedValue to an
+        // empty string won't cause any changes since it already equals an empty string.
+        if (selectedValue.value == "" && internalValue.value != null) {
+            internalValue.value = null;
+        }
+
+        selectedValue.value = "";
+    });
+
+    watch(selectedValue, () => {
+        if (willSkipWatchTriggers) {
+            return;
+        }
+
+        if (!selectedValue.value) {
+            internalValue.value = null;
+        }
+
+        const fullSelectedValue = internalRoot.value?.childValues?.find((v) => v.value == selectedValue.value);
+
+        if (fullSelectedValue) {
+            updateRefValue(internalValue, {
+                text: fullSelectedValue.text,
+                value: fullSelectedValue.value
+            });
+        }
+        else {
+            internalValue.value = null;
+        }
+    });
+
+    watch(() => props.modelValue, (val) => {
+        if (updateRefValue(internalValue, val)) {
+            // If we got a new value from an ancestor, make sure we reflect that value
+            setBasedOnModelValue();
+        }
+    });
+
+    watch(internalValue, () => emit("update:modelValue", internalValue.value));
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Try to build the whole structure to the point that we get to the value picker that has the current value and select it.
+     * This should only be run when we get the new value from the top coming down to the children, not when a child changes it
+     */
+    function setBasedOnModelValue(): void {
+        // Does our root have this value?
+        const value = internalValue.value != null && internalRoot.value?.childValues?.find((v) => v.value == internalValue.value?.value);
+
+        if (value) {
+            // Yup, set the selected value to this value and set the category to this category
+            selectedCategory.value = emptyGuid;
+            selectedValue.value = value.value as string;
+            skipWatchTriggers();
+            return;
+        }
+
+        // Nope, blank out the selected value
+        selectedValue.value = "";
+
+        // Is the new value even a value?
+        if (internalValue.value == null) {
+            // Nothing more to do. Just leave the category selectors as is.
+            return;
+        }
+
+        // Determine if the new value is deep within any of the categories
+        let containingCategory: CategorizedValuePickerNodeBag | null = null;
+
+        // Check each category to see if it has the value
+        for (const category of internalRoot.value?.childCategories ?? []) {
+            if (hasDescendantValue(category, internalValue.value)) {
+                containingCategory = category;
+                break;
+            }
+        }
+
+        // We found the value as a descendant of this category, so set it and pass it to the next level
+        if (containingCategory) {
+            selectedCategory.value = containingCategory.value as string;
+            skipWatchTriggers();
+            return;
+        }
+    }
+
+    function hasDescendantValue(base: CategorizedValuePickerNodeBag, valToFind: ListItemBag): boolean {
+        // Does our base have this value?
+        const isValFound = base.childValues?.find((v) => v.value == valToFind.value);
+
+        // Yup we found it
+        if (isValFound) {
+            return true;
+        }
+
+        // Check each category to see if it has the value
+        for (const category of base.childCategories ?? []) {
+            if (hasDescendantValue(category, valToFind)) {
+                return true;
+            }
+        }
+
+        // Couldn't find it
+        return false;
+    }
+
+    /**
+     * Sometimes we want to prevent watchers from triggering after setting values because those watchers can make
+     * changes that break what we're attempting to do. This allows us to easily skip those watchers that have been
+     * configured to be skippable.
+     */
+    async function skipWatchTriggers() {
+        willSkipWatchTriggers = true;
+        await nextTick();
+        willSkipWatchTriggers = false;
+    }
+
+    // #endregion
+
+    // #region Initialization
+
+    // Initial based on the incoming model value
+    if (internalValue.value && internalValue.value.value) {
+        setBasedOnModelValue();
+    }
+
+        // #endregion
+</script>

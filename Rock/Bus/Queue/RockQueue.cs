@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -159,17 +160,10 @@ namespace Rock.Bus.Queue
             }
 
             var key = queueType.FullName;
-            var queue = _queues.GetValueOrNull( key );
 
-            if ( queue == null )
-            {
-                queue = Activator.CreateInstance( queueType ) as IRockQueue;
-                _queues[key] = queue;
-            }
-
-            return queue;
+            return _queues.GetOrAdd( key, _key => Activator.CreateInstance( queueType ) as IRockQueue );
         }
-        private static Dictionary<string, IRockQueue> _queues = new Dictionary<string, IRockQueue>();
+        private static ConcurrentDictionary<string, IRockQueue> _queues = new ConcurrentDictionary<string, IRockQueue>();
 
         /// <summary>
         /// Gets the queue types.

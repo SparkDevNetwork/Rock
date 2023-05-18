@@ -20,6 +20,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -68,6 +69,20 @@ namespace Rock.Model
                 return System.Net.WebUtility.UrlEncode( ConfirmationCode );
             }
             private set { }
+        }
+
+        /// <summary>
+        /// Returns a boolean indicating if this is a passwordless user.
+        /// </summary>
+        [HideFromReporting]
+        [NotMapped]
+        [LavaVisible]
+        public virtual bool IsPasswordless
+        {
+            get
+            {
+                return EntityTypeId == EntityTypeCache.Get( SystemGuid.EntityType.AUTHENTICATION_PASSWORDLESS ).Id;
+            }
         }
 
         /// <summary>

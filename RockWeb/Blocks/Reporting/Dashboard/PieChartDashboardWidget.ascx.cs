@@ -20,6 +20,8 @@ using System.ComponentModel;
 using System.Linq;
 using Rock;
 using Rock.Attribute;
+using Rock.Chart;
+using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
 using Rock.Web.Cache;
@@ -28,31 +30,54 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
     /// <summary>
-    /// 
+    /// The Pie Chart shows the relative proportions of a collection of Metrics.
+    /// Each Metric represents a slice of the pie.
     /// </summary>
     [DisplayName( "Pie Chart" )]
     [Category( "Reporting > Dashboard" )]
     [Description( "Pie Chart Dashboard Widget" )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
-    [EntityField( "Series Partition", "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.", "Either select a specific {0} or leave {0} blank to get it from the page context.", false, Key = "Entity", Order = 4 )]
-    [MetricCategoriesField( "Metrics", "Select the metrics to include in the pie chart.  Each Metric will be a section of the pie.", false, "", "", 5, "MetricCategories" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES,
+        Name = "Chart Style",
+        Order = 3 )]
+    [EntityField( "Series Partition",
+        "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.",
+        "Either select a specific {0} or leave {0} blank to get it from the page context.",
+        false,
+        Key = "Entity",
+        Order = 4 )]
+    [MetricCategoriesField( "Metrics",
+        Description = "Select the metrics to include in the pie chart.  Each Metric will be a section of the pie.",
+        IsRequired = false,
+        Key = "MetricCategories",
+        Order = 5 )]
     [CustomRadioListField( "Metric Value Type", "Select which metric value type to display in the chart", "Goal,Measure", false, "Measure", Order = 6 )]
-    [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 7 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, Order = 8 )]
+    [SlidingDateRangeField( "Date Range",
+        Key = "SlidingDateRange",
+        DefaultValue = "1||4||",
+        Order = 7 )]
+    [LinkedPage( "Detail Page",
+        Description = "Select the page to navigate to when the chart is clicked",
+        IsRequired = false,
+        Order = 8 )]
     [Rock.SystemGuid.BlockTypeGuid( "341AAD88-47E0-4F25-B4F2-0EBCE5A96A1D" )]
-    public partial class PieChartDashboardWidget : DashboardWidget
+    public partial class PieChartDashboardWidget : MetricChartDashboardWidget
     {
+        protected override IRockChart GetChartControl()
+        {
+            return metricChart;
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
+        //protected override void OnInit( EventArgs e )
+        //{
+        //    base.OnInit( e );
 
-            this.BlockUpdated += Block_BlockUpdated;
-        }
+        //    this.BlockUpdated += Block_BlockUpdated;
+        //}
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -66,67 +91,45 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         }
 
         /// <summary>
-        /// Handles the BlockUpdated event of the Block control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-            LoadChart();
-        }
-
-        /// <summary>
         /// Loads the chart.
         /// </summary>
-        public void LoadChart()
+        public override void OnLoadChart()
         {
+            //
+            // Get the parameters from the block settings.
+            //
             pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
             pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
             lDashboardTitle.Text = this.Title;
             lDashboardSubtitle.Text = this.Subtitle;
-            pcChart.ShowTooltip = true;
-            pcChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+            metricChart.ShowTooltip = true;
+            metricChart.ShowLegend = false;
 
+
+            // Get the collection of Metrics that will comprise the pie chart.
+            // Each Metric is displayed as a separate section of the pie.
             var metricIdList = this.GetMetricIds();
 
-            string restApiUrl = string.Format( "~/api/MetricValues/GetSummary?metricIdList={0}", metricIdList.AsDelimited( "," ) );
-
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
-            if ( dateRange != null )
-            {
-                if ( dateRange.Start.HasValue )
-                {
-                    restApiUrl += string.Format( "&startDate={0}", dateRange.Start.Value.ToString( "o" ) );
-                }
-
-                if ( dateRange.End.HasValue )
-                {
-                    restApiUrl += string.Format( "&endDate={0}", dateRange.End.Value.ToString( "o" ) );
-                }
-            }
-
             var metricValueType = this.GetAttributeValue( "MetricValueTypes" ).ConvertToEnumOrNull<MetricValueType>() ?? Rock.Model.MetricValueType.Measure;
 
-            restApiUrl += string.Format( "&metricValueType={0}", metricValueType );
-
-            string[] entityValues = ( GetAttributeValue( "Entity" ) ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            var entityValues = ( GetAttributeValue( "Entity" ) ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             EntityTypeCache entityType = null;
             if ( entityValues.Length >= 1 )
             {
                 entityType = EntityTypeCache.Get( entityValues[0].AsGuid() );
             }
 
+            int? entityTypeId = null;
+            int? entityId = null;
+
             if ( entityValues.Length == 2 )
             {
                 // entity id specified by block setting
                 if ( entityType != null )
                 {
-                    restApiUrl += string.Format( "&entityTypeId={0}", entityType.Id );
-                    int? entityId = entityValues[1].AsIntegerOrNull();
-                    if ( entityId.HasValue )
-                    {
-                        restApiUrl += string.Format( "&entityId={0}", entityId );
-                    }
+                    entityTypeId = entityType.Id;
+                    entityId = entityValues[1].AsIntegerOrNull();
                 }
             }
             else
@@ -144,35 +147,82 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
                 if ( contextEntity != null )
                 {
-                    restApiUrl += string.Format( "&entityTypeId={0}&entityId={1}", EntityTypeCache.GetId( contextEntity.GetType() ), contextEntity.Id );
+                    entityTypeId = EntityTypeCache.GetId( contextEntity.GetType() );
+                    entityId = contextEntity.Id;
                 }
             }
 
-            pcChart.DataSourceUrl = restApiUrl;
+            //
+            // Get the data.
+            //
+            var rockContext = new RockContext();
+            var metricService = new MetricService( rockContext );
 
-            //// pcChart.PieOptions.tilt = 0.5;
-            //// pcChart.ChartHeight =  
+            var qryMetric = metricService.GetMetricValuesQuery( metricIdList,
+                metricValueType,
+                dateRange.Start,
+                dateRange.End,
+                new List<MetricService.EntityIdentifierByTypeAndId>
+                {
+                    new MetricService.EntityIdentifierByTypeAndId
+                    {
+                        EntityTypeId = entityTypeId.GetValueOrDefault(),
+                        EntityId = entityId.GetValueOrDefault()
+                    }
+                } );
 
-            pcChart.PieOptions.label = new PieLabel { show = true };
-            pcChart.PieOptions.label.formatter = @"
-function labelFormatter(label, series) {
-	return ""<div style='font-size:8pt; text-align:center; padding:2px; '>"" + label + ""<br/>"" + Math.round(series.percent) + ""%</div>"";
-}
-".Trim();
-            pcChart.Legend.show = false;
+            // Create new data points for the chart, because the Metric model does not implement IChartData.SeriesName.
+            var metricDataset = GetCategoryDatasetFromMetrics( qryMetric, metricValueType, "Total" );
 
-            nbMetricWarning.Visible = !metricIdList.Any();
+            metricChart.SetChartDataItems( metricDataset );
+
+            nbMetricWarning.Visible = !metricDataset.DataPoints.Any();
         }
 
         /// <summary>
-        /// Gets the metrics.
+        /// Convert a collection of Metrics into a collection of datasets suitable for plotting as a Category vs Value chart.
+        /// Each Metric represents a Category in the dataset, and the Value of the category is the sum of the metric values.
         /// </summary>
+        /// <param name="values"></param>
+        /// <param name="defaultSeriesName"></param>
         /// <returns></returns>
-        /// 
-        /// <value>
-        /// The metrics.
-        /// </value>
-        public List<int> GetMetricIds()
+        public ChartJsCategorySeriesDataset GetCategoryDatasetFromMetrics( IEnumerable<MetricValue> values, MetricValueType valueType, string defaultSeriesName )
+        {
+            if ( string.IsNullOrWhiteSpace( defaultSeriesName ) )
+            {
+                defaultSeriesName = "(unknown)";
+            }
+
+            var itemsByMetricId = values.Where( v => v.MetricValueType == valueType )
+                .GroupBy( k => k.MetricId, v => v );
+
+            var rockContext = new RockContext();
+            var metricService = new MetricService( rockContext );
+
+            var dataset = new ChartJsCategorySeriesDataset();
+            dataset.DataPoints = new List<IChartJsCategorySeriesDataPoint>();
+            foreach ( var metricIdGroup in itemsByMetricId )
+            {
+                var metric = metricService.Get( metricIdGroup.Key );
+
+                var categoryName = string.IsNullOrWhiteSpace( metric.Title ) ? defaultSeriesName : metric.Title;
+                if ( valueType == Rock.Model.MetricValueType.Goal )
+                {
+                    categoryName += " Goal";
+                }
+                var datapoint = new ChartJsCategorySeriesDataPoint
+                {
+                    Category = categoryName,
+                    Value = metricIdGroup.Sum( v => v.YValue ?? 0 )
+                };
+
+                dataset.DataPoints.Add( datapoint );
+            }
+
+            return dataset;
+        }
+
+        private List<int> GetMetricIds()
         {
             var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( "MetricCategories" ) );
 

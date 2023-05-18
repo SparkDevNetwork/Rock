@@ -16,7 +16,7 @@
 //
 import { defineComponent, PropType } from "vue";
 import LoadingIndicator from "./loadingIndicator";
-import { ValidationField } from "./gatewayControl";
+// import { ValidationField } from "./gatewayControl";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 
 /*
@@ -113,29 +113,29 @@ export default defineComponent({
                     return;
                 }
 
-                const validationFields: ValidationField[] = [];
+                // const validationFields: ValidationField[] = [];
 
-                for (const myWellField of validationResponse.invalid) {
-                    switch (myWellField) {
-                        case "cc":
-                            validationFields.push(ValidationField.CardNumber);
-                            break;
-                        case "exp":
-                            validationFields.push(ValidationField.Expiry);
-                            break;
-                        default:
-                            console.error("Unknown MyWell validation field", myWellField);
-                            break;
-                    }
-                }
+                // for (const myWellField of validationResponse.invalid) {
+                //     switch (myWellField) {
+                //         case "cc":
+                //             validationFields.push(ValidationField.CardNumber);
+                //             break;
+                //         case "exp":
+                //             validationFields.push(ValidationField.Expiry);
+                //             break;
+                //         default:
+                //             console.error("Unknown MyWell validation field", myWellField);
+                //             break;
+                //     }
+                // }
 
-                if (!validationFields.length) {
-                    this.$emit("error", "There was a validation issue, but the invalid field could not be inferred.");
-                    console.error("MyWell response contained unexpected values:", JSON.stringify(response));
-                    return;
-                }
+                // if (!validationFields.length) {
+                //     this.$emit("error", "There was a validation issue, but the invalid field could not be inferred.");
+                //     console.error("MyWell response contained unexpected values:", JSON.stringify(response));
+                //     return;
+                // }
 
-                this.$emit("validationRaw", validationFields);
+                // this.$emit("validationRaw", validationFields);
                 return;
             }
 
@@ -160,7 +160,7 @@ export default defineComponent({
         getTokenizerSettings (): unknown {
             return {
                 onLoad: () => {
- this.loading = false; 
+ this.loading = false;
 },
                 apikey: this.publicApiKey,
                 url: this.gatewayUrl,

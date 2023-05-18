@@ -82,6 +82,16 @@
                                 </div>
                             </div>
 
+                            <div class="row form-row">
+                                <div class="col-md-6">
+                                    <Rock:RacePicker ID="rpRace" runat="server" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <Rock:EthnicityPicker ID="epEthnicity" runat="server"/>
+                                </div>
+                            </div>
+
                             <asp:Panel ID="pnlPersonAttributes" runat="server">
                                 <Rock:AttributeValuesContainer ID="avcPersonAttributesAdult" runat="server" NumberOfColumns="2" />
                                 <Rock:AttributeValuesContainer ID="avcPersonAttributesChild" runat="server" NumberOfColumns="2" />

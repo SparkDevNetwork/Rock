@@ -132,7 +132,7 @@
                     styleSniffer: false, // we probably want to disable this. A fake input is created and gatewayCollect will steal css from that (and will disables all the css options)
 
                     /* Available CSS options. It can only be 1 level deep */
-                    /* Only a limited number of styles are supported. see https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#cjs_integration_inline2 */
+                    /* Only a limited number of styles are supported. see https://secure.nmi.com/merchants/resources/integration/integration_portal.php?#cjs_integration_inline2 */
                     customCss: {
                         // applied to all input fields
                         'color': inputStyles('color'),
@@ -391,7 +391,7 @@
             validateInputs: function (validationCallback) {
 
                 var self = this;
-                // according to https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#cjs_integration_inline3, there will be things with 'CollectJSInvalid' classes if there are any validation errors
+                // according to https://secure.nmi.com/merchants/resources/integration/integration_portal.php?#cjs_integration_inline3, there will be things with 'CollectJSInvalid' classes if there are any validation errors
                 for (var iframeKey in CollectJS.iframes) {
                     var $frameEl = $(CollectJS.iframes[iframeKey]);
                     if ($frameEl.hasClass('CollectJSInvalid') == true) {

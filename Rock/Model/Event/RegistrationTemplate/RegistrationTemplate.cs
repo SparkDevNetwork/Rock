@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -444,7 +444,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [RockObsolete( "1.10" )]
-        [Obsolete( "No longer used. Replaced by Group Placement feature (RegistrationTemplatePlacement, etc)" )]
+        [Obsolete( "No longer used. Replaced by Group Placement feature (RegistrationTemplatePlacement, etc)", true )]
         public bool AllowGroupPlacement { get; set; }
 
         /// <summary>

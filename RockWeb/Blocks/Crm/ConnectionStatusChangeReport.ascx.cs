@@ -477,7 +477,7 @@ namespace RockWeb.Blocks.Crm
                     ageClassification = AgeClassification.Adult;
                 }
 
-                vm.PhotoUrl = Person.GetPersonPhotoUrl( info.PersonId, info.PhotoId, info.Age, info.Gender, info.RecordTypeValueGuid, ageClassification );
+                vm.PhotoUrl = Person.GetPersonPhotoUrl( info.Initials, info.PhotoId, info.Age, info.Gender, info.RecordTypeValueId, ageClassification );
 
                 vm.OriginalStatus = info.OldConnectionStatusName;
                 vm.UpdatedStatus = info.NewConnectionStatusName;

@@ -58,9 +58,11 @@
         <div class="page-wrapper">
 
             <nav class="navbar navbar-fixed-top rock-top-header">
-                <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
-                    <i class="fa fa-bars"></i>
-                </div>
+                <button type="button" class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
+                    <div class="hamburger-box">
+                        <div class="hamburger-icon"></div>
+                    </div>
+                </button>
                 <Rock:Lava ID="hlHomeCorner" runat="server">
                     {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != null -%}
                         <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-corner has-logo">
@@ -78,9 +80,9 @@
             </nav>
 
             <nav class="navbar-default navbar-static-side" role="navigation">
-                <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
+                <%-- <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
                     <i class="fa fa-bars"></i>
-                </div>
+                </div> --%>
                 <Rock:Zone Name="Navigation" runat="server" />
             </nav>
 

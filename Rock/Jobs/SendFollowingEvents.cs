@@ -21,8 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -42,8 +40,7 @@ namespace Rock.Jobs
 
     [SystemCommunicationField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following event notification", true, order: 1 )]
-    [DisallowConcurrentExecution]
-    public class SendFollowingEvents : IJob
+    public class SendFollowingEvents : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -56,15 +53,11 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()" />
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            Guid? groupGuid = dataMap.GetString( "EligibleFollowers" ).AsGuidOrNull();
-            Guid? systemEmailGuid = dataMap.GetString( "EmailTemplate" ).AsGuidOrNull();
+            Guid? groupGuid = GetAttributeValue( "EligibleFollowers" ).AsGuidOrNull();
+            Guid? systemEmailGuid = GetAttributeValue( "EmailTemplate" ).AsGuidOrNull();
             int followingEventsSent = 0;
 
             if ( groupGuid.HasValue && systemEmailGuid.HasValue )
@@ -381,7 +374,7 @@ namespace Rock.Jobs
                     }
                 }
 
-                context.Result = string.Format( "{0} following events emails sent", followingEventsSent );
+                this.Result = string.Format( "{0} following events emails sent", followingEventsSent );
 
                 if ( exceptionMsgs.Any() )
                 {

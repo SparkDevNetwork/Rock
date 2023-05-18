@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.ViewModels.Cms;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.ContentCollectionDetail
@@ -67,6 +68,13 @@ namespace Rock.ViewModels.Blocks.Cms.ContentCollectionDetail
         /// collection source.
         /// </summary>
         public List<ListItemBag> Attributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom fields that when indexing content for
+        /// this source.
+        /// </summary>
+        /// <value>The custom fields definitions.</value>
+        public List<ContentCollectionCustomFieldBag> CustomFields { get; set; }
 
         /// <summary>
         /// Gets or sets the number of occurrences to include when indexing

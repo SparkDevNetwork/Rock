@@ -47,12 +47,37 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <inheritdoc/>
-        protected override string OnGenerateChartJson( object dataSource )
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            this.ChartClickScript = $@"function (event, pos, item) {{
+    var activePoints = _chart.getElementsAtEvent(event);
+    var chartData = activePoints[0]['_chart'].config.data;
+    var dataset = chartData.datasets[activePoints[0]['_datasetIndex']];
+    var dataItem = dataset.data[activePoints[0]['_index']];
+    var customData = dataItem.customData;
+    if (dataItem) {{
+        postbackArg = 'SeriesId=' + customData.SeriesName
+            + ';DateStamp=' + customData.DateTimeStamp
+            + ';YValue=' + ( customData.hasOwnProperty('YValue') ? customData.YValue : customData.Value );
+    }}
+    else
+    {{
+        // no point was clicked
+        postbackArg =  'DateStamp=;YValue=;SeriesId=';
+    }}
+    window.location = ""javascript:__doPostBack('{ ChartContainerControl.UniqueID }', '"" +  postbackArg + ""')"";
+}}";
+        }
+
+        /// <inheritdoc/>
+        protected override string OnGenerateChartJson( object dataSource, string defaultSeriesName = null )
         {
             var chartDataJson = string.Empty;
             if ( dataSource is IEnumerable<IChartData> chartData )
             {
-                chartDataJson = GetFromChartDataItems( chartData );
+                chartDataJson = GetFromChartDataItems( chartData, defaultSeriesName );
             }
             else if ( dataSource is List<ChartJsTimeSeriesDataset> datasets )
             {
@@ -81,16 +106,18 @@ namespace Rock.Web.UI.Controls
             return chartDataJson;
         }
 
-        private string GetFromChartDataItems( IEnumerable<IChartData> chartDataItems )
+        private string GetFromChartDataItems( IEnumerable<IChartData> chartDataItems, string defaultSeriesName )
         {
             var chartDataJson = string.Empty;
             var isTimeSeries = chartDataItems.Any( x => x.DateTimeStamp != 0 );
             if ( isTimeSeries )
             {
-                var timeDatasets = GetTimeSeriesFromChartData( chartDataItems );
+                var timeDatasets = ChartDataFactory.GetTimeSeriesFromChartData( chartDataItems, defaultSeriesName );
                 var chartFactory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
                 chartFactory.Datasets = timeDatasets;
                 chartFactory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Bar;
+                // TODO: Adjust the scale to suit the data.
+                chartFactory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Year;
                 chartFactory.CustomTooltipScript = this.TooltipContentScript;
 
                 // Add client script to construct the chart.
@@ -101,12 +128,12 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                var categoryDatasets = GetCategorySeriesFromChartData( chartDataItems );
+                var categoryDatasets = ChartDataFactory.GetCategorySeriesFromChartData( chartDataItems, defaultSeriesName );
                 var chartFactory = new ChartJsCategorySeriesDataFactory<ChartJsCategorySeriesDataPoint>();
 
                 chartFactory.Datasets = categoryDatasets;
                 chartFactory.ChartStyle = ChartJsCategorySeriesChartStyleSpecifier.Bar;
-  
+
                 // Add client script to construct the chart.
                 var args = GetCategoryChartDataFactoryArgs();
                 chartDataJson = chartFactory.GetJson( args );
@@ -122,10 +149,13 @@ namespace Rock.Web.UI.Controls
         private ChartJsTimeSeriesDataFactory.GetJsonArgs GetTimeChartDataFactoryArgs()
         {
             var args = new ChartJsTimeSeriesDataFactory.GetJsonArgs();
-            args.ChartStyle = GetChartStyle();
+
             args.ContainerControlId = this.ClientID;
+            args.LegendPosition = this.LegendPosition;
+            args.DisplayLegend = this.ShowLegend;
             args.DisableAnimation = this.Page.IsPostBack;
             args.YValueFormatString = this.YValueFormatString;
+
             return args;
         }
 
@@ -136,10 +166,13 @@ namespace Rock.Web.UI.Controls
         private ChartJsCategorySeriesDataFactory.GetJsonArgs GetCategoryChartDataFactoryArgs()
         {
             var args = new ChartJsCategorySeriesDataFactory.GetJsonArgs();
-            args.ChartStyle = GetChartStyle();
+
             args.ContainerControlId = this.ClientID;
+            args.LegendPosition = this.LegendPosition;
+            args.DisplayLegend = this.ShowLegend;
             args.DisableAnimation = this.Page.IsPostBack;
             args.YValueFormatString = this.YValueFormatString;
+
             return args;
         }
     }

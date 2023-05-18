@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -41,8 +39,7 @@ namespace Rock.Jobs
     [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
     [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
     [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", false, order: 3 )]
-    [DisallowConcurrentExecution]
-    public class SendGroupRequirementsNotification : IJob
+    public class SendGroupRequirementsNotification : RockJob
     {
         List<NotificationItem> _notificationList = new List<NotificationItem>();
         List<GroupsMissingRequirements> _groupsMissingRequirements = new List<GroupsMissingRequirements>();
@@ -58,29 +55,25 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             var errors = new List<string>();
             var rockContext = new RockContext();
 
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            Guid? systemEmailGuid = dataMap.GetString( "NotificationEmailTemplate" ).AsGuidOrNull();
+                        Guid? systemEmailGuid = GetAttributeValue( "NotificationEmailTemplate" ).AsGuidOrNull();
 
             if ( systemEmailGuid.HasValue )
             {
                 var selectedGroupTypes = new List<Guid>();
-                if ( !string.IsNullOrWhiteSpace( dataMap.GetString( "GroupTypes" ) ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "GroupTypes" ) ) )
                 {
-                    selectedGroupTypes = dataMap.GetString( "GroupTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
+                    selectedGroupTypes = GetAttributeValue( "GroupTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
                 }
 
-                var notificationOption = dataMap.GetString( "NotifyParentLeaders" ).ConvertToEnum<NotificationOption>( NotificationOption.None );
+                var notificationOption = GetAttributeValue( "NotifyParentLeaders" ).ConvertToEnum<NotificationOption>( NotificationOption.None );
 
-                var accountAbilityGroupGuid = dataMap.GetString( "AccountabilityGroup" ).AsGuid();
+                var accountAbilityGroupGuid = GetAttributeValue( "AccountabilityGroup" ).AsGuid();
 
                 var groupRequirementsQry = new GroupRequirementService( rockContext ).Queryable();
 
@@ -267,7 +260,7 @@ namespace Rock.Jobs
                     errors.AddRange( emailErrors );
                 }
 
-                context.Result = string.Format( "{0} requirement notification {1} sent", recipients, "email".PluralizeIf( recipients != 1 ) );
+                this.Result = string.Format( "{0} requirement notification {1} sent", recipients, "email".PluralizeIf( recipients != 1 ) );
 
                 if ( errors.Any() )
                 {
@@ -276,7 +269,7 @@ namespace Rock.Jobs
                     sb.Append( string.Format( "{0} Errors: ", errors.Count() ) );
                     errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errorMessage = sb.ToString();
-                    context.Result += errorMessage;
+                    this.Result += errorMessage;
                     var exception = new Exception( errorMessage );
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( exception, context2 );
@@ -285,7 +278,7 @@ namespace Rock.Jobs
             }
             else
             {
-                context.Result = "Warning: No NotificationEmailTemplate found";
+                this.Result = "Warning: No NotificationEmailTemplate found";
             }
         }
     }

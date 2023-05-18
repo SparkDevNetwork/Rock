@@ -47,7 +47,7 @@ namespace Rock.RealTime.AspNet
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.14.1", true )]
     public static class AspNetEngineStartup
     {
         /// <summary>
@@ -67,11 +67,6 @@ namespace Rock.RealTime.AspNet
             GlobalHost.DependencyResolver.Register( typeof( IAssemblyLocator ), () => new RockHubAssemblyLocator() );
             GlobalHost.DependencyResolver.Register( typeof( IHubDescriptorProvider ), () => new LegacyHubDescriptorProvider( GlobalHost.DependencyResolver ) );
 
-            // TODO: This should be updated to determine from RockContext data if
-            // we should use Azure for the RealTime engine in the future once that
-            // UI is implemented.
-            bool useAzure = false;
-
             // Initialize the Rock RealTime system.
             var rtHubConfiguration = new HubConfiguration
             {
@@ -80,23 +75,27 @@ namespace Rock.RealTime.AspNet
             rtHubConfiguration.Resolver.Register( typeof( IHubDescriptorProvider ), () => new RealTimeHubDescriptorProvider() );
             rtHubConfiguration.Resolver.Register( typeof( JsonSerializer ), () => CreateRealTimeSerializer() );
 
+            var azureEndpoint = System.Configuration.ConfigurationManager.AppSettings["AzureSignalREndpoint"];
+            var azureAccessKey = System.Configuration.ConfigurationManager.AppSettings["AzureSignalRAccessKey"];
+
             app.Map( "/rock-rt", subApp =>
             {
                 // Register some logic to handle adding a claim for the anonymous
                 // person identifier if we have one.
                 subApp.Use( RegisterSignalRClaims );
 
-                if ( !useAzure )
+                if ( azureEndpoint.IsNullOrWhiteSpace() || azureAccessKey.IsNullOrWhiteSpace() )
                 {
                     subApp.RunSignalR( rtHubConfiguration );
                 }
                 else
                 {
-                    subApp.RunAzureSignalR( "Rock"/*, "connectionString"*/, rtHubConfiguration );
+                    var connectionString = $"Endpoint=https://{azureEndpoint};AccessKey={azureAccessKey};Version=1.0;";
+                    subApp.RunAzureSignalR( "Rock", connectionString, rtHubConfiguration );
                 }
             } );
 
-            RealTimeHelper.Initialize( new Rock.RealTime.AspNetEngine( rtHubConfiguration ) );
+            RealTimeHelper.Initialize( new AspNetEngine( rtHubConfiguration ) );
         }
 
         #region SignalR Support

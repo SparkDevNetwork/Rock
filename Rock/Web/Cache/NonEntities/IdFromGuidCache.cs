@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Rock.Web.Cache
@@ -47,14 +48,51 @@ namespace Rock.Web.Cache
 
         #region Static Methods
 
+
         /// <summary>
         /// Returns Id associated with the Guid.  If the Item with that Guid hasn't been cached yet, returns null
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
-        /// <returns></returns>
-        public static int? GetId( Guid guid )
+        /// <typeparam name="T">The type of the cached object whose identifier is to be looked up.</typeparam>
+        /// <returns>The identifier if found in cache or <c>null</c>.</returns>
+        public static int? GetId<T>( Guid guid )
         {
-            return GetOrAddExisting( guid.ToString(), () => null )?.Id;
+            return GetOrAddExisting( $"{typeof(T).FullName}-{guid}", () => null )?.Id;
+        }
+
+        /// <summary>
+        /// Updates the cache identifier.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="id">The identifier.</param>
+        /// <typeparam name="T">The type of the cached object whose identifier is to be updated.</typeparam>
+        internal protected static void UpdateCacheId<T>( Guid guid, int id )
+        {
+            UpdateCacheItem( $"{typeof( T ).FullName}-{guid}", new IdFromGuidCache( id ) );
+        }
+
+        /// <summary>
+        /// Attempts to get an item from the cache without adding it if it does
+        /// not already exist.
+        /// </summary>
+        /// <param name="key">The key that identifies the item.</param>
+        /// <param name="id">On return will contain the identifier.</param>
+        /// <typeparam name="T">The type of the cached object whose identifier is to be looked up.</typeparam>
+        /// <returns><c>true</c> if the item was found in cache, <c>false</c> otherwise.</returns>
+        internal protected static bool TryGetId<T>( string key, out int id )
+        {
+            var result = TryGet( $"{typeof(T).FullName}-{key}", out var item );
+
+            if ( result )
+            {
+                id = item.Id;
+            }
+            else
+            {
+                id = 0;
+            }
+
+            return result;
         }
 
         #endregion

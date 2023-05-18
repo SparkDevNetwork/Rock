@@ -10,10 +10,10 @@
             obj.controlId = options.controlId;
             obj.restUrl = options.restUrl;
             obj.path = options.path;
-            obj.centerAddress = options.centerAddress;                     // used when nothing is on map
+            obj.centerAddress = options.centerAddress;                      // used when nothing is on map
             obj.centerLatitude = options.centerLatitude || "33.590795";     // used when nothing is on map
             obj.centerLongitude = options.centerLongitude || "-112.126459"; // used when nothing is on map
-            obj.drawingMode = options.drawingMode || "Polygon" || "Point"; // the available modes
+            obj.drawingMode = options.drawingMode || "Polygon" || "Point";  // the available modes
             obj.strokeColor = options.strokeColor || "#0088cc";
             obj.fillColor = options.fillColor || "#0088cc";
 
@@ -97,7 +97,7 @@
                     obj.selectedShape = null;
                 }
                 $('#gmnoprint-delete-button_' + obj.controlId).attr('disabled', '')
-                $('#gmnoprint-delete-button_' + obj.controlId + ' .fa-times').css("color", "#aaa");
+                    .find('.fa-times').css("color", "#aaa");
             }
 
             /**
@@ -109,9 +109,8 @@
                 obj.clearSelection();
 
                 // enable delete button
-                var $deleteButton = $('#gmnoprint-delete-button_' + obj.controlId);
-                $('#gmnoprint-delete-button_' + obj.controlId).prop("disabled", false);
-                $('#gmnoprint-delete-button_' + obj.controlId + ' .fa-times').css("color", "");
+                $('#gmnoprint-delete-button_' + obj.controlId).prop("disabled", false)
+                    .find('.fa-times').css("color", "");
 
                 obj.selectedShape = shape;
 
@@ -133,7 +132,6 @@
                     else {
                         obj.path = coordinates.join('|');
                     }
-                    //console.log(obj.path);
                 }
                 else if (type == "marker") {
                     obj.path = shape.getPosition().toUrlValue();
@@ -179,7 +177,6 @@
             * Returns a marker image styled according to the stroke color.
             */
             this.getMarkerImage = function getMarkerImage() {
-
                 return {
                     path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
                     fillColor: '#FE7569',
@@ -244,7 +241,6 @@
                 if (!obj.maxLng || lng > obj.maxLng) {
                     obj.maxLng = lng;
                 }
-                //console.log( 'min/max lat: ' + obj.minLat + '/' + obj.maxLat + ' min/max long: ' + obj.minLng + '/' + obj.minLng );
             }
 
             /**
@@ -275,8 +271,6 @@
                 obj.initMinMaxLatLng();
                 // only try this if we have a path
                 if (obj.path) {
-                    //console.log("found an obj.path to plot: " + obj.path);
-
                     var coords = obj.path.split('|');
                     var pathArray = new Array();
                     // put the polygon coordinates into a path array
@@ -321,10 +315,6 @@
                             google.maps.event.addListener(polygon.getPath(), 'insert_at', function (e) {
                                 obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
                             });
-
-                            //google.maps.event.addListener(polygon, 'mouseout', function (e) {
-                            //    obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
-                            //});
 
                             // Add an event listener to implement right-click to delete node
                             google.maps.event.addListener(polygon, 'rightclick', function (ev) {
@@ -376,7 +366,7 @@
                     return;
                 }
                 var geocoder = new google.maps.Geocoder();
-                geocoder = geocoder.geocode({ 'latLng': latlng }, function (results, status) {
+                geocoder = geocoder.geocode({ "latLng": latlng }, function (results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
                         if (results[0]) {
                             $labelElement.text('near ' + results[0].formatted_address);
@@ -434,9 +424,8 @@
         GeoPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId,
                 $control = $('#' + this.controlId),
-                $hiddenField = $('#hfGeoPath_' + this.controlId),
-                restUrl = this.restUrl;
-            var self = this;
+                $hiddenField = $('#' + this.controlId + '_hfGeoPath'),
+                self = this;
 
             /**
             * Toggle the picker on and off when the control's link is clicked.
@@ -563,19 +552,17 @@
 
             // have the X appear on hover if something is selected
             if ($hiddenField.val() && $hiddenField.val() !== '0') {
-                $control.find('.picker-select-none').addClass('rollover-item');
-                $control.find('.picker-select-none').show();
+                $control.find('.picker-select-none').addClass('rollover-item').show();
             }
 
             /**
             * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field.
             */
-            $('#btnSelect_' + controlId).on('click', function () {
+            $control.find('.js-geopicker-select').on('click', function () {
                 var geoInput = $('#' + controlId).find('input:checked'),
                     selectedValue = self.path,
                     selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId);
 
-                //console.log('storing coordinates into hf (' + '#hfGeoPath_' + self.controlId + ') self.path:' + self.path);
                 $hiddenField.val(self.path);
 
                 // have the X appear on hover. something is selected
@@ -621,8 +608,7 @@
         */
         GeoPicker.prototype.initialize = function () {
             var self = this;
-            var $myElement = $('#geoPicker_' + self.controlId);
-            var $hiddenField = $('#hfGeoPath_' + this.controlId);
+            var $hiddenField = $('#' + self.controlId + '_hfGeoPath');
             var deleteButtonId = 'gmnoprint-delete-button_' + self.controlId;
 
             // Pull anything in the hidden field onto this object's path
@@ -651,7 +637,6 @@
             self.centerMapOnAddress();
 
             self.map = new google.maps.Map(document.getElementById('geoPicker_' + self.controlId), mapOptions);
-            //console.log("adding map to element( " + 'geoPicker_' + self.controlId + " )");
 
             //Associate the styled map with the MapTypeId and set it to display.
             self.map.mapTypes.set('map_style', styledMap);
@@ -687,12 +672,10 @@
             // Handle when the polygon shape drawing is "complete"
             google.maps.event.addListener(self.drawingManager, 'overlaycomplete', function (e) {
                 if (e.type == google.maps.drawing.OverlayType.POLYGON || e.type == google.maps.drawing.OverlayType.MARKER ) {
-
                     // Disable the drawing manager once they've drawn an overlay.
                     self.disableDrawingManager();
 
-                    // Add an event listener that selects the newly-drawn shape when the user
-                    // mouses down on it.
+                    // Add an event listener that selects the newly-drawn shape when the user mouses down on it.
                     var newShape = e.overlay;
                     newShape.type = e.type;
                     google.maps.event.addListener(newShape, 'click', function () {
@@ -700,30 +683,39 @@
                     });
                     self.setSelection(newShape, e.type);
 
-                    // Add an event listener to implement right-click to delete node
-                    google.maps.event.addListener(newShape, 'rightclick', function (ev) {
-                        if (ev.vertex != null) {
-                            newShape.getPath().removeAt(ev.vertex);
-                        }
-                        obj.setSelection(newShape, google.maps.drawing.OverlayType.POLYGON);
-                    });
+                    if (e.type == google.maps.drawing.OverlayType.POLYGON) {
+                        // add listener for moving polygon points.
+                        google.maps.event.addListener(newShape.getPath(), 'set_at', function (e) {
+                            self.setSelection(newShape, google.maps.drawing.OverlayType.POLYGON);
+                        });
+
+                        // add listener for adding new points.
+                        google.maps.event.addListener(newShape.getPath(), 'insert_at', function (e) {
+                            self.setSelection(newShape, google.maps.drawing.OverlayType.POLYGON);
+                        });
+
+                        // Add an event listener to implement right-click to delete node
+                        google.maps.event.addListener(newShape, 'rightclick', function (ev) {
+                            if (ev.vertex != null) {
+                                newShape.getPath().removeAt(ev.vertex);
+                            }
+                            self.setSelection(newShape, google.maps.drawing.OverlayType.POLYGON);
+                        });
+                    }
                 }
             });
 
-            // Clear the current selection when the drawing mode is changed, or when the
-            // map is clicked.
+            // Clear the current selection when the drawing mode is changed, or when the map is clicked.
             google.maps.event.addListener(self.drawingManager, 'drawingmode_changed', self.clearSelection);
             google.maps.event.addListener(self.map, 'click', self.clearSelection);
 
             // Move our custom delete button into place once the map is idle.
             // as per http://stackoverflow.com/questions/832692/how-to-check-if-google-maps-is-fully-loaded
             google.maps.event.addListenerOnce(self.map, 'idle', function () {
-                // move the custom delete button to the second to last item in the gmnoprint list
-                //$('#' + deleteButtonId).insertAfter($myElement.find('div.gmnoprint:nth-last-child(2)'));
                 $('#' + deleteButtonId).fadeIn();
 
                 // wire up an event handler to the delete button
-                google.maps.event.addDomListener(document.getElementById(deleteButtonId), 'click', self.deleteSelectedShape);
+                document.getElementById(deleteButtonId).addEventListener('click', self.deleteSelectedShape);
             });
 
             self.initializeEventHandlers();

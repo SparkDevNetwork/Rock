@@ -20,8 +20,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Data;
 using Rock.Model;
 
@@ -33,8 +31,7 @@ namespace Rock.Jobs
     [DisplayName( "Process Workflows" )]
     [Description( "Runs continuously to process in workflows activities/actions in progress." )]
 
-    [DisallowConcurrentExecution]
-    public class ProcessWorkflows : IJob
+    public class ProcessWorkflows : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -47,20 +44,8 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Called by the <see cref="IScheduler" /> when a <see cref="ITrigger" />
-        /// fires that is associated with the <see cref="IJob" />.
-        /// </summary>
-        /// <param name="context">The execution context.</param>
-        /// <remarks>
-        /// The implementation may wish to set a  result object on the
-        /// JobExecutionContext before this method exits.  The result itself
-        /// is meaningless to Quartz, but may be informative to
-        /// <see cref="IJobListener" />s or
-        /// <see cref="ITriggerListener" />s that are watching the job's
-        /// execution.
-        /// </remarks>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
             int workflowsProcessed = 0;
             int workflowErrors = 0;
@@ -142,7 +127,7 @@ namespace Rock.Jobs
                 throw new Exception( "One or more exceptions occurred processing workflows..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
             }
 
-            context.Result = resultMsg.ToString();
+            this.Result = resultMsg.ToString();
         }
     }
 }

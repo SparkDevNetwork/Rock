@@ -17,7 +17,7 @@
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { getComparisonName } from "./comparisonType";
-import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
 /**
  * The full list of comparison type options that can be used in pickers.
@@ -83,7 +83,7 @@ export const comparisonTypeOptions: ListItemBag[] = [
 
 /**
  * Gets the comparison type options that match the provides comparison type values.
- * 
+ *
  * @param comparisonTypes The comparison type values to include in the list of options.
  *
  * @returns A filtered collection of ListItem objects that contain only the comparison types specified.

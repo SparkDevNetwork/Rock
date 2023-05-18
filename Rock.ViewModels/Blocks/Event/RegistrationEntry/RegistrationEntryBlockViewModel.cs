@@ -407,6 +407,22 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The name of the signature document template.
         /// </value>
         public string SignatureDocumentTemplateName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the races available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The races available for the user to select.
+        /// </value>
+        public List<ListItemBag> Races { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ethnicities available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The ethnicities available for the user to select.
+        /// </value>
+        public List<ListItemBag> Ethnicities { get; set; }
     }
 
     /// <summary>

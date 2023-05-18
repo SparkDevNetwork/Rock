@@ -31,6 +31,12 @@ namespace Rock.Tasks
         public override void Execute( Message message )
         {
             var type = Type.GetType( message.EntityTypeName );
+            var entityTypeId = EntityTypeCache.GetId( type );
+            if ( entityTypeId == null || !AchievementTypeCache.HasActiveAchievementTypesForEntityTypeId(entityTypeId.Value) )
+            {
+                return;
+            }
+
             var entity = Reflection.GetIEntityForEntityType( type, message.EntityGuid );
 
             if ( entity == null )

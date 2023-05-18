@@ -32,7 +32,7 @@ namespace Rock.Workflow.FormBuilder
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal]
+    [RockInternal( "1.13.2" )]
     public class FormPersonEntrySettings
     {
         /// <summary>
@@ -80,6 +80,16 @@ namespace Rock.Workflow.FormBuilder
         /// when displaying the campus picker.
         /// </summary>
         public int? CampusStatusValueId { get; set; }
+
+        /// <summary>
+        /// The <see cref="Rock.Model.DefinedValue"/> identifier for the person's race
+        /// </summary>
+        public int? RaceValueId { get; set; }
+
+        /// <summary>
+        /// The <see cref="Rock.Model.DefinedValue"/> identifier for the person's ethnicity
+        /// </summary>
+        public int? EthnicityValueId { get; set; }
 
         /// <summary>
         /// Determines if the gender control should be hidden, optional or
@@ -134,5 +144,17 @@ namespace Rock.Workflow.FormBuilder
         /// indicate that the following controls are for the spouse.
         /// </summary>
         public string SpouseLabel { get; set; }
+
+        /// <summary>
+        /// Determines if the race picker should be hidden, optional or
+        /// required when displaying the person entry form.
+        /// </summary>
+        public WorkflowActionFormPersonEntryOption RaceEntry { get; set; }
+
+        /// <summary>
+        /// Determines if the ethnicity picker should be hidden, optional or
+        /// required when displaying the person entry form.
+        /// </summary>
+        public WorkflowActionFormPersonEntryOption EthnicityEntry { get; set; }
     }
 }

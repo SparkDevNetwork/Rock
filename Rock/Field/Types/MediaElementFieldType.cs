@@ -16,8 +16,9 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Media;
@@ -60,6 +61,262 @@ namespace Rock.Field.Types
         /// Configuration Key for when to enable <see cref="MediaElementPicker.IsRefreshAllowed"/>.
         /// </summary>
         public static readonly string CONFIG_ALLOW_REFRESH = "allowRefresh";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var mediaElementGuid = privateValue.AsGuidOrNull();
+
+            if ( !mediaElementGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaElementName = new MediaElementService( rockContext ).GetSelect( mediaElementGuid.Value, me => me.Name );
+
+                return mediaElementName ?? string.Empty;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetHtmlValue( privateValue, false );
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetHtmlValue( privateValue, true );
+        }
+
+        /// <summary>
+        /// Gets the HTML formatted representation of this field value.
+        /// </summary>
+        /// <param name="privateValue">The private value of the field in the database.</param>
+        /// <param name="condensed">If set to <c>true</c> then the output should be condensed for rendering to a small space.</param>
+        /// <returns>A string that contains the HTML formatted representation of the field value.</returns>
+        private string GetHtmlValue( string privateValue, bool condensed )
+        {
+            var mediaElementGuid = privateValue.AsGuidOrNull();
+
+            if ( !mediaElementGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaInfo = new MediaElementService( rockContext ).Queryable()
+                    .Where( a => a.Guid == mediaElementGuid.Value )
+                    .Select( a => new
+                    {
+                        a.Name,
+                        a.ThumbnailDataJson
+                    } )
+                    .SingleOrDefault();
+
+                if ( mediaInfo == null )
+                {
+                    return string.Empty;
+                }
+
+                var thumbnails = mediaInfo.ThumbnailDataJson.FromJsonOrNull<List<MediaElementThumbnailData>>();
+                var thumbnailUrl = string.Empty;
+
+                if ( thumbnails != null )
+                {
+                    if ( condensed )
+                    {
+                        // Attempt to get the smallest thumbnail above 400px in
+                        // width. If that fails then just get the largest
+                        // thumbnail we have available.
+                        thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() && t.Width >= 400 )
+                            .OrderBy( t => t.Height )
+                            .Select( t => t.Link )
+                            .FirstOrDefault() ?? string.Empty;
+
+                        if ( thumbnailUrl == string.Empty )
+                        {
+                            thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() )
+                                .OrderByDescending( t => t.Height )
+                                .Select( t => t.Link )
+                                .FirstOrDefault() ?? string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() )
+                            .OrderByDescending( t => t.Height )
+                            .Select( t => t.Link )
+                            .FirstOrDefault() ?? string.Empty;
+                    }
+                }
+
+                if ( condensed )
+                {
+                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive grid-img' />";
+                }
+                else
+                {
+                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive' />";
+                }
+            }
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the limit to account identifier.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        private int? GetLimitToAccountId( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( configurationValues?.ContainsKey( CONFIG_LIMIT_TO_ACCOUNT ) == true )
+            {
+                return configurationValues[CONFIG_LIMIT_TO_ACCOUNT].Value.AsIntegerOrNull();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the limit to folder identifier.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        private int? GetLimitToFolderId( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( configurationValues?.ContainsKey( CONFIG_LIMIT_TO_FOLDER ) == true )
+            {
+                return configurationValues[CONFIG_LIMIT_TO_FOLDER].Value.AsIntegerOrNull();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the account and folder values if they were provided in the
+        /// configuration.
+        /// </summary>
+        /// <param name="mediaElementPicker">The media element picker.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        private void SetAccountAndFolderValues( MediaElementPicker mediaElementPicker, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // Determine if we have limit values for either account or folder.
+            var accountId = GetLimitToAccountId( configurationValues );
+            var folderId = GetLimitToFolderId( configurationValues );
+
+            // Set defaults for picker visibility.
+            mediaElementPicker.ShowAccountPicker = true;
+            mediaElementPicker.ShowFolderPicker = true;
+
+            // Set default values and hide the controls we don't need.
+            if ( folderId.IsNotNullOrZero() )
+            {
+                mediaElementPicker.MediaFolderId = folderId;
+                mediaElementPicker.ShowFolderPicker = false;
+                mediaElementPicker.ShowAccountPicker = false;
+            }
+            else if ( accountId.IsNotNullOrZero() )
+            {
+                mediaElementPicker.MediaAccountId = accountId;
+                mediaElementPicker.ShowAccountPicker = false;
+            }
+        }
+
+        #endregion
+
+        #region IEntityFieldType Methods
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The <see cref="IEntity"/> instance associated with the value.</returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The <see cref="IEntity"/> instance associated with the value.</returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            var mediaGuid = value.AsGuidOrNull();
+
+            if ( !mediaGuid.HasValue )
+            {
+                return null;
+            }
+
+            return new MediaElementService( rockContext ?? new RockContext() ).Get( mediaGuid.Value );
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaElementId = new MediaElementService( rockContext ).GetId( guid.Value );
+
+                if ( !mediaElementId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<MediaElement>().Value, mediaElementId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name and ThumbnailDataJson properties
+            // of a MediaElement and should have its persisted values updated when
+            // changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<MediaElement>().Value, nameof( MediaElement.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<MediaElement>().Value, nameof( MediaElement.ThumbnailDataJson ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -213,114 +470,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Formatting
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var mediaElementGuid = privateValue.AsGuidOrNull();
-
-            if ( !mediaElementGuid.HasValue )
-            {
-                return string.Empty;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var mediaElementName = new MediaElementService( rockContext ).GetSelect( mediaElementGuid.Value, me => me.Name );
-
-                return mediaElementName ?? string.Empty;
-            }
-        }
-
-        /// <inheritdoc/>
-        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            return GetHtmlValue( privateValue, false );
-        }
-
-        /// <inheritdoc/>
-        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            return GetHtmlValue( privateValue, true );
-        }
-
-        /// <summary>
-        /// Gets the HTML formatted representation of this field value.
-        /// </summary>
-        /// <param name="privateValue">The private value of the field in the database.</param>
-        /// <param name="condensed">If set to <c>true</c> then the output should be condensed for rendering to a small space.</param>
-        /// <returns>A string that contains the HTML formatted representation of the field value.</returns>
-        private string GetHtmlValue( string privateValue, bool condensed )
-        {
-            var mediaElementGuid = privateValue.AsGuidOrNull();
-
-            if ( !mediaElementGuid.HasValue )
-            {
-                return string.Empty;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var mediaInfo = new MediaElementService( rockContext ).Queryable()
-                    .Where( a => a.Guid == mediaElementGuid.Value )
-                    .Select( a => new
-                    {
-                        a.Name,
-                        a.ThumbnailDataJson
-                    } )
-                    .SingleOrDefault();
-
-                if ( mediaInfo == null )
-                {
-                    return string.Empty;
-                }
-
-                var thumbnails = mediaInfo.ThumbnailDataJson.FromJsonOrNull<List<MediaElementThumbnailData>>();
-                var thumbnailUrl = string.Empty;
-
-                if ( thumbnails != null )
-                {
-                    if ( condensed )
-                    {
-                        // Attempt to get the smallest thumbnail above 400px in
-                        // width. If that fails then just get the largest
-                        // thumbnail we have available.
-                        thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() && t.Width >= 400 )
-                            .OrderBy( t => t.Height )
-                            .Select( t => t.Link )
-                            .FirstOrDefault() ?? string.Empty;
-
-                        if ( thumbnailUrl == string.Empty )
-                        {
-                            thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() )
-                                .OrderByDescending( t => t.Height )
-                                .Select( t => t.Link )
-                                .FirstOrDefault() ?? string.Empty;
-                        }
-                    }
-                    else
-                    {
-                        thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() )
-                            .OrderByDescending( t => t.Height )
-                            .Select( t => t.Link )
-                            .FirstOrDefault() ?? string.Empty;
-                    }
-                }
-
-                if ( condensed )
-                {
-                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive grid-img' />";
-                }
-                else
-                {
-                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive' />";
-                }
-            }
-        }
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -350,10 +499,6 @@ namespace Rock.Field.Types
                 ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -483,74 +628,6 @@ namespace Rock.Field.Types
             SetAccountAndFolderValues( mediaElementPicker, configurationValues );
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the limit to account identifier.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        private int? GetLimitToAccountId( Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( configurationValues?.ContainsKey( CONFIG_LIMIT_TO_ACCOUNT ) == true )
-            {
-                return configurationValues[CONFIG_LIMIT_TO_ACCOUNT].Value.AsIntegerOrNull();
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the limit to folder identifier.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        private int? GetLimitToFolderId( Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( configurationValues?.ContainsKey( CONFIG_LIMIT_TO_FOLDER ) == true )
-            {
-                return configurationValues[CONFIG_LIMIT_TO_FOLDER].Value.AsIntegerOrNull();
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the account and folder values if they were provided in the
-        /// configuration.
-        /// </summary>
-        /// <param name="mediaElementPicker">The media element picker.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        private void SetAccountAndFolderValues( MediaElementPicker mediaElementPicker, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            // Determine if we have limit values for either account or folder.
-            var accountId = GetLimitToAccountId( configurationValues );
-            var folderId = GetLimitToFolderId( configurationValues );
-
-            // Set defaults for picker visibility.
-            mediaElementPicker.ShowAccountPicker = true;
-            mediaElementPicker.ShowFolderPicker = true;
-
-            // Set default values and hide the controls we don't need.
-            if ( folderId.IsNotNullOrZero() )
-            {
-                mediaElementPicker.MediaFolderId = folderId;
-                mediaElementPicker.ShowFolderPicker = false;
-                mediaElementPicker.ShowAccountPicker = false;
-            }
-            else if ( accountId.IsNotNullOrZero() )
-            {
-                mediaElementPicker.MediaAccountId = accountId;
-                mediaElementPicker.ShowAccountPicker = false;
-            }
-        }
-
-        #endregion
-
-        #region IEntityFieldType Methods
-
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -595,77 +672,7 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The <see cref="IEntity"/> instance associated with the value.</returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="IEntity"/> instance associated with the value.</returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            var mediaGuid = value.AsGuidOrNull();
-
-            if ( !mediaGuid.HasValue )
-            {
-                return null;
-            }
-
-            return new MediaElementService( rockContext ?? new RockContext() ).Get( mediaGuid.Value );
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var mediaElementId = new MediaElementService( rockContext ).GetId( guid.Value );
-
-                if ( !mediaElementId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<MediaElement>().Value, mediaElementId.Value )
-                };
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name and ThumbnailDataJson properties
-            // of a MediaElement and should have its persisted values updated when
-            // changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<MediaElement>().Value, nameof( MediaElement.Name ) ),
-                new ReferencedProperty( EntityTypeCache.GetId<MediaElement>().Value, nameof( MediaElement.ThumbnailDataJson ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

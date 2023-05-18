@@ -31,6 +31,7 @@ using System.Web;
 using Rock.Web.UI.Controls;
 using System.Text;
 using Rock.Web;
+using Rock.Attribute;
 using Rock.Lava;
 
 namespace RockWeb.Blocks.Core

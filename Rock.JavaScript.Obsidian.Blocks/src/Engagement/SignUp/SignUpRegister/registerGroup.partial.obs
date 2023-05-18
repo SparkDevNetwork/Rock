@@ -1,0 +1,101 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!identifiableGroupMembers.length" alertType="warning">
+        No group members found to register for this project.
+    </NotificationBox>
+
+    <div v-else>
+        <h3 v-if="props.title">{{ props.title }}</h3>
+
+        <CheckBoxList v-if="eligibleGroupMembers.length"
+                      v-model="registeredGroupMembers"
+                      label="Group Members"
+                      :items="eligibleGroupMembers"
+                      :disabled="isRegistering"
+                      @update:modelValue="onRegisteredGroupMembersChanged" />
+
+        <ListUnmetRequirements v-if="ineligibleGroupMembers.length" :registrants="ineligibleGroupMembers" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ListUnmetRequirements from "./listUnmetRequirements.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        isRegistering: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        registrants: {
+            type: Array as PropType<SignUpRegistrantBag[]>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string | null | undefined>,
+            default: ""
+        }
+    });
+
+    // #region Computed Values
+
+    const identifiableGroupMembers = computed((): SignUpRegistrantBag[] => {
+        return props.registrants
+            ?.filter((r: SignUpRegistrantBag) =>
+                r?.personIdKey
+                && r?.fullName
+            ) ?? [];
+    });
+
+    const eligibleGroupMembers = computed((): ListItemBag[] => {
+        return identifiableGroupMembers.value
+            .filter((r: SignUpRegistrantBag) => !r.unmetGroupRequirements?.length)
+            .map((r: SignUpRegistrantBag) => ({
+                value: r.personIdKey,
+                text: r.fullName
+            }));
+    });
+
+    const registeredGroupMembers = computed<string[]>({
+        get() {
+            return identifiableGroupMembers.value
+                .filter((r: SignUpRegistrantBag) => r.willAttend)
+                // r.personIdKey will never be null | undefined here, but TS is only happy if we use the nullish coalescing operator.
+                .map((r: SignUpRegistrantBag) => r.personIdKey ?? "");
+        },
+        set(newValue: string[]) {
+            identifiableGroupMembers.value
+                .forEach((r: SignUpRegistrantBag) => {
+                    r.willAttend = newValue.some((personIdKey: string) => personIdKey === r.personIdKey);
+                });
+        }
+    });
+
+    const ineligibleGroupMembers = computed((): SignUpRegistrantBag[] => {
+        return identifiableGroupMembers.value
+            .filter((r: SignUpRegistrantBag) => r.unmetGroupRequirements?.length);
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Synchronizes each group member's `SignUpRegistrantBag.willAttend` value when the control emits changes.
+     */
+    function onRegisteredGroupMembersChanged(): void {
+        props.registrants
+            ?.filter((r: SignUpRegistrantBag) => r?.isRegistrar === false)
+            .forEach((r: SignUpRegistrantBag) => {
+                r.willAttend = registeredGroupMembers.value.some((personIdKey: string) => personIdKey === r.personIdKey);
+            });
+    }
+
+    // #endregion
+</script>

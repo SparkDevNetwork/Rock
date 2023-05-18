@@ -91,7 +91,12 @@ export default defineComponent({
     props: {
         modelValue: {
             type: Object as PropType<ListItemBag>
-        }
+        },
+
+        formGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
     },
 
     setup(props, { emit }) {
@@ -399,7 +404,7 @@ export default defineComponent({
     template: `
 <RockFormField
     :modelValue="internalValue"
-    formGroupClasses="person-picker"
+    :formGroupClasses="'person-picker ' + formGroupClasses"
     name="personpicker">
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">

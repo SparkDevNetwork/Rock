@@ -24,6 +24,12 @@ export default defineComponent({
         delay: {
             type: Number as PropType<number>,
             default: 0
+        },
+
+        /** Whether or not to show a smaller version of the loading spinner */
+        isSmall: {
+            type: Boolean,
+            default: false
         }
     },
 
@@ -40,7 +46,7 @@ export default defineComponent({
     },
 
     template: `
-<div v-if="isShown" class="text-center fa-2x">
+<div v-if="isShown" :class="['text-center', isSmall ? '' : 'fa-2x']">
     <i class="fas fa-spinner fa-pulse"></i>
 </div>`
 });

@@ -147,7 +147,7 @@ namespace Rock.Logging
             {
                 LogLevel = rockSettings.LogLevel;
                 NumberOfLogFiles = Math.Max( rockSettings.NumberOfLogFiles, 1 );
-                MaxFileSize = rockSettings.MaxFileSize;
+                MaxFileSize = Math.Max( rockSettings.MaxFileSize, 1 );
                 DomainsToLog = rockSettings.DomainsToLog;
             }
 

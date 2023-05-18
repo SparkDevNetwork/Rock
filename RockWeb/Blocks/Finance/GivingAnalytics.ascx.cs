@@ -633,7 +633,7 @@ btnCopyToClipboard.ClientID );
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
                 if ( singleDateTime )
                 {
-                    var chartDataByCategory = bcAmount.GetCategorySeriesFromChartData( chartData );
+                    var chartDataByCategory = ChartDataFactory.GetCategorySeriesFromChartData( chartData );
                     bcAmount.SetChartDataItems( chartDataByCategory );
                 }
                 else

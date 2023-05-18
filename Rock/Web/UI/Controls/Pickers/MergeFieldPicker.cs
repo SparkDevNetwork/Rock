@@ -421,6 +421,8 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Formats the selected value (node path) into a liquid merge field.
+        /// ***NOTE***: Also implemented in Rock.Rest.v2.ControlsController's MergeFieldPickerFormatSelectedValue method.
+        /// Any changes here should also be made there
         /// </summary>
         /// <param name="selectedValue">The selected value.</param>
         /// <returns></returns>

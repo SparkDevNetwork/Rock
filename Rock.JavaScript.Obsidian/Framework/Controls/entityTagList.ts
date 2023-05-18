@@ -17,7 +17,7 @@
 import { Guid } from "@Obsidian/Types";
 import { useHttp } from "@Obsidian/Utility/http";
 import { useSuspense } from "@Obsidian/Utility/suspense";
-import { ControlLazyMode, ControlLazyModeType } from "@Obsidian/Types/Controls/controlLazyMode";
+import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { EntityTagListAddEntityTagOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListAddEntityTagOptionsBag";
 import { EntityTagListCreatePersonalTagOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListCreatePersonalTagOptionsBag";
 import { EntityTagListGetEntityTagsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListGetEntityTagsOptionsBag";
@@ -160,7 +160,7 @@ export default defineComponent({
 
         /** Determines if this control should delay page rendering until the initial tag data is loaded. */
         lazyMode: {
-            type: String as PropType<ControlLazyModeType>,
+            type: String as PropType<ControlLazyMode>,
             default: ControlLazyMode.Lazy
         },
 

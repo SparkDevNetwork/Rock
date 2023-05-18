@@ -49,6 +49,7 @@ namespace Rock.Model
 
             var authorizedReminderTypes = reminderTypes
                 .Where( t => t.IsAuthorized( Rock.Security.Authorization.VIEW, authorizedPerson ) )
+                .OrderBy( t => t.Order )
                 .ToList();
 
             return authorizedReminderTypes;

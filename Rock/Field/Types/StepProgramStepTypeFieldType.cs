@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// Stored as "StepProgram.Guid|StepType.Guid"
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "B00149C7-08D6-448C-AF21-948BF453DF7E")]
+    [Rock.SystemGuid.FieldTypeGuid( "B00149C7-08D6-448C-AF21-948BF453DF7E" )]
     public class StepProgramStepTypeFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Keys
@@ -52,77 +53,6 @@ namespace Rock.Field.Types
         #endregion Keys
 
         #region Configuration
-
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            return new List<string>
-            {
-                ConfigKey.DefaultStepProgramGuid
-            };
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var stepProgramPicker = new StepProgramPicker
-            {
-                Label = "Default Step Program",
-                Help = "The default step program selection"
-            };
-
-            StepProgramPicker.LoadDropDownItems( stepProgramPicker, true );
-            return new List<Control> { stepProgramPicker };
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            var configurationValues = new Dictionary<string, ConfigurationValue>
-            {
-                { ConfigKey.DefaultStepProgramGuid, new ConfigurationValue( "Default Step Program Guid", "The default step program.", string.Empty ) }
-            };
-
-            if ( controls != null && controls.Count == 1 )
-            {
-                var stepProgramPicker = controls[0] as StepProgramPicker;
-
-                if ( stepProgramPicker != null )
-                {
-                    configurationValues[ConfigKey.DefaultStepProgramGuid].Value = stepProgramPicker.SelectedValue;
-                }
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && controls.Count == 1 && configurationValues != null && configurationValues.ContainsKey( ConfigKey.DefaultStepProgramGuid ) )
-            {
-                var stepProgramPicker = controls[0] as StepProgramPicker;
-
-                if ( stepProgramPicker != null )
-                {
-                    stepProgramPicker.SelectedValue = configurationValues[ConfigKey.DefaultStepProgramGuid].Value;
-                }
-            }
-        }
 
         #endregion Configuration
 
@@ -146,113 +76,9 @@ namespace Rock.Field.Types
             return formattedValue;
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion Formatting
 
         #region Edit Control
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var editControl = new StepProgramStepTypePicker { ID = id };
-
-            if ( configurationValues != null && configurationValues.ContainsKey( ConfigKey.DefaultStepProgramGuid ) )
-            {
-                var stepProgramGuid = configurationValues[ConfigKey.DefaultStepProgramGuid].Value.AsGuidOrNull();
-
-                if ( stepProgramGuid.HasValue )
-                {
-                    var stepProgram = new StepProgramService( new RockContext() ).GetNoTracking( stepProgramGuid.Value );
-                    editControl.DefaultStepProgramId = stepProgram?.Id;
-                }
-            }
-
-            return editControl;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field ( as Guid )
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var stepProgramStepTypePicker = control as StepProgramStepTypePicker;
-
-            if ( stepProgramStepTypePicker != null )
-            {
-                var rockContext = new RockContext();
-                Guid? stepProgramGuid = null;
-                Guid? stepTypeGuid = null;
-
-                if ( stepProgramStepTypePicker.StepProgramId.HasValue )
-                {
-                    var stepProgram = new StepProgramService( rockContext ).GetNoTracking( stepProgramStepTypePicker.StepProgramId.Value );
-
-                    if ( stepProgram != null )
-                    {
-                        stepProgramGuid = stepProgram.Guid;
-                    }
-                }
-
-                if ( stepProgramStepTypePicker.StepTypeId.HasValue )
-                {
-                    var stepType = new StepTypeService( rockContext ).GetNoTracking( stepProgramStepTypePicker.StepTypeId.Value );
-
-                    if ( stepType != null )
-                    {
-                        stepTypeGuid = stepType.Guid;
-                    }
-                }
-
-                if ( stepProgramGuid.HasValue || stepTypeGuid.HasValue )
-                {
-                    return string.Format( "{0}|{1}", stepProgramGuid, stepTypeGuid );
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value. ( as Guid )
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var stepProgramStepTypePicker = control as StepProgramStepTypePicker;
-
-            if ( stepProgramStepTypePicker != null )
-            {
-                GetModelsFromAttributeValue( value, out var stepProgram, out var stepType );
-                stepProgramStepTypePicker.StepProgramId = stepProgram?.Id;
-                stepProgramStepTypePicker.StepTypeId = stepType?.Id;
-            }
-        }
 
         #endregion Edit Control
 
@@ -369,6 +195,187 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            return new List<string>
+            {
+                ConfigKey.DefaultStepProgramGuid
+            };
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var stepProgramPicker = new StepProgramPicker
+            {
+                Label = "Default Step Program",
+                Help = "The default step program selection"
+            };
+
+            StepProgramPicker.LoadDropDownItems( stepProgramPicker, true );
+            return new List<Control> { stepProgramPicker };
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            var configurationValues = new Dictionary<string, ConfigurationValue>
+            {
+                { ConfigKey.DefaultStepProgramGuid, new ConfigurationValue( "Default Step Program Guid", "The default step program.", string.Empty ) }
+            };
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                var stepProgramPicker = controls[0] as StepProgramPicker;
+
+                if ( stepProgramPicker != null )
+                {
+                    configurationValues[ConfigKey.DefaultStepProgramGuid].Value = stepProgramPicker.SelectedValue;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null && configurationValues.ContainsKey( ConfigKey.DefaultStepProgramGuid ) )
+            {
+                var stepProgramPicker = controls[0] as StepProgramPicker;
+
+                if ( stepProgramPicker != null )
+                {
+                    stepProgramPicker.SelectedValue = configurationValues[ConfigKey.DefaultStepProgramGuid].Value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var editControl = new StepProgramStepTypePicker { ID = id };
+
+            if ( configurationValues != null && configurationValues.ContainsKey( ConfigKey.DefaultStepProgramGuid ) )
+            {
+                var stepProgramGuid = configurationValues[ConfigKey.DefaultStepProgramGuid].Value.AsGuidOrNull();
+
+                if ( stepProgramGuid.HasValue )
+                {
+                    var stepProgram = new StepProgramService( new RockContext() ).GetNoTracking( stepProgramGuid.Value );
+                    editControl.DefaultStepProgramId = stepProgram?.Id;
+                }
+            }
+
+            return editControl;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field ( as Guid )
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var stepProgramStepTypePicker = control as StepProgramStepTypePicker;
+
+            if ( stepProgramStepTypePicker != null )
+            {
+                var rockContext = new RockContext();
+                Guid? stepProgramGuid = null;
+                Guid? stepTypeGuid = null;
+
+                if ( stepProgramStepTypePicker.StepProgramId.HasValue )
+                {
+                    var stepProgram = new StepProgramService( rockContext ).GetNoTracking( stepProgramStepTypePicker.StepProgramId.Value );
+
+                    if ( stepProgram != null )
+                    {
+                        stepProgramGuid = stepProgram.Guid;
+                    }
+                }
+
+                if ( stepProgramStepTypePicker.StepTypeId.HasValue )
+                {
+                    var stepType = new StepTypeService( rockContext ).GetNoTracking( stepProgramStepTypePicker.StepTypeId.Value );
+
+                    if ( stepType != null )
+                    {
+                        stepTypeGuid = stepType.Guid;
+                    }
+                }
+
+                if ( stepProgramGuid.HasValue || stepTypeGuid.HasValue )
+                {
+                    return string.Format( "{0}|{1}", stepProgramGuid, stepTypeGuid );
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value. ( as Guid )
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var stepProgramStepTypePicker = control as StepProgramStepTypePicker;
+
+            if ( stepProgramStepTypePicker != null )
+            {
+                GetModelsFromAttributeValue( value, out var stepProgram, out var stepType );
+                stepProgramStepTypePicker.StepProgramId = stepProgram?.Id;
+                stepProgramStepTypePicker.StepTypeId = stepType?.Id;
+            }
+        }
+
+#endif
         #endregion
     }
 }

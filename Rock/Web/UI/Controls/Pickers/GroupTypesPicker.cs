@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
@@ -39,6 +40,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to Group.Guid instead of Group.Id for the listitem values (default false)
+        /// NOTE: Make sure you set this before setting .GroupTypes
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [use unique identifier as value]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UseGuidAsValue { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether listitem to sorted by name Or by Order then by name (default false)
         /// NOTE: Make sure you set this before setting .GroupTypes
         /// </summary>
@@ -46,6 +56,11 @@ namespace Rock.Web.UI.Controls
         /// <c>true</c> if [use unique identifier as value]; otherwise, <c>false</c>.
         /// </value>
         public bool IsSortedByName { get; set; }
+
+        /// <summary>
+        /// The default number of columns to display in the <see cref="RockCheckBoxList" /> control.
+        /// </summary>
+        public static readonly int DefaultRepeatColumns = 2;
 
         /// <summary>
         /// Sets the group types. Note: Use SetGroupTypes instead to set this using List&lt;GroupTypeCache&gt;
@@ -69,12 +84,9 @@ namespace Rock.Web.UI.Controls
         {
             this.Items.Clear();
             var orderedGroupTypes = IsSortedByName ? groupTypes.OrderBy( a => a.Name ) : groupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name );
-            foreach ( var groupType in orderedGroupTypes )
+            foreach ( GroupTypeCache groupType in orderedGroupTypes )
             {
-                ListItem groupTypeItem = new ListItem();
-                groupTypeItem.Value = groupType.Id.ToString();
-                groupTypeItem.Text = groupType.Name;
-                this.Items.Add( groupTypeItem );
+                this.Items.Add( new ListItem( groupType.Name, UseGuidAsValue ? groupType.Guid.ToString() : groupType.Id.ToString() ) );
             }
         }
 
@@ -93,11 +105,29 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selected group type Guid.
+        /// </summary>
+        /// <value>The selected group type guids.</value>
+        public List<Guid> SelectedGroupTypeGuids
+        {
+            get
+            {
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).AsGuidList();
+            }
+
+            set
+            {
+                foreach ( ListItem groupTypeItem in this.Items )
+                {
+                    groupTypeItem.Selected = value.Exists( a => a.Equals( groupTypeItem.Value.AsGuid() ) );
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the selected group type ids.
         /// </summary>
-        /// <value>
-        /// The selected group type ids.
-        /// </value>
+        /// <value>The selected group type ids.</value>
         public List<int> SelectedGroupTypeIds
         {
             get
@@ -113,5 +143,28 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+        /// <inheritdoc/>
+        public override int RepeatColumns
+        {
+            get
+            {
+                if ( this.RepeatDirection == RepeatDirection.Horizontal )
+                {
+                    return _repeatColumns ?? DefaultRepeatColumns;
+                }
+                else
+                {
+                    return _repeatColumns ?? 0;
+                }
+            }
+
+            set
+            {
+                _repeatColumns = value;
+            }
+        }
+
+        private int? _repeatColumns;
     }
 }

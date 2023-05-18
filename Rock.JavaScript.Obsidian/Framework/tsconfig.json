@@ -2,6 +2,8 @@
   "files": [],
   "include": [],
   "references": [
+    { "path": "./Enums" },
+    { "path": "./SystemGuids" },
     { "path": "./Libs" },
     { "path": "./Core" },
     { "path": "./ValidationRules" },

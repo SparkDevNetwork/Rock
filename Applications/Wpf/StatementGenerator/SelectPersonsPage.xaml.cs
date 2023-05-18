@@ -298,7 +298,7 @@ namespace Rock.Apps.StatementGenerator
         private void btnPrev_Click( object sender, RoutedEventArgs e )
         {
             SaveChanges( false );
-            this.NavigationService.GoBack();
+            this.NavigationService.Navigate( new StartPage() );
         }
 
         /// <summary>

@@ -88,7 +88,7 @@ namespace Rock.Model
         /// divided by the total number of members in the group.
         /// </value>
         [RockObsolete( "1.10" )]
-        [System.Obsolete( "Use Attendance Rate instead." )]
+        [System.Obsolete( "Use Attendance Rate instead.", true )]
         public double PercentMembersAttended
         {
             get

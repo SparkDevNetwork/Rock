@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection.Search
 {
     /// <summary>
     /// Searches common document fields for the specified term.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class SearchTerm : ISearchItem
     {
         #region Properties

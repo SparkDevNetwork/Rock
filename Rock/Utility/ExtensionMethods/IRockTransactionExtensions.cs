@@ -21,12 +21,30 @@ namespace Rock
     public static partial class ExtensionMethods
     {
         /// <summary>
-        /// Adds the ITransaction to the Rock TransactionQueue
+        /// Adds the <see cref="ITransaction"/> to the standard Rock transaction queue.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
+        /// <param name="transaction">The transaction to be added to the queue.</param>
         public static void Enqueue( this ITransaction transaction )
         {
-            RockQueue.TransactionQueue.Enqueue( transaction );
+            RockQueue.Enqueue( transaction );
+        }
+
+        /// <summary>
+        /// Adds the <see cref="ITransaction"/> to the Rock transaction queue.
+        /// </summary>
+        /// <param name="transaction">The transaction to be added to the queue.</param>
+        /// <param name="useFastQueue">
+        ///     <para>
+        ///         <c>true</c> if the fast queue should be used.
+        ///     </para>
+        ///     <para>
+        ///         This queue drains every second so it should only be used with transactions
+        ///         that execute extremely fast and need to execute quickly.
+        ///     </para>
+        /// </param>
+        public static void Enqueue( this ITransaction transaction, bool useFastQueue )
+        {
+            RockQueue.Enqueue( transaction, useFastQueue );
         }
     }
 }

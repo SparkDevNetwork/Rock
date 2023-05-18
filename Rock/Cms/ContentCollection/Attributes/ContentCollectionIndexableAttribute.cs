@@ -17,6 +17,8 @@
 
 using System;
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection.Attributes
 {
     /// <summary>
@@ -24,6 +26,7 @@ namespace Rock.Cms.ContentCollection.Attributes
     /// and specifies the class that will handle the indexing of items.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false )]
+    [RockInternal( "1.14" )]
     internal class ContentCollectionIndexableAttribute : System.Attribute
     {
         /// <summary>

@@ -16,14 +16,14 @@
 //
 
 import { inject, provide } from "vue";
-import { ValueSources } from "./types";
+import { ValueSources } from "./types.partial";
 
 // Unique key used to track the sources for the FormBuilderDetail block.
 const sourcesKey = Symbol();
 
 /**
  * Make the list of value sources available to child components.
- * 
+ *
  * @param sources The value sources to make available.
  */
 export function provideSources(sources: ValueSources): void {

@@ -100,6 +100,7 @@ namespace RockWeb.Blocks.Communication
         private DataViewService _gridDataViewService;
         private BinaryFileService _gridBinaryFileService;
         private Dictionary<int, CommunicationType> _mediumEntityIdToCommunicationTypeMap;
+        private List<int> _currentPersonAliasIdList;
 
         private const string _communicationItemLavaTemplate = @"
 <div class='communication-item pt-3 d-flex flex-row cursor-default'>
@@ -771,12 +772,14 @@ namespace RockWeb.Blocks.Communication
 
         private void InitializeDataBindingServices()
         {
-            // Initialize the services used during the Grid data binding process.
+            // Initialize the services and data used during the Grid data binding process.
             var rockContext = new RockContext();
 
             _gridPersonService = _gridPersonService ?? new PersonService( rockContext );
             _gridDataViewService = _gridDataViewService ?? new DataViewService( rockContext );
             _gridBinaryFileService = _gridBinaryFileService ?? new BinaryFileService( rockContext );
+
+            _currentPersonAliasIdList = this.CurrentPerson?.Aliases.Select( p => p.Id ).ToList() ?? new List<int>();
         }
 
         private IQueryable<CommunicationRecipientListQueryItem> GetCommunicationListItemsQuery( RockContext rockContext, IQueryable<Rock.Model.Communication> qryCommunications, int personId )
@@ -862,8 +865,8 @@ namespace RockWeb.Blocks.Communication
                             CommunicationTemplateName = ciGroup.Communication.CommunicationTemplateId == null ? null : ciGroup.Communication.CommunicationTemplate.Name,
                             SenderName = ciGroup.Communication.FromName,
                             InternalSenderEmail = ciGroup.Communication.FromEmail,
-                            InternalSenderSmsName = ciGroup.Communication.SMSFromDefinedValue.Description,
-                            InternalSenderSmsNumber = ciGroup.Communication.SMSFromDefinedValue.Value,
+                            InternalSenderSmsName = ciGroup.Communication.SmsFromSystemPhoneNumber.Name,
+                            InternalSenderSmsNumber = ciGroup.Communication.SmsFromSystemPhoneNumber.Number,
                             InternalPushImageFileId = ciGroup.Communication.PushImageBinaryFileId,
                             InternalPushData = ciGroup.Communication.PushData,
                             InternalAttachments = ciGroup.Communication.Attachments.Select( x => new CommunicationAttachmentInfo { BinaryFileId = x.BinaryFileId, CommunicationType = x.CommunicationType } ).ToList(),
@@ -1150,8 +1153,14 @@ namespace RockWeb.Blocks.Communication
         private void GetAdditionalCommunicationEntryData( CommunicationListItem info )
         {
             // Set the View permission for the communication detail.
+            // The current person should have view permission for the communication if:
+            // 1. They are the creator or sender; or
+            // 2. They have Edit permission for this block.
+            var senderPrimaryAliasId = info.Sender?.PrimaryAliasId ?? 0;
+
             info.ViewDetailIsAllowed = UserCanEdit
-                || ( CurrentPersonAliasId != null && info.CreatedByPersonAliasId != null && info.CreatedByPersonAliasId.Value == CurrentPersonAliasId.Value );
+                || _currentPersonAliasIdList.Contains( info.CreatedByPersonAliasId.GetValueOrDefault() )
+                || _currentPersonAliasIdList.Contains( info.Sender?.PrimaryAliasId ?? 0 );
 
             // Get Communication List Segments.
             if ( !string.IsNullOrWhiteSpace( info?.Detail?.InternalCommunicationSegmentData ) )

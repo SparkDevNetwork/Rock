@@ -26,7 +26,7 @@ namespace Rock.Communication
     /// Obsolete: This has a issue where the wrong person(s) might be logged as the recipient. Use a <see cref="RockMessageRecipient"/> class instead to ensure the correct person is associated with the communication.
     /// </summary>
     [RockObsolete( "1.10" )]
-    [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use RockMessageRecipient instead to ensure the correct person is associated with the communication." )]
+    [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use RockMessageRecipient instead to ensure the correct person is associated with the communication.", true )]
     public class RecipientData
     {
         /// <summary>

@@ -34,6 +34,7 @@ namespace Rock.Web.UI
 
         private RockBlock _rockBlock = null;
         private List<Control> _adminControls = new List<Control>();
+        private static readonly string LegacyBlockTypeSuffix = "(Legacy)";
 
         #endregion
 
@@ -116,17 +117,17 @@ namespace Rock.Web.UI
             }
 
             // Create block wrapper
-            string blockTypeCss = blockCache.BlockType != null ? blockCache.BlockType.Name : "";
+            var blockTypeCss = blockCache.BlockType != null ? blockCache.BlockType.Name.ReplaceCaseInsensitive( LegacyBlockTypeSuffix, string.Empty ).Trim() : string.Empty;
             var parts = blockTypeCss.Split( new char[] { '>' } );
             if ( parts.Length > 1 )
             {
                 blockTypeCss = parts[parts.Length - 1].Trim();
             }
             blockTypeCss = blockTypeCss.Replace( ' ', '-' ).ToLower();
-            string blockInstanceCss = "block-instance js-block-instance " +
+            var blockInstanceCss = "block-instance js-block-instance " +
                 blockTypeCss +
-                ( string.IsNullOrWhiteSpace( blockCache.CssClass ) ? "" : " " + blockCache.CssClass.Trim() ) +
-                ( _rockBlock.UserCanEdit || _rockBlock.UserCanAdministrate ? " can-configure " : "" );
+                ( string.IsNullOrWhiteSpace( blockCache.CssClass ) ? string.Empty : " " + blockCache.CssClass.Trim() ) +
+                ( _rockBlock.UserCanEdit || _rockBlock.UserCanAdministrate ? " can-configure " : string.Empty );
 
             writer.Write( preHtml );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, string.Format( "bid_{0}", blockCache.Id ) );

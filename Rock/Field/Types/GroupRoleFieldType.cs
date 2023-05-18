@@ -18,9 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -37,10 +38,116 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_ROLE )]
     public class GroupRoleFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Configuration
 
         private const string GROUP_TYPE_KEY = "grouptype";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            Guid guid = Guid.Empty;
+            if ( Guid.TryParse( privateValue, out guid ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var groupRole = new GroupTypeRoleService( rockContext ).GetNoTracking( guid );
+                    if ( groupRole != null )
+                    {
+                        formattedValue = groupRole.Name;
+                    }
+                }
+            }
+
+            return formattedValue;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new GroupTypeRoleService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupTypeRoleId = new GroupTypeRoleService( rockContext ).GetId( guid.Value );
+
+                if ( !groupTypeRoleId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupTypeRole>().Value, groupTypeRoleId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Group Role and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<GroupTypeRole>().Value, nameof( GroupTypeRole.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -95,7 +202,7 @@ namespace Rock.Field.Types
             {
                 if ( controls[0] != null && controls[0] is DropDownList )
                 {
-                    configurationValues[GROUP_TYPE_KEY].Value = ( (DropDownList)controls[0] ).SelectedValue;
+                    configurationValues[GROUP_TYPE_KEY].Value = ( ( DropDownList ) controls[0] ).SelectedValue;
                 }
             }
 
@@ -113,14 +220,10 @@ namespace Rock.Field.Types
             {
                 if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( GROUP_TYPE_KEY ) )
                 {
-                    ( (DropDownList)controls[0] ).SelectedValue = configurationValues[GROUP_TYPE_KEY].Value;
+                    ( ( DropDownList ) controls[0] ).SelectedValue = configurationValues[GROUP_TYPE_KEY].Value;
                 }
             }
         }
-
-        #endregion
-
-        #region Formatting
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -136,31 +239,6 @@ namespace Rock.Field.Types
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            string formattedValue = string.Empty;
-
-            Guid guid = Guid.Empty;
-            if ( Guid.TryParse( privateValue, out guid ) )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var groupRole = new GroupTypeRoleService( rockContext ).GetNoTracking( guid );
-                    if ( groupRole != null )
-                    {
-                        formattedValue = groupRole.Name;
-                    }
-                }
-            }
-
-            return formattedValue;
-        }
-
-        #endregion
-
-        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -238,10 +316,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Entity Methods
-
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -252,7 +326,7 @@ namespace Rock.Field.Types
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
             var item = new GroupTypeRoleService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            return item != null ? item.Id : ( int? ) null;
         }
 
         /// <summary>
@@ -268,75 +342,7 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, guidValue );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new GroupTypeRoleService( rockContext ).Get( guid.Value );
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            Guid? guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue )
-            {
-                return null;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var groupTypeRoleId = new GroupTypeRoleService( rockContext ).GetId( guid.Value );
-
-                if ( !groupTypeRoleId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<GroupTypeRole>().Value, groupTypeRoleId.Value )
-                };
-            }
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Group Role and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<GroupTypeRole>().Value, nameof( GroupTypeRole.Name ) )
-            };
-        }
-
+#endif
         #endregion
 
     }

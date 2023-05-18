@@ -83,6 +83,7 @@ namespace Rock.Model
                                      c.ConnectionState != ConnectionState.Inactive &&
                                      c.ConnectionState != ConnectionState.Connected ) )
                             {
+                                Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Crm, $"Person.PreSave() setting connection requests Inactive for Person.Id {this.Entity.Id} and ConnectionRequest.Id = {connectionRequest.Id}" );
                                 connectionRequest.ConnectionState = ConnectionState.Inactive;
                             }
                         }
@@ -172,6 +173,9 @@ namespace Rock.Model
 
                 // Calculates the BirthDate and sets it
                 this.Entity.BirthDate = this.Entity.CalculateBirthDate();
+                this.Entity.BirthDateKey = this.Entity.BirthDate?.ToString( "yyyyMMdd" ).AsIntegerOrNull();
+                this.Entity.Age = GetAge( this.Entity.BirthDate, this.Entity.DeceasedDate );
+                this.Entity.AgeBracket = GetAgeBracket( this.Entity.Age );
 
                 this.Entity.CalculateSignals();
 
@@ -326,7 +330,6 @@ namespace Rock.Model
                             return;
                         }
                 }
-
                 base.PreSave();
             }
 

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -158,11 +158,11 @@ namespace RockWeb.Blocks.Security
                         person.PhotoId = imgPhoto.BinaryFileId;
                     }
 
-                    person.TitleValueId = dvpTitle.SelectedValueAsInt(); ;
+                    person.TitleValueId = dvpTitle.SelectedValueAsInt();
                     person.FirstName = tbFirstName.Text;
                     person.NickName = tbNickName.Text;
                     person.LastName = tbLastName.Text;
-                    person.SuffixValueId = dvpSuffix.SelectedValueAsInt(); ;
+                    person.SuffixValueId = dvpSuffix.SelectedValueAsInt();
 
                     var birthMonth = person.BirthMonth;
                     var birthDay = person.BirthDay;
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Security
                         person.SetBirthDate( null );
                     }
 
-                    person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>(); ;
+                    person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
 
                     var phoneNumberTypeIds = new List<int>();
 
@@ -245,18 +245,11 @@ namespace RockWeb.Blocks.Security
                         }
                     }
 
-                    // Remove any blank numbers
-                    var phoneNumberService = new PhoneNumberService( rockContext );
-                    foreach ( var phoneNumber in person.PhoneNumbers
-                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
-                        .ToList() )
-                    {
-                        person.PhoneNumbers.Remove( phoneNumber );
-                        phoneNumberService.Delete( phoneNumber );
-                    }
+                    // Remove any duplicates and blank numbers
+                    personService.RemoveEmptyAndDuplicatePhoneNumbers( person, phoneNumberTypeIds, rockContext );
 
                     person.Email = tbEmail.Text.Trim();
-                    person.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>(); ;
+                    person.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
 
                     if ( person.IsValid )
                     {
@@ -332,14 +325,14 @@ namespace RockWeb.Blocks.Security
                                                     familyAddress.IsMailingLocation = true;
                                                     familyAddress.IsMappedLocation = true;
                                                 }
-                                                else if ( hfStreet1.Value != string.Empty ) {
-
+                                                else if ( hfStreet1.Value != string.Empty )
+                                                {
                                                     // user clicked move so create a previous address
                                                     var previousAddress = new GroupLocation();
                                                     groupLocationService.Add( previousAddress );
 
                                                     var previousAddressValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
-                                                    if ( previousAddressValue  != null )
+                                                    if ( previousAddressValue != null )
                                                     {
                                                         previousAddress.GroupLocationTypeValueId = previousAddressValue.Id;
                                                         previousAddress.GroupId = familyGroup.Id;
@@ -368,7 +361,6 @@ namespace RockWeb.Blocks.Security
                                                 rockContext.SaveChanges();
                                             }
                                         }
-
                                     }
                                 }
                             }
@@ -421,12 +413,13 @@ namespace RockWeb.Blocks.Security
                     var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
 
                     // if address type is home enable the move and is mailing/physical
-                    if (addressTypeDv.Guid == Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )
+                    if ( addressTypeDv.Guid == Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )
                     {
                         lbMoved.Visible = true;
                         cbIsMailingAddress.Visible = true;
                         cbIsPhysicalAddress.Visible = true;
-                    } else
+                    }
+                    else
                     {
                         lbMoved.Visible = false;
                         cbIsMailingAddress.Visible = false;
@@ -444,7 +437,7 @@ namespace RockWeb.Blocks.Security
                         var familyAddress = new GroupLocationService( rockContext ).Queryable()
                                             .Where( l => l.Group.GroupTypeId == familyGroupType.Id
                                                  && l.GroupLocationTypeValueId == addressTypeDv.Id
-                                                 && l.Group.Members.Any( m => m.PersonId == person.Id))
+                                                 && l.Group.Members.Any( m => m.PersonId == person.Id ) )
                                             .FirstOrDefault();
                         if ( familyAddress != null )
                         {

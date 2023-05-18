@@ -16,68 +16,44 @@
 //
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
-import { DayOfWeek } from "./dayOfWeekField.partial";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
 export const EditComponent = defineComponent({
     name: "DayOfWeekField.Edit",
     components: {
-        DropDownList
+        DayOfWeekPicker
     },
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-        const options: ListItemBag[] = [
-            { text: "Sunday", value: DayOfWeek.Sunday.toString() },
-            { text: "Monday", value: DayOfWeek.Monday.toString() },
-            { text: "Tuesday", value: DayOfWeek.Tuesday.toString() },
-            { text: "Wednesday", value: DayOfWeek.Wednesday.toString() },
-            { text: "Thursday", value: DayOfWeek.Thursday.toString() },
-            { text: "Friday", value: DayOfWeek.Friday.toString() },
-            { text: "Saturday", value: DayOfWeek.Saturday.toString() }
-        ];
-
         return {
-            internalValue,
-            options
+            internalValue
         };
     },
     template: `
-<DropDownList v-model="internalValue" :items="options" />
+<DayOfWeekPicker v-model="internalValue" />
 `
 });
 
 export const FilterComponent = defineComponent({
     name: "DayOfWeekField.Filter",
     components: {
-        DropDownList
+        DayOfWeekPicker
     },
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-        const options: ListItemBag[] = [
-            { text: "Sunday", value: DayOfWeek.Sunday.toString() },
-            { text: "Monday", value: DayOfWeek.Monday.toString() },
-            { text: "Tuesday", value: DayOfWeek.Tuesday.toString() },
-            { text: "Wednesday", value: DayOfWeek.Wednesday.toString() },
-            { text: "Thursday", value: DayOfWeek.Thursday.toString() },
-            { text: "Friday", value: DayOfWeek.Friday.toString() },
-            { text: "Saturday", value: DayOfWeek.Saturday.toString() }
-        ];
-
         return {
-            internalValue,
-            options
+            internalValue
         };
     },
     template: `
-<DropDownList v-model="internalValue" :items="options" />
+<DayOfWeekPicker v-model="internalValue" />
 `
 });
 

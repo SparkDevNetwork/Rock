@@ -241,6 +241,7 @@ namespace RockWeb.Blocks.Fundraising
                         gmrcRequirements.Visible = true;
                         SetRequirementStatuses( rockContext );
                     }
+
                     CreateDynamicControls( groupMember );
                 }
             }
@@ -617,17 +618,18 @@ namespace RockWeb.Blocks.Fundraising
                 var groupMembers = group.Members.ToList();
 
                 // Create a list of group member Ids that are all the family members in the current group.
-                var familyMemberGroupMemberIdsInCurrentGroup = groupMembers.Where( m => familyMembers.Contains( m.PersonId ) ).Select( m => m.Id ).ToList();
+                var familyMemberGroupMembersInCurrentGroup = groupMembers.Where( m => familyMembers.Contains( m.PersonId ) );
 
-                contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
-                        .Where( d => d.EntityTypeId == entityTypeIdGroupMember
-                                && d.EntityId.HasValue
-                                && familyMemberGroupMemberIdsInCurrentGroup.Contains( d.EntityId.Value ) )
-                        .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+                contributionTotal = new FinancialTransactionDetailService( rockContext )
+                       .GetContributionsForGroupMemberList( entityTypeIdGroupMember, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
 
-                // Multiply the number of family members by the individual fundraising goals from the group (not any goals from the group members).
-                var groupFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
-                fundraisingGoal = groupFundraisingGoal.HasValue ? familyMemberGroupMemberIdsInCurrentGroup.Count * groupFundraisingGoal.Value : 0.00M;
+                // Sum the family members' individual fundraising goals or the goals from the group.
+                fundraisingGoal = 0;
+                foreach ( var member in familyMemberGroupMembersInCurrentGroup )
+                {
+                    member.LoadAttributes( rockContext );
+                    fundraisingGoal += member.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? 0;
+                }
             }
             else
             {

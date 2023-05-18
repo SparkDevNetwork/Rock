@@ -134,8 +134,8 @@ namespace Rock.Blocks.Cms
 
             if ( entity != null )
             {
-                var isViewable = entity.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+                box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
                 if ( loadAttributes )
                 {
@@ -354,7 +354,7 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${PersonalLinkSection.FriendlyTypeName}." );
                 return false;

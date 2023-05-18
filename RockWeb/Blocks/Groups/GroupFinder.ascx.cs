@@ -1529,7 +1529,7 @@ namespace RockWeb.Blocks.Groups
 
                     if ( LavaService.RockLiquidIsEnabled )
                     {
-                        template = Template.Parse( GetAttributeValue( AttributeKey.MapInfo ) );
+                        template = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( AttributeKey.MapInfo ) );
 
                         LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.MapInfo ) );
                     }

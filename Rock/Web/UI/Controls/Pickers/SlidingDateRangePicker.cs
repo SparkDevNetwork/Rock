@@ -735,8 +735,8 @@ namespace Rock.Web.UI.Controls
                     this.SlidingDateRangeMode,
                     ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( this.SlidingDateRangeMode ) ? this.NumberOfTimeUnits : (int?) null,
                     ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( this.SlidingDateRangeMode ) ? this.TimeUnit : (TimeUnitType?) null,
-                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeStart.Value.ToString( "o" ) : null,
-                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeEnd.Value.ToString( "o" ) : null );
+                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeStart?.ToString( "o" ) : null,
+                    this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeEnd?.ToString( "o" ) : null );
             }
 
             set

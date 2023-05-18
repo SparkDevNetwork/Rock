@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace Rock.Security
     /// </summary>
     public class SecuritySettingsService
     {
-        private List<ValidationResult> _validationResults;
+        private readonly List<ValidationResult> _validationResults;
 
         /// <summary>
         /// Gets the validation results.
@@ -61,20 +62,57 @@ namespace Rock.Security
             if ( securitySettings == null )
             {
                 securitySettings = GetDefaultSecuritySettings();
-                SecuritySettings = securitySettings;
-                Save();
+                this.SecuritySettings = securitySettings;
+
+                try
+                {
+                    Save();
+                }
+                catch ( Exception ex )
+                {
+                    if ( IsInsertDuplicateKeySqlException( ex ) )
+                    {
+                        // A security settings record already exists if this exception was thrown,
+                        // so get the latest security settings and move on.
+                        securitySettings = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS ).FromJsonOrThrow<SecuritySettings>();
+                        RefreshSecurityGroups( securitySettings );
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
             else
             {
-                var keys = securitySettings.AccountProtectionProfileSecurityGroup.Keys.ToList();
-                foreach ( var key in keys )
-                {
-                    var roleCache = securitySettings.AccountProtectionProfileSecurityGroup[key];
-                    securitySettings.AccountProtectionProfileSecurityGroup[key] = RoleCache.Get( roleCache.Id );
-                }
+                RefreshSecurityGroups( securitySettings );
             }
 
-            SecuritySettings = securitySettings;
+            this.SecuritySettings = securitySettings;
+        }
+
+        /// <summary>
+        /// Determines whether the <paramref name="ex"/> or one of its inner exceptions is a duplicate key insertion SQL exception.
+        /// </summary>
+        /// <param name="ex">The exception.</param>
+        /// <returns>
+        ///   <c>true</c> if the exception or one of its inner exceptions is a duplicate key insersion SQL exception; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsInsertDuplicateKeySqlException( Exception ex )
+        {
+            var exception = ex;
+
+            while ( exception != null )
+            {
+                if ( exception is System.Data.SqlClient.SqlException sqlException && sqlException.Number == 2601 )
+                {
+                    return true;
+                }
+
+                exception = exception.InnerException;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -85,7 +123,8 @@ namespace Rock.Security
         {
             return new SecuritySettings
             {
-                AccountProtectionProfilesForDuplicateDetectionToIgnore = new List<AccountProtectionProfile> {
+                AccountProtectionProfilesForDuplicateDetectionToIgnore = new List<AccountProtectionProfile>
+                {
                     AccountProtectionProfile.Extreme,
                     AccountProtectionProfile.High,
                     AccountProtectionProfile.Medium
@@ -95,10 +134,32 @@ namespace Rock.Security
                     { AccountProtectionProfile.Extreme, RoleCache.Get( SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ) },
                     { AccountProtectionProfile.High, RoleCache.Get( SystemGuid.Group.GROUP_DATA_INTEGRITY_WORKER.AsGuid() ) }
                 },
-                DisableTokensForAccountProtectionProfiles = new List<AccountProtectionProfile> {
+                DisablePasswordlessSignInForAccountProtectionProfiles = new List<AccountProtectionProfile>
+                {
                     AccountProtectionProfile.Extreme
                 },
+                DisableTokensForAccountProtectionProfiles = new List<AccountProtectionProfile>
+                {
+                    AccountProtectionProfile.Extreme
+                },
+                PasswordlessSignInDailyIpThrottle = SecuritySettings.PasswordlessSignInDailyIpThrottleDefaultValue,
+                PasswordlessConfirmationCommunicationTemplateGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_LOGIN_PASSWORDLESS.AsGuid(),
+                PasswordlessSignInSessionDuration = SecuritySettings.PasswordlessSignInSessionDurationDefaultValue,
             };
+        }
+
+        /// <summary>
+        /// Refreshes the security groups.
+        /// </summary>
+        /// <param name="securitySettings">The security settings.</param>
+        private void RefreshSecurityGroups(SecuritySettings securitySettings)
+        {
+            var keys = securitySettings.AccountProtectionProfileSecurityGroup.Keys.ToList();
+            foreach ( var key in keys )
+            {
+                var roleCache = securitySettings.AccountProtectionProfileSecurityGroup[key];
+                securitySettings.AccountProtectionProfileSecurityGroup[key] = RoleCache.Get( roleCache.Id );
+            }
         }
 
         /// <summary>
@@ -109,7 +170,7 @@ namespace Rock.Security
         {
             if ( Validate() )
             {
-                SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS, this.SecuritySettings.ToJson() );
+                SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS, this.SecuritySettings.ToJson(), SystemGuid.Attribute.SYSTEM_SECURITY_SETTINGS.AsGuid() );
                 return true;
             }
 

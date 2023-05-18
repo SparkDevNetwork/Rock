@@ -56,6 +56,16 @@ namespace Rock.Communication
         public string Url { get; set; }
 
         /// <summary>
+        /// Gets or sets the application badge count. If <c>null</c> then no
+        /// badge count will be included.
+        /// </summary>
+        /// <remarks>
+        /// This is currently only supported by iOS shells.
+        /// </remarks>
+        /// <value>The application badge count.</value>
+        public int? ApplicationBadgeCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the custom keys and values that should be included in the
         /// push notification.
         /// </summary>

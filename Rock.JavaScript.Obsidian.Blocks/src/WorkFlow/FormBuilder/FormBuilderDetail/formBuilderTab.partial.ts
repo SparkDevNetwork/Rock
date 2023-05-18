@@ -16,7 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { computed, defineComponent, reactive, Ref, ref, watch } from "vue";
+import { computed, defineComponent, reactive, Ref, ref, shallowRef, watch } from "vue";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import Modal from "@Obsidian/Controls/modal";
 import Panel from "@Obsidian/Controls/panel";
@@ -36,8 +36,8 @@ import SectionZone from "./sectionZone.partial";
 import { DragSource, DragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { List } from "@Obsidian/Utility/linq";
-import { FormBuilderSettings, FormTemplateListItem, GeneralAsideSettings, IAsideProvider, SectionAsideSettings } from "./types";
-import { FormField, FormFieldType, FormPersonEntry, FormSection } from "../Shared/types";
+import { FormBuilderSettings, FormTemplateListItem, GeneralAsideSettings, IAsideProvider, SectionAsideSettings } from "./types.partial";
+import { FormField, FormFieldType, FormPersonEntry, FormSection } from "../Shared/types.partial";
 import { PropType } from "vue";
 import { useFormSources } from "./utils.partial";
 import { confirmDelete } from "@Obsidian/Utility/dialogs";
@@ -322,7 +322,7 @@ export default defineComponent({
         const fieldReorderDragSourceOptions = getFieldReorderDragSourceOptions(sections);
 
         /** The body element that will be used for drag and drop operations. */
-        const bodyElement = ref<HTMLElement | null>(null);
+        const bodyElement = shallowRef<HTMLElement | null>(null);
 
         /** The component instance that is displaying the general form settings. */
         const generalAsideComponentInstance = ref<IAsideProvider | null>(null);

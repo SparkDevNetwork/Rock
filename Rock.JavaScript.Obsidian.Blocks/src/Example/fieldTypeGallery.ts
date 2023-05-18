@@ -20,7 +20,7 @@ import { Component, computed, defineComponent, PropType, reactive, ref } from "v
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import PanelWidget from "@Obsidian/Controls/panelWidget";
 import TextBox from "@Obsidian/Controls/textBox";
-import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids";
+import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
 import Block from "@Obsidian/Templates/block";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";

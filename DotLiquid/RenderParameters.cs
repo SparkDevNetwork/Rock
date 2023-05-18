@@ -50,7 +50,7 @@ namespace DotLiquid
                  * store any "user-defined, internally-available variables". This Hash is a Dictionary<string, object>
                  * under the hood. We leverage this object to store the collection of "EnabledCommands" for a given
                  * Template. Within the context of a Thread-safe, cached Template, we generally don't want to share
-                 * any of these Register entries bewteen Threads, as a given Thread will have unique entries, but the
+                 * any of these Register entries between Threads, as a given Thread will have unique entries, but the
                  * EnabledCommands entry is an exception to this rule; each time we re-use a cached Template, the
                  * Context needs to be aware of which Rock Commands are enabled for that Template.
                  *

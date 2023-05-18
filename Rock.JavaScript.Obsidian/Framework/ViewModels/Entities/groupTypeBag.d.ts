@@ -52,6 +52,15 @@ export type GroupTypeBag = {
     /** Gets or sets the Rock.Model.PrintTo indicating the type of  location of where attendee labels for Groups of this GroupType should print. */
     attendancePrintTo: number;
 
+    /** Gets or sets the attendance reminder followup days.  This is a comma-delimited list of integer values.  See Rock.Model.GroupType.AttendanceReminderFollowupDaysList */
+    attendanceReminderFollowupDays?: string | null;
+
+    /** Gets or sets the attendance reminder send start offset minutes. */
+    attendanceReminderSendStartOffsetMinutes?: number | null;
+
+    /** Gets or sets the attendance reminder system communication identifier. */
+    attendanceReminderSystemCommunicationId?: number | null;
+
     /** Gets or sets the Rock.Model.AttendanceRule that indicates how attendance is managed a Rock.Model.Group of this GroupType */
     attendanceRule: number;
 

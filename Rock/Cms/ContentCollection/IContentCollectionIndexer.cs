@@ -25,6 +25,7 @@ namespace Rock.Cms.ContentCollection
     /// The methods that must be implemented for an entity to be able to
     /// participate in the content collection system.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal interface IContentCollectionIndexer
     {
         /// <summary>

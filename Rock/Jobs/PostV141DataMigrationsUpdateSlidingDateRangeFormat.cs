@@ -15,9 +15,7 @@
 // </copyright>
 //
 using Rock.Attribute;
-using System;
 using System.ComponentModel;
-using Quartz;
 using Rock.Data;
 using Rock.Model;
 using System.Linq;
@@ -32,7 +30,6 @@ namespace Rock.Jobs
     [DisplayName( "Rock Update Helper v14.1 - Update SlidingDateRange Attribute Values." )]
     [Description( "Updates attribute values of SlidingDateRangeFieldType to RoundTrip format." )]
 
-    [DisallowConcurrentExecution]
     [IntegerField(
         "Command Timeout",
         Description = "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher",
@@ -41,7 +38,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 1,
         Key = AttributeKey.CommandTimeout )]
-    public class PostV141DataMigrationsUpdateSlidingDateRangeFormat : IJob
+    public class PostV141DataMigrationsUpdateSlidingDateRangeFormat : RockJob
     {
         #region Keys
 
@@ -72,13 +69,10 @@ namespace Rock.Jobs
         /// <summary>
         /// Executes the specified context.
         /// </summary>
-        /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the configured timeout, or default to 60 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaults.CommandTimeout;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaults.CommandTimeout;
             var isProcessingComplete = false;
             var batchSize = 1000;
             var totalBatchSize = 0;
@@ -117,13 +111,13 @@ namespace Rock.Jobs
                     var recordsPerMillisecond = recordsProcessed / processTime;
                     var recordsRemaining = totalBatchSize - recordsProcessed;
                     var minutesRemaining = recordsRemaining / recordsPerMillisecond / 1000 / 60;
-                    context.UpdateLastStatusMessage( $"Processing {recordsProcessed} of {totalBatchSize} records. Approximately {minutesRemaining:N0} minutes remaining." );
+                    UpdateLastStatusMessage( $"Processing {recordsProcessed} of {totalBatchSize} records. Approximately {minutesRemaining:N0} minutes remaining." );
                     currentBatch++;
                     isProcessingComplete = attributes.Count < batchSize;
                 }
             }
 
-            ServiceJobService.DeleteJob( context.GetJobId() );
+            ServiceJobService.DeleteJob( GetJobId() );
         }
     }
 }

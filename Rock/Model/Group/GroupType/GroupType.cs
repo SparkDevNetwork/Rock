@@ -37,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "0DD30B04-01CF-4B38-8E83-BE661E2F7286")]
+    [Rock.SystemGuid.EntityTypeGuid( "0DD30B04-01CF-4B38-8E83-BE661E2F7286" )]
     public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
         #region Entity Properties
@@ -667,6 +667,30 @@ namespace Rock.Model
         [DataMember]
         public ScheduleConfirmationLogic ScheduleConfirmationLogic { get; set; }
 
+        /// <summary>
+        /// Gets or sets the attendance reminder system communication identifier.
+        /// </summary>
+        /// <value>The attendance reminder system communication identifier.</value>
+        [DataMember]
+        public int? AttendanceReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance reminder send start offset minutes.
+        /// </summary>
+        /// <value>The attendance reminder send start offset minutes.</value>
+        [DataMember]
+        public int? AttendanceReminderSendStartOffsetMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance reminder followup days.  This is a comma-delimited list of integer values.  See <see cref="AttendanceReminderFollowupDaysList"/>
+        /// </summary>
+        /// <value>The attendance reminder followup days.</value>
+        [DataMember]
+        [MaxLength(100)]
+        public string AttendanceReminderFollowupDays { get; set; }
+
+        //AttendanceReminderLastSentDateTime
+
         #endregion Entity Properties
 
         #region Group Scheduling Related
@@ -696,7 +720,7 @@ namespace Rock.Model
         /// The scheduled system email identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead." )]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? ScheduleConfirmationSystemEmailId { get; set; }
 
@@ -716,7 +740,7 @@ namespace Rock.Model
         /// The schedule reminder system email identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead." )]
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", true )]
         [RockObsolete( "1.10" )]
         public int? ScheduleReminderSystemEmailId { get; set; }
 
@@ -946,7 +970,7 @@ namespace Rock.Model
         /// The scheduled system email.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunication instead." )]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunication instead.", true )]
         [RockObsolete( "1.10" )]
         public virtual SystemEmail ScheduleConfirmationSystemEmail { get; set; }
 
@@ -957,7 +981,7 @@ namespace Rock.Model
         /// The schedule reminder system email.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunication instead." )]
+        [Obsolete( "Use ScheduleReminderSystemCommunication instead.", true )]
         [RockObsolete( "1.10" )]
         public virtual SystemEmail ScheduleReminderSystemEmail { get; set; }
 
@@ -1057,6 +1081,13 @@ namespace Rock.Model
 
         private Dictionary<string, string> _supportedActions;
 
+        /// <summary>
+        /// Gets or sets the attendance reminder system communication.
+        /// </summary>
+        /// <value>The attendance reminder system communication.</value>
+        [DataMember]
+        public virtual SystemCommunication AttendanceReminderSystemCommunication { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -1094,11 +1125,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ScheduleConfirmationSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleReminderSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleCancellationWorkflowType ).WithMany().HasForeignKey( p => p.ScheduleCancellationWorkflowTypeId ).WillCascadeOnDelete( false );
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            this.HasOptional( p => p.ScheduleConfirmationSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemEmailId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.ScheduleReminderSystemEmail ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemEmailId ).WillCascadeOnDelete( false );
-#pragma warning restore CS0618 // Type or member is obsolete
+            this.HasOptional( p => p.AttendanceReminderSystemCommunication ).WithMany().HasForeignKey( p => p.AttendanceReminderSystemCommunicationId ).WillCascadeOnDelete( false );
         }
     }
 

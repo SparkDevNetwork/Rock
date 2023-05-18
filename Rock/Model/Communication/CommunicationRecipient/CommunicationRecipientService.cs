@@ -15,7 +15,12 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
+
+using Rock.ViewModels.Communication;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -50,5 +55,66 @@ namespace Rock.Model
                 .Where( r => r.CommunicationId == communicationId );
         }
 
+        /// <summary>
+        /// Gets the conversation message bag that will represent the specified
+        /// communication recipient message.
+        /// </summary>
+        /// <param name="communicationRecipientId">The communication recipient identifier.</param>
+        /// <returns>A <see cref="ConversationMessageBag"/> that will represent the communication recipient message.</returns>
+        internal ConversationMessageBag GetConversationMessageBag( int communicationRecipientId )
+        {
+            var recipient = Get( communicationRecipientId );
+
+            var publicUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+
+            var rockPhoneNumber = SystemPhoneNumberCache.Get( recipient.Communication.SmsFromSystemPhoneNumberId ?? 0 );
+
+            if ( rockPhoneNumber == null )
+            {
+                throw new Exception( "Unable to determine Rock phone number." );
+            }
+
+            var bag = new ConversationMessageBag
+            {
+                ConversationKey = $"SMS:{rockPhoneNumber.Guid}:{recipient.PersonAlias.Person.Guid}",
+                MessageKey = $"C:{recipient.Guid}",
+                RockContactKey = rockPhoneNumber.Guid.ToString(),
+                ContactKey = recipient.PersonAlias.Person.IsNameless() ? recipient.PersonAlias.Person.PhoneNumbers.FirstOrDefault()?.Number : null,
+                MessageDateTime = recipient.CreatedDateTime,
+                Message = recipient.SentMessage.IsNotNullOrWhiteSpace() ? recipient.SentMessage : recipient.Communication.SMSMessage,
+                IsRead = true,
+                PersonGuid = recipient.PersonAlias.Person.Guid,
+                FullName = recipient.PersonAlias.Person.FullName,
+                IsNamelessPerson = recipient.PersonAlias.Person.IsNameless(),
+                IsOutbound = true,
+                OutboundSenderFullName = recipient.Communication.SenderPersonAlias.Person.FullName,
+                Attachments = new List<ConversationAttachmentBag>()
+            };
+
+            if ( recipient.PersonAlias.Person.PhotoId.HasValue )
+            {
+                bag.PhotoUrl = $"{publicUrl}GetImage.ashx?Id={recipient.PersonAlias.Person.PhotoId}&maxwidth=256&maxheight=256";
+            }
+
+            var attachmentGuids = recipient.Communication.Attachments
+                .Where( ca => ca.CommunicationType == CommunicationType.SMS )
+                .Select( ca => ca.Guid )
+                .ToList();
+
+            foreach ( var attachment in recipient.Communication.Attachments )
+            {
+                var ext = System.IO.Path.GetExtension( attachment.BinaryFile.FileName ).ToLower();
+                var isImage = attachment.BinaryFile.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) == true;
+
+                bag.Attachments.Add( new ConversationAttachmentBag
+                {
+                    FileName = attachment.BinaryFile.FileName,
+                    Url = $"{publicUrl}GetImage.ashx?Guid={attachment.BinaryFile.Guid}",
+                    ThumbnailUrl = isImage ? $"{publicUrl}GetImage.ashx?Guid={attachment.BinaryFile.Guid}&maxwidth=512&maxheight=512" : null
+                } );
+            }
+
+            return bag;
+        }
     }
 }

@@ -1,11 +1,6 @@
 module.exports = {
     root: true,
     parser: "vue-eslint-parser",
-    parserOptions: {
-        parser: "@typescript-eslint/parser",
-        ecmaVersion: 6,
-        sourceType: "module"
-    },
     plugins: [
         "@typescript-eslint",
     ],
@@ -16,6 +11,11 @@ module.exports = {
     env: {
         browser: true,
         amd: true
+    },
+    parserOptions: {
+        parser: "@typescript-eslint/parser",
+        ecmaVersion: 6,
+        sourceType: "module"
     },
     rules: {
         // Warn if tabs are used anywhere in a file.
@@ -107,7 +107,7 @@ module.exports = {
     },
     overrides: [
         {
-            "files": ["src/**/*.ts", "src/**/*.vue"],
+            "files": ["src/**/*.ts", "src/**/*.vue", "src/**/*.obs"],
             "rules": {
                 // Disable undefined use warnings, TypeScript will tell us.
                 "no-undef": 0

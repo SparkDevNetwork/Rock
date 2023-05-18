@@ -460,7 +460,7 @@ namespace Rock.SystemGuid
         /// The groupmember (of a communication list) preferred communication medium
         /// </summary>
         [RockObsolete( "1.10" )]
-        [Obsolete( "This value is no longer used. The Communication Preference on the Group Member should be used." )]
+        [Obsolete( "This value is no longer used. The Communication Preference on the Group Member should be used.", true )]
         public const string GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM = "D7941908-1F65-CC9B-416C-CCFABE4221B9";
 
         #endregion
@@ -723,6 +723,11 @@ namespace Rock.SystemGuid
         /// The defined value log system settings
         /// </summary>
         public const string DEFINED_VALUE_LOG_SYSTEM_SETTINGS = "B9D4A315-8672-4214-B5D3-01A06C3CAD9F";
+
+        /// <summary>
+        /// The system security settings.
+        /// </summary>
+        public const string SYSTEM_SECURITY_SETTINGS = "450EF9DC-66F6-43A3-BE22-9CB8B1C42477";
 
         /// <summary>
         /// The phone number lookup title
@@ -1027,5 +1032,14 @@ namespace Rock.SystemGuid
         /// The category treeview search results
         /// </summary>
         public const string CATEGORY_TREEVIEW_SEARCH_RESULTS = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E";
+
+        #region Sign-Up Group (GroupType) Attributes
+
+        /// <summary>
+        /// The Sign-up Group - Group Type's project type attribute
+        /// </summary>
+        public const string GROUPTYPE_SIGNUP_GROUP_PROJECT_TYPE = "46FFBB10-6E4B-4B3A-A560-61B36C6B0E09";
+
+        #endregion
     }
 }

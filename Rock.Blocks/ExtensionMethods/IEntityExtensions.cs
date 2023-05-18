@@ -26,32 +26,6 @@ namespace Rock.Blocks
 {
     internal static class IEntityExtensions
     {
-        public static ListItemBag ToListItemBag( this IEntity entity )
-        {
-            if ( entity == null )
-            {
-                return null;
-            }
-
-            var viewModel = new ListItemBag
-            {
-                Value = entity.Guid.ToString(),
-                Text = entity.ToString()
-            };
-
-            return viewModel;
-        }
-
-        public static List<ListItemBag> ToListItemBagList( this IEnumerable<IEntity> entities )
-        {
-            if ( entities == null )
-            {
-                return new List<ListItemBag>();
-            }
-
-            return entities.Select( e => e.ToListItemBag() ).ToList();
-        }
-
         public static int? GetEntityId<TEntity>( this ListItemBag viewModel, RockContext rockContext )
             where TEntity : IEntity
         {

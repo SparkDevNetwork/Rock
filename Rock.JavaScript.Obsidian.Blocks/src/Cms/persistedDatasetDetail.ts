@@ -16,15 +16,15 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
-import { EntityType } from "@Obsidian/SystemGuids";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
-import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
+import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import EditPanel from "./PersistedDatasetDetail/editPanel.partial";
 import ViewPanel from "./PersistedDatasetDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { NavigationUrlKey } from "./PersistedDatasetDetail/types";
+import { NavigationUrlKey } from "./PersistedDatasetDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { PersistedDatasetBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetBag";
 import { PersistedDatasetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetDetailOptionsBag";
@@ -33,7 +33,7 @@ export default defineComponent({
     name: "Cms.PersistedDatasetDetail",
 
     components: {
-        Alert,
+        NotificationBox,
         EditPanel,
         DetailBlock,
         ViewPanel
@@ -52,7 +52,7 @@ export default defineComponent({
         const persistedDatasetViewBag = ref(config.entity);
         const persistedDatasetEditBag = ref<PersistedDatasetBag | null>(null);
 
-        const panelMode = ref(DetailPanelMode.View);
+        const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
         // The properties that are being edited in the UI. This is used to
         // inform the server which incoming values have valid data in them.
@@ -233,7 +233,7 @@ export default defineComponent({
          * Event handler for when a value has changed that has an associated
          * C# property name. This is used to detect changes to values that
          * might cause qualified attributes to either show up or not show up.
-         * 
+         *
          * @param propertyName The name of the C# property that was changed.
          */
         const onPropertyChanged = (propertyName: string): void => {
@@ -281,9 +281,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+<NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
 
-<Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+<NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
 <DetailBlock v-if="!blockError"
     v-model:mode="panelMode"

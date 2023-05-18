@@ -18,8 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Rock.Data;
+using Rock.RealTime;
+using Rock.RealTime.Topics;
+using Rock.ViewModels.Engagement;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -180,6 +184,214 @@ namespace Rock.Model
                 .OrderByDescending( saa => saa.AchievementAttemptStartDateTime )
                 .ToList();
         }
+
+        #region RealTime Related
+
+        /// <summary>
+        /// Sends the achievement completed real time notifications for the
+        /// specified achievement attempt records.
+        /// </summary>
+        /// <param name="achievementAttemptGuids">The achievement attempt unique identifiers.</param>
+        /// <returns>A task that represents this operation.</returns>
+        internal static async Task SendAchievementCompletedRealTimeNotificationsAsync( IEnumerable<Guid> achievementAttemptGuids )
+        {
+            var guids = achievementAttemptGuids.ToList();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var achievementAttemptService = new AchievementAttemptService( rockContext );
+
+                while ( guids.Any() )
+                {
+                    // Work with at most 1,000 records at a time since it
+                    // translates to an IN query which doesn't perform well
+                    // on large sets.
+                    var guidsToProcess = guids.Take( 1_000 ).ToList();
+                    guids = guids.Skip( 1_000 ).ToList();
+
+                    try
+                    {
+                        var qry = achievementAttemptService
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( aa => achievementAttemptGuids.Contains( aa.Guid ) );
+
+                        await SendAchievementCompletedRealTimeNotificationsAsync( qry, rockContext );
+                    }
+                    catch ( Exception ex )
+                    {
+                        Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send achievement completed real time notifications for the achievement
+        /// attempt records returned by the query.
+        /// </summary>
+        /// <param name="qry">The query that provides the achievement attempt records.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A task that represents this operation.</returns>
+        private static async Task SendAchievementCompletedRealTimeNotificationsAsync( IQueryable<AchievementAttempt> qry, RockContext rockContext )
+        {
+            var bags = GetAchievementCompletedMessageBags( qry, rockContext );
+
+            if ( !bags.Any() )
+            {
+                return;
+            }
+
+            var topicClients = RealTimeHelper.GetTopicContext<IEntityUpdated>().Clients;
+
+            var tasks = bags
+                .Select( b =>
+                {
+                    return Task.Run( () =>
+                    {
+                        var channels = EntityUpdatedTopic.GetAchievementCompletedChannelsForBag( b );
+
+                        return topicClients
+                            .Channels( channels )
+                            .AchievementCompleted( b );
+                    } );
+                } )
+                .ToArray();
+
+            try
+            {
+                await Task.WhenAll( tasks );
+            }
+            catch ( Exception ex )
+            {
+                Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// Gets the achievement completed message bags from the query using the
+        /// most optimal pattern.
+        /// </summary>
+        /// <param name="qry">The query that provides the achievement attempt records.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A list of <see cref="AchievementCompletedMessageBag"/> objects that represent the achievements.</returns>
+        private static List<AchievementCompletedMessageBag> GetAchievementCompletedMessageBags( IQueryable<AchievementAttempt> qry, RockContext rockContext )
+        {
+            var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+            var bags = new List<AchievementCompletedMessageBag>();
+
+            // Query the database and group the results by the achievement type.
+            var groupedRecords = qry
+                .Select( aa => new
+                {
+                    aa.Guid,
+                    AchievementTypeGuid = aa.AchievementType.Guid,
+                    aa.AchieverEntityId
+                } )
+                .GroupBy( aa => aa.AchievementTypeGuid )
+                .ToList();
+
+            foreach ( var records in groupedRecords )
+            {
+                // Determine the entity type for the achievers of this group.
+                var achievementTypeCache = AchievementTypeCache.Get( records.Key );
+                var entityType = achievementTypeCache?.AchieverEntityTypeCache?.GetEntityType();
+                var entityIds = records.Select( aa => aa.AchieverEntityId ).ToList();
+
+                if ( entityType == null )
+                {
+                    continue;
+                }
+
+                Dictionary<int, IEntity> entityLookup;
+
+                if ( entityType == typeof( PersonAlias ) )
+                {
+                    // A bit of special logic to deal with PersonAlias so we
+                    // actually get back a Person object.
+                    entityLookup = new PersonAliasService( rockContext )
+                        .Queryable()
+                        .Where( pa => entityIds.Contains( pa.Id ) )
+                        .Select( pa => new
+                        {
+                            pa.Id,
+                            pa.Person
+                        } )
+                        .ToList()
+                        .ToDictionary( pa => pa.Id, pa => ( IEntity ) pa.Person );
+                }
+                else
+                {
+                    // Dynamically get the IService for the entity type and
+                    // then get a queryable to load them.
+                    var entityService = Rock.Reflection.GetServiceForEntityType( entityType, rockContext );
+
+                    var asQueryableMethod = entityService?.GetType()
+                        .GetMethod( "Queryable", Array.Empty<Type>() );
+
+                    // Must not really be an IEntity type...
+                    if ( asQueryableMethod == null )
+                    {
+                        return bags;
+                    }
+
+                    var entityQry = ( IQueryable<IEntity> ) asQueryableMethod?.Invoke( entityService, Array.Empty<object>() );
+
+                    // Load all entities referenced by one of the achievement
+                    // attempts and the populate the lookup dictionary.
+                    entityLookup = entityQry
+                        .AsNoTracking()
+                        .Where( e => entityIds.Contains( e.Id ) )
+                        .ToList()
+                        .ToDictionary( e => e.Id, e => e );
+                }
+
+                var groupBags = records
+                    .Select( r =>
+                    {
+                        // Since there is no foreign key, it's possible to have
+                        // an achievement attempt without an entity.
+                        if ( !entityLookup.TryGetValue( r.AchieverEntityId, out var entity ) )
+                        {
+                            return null;
+                        }
+
+                        var bag = new AchievementCompletedMessageBag
+                        {
+                            AchievementAttemptGuid = r.Guid,
+                            AchievementTypeGuid = r.AchievementTypeGuid,
+                            AchievementTypeName = achievementTypeCache.Name,
+                            EntityGuid = entity.Guid,
+                            EntityName = entity.ToString()
+                        };
+
+                        if ( achievementTypeCache.ImageBinaryFileId.HasValue )
+                        {
+                            bag.AchievementTypeImageUrl = $"{publicApplicationRoot}GetImage.ashx?Id={achievementTypeCache.ImageBinaryFileId}";
+                        }
+
+                        if ( achievementTypeCache.AlternateImageBinaryFileId.HasValue )
+                        {
+                            bag.AchievementTypeAlternateImageUrl = $"{publicApplicationRoot}GetImage.ashx?Id={achievementTypeCache.AlternateImageBinaryFileId}";
+                        }
+
+                        // If the entity is a person, populate the photo URL.
+                        if ( entity is Person person )
+                        {
+                            bag.EntityPhotoUrl = $"{publicApplicationRoot}{person.PhotoUrl.TrimStart( '~', '/' )}";
+                        }
+
+                        return bag;
+                    } )
+                    .Where( b => b != null );
+
+                bags.AddRange( groupBags );
+            }
+
+            return bags;
+        }
+
+        #endregion
 
         /// <summary>
         /// 

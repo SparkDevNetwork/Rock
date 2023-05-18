@@ -15,8 +15,9 @@
 // </copyright>
 //
 using System.Collections.Generic;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -52,6 +53,22 @@ namespace Rock.Field.Types
             // Default method tries to HTML encode which we don't want to do.
             return GetTextValue( privateValue, privateConfigurationValues );
         }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Lava could cause a different result with each render.
+            return false;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Formats the value.
@@ -114,17 +131,7 @@ namespace Rock.Field.Types
             return FormatValue( parentControl, value, configurationValues, condensed );
         }
 
-        #endregion
-
-        #region Persistence
-
-        /// <inheritdoc/>
-        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
-        {
-            // Lava could cause a different result with each render.
-            return false;
-        }
-
+#endif
         #endregion
     }
 }

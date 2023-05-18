@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -236,7 +237,18 @@ namespace Rock.Model
         /// From number.
         /// </value>
         [DataMember]
+        [Obsolete( "Use SmsFromSystemPhoneNumberId instead." )]
+        [RockObsolete( "1.15" )]
         public int? SMSFromDefinedValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system phone number identifier used for SMS sending.
+        /// </summary>
+        /// <value>
+        /// The system phone number identifier used for SMS sending.
+        /// </value>
+        [DataMember]
+        public int? SmsFromSystemPhoneNumberId { get; set; }
 
         /// <summary>
         /// Gets or sets the message.
@@ -407,7 +419,18 @@ namespace Rock.Model
         /// The SMS from defined value.
         /// </value>
         [DataMember]
+        [Obsolete( "Use SmsFromSystemPhoneNumber instead." )]
+        [RockObsolete( "1.15" )]
         public virtual DefinedValue SMSFromDefinedValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system phone number used for SMS sending.
+        /// </summary>
+        /// <value>
+        /// The system phone number used for SMS sending.
+        /// </value>
+        [DataMember]
+        public virtual SystemPhoneNumber SmsFromSystemPhoneNumber { get; set; }
 
         #endregion
     }
@@ -429,7 +452,7 @@ namespace Rock.Model
             this.HasOptional( c => c.LogoBinaryFile ).WithMany().HasForeignKey( c => c.LogoBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.PushImageBinaryFile ).WithMany().HasForeignKey( c => c.PushImageBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
-            this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.SmsFromSystemPhoneNumber ).WithMany().HasForeignKey( c => c.SmsFromSystemPhoneNumberId ).WillCascadeOnDelete( false );
         }
     }
 

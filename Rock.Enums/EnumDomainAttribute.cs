@@ -29,7 +29,7 @@ namespace Rock.Enums
         public string Domain { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EnumDomainAttribute"/> class.
+        /// Initializes a new instance of the EnumDomainAttribute class.
         /// </summary>
         /// <param name="domain">The domain.</param>
         public EnumDomainAttribute( string domain )

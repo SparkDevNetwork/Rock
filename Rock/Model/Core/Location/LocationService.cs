@@ -665,6 +665,37 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the mapCoordinate from city and state combination.
+        /// </summary>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <returns></returns>
+        public MapCoordinate GetMapCoordinateFromCityState( string city, string state )
+        {
+            Address.SmartyStreets smartyStreets = new Address.SmartyStreets();
+            string resultMsg = string.Empty;
+            var coordinate = smartyStreets.GetLocationFromCityState( city, state, out resultMsg );
+
+            // Log the results of the service.
+            if ( !string.IsNullOrWhiteSpace( resultMsg ) )
+            {
+                var rockContext = new RockContext();
+                Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
+                Model.ServiceLog log = new Model.ServiceLog();
+                log.LogDateTime = RockDateTime.Now;
+                log.Type = "Mapcoordinate from city and state";
+                log.Name = smartyStreets.TypeName;
+                log.Input = $"{city}, {state}";
+                log.Result = resultMsg.Left( 200 );
+                log.Success = coordinate != null;
+                logService.Add( log );
+                rockContext.SaveChanges();
+            }
+
+            return coordinate;
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Location">Locations</see> that are descendants of a <see cref="Rock.Model.Location"/>
         /// </summary>
         /// <param name="parentLocationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/></param>

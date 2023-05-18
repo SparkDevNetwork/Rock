@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
-using Quartz;
 using Quartz.Impl.Matchers;
+using Quartz;
 
 using Rock.Attribute;
 using Rock.Model;
@@ -41,8 +40,7 @@ namespace Rock.Jobs
         DefaultBooleanValue = false,
         Order = 0 )]
 
-    [DisallowConcurrentExecution]
-    public class JobPulse : IJob
+    public class JobPulse : RockJob
     {
 
         /// <summary>
@@ -67,12 +65,9 @@ namespace Rock.Jobs
         /// <summary> 
         /// System job that allows Rock to monitor the jobs engine
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            context.GetJobId();
-
-            var setJobPulseDateTimeGlobalAttribute = dataMap.GetString( AttributeKey.SetJobPulseDateTimeGlobalAttribute ).AsBoolean();
+            var setJobPulseDateTimeGlobalAttribute = GetAttributeValue( AttributeKey.SetJobPulseDateTimeGlobalAttribute ).AsBoolean();
 
             if ( setJobPulseDateTimeGlobalAttribute )
             {
@@ -82,23 +77,22 @@ namespace Rock.Jobs
                 globalAttributesCache.SetValue( "JobPulse", RockDateTime.Now.ToString(), true );
             }
 
-            UpdateScheduledJobs( context );
+            UpdateScheduledJobs();
         }
 
         /// <summary>
         /// Updates the scheduled jobs.
         /// </summary>
-        /// <param name="context">The context.</param>
-        private void UpdateScheduledJobs( IJobExecutionContext context )
+        private void UpdateScheduledJobs()
         {
-            var scheduler = context.Scheduler;
+            var scheduler = this.Scheduler;
             int jobsDeleted = 0;
             int jobsScheduleUpdated = 0;
 
             var rockContext = new Rock.Data.RockContext();
             ServiceJobService jobService = new ServiceJobService( rockContext );
             List<ServiceJob> activeJobList = jobService.GetActiveJobs().ToList();
-            List<Quartz.JobKey> scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) ).ToList();
+            var scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) );
 
             // delete any jobs that are no longer exist (are are not set to active) in the database
             var quartsJobsToDelete = scheduledQuartzJobs.Where( a => !activeJobList.Any( j => j.Guid.Equals( a.Name.AsGuid() ) ) );
@@ -150,12 +144,13 @@ namespace Rock.Jobs
             }
 
             // reload the jobs in case any where added/removed
-            scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) ).ToList();
+            scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) );
 
             // update schedule if the schedule has changed
             foreach ( var jobKey in scheduledQuartzJobs )
             {
-                var jobCronTrigger = scheduler.GetTriggersOfJob( jobKey ).OfType<ICronTrigger>().FirstOrDefault();
+                var triggersOfJob = scheduler.GetTriggersOfJob( jobKey );
+                var jobCronTrigger = triggersOfJob.OfType<ICronTrigger>().FirstOrDefault();
                 var activeJob = activeJobList.FirstOrDefault( a => a.Guid.Equals( jobKey.Name.AsGuid() ) );
                 if ( jobCronTrigger == null || activeJob == null )
                 {
@@ -214,16 +209,16 @@ namespace Rock.Jobs
                 }
             }
 
-            context.Result = string.Empty;
+            this.Result = string.Empty;
 
             if ( jobsDeleted > 0 )
             {
-                context.Result += string.Format( "Deleted {0} job schedule(s)", jobsDeleted );
+                this.Result += string.Format( "Deleted {0} job schedule(s)", jobsDeleted );
             }
 
             if ( jobsScheduleUpdated > 0 )
             {
-                context.Result += ( string.IsNullOrEmpty( context.Result as string ) ? "" : " and " ) + string.Format( "Updated {0} schedule(s)", jobsScheduleUpdated );
+                this.Result += ( string.IsNullOrEmpty( this.Result as string ) ? "" : " and " ) + string.Format( "Updated {0} schedule(s)", jobsScheduleUpdated );
             }
         }
     }

@@ -301,6 +301,12 @@
 
                     <div class="row">
                         <div class="col-md-6">
+                            <Rock:PagePicker ID="ppEditSmsConversationPage" runat="server" Label="SMS Conversation Page" Help="If you are using the SMS conversations, then set this to the page that contains the SMS Conversation block." />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
                             <Rock:RockTextBox ID="tbEditApiKey" runat="server" Label="API Key" Required="true" />
                         </div>
                     </div>

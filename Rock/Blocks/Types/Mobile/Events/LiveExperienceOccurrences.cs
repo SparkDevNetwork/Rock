@@ -71,6 +71,12 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.Template,
         Order = 4 )]
 
+    [IntegerField( "Refresh Interval",
+        Description = "If set to a value greater than 0 the block will automatically refresh itself every 'Refresh Interval' seconds. This only happens when the block is on the visible page. Even so care should be taken when using this and it should probably never be set below 60 (except 0 to disable it).",
+        DefaultIntegerValue = 0,
+        Key = AttributeKeys.RefreshInterval,
+        Order = 5 )]
+
     #endregion
 
     [SystemGuid.EntityTypeGuid( "af20692a-9ae1-4faf-a506-d408b14652d1" )]
@@ -106,10 +112,18 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()
         {
+            var refreshInterval = GetAttributeValue( AttributeKeys.RefreshInterval ).AsInteger();
+
+            if ( refreshInterval < 0 )
+            {
+                refreshInterval = 0;
+            }
+
             return new
             {
                 AlwaysRequestLocation = GetAttributeValue( AttributeKeys.AlwaysRequestLocation ).AsBoolean(),
-                LoginPageGuid = GetAttributeValue( AttributeKeys.LoginPage ).AsGuidOrNull()
+                LoginPageGuid = GetAttributeValue( AttributeKeys.LoginPage ).AsGuidOrNull(),
+                RefreshInterval = refreshInterval
             };
         }
 
@@ -127,6 +141,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             public const string LoginPage = "LoginPage";
             public const string ShowAll = "ShowAll";
             public const string Template = "Template";
+            public const string RefreshInterval = "RefreshInterval";
         }
 
         #endregion

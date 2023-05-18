@@ -173,6 +173,7 @@ namespace Rock.Model
                 Name = model.Name,
                 PersistedLastRefreshDateTime = model.PersistedLastRefreshDateTime,
                 PersistedLastRunDurationMilliseconds = model.PersistedLastRunDurationMilliseconds,
+                PersistedScheduleId = model.PersistedScheduleId,
                 PersistedScheduleIntervalMinutes = model.PersistedScheduleIntervalMinutes,
                 RunCount = model.RunCount,
                 RunCountLastRefreshDateTime = model.RunCountLastRefreshDateTime,
@@ -260,6 +261,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
             target.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
+            target.PersistedScheduleId = source.PersistedScheduleId;
             target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             target.RunCount = source.RunCount;
             target.RunCountLastRefreshDateTime = source.RunCountLastRefreshDateTime;

@@ -17,13 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Encodings.Web;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
@@ -49,27 +45,32 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Key = AttributeKey.CaseWorkerRole,
         Order = 1 )]
+
     [BooleanField(
         "Display Country Code",
         Key = AttributeKey.DisplayCountryCode,
         Description = "When enabled prepends the country code to all phone numbers.",
         DefaultBooleanValue = false,
         Order = 2 )]
+
     [BooleanField( "Display Government Id",
         Key = AttributeKey.DisplayGovernmentId,
         Description = "Display the government identifier.",
         DefaultBooleanValue = true,
         Order = 3 )]
+
     [BooleanField( "Display Middle Name",
         Key = AttributeKey.DisplayMiddleName,
         Description = "Display the middle name of the person.",
         DefaultBooleanValue = false,
         Order = 4 )]
+
     [LinkedPage( "Benevolence Request Statement Page",
         Description = "The page which summarizes a benevolence request for printing",
         IsRequired = true,
         Key = AttributeKey.BenevolenceRequestStatementPage,
         Order = 5 )]
+
     [LinkedPage(
         "Workflow Detail Page",
         Description = "Page used to display details about a workflow.",
@@ -83,6 +84,26 @@ namespace RockWeb.Blocks.Finance
         Order = 7,
         Key = AttributeKey.WorkflowEntryPage,
         DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY )]
+
+    [CustomDropdownListField(
+        "Race",
+        Key = AttributeKey.RaceOption,
+        Description = "Allow race to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = "Individual",
+        Order = 8 )]
+
+    [CustomDropdownListField(
+        "Ethnicity",
+        Key = AttributeKey.EthnicityOption,
+        Description = "Allow Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Category = "Individual",
+        Order = 9 )]
     #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "34275D0E-BC7E-4A9C-913E-623D086159A1" )]
@@ -109,9 +130,19 @@ namespace RockWeb.Blocks.Finance
             public const string BenevolenceRequestStatementPage = "BenevolenceRequestStatementPage";
             public const string WorkflowDetailPage = "WorkflowDetailPage";
             public const string WorkflowEntryPage = "WorkflowEntryPage";
+            public const string RaceOption = "RaceOption";
+            public const string EthnicityOption = "EthnicityOption";
         }
 
         #endregion Attribute Keys
+
+        #region List Source
+        private static class ListSource
+        {
+            public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
+        }
+
+        #endregion
 
         #region Page PageParameterKeys
         private static class PageParameterKey
@@ -162,6 +193,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
+            base.OnInit( e );
             SetPageParameters();
             _caseWorkRoleGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuidOrNull();
 
@@ -179,6 +211,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             dlEditDocuments.ItemDataBound += dlDocuments_ItemDataBound;
+            BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -192,6 +225,7 @@ namespace RockWeb.Blocks.Finance
             _caseWorkRoleGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuidOrNull();
             LoadEditDetails();
             LoadViewDetails();
+            ConfigureRaceAndEthnicityControls();
         }
 
         /// <summary>
@@ -228,6 +262,7 @@ namespace RockWeb.Blocks.Finance
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             LoadEditDetails();
+            ConfigureRaceAndEthnicityControls();
         }
 
         /// <summary>
@@ -408,7 +443,7 @@ namespace RockWeb.Blocks.Finance
             Person person = persons?.FirstOrDefault();
             if ( person == null )
             {
-                person = new Person { FirstName = firstName, LastName = lastName, Email = emailAddress };
+                person = new Person { FirstName = firstName, LastName = lastName, Email = emailAddress, RaceValueId = rpRace.SelectedValueAsId(), EthnicityValueId = epEthnicity.SelectedValueAsId() };
                 var group = PersonService.SaveNewPerson( person, rockContext );
 
                 SavePhoneNumbers( person.Id, homePhone, mobilePhone, workPhone, rockContext );
@@ -507,6 +542,12 @@ namespace RockWeb.Blocks.Finance
                     dvpEditConnectionStatus.SetValue( person.ConnectionStatusValueId );
                     dvpEditConnectionStatus.Enabled = false;
 
+                    rpRace.SetValue( person.RaceValueId );
+                    rpRace.Enabled = false;
+
+                    epEthnicity.SetValue( person.EthnicityValueId );
+                    epEthnicity.Enabled = false;
+
                     var homePhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                     if ( homePhoneType != null )
                     {
@@ -567,6 +608,8 @@ namespace RockWeb.Blocks.Finance
                 ebEditEmail.Enabled = true;
                 lapEditAddress.Enabled = true;
                 lbEditCreatePerson.Visible = true;
+                rpRace.Enabled = true;
+                epEthnicity.Enabled = true;
             }
         }
 
@@ -580,7 +623,7 @@ namespace RockWeb.Blocks.Finance
             if ( fuEditDoc.BinaryFileId.HasValue )
             {
                 _documentsState.Add( fuEditDoc.BinaryFileId.Value );
-                BindUploadDocuments(  );
+                BindUploadDocuments();
             }
         }
 
@@ -593,7 +636,7 @@ namespace RockWeb.Blocks.Finance
             if ( e.BinaryFileId.HasValue )
             {
                 _documentsState.Remove( e.BinaryFileId.Value );
-                BindUploadDocuments(  );
+                BindUploadDocuments();
             }
         }
 
@@ -852,7 +895,7 @@ namespace RockWeb.Blocks.Finance
         #endregion View Events
 
         #region Edit Methods
-        
+
         /// <summary>
         /// Sets the edit mode.
         /// </summary>
@@ -870,6 +913,15 @@ namespace RockWeb.Blocks.Finance
         {
             pnlViewDetail.Visible = true;
             pnlEditDetail.Visible = false;
+        }
+
+        private void ConfigureRaceAndEthnicityControls()
+        {
+            rpRace.Visible = GetAttributeValue( AttributeKey.RaceOption ) != "Hide";
+            rpRace.Required = GetAttributeValue( AttributeKey.RaceOption ) == "Required";
+
+            epEthnicity.Visible = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
+            epEthnicity.Required = GetAttributeValue( AttributeKey.EthnicityOption ) == "Required";
         }
 
         /// <summary>
@@ -996,7 +1048,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 _documentsState = benevolenceRequest.Documents.OrderBy( s => s.Order ).Select( s => s.BinaryFileId ).ToList();
-                BindUploadDocuments(  );
+                BindUploadDocuments();
 
                 avcAttributes.AddEditControls( benevolenceRequest, Rock.Security.Authorization.EDIT, CurrentPerson );
 
@@ -1458,16 +1510,8 @@ namespace RockWeb.Blocks.Finance
             DisplayPersonName();
 
             // Setup Image
-            if ( _requester?.PhotoId != null && _requester.PhotoId.HasValue )
-            {
-                imgViewRequestor.ImageUrl = Person.GetPersonPhotoUrl( _requester );
-            }
-            else
-            {
-                imgViewRequestor.ImageUrl = "/Assets/Images/person-no-photo-unknown.svg";
-            }
-
-            if ( _assignedTo?.PhotoId != null && _assignedTo.PhotoId.HasValue )
+            imgViewRequestor.ImageUrl = Person.GetPersonPhotoUrl( _requester );
+            if ( _assignedTo != null )
             {
                 imgViewAssignedTo.ImageUrl = Person.GetPersonPhotoUrl( _assignedTo );
             }
@@ -1611,6 +1655,7 @@ namespace RockWeb.Blocks.Finance
 
             divViewRelatedDocs.Visible = documentList.Any();
 
+            ConfigureRaceAndEthnicityControls();
         }
 
         /// <summary>

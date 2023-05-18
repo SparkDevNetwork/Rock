@@ -16,10 +16,10 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.vue";
-import { EntityType } from "@Obsidian/SystemGuids";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
-import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
+import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import ContentSources from "./ContentCollectionDetail/contentSources.partial";
 import EditPanel from "./ContentCollectionDetail/editPanel.partial";
@@ -27,7 +27,7 @@ import SearchFilters from "./ContentCollectionDetail/searchFilters.partial";
 import ViewPanel from "./ContentCollectionDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { debounce } from "@Obsidian/Utility/util";
-import { NavigationUrlKey } from "./ContentCollectionDetail/types";
+import { NavigationUrlKey } from "./ContentCollectionDetail/types.partial";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { ContentCollectionBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionBag";
 import { ContentCollectionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionDetailOptionsBag";
@@ -37,7 +37,7 @@ export default defineComponent({
     name: "Cms.ContentCollectionView",
 
     components: {
-        Alert,
+        NotificationBox,
         ContentSources,
         SearchFilters,
         EditPanel,
@@ -58,7 +58,7 @@ export default defineComponent({
         const contentCollectionViewBag = ref(config.entity);
         const contentCollectionEditBag = ref<ContentCollectionBag | null>(null);
 
-        const panelMode = ref(DetailPanelMode.View);
+        const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
         const isContentSourcesActive = ref(true);
 
@@ -225,7 +225,7 @@ export default defineComponent({
          * Event handler for when a value has changed that has an associated
          * C# property name. This is used to detect changes to values that
          * might cause qualified attributes to either show up or not show up.
-         * 
+         *
          * @param propertyName The name of the C# property that was changed.
          */
         const onPropertyChanged = (propertyName: string): void => {
@@ -356,9 +356,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+<NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
 
-<Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+<NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
 <v-style>
     .content-collection-detail .label-container > .label + .label {

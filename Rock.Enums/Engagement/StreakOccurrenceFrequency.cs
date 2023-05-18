@@ -1,0 +1,45 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+namespace Rock.Model
+{
+    /// <summary>
+    /// Represents the timespan represented by each of the StreakType bits.
+    /// </summary>
+    [Enums.EnumDomain( "Engagement" )]
+    public enum StreakOccurrenceFrequency
+    {
+        /// <summary>
+        /// The StreakType has bits that represent a day.
+        /// </summary>
+        Daily = 0,
+
+        /// <summary>
+        /// The StreakType has bits that represent a week.
+        /// </summary>
+        Weekly = 1,
+
+        /// <summary>
+        /// The StreakType has bits that represent a month.
+        /// </summary>
+        Monthly = 2,
+
+        /// <summary>
+        /// The StreakType has bits that represent a year.
+        /// </summary>
+        Yearly = 3
+    }
+}

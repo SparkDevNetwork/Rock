@@ -19,7 +19,7 @@ namespace Rock.Plugin.HotFixes {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class HotFixMigrationResource {
@@ -366,7 +366,7 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to /*
+        ///   Looks up a localized string similar to 
         ///
         ///&lt;doc&gt;
         /// &lt;summary&gt;
@@ -434,8 +434,7 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -832,7 +831,7 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
         ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
@@ -844,11 +843,28 @@ namespace Rock.Plugin.HotFixes {
         ///
         ///{%- if type == &apos;&apos;stackedbar&apos;&apos; -%}
         ///    {%- assign type = &apos;&apos;bar&apos;&apos; -%}
-        ///    {%- assign xaxistype = &apos;&apos;stacked&apos;&apos; -% [rest of string was truncated]&quot;;.
+        ///    {%- assign xaxistype = &apos;&apos;st [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix {
             get {
                 return ResourceManager.GetString("_157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% assign apiKey = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;GoogleApiKey&apos;&apos; %}
+        ///
+        ///{% if apiKey == &quot;&quot; %}
+        ///    &lt;div class=&quot;alert alert-warning&quot;&gt;
+        ///        There is no Google API key defined. Please add your key under: &apos;&apos;Admin Tools &gt; General Settings &gt; Global Attributes &gt; Google API Key&apos;&apos;.
+        ///    &lt;/div&gt;
+        ///{% endif %}
+        ///
+        ///{% assign url = &apos;&apos;https://maps.googleapis.com/maps/api/staticmap?&apos;&apos; | Append:&apos;&apos;size=&apos;&apos; | Append:imagesize | Append:&apos;&apos;&amp;maptype=&apos;&apos; | Append:maptype | Append:&apos;&apos;&amp;scale=&apos;&apos; | Append:scale | [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap {
+            get {
+                return ResourceManager.GetString("_167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap", resourceCulture);
             }
         }
     }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -219,10 +219,10 @@ function() {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
             var accountPicker = controls[0] as AccountPicker;
-            var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( selectionConfig.AccountGuids );
+            var accounts = FinancialAccountCache.GetByGuids( selectionConfig.AccountGuids );
             if ( accounts != null && accounts.Any() )
             {
-                accountPicker.SetValues( accounts );
+                accountPicker.SetValuesFromCache( accounts );
             }
 
             var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;

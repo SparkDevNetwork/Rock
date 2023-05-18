@@ -57,6 +57,16 @@ namespace Rock.Utility
 
             sparkLinkRequest.NumberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
 
+            sparkLinkRequest.PluginBlockTypes = new BlockTypeService( rockContext ).Queryable()
+                .Where( bt => bt.Path.Contains( "~/Plugins" ) )
+                .Select( bt => new PluginBlockType()
+                {
+                    CreatedDateTime = bt.CreatedDateTime,
+                    ModifiedDateTime = bt.ModifiedDateTime,
+                    Name = bt.Name,
+                    Path = bt.Path,
+                } ).ToList();
+
             // Fetch the organization address
             var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
             if ( !organizationAddressLocationGuid.Equals( Guid.Empty ) )
@@ -179,6 +189,14 @@ namespace Rock.Utility
             /// The number of active records.
             /// </value>
             public int NumberOfActiveRecords { get; set; }
+
+            /// <summary>
+            /// Gets or sets the plugin block types.
+            /// </summary>
+            /// <value>
+            /// The plugin block types.
+            /// </value>
+            public List<PluginBlockType> PluginBlockTypes { get; set; }
         }
 
         /// <summary>
@@ -256,6 +274,45 @@ namespace Rock.Utility
                 Country = location.Country;
             }
         }
+
+        /// <summary>
+        /// Details of BlockTypes from plugins
+        /// </summary>
+        public class PluginBlockType
+        {
+            /// <summary>
+            /// Gets or sets the path.
+            /// </summary>
+            /// <value>
+            /// The path.
+            /// </value>
+            public string Path { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the created date time.
+            /// </summary>
+            /// <value>
+            /// The created date time.
+            /// </value>
+            public DateTime? CreatedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the modified date time.
+            /// </summary>
+            /// <value>
+            /// The modified date time.
+            /// </value>
+            public DateTime? ModifiedDateTime { get; set; }
+        }
+
         #endregion
 
     }

@@ -1,0 +1,85 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+
+    <RockButton
+        v-if="isCredentialLoginSupported && !loginMethodWrapper.isCredential"
+        :btnType="BtnType.Default"
+        class="w-100"
+        :disabled="disabled"
+        type="button"
+        @click="onSignInWithAccountClicked()">Sign in with Account</RockButton>
+
+    <RockButton
+        v-else-if="isPasswordlessLoginSupported && !loginMethodWrapper.isPasswordless"
+        :btnType="BtnType.Default"
+        class="w-100"
+        :disabled="disabled"
+        type="button"
+        @click="onSignInWithEmailOrPhoneClicked()">Sign in with Email or Phone</RockButton>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import { LoginMethod } from "@Obsidian/Enums/Blocks/Security/Login/loginMethod";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LoginMethod>,
+            required: true
+        },
+        isCredentialLoginSupported: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        isPasswordlessLoginSupported: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: LoginMethod): void
+    }>();
+
+    //#region Values
+
+    //#endregion
+
+    //#region Computed Values
+
+    const loginMethodWrapper = computed(() => ({
+        isCredential: internalLoginMethod.value === LoginMethod.InternalDatabase,
+        isPasswordless: internalLoginMethod.value === LoginMethod.Passwordless
+    }));
+
+    const internalLoginMethod = computed({
+        get() {
+            return props.modelValue;
+        },
+        set(newValue: LoginMethod) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onSignInWithAccountClicked(): void {
+        internalLoginMethod.value = LoginMethod.InternalDatabase;
+    }
+
+    function onSignInWithEmailOrPhoneClicked(): void {
+        internalLoginMethod.value = LoginMethod.Passwordless;
+    }
+
+    //#endregion
+
+</script>

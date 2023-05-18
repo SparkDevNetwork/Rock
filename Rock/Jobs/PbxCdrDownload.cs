@@ -16,8 +16,6 @@
 //
 using System;
 using System.ComponentModel;
-using Quartz;
-
 using Rock.Attribute;
 
 namespace Rock.Jobs
@@ -29,8 +27,7 @@ namespace Rock.Jobs
     [Description( "This job downloads CBR information for the specified PBX component." )]
 
     [ComponentField( "Rock.Pbx.PbxContainer, Rock", "PBX Component", "The PBX type to process.", true, key:"PbxComponent" )]
-    [DisallowConcurrentExecution]
-    public class PbxCdrDownload : IJob
+    public class PbxCdrDownload : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -43,23 +40,16 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// 
-        /// Called by the <see cref="IScheduler" /> when a
-        /// <see cref="ITrigger" /> fires that is associated with
-        /// the <see cref="IJob" />.
-        /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        /// <inheritdoc cref="RockJob.Execute()"/>
+        public override void Execute()
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
             // get the selected provider
-            var componentType = dataMap.GetString( "PbxComponent" );
+            var componentType = GetAttributeValue( "PbxComponent" );
             var provider = Pbx.PbxContainer.GetComponent( componentType );
 
             if (provider == null )
             {
-                context.Result = "Could not find Component Type";
+                this.Result = "Could not find Component Type";
                 return;
             }
 
@@ -72,7 +62,7 @@ namespace Rock.Jobs
             }
 
             bool downloadSuccessful = false;
-            context.Result = provider.DownloadCdr( out downloadSuccessful, lastProcessedDate );
+            this.Result = provider.DownloadCdr( out downloadSuccessful, lastProcessedDate );
 
             if ( downloadSuccessful )
             {

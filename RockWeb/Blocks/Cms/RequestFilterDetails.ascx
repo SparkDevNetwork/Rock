@@ -39,7 +39,7 @@
                 <%-- Previous Activity --%>
                 <asp:Panel ID="pnlPreviousActivity" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <div class="panel-title">Previous Activity</div>
+                        <h4 class="panel-title">Previous Activity</h4>
                     </div>
                     <div class="panel-body">
                         <Rock:RockCheckBoxList ID="cblPreviousActivity" runat="server" Label="Visitor Type" RepeatDirection="Horizontal" />
@@ -51,7 +51,7 @@
                 <%-- Device Types --%>
                 <asp:Panel ID="pnlDeviceType" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <div class="panel-title">Device Types</div>
+                        <h4 class="panel-title">Device Types</h4>
                     </div>
                     <div class="panel-body">
                         <Rock:RockCheckBoxList ID="cblDeviceTypes" runat="server" Label="Device Type" RepeatDirection="Horizontal" />
@@ -63,9 +63,8 @@
                 <%-- Query String Filter --%>
                 <asp:Panel ID="pnlQueryStringFilter" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <div class="panel-title pull-left">Query String Filter</div>
+                        <h4 class="panel-title">Query String Filter</h4>
                         <Rock:Toggle ID="tglQueryStringFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" CssClass="panel-title pull-right" />
-                        <div class="clearfix"></div>
                     </div>
                     <div class="panel-body">
                         <Rock:Grid ID="gQueryStringFilter" runat="server" DisplayType="Light" RowItemText="Query String Filter">
@@ -85,9 +84,8 @@
                 <%-- Cookie --%>
                 <asp:Panel ID="pnlCookie" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <div class="panel-title pull-left">Cookie</div>
+                        <h4 class="panel-title">Cookie</h4>
                         <Rock:Toggle ID="tglCookiesAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" CssClass="panel-title pull-right" />
-                        <div class="clearfix"></div>
                     </div>
                     <div class="panel-body">
                         <Rock:Grid ID="gCookie" runat="server" DisplayType="Light" RowItemText="Cookie">
@@ -107,7 +105,7 @@
                 <%-- Browser --%>
                 <asp:Panel ID="pnlBrowser" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <div class="panel-title">Browser</div>
+                        <h4 class="panel-title">Browser</h4>
                     </div>
                     <div class="panel-body">
                         <Rock:Grid ID="gBrowser" runat="server" DisplayType="Light" RowItemText="Browser">
@@ -127,7 +125,7 @@
                 <%-- IP Addresses --%>
                 <asp:Panel ID="pnlIpAddress" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <div class="panel-title">IP Addresses</div>
+                        <h4 class="panel-title">IP Addresses</h4>
                     </div>
                     <div class="panel-body">
                         <Rock:Grid ID="gIPAddress" runat="server" DisplayType="Light" RowItemText="IP Address">
@@ -142,6 +140,23 @@
                     </div>
                 </asp:Panel>
 
+                <span class="segment-and"><span class="text">And</span></span>
+
+                <%-- Environment --%>
+                <asp:Panel ID="pnlEnvironment" runat="server" CssClass="panel panel-section">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Environment</h4>
+                    </div>
+                    <div class="panel-body">
+                        <Rock:DaysOfWeekPicker ID="dowDaysOfWeek" runat="server" Label="Days of Week"  RepeatDirection="Horizontal" RepeatColumns="7" />
+                        <label class="control-label">Time of Day</label>
+                        <div class="form-control-group">
+                            <Rock:TimePicker ID="tpTimeOfDayFrom" runat="server" Label="" />
+                            <div class="input-group form-control-static"> to </div>
+                            <Rock:TimePicker ID="tpTimeOfDayTo" runat="server" Label="" />
+                        </div>
+                    </div>
+                </asp:Panel>
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
@@ -299,7 +314,7 @@
 
         </asp:Panel>
 
-         <script>
+        <script>
             function populateRequestFilterKey() {
                 // if the request filter key hasn't been filled in yet, populate it with the segment name minus whitespace and special chars
                 var $keyControl = $('#<%=tbKey.ClientID%>');
@@ -325,6 +340,6 @@
                 }
             }
 
-         </script>
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -109,11 +109,11 @@ namespace Rock.Lava.Blocks
             var calendar = ResolveCalendarSettingOrThrow( rockContext, settings.GetStringValue( ParameterCalendarId ) );
 
             // Get the Date Range.
-            var startDate = settings.GetDateTimeValue( ParameterStartDate, RockDateTime.Today );
-
+            var startDate = settings.GetDateTimeValue( ParameterStartDate, RockDateTime.Today ).Value;
             var dateRange = settings.GetStringValue( ParameterDateRange, string.Empty ).ToLower();
 
-            var endDate = GetEndDateFromStartDateAndRange( startDate, dateRange );
+            DateTime? endDate;
+            GetDateRangeBoundaryCalendarDates( startDate, dateRange, out startDate, out endDate );
 
             // Get the Maximum Occurrences.
             int maxOccurrences = 100;
@@ -184,11 +184,11 @@ namespace Rock.Lava.Blocks
             var eventItem = ResolveEventSettingOrThrow( rockContext, settings.GetStringValue( ParameterEventId ) );
 
             // Get the Date Range.
-            var startDate = settings.GetDateTimeValue( ParameterStartDate, RockDateTime.Today );
-
+            var startDate = settings.GetDateTimeValue( ParameterStartDate, RockDateTime.Today ).Value;
             var dateRange = settings.GetStringValue( ParameterDateRange, string.Empty ).ToLower();
 
-            var endDate = GetEndDateFromStartDateAndRange( startDate, dateRange );
+            DateTime? endDate;
+            GetDateRangeBoundaryCalendarDates( startDate, dateRange, out startDate, out endDate );
 
             // Get the Maximum Occurrences.
             int maxOccurrences = 100;
@@ -219,13 +219,18 @@ namespace Rock.Lava.Blocks
             return summaries;
         }
 
-        private DateTime? GetEndDateFromStartDateAndRange( DateTime? startDate, string dateRangeExpression )
+        private void GetDateRangeBoundaryCalendarDates( DateTime? startDate, string dateRangeExpression, out DateTime startDateTime, out DateTime? endDateTime )
         {
-            // Get the Date Range.
-            DateTime? endDate = null;
+            // Get the calendar date representing the start of the period.
+            startDateTime = startDate.HasValue ? startDate.Value.Date : RockDateTime.Today;
 
-            if ( !string.IsNullOrEmpty( dateRangeExpression ) )
+            if ( string.IsNullOrWhiteSpace( dateRangeExpression ) )
             {
+                endDateTime = null;
+            }
+            else
+            {
+                // Calculate the end date from the date range expression.
                 string rangePeriod;
 
                 if ( dateRangeExpression.IsDigitsOnly() )
@@ -247,33 +252,33 @@ namespace Rock.Lava.Blocks
                 }
 
                 // Get the end date by adding the range increment to the start date.
-                // A range of 1 indicates that the start date and end date are the sameno change to the start date.
-                var increment = rangeAmount.Value - 1;
-
                 if ( rangePeriod == "m" )
                 {
                     // Range in Months
-                    endDate = startDate.Value.AddMonths( rangeAmount.Value );
+                    endDateTime = startDate.Value.AddMonths( rangeAmount.Value );
 
+                    // Adjust the calculated end date to the previous day because the time period is inclusive of the start and end dates.
+                    endDateTime = endDateTime.Value.AddDays( -1 );
                 }
                 else if ( rangePeriod == "w" )
                 {
                     // Range in Weeks.
-                    endDate = startDate.Value.AddDays( increment * 7 );
+                    endDateTime = startDate.Value.AddDays( rangeAmount.Value * 7 );
+
+                    // The range is inclusive of the start date, so the end date should be the final day of the last week.
+                    endDateTime = endDateTime.Value.AddDays( -1 );
                 }
                 else
                 {
-                    // Range in Days.
-                    // A range of 1 day indicates that the start date and end date should be the same.
-                    endDate = startDate.Value.AddDays( increment );
+                    // Range in Calendar Days.
+                    // The range is inclusive of the start date, so a range of 1 day indicates
+                    // that the start date and end date should be the same.
+                    endDateTime = startDate.Value.AddDays( rangeAmount.Value - 1 );
                 }
 
-                // Adjust the calculated end date to the previous day because the time period is inclusive of the start and end dates.
-                // For example, a range of 1 day requires that the start date and end date are the same.
-                endDate = endDate.Value.AddDays( -1 );
+                // Set the time to the outer boundary of the end date.
+                endDateTime = endDateTime.Value.Date.AddDays( 1 ).AddTicks( -1 );
             }
-
-            return endDate;
         }
 
         private List<int> ResolveAudienceSettingOrThrow( string audienceSettingValue )
@@ -532,6 +537,12 @@ namespace Rock.Lava.Blocks
                 endDate = startDate.Value.AddYears( 100 );
             }
 
+            // Set the time component of the startDate and endDate parameters to ensure that any events scheduled on these days are included.
+            startDate = startDate.Value.Date;
+            endDate = endDate.Value.Date.AddDays( 1 ).AddTicks( -1 );
+
+            // Events scheduled on the boundary dates of the period specified by the startDate and endDate parameters should include e.
+            // To ensure this is 
             var occurrencesWithDates = qryOccurrences.ToList()
                 .Select( o =>
                 {

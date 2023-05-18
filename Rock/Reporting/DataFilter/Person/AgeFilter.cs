@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -281,25 +281,14 @@ function() {
 
                 decimal ageValueStart = numberRangeEditor.LowerValue ?? 0;
                 decimal ageValueEnd = numberRangeEditor.UpperValue ?? decimal.MaxValue;
-                var personAgeBetweenQuery = personAgeQuery.Where(
-                  p => ( ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
-                        ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
-                        : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
-                    >= ageValueStart ) && ( ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
-                        ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
-                        : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
-                    <= ageValueEnd ) );
+                var personAgeBetweenQuery = personAgeQuery.Where( p => p.Age >= ageValueStart && p.Age <= ageValueEnd );
 
                 BinaryExpression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeBetweenQuery, parameterExpression, "p" ) as BinaryExpression;
                 return result;
             }
             else
             {
-                var personAgeEqualQuery = personAgeQuery.Where(
-                          p => ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
-                            == ageValue );
+                var personAgeEqualQuery = personAgeQuery.Where( p => p.Age == ageValue );
 
                 BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeEqualQuery, parameterExpression, "p" ) as BinaryExpression;
                 BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );

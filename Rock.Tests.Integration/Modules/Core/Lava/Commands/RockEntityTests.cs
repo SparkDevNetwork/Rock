@@ -1,0 +1,221 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+
+using Rock.Tests.Shared;
+using Rock.Lava.Blocks;
+using Rock.Lava;
+using Rock.Web.Cache;
+
+namespace Rock.Tests.Integration.Core.Lava
+{
+    [TestClass]
+    public class RockEntityTests : LavaIntegrationTestBase
+    {
+        /// <summary>
+        /// Tests the EventsCalendarItem to make sure that an item's EventItem and EventItem.Summary are returned.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "This test requires specific test data that does not exist in the sample database." )]
+        public void EventCalendarItemAllowsEventItemSummary()
+        {
+            RockEntityBlock.RegisterEntityCommands( LavaService.GetCurrentEngine() );
+
+            var expectedOutput = @"
+3 [2]: <br>
+5 [3]: <br>
+7 [4]: <br>
+8 [5]: Scelerisque eleifend donec pretium vulputate sapien. Proin sed libero enim sed faucibus turpis in eu mi. Vel elit scelerisque mauris pellentesque pulvinar pellentesque habitant morbi. Egestas erat imperdiet sed euismod. Metus aliquam eleifend mi in.<br>
+".Trim();
+
+            var mergeFields = new Dictionary<string, object>();
+
+            var lava = @"{% eventcalendaritem where:'EventCalendarId == 1' %}
+{% for item in eventcalendaritemItems %}
+{{ item.Id }} [{{ item.EventItemId }}]: {{ item.EventItem.Summary }}<br>
+{% endfor %}
+{% endeventcalendaritem %}";
+            string output = lava.ResolveMergeFields( mergeFields, "RockEntity" ).Trim();
+
+            Assert.That.AreEqualIgnoreNewline( expectedOutput, output );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_ContainingForBlock_ExecutesCorrectly()
+        {
+            var template = @"
+{%- eventscheduledinstance eventid:'Rock Solid Finances Class' startdate:'2020-1-1' maxoccurrences:'25' daterange:'2m' -%}
+    {%- for occurrence in EventItems -%}
+        <b>Series {{forloop.index}}</b><br>
+
+<br>
+Occurrence Collection Type = {{ occurrence | TypeName }}
+</br>
+
+        {%- for item in occurrence -%}
+            {%- if forloop.first -%}
+                {{ item.Name }}
+                <b>{{ item.DateTime | Date:'dddd' }} Series</b><br>
+                <ol>
+            {% endif %}
+
+            <li>{{ item.DateTime | Date:'MMM d, yyyy' }} in {{ item.LocationDescription }}</li>
+
+            {%- if forloop.last -%}
+                </ol>
+            {% endif %}
+        {% endfor %}
+
+    {% endfor %}
+{% endeventscheduledinstance %}
+";
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                // Verify that the output contains series headings and relevant dates for both schedules.
+                Assert.That.Contains( output, "<b>Series 1</b>" );
+                Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
+                Assert.That.Contains( output, "<b>Series 2</b>" );
+                Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+            } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_NestedInParentEntityCommandBlock_ExecutesCorrectly()
+        {
+            var template = @"
+{%- contentchannelitem where:'ContentChannelId == 21' limit:'1000' sort:'StartDateTime desc' iterator:'MessageSeries' -%}
+  {%- for item in MessageSeries -%}
+
+      {%- contentchannelitem ids:'391,392' sort:'StartDateTime desc' iterator:'Messages' -%}
+        {%- for message in Messages -%}
+          {{ message.Title }}
+        {%- endfor -%}
+      {%- endcontentchannelitem -%}
+      
+  {%- endfor -%}
+{%- endcontentchannelitem -%}
+";
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                // Verify that the output contains series headings and relevant dates for both schedules.
+                //Assert.That.Contains( output, "<b>Series 1</b>" );
+                //Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
+                //Assert.That.Contains( output, "<b>Series 2</b>" );
+                //Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+            } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WhereFilterByAttribute_ReturnsMatchedEntitiesOnly()
+        {
+            var template = @"
+{% contentchannelitem where:'Speaker == ""Pete Foster""' iterator:'items' %}
+
+  {% for item in items %}
+  {{ item.Title }} ({{ item | Attribute:'Speaker' }})
+  {% endfor %}
+{% endcontentchannelitem %}
+";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                Assert.That.Contains( output, "Of Faith and Firsts (Pete Foster)" );
+                Assert.That.Contains( output, "1x8 (Pete Foster)" );
+            } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WhereFilterByCoreAttribute_ReturnsMatchedEntitiesOnly()
+        {
+            var template = @"
+{% person where:'core_CurrentlyAnEra == 1' iterator:'items' %}
+<ul>
+  {% for item in items %}
+    <li>{{ item.NickName }} {{ item.LastName }}</li>
+  {% endfor %}
+</ul>
+{% endperson %}
+";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                Assert.That.Contains( output, "Cindy Decker" );
+                Assert.That.DoesNotContain( output, "Ted Decker" );
+            } );
+        }
+
+        [DataTestMethod]
+        [DataRow( @"LastName == ""Decker"" && NickName ==""Ted""", "Ted Decker" )]
+        [DataRow( @"LastName == ""Decker"" && NickName !=""Ted""", "Cindy Decker" )]
+        [DataRow( @"LastName == ""Decker"" && NickName ^=""T""", "Ted Decker" )]
+        [DataRow( @"LastName == ""Decker"" && NickName *=""e""", "Ted Decker" )]
+        [DataRow( @"LastName == ""Decker"" && NickName *!""e""", "Cindy Decker" )]
+        [DataRow( @"LastName == ""Decker"" && NickName *!""e""", "Cindy Decker" )]
+        [DataRow( @"LastName == ""Decker"" && Employer _= """"", "Cindy Decker" )]
+        [DataRow( @"LastName == ""Decker"" && Employer _! ""*""", "Ted Decker" )]
+        [DataRow( @"LastName == ""Decker"" && BirthYear > 2000", "Alex Decker" )]
+        [DataRow( @"LastName == ""Decker"" && BirthYear >= 2000", "Alex Decker" )]
+        [DataRow( @"LastName == ""Decker"" && BirthYear < 2000", "Ted Decker" )]
+        [DataRow( @"LastName == ""Decker"" && BirthYear <= 2000", "Ted Decker" )]
+        [DataRow( @"LastName == ""Decker"" && NickName $=""dy""", "Cindy Decker" )]
+        [DataRow( @"LastName == ""Decker"" || NickName ==""Bill""", "Bill Marble" )]
+        public void EntityCommandBlock_WhereFilterOperators_AreProcessedCorrectly( string whereClause, string expectedOutputItem )
+        {
+            var template = @"
+{% person where:'<whereClause>' iterator:'items' %}
+<ul>
+  {% for item in items %}
+    <li>{{ item.NickName }} {{ item.LastName }}</li>
+  {% endfor %}
+</ul>
+{% endperson %}
+";
+
+            template = template.Replace( "<whereClause>", whereClause );
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var options = new LavaTestRenderOptions
+                {
+                    EnabledCommands = "rockentity",
+                    OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains
+                };
+                TestHelper.AssertTemplateOutput( engine, expectedOutputItem, template, options );
+            } );
+        }
+
+    }
+}

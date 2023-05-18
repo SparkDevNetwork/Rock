@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Cms.ContentCollection.Search
 {
     /// <summary>
     /// Optional search options to apply to the search request.
     /// </summary>
+    [RockInternal( "1.14" )]
     internal class SearchOptions
     {
         /// <summary>

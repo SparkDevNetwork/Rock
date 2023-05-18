@@ -152,7 +152,7 @@ namespace Rock.Badge
         /// Gets or sets the parent person block.
         /// </summary>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use the ParentContextEntityBlock instead.", false )]
+        [Obsolete( "Use the ParentContextEntityBlock instead.", true )]
         public PersonBlock ParentPersonBlock
         {
             get => ParentContextEntityBlock as PersonBlock;
@@ -333,7 +333,7 @@ $@"(function () {{
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use the BadgeCache param instead.", false )]
+        [Obsolete( "Use the BadgeCache param instead.", true )]
         protected string GetAttributeValue( PersonBadgeCache personBadgeCache, string key )
         {
             var badgeCache = BadgeCache.Get( personBadgeCache.Id );
@@ -411,7 +411,7 @@ $@"(function () {{
         /// <param name="personBadgeCache">The badge.</param>
         /// <param name="writer">The writer.</param>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use the BadgeCache param instead.", false )]
+        [Obsolete( "Use the BadgeCache param instead.", true )]
         public virtual void Render( PersonBadgeCache personBadgeCache, HtmlTextWriter writer ) { }
 
         #endregion

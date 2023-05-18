@@ -1,0 +1,39 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Dialog :modelValue="modelValue" @update:modelValue="$event => emit('update:modelValue', $event)">
+        <h4 v-if="type !== ModalAlertType.None">{{ type }}</h4>
+        <slot></slot>
+
+        <template #footer>
+            <RockButton @click="emit('update:modelValue', false)" btnType="primary">OK</RockButton>
+        </template>
+    </Dialog>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+    import Dialog from "./dialog";
+    import RockButton from "./rockButton";
+
+    defineProps({
+        /**
+         * Whether or not the dialog is visible
+         */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        /**
+         * Alert type specifies what the heading is.
+         */
+        type: {
+            type: String as PropType<ModalAlertType>,
+            default: ModalAlertType.None
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", v: boolean): void
+    }>();
+</script>

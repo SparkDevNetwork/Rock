@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
@@ -34,7 +35,6 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DAYS_OF_WEEK )]
     public class DaysOfWeekFieldType : FieldType
     {
-
         #region Formatting
 
         /// <inheritdoc/>
@@ -51,6 +51,53 @@ namespace Rock.Field.Types
             return dayNames.AsDelimited( ", " );
         }
 
+        #endregion
+
+        #region EditControl
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                List<DayOfWeek> daysOfWeek = value.Split( ',' ).Select( a => ( DayOfWeek ) ( a.AsInteger() ) ).ToList();
+                List<string> dayNames = daysOfWeek.Select( a => a.ConvertToString() ).ToList();
+                return AddQuotes( dayNames.AsDelimited( "' AND '" ) );
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -65,10 +112,6 @@ namespace Rock.Field.Types
                 ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
-
-        #endregion
-
-        #region EditControl
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -116,45 +159,8 @@ namespace Rock.Field.Types
             }
         }
 
+
+#endif
         #endregion
-
-        #region Filter Control
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override ComparisonType FilterComparisonType
-        {
-            get
-            {
-                return ComparisonHelper.ContainsFilterComparisonTypes;
-            }
-        }
-
-        /// <summary>
-        /// Formats the filter value value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                List<DayOfWeek> daysOfWeek = value.Split( ',' ).Select( a => ( DayOfWeek ) ( a.AsInteger() ) ).ToList();
-                List<string> dayNames = daysOfWeek.Select( a => a.ConvertToString() ).ToList();
-                return AddQuotes( dayNames.AsDelimited( "' AND '" ) );
-            }
-
-            return string.Empty;
-        }
-
-        #endregion
-
     }
 }

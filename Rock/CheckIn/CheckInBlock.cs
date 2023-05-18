@@ -178,7 +178,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// The current theme.
         /// </summary>
-        [Obsolete( "Use LocalDeviceConfig..." )]
+        [Obsolete( "Use LocalDeviceConfig...", true )]
         [RockObsolete( "1.10" )]
         protected string CurrentTheme
         {
@@ -197,7 +197,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// The current kiosk id
         /// </summary>
-        [Obsolete( "Use LocalDeviceConfig..." )]
+        [Obsolete( "Use LocalDeviceConfig...", true )]
         [RockObsolete( "1.10" )]
         protected int? CurrentKioskId
         {
@@ -208,7 +208,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// The current primary checkin-type id
         /// </summary>
-        [Obsolete( "Use LocalDeviceConfig..." )]
+        [Obsolete( "Use LocalDeviceConfig...", true )]
         [RockObsolete( "1.10" )]
         protected int? CurrentCheckinTypeId
         {
@@ -227,7 +227,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// The current group type ids (Checkin Areas)
         /// </summary>
-        [Obsolete( "Use LocalDeviceConfig..." )]
+        [Obsolete( "Use LocalDeviceConfig...", true )]
         [RockObsolete( "1.10" )]
         protected List<int> CurrentGroupTypeIds
         {
@@ -302,7 +302,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Holds cookie names shared across certain check-in blocks.
         /// </summary>
-        [Obsolete( "Use CheckInCookieKey instead" )]
+        [Obsolete( "Use CheckInCookieKey instead", true )]
         [RockObsolete( "1.10" )]
         public struct CheckInCookie
         {

@@ -1,0 +1,72 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <div v-if="hasExternalLogins" v-html="caption"></div>
+
+        <RockButton
+            v-for="login in externalLogins"
+            :btnType="BtnType.Authentication"
+            :class="login.cssClass || ''"
+            :disabled="disabled"
+            @click="onExternalLoginClick(login)">
+            {{ login.text }}
+        </RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ExternalAuthenticationButtonBag } from "@Obsidian/ViewModels/Blocks/Security/Login/externalAuthenticationButtonBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<ExternalAuthenticationButtonBag[]>,
+            required: true,
+            default: []
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        caption: {
+            type: String as PropType<string>,
+            required: false,
+            default: "Log in with social account"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "login", value: ExternalAuthenticationButtonBag): void
+    }>();
+
+    // #endregion
+
+    //#region Values
+
+    //#endregion
+
+    // #region Computed Values
+
+    const externalLogins = computed<ExternalAuthenticationButtonBag[]>(() => {
+        return props.modelValue?.filter(l => !!l.authenticationType) ?? [];
+    });
+
+    const hasExternalLogins = computed<boolean>(() => !!externalLogins.value.length);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the event when an external login button is clicked.
+     */
+    function onExternalLoginClick(externalLogin: ExternalAuthenticationButtonBag): void {
+        emit("login", externalLogin);
+    }
+
+    // #endregion
+
+</script>

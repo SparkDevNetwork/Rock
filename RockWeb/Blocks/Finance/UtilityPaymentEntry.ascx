@@ -1,5 +1,59 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="UtilityPaymentEntry.ascx.cs" Inherits="RockWeb.Blocks.Finance.UtilityPaymentEntry" %>
 
+<style>    
+    .dropdown-header {
+        display: block;
+        padding: 5px 16px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #535353;
+        white-space: nowrap;
+        font-weight: 700;
+    }
+    .dropdown-menu .dropdown-submenu-toggle {
+        display: flex;
+        align-items: center;
+    }
+    .dropdown-submenu-toggle > .caret {
+        color: rgb(52 58 64 / 50%);
+        margin-left: auto;
+        transform: rotate(-90deg);
+        transition: transform 125ms;
+    }
+    .dropdown-submenu-toggle.open > .caret {
+        transform: rotate(0deg);
+    }
+    
+    .dropdown-submenu > ul.dropdown-menu {
+        position: relative;
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        list-style: none;
+        border: 0;
+        width: 100%;
+    }
+    
+    .dropdown-submenu > .dropdown-menu>li>a {
+        padding-left: 40px;
+    }
+</style>
+
+<script>
+    Sys.Application.add_load(function () {
+        // jquery ready
+        $(document).ready(function () {
+            // Make Dropdown Submenus possible
+            $('.dropdown-submenu-toggle').on("click", function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                $(this).toggleClass('open').next('ul').toggle();
+            });
+        });
+    });
+</script>
+
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>
 
@@ -42,9 +96,9 @@
 
             <asp:Panel ID="pnlSelection" CssClass="panel panel-block" runat="server">
 
-                <asp:Panel ID="pnlHeading1" runat="server" CssClass="panel-heading">
+                <asp:Panel ID="pnlHeadingSelection" runat="server" CssClass="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-credit-card"></i>
-                        <asp:Literal ID="lPanelTitle1" runat="server" /></h1>
+                        <asp:Literal ID="lPanelTitleSelection" runat="server" /></h1>
                 </asp:Panel>
                 <div class="panel-body">
 
@@ -57,12 +111,16 @@
                                 <% } %>
                                 <asp:Literal ID="lTransactionHeader" runat="server" />
                                 <div class="panel panel-default contribution-info">
-                                    <asp:Panel ID="pnlHeading3" runat="server" CssClass="panel-heading">
+                                    <asp:Panel ID="pnlHeadingContributionInfoTitle" runat="server" CssClass="panel-heading">
                                         <h3 class="panel-title"><asp:Literal ID="lContributionInfoTitle" runat="server" /></h3>
                                     </asp:Panel>
                                     <div class="panel-body">
                                         <fieldset>
                                             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
+
+                                            <div class="form-group">
+                                                <asp:PlaceHolder ID="phbtnAddAccount" runat="server" Visible="false" />
+                                            </div>
 
                                             <div id="divRepeatingPayments" runat="server" visible="false">
                                                 <Rock:RockLiteral ID="txtFrequency" runat="server" Label="Frequency" Visible="false" />
@@ -84,7 +142,7 @@
                                 <% } %>
 
                                 <div class="panel panel-default contribution-personal">
-                                    <asp:Panel ID="pnlHeading4" runat="server" CssClass="panel-heading">
+                                    <asp:Panel ID="pnlHeadingPersonalInfoTitle" runat="server" CssClass="panel-heading">
                                         <h3 class="panel-title">
                                             <asp:Literal ID="lPersonalInfoTitle" runat="server" />
                                             <div class="panel-labels">
@@ -98,7 +156,7 @@
                                     <div class="panel-body">
                                         <fieldset>
                                             <%-- Special input with rock-fullname class --%>
-                                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" autocomplete="new-password" />
 
                                             <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
                                                 <div class="row">
@@ -156,7 +214,7 @@
 
                                 <asp:Panel ID="pnlPayment" runat="server" CssClass="panel panel-default contribution-payment">
 
-                                    <asp:Panel ID="pnlHeading5" runat="server" CssClass="panel-heading">
+                                    <asp:Panel ID="pnlHeadingPaymentInfoTitle" runat="server" CssClass="panel-heading">
                                         <h3 class="panel-title"><asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3>
                                     </asp:Panel>
                                     <div class="panel-body">
@@ -206,15 +264,15 @@
 
             <asp:Panel ID="pnlConfirmation" CssClass="panel panel-block contribution-confirmation" runat="server" Visible="false">
 
-                <asp:Panel ID="pnlHeading2" runat="server" CssClass="panel-heading">
+                <asp:Panel ID="pnlHeadingConfirmation" runat="server" CssClass="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-credit-card"></i>
-                        <asp:Literal ID="lPanelTitle2" runat="server" /></h1>
+                        <asp:Literal ID="lPanelTitleConfirmation" runat="server" /></h1>
                 </asp:Panel>
 
                 <div class="panel-body">
                     <div class="panel panel-default">
 
-                        <asp:Panel ID="pnlHeading6" runat="server" CssClass="panel-heading">
+                        <asp:Panel ID="pnlHeadingConfirmationTitle" runat="server" CssClass="panel-heading">
                             <h1 class="panel-title">
                                 <asp:Literal ID="lConfirmationTitle" runat="server" /></h1>
                         </asp:Panel>

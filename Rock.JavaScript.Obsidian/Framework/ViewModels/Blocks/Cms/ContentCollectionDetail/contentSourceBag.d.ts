@@ -22,6 +22,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
@@ -40,6 +41,12 @@ export type ContentSourceBag = {
      * collection source. This will be in the format #rrggbb.
      */
     color?: string | null;
+
+    /**
+     * Gets or sets the custom fields that when indexing content for
+     * this source.
+     */
+    customFields?: ContentCollectionCustomFieldBag[] | null;
 
     /** Gets or sets the unique identifier of the entity this source references. */
     entityGuid?: Guid | null;

@@ -573,7 +573,7 @@ namespace Rock.WebFarm
                 // Write to log if the server was thought to be inactive but responded
                 if ( !node.IsActive )
                 {
-                    AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Critical, node.Id, EventType.Availability, $"{node.NodeName} was marked inactive but responded to a ping" );
+                    AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, node.Id, EventType.Availability, $"{node.NodeName} was marked inactive but responded to a ping" );
                 }
 
                 node.StoppedDateTime = null;

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -377,23 +378,19 @@ namespace Rock.Model
         public void BulkIndexDocumentsByContentChannel( int contentChannelId )
         {
             // return all approved content channel items that are in content channels that should be indexed
-            var contentChannelItemIds = new ContentChannelItemService( new RockContext() ).Queryable()
-                                            .Where( i =>
-                                                i.ContentChannelId == contentChannelId
-                                                && ( i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved ) )
-                                            .Select( a => a.Id ).ToList();
+            var contentChannelItemIds = new ContentChannelItemService( new RockContext() )
+                .Queryable()
+                .Where( i => i.ContentChannelId == contentChannelId
+                    && ( i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved ) )
+                .Select( a => a.Id )
+                .ToList();
 
             int contentChannelItemEntityTypeId = EntityTypeCache.GetId<Rock.Model.ContentChannelItem>().Value;
 
             foreach ( var contentChannelItemId in contentChannelItemIds )
             {
-                var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
-                {
-                    EntityTypeId = contentChannelItemEntityTypeId,
-                    EntityId = contentChannelItemId
-                };
-
-                processEntityTypeIndexMsg.Send();
+                var indexEntityTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = contentChannelItemEntityTypeId, EntityId = contentChannelItemId } );
+                indexEntityTransaction.Enqueue();
             }
         }
 
@@ -409,6 +406,7 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
         #endregion Methods
     }
 

@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+#endif
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -40,6 +41,110 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string SHORTENING_SITES_ONLY = "shorteningSitesOnly";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            if ( int.TryParse( privateValue, out int id ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var site = new SiteService( rockContext ).GetNoTracking( id );
+                    if ( site != null )
+                    {
+                        formattedValue = site.Name;
+                    }
+                }
+            }
+
+            return formattedValue;
+        }
+
+        #endregion
+
+        #region Edit Control 
+
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            int? id = value.AsIntegerOrNull();
+            if ( id.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new SiteService( rockContext ).Get( id.Value );
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var id = privateValue.AsIntegerOrNull();
+
+            if ( !id.HasValue )
+            {
+                return null;
+            }
+
+            // Query the cache to make sure the id is valid.
+            var siteId = SiteCache.Get( id.Value )?.Id;
+
+            if ( !siteId.HasValue )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<Site>().Value, siteId.Value )
+            };
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Site and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Site>().Value, nameof( Site.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -86,7 +191,7 @@ namespace Rock.Field.Types
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is RockCheckBox )
                 {
-                    configurationValues[SHORTENING_SITES_ONLY].Value = ( (RockCheckBox)controls[0] ).Checked.ToString();
+                    configurationValues[SHORTENING_SITES_ONLY].Value = ( ( RockCheckBox ) controls[0] ).Checked.ToString();
                 }
             }
 
@@ -104,14 +209,10 @@ namespace Rock.Field.Types
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is RockCheckBox && configurationValues.ContainsKey( SHORTENING_SITES_ONLY ) )
                 {
-                    ( (RockCheckBox)controls[0] ).Checked = configurationValues[SHORTENING_SITES_ONLY].Value.AsBoolean();
+                    ( ( RockCheckBox ) controls[0] ).Checked = configurationValues[SHORTENING_SITES_ONLY].Value.AsBoolean();
                 }
             }
         }
-
-        #endregion
-
-        #region Formatting
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -127,30 +228,6 @@ namespace Rock.Field.Types
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            string formattedValue = string.Empty;
-
-            if ( int.TryParse( privateValue, out int id ) )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var site = new SiteService( rockContext ).GetNoTracking( id );
-                    if ( site != null )
-                    {
-                        formattedValue = site.Name;
-                    }
-                }
-            }
-
-            return formattedValue;
-        }
-
-        #endregion
-
-        #region Edit Control 
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -239,10 +316,6 @@ namespace Rock.Field.Types
             }
         }
 
-        #endregion
-
-        #region Entity Methods
-
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -265,73 +338,7 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, id.ToString() );
         }
 
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
-        {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            int? id = value.AsIntegerOrNull();
-            if ( id.HasValue )
-            {
-                rockContext = rockContext ?? new RockContext();
-                return new SiteService( rockContext ).Get( id.Value );
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region IEntityReferenceFieldType
-
-        /// <inheritdoc/>
-        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var id = privateValue.AsIntegerOrNull();
-
-            if ( !id.HasValue )
-            {
-                return null;
-            }
-
-            // Query the cache to make sure the id is valid.
-            var siteId = SiteCache.Get( id.Value )?.Id;
-
-            if ( !siteId.HasValue )
-            {
-                return null;
-            }
-
-            return new List<ReferencedEntity>
-            {
-                new ReferencedEntity( EntityTypeCache.GetId<Site>().Value, siteId.Value )
-            };
-        }
-
-        /// <inheritdoc/>
-        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
-        {
-            // This field type references the Name property of a Site and
-            // should have its persisted values updated when changed.
-            return new List<ReferencedProperty>
-            {
-                new ReferencedProperty( EntityTypeCache.GetId<Site>().Value, nameof( Site.Name ) )
-            };
-        }
-
+#endif
         #endregion
     }
 }

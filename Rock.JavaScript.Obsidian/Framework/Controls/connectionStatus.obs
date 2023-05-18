@@ -1,0 +1,50 @@
+<template>
+    <TransitionVerticalCollapse>
+        <div v-if="isReconnecting || isDisconnected">
+            <div v-if="isDisconnected" class="connection-status connection-status-disconnected">
+                <i class="fa fa-fw fa-ban"></i>
+                Disconnected
+            </div>
+            <div v-else-if="isReconnecting" class="connection-status connection-status-reconnecting">
+                <i class="fa fa-fw fa-spin fa-sync"></i>
+                Reconnecting
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<style scoped>
+.connection-status {
+    text-align: center;
+    padding: 4px 24px;
+}
+
+.connection-status-disconnected {
+    background-color: #fcf2f1;
+    color: #e55235;
+}
+
+.connection-status-reconnecting {
+    background-color: #fffae5;
+    color: #8a6d3b;
+}
+</style>
+
+<script setup lang="ts">
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import { PropType } from "vue";
+
+    defineProps({
+        /** True if the reconnecting message should be displayed. */
+        isReconnecting: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** True if the disconnected message should be displayed. */
+        isDisconnected: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+</script>

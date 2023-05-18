@@ -47,15 +47,15 @@
                     <asp:CustomValidator ID="cvAccount" runat="server" Display="None" />
 
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server"
                                 SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Name" />
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-xs-6 col-md-3">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                         </div>
-                        <div class="col-md-4">
-                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Show Publicly" />
+                        <div class="col-xs-6 col-md-3">
+                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Public" />
                         </div>
                     </div>
 
@@ -68,7 +68,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:CodeEditor ID="cePublicDescription" runat="server" Label="Public description HTML" EditorMode="Lava" EditorTheme="Rock" EditorHeight="250"
+                            <Rock:CodeEditor ID="cePublicDescription" runat="server" Label="Public Description HTML" EditorMode="Lava" EditorTheme="Rock" EditorHeight="250"
                                 Help="Additional HTML content to include with the account." />
                         </div>
                     </div>

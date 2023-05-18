@@ -476,7 +476,7 @@ namespace RockWeb.Blocks.Connection
                 var workflowDetails = connectionRequests.ConvertAll( p => new LaunchWorkflowDetails( p ) );
                 var launchWorkflowsTxn = new LaunchWorkflowsTransaction( intValue, workflowDetails );
                 launchWorkflowsTxn.InitiatorPersonAliasId = CurrentPersonAliasId;
-                RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+                launchWorkflowsTxn.Enqueue();
             }
 
             ddlState.ClearSelection();

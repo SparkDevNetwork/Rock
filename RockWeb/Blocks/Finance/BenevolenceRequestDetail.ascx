@@ -119,6 +119,15 @@
                             <Rock:PhoneNumberBox ID="pnbEditWorkPhone" runat="server" Label="Work Phone" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="WorkPhone" />
                         </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <Rock:RacePicker ID="rpRace" runat="server" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:EthnicityPicker ID="epEthnicity" runat="server" />
+                        </div>
+                    </div>
                 </Rock:PanelWidget>
 
                 <Rock:PanelWidget ID="pwEditRequest" runat="server" Title="Request Details" Expanded="true">

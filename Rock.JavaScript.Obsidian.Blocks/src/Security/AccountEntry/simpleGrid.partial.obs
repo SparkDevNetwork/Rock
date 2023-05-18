@@ -1,0 +1,117 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <table class="grid-table table table-bordered table-striped table-hover">
+        <thead>
+            <!-- Implement <template v-slot="header"></template> in parent to override the header template. -->
+            <slot name="header">
+                <tr>
+                    <template v-for="propertyName in propertyNames">
+                        <!-- Implement <template v-slot="header-<propertyName>"></template> in parent to override the individual header cell templates. -->
+                        <slot :name="getHeaderSlotName(propertyName)" :propertyName="propertyName">
+                            <th>{{ toTitleCase(splitCamelCase(propertyName)) }}</th>
+                        </slot>
+                    </template>
+                </tr>
+            </slot>
+        </thead>
+        <tbody>
+            <template v-for="item in items">
+                <!-- Implement <template v-slot="row"></template> in parent to override the row template. -->
+                <slot name="row" :item="item">
+                    <tr>
+                        <template v-for="propertyName in propertyNames">
+                            <!-- Implement <template v-slot="column-<propertyName>"></template> in parent to override the individual row cell templates. -->
+                            <slot :name="getColumnSlotName(propertyName)" :item="item" :propertyName="propertyName">
+                                <td>{{ item[propertyName] }}</td>
+                            </slot>
+                        </template>
+                    </tr>
+                </slot>
+            </template>
+        </tbody>
+        <tfoot>
+            <!-- Implement <template v-slot="footer"></template> in parent to override the footer template. -->
+            <slot name="footer"></slot>
+        </tfoot>
+    </table>
+</template>
+
+<script setup lang="ts">
+    import { splitCamelCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { computed, PropType } from "vue";
+
+    const props = defineProps({
+        items: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            type: Array as PropType<any[] | null | undefined>,
+            required: false,
+            default: []
+        }
+    });
+
+    //#region Computed Values
+
+    const propertyNames = computed(() => {
+        if (!props.items?.length) {
+            return [];
+        }
+
+        const firstTruthyItem = props.items.find(item => !!item && typeof item === "object");
+
+        return getPropertyNames(firstTruthyItem);
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Gets the slot name for a column.
+     *
+     * @param columnId The unique identifier for the column.
+     */
+    function getColumnSlotName(columnId: string): string {
+        return `column-${columnId}`;
+    }
+
+    /**
+     * Gets the slot name for a header column.
+     *
+     * @param columnId The unique identifier for the column.
+     */
+    function getHeaderSlotName(columnId: string): string {
+        return `header-${columnId}`;
+    }
+
+    /**
+     * Gets the properties for a data-bound item.
+     *
+     * @param item The data-bound item.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function getProperties(item: any): [string, unknown][] {
+        if (!item) {
+            return [];
+        }
+
+        return Object.entries(item);
+    }
+
+    /**
+     * Gets the property names for a data-bound item.
+     *
+     * @param item The data-bound item.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function getPropertyNames(item: any): string[] {
+        const properties = getProperties(item);
+        if (!properties.length) {
+            return [];
+        }
+
+        // The property names (column headers) and property values (column values) should be in the same order since they both use `getProperties()`.
+        return properties.map(([name, _value]) => name);
+    }
+
+    //#endregion
+</script>

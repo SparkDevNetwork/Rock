@@ -743,6 +743,9 @@
                     <div class="board-card-name">
                         {{PersonFullname}}
                     </div>
+                    <div class="board-card-attributes">
+                        {{RequestAttributes}}
+                    </div>
                     <span class="board-card-assigned">{{ConnectorPersonFullname}}
                     </span>
                 </div>

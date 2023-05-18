@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -56,117 +58,13 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
-        }
-
         #endregion
 
         #region Edit Control
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var editControl = new RockDropDownList { ID = id };
-            editControl.Items.Add( new ListItem() );
-
-            var contentChannelTypeList = new ContentChannelTypeService( new RockContext() ).Queryable()
-                .OrderBy( d => d.Name )
-                .Select( a => new { a.Name, a.Guid } )
-                .ToList();
-
-            if ( contentChannelTypeList.Any() )
-            {
-                foreach ( var contentChannelType in contentChannelTypeList )
-                {
-                    editControl.Items.Add( new ListItem( contentChannelType.Name, contentChannelType.Guid.ToString() ) );
-                }
-
-                return editControl;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var picker = control as DropDownList;
-            if ( picker != null )
-            {
-                // picker has value as ContentChannelType.Guid
-                return picker.SelectedValue;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var editControl = control as ListControl;
-            if ( editControl != null )
-            {
-                editControl.SetValue( value );
-            }
-        }
-
         #endregion
 
         #region Entity Methods
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var entityId = new ContentChannelTypeService( new RockContext() ).GetId( guid );
-            return entityId;
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
-        {
-            var itemGuid = new ContentChannelTypeService( new RockContext() ).GetGuid( id ?? 0 );
-            SetEditValue( control, configurationValues, itemGuid?.ToString() );
-        }
 
         /// <summary>
         /// Gets the entity.
@@ -232,6 +130,116 @@ namespace Rock.Field.Types
             };
         }
 
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
+
+            var contentChannelTypeList = new ContentChannelTypeService( new RockContext() ).Queryable()
+                .OrderBy( d => d.Name )
+                .Select( a => new { a.Name, a.Guid } )
+                .ToList();
+
+            if ( contentChannelTypeList.Any() )
+            {
+                foreach ( var contentChannelType in contentChannelTypeList )
+                {
+                    editControl.Items.Add( new ListItem( contentChannelType.Name, contentChannelType.Guid.ToString() ) );
+                }
+
+                return editControl;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var picker = control as DropDownList;
+            if ( picker != null )
+            {
+                // picker has value as ContentChannelType.Guid
+                return picker.SelectedValue;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var editControl = control as ListControl;
+            if ( editControl != null )
+            {
+                editControl.SetValue( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var entityId = new ContentChannelTypeService( new RockContext() ).GetId( guid );
+            return entityId;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var itemGuid = new ContentChannelTypeService( new RockContext() ).GetGuid( id ?? 0 );
+            SetEditValue( control, configurationValues, itemGuid?.ToString() );
+        }
+
+#endif
         #endregion
     }
 }

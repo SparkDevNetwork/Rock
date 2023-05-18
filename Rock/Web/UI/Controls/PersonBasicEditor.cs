@@ -63,6 +63,8 @@ namespace Rock.Web.UI.Controls
         private DefinedValuePicker _dvpPersonMaritalStatus;
         private EmailBox _ebPersonEmail;
         private PhoneNumberBox _pnbMobilePhoneNumber;
+        private RacePicker _rpRace;
+        private EthnicityPicker _epEthnicity;
 
         #endregion Controls
 
@@ -364,6 +366,88 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show race].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show race]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowRace
+        {
+            get
+            {
+                EnsureChildControls();
+                return _rpRace.Visible;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _rpRace.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show ethnicity].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show Ethnicity]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowEthnicity
+        {
+            get
+            {
+                EnsureChildControls();
+                return _epEthnicity.Visible;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _epEthnicity.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [require race].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require race]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequireRace
+        {
+            get
+            {
+                EnsureChildControls();
+                return _rpRace.Required;
+            }
+            set
+            {
+                EnsureChildControls();
+                _rpRace.Required = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [require ethnicity].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require ethnicity]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequireEthnicity
+        {
+            get
+            {
+                EnsureChildControls();
+                return _epEthnicity.Required;
+            }
+            set
+            {
+                EnsureChildControls();
+                _epEthnicity.Required = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the Person Id of the <see cref="Person"/> record that was passed to <see cref="SetFromPerson"/>. This will be null if this is a new person
         /// </summary>
         /// <value>
@@ -591,6 +675,48 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the person's race.
+        /// </summary>
+        /// <value>
+        /// The person's race.
+        /// </value>
+        public int? PersonRaceValueId
+        {
+            get
+            {
+                EnsureChildControls();
+                return _rpRace.SelectedValueAsId();
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _rpRace.SetValue( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the person's ethnicity.
+        /// </summary>
+        /// <value>
+        /// The person's ethnicity.
+        /// </value>
+        public int? PersonEthnicityValueId
+        {
+            get
+            {
+                EnsureChildControls();
+                return _epEthnicity.SelectedValueAsId();
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _epEthnicity.SetValue( value );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the person birth date.
         /// </summary>
         /// <value>
@@ -731,6 +857,8 @@ namespace Rock.Web.UI.Controls
             _dvpPersonMaritalStatus.Label = AddLabelPrefix( "Marital Status" );
             _ebPersonEmail.Label = AddLabelPrefix( "Email" );
             _pnbMobilePhoneNumber.Label = AddLabelPrefix( "Mobile Phone" );
+            _rpRace.Label = AddLabelPrefix( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" ) );
+            _epEthnicity.Label = AddLabelPrefix( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" ) );
         }
 
         /// <summary>
@@ -909,6 +1037,20 @@ namespace Rock.Web.UI.Controls
                 FormGroupCssClass = "field-maritalstatus"
             };
 
+            _rpRace = new RacePicker
+            {
+                ID = "rpRace",
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-race"
+            };
+
+            _epEthnicity = new EthnicityPicker
+            {
+                ID = "epEthnicity",
+                ValidationGroup = ValidationGroup,
+                FormGroupCssClass = "field-ethnicity"
+            };
+
             var groupType = GroupTypeCache.GetFamilyGroupType();
             _rblPersonRole.DataSource = groupType.Roles.OrderBy( r => r.Order ).ToList();
             _rblPersonRole.DataBind();
@@ -938,6 +1080,8 @@ namespace Rock.Web.UI.Controls
             _rblPersonRole.Parent?.Controls.Remove( _rblPersonRole );
             _ddlGradePicker.Parent?.Controls.Remove( _ddlGradePicker );
             _dvpPersonMaritalStatus.Parent?.Controls.Remove( _dvpPersonMaritalStatus );
+            _rpRace.Parent?.Controls.Remove( _rpRace );
+            _epEthnicity.Parent?.Controls.Remove( _epEthnicity );
 
             if ( showInColumns )
             {
@@ -955,6 +1099,8 @@ namespace Rock.Web.UI.Controls
                 _pnlCol3.Controls.Add( _bdpPersonBirthDate );
                 _pnlCol3.Controls.Add( _ddlGradePicker );
                 _pnlCol3.Controls.Add( _dvpPersonMaritalStatus );
+                _pnlCol3.Controls.Add( _rpRace );
+                _pnlCol3.Controls.Add( _epEthnicity );
             }
             else
             {
@@ -970,6 +1116,8 @@ namespace Rock.Web.UI.Controls
                 _phControls.Controls.Add( _rblPersonRole );
                 _phControls.Controls.Add( _ddlGradePicker );
                 _phControls.Controls.Add( _dvpPersonMaritalStatus );
+                _phControls.Controls.Add( _rpRace );
+                _phControls.Controls.Add( _epEthnicity );
             }
         }
 
@@ -1078,6 +1226,16 @@ namespace Rock.Web.UI.Controls
                 person.Email = this.Email;
             }
 
+            if ( ShowRace )
+            {
+                person.RaceValueId = this.PersonRaceValueId;
+            }
+
+            if ( ShowEthnicity )
+            {
+                person.EthnicityValueId = this.PersonEthnicityValueId;
+            }
+
             if ( ShowMobilePhone )
             {
                 var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
@@ -1118,6 +1276,8 @@ namespace Rock.Web.UI.Controls
             this.PersonMaritalStatusValueId = person.MaritalStatusValueId;
             this.PersonBirthDate = person.BirthDate;
             this.PersonGradeOffset = person.GradeOffset;
+            this.PersonRaceValueId = person.RaceValueId;
+            this.PersonEthnicityValueId = person.EthnicityValueId;
 
             if ( person.AgeClassification == AgeClassification.Child )
             {

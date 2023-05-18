@@ -1,0 +1,120 @@
+<template>
+    <LocationItemPicker v-if="selectedOption == '0'" v-model="itemValue" v-model:showPopup="popupStatus">
+        <template #pickerContentSuperHeader>
+            <RadioButtonList v-model="selectedOption" :items="options" horizontal />
+        </template>
+        <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
+            <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #inputGroupPrepend="{ isInputGroupSupported }" v-if="$slots.inputGroupPrepend">
+            <slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #append="{ isInputGroupSupported }" v-if="$slots.append">
+            <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+    </LocationItemPicker>
+    <LocationAddressPicker v-if="selectedOption == '1'" v-model="addressValue" v-model:showPopup="popupStatus">
+        <template #pickerContentSuperHeader>
+            <RadioButtonList v-model="selectedOption" :items="options" horizontal />
+        </template>
+        <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
+            <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #inputGroupPrepend="{ isInputGroupSupported }" v-if="$slots.inputGroupPrepend">
+            <slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #append="{ isInputGroupSupported }" v-if="$slots.append">
+            <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+    </LocationAddressPicker>
+    <GeoPicker v-if="selectedOption == '2'" v-model="pointValue" drawingMode="Point" v-model:showPopup="popupStatus">
+        <template #pickerContentSuperHeader>
+            <RadioButtonList v-model="selectedOption" :items="options" horizontal />
+        </template>
+        <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
+            <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #inputGroupPrepend="{ isInputGroupSupported }" v-if="$slots.inputGroupPrepend">
+            <slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #append="{ isInputGroupSupported }" v-if="$slots.append">
+            <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+    </GeoPicker>
+    <GeoPicker v-if="selectedOption == '3'" v-model="fenceValue" drawingMode="Polygon" v-model:showPopup="popupStatus">
+        <template #pickerContentSuperHeader>
+            <RadioButtonList v-model="selectedOption" :items="options" horizontal />
+        </template>
+        <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
+            <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #inputGroupPrepend="{ isInputGroupSupported }" v-if="$slots.inputGroupPrepend">
+            <slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #append="{ isInputGroupSupported }" v-if="$slots.append">
+            <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+    </GeoPicker>
+</template>
+
+<script lang="ts" setup>
+    import LocationItemPicker from "./locationItemPicker";
+    import LocationAddressPicker from "./locationAddressPicker.obs";
+    import GeoPicker from "./geoPicker.obs";
+    import RadioButtonList from "./radioButtonList";
+    import { computed, PropType, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+
+    defineProps({
+        modelValue: {
+            type: Object as PropType<AddressControlBag | ListItemBag | string>
+        }
+    });
+
+    const emit = defineEmits<{
+        (_e: "update:modelValue", value: AddressControlBag | ListItemBag | string): void
+    }>();
+
+    const selectedOption = ref<"0" | "1" | "2" | "3">("0");
+
+    const options = [{
+        text: "Location",
+        value: "0"
+    }, {
+        text: "Address",
+        value: "1"
+    }, {
+        text: "Point",
+        value: "2"
+    }, {
+        text: "Geo-fence",
+        value: "3"
+    }];
+
+    const itemValue = ref<ListItemBag>({});
+    const addressValue = ref<AddressControlBag>({});
+    const pointValue = ref<string>("");
+    const fenceValue = ref<string>("");
+
+    const popupStatus = ref<boolean>(false);
+
+    const internalValue = computed(() => {
+        if (selectedOption.value == "0") {
+            return itemValue.value;
+        }
+        if (selectedOption.value == "1") {
+            return addressValue.value;
+        }
+        if (selectedOption.value == "2") {
+            return pointValue.value;
+        }
+        if (selectedOption.value == "3") {
+            return fenceValue.value;
+        }
+
+        return "";
+    });
+
+    watch(internalValue, () => emit("update:modelValue", internalValue.value));
+</script>

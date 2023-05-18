@@ -63,6 +63,37 @@ Color: green
             TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
         }
 
+        /// <summary>
+        /// Verify the resolution of a specific issue in the Fluid framework where a {% case %} statement containing whitespace throws a parsing error.
+        /// </summary>
+        /// <remarks>
+        /// Verifies the resolution of Issue #5232.
+        /// https://github.com/SparkDevNetwork/Rock/issues/5232
+        /// </remarks>
+        [TestMethod]
+        public void LiquidCaseBlock_WithMultipleMatchedCases_RendersAllMatches()
+        {
+            var template = @"
+{% assign number = '1' %}
+{% case number %}
+    {% when '1' %}
+        First Case matched.
+    {% when '1' or '2' %}
+        Second Case matched.
+    {% when '3' %}
+        Third Case matched.
+    {% else %}
+        No Case matched.
+{% endcase %}
+";
+
+            var expectedOutput = @"
+First Case matched. Second Case matched.
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+        }
+
         #endregion
 
         #region Cycle Tag
@@ -440,5 +471,25 @@ WELCOME TO THE LAVA TAG
         }
 
         #endregion
+
+        #region Raw Tag
+
+        /// <summary>
+        /// The raw tag should preserve all whitespace in its content.
+        /// </summary>
+        [TestMethod]
+        public void RawTag_ContainingWhitespace_PreservesWhitespace()
+        {
+            var template = @"{% raw %}{{- -}}{% endraw %}";
+
+            var expectedOutput = @"{{- -}}";
+
+            // This only works correctly in the Fluid engine.
+            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, template, ignoreWhitespace: false );
+
+        }
+
+        #endregion
+
     }
 }

@@ -16,8 +16,9 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+#if WEBFORMS
 using System.Web.UI;
-
+#endif
 using Rock.Attribute;
 
 namespace Rock.Field.Types
@@ -30,7 +31,6 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.VIDEO_URL )]
     public class VideoUrlFieldType : FieldType
     {
-
         #region Formatting
 
         /// <inheritdoc/>
@@ -81,6 +81,24 @@ namespace Rock.Field.Types
             return $"<a href=\"{encodedUrl}\">{encodedUrl}</a>";
         }
 
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
+        #endregion
+
+        #region WebForms
+#if WEBFORMS
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -97,10 +115,6 @@ namespace Rock.Field.Types
                 : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
-        #endregion
-
-        #region Filter Control
-
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -115,16 +129,7 @@ namespace Rock.Field.Types
             return null;
         }
 
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return false;
-        }
-
+#endif
         #endregion
-      
     }
 }

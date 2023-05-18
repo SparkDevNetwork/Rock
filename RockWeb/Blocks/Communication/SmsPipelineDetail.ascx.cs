@@ -348,7 +348,6 @@ namespace RockWeb.Blocks.Communication
 
                 rockContext.SaveChanges();
                 BindActions();
-                SmsActionCache.Clear();
             }
         }
 
@@ -419,8 +418,6 @@ namespace RockWeb.Blocks.Communication
 
                 action.SaveAttributeValues();
             } );
-
-            SmsActionCache.Clear();
 
             pnlEditAction.Visible = false;
             hfEditActionId.Value = string.Empty;

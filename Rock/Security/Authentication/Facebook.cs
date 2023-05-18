@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,8 @@ using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security.Authentication;
+using Rock.Security.Authentication.ExternalRedirectAuthentication;
 using Rock.Tasks;
 using Rock.Web.Cache;
 
@@ -48,7 +50,7 @@ namespace Rock.Security.ExternalAuthentication
     [TextField( "App Secret", "The Facebook App Secret" )]
     [BooleanField( "Sync Friends", "Should the person's Facebook friends who are also in Rock be added as a known relationship?", true )]
     [Rock.SystemGuid.EntityTypeGuid( "2486AB81-EB35-4788-AECD-F16C5D7362F0")]
-    public class Facebook : AuthenticationComponent
+    public class Facebook : AuthenticationComponent, IExternalRedirectAuthentication
     {
         /// <summary>
         /// Gets the type of the service.
@@ -79,10 +81,9 @@ namespace Rock.Security.ExternalAuthentication
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
-        public override Boolean IsReturningFromAuthentication( HttpRequest request )
+        public override bool IsReturningFromAuthentication( HttpRequest request )
         {
-            return ( !String.IsNullOrWhiteSpace( request.QueryString["code"] ) &&
-                !String.IsNullOrWhiteSpace( request.QueryString["state"] ) );
+            return IsReturningFromExternalAuthentication( request.QueryString.ToSimpleQueryStringDictionary() );
         }
 
         /// <summary>
@@ -92,70 +93,24 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public override Uri GenerateLoginUrl( HttpRequest request )
         {
-            string returnUrl = request.QueryString["returnurl"];
-            string redirectUri = GetRedirectUrl( request );
-            string scopeUserFriends = ( GetAttributeValue( "SyncFriends" ).AsBoolean( false ) ) ? ",user_friends" : string.Empty;
-
-            return new Uri( string.Format( "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email" + scopeUserFriends,
-                GetAttributeValue( "AppID" ),
-                HttpUtility.UrlEncode( redirectUri ),
-                HttpUtility.UrlEncode( returnUrl ?? FormsAuthentication.DefaultUrl ) ) );
+            return GenerateExternalLoginUrl( GetRedirectUrl( request ), request.QueryString["returnurl"] );
         }
 
-        /// <summary>
-        /// Authenticates the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="username">The username.</param>
-        /// <param name="returnUrl">The return URL.</param>
-        /// <returns></returns>
-        public override Boolean Authenticate( HttpRequest request, out string username, out string returnUrl )
+        /// <inheritdoc/>
+        public override bool Authenticate( HttpRequest request, out string userName, out string returnUrl )
         {
-            username = string.Empty;
-            returnUrl = request.QueryString["State"];
-            string redirectUri = GetRedirectUrl( request );
-
-            try
+            var options = new ExternalRedirectAuthenticationOptions
             {
-                // Get a new Facebook Access Token for the 'code' that was returned from the Facebook login redirect
-                var restClient = new RestClient(
-                    string.Format( "https://graph.facebook.com/oauth/access_token?client_id={0}&redirect_uri={1}&client_secret={2}&code={3}",
-                        GetAttributeValue( "AppID" ),
-                        HttpUtility.UrlEncode( redirectUri ),
-                        GetAttributeValue( "AppSecret" ),
-                        request.QueryString["code"] ) );
-                var restRequest = new RestRequest( Method.GET );
-                var restResponse = restClient.Execute( restRequest );
+                RedirectUrl = GetRedirectUrl( request ),
+                Parameters = request.QueryString.ToSimpleQueryStringDictionary()
+            };
 
-                if ( restResponse.StatusCode == HttpStatusCode.OK )
-                {
-                    // As of March 28, 2017... the response is now in JSON format, not form values.  Facebook says
-                    // they made this update to be compliant with section 5.1 of RFC 6749. https://developers.facebook.com/docs/apps/changelog
-                    dynamic facebookOauthResponse = JsonConvert.DeserializeObject<ExpandoObject>( restResponse.Content );
-                    string accessToken = facebookOauthResponse.access_token;
+            var result = Authenticate( options );
 
-                    // Get information about the person who logged in using Facebook
-                    restRequest = new RestRequest( Method.GET );
-                    restRequest.AddParameter( "access_token", accessToken );
-                    restRequest.RequestFormat = DataFormat.Json;
-                    restRequest.AddHeader( "Accept", "application/json" );
-                    restClient = new RestClient( "https://graph.facebook.com/v3.3/me?fields=email,last_name,first_name,link" );
-                    restResponse = restClient.Execute( restRequest );
+            userName = result.UserName;
+            returnUrl = result.ReturnUrl;
 
-                    if ( restResponse.StatusCode == HttpStatusCode.OK )
-                    {
-                        FacebookUser facebookUser = JsonConvert.DeserializeObject<FacebookUser>( restResponse.Content );
-                        username = GetFacebookUserName( facebookUser, GetAttributeValue( "SyncFriends" ).AsBoolean(), accessToken );
-                    }
-                }
-            }
-
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, HttpContext.Current );
-            }
-
-            return !string.IsNullOrWhiteSpace( username );
+            return result.IsAuthenticated;
         }
 
         /// <summary>
@@ -163,9 +118,9 @@ namespace Rock.Security.ExternalAuthentication
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override String ImageUrl()
+        public override string ImageUrl()
         {
-            return ""; /*~/Assets/Images/facebook-login.png*/
+            return string.Empty; /*~/Assets/Images/facebook-login.png*/
         }
 
         private string GetRedirectUrl( HttpRequest request )
@@ -356,7 +311,6 @@ namespace Rock.Security.ExternalAuthentication
 
             using ( var rockContext = new RockContext() )
             {
-
                 // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );
                 user = userLoginService.GetByUserName( userName );
@@ -368,8 +322,13 @@ namespace Rock.Security.ExternalAuthentication
                     string lastName = facebookUser.last_name.ToStringSafe();
                     string firstName = facebookUser.first_name.ToStringSafe();
                     string email = string.Empty;
-                    try { email = facebookUser.email.ToStringSafe(); }
-                    catch { }
+                    try
+                    {
+                        email = facebookUser.email.ToStringSafe();
+                    }
+                    catch
+                    {
+                    }
 
                     Person person = null;
 
@@ -411,7 +370,9 @@ namespace Rock.Security.ExternalAuthentication
                                     person.Gender = Gender.Unknown;
                                 }
                             }
-                            catch { }
+                            catch
+                            {
+                            }
 
                             if ( person != null )
                             {
@@ -424,7 +385,6 @@ namespace Rock.Security.ExternalAuthentication
                             int typeId = EntityTypeCache.Get( typeof( Facebook ) ).Id;
                             user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, userName, "fb", true );
                         }
-
                     } );
                 }
 
@@ -521,12 +481,86 @@ namespace Rock.Security.ExternalAuthentication
                                 }
                             }
                         }
-
                     }
                 }
 
                 return username;
             }
         }
+
+        #region IExternalRedirectAuthentication Implementation
+
+        /// <inheritdoc/>
+        public ExternalRedirectAuthenticationResult Authenticate( ExternalRedirectAuthenticationOptions options )
+        {
+            var result = new ExternalRedirectAuthenticationResult
+            {
+                UserName = string.Empty,
+                ReturnUrl = options.Parameters.GetValueOrNull( "State" )
+            };
+
+            try
+            {
+                // Get a new Facebook Access Token for the 'code' that was returned from the Facebook login redirect
+                var restClient = new RestClient( string.Format(
+                    "https://graph.facebook.com/oauth/access_token?client_id={0}&redirect_uri={1}&client_secret={2}&code={3}",
+                    GetAttributeValue( "AppID" ),
+                    HttpUtility.UrlEncode( options.RedirectUrl ),
+                    GetAttributeValue( "AppSecret" ),
+                    options.Parameters.GetValueOrNull( "code" ) ) );
+                var restRequest = new RestRequest( Method.GET );
+                var restResponse = restClient.Execute( restRequest );
+
+                if ( restResponse.StatusCode == HttpStatusCode.OK )
+                {
+                    // As of March 28, 2017... the response is now in JSON format, not form values.  Facebook says
+                    // they made this update to be compliant with section 5.1 of RFC 6749. https://developers.facebook.com/docs/apps/changelog
+                    dynamic facebookOauthResponse = JsonConvert.DeserializeObject<ExpandoObject>( restResponse.Content );
+                    string accessToken = facebookOauthResponse.access_token;
+
+                    // Get information about the person who logged in using Facebook
+                    restRequest = new RestRequest( Method.GET );
+                    restRequest.AddParameter( "access_token", accessToken );
+                    restRequest.RequestFormat = DataFormat.Json;
+                    restRequest.AddHeader( "Accept", "application/json" );
+                    restClient = new RestClient( "https://graph.facebook.com/v3.3/me?fields=email,last_name,first_name,link" );
+                    restResponse = restClient.Execute( restRequest );
+
+                    if ( restResponse.StatusCode == HttpStatusCode.OK )
+                    {
+                        FacebookUser facebookUser = JsonConvert.DeserializeObject<FacebookUser>( restResponse.Content );
+                        result.UserName = GetFacebookUserName( facebookUser, GetAttributeValue( "SyncFriends" ).AsBoolean(), accessToken );
+                        result.IsAuthenticated = !string.IsNullOrWhiteSpace( result.UserName );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, HttpContext.Current );
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public Uri GenerateExternalLoginUrl( string externalProviderReturnUrl, string successfulAuthenticationRedirectUrl )
+        {
+            string scopeUserFriends = GetAttributeValue( "SyncFriends" ).AsBoolean( false ) ? ",user_friends" : string.Empty;
+
+            return new Uri( string.Format(
+                "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email" + scopeUserFriends,
+                GetAttributeValue( "AppID" ),
+                HttpUtility.UrlEncode( externalProviderReturnUrl ),
+                HttpUtility.UrlEncode( successfulAuthenticationRedirectUrl ?? FormsAuthentication.DefaultUrl ) ) );
+        }
+
+        /// <inheritdoc/>
+        public bool IsReturningFromExternalAuthentication( IDictionary<string, string> parameters )
+        {
+            return !string.IsNullOrWhiteSpace( parameters.GetValueOrNull( "code" ) )
+                && !string.IsNullOrWhiteSpace( parameters.GetValueOrNull( "state" ) );
+        }
+
+        #endregion
     }
 }

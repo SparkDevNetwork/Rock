@@ -111,7 +111,12 @@ namespace Rock.Communication
         /// <value>
         /// From number.
         /// </value>
+        [Obsolete( "Use SmsFromSystemPhoneNumberId instead." )]
+        [RockObsolete( "1.15" )]
         public int? SMSFromDefinedValueId { get; set; }
+
+        /// <inheritdoc/>
+        public int? SmsFromSystemPhoneNumberId { get; set; }
 
         /// <summary>
         /// Gets or sets the message.
@@ -214,7 +219,10 @@ namespace Rock.Communication
             target.PushOpenAction = source.PushOpenAction;
             target.PushOpenMessage = source.PushOpenMessage;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
+#pragma warning restore CS0618 // Type or member is obsolete
+            target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             target.SMSMessage = source.SMSMessage;
         }
     }
