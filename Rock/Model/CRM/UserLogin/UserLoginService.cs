@@ -442,6 +442,16 @@ namespace Rock.Model
 
             var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
 
+            var excludedAuthProviderTypes = new List<Guid>
+            {
+                SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid()
+            };
+
+            if( component?.EntityType?.Guid != null && excludedAuthProviderTypes.Contains( component.EntityType.Guid ) )
+            {
+                return ( UserLoginValidationState.InvalidPassword, userLogin );
+            }
+
             // Check if the password is valid for this login.
             if ( component?.IsActive != true || !component.Authenticate( userLogin, password ) )
             {
