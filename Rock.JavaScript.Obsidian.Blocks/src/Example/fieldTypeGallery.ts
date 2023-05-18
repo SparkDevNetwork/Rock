@@ -303,7 +303,7 @@ const galleryComponents: Record<string, Component> = {
 
     PersonGallery: getFieldTypeGalleryComponent("Person", '{ "value": "996c8b72-c255-40e6-bb98-b1d5cf345f3b", "text": "Admin Admin" }', FieldTypeGuids.Person, {
         includeBusinesses: "false",
-        EnableSelfSelection: "T"
+        EnableSelfSelection: "True"
     }),
 
     PhoneNumberGallery: getFieldTypeGalleryComponent("PhoneNumber", "(321) 456-7890", FieldTypeGuids.PhoneNumber, {
