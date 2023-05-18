@@ -20,7 +20,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
-    EnableSelfSelection = "enableSelfSelection",
+    EnableSelfSelection = "EnableSelfSelection",
     IncludeBusinesses = "includeBusinesses"
 }
 
