@@ -14,11 +14,10 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <GroupPicker label="Group" v-if="group.value" v-model="group"
+                    <GroupPicker label="Group" v-if="selectGroupTypeGuid" v-model="group"
                         :includedGroupTypeGuids="[selectGroupTypeGuid]" :multiple="false" />
 
-                    <DropDownList label="Account" v-model="lastName" :showBlankItem="true" :enhanceForLongLists="true"
-                        :grouped="true" :multiple="false" />
+                    <AccountPicker label="Account" v-model="account" :enhanceForLongLists="true" :multiple="false" />
 
                     <CurrencyBox label="Total Pledge Amount" v-model="totalAmount"
                         help="The total amount that you are pledging. If you intend to give $100 monthly for one year, enter $1,200."
@@ -88,9 +87,9 @@ import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import RockLabel from "@Obsidian/Controls/rockLabel";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
 import Alert from "@Obsidian/Controls/alert.obs";
 import PersonPicker from "@Obsidian/Controls/personPicker";
-import DropDownList from "@Obsidian/Controls/dropDownList";
 import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeBag";
 import { FinancialPledgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeDetailOptionsBag";
 import { DefinedType } from "@Obsidian/SystemGuids/definedType";
