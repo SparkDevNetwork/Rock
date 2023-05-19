@@ -82,7 +82,7 @@
 
                             <asp:Literal ID="lFormFooterText" runat="server" />
 
-                            <div class="actions">
+                            <div class="actions ">
                                 <asp:PlaceHolder ID="phActions" runat="server" />
                             </div>
 

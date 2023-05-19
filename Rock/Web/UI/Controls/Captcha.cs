@@ -462,6 +462,11 @@ function onloadTurnstileCallback(token) {{
             var userResponse = HttpContext.Current.Request.Form[$"{UniqueID}_hfToken"];
             string remoteIp = HttpContext.Current.Request.UserHostAddress;
 
+            System.Diagnostics.Debug.WriteLine( $"" );
+            System.Diagnostics.Debug.WriteLine( $"Start IsResponseValid" );
+            System.Diagnostics.Debug.WriteLine( $"userResponse: {userResponse}" );
+            System.Diagnostics.Debug.WriteLine( $"Initial ValidatedResult: {ValidatedResult.ToString() ?? "null"}" );
+
             if ( string.IsNullOrWhiteSpace( SiteKey ) || string.IsNullOrWhiteSpace( SecretKey ) )
             {
                 return true;
@@ -474,6 +479,8 @@ function onloadTurnstileCallback(token) {{
 
             if ( string.IsNullOrWhiteSpace( userResponse ) )
             {
+                System.Diagnostics.Debug.WriteLine( $"Exiting userResponse is null or whitespace." );
+System.Diagnostics.Debug.WriteLine( $"End IsResponseValid" );
                 return false;
             }
 
@@ -493,15 +500,16 @@ function onloadTurnstileCallback(token) {{
                 request.Timeout = 5000;
 
                 var response = client.Execute<CloudFlareCaptchaResponse>( request );
-
+                System.Diagnostics.Debug.WriteLine( $"Response: {response.Content}" );
                 ValidatedResult = response.Data.Success;
             }
             catch (Exception e)
             {
                 Rock.Model.ExceptionLogService.LogException( e );
                 ValidatedResult = false;
+                System.Diagnostics.Debug.WriteLine( $"Ex.Message: {e.Message}" );
             }
-
+            System.Diagnostics.Debug.WriteLine( $"End IsResponseValid" );
             return ValidatedResult.Value;
         }
 
