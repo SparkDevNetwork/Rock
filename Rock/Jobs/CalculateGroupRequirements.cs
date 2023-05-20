@@ -50,25 +50,33 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            var rockContext = new RockContext();
-            var groupRequirementService = new GroupRequirementService( rockContext );
-            var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-            var groupMemberService = new GroupMemberService( rockContext );
-            var groupService = new GroupService( rockContext );
-
-            // we only need to consider group requirements that are based on a DataView or SQL
-            var groupRequirementQry = groupRequirementService.Queryable()
-                .Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
-                .AsNoTracking();
-
             // Lists for warnings of skipped groups, workflows, or people from the job.
             List<string> skippedGroupNames = new List<string>();
             List<string> skippedWorkflowNames = new List<string>();
             List<string> skippedPersonIds = new List<string>();
             List<int> groupRequirementsCalculatedPersonIds = new List<int>();
 
-            foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).Include( a => a.GroupRequirementType.DataView ).Include( a => a.GroupRequirementType.WarningDataView ).AsNoTracking().ToList() )
+            // Get the list of group requirements that are based on a DataView or SQL.
+            var rockContext = new RockContext();
+            var groupRequirementService = new GroupRequirementService( rockContext );
+            var groupRequirements = groupRequirementService.Queryable()
+                .Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
+                .AsNoTracking()
+                .Include( i => i.GroupRequirementType )
+                .Include( a => a.GroupRequirementType.DataView )
+                .Include( a => a.GroupRequirementType.WarningDataView )
+                .AsNoTracking()
+                .ToList();
+
+            foreach ( var groupRequirement in groupRequirements )
             {
+                // Create a new data context for each requirement to ensure performance is scalable.
+                rockContext = new RockContext();
+
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupService = new GroupService( rockContext );
+
                 // Only calculate group requirements for Active groups (if an inactive group becomes active again, this job will take care of re-calculating the requirements again).
                 var groupQuery = groupService.Queryable().Where( a => a.IsActive );
                 if ( groupRequirement.GroupId.HasValue )
@@ -85,11 +93,11 @@ namespace Rock.Jobs
                     break;
                 }
 
-                var groupIdNameQuery = groupQuery.Select( a => new { a.Id, a.Name } );
+                var groupIdNameList = groupQuery.Select( a => new { a.Id, a.Name } ).OrderBy( g => g.Name ).ToList();
 
-                foreach ( var groupIdName in groupIdNameQuery )
+                foreach ( var groupIdName in groupIdNameList )
                 {
-                    this.UpdateLastStatusMessage( $"Calculating group requirement '{groupRequirement.GroupRequirementType.Name}' for {groupIdName.Name}" );
+                    this.UpdateLastStatusMessage( $"Calculating group requirement '{groupRequirement.GroupRequirementType.Name}' for {groupIdName.Name} (Id:{groupIdName.Id})" );
                     try
                     {
                         var currentDateTime = RockDateTime.Now;
@@ -204,7 +212,7 @@ namespace Rock.Jobs
             }
 
             JobSummary jobSummary = new JobSummary();
-            jobSummary.Successes.Add( $"{groupRequirementQry.Count()} group {"requirement".PluralizeIf( groupRequirementQry.Count() != 1 )} " +
+            jobSummary.Successes.Add( $"{groupRequirements.Count} group {"requirement".PluralizeIf( groupRequirements.Count != 1 )} " +
                 $"re-calculated for {groupRequirementsCalculatedPersonIds.Distinct().Count()} " +
                 $"{"person".PluralizeIf( groupRequirementsCalculatedPersonIds.Distinct().Count() != 1 )}." );
 
