@@ -1605,6 +1605,7 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
     <Compile Include="Plugin\HotFixes\155_BackgroundCheckPersonEmailValidFix.cs" />
+    <Compile Include="Plugin\HotFixes\176_WindowsCheckinInstaller13_8.cs" />
     <Compile Include="Plugin\HotFixes\158_CorrectWorkfflowLogIsSecured.cs" />
     <Compile Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0.cs" />
     <Compile Include="Plugin\HotFixes\156_CorrectBlockCategories.cs" />
