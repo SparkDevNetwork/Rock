@@ -327,6 +327,7 @@
         }
 
         experienceStyles.value = getExperienceStyles(occurrence.style);
+        setupCustomStyles(occurrence.style);
         occurrenceEndDateTime = RockDateTime.parseISO(occurrence.occurrenceEndDateTime ?? "");
 
         if (occurrence.experienceToken) {
