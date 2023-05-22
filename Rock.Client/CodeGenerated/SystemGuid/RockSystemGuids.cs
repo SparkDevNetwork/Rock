@@ -828,6 +828,7 @@ namespace Rock.Client.SystemGuid
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
         public const string DEFINED_TYPE = "6028D502-79F4-4A74-9323-525E90F900C7";
         public const string DEFINED_VALUE = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E";
+        public const string DOCUMENT = "7CEFA340-9D98-4B2C-B462-313C61944B6C";
         public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";
         public const string FINANCIAL_ACCOUNT = "798BCE48-6AA7-4983-9214-F9BCEFB4521D";
         public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
