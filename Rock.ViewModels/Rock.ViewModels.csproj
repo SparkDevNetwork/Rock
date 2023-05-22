@@ -199,6 +199,7 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualizerStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\PingExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />

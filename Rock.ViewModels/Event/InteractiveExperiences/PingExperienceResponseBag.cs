@@ -15,30 +15,17 @@
 // </copyright>
 //
 
-using Rock.Enums.Event;
-
 namespace Rock.ViewModels.Event.InteractiveExperiences
 {
     /// <summary>
-    /// Contents of the ExperienceSettingsJson property on an InteractiveExperience.
+    /// The response object returned by the Ping Experience real-time command.
     /// </summary>
-    public class ExperienceSettingsBag
+    public class PingExperienceResponseBag
     {
         /// <summary>
-        /// The behavior of campus choices for this experience. See the description
-        /// of the individual enum values for specific functionality.
+        /// Gets or sets a value indicating whether this experience is active.
         /// </summary>
-        public InteractiveExperienceCampusBehavior CampusBehavior { get; set; }
-
-        /// <summary>
-        /// The default campus to use when recording an Interaction if no other
-        /// campus could be determined.
-        /// </summary>
-        public int? DefaultCampusId { get; set; }
-
-        /// <summary>
-        /// The lava template to use when the experience has ended.
-        /// </summary>
-        public string ExperienceEndedTemplate { get; set; }
+        /// <value><c>true</c> if this experience is active; otherwise, <c>false</c>.</value>
+        public bool IsActive { get; set; }
     }
 }
