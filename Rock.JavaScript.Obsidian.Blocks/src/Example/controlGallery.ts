@@ -148,9 +148,11 @@ import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicke
 import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
 import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
 import RemoteAuthsPicker from "@Obsidian/Controls/remoteAuthsPicker";
-import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker";
-import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
-import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
+import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
+import StepProgramStepTypePicker from "@Obsidian/Controls/stepProgramStepTypePicker.obs";
+import StepProgramStepStatusPicker from "@Obsidian/Controls/stepProgramStepStatusPicker.obs";
+import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker.obs";
+import StepTypePicker from "@Obsidian/Controls/stepTypePicker.obs";
 import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -4458,7 +4460,7 @@ const stepProgramPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("stepProgramPicker"),
+            importCode: getSfcControlImportPath("stepProgramPicker"),
             exampleCode: `<StepProgramPicker label="Step Program" v-model="value" />`
         };
     },
@@ -4499,6 +4501,108 @@ const stepProgramPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Step Program Step Type Picker */
+const stepProgramStepTypePickerGallery = defineComponent({
+    name: "StepProgramStepTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        StepProgramPicker,
+        StepProgramStepTypePicker,
+        CheckBox,
+    },
+    setup() {
+        return {
+            value: ref({}),
+            stepProgram: ref({}),
+            defaultProgramGuid: ref(""),
+            required: ref(false),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("stepProgramStepTypePicker"),
+            exampleCode: `<StepProgramStepTypePicker label="Step Program > Step Type" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{value,stepProgram}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+    <StepProgramStepTypePicker label="Step Program > Step Type"
+        v-model="value"
+        v-model:stepProgram="stepProgram"
+        :defaultStepProgramGuid="defaultProgramGuid?.value"
+        :rules="required ? 'required' : ''"
+        :disabled="disabled" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <StepProgramPicker label="Default Step Program" v-model="defaultProgramGuid" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Step Program Step Status Picker */
+const stepProgramStepStatusPickerGallery = defineComponent({
+    name: "StepProgramStepStatusPickerGallery",
+    components: {
+        GalleryAndResult,
+        StepProgramPicker,
+        StepProgramStepStatusPicker,
+        CheckBox,
+    },
+    setup() {
+        return {
+            value: ref({}),
+            stepProgram: ref({}),
+            defaultProgramGuid: ref(""),
+            required: ref(false),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("stepProgramStepStatusPicker"),
+            exampleCode: `<StepProgramStepStatusPicker label="Step Program > Step Status" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{value,stepProgram}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+    <StepProgramStepStatusPicker label="Step Program > Step Status"
+        v-model="value"
+        v-model:stepProgram="stepProgram"
+        :defaultStepProgramGuid="defaultProgramGuid?.value"
+        :rules="required ? 'required' : ''"
+        :disabled="disabled" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <StepProgramPicker label="Default Step Program" v-model="defaultProgramGuid" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates Step Status Picker */
 const stepStatusPickerGallery = defineComponent({
     name: "StepStatusPickerGallery",
@@ -4522,7 +4626,7 @@ const stepStatusPickerGallery = defineComponent({
             showBlankItem: ref(false),
             stepProgramGuid: ref(null),
             value: ref({}),
-            importCode: getControlImportPath("stepStatusPicker"),
+            importCode: getSfcControlImportPath("stepStatusPicker"),
             exampleCode: `<StepStatusPicker label="Step Status" v-model="value" />`
         };
     },
@@ -4590,7 +4694,7 @@ const stepTypePickerGallery = defineComponent({
             showBlankItem: ref(false),
             stepProgramGuid: ref(null),
             value: ref({}),
-            importCode: getControlImportPath("stepTypePicker"),
+            importCode: getSfcControlImportPath("stepTypePicker"),
             exampleCode: `<StepTypePicker label="Step Type" v-model="value" />`
         };
     },
@@ -7849,6 +7953,8 @@ const controlGalleryComponents: Record<string, Component> = [
     lavaCommandPickerGallery,
     remoteAuthsPickerGallery,
     stepProgramPickerGallery,
+    stepProgramStepTypePickerGallery,
+    stepProgramStepStatusPickerGallery,
     stepStatusPickerGallery,
     stepTypePickerGallery,
     streakTypePickerGallery,
