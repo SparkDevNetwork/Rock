@@ -1098,6 +1098,7 @@ mission. We are so grateful for your commitment.</p>
             caapPromptForAccountAmounts.UseAccountCampusMappingLogic = this.GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic ).AsBooleanOrNull() ?? false;
             caapPromptForAccountAmounts.AskForCampusIfKnown = this.GetAttributeValue( AttributeKey.AskForCampusIfKnown ).AsBoolean();
             caapPromptForAccountAmounts.IncludeInactiveCampuses = this.GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
+            caapPromptForAccountAmounts.OrderBySelectableAccountsIndex = true;
             var includedCampusStatusIds = this.GetAttributeValues( AttributeKey.IncludedCampusStatuses )
                 .ToList()
                 .AsGuidList()
