@@ -289,9 +289,8 @@ namespace RockWeb.Blocks.WorkFlow
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
-
             SetBlockTitle();
+            AdditionalCaptchaText();
         }
 
         /// <summary>
@@ -416,37 +415,27 @@ namespace RockWeb.Blocks.WorkFlow
             CompleteFormAction( eventArgument );
         }
 
-        /// <summary>
-        /// Handles the TokenReceived event of the CpCaptcha control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
-        private void CpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
-        {
-            if ( e.IsValid )
-            {
-                EnableUserFormActionButtons( true );
-            }
-        }
-
         #endregion Events
 
         #region Methods
 
-        private void EnableUserFormActionButtons( bool enable )
+
+
+        private void AdditionalCaptchaText()
         {
-            cpCaptcha.Visible = false;
-            foreach ( var control in phActions.Controls )
+            // If captcha is disabled don't do anything.
+            if( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
             {
-                if( control is LiteralControl )
-                {
-                    var literalControl = ( LiteralControl ) control;
-                    if ( literalControl.Text.StartsWith( "<a" ) )
-                    {
-                        literalControl.Text = literalControl.Text.Replace( "disabled", string.Empty );
-                    }
-                }
+                return;
             }
+
+            // Script to disabled controls with class js-action-button
+            var script = $@"
+$()
+
+";
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "captchaActionButtons", script, true );
+
         }
 
         /// <summary>
@@ -1231,7 +1220,6 @@ namespace RockWeb.Blocks.WorkFlow
             phActions.Controls.Clear();
 
             var buttons = WorkflowActionFormUserAction.FromUriEncodedString( form.Actions );
-            var disabedClass = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ? string.Empty : "disabled";
             foreach ( var button in buttons )
             {
                 // Get the button HTML. If actionParts has a guid at [1],
@@ -1253,7 +1241,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( buttonHtml.IsNullOrWhiteSpace() )
                 {
-                    buttonHtml = $"<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary js-action-button {disabedClass}' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
+                    buttonHtml = $"<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary {{AdditionalButtonClasses}}' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
                 }
 
                 var buttonMergeFields = new Dictionary<string, object>();
@@ -1270,7 +1258,7 @@ namespace RockWeb.Blocks.WorkFlow
                 var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, button.ActionName );
                 buttonMergeFields.Add( "ButtonLink", buttonLinkScript );
 
-                buttonMergeFields.Add( "AdditionalButtonClasses", disabedClass );
+                buttonMergeFields.Add( "AdditionalButtonClasses", "js-action-button" );
 
                 buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );
 
