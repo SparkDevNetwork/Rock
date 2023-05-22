@@ -205,6 +205,10 @@ export const EntityType = {
     ContentCollection: "AD7B9219-1B47-4164-9DD1-90F0AF588CB8",
     /** The guid for the Rock.Model.ContentCollectionSource entity */
     ContentCollectionSource: "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733",
+    /** The guid for the Rock.Model.ContentTopic entity */
+    ContentTopic: "CD4BE244-147E-4A90-9137-B35FC35B5A52",
+    /** The guid for the Rock.Model.ContentTopicDomain entity */
+    ContentTopicDomain: "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51",
     /** The EntityType Guid for Rock.Model.DataViewFilter  */
     DataViewFilter: "507E646B-9943-4DD6-8FB7-8BA9F95E6BD0",
     /** The guid for the Rock.Model.DataView entity. */

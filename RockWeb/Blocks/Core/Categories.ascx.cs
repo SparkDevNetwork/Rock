@@ -260,7 +260,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( AttributeKey.EntityType, entityTypeFilter.SelectedValue );
+            rFilter.SetFilterPreference( AttributeKey.EntityType, entityTypeFilter.SelectedValue );
             BindGrid();
         }
 
@@ -611,7 +611,7 @@ namespace RockWeb.Blocks.Core
             entityTypePicker.EntityTypes = entityTypes;
             entityTypeFilter.EntityTypes = entityTypes;
 
-            entityTypeFilter.SetValue( rFilter.GetUserPreference( AttributeKey.EntityType ) );
+            entityTypeFilter.SetValue( rFilter.GetFilterPreference( AttributeKey.EntityType ) );
 
             if ( _entityTypeId != 0 )
             {

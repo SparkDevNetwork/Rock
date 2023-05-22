@@ -454,8 +454,7 @@ export default defineComponent({
 
             // After the UI updates, put the keyboard focus on the input box.
             nextTick(() => {
-                const input = tagsInputRef.value?.querySelector("input.ant-select-selection-search-input") as HTMLElement;
-                input?.focus();
+                tagsInputRef.value?.focus();
             });
         };
 
@@ -535,27 +534,28 @@ export default defineComponent({
     </v-style>
 
     <div class="tag-wrap">
-        <div class="tagsinput" ref="tagsInputRef">
+        <div class="tagsinput">
             <Tag v-for="tag in currentTags"
                 :key="tag.value"
                 :modelValue="tag"
                 :disabled="disabled"
                 @removeTag="onRemoveTag" />
+
+                <template v-if="!disabled">
+                    <AutoComplete v-if="isNewTagVisible"
+                        ref="tagsInputRef"
+                        v-model:value="searchValue"
+                        :options="searchOptions"
+                        placeholder="tag name"
+                        @select="onSelect"
+                        @search="onSearch"
+                        @inputKeyDown="onInputKeyDown" />
+
+                    <span v-else class="text-muted add-new-tags clickable" @click="onAddNewTagsClick">
+                        <i class="fa fa-plus"></i>
+                    </span>
+                </template>
         </div>
-
-        <template v-if="!disabled">
-            <AutoComplete v-if="isNewTagVisible"
-                v-model:value="searchValue"
-                :options="searchOptions"
-                placeholder="tag name"
-                @select="onSelect"
-                @search="onSearch"
-                @inputKeyDown="onInputKeyDown" />
-
-            <span v-else class="text-muted add-new-tags clickable" @click="onAddNewTagsClick">
-                <i class="fa fa-plus"></i>
-            </span>
-        </template>
     </div>
 </div>
 `

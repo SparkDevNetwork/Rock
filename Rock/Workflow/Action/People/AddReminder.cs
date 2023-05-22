@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
     #region Workflow Attributes
 
     [ReminderTypeField( "Reminder Type",
-    Description = "The type of note to add.",
+    Description = "The type of reminder to add.",
     Key = AttributeKey.ReminderType,
     IsRequired = true,
     Order = 1 )]

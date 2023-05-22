@@ -64,6 +64,34 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202304061959408_CodeGenerated_20230406.cs" />
+    <Compile Include="Migrations\202304061959408_CodeGenerated_20230406.designer.cs">
+      <DependentUpon>202304061959408_CodeGenerated_20230406.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202304201936307_Rollup_20230420.cs" />
+    <Compile Include="Migrations\202304201936307_Rollup_20230420.designer.cs">
+      <DependentUpon>202304201936307_Rollup_20230420.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202304202031065_CodeGenerated_20230420.cs" />
+    <Compile Include="Migrations\202304202031065_CodeGenerated_20230420.designer.cs">
+      <DependentUpon>202304202031065_CodeGenerated_20230420.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202305021908131_Rollup_20230502.cs" />
+    <Compile Include="Migrations\202305021908131_Rollup_20230502.designer.cs">
+      <DependentUpon>202305021908131_Rollup_20230502.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202305032038500_AddContentLibraryCoreModels.cs" />
+    <Compile Include="Migrations\202305032038500_AddContentLibraryCoreModels.designer.cs">
+      <DependentUpon>202305032038500_AddContentLibraryCoreModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202305041932566_Rollup_20230504.cs" />
+    <Compile Include="Migrations\202305041932566_Rollup_20230504.designer.cs">
+      <DependentUpon>202305041932566_Rollup_20230504.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202305042020411_CodeGenerated_20230504.cs" />
+    <Compile Include="Migrations\202305042020411_CodeGenerated_20230504.designer.cs">
+      <DependentUpon>202305042020411_CodeGenerated_20230504.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1618,6 +1646,27 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202304061959408_CodeGenerated_20230406.resx">
+      <DependentUpon>202304061959408_CodeGenerated_20230406.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202304201936307_Rollup_20230420.resx">
+      <DependentUpon>202304201936307_Rollup_20230420.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202304202031065_CodeGenerated_20230420.resx">
+      <DependentUpon>202304202031065_CodeGenerated_20230420.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305021908131_Rollup_20230502.resx">
+      <DependentUpon>202305021908131_Rollup_20230502.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305032038500_AddContentLibraryCoreModels.resx">
+      <DependentUpon>202305032038500_AddContentLibraryCoreModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305041932566_Rollup_20230504.resx">
+      <DependentUpon>202305041932566_Rollup_20230504.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305042020411_CodeGenerated_20230504.resx">
+      <DependentUpon>202305042020411_CodeGenerated_20230504.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
     </EmbeddedResource>

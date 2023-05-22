@@ -500,6 +500,7 @@ namespace RockWeb.Blocks.Crm
             var oldPhotos = new List<int>();
 
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = 90;
 
             try
             {
@@ -819,7 +820,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( mergedPersonIdList.Any() )
                 {
-                    DbService.ExecuteCommand( $"DELETE FROM [AnalyticsSourcePersonHistorical] WHERE [PersonId] IN ({ mergedPersonIdList.AsDelimited( "," ) })" );
+                    DbService.ExecuteCommand( $"DELETE FROM [AnalyticsSourcePersonHistorical] WHERE [PersonId] IN ({ mergedPersonIdList.AsDelimited( "," ) })", commandTimeout: 90 );
                 }
 
                 foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
@@ -828,7 +829,7 @@ namespace RockWeb.Blocks.Crm
                     var parms = new Dictionary<string, object>();
                     parms.Add( "OldId", p.Id );
                     parms.Add( "NewId", primaryPersonId.Value );
-                    DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
+                    DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms, 90 );
                 }
             }
             catch ( Exception ex )

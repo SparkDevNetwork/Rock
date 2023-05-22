@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="!identifiableGroupMembers.length" alertType="warning">
+    <NotificationBox v-if="!identifiableGroupMembers.length" :alertType="AlertType.Warning">
         No group members found to register for this project.
     </NotificationBox>
 
@@ -21,8 +21,9 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import ListUnmetRequirements from "./listUnmetRequirements.partial.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

@@ -180,9 +180,9 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( "IsRequired", ddlIsRequired.SelectedValue );
-            gfSettings.SaveUserPreference( "IsDatabase", ddlIsDatabase.SelectedValue );
-            gfSettings.SaveUserPreference( "IsLava", ddlIsLava.SelectedValue );
+            gfSettings.SetFilterPreference( "IsRequired", ddlIsRequired.SelectedValue );
+            gfSettings.SetFilterPreference( "IsDatabase", ddlIsDatabase.SelectedValue );
+            gfSettings.SetFilterPreference( "IsLava", ddlIsLava.SelectedValue );
 
             ShowData( hfSelectedCategoryGuid.Value.AsGuidOrNull(), hfSelectedEntityId.Value.AsIntegerOrNull() );
         }
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfSettings_ClearFilterClick( object sender, EventArgs e )
         {
-            gfSettings.DeleteUserPreferences();
+            gfSettings.DeleteFilterPreferences();
             BindFilter();
 
             ShowData( hfSelectedCategoryGuid.Value.AsGuidOrNull(), hfSelectedEntityId.Value.AsIntegerOrNull() );
@@ -213,23 +213,23 @@ namespace RockWeb.Blocks.Examples
             {
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "IsRequired" ) ) )
                 {
-                    gfSettings.SaveUserPreference( "IsRequired", PageParameter( "IsRequired" ) );
+                    gfSettings.SetFilterPreference( "IsRequired", PageParameter( "IsRequired" ) );
                 }
 
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "IsDatabase" ) ) )
                 {
-                    gfSettings.SaveUserPreference( "IsDatabase", PageParameter( "IsDatabase" ) );
+                    gfSettings.SetFilterPreference( "IsDatabase", PageParameter( "IsDatabase" ) );
                 }
 
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "IsLava" ) ) )
                 {
-                    gfSettings.SaveUserPreference( "IsLava", PageParameter( "IsLava" ) );
+                    gfSettings.SetFilterPreference( "IsLava", PageParameter( "IsLava" ) );
                 }
             }
 
-            ddlIsRequired.SelectedValue = gfSettings.GetUserPreference( "IsRequired" );
-            ddlIsDatabase.SelectedValue = gfSettings.GetUserPreference( "IsDatabase" );
-            ddlIsLava.SelectedValue = gfSettings.GetUserPreference( "IsLava" );
+            ddlIsRequired.SelectedValue = gfSettings.GetFilterPreference( "IsRequired" );
+            ddlIsDatabase.SelectedValue = gfSettings.GetFilterPreference( "IsDatabase" );
+            ddlIsLava.SelectedValue = gfSettings.GetFilterPreference( "IsLava" );
         }
 
         private void LoadCategories()
@@ -486,9 +486,9 @@ namespace RockWeb.Blocks.Examples
                     sb.AppendLine( "<h5 class='font-weight-normal'>Properties</h5><table class='table table-properties'>" );
                     foreach ( var property in aClass.Properties.OrderBy( p => p.Name ) )
                     {
-                        bool? isRequired = gfSettings.GetUserPreference( "IsRequired" ).AsBooleanOrNull();
-                        bool? isDatabase = gfSettings.GetUserPreference( "IsDatabase" ).AsBooleanOrNull();
-                        bool? isLava = gfSettings.GetUserPreference( "IsLava" ).AsBooleanOrNull();
+                        bool? isRequired = gfSettings.GetFilterPreference( "IsRequired" ).AsBooleanOrNull();
+                        bool? isDatabase = gfSettings.GetFilterPreference( "IsDatabase" ).AsBooleanOrNull();
+                        bool? isLava = gfSettings.GetFilterPreference( "IsLava" ).AsBooleanOrNull();
 
                         if ( isRequired.HasValue && isRequired.Value != property.Required )
                         {

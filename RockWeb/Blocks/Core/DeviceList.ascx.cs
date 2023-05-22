@@ -99,14 +99,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void fDevice_ApplyFilterClick( object sender, EventArgs e )
         {
-            fDevice.SaveUserPreference( "Name", tbName.Text );
-            fDevice.SaveUserPreference( "Device Type", dvpDeviceType.SelectedValue );
-            fDevice.SaveUserPreference( "IP Address", tbIPAddress.Text );
-            fDevice.SaveUserPreference( "Kiosk Type", ddlKioskType.SelectedValue );
-            fDevice.SaveUserPreference( "Print To", ddlPrintTo.SelectedValue );
-            fDevice.SaveUserPreference( "Printer", ddlPrinter.SelectedValue );
-            fDevice.SaveUserPreference( "Print From", ddlPrintFrom.SelectedValue );
-            fDevice.SaveUserPreference( "Active Status", ddlActiveFilter.SelectedValue );
+            fDevice.SetFilterPreference( "Name", tbName.Text );
+            fDevice.SetFilterPreference( "Device Type", dvpDeviceType.SelectedValue );
+            fDevice.SetFilterPreference( "IP Address", tbIPAddress.Text );
+            fDevice.SetFilterPreference( "Kiosk Type", ddlKioskType.SelectedValue );
+            fDevice.SetFilterPreference( "Print To", ddlPrintTo.SelectedValue );
+            fDevice.SetFilterPreference( "Printer", ddlPrinter.SelectedValue );
+            fDevice.SetFilterPreference( "Print From", ddlPrintFrom.SelectedValue );
+            fDevice.SetFilterPreference( "Active Status", ddlActiveFilter.SelectedValue );
 
             BindGrid();
         }
@@ -335,14 +335,14 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                tbName.Text = fDevice.GetUserPreference( "Name" );
-                dvpDeviceType.SetValue( fDevice.GetUserPreference( "Device Type" ) );
-                tbIPAddress.Text = fDevice.GetUserPreference( "IP Address" );
-                ddlKioskType.SetValue( fDevice.GetUserPreference( "Kiosk Type" ) );
-                ddlPrintTo.SetValue( fDevice.GetUserPreference( "Print To" ) );
-                ddlPrinter.SetValue( fDevice.GetUserPreference( "Printer" ) );
-                ddlPrintFrom.SetValue( fDevice.GetUserPreference( "Print From" ) );
-                var itemActiveStatus = ddlActiveFilter.Items.FindByValue( fDevice.GetUserPreference( "Active Status" ) );
+                tbName.Text = fDevice.GetFilterPreference( "Name" );
+                dvpDeviceType.SetValue( fDevice.GetFilterPreference( "Device Type" ) );
+                tbIPAddress.Text = fDevice.GetFilterPreference( "IP Address" );
+                ddlKioskType.SetValue( fDevice.GetFilterPreference( "Kiosk Type" ) );
+                ddlPrintTo.SetValue( fDevice.GetFilterPreference( "Print To" ) );
+                ddlPrinter.SetValue( fDevice.GetFilterPreference( "Printer" ) );
+                ddlPrintFrom.SetValue( fDevice.GetFilterPreference( "Print From" ) );
+                var itemActiveStatus = ddlActiveFilter.Items.FindByValue( fDevice.GetFilterPreference( "Active Status" ) );
                 if ( itemActiveStatus != null )
                 {
                     itemActiveStatus.Selected = true;
@@ -361,49 +361,49 @@ namespace RockWeb.Blocks.Core
 
             var queryable = deviceService.Queryable();
 
-            string name = fDevice.GetUserPreference( "Name" );
+            string name = fDevice.GetFilterPreference( "Name" );
             if ( !string.IsNullOrWhiteSpace( name ) )
             {
                 queryable = queryable.Where( d => d.Name.Contains( name ) );
             }
 
-            int? deviceTypeId = fDevice.GetUserPreference( "Device Type" ).AsIntegerOrNull();
+            int? deviceTypeId = fDevice.GetFilterPreference( "Device Type" ).AsIntegerOrNull();
             if ( deviceTypeId.HasValue )
             {
                 queryable = queryable.Where( d => d.DeviceTypeValueId == deviceTypeId.Value );
             }
 
-            KioskType? kioskTypeFilter = fDevice.GetUserPreference( "Kiosk Type" )?.ConvertToEnumOrNull<KioskType>();
+            KioskType? kioskTypeFilter = fDevice.GetFilterPreference( "Kiosk Type" )?.ConvertToEnumOrNull<KioskType>();
             if ( kioskTypeFilter.HasValue )
             {
                 queryable = queryable.Where( d => d.KioskType == kioskTypeFilter.Value );
             }
 
-            string ipAddress = fDevice.GetUserPreference( "IP Address" );
+            string ipAddress = fDevice.GetFilterPreference( "IP Address" );
             if ( !string.IsNullOrWhiteSpace( ipAddress ) )
             {
                 queryable = queryable.Where( d => d.IPAddress.Contains( ipAddress ) );
             }
 
-            if ( !string.IsNullOrWhiteSpace( fDevice.GetUserPreference( "Print To" ) ) )
+            if ( !string.IsNullOrWhiteSpace( fDevice.GetFilterPreference( "Print To" ) ) )
             {
-                PrintTo printTo = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), fDevice.GetUserPreference( "Print To" ) );
+                PrintTo printTo = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), fDevice.GetFilterPreference( "Print To" ) );
                 queryable = queryable.Where( d => d.PrintToOverride == printTo );
             }
 
-            int? printerId = fDevice.GetUserPreference( "Printer" ).AsIntegerOrNull();
+            int? printerId = fDevice.GetFilterPreference( "Printer" ).AsIntegerOrNull();
             if ( printerId.HasValue )
             {
                 queryable = queryable.Where( d => d.PrinterDeviceId == printerId );
             }
 
-            if ( !string.IsNullOrWhiteSpace( fDevice.GetUserPreference( "Print From" ) ) )
+            if ( !string.IsNullOrWhiteSpace( fDevice.GetFilterPreference( "Print From" ) ) )
             {
-                PrintFrom printFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), fDevice.GetUserPreference( "Print From" ) );
+                PrintFrom printFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), fDevice.GetFilterPreference( "Print From" ) );
                 queryable = queryable.Where( d => d.PrintFrom == printFrom );
             }
 
-            string activeFilterValue = fDevice.GetUserPreference( "Active Status" );
+            string activeFilterValue = fDevice.GetFilterPreference( "Active Status" );
             if ( !string.IsNullOrWhiteSpace( activeFilterValue ) )
             {
                 if ( activeFilterValue != "all" )

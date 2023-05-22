@@ -28,6 +28,8 @@ namespace Rock.Tests.Integration.Core.Model
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
+            TestDatabaseHelper.ResetDatabase();
+
             CreatePersonWithProtectionProfile( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid(), AccountProtectionProfile.Low );
             CreatePersonWithProtectionProfile( PersonGuid.PersonWithMediumAccountProtectionProfileGuid.AsGuid(), AccountProtectionProfile.Medium );
             CreatePersonWithProtectionProfile( PersonGuid.PersonWithHighAccountProtectionProfileGuid.AsGuid(), AccountProtectionProfile.High );

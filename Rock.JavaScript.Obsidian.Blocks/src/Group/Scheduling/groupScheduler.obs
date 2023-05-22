@@ -1,0 +1,784 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockErrorMessage" :alertType="AlertType.Warning">
+        {{ blockErrorMessage }}
+    </NotificationBox>
+
+    <Panel v-if="!blockErrorMessage"
+           title="Group Scheduler"
+           class="new-group-scheduler"
+           :hasZoom="true"
+           :hasFullscreen="true"
+           :headerSecondaryActions="secondaryActions">
+
+        <template #helpContent>
+            <div class="p-3 bg-white">
+                <div>
+                    <h5 class="mt-0 mb-4">Group Scheduler Help</h5>
+                    <p><strong>Scheduling Basics</strong></p>
+                    <p>This screen allows you to schedule individuals into groups. Individuals can be added to a schedule by clicking the ‘Plus’ icon in the lower right corner of each location.</p>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <p><strong>Scheduled Individual Legend</strong></p>
+                        <p>Each scheduled individual has one of three invite statuses:</p>
+                        <ul>
+                            <li><i class="fa fa-circle text-success"></i> Accepted Invite</li>
+                            <li><i class="fa fa-circle text-muted"></i> Pending Invite</li>
+                            <li><i class="fa fa-circle text-danger"></i> Declined Invite</li>
+                        </ul>
+                        <p>The invite status is shown by a border around the individual's avatar.</p>
+                        <p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>
+                        <ul>
+                            <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
+                            <li><i class="fa fa-minus-circle"></i> Indicates that the schedule does not match this person's scheduling preference.</li>
+                        </ul>
+                        <p>For both notification icon types, additional details can be viewed by hovering over the icon.</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p><strong>Group Location Schedule Status</strong></p>
+                        <p>Each group location has a status bar at the bottom that shows the overall status of the schedule.</p>
+                        <ul>
+                            <li><i class="fa fa-square text-danger"></i> A red bar means there are not enough accepted invites to reach the minimum number of individuals needed.</li>
+                            <li><i class="fa fa-square text-warning"></i> A yellow bar means there are enough accepted invites to reach the minimum number, but not the desired number.</li>
+                            <li><i class="fa fa-square text-success"></i> A green bar means there are enough accepted invites to reach or exceed the desired number.</li>
+                            <li><i class="fa fa-square text-critical"></i> An orange bar means there are too many accepted invites and the maximum number is exceeded.</li>
+                        </ul>
+                        <p>Each status bar will show a solid bar representing the accepted invites, and a semi-transparent bar representing pending invites.</p>
+                        <p>Bars include ticks, that mark the thresholds (minimum, desired and maximum) for each schedule. You can hover over each tick to see a tooltip with the threshold and the number of individuals required.</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Toolbar: Desktop -->
+        <div class="panel-toolbar d-none d-md-flex flex-wrap flex-sm-nowrap justify-content-between">
+            <div :class="filtersCssClass"
+                 :disabled="isBusy"
+                 @click="onSelectFiltersClick"><i class="fa fa-sliders-h"></i> {{ filtersText }}</div>
+
+            <div class="d-block flex-shrink-0">
+                <RockButton :btnSize="BtnSize.ExtraSmall"
+                            :disabled="isSchedulingDisabled"
+                            @click="onCloneSchedulesClick">
+                    <i class="fa fa-clone"></i> Clone Schedules
+                    <Loading :isLoading="isCloningSchedules" :isSmall="true" class="d-inline-block" />
+                </RockButton>
+
+                <RockButton v-if="rosterUrl"
+                            :btnSize="BtnSize.ExtraSmall"
+                            :disabled="isSchedulingDisabled"
+                            class="ml-1"
+                            @click="onRosterClick">
+                    <i class="fa fa-calendar-check"></i> Rosters
+                </RockButton>
+
+                <RockButton :btnSize="BtnSize.ExtraSmall"
+                            :disabled="isSchedulingDisabled"
+                            class="ml-1"
+                            @click="onAutoScheduleClick">
+                    <i class="fa fa-magic"></i> Auto Schedule
+                    <Loading :isLoading="isAutoScheduling" :isSmall="true" class="d-inline-block" />
+                </RockButton>
+
+                <RockButton :btnSize="BtnSize.ExtraSmall"
+                            :disabled="isSchedulingDisabled"
+                            class="ml-1"
+                            @click="onSendNowClick">
+                    <i class="fa fa-envelope-o"></i> Send Now
+                    <Loading :isLoading="isSendingNow" :isSmall="true" class="d-inline-block" />
+                </RockButton>
+            </div>
+        </div>
+
+        <!-- Toolbar: Mobile -->
+        <div class="panel-toolbar panel-toolbar-mobile d-flex d-md-none justify-content-between">
+            <RockButton :btnSize="BtnSize.Small"
+                        :disabled="isBusy"
+                        @click="onSelectFiltersClick"><i class="fa fa-sliders-h"></i> Filters</RockButton>
+
+            <div class="d-flex">
+                <div class="dropdown">
+                    <button type="button"
+                            class="btn btn-default btn-square btn-sm"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            :disabled="isSchedulingDisabled">
+                        <Loading :isLoading="isCloningSchedules || isAutoScheduling || isSendingNow" :isSmall="true">
+                            <i class="fa fa-ellipsis-v"></i>
+                        </Loading>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li>
+                            <button type="button"
+                                    class="dropdown-item btn-link text-nowrap"
+                                    :disabled="isSchedulingDisabled"
+                                    @click="onSendNowClick">
+                                <i class="fa fa-envelope-o"></i> Send Now
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button"
+                                    class="dropdown-item btn-link text-nowrap"
+                                    :disabled="isSchedulingDisabled"
+                                    @click="onCloneSchedulesClick">
+                                <i class="fa fa-clone"></i> Clone Schedules
+                            </button>
+                        </li>
+                        <li>
+                            <button v-if="rosterUrl"
+                                    type="button"
+                                    class="dropdown-item btn-link text-nowrap"
+                                    :disabled="isSchedulingDisabled"
+                                    @click="onRosterClick">
+                                <i class="fa fa-calendar-check"></i> Rosters
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button"
+                                    class="dropdown-item btn-link text-nowrap"
+                                    :disabled="isSchedulingDisabled"
+                                    @click="onAutoScheduleClick">
+                                <i class="fa fa-magic"></i> Auto Schedule
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div v-if="!anyOccurrences" class="panel-body-alert">
+
+            <NotificationBox v-if="!anyGroupsSelected" :alertType="AlertType.Info">
+                Please select at least one group.
+            </NotificationBox>
+
+            <NotificationBox v-else :alertType="AlertType.Info">
+                No schedule occurrences match the selected filters.
+            </NotificationBox>
+
+        </div>
+
+        <div v-else ref="snapContainer" class="snap-container">
+
+            <OccurrenceDate v-for="(occurrences, index) in sortedOccurrencesByDate" :key="getOccurrenceDateKey(occurrences)"
+                            :occurrences="occurrences"
+                            :showPrevNextButtons="showPrevNextButtons"
+                            :disabled="isSchedulingDisabled"
+                            @scheduleComponentsCreated="onScheduleComponentsCreated(index, $event)"
+                            @goPrevious="onGoPrevious(index, $event)"
+                            @goNext="onGoNext(index, $event)"
+                            @preferenceUpdated="onPreferenceUpdated"></OccurrenceDate>
+
+        </div>
+
+        <SelectFilters v-model:isVisible="isSelectingFilters"
+                       :appliedFilters="currentlyAppliedFilters"
+                       @filtersApplied="onFiltersApplied" />
+
+        <CloneSchedules v-model:isVisible="isSelectingCloneSettings"
+                        :filters="filters"
+                        @cloneSchedules="onCloneSchedules" />
+
+        <ModalAlert v-model="isCloneSchedulesModalVisible"
+                    :type="ModalAlertType.Information">
+
+            <p v-if="cloneSchedulesResponse?.anyOccurrencesToClone === false">
+                No schedules were cloned.
+            </p>
+
+            <p v-else-if="clonedSchedulesMessage">
+                {{ clonedSchedulesMessage }}
+            </p>
+
+            <p>
+                <strong>Source: </strong>Week of {{ clonedSchedulesSourceDateRange }}
+                <br>
+                <strong>Destination: </strong>Week of {{ clonedSchedulesDestinationDateRange }}
+            </p>
+
+            <p v-if="cloneSchedulesResponse?.skippedIndividualsExplanation">
+                {{ cloneSchedulesResponse.skippedIndividualsExplanation }}
+            </p>
+
+        </ModalAlert>
+
+        <ModalAlert v-model="isSendNowModalVisible"
+                    :type="sendNowModalAlertType">
+
+            <div v-if="sendNowResponse?.errors?.length">
+                One or more errors occurred when sending confirmations:
+                <ul>
+                    <li v-for="error in sendNowResponse.errors">
+                        {{ error }}
+                    </li>
+                </ul>
+            </div>
+
+            <div v-if="sendNowResponse?.warnings?.length">
+                One or more warnings occurred when sending confirmations:
+                <ul>
+                    <li v-for="warning in sendNowResponse.warnings">
+                        {{ warning }}
+                    </li>
+                </ul>
+            </div>
+
+            <p v-if="sendNowResponse?.anyCommunicationsToSend === false">
+                Everybody has already been sent a confirmation. No additional confirmations sent.
+            </p>
+
+            <p v-else-if="sentConfirmationsMessage">
+                {{ sentConfirmationsMessage }}
+            </p>
+
+        </ModalAlert>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ComponentPublicInstance, computed, nextTick, provide, ref } from "vue";
+    import CloneSchedules from "./GroupScheduler/cloneSchedules.partial.obs";
+    import OccurrenceDate from "./GroupScheduler/occurrenceDate.partial.obs";
+    import SelectFilters from "./GroupScheduler/selectFilters.partial.obs";
+    import { NavigationUrlKey, ReloadAllOccurrences, ReloadOccurrencesContainingResource } from "./GroupScheduler/types.partial";
+    import Loading from "@Obsidian/Controls/loading";
+    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { GroupSchedulerAppliedFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerAppliedFiltersBag";
+    import { GroupSchedulerCloneSchedulesResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSchedulesResponseBag";
+    import { GroupSchedulerCloneSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSettingsBag";
+    import { GroupSchedulerFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerFiltersBag";
+    import { GroupSchedulerInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/GroupSchedulerInitializationBox";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+    import { GroupSchedulerSendNowResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerSendNowResponseBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<GroupSchedulerInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const reloadBlock = useReloadBlock();
+
+    enum ScrollDirection {
+        Previous,
+        Next
+    }
+
+    // #region Values
+
+    const blockActionErrorMessage = ref("");
+
+    const snapContainer = ref<HTMLElement | null>(null);
+    const scheduleComponentsByOccurrenceDate = ref<Record<number, (ComponentPublicInstance | null)[]>>({});
+
+    const filters = ref<GroupSchedulerFiltersBag | null | undefined>(config.appliedFilters?.filters);
+    const scheduleOccurrences = ref<GroupSchedulerOccurrenceBag[] | null | undefined>(config.appliedFilters?.scheduleOccurrences);
+    const navigationUrls = ref<Record<string, string> | null | undefined>(config.appliedFilters?.navigationUrls);
+
+    const isSelectingFilters = ref(false);
+
+    const isSelectingCloneSettings = ref(false);
+    const isCloningSchedules = ref(false);
+    const cloneSchedulesResponse = ref<GroupSchedulerCloneSchedulesResponseBag | null>(null);
+    const isCloneSchedulesModalVisible = ref(false);
+
+    const isAutoScheduling = ref(false);
+
+    const isSendingNow = ref(false);
+    const sendNowResponse = ref<GroupSchedulerSendNowResponseBag | null>(null);
+    const isSendNowModalVisible = ref(false);
+
+    const reloadAllOccurrences = ref(false);
+    const reloadOccurrencesContainingResource = ref<number | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const blockErrorMessage = computed((): string | undefined | null => {
+        return config.errorMessage;
+    });
+
+    const anyGroupsSelected = computed((): boolean => {
+        return !!filters.value?.groups?.length;
+    });
+
+    const copyLinkUrl = computed((): string | null => {
+        return navigationUrls.value?.[NavigationUrlKey.CopyLink] ?? "hello";
+    });
+
+    const secondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (copyLinkUrl.value) {
+            actions.push({
+                title: "Copy Link to Clipboard",
+                iconCssClass: "fa fa-clipboard",
+                type: "default",
+                handler: onCopyToClipboardClick,
+                disabled: isSchedulingDisabled.value
+            });
+        }
+
+        return actions;
+    });
+
+    const filtersText = computed((): string => {
+        const currentFilters = filters.value;
+
+        function getSingleItemOrCount(items: ListItemBag[] | null | undefined, label: string): string {
+            if (items?.length) {
+                if (items.length === 1 && items[0]) {
+                    return items[0].text || "";
+                }
+
+                label = items.length === 1 ? label : `${label}s`;
+                return `${items.length} ${label}`;
+            }
+
+            return `All ${label}s`;
+        }
+
+        const filtersTextSegements: string[] = [
+            currentFilters?.groups?.length ? currentFilters.groups.map(g => g.text).join(", ") : "",
+            currentFilters?.friendlyDateRange ? `Weeks: ${currentFilters?.friendlyDateRange}` : "",
+            getSingleItemOrCount(currentFilters?.locations?.selectedLocations, "Location"),
+            getSingleItemOrCount(currentFilters?.schedules?.selectedSchedules, "Schedule")
+        ];
+
+        return ` Filters: ${filtersTextSegements.filter(s => s).join(" | ")}`;
+    });
+
+    const filtersCssClass = computed((): string => {
+        return `d-block text-muted${(isBusy.value ? "" : " clickable")} text-truncate`;
+    });
+
+    const currentlyAppliedFilters = computed((): GroupSchedulerAppliedFiltersBag => {
+        return {
+            filters: filters.value,
+            scheduleOccurrences: scheduleOccurrences.value,
+            navigationUrls: navigationUrls.value
+        };
+    });
+
+    const sortedOccurrencesByDate = computed((): (GroupSchedulerOccurrenceBag[])[] => {
+        if (!scheduleOccurrences.value?.length) {
+            return [];
+        }
+
+        // We're assuming the server has performed the sort and returned the occcurrences to us in the expected display order.
+        // A Map object is needed to maintain sort order.
+        const groupedOccurrences = new Map<string, GroupSchedulerOccurrenceBag[]>();
+        scheduleOccurrences.value
+            .filter((o: GroupSchedulerOccurrenceBag) => o.occurrenceDate)
+            .forEach((o: GroupSchedulerOccurrenceBag) => {
+                const date = o.occurrenceDate || "";
+                let dateOccurrences = groupedOccurrences.get(date);
+
+                if (!dateOccurrences) {
+                    dateOccurrences = [];
+                    groupedOccurrences.set(date, dateOccurrences);
+                }
+
+                dateOccurrences.push(o);
+            });
+
+        const sortedDateOccurrences: (GroupSchedulerOccurrenceBag[])[] = [];
+        groupedOccurrences.forEach((occurrences) => sortedDateOccurrences.push(occurrences));
+
+        return sortedDateOccurrences;
+    });
+
+    const occurrenceDateCount = computed((): number => {
+        return sortedOccurrencesByDate.value.length;
+    });
+
+    const anyOccurrences = computed((): boolean => {
+        return !!occurrenceDateCount.value;
+    });
+
+    const showPrevNextButtons = computed((): boolean => {
+        if (!anyOccurrences.value) {
+            return false;
+        }
+
+        // If we have more than once occurrence date, show the prev/next buttons.
+        if (occurrenceDateCount.value > 1) {
+            return true;
+        }
+
+        /*
+         * If we got here, this means we have eactly one occurrence date; check to see if this date contains
+         * more than one schedule. If so, show the prev/next buttons.
+         */
+        const uniqueScheduleIds: number[] = [];
+        sortedOccurrencesByDate[0]?.forEach((o: GroupSchedulerOccurrenceBag) => {
+            if (!uniqueScheduleIds.some((id: number) => id === o.scheduleId)) {
+                uniqueScheduleIds.push(o.scheduleId);
+            }
+        });
+
+        return uniqueScheduleIds.length > 0;
+    });
+
+    const clonedSchedulesMessage = computed((): string | null => {
+        const occurrencesClonedCount = cloneSchedulesResponse.value?.occurrencesClonedCount;
+
+        if (!occurrencesClonedCount) {
+            return "No schedules were cloned.";
+        }
+
+        const scheduleLabel = `schedule${(occurrencesClonedCount > 1 ? "s" : "")}`;
+
+        return `Successfully cloned ${occurrencesClonedCount} ${scheduleLabel}.`;
+    });
+
+    const clonedSchedulesSourceDateRange = computed((): string | null | undefined => {
+        return cloneSchedulesResponse.value?.sourceDateRange;
+    });
+
+    const clonedSchedulesDestinationDateRange = computed((): string | null | undefined => {
+        return cloneSchedulesResponse.value?.destinationDateRange;
+    });
+
+    const rosterUrl = computed((): string | null => {
+        return navigationUrls.value?.[NavigationUrlKey.RosterPage] ?? null;
+    });
+
+    const sendNowModalAlertType = computed((): ModalAlertType => {
+        if (sendNowResponse.value?.errors?.length) {
+            return ModalAlertType.Alert;
+        }
+        else if (sendNowResponse.value?.warnings?.length) {
+            return ModalAlertType.Warning;
+        }
+
+        return ModalAlertType.Information;
+    });
+
+    const sentConfirmationsMessage = computed((): string | null => {
+        const count = sendNowResponse.value?.communicationsSentCount ?? 0;
+        return count
+            ? `Successfully sent ${count} confirmation${(count > 1 ? "s" : "")}.`
+            : null;
+    });
+
+    const isBusy = computed((): boolean => {
+        return isSelectingFilters.value
+            || isSelectingCloneSettings.value
+            || isCloningSchedules.value
+            || isAutoScheduling.value
+            || isSendingNow.value;
+    });
+
+    const isSchedulingDisabled = computed((): boolean => {
+        return isBusy.value || !anyGroupsSelected.value || !anyOccurrences.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the occurrence date "key" from the first occurrence in the collection.
+     *
+     * @param occurrences The occurrences for a given occurrence date.
+     */
+    function getOccurrenceDateKey(occurrences: GroupSchedulerOccurrenceBag[]): string {
+        return occurrences?.[0]?.occurrenceDate ?? "unknown";
+    }
+
+    /**
+     * Scrolls to the previous or next schedule component.
+     *
+     * @param currentDateIndex The index of the occurrenceDate component currently within view.
+     * @param currentScheduleIndex The index of the schedule component (within a given occurrence date) currently within view.
+     * @param direction The direction to scroll.
+     */
+    function scrollToSchedule(currentDateIndex: number, currentScheduleIndex: number, direction: ScrollDirection): void {
+        let targetSchedules = scheduleComponentsByOccurrenceDate.value[currentDateIndex];
+        let targetScheduleIndex = direction == ScrollDirection.Previous ? currentScheduleIndex - 1 : currentScheduleIndex + 1;
+
+        if (direction == ScrollDirection.Previous) {
+            if (targetScheduleIndex < 0) {
+                // The first schedule of a given occurrence date is currently within view.
+                if (occurrenceDateCount.value > 1) {
+                    // There is more than one occurrence date; go to the last schedule of the previous occurrence date.
+                    targetSchedules = scheduleComponentsByOccurrenceDate.value[currentDateIndex === 0 ? occurrenceDateCount.value - 1 : currentDateIndex - 1];
+                }
+                else {
+                    // There is only one occurrence date; go to the last schedule within this same occurrence date.
+                }
+
+                if (targetSchedules?.length) {
+                    scrollTo(targetSchedules[targetSchedules.length - 1]);
+                }
+            }
+            else {
+                // Go to the previous schedule within this same occurrence date.
+                if (targetSchedules?.length ?? 0 > targetScheduleIndex) {
+                    scrollTo(targetSchedules[targetScheduleIndex]);
+                }
+            }
+        }
+        else if (direction == ScrollDirection.Next) {
+            if (!targetSchedules) {
+                return;
+            }
+
+            if (targetScheduleIndex > targetSchedules.length - 1) {
+                // The last schedule of a given occurrence is currently within view.
+                if (occurrenceDateCount.value > 1) {
+                    // There is more than one occurrence date; go to the first schedule of the next occurrence date.
+                    targetSchedules = scheduleComponentsByOccurrenceDate.value[currentDateIndex === occurrenceDateCount.value - 1 ? 0 : currentDateIndex + 1];
+                }
+                else {
+                    // There is only one occurrece date; go to the first schedule within this same occurrence date.
+                }
+
+                if (targetSchedules?.length) {
+                    scrollTo(targetSchedules[0]);
+                }
+            }
+            else {
+                // Go to the next schedule within this same occurrence date.
+                if (targetSchedules?.length ?? 0 > targetScheduleIndex) {
+                    scrollTo(targetSchedules[targetScheduleIndex]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Scrolls to the specified component.
+     *
+     * @param component The component to scroll to.
+     */
+    function scrollTo(component: ComponentPublicInstance | null): void {
+        if (!component?.$el || !snapContainer.value) {
+            return;
+        }
+
+        const elementLeft: number = component.$el.getBoundingClientRect()?.left ?? 0;
+        const snapContainerScrollLeft: number = snapContainer.value?.scrollLeft ?? 0;
+
+        snapContainer.value.scrollTo({
+            left: elementLeft + snapContainerScrollLeft
+        });
+    }
+
+    /**
+     * Instructs any listening descendant schedule occurrences to reload themselves.
+     */
+    function reloadAllScheduleOccurrences(): void {
+        reloadAllOccurrences.value = true;
+
+        nextTick(() => {
+            reloadAllOccurrences.value = false;
+        });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the click event of the "Copy Link to Clipboard" secondary panel action.
+     */
+    async function onCopyToClipboardClick(): Promise<void> {
+        await navigator.clipboard.writeText(copyLinkUrl.value ?? "");
+    }
+
+    /**
+     * Handles the click event of the "Filters..." elements, to show the `SelectFilters` component.
+     */
+    function onSelectFiltersClick(): void {
+        if (isBusy.value) {
+            return;
+        }
+
+        isSelectingFilters.value = true;
+    }
+
+    /**
+     * Handles the click event of the "Clone Schedules" button.
+     */
+    function onCloneSchedulesClick(): void {
+        if (isSchedulingDisabled.value) {
+            return;
+        }
+
+        isSelectingCloneSettings.value = true;
+    }
+
+    /**
+     * Handles the `cloneSchedules` event of the CloneSchedules component.
+     *
+     * @param cloneSettings The settings dictating how schedules should be cloned.
+     */
+    async function onCloneSchedules(cloneSettings: GroupSchedulerCloneSettingsBag): Promise<void> {
+        if (isCloningSchedules.value) {
+            return;
+        }
+
+        isCloningSchedules.value = true;
+        blockActionErrorMessage.value = "";
+
+        const result = await invokeBlockAction<GroupSchedulerCloneSchedulesResponseBag>("CloneSchedules", { bag: cloneSettings });
+        isCloningSchedules.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to clone schedules.";
+            return;
+        }
+
+        cloneSchedulesResponse.value = result.data ?? null;
+        isCloneSchedulesModalVisible.value = true;
+
+        reloadAllScheduleOccurrences();
+    }
+
+    /**
+     * Handles the click event of the "Roster" button.
+     */
+    function onRosterClick(): void {
+        if (!rosterUrl.value) {
+            return;
+        }
+
+        window.location.href = rosterUrl.value;
+    }
+
+    /**
+     * Handles the click event of the "Auto Schedule" button.
+     */
+    async function onAutoScheduleClick(): Promise<void> {
+        if (isAutoScheduling.value) {
+            return;
+        }
+
+        isAutoScheduling.value = true;
+        blockActionErrorMessage.value = "";
+
+        const result = await invokeBlockAction<GroupSchedulerAppliedFiltersBag>("AutoSchedule", { bag: filters.value });
+        isAutoScheduling.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while auto-scheduling.";
+            return;
+        }
+
+        filters.value = result.data?.filters;
+        scheduleOccurrences.value = result.data?.scheduleOccurrences;
+        navigationUrls.value = result.data?.navigationUrls;
+
+        reloadAllScheduleOccurrences();
+    }
+
+    /**
+     * Handles the click event of the "Send Now" button.
+     */
+    async function onSendNowClick(): Promise<void> {
+        if (isSendingNow.value) {
+            return;
+        }
+
+        isSendingNow.value = true;
+        sendNowResponse.value = null;
+        blockActionErrorMessage.value = "";
+
+        const result = await invokeBlockAction<GroupSchedulerSendNowResponseBag>("SendNow", { bag: filters.value });
+        isSendingNow.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while sending confirmations.";
+            return;
+        }
+
+        sendNowResponse.value = result.data;
+        isSendNowModalVisible.value = true;
+    }
+
+    /**
+     * Handles the `filtersApplied` event of the `SelectFilters` component.
+     *
+     * @param appliedFilters The filters to apply.
+     */
+    function onFiltersApplied(appliedFilters: GroupSchedulerAppliedFiltersBag): void {
+        scheduleComponentsByOccurrenceDate.value = {};
+
+        filters.value = appliedFilters?.filters;
+        scheduleOccurrences.value = appliedFilters?.scheduleOccurrences;
+        navigationUrls.value = appliedFilters?.navigationUrls;
+
+        nextTick(() => {
+            if (snapContainer.value) {
+                snapContainer.value.scrollTo({
+                    left: 0
+                });
+            }
+        });
+    }
+
+    /**
+     * Adds this occurrence date's schedule components to the local collection so we can scroll between them.
+     *
+     * @param dateIndex The index of the occurrenceDate component from which this event originated.
+     * @param scheduleComponents The schedule components that were created as children of the occurrenceDate component.
+     */
+    function onScheduleComponentsCreated(dateIndex: number, scheduleComponents: (ComponentPublicInstance | null)[]): void {
+        scheduleComponentsByOccurrenceDate.value[dateIndex] = scheduleComponents;
+    }
+
+    /**
+     * Scrolls the previous schedule component into view.
+     *
+     * @param dateIndex The index of the occurrenceDate component from which this event originated.
+     * @param currentIndex The index of schedule component currently within view.
+     */
+    function onGoPrevious(dateIndex: number, currentIndex: number): void {
+        scrollToSchedule(dateIndex, currentIndex, ScrollDirection.Previous);
+    }
+
+    /**
+     * Scrolls the next schedule component into view.
+     *
+     * @param dateIndex The index of the occurrenceDate component from which this event originated.
+     * @param currentIndex The index of schedule component currently within view.
+     */
+    function onGoNext(dateIndex: number, currentIndex: number): void {
+        scrollToSchedule(dateIndex, currentIndex, ScrollDirection.Next);
+    }
+
+    /**
+     * Handles the `preferenceUpdated` event of the occurrence date component.
+     *
+     * @param personId The identifier of the person whose preference was updated.
+     */
+    function onPreferenceUpdated(personId: number): void {
+        reloadOccurrencesContainingResource.value = personId;
+
+        nextTick(() => {
+            reloadOccurrencesContainingResource.value = null;
+        });
+    }
+
+    // #endregion
+
+    provide(ReloadAllOccurrences, reloadAllOccurrences);
+    provide(ReloadOccurrencesContainingResource, reloadOccurrencesContainingResource);
+    provideSecurityGrant(securityGrant);
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

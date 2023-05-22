@@ -69,5 +69,11 @@ namespace Rock.ViewModels.Cms
         /// The custom configuration actions for the block.
         /// </value>
         public List<BlockCustomActionBag> CustomConfigurationActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person preferences associated with this block.
+        /// </summary>
+        /// <value>The person preferences associated with this block.</value>
+        public ObsidianBlockPreferencesBag Preferences { get; set; }
     }
 }

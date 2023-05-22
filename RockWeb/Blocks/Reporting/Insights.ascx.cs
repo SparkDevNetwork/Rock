@@ -74,14 +74,15 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private readonly List<string> _availableColors = new List<string>()
         {
-            "#3b82f6",
-            "#ef4444",
-            "#06b6d4",
-            "#f97316",
-            "#22c55e",
-            "#eab308",
-            "#8b5cf6",
-            "#EC4899",
+             "#38BDF8",  // Sky
+             "#34D399",  // Emerald
+             "#FB7185",  // Rose
+             "#A3E635",  // Lime
+             "#818CF8",  // Indigo
+             "#FB923C",  // Orange
+             "#C084FC",  // Purple
+             "#FBBF24",  // Amber
+             "#A8A29E",  // Stone
         };
 
         /// <summary>
@@ -221,31 +222,31 @@ namespace RockWeb.Blocks.Reporting
             var dataItems = new List<DataItem>();
             var peopleWithAgeQry = qry.Where( p => p.BirthDate.HasValue );
 
-            var zeroTo12RangeSql = peopleWithAgeQry.Count( p => p.Age >= 0 && p.Age <= 12 );
+            var zeroTo12RangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ZeroToTwelve );
             dataItems.Add( new DataItem( "0-12", zeroTo12RangeSql.ToString() ) );
 
-            var thirteenToSeventeenRangeSql = peopleWithAgeQry.Count( p => p.Age >= 13 && p.Age <= 17 );
+            var thirteenToSeventeenRangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ThirteenToSeventeen );
             dataItems.Add( new DataItem( "13-17", thirteenToSeventeenRangeSql.ToString() ) );
 
-            var eighteenAndTwentyFour = peopleWithAgeQry.Count( p => p.Age >= 18 && p.Age <= 24 );
+            var eighteenAndTwentyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.EighteenToTwentyFour );
             dataItems.Add( new DataItem( "18-24", eighteenAndTwentyFour.ToString() ) );
 
-            var twentyFiveAndThirtyFour = peopleWithAgeQry.Count( p => p.Age >= 25 && p.Age <= 34 );
+            var twentyFiveAndThirtyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.TwentyFiveToThirtyFour );
             dataItems.Add( new DataItem( "25-34", twentyFiveAndThirtyFour.ToString() ) );
 
-            var thirtyFiveAndFortyFour = peopleWithAgeQry.Count( p => p.Age >= 35 && p.Age <= 44 );
+            var thirtyFiveAndFortyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ThirtyFiveToFortyFour );
             dataItems.Add( new DataItem( "35-44", thirtyFiveAndFortyFour.ToString() ) );
 
-            var fortyFiveAndFiftyFour = peopleWithAgeQry.Count( p => p.Age >= 45 && p.Age <= 54 );
+            var fortyFiveAndFiftyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.FortyFiveToFiftyFour );
             dataItems.Add( new DataItem( "45-54", fortyFiveAndFiftyFour.ToString() ) );
 
-            var fiftyFiveAndSixtyFour = peopleWithAgeQry.Count( p => p.Age >= 55 && p.Age <= 64 );
+            var fiftyFiveAndSixtyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.FiftyFiveToSixtyFour );
             dataItems.Add( new DataItem( "55-64", fiftyFiveAndSixtyFour.ToString() ) );
 
-            var overSixtyFive = peopleWithAgeQry.Count( predicate: p => p.Age >= 60 );
-            dataItems.Add( new DataItem( ">60", overSixtyFive.ToString() ) );
+            var overSixtyFive = peopleWithAgeQry.Count( predicate: p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.SixtyFiveOrOlder);
+            dataItems.Add( new DataItem( ">65", overSixtyFive.ToString() ) );
 
-            var unknown = qry.Count( p => !p.BirthDate.HasValue );
+            var unknown = qry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.Unknown );
             dataItems.Add( new DataItem( "Unknown", unknown.ToString() ) );
 
             return PopulateShortcodeDataItems( PieChartConfig, dataItems );
@@ -368,7 +369,10 @@ namespace RockWeb.Blocks.Reporting
             dataItems.Add( new DataItem( "Active", DataItem.GetPercentage( activeCount, total ) ) );
 
             var inActiveCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-            dataItems.Add( new DataItem( "InActive", DataItem.GetPercentage( inActiveCount, total ) ) );
+            dataItems.Add( new DataItem( "Inactive", DataItem.GetPercentage( inActiveCount, total ) ) );
+
+            var pendingCount = alivePersonsQry.Count( p => p.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() );
+            dataItems.Add( new DataItem( "Pending", DataItem.GetPercentage( pendingCount, total ) ) );
 
             const string chartConfig = "{[ chart type:'pie' chartheight:'200px' legendshow:'true' legendposition:'right' valueformat:'percentage' ]}";
 
@@ -387,10 +391,19 @@ namespace RockWeb.Blocks.Reporting
 
             var sb = new StringBuilder( chartConfig );
 
+            // Reset the skip count
+            skipCount = 0;
+            
             foreach ( var dataItem in dataItems )
             {
                 sb.AppendFormat( dataItemFormat, dataItem.Label, dataItem.Value, GetFillColor( skipCount, dataItem.Label ) ).AppendLine();
-                skipCount ++;
+                
+                // Only skip if a color was used
+                if ( dataItem.Label != "Unknown" )
+                {
+                    skipCount ++;
+                }
+                
             }
 
             sb.AppendLine( "{[ endchart ]}" );
@@ -408,7 +421,7 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( label == "Unknown" )
             {
-                return "#737373";
+                return "#E7E5E4";
             }
             else
             {

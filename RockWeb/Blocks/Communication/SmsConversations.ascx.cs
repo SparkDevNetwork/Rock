@@ -247,9 +247,9 @@ namespace RockWeb.Blocks.Communication
 
                 ddlMessageFilter.BindToEnum<CommunicationMessageFilter>();
 
-                string keyPrefix = string.Format( "sms-conversations-{0}-", this.BlockId );
+                var preferences = GetBlockPersonPreferences();
 
-                string smsNumberUserPref = this.GetUserPreference( keyPrefix + "smsNumber" ) ?? string.Empty;
+                string smsNumberUserPref = preferences.GetValue( "smsNumber" );
 
                 if ( smsNumberUserPref.IsNotNullOrWhiteSpace() )
                 {
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Communication
                 hlSmsNumber.Text = smsDetails.Select( v => v.Description ).FirstOrDefault();
                 hfSmsNumber.SetValue( smsNumbers.Count() > 1 ? ddlSmsNumbers.SelectedValue.AsInteger() : smsDetails.Select( v => v.Id ).FirstOrDefault() );
 
-                ddlMessageFilter.SelectedValue = this.GetUserPreference( keyPrefix + "messageFilter" ) ?? CommunicationMessageFilter.ShowUnreadReplies.ToString();
+                ddlMessageFilter.SelectedValue = preferences.GetValue( "messageFilter" ).IfEmpty( CommunicationMessageFilter.ShowUnreadReplies.ToString() );
             }
             else
             {
@@ -465,19 +465,21 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SaveSettings()
         {
-            string keyPrefix = string.Format( "sms-conversations-{0}-", this.BlockId );
+            var preferences = GetBlockPersonPreferences();
 
             if ( ddlSmsNumbers.Visible )
             {
-                this.SetUserPreference( keyPrefix + "smsNumber", ddlSmsNumbers.SelectedValue.ToString() );
+                preferences.SetValue( "smsNumber", ddlSmsNumbers.SelectedValue.ToString() );
                 hfSmsNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
             }
             else
             {
-                this.SetUserPreference( keyPrefix + "smsNumber", hfSmsNumber.Value.ToString() );
+                preferences.SetValue( "smsNumber", hfSmsNumber.Value.ToString() );
             }
 
-            this.SetUserPreference( keyPrefix + "messageFilter", ddlMessageFilter.SelectedValue );
+            preferences.SetValue( "messageFilter", ddlMessageFilter.SelectedValue );
+
+            preferences.Save();
         }
 
         /// <summary>

@@ -444,6 +444,11 @@ namespace Rock.SystemGuid
         public const string LOCATION = "B0B9EFE3-F09F-4604-AD1B-76B298A85D83";
 
         /// <summary>
+        /// Location List field type
+        /// </summary>
+        public const string LOCATION_LIST = "A58A0CBF-C3E6-4054-85D7-05118035980B";
+
+        /// <summary>
         /// Markdown field type
         /// </summary>
         public const string MARKDOWN = "C2FBCF94-0FDF-4DFD-93A5-19FE6A409C84";
@@ -552,6 +557,11 @@ namespace Rock.SystemGuid
         /// Registration Template field type
         /// </summary>
         public const string REGISTRATION_TEMPLATE = "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620";
+
+        /// <summary>
+        /// Registration Entry field type
+        /// </summary>
+        public const string REGISTRY_ENTRY = "D98E1D88-2240-4248-B93B-0512BD3BB61A";
 
         /// <summary>
         /// Registration Template field type

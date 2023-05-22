@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fLinkages_ApplyFilterClick( object sender, EventArgs e )
         {
-            fLinkages.SaveUserPreference( UserPreferenceKeyBase.GridFilter_Campus, cblCampus.SelectedValues.AsDelimited( ";" ) );
+            fLinkages.SetFilterPreference( UserPreferenceKeyBase.GridFilter_Campus, cblCampus.SelectedValues.AsDelimited( ";" ) );
 
             BindLinkagesGrid();
         }
@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fLinkages_ClearFilterClick( object sender, EventArgs e )
         {
-            fLinkages.DeleteUserPreferences();
+            fLinkages.DeleteFilterPreferences();
             BindLinkagesFilter();
         }
 
@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void SetUserPreferencePrefix( int registrationTemplateId )
         {
-            fLinkages.UserPreferenceKeyPrefix = string.Format( "{0}-", registrationTemplateId );
+            fLinkages.PreferenceKeyPrefix = string.Format( "{0}-", registrationTemplateId );
         }
 
         /// <summary>
@@ -403,7 +403,7 @@ namespace RockWeb.Blocks.Event
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
 
-            string campusValue = fLinkages.GetUserPreference( UserPreferenceKeyBase.GridFilter_Campus );
+            string campusValue = fLinkages.GetFilterPreference( UserPreferenceKeyBase.GridFilter_Campus );
 
             if ( !string.IsNullOrWhiteSpace( campusValue ) )
             {

@@ -30,7 +30,7 @@
     <Parameter name="GoogleServiceAccountJsonKey" value="" />
 
     <!-- Test Database Configuration -->
-    <Parameter name="SampleDataUrl" value="http://storage.rockrms.com/sampledata/sampledata_1_14_0.xml" />
+    <Parameter name="SampleDataUrl" value="http://storage.rockrms.com/sampledata/sampledata_1_14_1.xml" />
     <Parameter name="DatabaseCreatorId" value="RockIntegrationTestProject" />
     <!-- The DatabaseRefreshStrategy setting determines if the test database is replaced for each test run.
          * "never" prevents an existing database from being replaced. 

@@ -117,11 +117,12 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !this.IsPostBack )
             {
-                var campusIds = this.GetBlockUserPreference( "Campuses" ).SplitDelimitedValues().AsIntegerList();
-                var dataViewGuid = this.GetBlockUserPreference( "DataView" ).AsGuidOrNull();
+                var preferences = GetBlockPersonPreferences();
+                var campusIds = preferences.GetValue( "Campuses" ).SplitDelimitedValues().AsIntegerList();
+                var dataViewGuid = preferences.GetValue( "DataView" ).AsGuidOrNull();
 
-                cbShowCampusLocations.Checked = this.GetBlockUserPreference( "ShowCampusLocations" ).AsBoolean();
-                this.DataPointRadius = this.GetBlockUserPreference( "DataPointRadius" ).AsIntegerOrNull() ?? 32;
+                cbShowCampusLocations.Checked = preferences.GetValue( "ShowCampusLocations" ).AsBoolean();
+                this.DataPointRadius = preferences.GetValue( "DataPointRadius" ).AsIntegerOrNull() ?? 32;
                 rsDataPointRadius.SelectedValue = this.DataPointRadius;
 
                 cpCampuses.SetValues( campusIds );
@@ -133,7 +134,7 @@ namespace RockWeb.Blocks.Reporting
                     pnlOptions.Style["display"] = "";
                 }
 
-                var groupId = this.GetBlockUserPreference( "GroupId" ).AsIntegerOrNull();
+                var groupId = preferences.GetValue( "GroupId" ).AsIntegerOrNull();
                 gpGroupToMap.SetValue( groupId );
 
                 this.LabelFontSize = this.GetAttributeValue( "LabelFontSize" ).AsIntegerOrNull() ?? 24;
@@ -540,11 +541,13 @@ namespace RockWeb.Blocks.Reporting
         protected void btn_ApplyOptionsClick( object sender, EventArgs e )
         {
             // reload the full page to ensure the updated HeatMapData is rendered correctly
-            this.SetBlockUserPreference( "ShowCampusLocations", cbShowCampusLocations.Checked.ToTrueFalse() );
-            this.SetBlockUserPreference( "DataPointRadius", rsDataPointRadius.SelectedValue.ToString() );
-            this.SetBlockUserPreference( "Campuses", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
-            this.SetBlockUserPreference( "DataView", ddlUserDataView.SelectedValue );
-            this.SetBlockUserPreference( "GroupId", gpGroupToMap.SelectedValue );
+            var preferences = GetBlockPersonPreferences();
+            preferences.SetValue( "ShowCampusLocations", cbShowCampusLocations.Checked.ToTrueFalse() );
+            preferences.SetValue( "DataPointRadius", rsDataPointRadius.SelectedValue.ToString() );
+            preferences.SetValue( "Campuses", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            preferences.SetValue( "DataView", ddlUserDataView.SelectedValue );
+            preferences.SetValue( "GroupId", gpGroupToMap.SelectedValue );
+            preferences.Save();
 
             NavigateToPage( this.CurrentPageReference );
         }

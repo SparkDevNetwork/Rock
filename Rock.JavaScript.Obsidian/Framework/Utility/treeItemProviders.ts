@@ -310,7 +310,6 @@ export class WorkflowTypeTreeItemProvider implements ITreeItemProvider {
 }
 
 
-
 /**
  * Tree Item Provider for retrieving pages from the server and displaying
  * them inside a tree list.
@@ -434,7 +433,6 @@ export class PageTreeItemProvider implements ITreeItemProvider {
         return this.getItems(item.value);
     }
 }
-
 
 
 /**

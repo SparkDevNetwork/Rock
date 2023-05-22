@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .Select( a => new
                 {
                     TransactionDateTime = a.TransactionDateTime,
-                    TotalAmountBeforeRefund = a.TransactionDetails.Sum( d => d.Amount ),
+                    TotalAmountBeforeRefund = a.TransactionDetails.Where(td => td.Account.IsTaxDeductible == true).Sum( d => d.Amount ),
                     // For each Refund (there could be more than one) get the refund amount for each if the refunds's Detail records for the Account.
                     // Then sum that up for the total refund amount for the account
                     TotalRefundAmount = a
@@ -516,16 +516,16 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
             // Typical gift KPI
-            var giftAmountMedian = FormatAsCurrency( Person.GetAttributeValue( "GiftAmountMedian" ).AsDecimal() );
-            var giftAmountIqr = FormatAsCurrency( Person.GetAttributeValue( "GiftAmountIQR" ).AsDecimal() );
+            var giftAmountMedian = Person.GetAttributeValue( "GiftAmountMedian" ).AsDecimal();
+            var giftAmountIqr = Person.GetAttributeValue( "GiftAmountIQR" ).AsDecimal();
 
             var typicalGiftKpi = GetKpiShortCode(
                 "Typical Gift",
-                $"<span class=\"currency-span\">{giftAmountMedian}</span>",
+                $"<span class=\"currency-span\">{FormatAsCurrency( giftAmountMedian )}</span>",
                 $"{giftAmountIqr}",
                 "fa-fw fa-money-bill",
                 "left",
-                $"A typical gift amount has a median value of {giftAmountMedian} with an IQR variance of {giftAmountIqr}." );
+                $"A typical gift amount has a median value of ${giftAmountMedian} with an IQR variance of ${giftAmountIqr}." );
 
             stringBuilder.Append( typicalGiftKpi );
 

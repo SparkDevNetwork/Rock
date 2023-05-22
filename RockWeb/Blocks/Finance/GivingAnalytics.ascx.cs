@@ -740,14 +740,14 @@ var headerText = dp.label;
         /// </summary>
         private void SaveSettings()
         {
-            string keyPrefix = string.Format( "giving-analytics-{0}-", this.BlockId );
+            var preferences = GetBlockPersonPreferences();
 
-            this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues, false );
-            this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
-            this.SetUserPreference( keyPrefix + "AmountRange", nreAmount.DelimitedValues, false );
-            this.SetUserPreference( keyPrefix + "TransactionTypeIds", dvpTransactionType.SelectedValues.AsDelimited( "," ), false );
-            this.SetUserPreference( keyPrefix + "CurrencyTypeIds", dvpCurrencyTypes.SelectedValues.AsDelimited( "," ), false );
-            this.SetUserPreference( keyPrefix + "SourceIds", dvpTransactionSource.SelectedValues.AsDelimited( "," ), false );
+            preferences.SetValue( "SlidingDateRange", drpSlidingDateRange.DelimitedValues );
+            preferences.SetValue( "GroupBy", hfGroupBy.Value );
+            preferences.SetValue( "AmountRange", nreAmount.DelimitedValues );
+            preferences.SetValue( "TransactionTypeIds", dvpTransactionType.SelectedValues.AsDelimited( "," ) );
+            preferences.SetValue( "CurrencyTypeIds", dvpCurrencyTypes.SelectedValues.AsDelimited( "," ) );
+            preferences.SetValue( "SourceIds", dvpTransactionSource.SelectedValues.AsDelimited( "," ) );
 
             var accountIds = new List<int>();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
@@ -755,16 +755,16 @@ var headerText = dp.label;
                 accountIds.AddRange( cblAccounts.SelectedValuesAsInt );
             }
 
-            this.SetUserPreference( keyPrefix + "AccountIds", accountIds.AsDelimited( "," ), false );
+            preferences.SetValue( "AccountIds", accountIds.AsDelimited( "," ) );
 
-            this.SetUserPreference( keyPrefix + "DataView", dvpDataView.SelectedValue, false );
-            this.SetUserPreference( keyPrefix + "DataViewAction", rblDataViewAction.SelectedValue, false );
+            preferences.SetValue( "DataView", dvpDataView.SelectedValue );
+            preferences.SetValue( "DataViewAction", rblDataViewAction.SelectedValue );
 
-            this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value, false );
-            this.SetUserPreference( keyPrefix + "ShowBy", hfShowBy.Value, false );
+            preferences.SetValue( "GraphBy", hfGraphBy.Value );
+            preferences.SetValue( "ShowBy", hfShowBy.Value );
             if ( !hideViewByOption )
             {
-                this.SetUserPreference( keyPrefix + "ViewBy", hfViewBy.Value, false );
+                preferences.SetValue( "ViewBy", hfViewBy.Value );
             }
 
             GiversFilterBy giversFilterBy;
@@ -781,17 +781,16 @@ var headerText = dp.label;
                 giversFilterBy = GiversFilterBy.All;
             }
 
-            this.SetUserPreference( keyPrefix + "GiversFilterByType", giversFilterBy.ConvertToInt().ToString(), false );
-            this.SetUserPreference( keyPrefix + "GiversFilterByPattern", string.Format( "{0}|{1}|{2}", tbPatternXTimes.Text, cbPatternAndMissed.Checked, drpPatternDateRange.DelimitedValues ), false );
+            preferences.SetValue( "GiversFilterByType", giversFilterBy.ConvertToInt().ToString() );
+            preferences.SetValue( "GiversFilterByPattern", string.Format( "{0}|{1}|{2}", tbPatternXTimes.Text, cbPatternAndMissed.Checked, drpPatternDateRange.DelimitedValues ) );
 
-            this.SaveUserPreferences( keyPrefix );
+            preferences.Save();
 
             // Create URL for selected settings
             var pageReference = CurrentPageReference;
-            foreach ( var setting in GetUserPreferences( keyPrefix ) )
+            foreach ( var key in preferences.GetKeys() )
             {
-                string key = setting.Key.Substring( keyPrefix.Length );
-                pageReference.Parameters.AddOrReplace( key, setting.Value );
+                pageReference.Parameters.AddOrReplace( key, preferences.GetValue( key ) );
             }
 
             Uri uri = new Uri( Request.UrlProxySafe().ToString() );
@@ -893,7 +892,7 @@ var headerText = dp.label;
                 return setting;
             }
 
-            return this.GetUserPreference( prefix + key );
+            return GetBlockPersonPreferences().GetValue( key );
         }
 
         /// <summary>

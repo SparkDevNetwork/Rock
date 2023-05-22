@@ -71,7 +71,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [CustomDropdownListField( "Display Project Filters As",
         Key = AttributeKey.DisplayProjectFiltersAs,
-        Description = "Determines if the project filters should be show as checkboxes or multi-select dropdowns.",
+        Description = @"Determines if the ""Project Types"", ""Campus"", and ""Named Schedule"" project filters should be shown as checkboxes or multi-select dropdowns.",
         Category = AttributeCategory.CustomSetting,
         ListSource = "Checkboxes^Checkboxes,MultiSelectDropDown^Multi-Select Dropdown",
         DefaultValue = "Checkboxes",
@@ -1399,6 +1399,11 @@ namespace Rock.Blocks.Engagement.SignUp
             }
         }
 
+        /// <summary>
+        /// Gets the sign-up projects that should be displayed based on the provided filters.
+        /// </summary>
+        /// <param name="bag">The object containing the filter criteria.</param>
+        /// <returns>The sign-up projects that should be displayed based on the provided filters.</returns>
         [BlockAction]
         public BlockActionResult GetFilteredProjects( SignUpFinderSelectedFiltersBag bag )
         {

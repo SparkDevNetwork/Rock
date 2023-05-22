@@ -189,8 +189,10 @@ namespace Rock.Web.UI.Controls
 
                     var hasPermissionToOverride = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
 
-                    // Do not render cards for "Not Applicable" or "Error" results.
-                    if ( requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.Error )
+                    var isAuthorized = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson );
+
+                    // Do not render cards where the current person is not authorized, or the status is "Not Applicable" or "Error".
+                    if ( isAuthorized && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.Error )
                     {
                         var card = new GroupMemberRequirementCard( requirementStatus.GroupRequirement.GroupRequirementType, leaderCanOverride || hasPermissionToOverride )
                         {

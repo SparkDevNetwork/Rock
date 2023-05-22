@@ -28,6 +28,12 @@ namespace Rock.Tests.Shared
         // A Guid Reference that does not match any entity in a Rock database.
         public const string NoMatch = "00000000-0000-0000-0000-000000000001";
 
+        public static class Crm
+        {
+            public const string CampusMain = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
+            public const string CampusSouth = "5434F90B-BB91-4A34-8B09-8C117A9E5D95";
+        }
+
         public static class Category
         {
             public const string DataViewLocations = "1D45C0A7-3DE8-428C-94A8-14E5ED5E2E36";

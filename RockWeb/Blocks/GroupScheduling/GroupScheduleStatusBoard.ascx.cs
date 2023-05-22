@@ -530,7 +530,9 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <returns></returns>
         private List<int> GetSelectedGroupIds()
         {
-            return this.GetBlockUserPreference( UserPreferenceKey.GroupIds ).SplitDelimitedValues().AsIntegerList();
+            var preferences = GetBlockPersonPreferences();
+
+            return preferences.GetValue( UserPreferenceKey.GroupIds ).SplitDelimitedValues().AsIntegerList();
         }
 
         /// <summary>
@@ -546,7 +548,8 @@ namespace RockWeb.Blocks.GroupScheduling
             }
 
             // if there is a stored user preference, use that, otherwise use the value from block attributes
-            int? numberOfWeeks = this.GetBlockUserPreference( UserPreferenceKey.FutureWeeksToShow ).AsIntegerOrNull();
+            var preferences = GetBlockPersonPreferences();
+            int? numberOfWeeks = preferences.GetValue( UserPreferenceKey.FutureWeeksToShow ).AsIntegerOrNull();
             if ( !numberOfWeeks.HasValue )
             {
                 numberOfWeeks = this.GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 2;
@@ -598,7 +601,9 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDates_Click( object sender, EventArgs e )
         {
-            rsDateRange.SelectedValue = this.GetBlockUserPreference( UserPreferenceKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 2;
+            var preferences = GetBlockPersonPreferences();
+
+            rsDateRange.SelectedValue = preferences.GetValue( UserPreferenceKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 2;
             dlgDateRangeSlider.Show();
         }
 
@@ -611,7 +616,9 @@ namespace RockWeb.Blocks.GroupScheduling
         {
             dlgGroups.Hide();
             var selectedGroupIds = gpGroups.SelectedValues.ToList().AsIntegerList();
-            this.SetBlockUserPreference( UserPreferenceKey.GroupIds, selectedGroupIds.AsDelimited( "," ) );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreferenceKey.GroupIds, selectedGroupIds.AsDelimited( "," ) );
             BuildStatusBoard();
         }
 
@@ -623,7 +630,12 @@ namespace RockWeb.Blocks.GroupScheduling
         protected void dlgDateRangeSlider_SaveClick( object sender, EventArgs e )
         {
             dlgDateRangeSlider.Hide();
-            this.SetBlockUserPreference( UserPreferenceKey.FutureWeeksToShow, rsDateRange.SelectedValue.ToString() );
+
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreferenceKey.FutureWeeksToShow, rsDateRange.SelectedValue.ToString() );
+            preferences.Save();
+
             BuildStatusBoard();
         }
 

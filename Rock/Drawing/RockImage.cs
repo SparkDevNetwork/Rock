@@ -66,7 +66,8 @@ namespace Rock.Drawing
         }
 
         /// <summary>
-        /// Returns a Image Sharp image from a binary file 
+        /// Returns a Image Sharp image from a binary file
+        /// If the retrival of the image fails, a blank image would be returned.
         /// </summary>
         /// <param name="photoId"></param>
         /// <returns></returns>
@@ -74,17 +75,15 @@ namespace Rock.Drawing
         {          
             var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
 
-            if ( binaryFile == null || binaryFile.ContentStream == null )
-            {
-                // Image does not exist so return a blank image
-                return new Image<Rgba32>( 1, 1 );
-            }
-
-            // Load image from stream
             try
             {
-                return Image.Load<Rgba32>( binaryFile.ContentStream );
+                // Load image from stream if the file exists and can be loaded from the stream
+                if ( binaryFile.ContentStream != null )
+                {
+                    return Image.Load<Rgba32>( binaryFile.ContentStream );
+                }
             }
+            // if the retrival fails due to some exception, swallow the exception
             catch { }
 
             // There was a problem with the content in the binary file so return a blank image

@@ -71,7 +71,7 @@
                              :items="campusBehaviorItems"
                              rules="required"
                              horizontal
-                             help="&lt;p&gt;Determines the role of campus with the experience.&lt;/p&gt;&lt;p&gt;Filter Schedules will only show the schedules that match the individual's location using the geofence of the campuses.&lt;/p&gt;&lt;p&gt;Dermine Campus will use the campus geofence to determine which campus to use for the individual's interactions.&lt;/p&gt;&lt;p&gt;Use Individual's Campus will not consider campus geofences and simply use the campus set on the individual.&lt;/p&gt;" />
+                             help="&lt;p&gt;Determines the role of campus with the experience.&lt;/p&gt;&lt;p&gt;Filter Schedules will only show the schedules that match the individual's location using the geofence of the campuses. It will also use the geofence to determine which campus to use for the individual's interactions.&lt;/p&gt;&lt;p&gt;Dermine Campus will use the campus geofence to determine which campus to use for the individual's interactions.&lt;/p&gt;&lt;p&gt;Use Individual's Campus will not consider campus geofences and simply use the campus set on the individual.&lt;/p&gt;" />
 
             <TransitionVerticalCollapse>
                 <div v-if="isDefaultCampusVisible" class="row">

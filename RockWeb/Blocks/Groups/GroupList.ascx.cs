@@ -376,18 +376,18 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( "Group Type", gtpGroupType.SelectedValue );
+            gfSettings.SetFilterPreference( "Group Type", gtpGroupType.SelectedValue );
 
             if ( ddlActiveFilter.SelectedValue == "all" )
             {
-                gfSettings.SaveUserPreference( "Active Status", string.Empty );
+                gfSettings.SetFilterPreference( "Active Status", string.Empty );
             }
             else
             {
-                gfSettings.SaveUserPreference( "Active Status", ddlActiveFilter.SelectedValue );
+                gfSettings.SetFilterPreference( "Active Status", ddlActiveFilter.SelectedValue );
             }
 
-            gfSettings.SaveUserPreference( "Group Type Purpose", dvpGroupTypePurpose.SelectedValue );
+            gfSettings.SetFilterPreference( "Group Type Purpose", dvpGroupTypePurpose.SelectedValue );
 
             BindGrid();
         }
@@ -716,14 +716,14 @@ namespace RockWeb.Blocks.Groups
                 gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable()
                     .Where( g => groupTypeIds.Contains( g.Id ) ).ToList();
 
-                gtpGroupType.SelectedValue = gfSettings.GetUserPreference( "Group Type" );
+                gtpGroupType.SelectedValue = gfSettings.GetFilterPreference( "Group Type" );
             }
 
             dvpGroupTypePurpose.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ).Id;
-            dvpGroupTypePurpose.SetValue( gfSettings.GetUserPreference( "Group Type Purpose" ) );
+            dvpGroupTypePurpose.SetValue( gfSettings.GetFilterPreference( "Group Type Purpose" ) );
 
             // Set the Active Status
-            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetUserPreference( "Active Status" ) );
+            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetFilterPreference( "Active Status" ) );
             if ( itemActiveStatus != null )
             {
                 itemActiveStatus.Selected = true;
@@ -740,7 +740,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( GetAttributeValue( "DisplayFilter" ).AsBooleanOrNull() ?? false )
             {
-                int? groupTypeFilter = gfSettings.GetUserPreference( "Group Type" ).AsIntegerOrNull();
+                int? groupTypeFilter = gfSettings.GetFilterPreference( "Group Type" ).AsIntegerOrNull();
                 if ( groupTypeFilter.HasValue )
                 {
                     groupTypeIds = groupTypeIds.Where( g => g == groupTypeFilter.Value ).ToList();
@@ -778,6 +778,16 @@ namespace RockWeb.Blocks.Groups
             var qryGroups = groupService.Queryable()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
 
+            var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
+            if ( rootGroupGuid.HasValue )
+            {
+                var parentGroup = groupService.Get( rootGroupGuid.Value );
+                if ( parentGroup != null )
+                {
+                    qryGroups = qryGroups.Where( g => g.ParentGroupId == parentGroup.Id );
+                }
+            }
+
             string limitToActiveStatus = GetAttributeValue( "LimittoActiveStatus" );
 
             bool showActive = true;
@@ -808,7 +818,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            var groupTypePurposeValue = gfSettings.GetUserPreference( "Group Type Purpose" ).AsIntegerOrNull();
+            var groupTypePurposeValue = gfSettings.GetFilterPreference( "Group Type Purpose" ).AsIntegerOrNull();
 
             var groupList = new List<GroupListRowInfo>();
 
@@ -895,6 +905,9 @@ namespace RockWeb.Blocks.Groups
                 // load with groups that have Group History
                 _groupsWithGroupHistory = new HashSet<int>( new GroupHistoricalService( rockContext ).Queryable().Where( a => qryGroups.Any( g => g.Id == a.GroupId ) ).Select( a => a.GroupId ).ToList() );
 
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupSyncService = new GroupSyncService( rockContext );
+
                 groupList = qryGroups
                     .AsEnumerable()
                     .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
@@ -914,8 +927,8 @@ namespace RockWeb.Blocks.Groups
                         ElevatedSecurityLevel = g.ElevatedSecurityLevel,
                         IsSecurityRole = g.IsSecurityRole,
                         DateAdded = DateTime.MinValue,
-                        IsSynced = g.GroupSyncs.Any(),
-                        MemberCount = g.Members.Count()
+                        IsSynced = groupSyncService.Queryable().Any( gs => gs.GroupId == g.Id ),
+                        MemberCount = groupMemberService.Queryable().Count( gm => gm.GroupId == g.Id )
                     } )
                     .AsQueryable()
                     .Sort( sortProperty )
@@ -954,6 +967,16 @@ namespace RockWeb.Blocks.Groups
 
             var groupTypeService = new GroupTypeService( new RockContext() );
             var qry = groupTypeService.Queryable().Where( t => t.ShowInGroupList );
+
+            /*
+                04/20/2022 - KA
+
+                The GroupType filtering should use an if/else clause with the IncludeGroupTypes taking priority over the ExcludeGroupTypes
+                (refer to ReminderService.GetReminderEntityTypesByPerson for how it should work). Thus if any GroupTypes are selected as 
+                part of the IncludeGroupTypes they should not be excluded even if they are selected as part of the ExcludeGroupTypes. This
+                implementation has been left as it is because it would be too late/risky to change the behavior now since people/admins
+                have already configured it and it is working the way it is working now.
+            */
 
             List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
             if ( includeGroupTypeGuids.Count > 0 )

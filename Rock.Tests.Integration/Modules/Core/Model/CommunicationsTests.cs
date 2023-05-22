@@ -11,6 +11,12 @@ namespace Rock.Tests.Integration.Communications
     {
         private string communicationForeignKey;
 
+        [ClassInitialize]
+        public static void TestInitialize( TestContext context )
+        {
+            TestDatabaseHelper.ResetDatabase();
+        }
+
         [TestInitialize]
         public void TestInitialize()
         {

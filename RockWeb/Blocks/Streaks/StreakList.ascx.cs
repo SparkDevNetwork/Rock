@@ -256,9 +256,9 @@ namespace RockWeb.Blocks.Streaks
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterKey.FirstName, "First Name", tbFirstName.Text );
-            rFilter.SaveUserPreference( FilterKey.LastName, "Last Name", tbLastName.Text );
-            rFilter.SaveUserPreference( FilterKey.EnrollmentDate, "Enrollment Date", drpEnrollmentDate.DelimitedValues );
+            rFilter.SetFilterPreference( FilterKey.FirstName, "First Name", tbFirstName.Text );
+            rFilter.SetFilterPreference( FilterKey.LastName, "Last Name", tbLastName.Text );
+            rFilter.SetFilterPreference( FilterKey.EnrollmentDate, "Enrollment Date", drpEnrollmentDate.DelimitedValues );
 
             BindEnrollmentGrid();
         }
@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Streaks
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -452,7 +452,7 @@ namespace RockWeb.Blocks.Streaks
 
                 if ( streakType != null )
                 {
-                    rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", streakType.Id );
+                    rFilter.PreferenceKeyPrefix = string.Format( "{0}-", streakType.Id );
                 }
 
                 BindFilter();
@@ -503,9 +503,9 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void BindFilter()
         {
-            tbFirstName.Text = rFilter.GetUserPreference( FilterKey.FirstName );
-            tbLastName.Text = rFilter.GetUserPreference( FilterKey.LastName );
-            drpEnrollmentDate.DelimitedValues = rFilter.GetUserPreference( FilterKey.EnrollmentDate );
+            tbFirstName.Text = rFilter.GetFilterPreference( FilterKey.FirstName );
+            tbLastName.Text = rFilter.GetFilterPreference( FilterKey.LastName );
+            drpEnrollmentDate.DelimitedValues = rFilter.GetFilterPreference( FilterKey.EnrollmentDate );
         }
 
         /// <summary>

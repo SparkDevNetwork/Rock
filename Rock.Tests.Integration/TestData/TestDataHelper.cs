@@ -472,5 +472,25 @@ namespace Rock.Tests.Integration
         {
             return rockContext ?? new RockContext();
         }
+
+        #region Asserts
+
+        /// <summary>
+        /// Asserts that the specified Rock Entity object has a value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="identifier"></param>
+        public static void AssertRockEntityIsNotNull<T>( T entity, string identifier )
+    where T : IEntity
+        {
+            if ( entity == null )
+            {
+                var entityType = typeof( T );
+                throw new Exception( $"{entityType.GetFriendlyTypeName()} not found. [Identifier={identifier}]" );
+            }
+        }
+
+        #endregion
     }
 }

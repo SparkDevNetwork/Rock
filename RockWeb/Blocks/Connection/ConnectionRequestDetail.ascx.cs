@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Connection
 
         #region Fields
 
-        private const string CAMPUS_SETTING = "ConnectionRequestDetail_Campus";
+        private const string CAMPUS_SETTING = "default-campus";
         
         #endregion
 
@@ -645,7 +645,10 @@ namespace RockWeb.Blocks.Connection
 
                         if ( cpCampus.SelectedCampusId.HasValue )
                         {
-                            SetUserPreference( CAMPUS_SETTING, cpCampus.SelectedCampusId.Value.ToString() );
+                            var preferences = GetBlockPersonPreferences();
+
+                            preferences.SetValue( CAMPUS_SETTING, cpCampus.SelectedCampusId.Value.ToString() );
+                            preferences.Save();
                         }
                     }
                     else
@@ -1949,7 +1952,8 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest.ConnectionStatus = connectionStatus;
                         connectionRequest.ConnectionStatusId = connectionStatus.Id;
 
-                        int? campusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();
+                        var preferences = GetBlockPersonPreferences();
+                        int? campusId = preferences.GetValue( CAMPUS_SETTING ).AsIntegerOrNull();
                         if ( campusId.HasValue )
                         {
                             connectionRequest.CampusId = campusId.Value;
@@ -2355,7 +2359,7 @@ namespace RockWeb.Blocks.Connection
             // Status
             rblStatus.Items.Clear();
 
-            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.AutoInactivateState ).ThenBy( a => a.Name );
+            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Order ).ThenByDescending( a => a.IsDefault ).ThenBy( a => a.Name );
 
             foreach ( var status in allStatuses )
             {
