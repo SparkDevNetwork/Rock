@@ -21,22 +21,8 @@
 // </copyright>
 //
 
-import { InteractiveExperienceCampusBehavior } from "@Obsidian/Enums/Event/interactiveExperienceCampusBehavior";
-
-/** Contents of the ExperienceSettingsJson property on an InteractiveExperience. */
-export type ExperienceSettingsBag = {
-    /**
-     * The behavior of campus choices for this experience. See the description
-     * of the individual enum values for specific functionality.
-     */
-    campusBehavior: InteractiveExperienceCampusBehavior;
-
-    /**
-     * The default campus to use when recording an Interaction if no other
-     * campus could be determined.
-     */
-    defaultCampusId?: number | null;
-
-    /** The lava template to use when the experience has ended. */
-    experienceEndedTemplate?: string | null;
+/** The response object returned by the Ping Experience real-time command. */
+export type PingExperienceResponseBag = {
+    /** Gets or sets a value indicating whether this experience is active. */
+    isActive: boolean;
 };
