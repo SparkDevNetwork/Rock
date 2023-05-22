@@ -183,6 +183,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// If enabled the Accounts will be ordered by the index of <see cref="SelectableAccountIds"/>,
+        /// that is they will be rendered in the order in which the Account Ids were added to the <see cref="SelectableAccountIds"/>
+        /// </summary>
+        public bool OrderBySelectableAccountsIndex
+        {
+            get => ViewState["OrderBySelectableAccountsIndex"] as bool? ?? false;
+            set => ViewState["OrderBySelectableAccountsIndex"] = value;
+        }
+
+        /// <summary>
         /// Class to specify an amount for a selected AccountId
         /// </summary>
         public class AccountIdAmount
@@ -737,6 +747,11 @@ namespace Rock.Web.UI.Controls
             if ( accountHeaderTemplate.IsNullOrWhiteSpace() )
             {
                 accountHeaderTemplate = "{{ Account.PublicName }}";
+            }
+
+            if ( OrderBySelectableAccountsIndex )
+            {
+                accountsList = accountsList.OrderBy( x => selectableAccountIds.IndexOf( x.Id ) ).ToList();
             }
 
             foreach ( var account in accountsList )
