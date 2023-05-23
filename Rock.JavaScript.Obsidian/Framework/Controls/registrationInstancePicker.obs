@@ -59,7 +59,7 @@
 
     // #region Values
 
-    const internalValue = computed({
+    const internalValue = computed<ListItemBag | null>({
         get() {
             return props.modelValue;
         },
