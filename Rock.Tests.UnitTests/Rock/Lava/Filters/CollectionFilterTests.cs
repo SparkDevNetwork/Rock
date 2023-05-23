@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
@@ -473,6 +474,37 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
             TestHelper.AssertTemplateOutput( "Value1-2;Value2-2;",
                 "{% assign values = Dictionaries | Select:'Key2' %}{% for value in values %}{{ value }};{% endfor %}",
                 mergeValues );
+        }
+
+
+        /// <summary>
+        /// The Sort filter is case-sensitive, sorting alphabetically with uppercase before lowercase values.
+        /// </summary>
+        [TestMethod]
+        public void Sort_ForArrayTarget_IsCaseSensitive()
+        {
+            var unsortedNames = new List<string>() { "Ted", "brian", "Cynthia", "alisha" };
+            var mergeValues = new LavaDataDictionary { { "TestList", unsortedNames } };
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
+                "Cynthia,Ted,alisha,brian",
+                "{{ TestList | Sort | Join:',' }}", mergeValues );
+
+        }
+
+        /// <summary>
+        /// The SortNatural filter is case-insensitive, sorting alphabetically without regard to case.
+        /// </summary>
+        [TestMethod]
+        public void SortNatural_ForArrayTarget_IsCaseSensitive()
+        {
+            var unsortedNames = new List<string>() { "Ted", "brian", "Cynthia", "alisha" };
+            var mergeValues = new LavaDataDictionary { { "TestList", unsortedNames } };
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
+                "alisha,brian,Cynthia,Ted",
+                "{{ TestList | SortNatural | Join:',' }}", mergeValues );
+
         }
 
         /// <summary>
