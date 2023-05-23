@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,13 +25,13 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a local or cloud storage provider in Rock.  
+    /// Represents a local or cloud storage provider in Rock.
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "AssetStorageProvider" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "E0B4BE77-B29F-4BD4-AE45-CF833AC3A482")]
-    public partial class AssetStorageProvider : Model<AssetStorageProvider>, IHasActiveFlag
+    public partial class AssetStorageProvider : Model<AssetStorageProvider>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
 

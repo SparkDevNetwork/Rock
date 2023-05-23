@@ -34,16 +34,16 @@ using Rock.Extension;
 using Rock.Field.Types;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
-using Rock.Utility;
 using Rock.Workflow;
 
 namespace Rock.Rest.v2
@@ -595,16 +595,10 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = new AssetStorageProviderService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( g => g.EntityTypeId.HasValue && g.IsActive )
-                    .OrderBy( g => g.Name )
-                    .Select( t => new ListItemBag
-                    {
-                        Value = t.Guid.ToString(),
-                        Text = t.Name
-                    } )
-                    .ToList();
+                var items = AssetStorageProviderCache.All()
+                    .Where( a => a.EntityTypeId.HasValue && a.IsActive )
+                    .OrderBy( a => a.Name )
+                    .ToListItemBagList();
 
                 return Ok( items );
             }

@@ -1000,6 +1000,7 @@
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.Logic.cs" />
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumberService.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
+    <Compile Include="Model\Core\AssetStorageProvider\AssetStorageProvider.Logic.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
@@ -1976,6 +1977,7 @@
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
+    <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />

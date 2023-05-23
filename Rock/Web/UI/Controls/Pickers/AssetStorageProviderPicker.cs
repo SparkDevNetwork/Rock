@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.Web.UI.Controls
 {
@@ -60,20 +61,16 @@ namespace Rock.Web.UI.Controls
             this.Items.Clear();
             this.Items.Add( new ListItem() );
 
-            using ( var rockContext = new RockContext() )
+            foreach ( var assetStorageProviderCache in AssetStorageProviderCache.All()
+                .Where( a => a.EntityTypeId.HasValue )
+                .OrderBy( a => a.Name )
+                .ToList() )
             {
-                foreach ( var assetStorageProvider in new AssetStorageProviderService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( g => g.EntityTypeId.HasValue )
-                    .OrderBy( g => g.Name )
-                    .ToList() )
+                var entityType = EntityTypeCache.Get( assetStorageProviderCache.EntityTypeId.Value );
+                AssetStorageComponent component = assetStorageProviderCache.AssetStorageComponent;
+                if ( showAll || ( assetStorageProviderCache.IsActive && component != null && component.IsActive ) )
                 {
-                    var entityType = EntityTypeCache.Get( assetStorageProvider.EntityTypeId.Value );
-                    AssetStorageComponent component = AssetStorageContainer.GetComponent( entityType.Name );
-                    if ( showAll || ( assetStorageProvider.IsActive && component != null && component.IsActive ) )
-                    {
-                        this.Items.Add( new ListItem( assetStorageProvider.Name, assetStorageProvider.Id.ToString() ) );
-                    }
+                    this.Items.Add( new ListItem( assetStorageProviderCache.Name, assetStorageProviderCache.Id.ToString() ) );
                 }
             }
 
