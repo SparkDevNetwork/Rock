@@ -85,7 +85,8 @@
 		"[vue]": {
 			"editor.defaultFormatter": "Vue.volar"
 		},
-		"css.format.spaceAroundSelectorSeparator": true
+		"css.format.spaceAroundSelectorSeparator": true,
+		"typescript.tsdk": "node_modules/typescript/lib"
 	},
 	"tasks": {
 		"version": "2.0.0",
