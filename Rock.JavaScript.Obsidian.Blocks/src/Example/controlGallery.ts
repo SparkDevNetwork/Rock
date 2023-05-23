@@ -219,6 +219,7 @@ import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
 import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
 import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
 
 // #region Gallery Support
 
@@ -7877,6 +7878,54 @@ const structuredContentEditorGallery = defineComponent({
 });
 
 
+/** Demonstrates registrationInstance picker */
+const registrationInstancePickerGallery = defineComponent({
+    name: "RegistrationInstancePickerGallery",
+    components: {
+        GalleryAndResult,
+        RegistrationInstancePicker,
+        RegistrationTemplatePicker,
+        DropDownList,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            registrationTemplateGuid: ref(null),
+            value: ref({
+                "value": "eefe4ad9-bfa9-405c-b732-ccb4d857ab73",
+                "text": "Joe's Test Registration",
+                "category": null
+            }),
+            importCode: getSfcControlImportPath("registrationInstancePicker"),
+            exampleCode: `<RegistrationInstancePicker label="Registration Instance" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <RegistrationInstancePicker
+        v-model="value"
+        label="Registration Instance"
+        :registrationTemplateGuid="registrationTemplateGuid?.value" />
+
+    <template #settings>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <RegistrationTemplatePicker label="Registration Template" v-model="registrationTemplateGuid" showBlankItem />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
     attributeValuesContainerGallery,
@@ -8021,6 +8070,7 @@ const controlGalleryComponents: Record<string, Component> = [
     groupAndRolePickerGallery,
     accountPickerGallery,
     structuredContentEditorGallery,
+    registrationInstancePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

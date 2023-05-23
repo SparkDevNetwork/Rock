@@ -73,11 +73,18 @@
     <Content Include="Framework\Controls\phoneNumberBox.obs" />
     <Content Include="Framework\Controls\popOver.obs" />
     <Content Include="Framework\Controls\racePicker.obs" />
+    <Content Include="Framework\Controls\registrationInstanceBasePicker.obs" />
+    <Content Include="Framework\Controls\registrationInstancePicker.obs" />
     <Content Include="Framework\Controls\registryEntry.obs" />
     <Content Include="Framework\Controls\rockLiteral.obs" />
     <Content Include="Framework\Controls\slidingDateRangePicker.obs" />
     <Content Include="Framework\Controls\reminderTypePicker.obs" />
     <Content Include="Framework\Controls\scheduleBuilder.obs" />
+    <Content Include="Framework\Controls\stepProgramPicker.obs" />
+    <Content Include="Framework\Controls\stepProgramStepStatusPicker.obs" />
+    <Content Include="Framework\Controls\stepProgramStepTypePicker.obs" />
+    <Content Include="Framework\Controls\stepStatusPicker.obs" />
+    <Content Include="Framework\Controls\stepTypePicker.obs" />
     <Content Include="Framework\Controls\structuredContentEditor.obs" />
     <Content Include="Framework\Controls\timeIntervalPicker.obs" />
     <Content Include="Framework\Controls\timePicker.obs" />
@@ -269,8 +276,6 @@
     <TypeScriptCompile Include="Framework\Controls\schedulePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\shims-vue.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\streakTypePicker.ts" />
-    <TypeScriptCompile Include="Framework\Controls\stepTypePicker.ts" />
-    <TypeScriptCompile Include="Framework\Controls\stepStatusPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\lavaCommandPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\interactionComponentPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\groupMemberPicker.ts" />
@@ -278,7 +283,6 @@
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
     <TypeScriptCompile Include="Framework\Controls\locationItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockFormFieldError.ts" />
-    <TypeScriptCompile Include="Framework\Controls\stepProgramPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\remoteAuthsPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionContainer.ts" />
@@ -1105,6 +1109,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberBoxGetConfigurationResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberCountryCodeRulesConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\racePickerGetRacesResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\registrationInstancePickerGetRegistrationInstancesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\registrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\registrationTemplatePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\reminderTypePickerGetReminderTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\reportPickerGetChildrenOptionsBag.d.ts" />

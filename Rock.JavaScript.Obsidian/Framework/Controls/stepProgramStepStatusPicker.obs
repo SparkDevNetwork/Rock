@@ -75,7 +75,7 @@
 
     watch(() => props.defaultStepProgramGuid, (newVal) => {
         if (newVal) {
-            internalValue.value = { value: newVal };
+            internalProgramValue.value = { value: newVal };
         }
     });
 
@@ -85,5 +85,5 @@
         }
     });
 
-    // #endregion
+        // #endregion
 </script>

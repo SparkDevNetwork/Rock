@@ -230,6 +230,8 @@
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PersonLinkGetPopupHtmlOptionsBag.cs" />
+    <Compile Include="Rest\Controls\RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag.cs" />
+    <Compile Include="Rest\Controls\RegistrationInstancePickerGetRegistrationInstancesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ReminderTypePickerGetReminderTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupRolePickerGetAllForGroupRoleResultsBag.cs" />
     <Compile Include="Rest\Controls\GroupRolePickerGetAllForGroupRoleOptionsBag.cs" />

@@ -4534,6 +4534,55 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Registration Instance Picker
+
+        /// <summary>
+        /// Gets the instances that can be displayed in the registration instance picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the registration instances for the control.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RegistrationInstancePickerGetRegistrationInstances" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "26ecd3a7-9c55-4052-afc9-b59e84ab890b" )]
+        public IHttpActionResult RegistrationInstancePickerGetRegistrationInstances( [FromBody] RegistrationInstancePickerGetRegistrationInstancesOptionsBag options )
+        {
+            using (var rockContext = new RockContext())
+            {
+                var registrationInstanceService = new Rock.Model.RegistrationInstanceService( new RockContext() );
+                var registrationInstances = registrationInstanceService.Queryable()
+                    .Where( ri => ri.RegistrationTemplate.Guid == options.RegistrationTemplateGuid && ri.IsActive )
+                    .OrderBy( ri => ri.Name )
+                    .Select(ri => new ListItemBag { Text = ri.Name, Value = ri.Guid.ToString() } )
+                    .ToList();
+
+                return Ok( registrationInstances );
+            }
+        }
+
+        /// <summary>
+        /// Gets the registration template that the given instance uses.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> object that represents the registration template.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RegistrationInstancePickerGetRegistrationTemplateForInstance" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "acbccf4f-54d6-4c7c-8201-07fdefe87352" )]
+        public IHttpActionResult RegistrationInstancePickerGetRegistrationTemplateForInstance( [FromBody] RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstance = new Rock.Model.RegistrationInstanceService( new RockContext() ).Get( options.RegistrationInstanceGuid );
+                if (registrationInstance == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = registrationInstance.RegistrationTemplate.Name, Value = registrationInstance.RegistrationTemplate.Guid.ToString() } );
+            }
+        }
+
+        #endregion
+
         #region Registration Template Picker
 
         /// <summary>
