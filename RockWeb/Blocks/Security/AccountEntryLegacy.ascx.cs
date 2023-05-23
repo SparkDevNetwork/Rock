@@ -304,7 +304,6 @@ namespace RockWeb.Blocks.Security
         private static class PageParameterKey
         {
             public const string Caption = "Caption";
-            public const string Returnurl = "Returnurl";
         }
 
         #endregion
@@ -1078,7 +1077,7 @@ usernameTextbox.blur(function () {{
                     // Redirect to new communication
                     if ( CurrentPageReference.Parameters.ContainsKey( PageParameterKey.Caption ) )
                     {
-                        CurrentPageReference.Parameters[PageParameterKey.Returnurl] = "Success";
+                        CurrentPageReference.Parameters[PageParameterKey.Caption] = "Success";
                     }
                     else
                     {
