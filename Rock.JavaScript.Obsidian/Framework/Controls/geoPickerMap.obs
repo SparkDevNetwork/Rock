@@ -418,7 +418,6 @@
      * Disables the drawing manager so they cannot add anything to the map.
      */
     function enableDrawing(): void {
-        // TODO
         if (!drawingManager) {
             return;
         }
@@ -486,7 +485,7 @@
         isMounted.value = true;
     });
 
-    // #endregion
+        // #endregion
 </script>
 
 <style>
