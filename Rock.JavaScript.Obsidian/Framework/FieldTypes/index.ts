@@ -26,6 +26,9 @@ export { ConfigurationValues, getFieldEditorProps } from "./utils";
 import { AddressFieldType } from "./addressField.partial";
 registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 
+import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
+registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
+
 import { BooleanFieldType } from "./booleanField.partial";
 registerFieldType(FieldTypeGuids.Boolean, new BooleanFieldType());
 
