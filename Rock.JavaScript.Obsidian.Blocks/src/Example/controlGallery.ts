@@ -7939,7 +7939,7 @@ const interactionChannelInteractionComponentPickerGallery = defineComponent({
     },
     setup() {
         return {
-            registrationTemplateGuid: ref(null),
+            interactionChannelGuid: ref(null),
             value: ref({
                 "value": "1d6d3e3c-131c-4ed9-befe-b34f3c3da7d3",
                 "text": "Calendar",
@@ -7958,13 +7958,13 @@ const interactionChannelInteractionComponentPickerGallery = defineComponent({
 
     <InteractionChannelInteractionComponentPicker
         v-model="value"
-        label="Registration Instance"
-        :registrationTemplateGuid="registrationTemplateGuid?.value" />
+        label="Interaction Channel > Interaction Component"
+        :defaultInteractionChannelGuid="interactionChannelGuid?.value" />
 
     <template #settings>
         <div class="row mb-3">
             <div class="col-md-3">
-                <InteractionChannelPicker label="Default Interaction Channel" v-model="registrationTemplateGuid" showBlankItem />
+                <InteractionChannelPicker label="Default Interaction Channel" v-model="interactionChannelGuid" showBlankItem />
             </div>
         </div>
 
