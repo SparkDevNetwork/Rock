@@ -51,6 +51,8 @@
 
                     <h1 runat="server">General Information</h1>
 
+                    <Rock:InteractionChannelInteractionComponentPicker runat="server" ID="icic0" InteractionChannelId="3" />
+
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">

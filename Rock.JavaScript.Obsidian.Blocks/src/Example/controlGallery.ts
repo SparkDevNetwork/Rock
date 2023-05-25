@@ -144,8 +144,8 @@ import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
 import GradePicker from "@Obsidian/Controls/gradePicker";
 import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
 import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
-import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
-import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
+import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
+import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
 import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
 import RemoteAuthsPicker from "@Obsidian/Controls/remoteAuthsPicker";
 import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
@@ -220,6 +220,7 @@ import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
 import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
 import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
+import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/interactionChannelInteractionComponentPicker.obs";
 
 // #region Gallery Support
 
@@ -4207,7 +4208,7 @@ const interactionChannelPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("interactionChannelPicker"),
+            importCode: getSfcControlImportPath("interactionChannelPicker"),
             exampleCode: `<InteractionChannelPicker label="Interaction Channel" v-model="value" />`
         };
     },
@@ -4271,7 +4272,7 @@ const interactionComponentPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("interactionComponentPicker"),
+            importCode: getSfcControlImportPath("interactionComponentPicker"),
             exampleCode: `<InteractionComponentPicker label="Interaction Component" v-model="value" :interactionChannelGuid="interactionChannelGuid" />`
         };
     },
@@ -7915,7 +7916,55 @@ const registrationInstancePickerGallery = defineComponent({
     <template #settings>
         <div class="row mb-3">
             <div class="col-md-3">
-                <RegistrationTemplatePicker label="Registration Template" v-model="registrationTemplateGuid" showBlankItem />
+                <RegistrationTemplatePicker label="Default Registration Template" v-model="registrationTemplateGuid" showBlankItem />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates interactionChannelInteractionComponent picker */
+const interactionChannelInteractionComponentPickerGallery = defineComponent({
+    name: "InteractionChannelInteractionComponentPickerGallery",
+    components: {
+        GalleryAndResult,
+        InteractionChannelInteractionComponentPicker,
+        InteractionChannelPicker,
+        DropDownList,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            registrationTemplateGuid: ref(null),
+            value: ref({
+                "value": "1d6d3e3c-131c-4ed9-befe-b34f3c3da7d3",
+                "text": "Calendar",
+                "category": null
+            }),
+            importCode: getSfcControlImportPath("interactionChannelInteractionComponentPicker"),
+            exampleCode: `<InteractionChannelInteractionComponentPicker label="Registration Instance" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <InteractionChannelInteractionComponentPicker
+        v-model="value"
+        label="Registration Instance"
+        :registrationTemplateGuid="registrationTemplateGuid?.value" />
+
+    <template #settings>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <InteractionChannelPicker label="Default Interaction Channel" v-model="registrationTemplateGuid" showBlankItem />
             </div>
         </div>
 
@@ -8071,6 +8120,7 @@ const controlGalleryComponents: Record<string, Component> = [
     accountPickerGallery,
     structuredContentEditorGallery,
     registrationInstancePickerGallery,
+    interactionChannelInteractionComponentPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

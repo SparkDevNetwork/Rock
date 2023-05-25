@@ -2918,6 +2918,36 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Interaction Channel Interaction Component Picker
+
+        /// <summary>
+        /// Gets the interaction channel that the given interaction component is a part of.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> object that represents the interaction channel.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "InteractionChannelInteractionComponentPickerGetChannelFromComponent" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "ebef7cb7-f20d-40d9-9f70-1f30aff1cd8f" )]
+        public IHttpActionResult InteractionChannelInteractionComponentPickerGetChannelFromComponent( [FromBody] InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionComponentService = new InteractionComponentService( rockContext );
+                var component = interactionComponentService.Get(options.InteractionComponentGuid);
+
+                if (component == null)
+                {
+                    return NotFound();
+                }
+
+                var channel = component.Channel;
+
+                return Ok( new ListItemBag { Text = $"{channel.Name} ({ channel.ChannelTypeMediumValue.Value ?? string.Empty })", Value = channel.Guid.ToString() } );
+            }
+        }
+
+        #endregion
+
         #region Interaction Channel Picker
 
         /// <summary>

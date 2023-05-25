@@ -38,6 +38,9 @@
     <Content Include="Framework\Controls\basicTimePicker.obs" />
     <Content Include="Framework\Controls\groupAndRolePicker.obs" />
     <Content Include="Framework\Controls\groupTypeGroupPicker.obs" />
+    <Content Include="Framework\Controls\interactionChannelInteractionComponentPicker.obs" />
+    <Content Include="Framework\Controls\interactionChannelPicker.obs" />
+    <Content Include="Framework\Controls\interactionComponentPicker.obs" />
     <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
     <Content Include="Framework\Controls\cacheabilityPicker.obs" />
@@ -277,9 +280,7 @@
     <TypeScriptCompile Include="Framework\Controls\shims-vue.d.ts" />
     <TypeScriptCompile Include="Framework\Controls\streakTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\lavaCommandPicker.ts" />
-    <TypeScriptCompile Include="Framework\Controls\interactionComponentPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\groupMemberPicker.ts" />
-    <TypeScriptCompile Include="Framework\Controls\interactionChannelPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
     <TypeScriptCompile Include="Framework\Controls\locationItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockFormFieldError.ts" />
@@ -1086,6 +1087,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupTypeGroupPickerGetGroupsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupTypeGroupPickerGetGroupTypeOfGroupOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupTypePickerGetGroupTypesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionComponentPickerGetInteractionComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationItemPickerGetActiveChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationListGetLocationsOptionsBag.d.ts" />
