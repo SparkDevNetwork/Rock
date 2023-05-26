@@ -31,7 +31,7 @@ namespace RockWeb
     /// <summary>
     /// Handles retrieving file (image) data from storage
     /// </summary>
-    public class GetAvatar : IHttpHandler
+    public class GetAvatar : IHttpAsyncHandler
     {
         // Implemented this as an IHttpAsyncHandler instead of IHttpHandler to improve performance
         // https://stackoverflow.com/questions/48528773/ihttphandler-versus-httptaskasynchandler-performance
