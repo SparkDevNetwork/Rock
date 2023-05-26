@@ -1077,6 +1077,7 @@
     <Compile Include="Plugin\HotFixes\162_RemoveUnusedRoute.cs" />
     <Compile Include="Plugin\HotFixes\161_RemindersUpdates.cs" />
     <Compile Include="Plugin\HotFixes\160_SetupReminders.cs" />
+    <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -4270,6 +4271,7 @@
     </Content>
     <None Include="Resources\updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
+    <None Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
