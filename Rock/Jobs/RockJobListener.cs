@@ -77,8 +77,32 @@ namespace Rock.Jobs
 
             if ( job != null && job.Guid != Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() )
             {
+                var now = RockDateTime.Now;
                 job.LastStatus = "Running";
-                job.LastStatusMessage = "Started at " + RockDateTime.Now.ToString();
+                job.LastStatusMessage = "Started at " + now.ToString();
+
+                /* 
+                     5/25/2023 - JMH
+                     
+                     Before the job executes, a partial "started" ServiceJobHistory record is created.
+                     After the job is executed, the ServiceJobHistory record's status, started,
+                     and stopped date times will be updated to match the job's last run.
+                     
+                     The job scheduler does not expose the job execution's actual start or stop time,
+                     but it does expose the execution's run duration (in seconds) once the job is executed
+                     (available in the "JobWasExecuted" callback).
+                     
+                     In the "JobWasExecuted" callback, we update the ServiceJob.LastRunDurationSeconds value
+                     to the actual run duration returned by the scheduler, and the ServiceJob.LastRunDateTime
+                     to the current system time. The last run start time is not stored in the ServiceJob.
+                     
+                     Lastly, the ServiceJobHistory data will be updated to match the ServiceJob's last run data.
+                     
+                     Reason: Rock Jobs Scheduler                     
+                 */
+                var jobHistoryService = new ServiceJobHistoryService( rockContext );
+                jobHistoryService.AddStartedServiceJobHistory( job, now );
+
                 rockContext.SaveChanges();
             }
 
@@ -99,28 +123,6 @@ namespace Rock.Jobs
         public void JobExecutionVetoed( IJobExecutionContext context )
         {
             return;
-        }
-
-        /// <summary>
-        /// Adds the service job history.
-        /// </summary>
-        /// <param name="job">The job.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void AddServiceJobHistory( ServiceJob job, RockContext rockContext )
-        {
-            var jobHistoryService = new ServiceJobHistoryService( rockContext );
-            var jobHistory = new ServiceJobHistory()
-            {
-                ServiceJobId = job.Id,
-                StartDateTime = job.LastRunDateTime?.AddSeconds( 0.0d - ( double ) job.LastRunDurationSeconds ),
-                StopDateTime = job.LastRunDateTime,
-                Status = job.LastStatus,
-                StatusMessage = job.LastStatusMessage,
-                ServiceWorker = Environment.MachineName.ToLower()
-            };
-
-            jobHistoryService.Add( jobHistory );
-            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -220,7 +222,9 @@ namespace Rock.Jobs
             rockContext.SaveChanges();
 
             // Add job history
-            AddServiceJobHistory( job, rockContext );
+            var serviceJobHistoryService = new ServiceJobHistoryService( rockContext );
+            serviceJobHistoryService.AddCompletedServiceJobHistory( job );
+            rockContext.SaveChanges();
 
             // send notification
             if ( sendMessage )
