@@ -60,13 +60,7 @@
 			"html": true
 		},
 		"volar.completion.preferredAttrNameCase": "camel",
-		"vue.features.complete.propNameCasing": "camel",
 		"volar.vueserver.additionalExtensions": [
-			"obs"
-		],
-		"vue.complete.casing.props": "camel",
-		"vue.complete.casing.tags": "pascal",
-		"vue.server.additionalExtensions": [
 			"obs"
 		],
 		"files.trimTrailingWhitespace": true,
@@ -108,9 +102,7 @@
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian"
 				},
-				"problemMatcher": {
-					"base": "$tsc-watch"
-				}
+				"problemMatcher": []
 			},
 			{
 				"label": "Build Obsidian Blocks",
@@ -128,9 +120,7 @@
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
 				},
-				"problemMatcher": {
-					"base": "$tsc-watch"
-				}
+				"problemMatcher": []
 			},
 			{
 				"label": "Build All Obsidian",
@@ -159,7 +149,7 @@
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"base": "$tsc-watch",
+					"pattern": [],
 					"background": {
 						"beginsPattern": "^rollup v",
 						"endsPattern": "waiting for changes\\.\\.\\.$"
@@ -181,7 +171,7 @@
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"base": "$tsc-watch",
+					"pattern": [],
 					"background": {
 						"beginsPattern": "^rollup v",
 						"endsPattern": "waiting for changes\\.\\.\\.$"
