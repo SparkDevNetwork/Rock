@@ -21,8 +21,7 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Web;
-
+using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -79,381 +78,403 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( "CommandTimeout" ).AsIntegerOrNull() ?? 180;
 
             // Counters for displaying results
-            int groupsSynced = 0;
-            int groupsChanged = 0;
+            int deletedMemberCount = 0;
+            int addedMemberCount = 0;
+            int notAddedMemberCount = 0;
+
+            var groupIdsSynced = new List<int>();
+            var groupIdsChanged = new List<int>();
+
+            int groupId = default;
             string groupName = string.Empty;
             string dataViewName = string.Empty;
-            var errors = new List<string>();
 
-            try
+            var warningMessages = new List<string>();
+            var warningExceptions = new List<RockJobWarningException>();
+
+            // get groups set to sync
+            var activeSyncList = new List<GroupSyncInfo>();
+            using ( var rockContextReadOnly = new RockContextReadOnly() )
             {
-                // get groups set to sync
-                var activeSyncList = new List<GroupSyncInfo>();
-                using ( var rockContextReadOnly = new RockContextReadOnly() )
+                // Get groups that are not archived and are still active.
+                activeSyncList = new GroupSyncService( rockContextReadOnly )
+                    .Queryable()
+                    .AsNoTracking()
+                    .AreNotArchived()
+                    .AreActive()
+                    .NeedToBeSynced()
+                    .Select( x => new GroupSyncInfo { SyncId = x.Id, GroupName = x.Group.Name } )
+                    .ToList();
+            }
+
+            foreach ( var syncInfo in activeSyncList )
+            {
+                int syncId = syncInfo.SyncId;
+                bool hasSyncChanged = false;
+                this.UpdateLastStatusMessage( $"Syncing group '{syncInfo.GroupName}'" );
+
+                // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
+                /*  
+                    5/11/2023 - CWR
+
+                    This needs to use the regular RockContext because
+                    the change of group members' archive state versus a RockContextReadOnly version 
+                    attempts a duplicate addition and causes a potential exception.
+                */
+                using ( var rockContext = new RockContext() )
                 {
-                    // Get groups that are not archived and are still active.
-                    activeSyncList = new GroupSyncService( rockContextReadOnly )
+                    // increase the timeout just in case the data view source is slow
+                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.SourceOfChange = "Group Sync";
+
+                    // Get the Sync
+                    var sync = new GroupSyncService( rockContext )
                         .Queryable()
+                        .Include( a => a.Group )
+                        .Include( a => a.SyncDataView )
                         .AsNoTracking()
-                        .AreNotArchived()
-                        .AreActive()
-                        .NeedToBeSynced()
-                        .Select( x => new GroupSyncInfo { SyncId = x.Id, GroupName = x.Group.Name } )
-                        .ToList();
-                }
+                        .FirstOrDefault( s => s.Id == syncId );
 
-                foreach ( var syncInfo in activeSyncList )
-                {
-                    int syncId = syncInfo.SyncId;
-                    bool hasSyncChanged = false;
-                    this.UpdateLastStatusMessage( $"Syncing group {syncInfo.GroupName}" );
-
-                    // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
-                    /*  
-                        5/11/2023 - CWR
-
-                        This needs to use the regular RockContext because
-                        the change of group members' archive state versus a RockContextReadOnly version 
-                        attempts a duplicate addition and causes a potential exception.
-                    */
-                    using ( var rockContext = new RockContext() )
+                    if ( sync == null || sync.SyncDataView.EntityTypeId != EntityTypeCache.Get( typeof( Person ) ).Id )
                     {
-                        // increase the timeout just in case the data view source is slow
-                        rockContext.Database.CommandTimeout = commandTimeout;
-                        rockContext.SourceOfChange = "Group Sync";
+                        // invalid sync or invalid SyncDataView
+                        continue;
+                    }
 
-                        // Get the Sync
-                        var sync = new GroupSyncService( rockContext )
-                            .Queryable()
-                            .Include( a => a.Group )
-                            .Include( a => a.SyncDataView )
-                            .AsNoTracking()
-                            .FirstOrDefault( s => s.Id == syncId );
+                    dataViewName = sync.SyncDataView.Name;
+                    groupName = sync.Group.Name;
+                    groupId = sync.Group.Id;
 
-                        if ( sync == null || sync.SyncDataView.EntityTypeId != EntityTypeCache.Get( typeof( Person ) ).Id )
+                    Stopwatch stopwatch = Stopwatch.StartNew();
+
+                    // Get the person id's from the data view (source)
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    {
+                        /*
+
+                            11/28/2022 - CWR
+                            In order to prevent potential context conflicts with allowing a new Rock context being created here,
+                            this DbContext will stay set to the rockContext that was passed in.
+
+                         */
+                        DbContext = rockContext,
+                        DatabaseTimeoutSeconds = commandTimeout
+                    };
+
+                    List<int> sourcePersonIds;
+
+                    try
+                    {
+                        var dataViewQry = sync.SyncDataView.GetQuery( dataViewGetQueryArgs );
+                        sourcePersonIds = dataViewQry.Select( q => q.Id ).ToList();
+                    }
+                    catch ( Exception ex )
+                    {
+                        // If any error occurred trying get the 'where expression' from the sync-data-view,
+                        // just skip trying to sync that particular group's Sync Data View for now.
+                        warningExceptions.Add( new RockJobWarningException( $"An error occurred while trying to GroupSync group '{groupName}' and data view '{dataViewName}' so the sync was skipped.", ex ) );
+                        continue;
+                    }
+
+                    stopwatch.Stop();
+                    DataViewService.AddRunDataViewTransaction( sync.SyncDataView.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
+
+                    // Get the person id's in the group (target) for the role being synced.
+                    // Note: targetPersonIds must include archived group members
+                    // so we don't try to delete anyone who's already archived, and
+                    // it must include deceased members so we can remove them if they
+                    // are no longer in the data view.
+                    var existingGroupMemberPersonList = new GroupMemberService( rockContext )
+                        .Queryable( true, true ).AsNoTracking()
+                        .Where( gm => gm.GroupId == sync.GroupId )
+                        .Where( gm => gm.GroupRoleId == sync.GroupTypeRoleId )
+                        .Select( gm => new
                         {
-                            // invalid sync or invalid SyncDataView
-                            continue;
-                        }
+                            PersonId = gm.PersonId,
+                            IsArchived = gm.IsArchived
+                        } )
+                        .ToList();
 
-                        dataViewName = sync.SyncDataView.Name;
-                        groupName = sync.Group.Name;
+                    var targetPersonIdsToDelete = existingGroupMemberPersonList.Where( t => !sourcePersonIds.Contains( t.PersonId ) && t.IsArchived != true ).ToList();
+                    if ( targetPersonIdsToDelete.Any() )
+                    {
+                        this.UpdateLastStatusMessage( $"Deleting or archiving {targetPersonIdsToDelete.Count()} group member records in '{groupName}' that are no longer in the sync data view." );
+                    }
 
-                        Stopwatch stopwatch = Stopwatch.StartNew();
-
-                        // Get the person id's from the data view (source)
-                        var dataViewGetQueryArgs = new DataViewGetQueryArgs
-                        {
-                            /*
-
-                                11/28/2022 - CWR
-                                In order to prevent potential context conflicts with allowing a new Rock context being created here,
-                                this DbContext will stay set to the rockContext that was passed in.
-
-                             */
-                            DbContext = rockContext,
-                            DatabaseTimeoutSeconds = commandTimeout
-                        };
-
-                        List<int> sourcePersonIds;
-
+                    // Delete people from the group/role that are no longer in the data view --
+                    // but not the ones that are already archived.
+                    foreach ( var targetPerson in targetPersonIdsToDelete )
+                    {
                         try
                         {
-                            var dataViewQry = sync.SyncDataView.GetQuery( dataViewGetQueryArgs );
-                            sourcePersonIds = dataViewQry.Select( q => q.Id ).ToList();
+                            // Use a new context to limit the amount of change-tracking required
+                            using ( var groupMemberContext = new RockContext() )
+                            {
+                                // Delete the records for that person's group and role.
+                                // NOTE: just in case there are duplicate records, delete all group member records for that person and role
+                                var groupMemberService = new GroupMemberService( groupMemberContext );
+                                foreach ( var groupMember in groupMemberService
+                                    .Queryable( true, true )
+                                    .Where( m =>
+                                        m.GroupId == sync.GroupId &&
+                                        m.GroupRoleId == sync.GroupTypeRoleId &&
+                                        m.PersonId == targetPerson.PersonId )
+                                    .ToList() )
+                                {
+                                    groupMemberService.Delete( groupMember );
+                                }
+
+                                groupMemberContext.SaveChanges();
+
+                                deletedMemberCount++;
+                                if ( deletedMemberCount % 100 == 0 )
+                                {
+                                    this.UpdateLastStatusMessage( $"Deleted or archived {deletedMemberCount} of {targetPersonIdsToDelete.Count()} group member records for group '{groupName}'." );
+                                }
+
+                                hasSyncChanged = true;
+
+                                // If the Group has an exit email, and person has an email address, send them the exit email
+                                if ( sync.ExitSystemCommunication != null )
+                                {
+                                    var person = new PersonService( groupMemberContext ).Get( targetPerson.PersonId );
+                                    if ( person.CanReceiveEmail( false ) )
+                                    {
+                                        // Send the exit email
+                                        var mergeFields = new Dictionary<string, object>();
+                                        mergeFields.Add( "Group", sync.Group );
+                                        mergeFields.Add( "Person", person );
+                                        var emailMessage = new RockEmailMessage( sync.ExitSystemCommunication );
+                                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
+                                        var emailErrors = new List<string>();
+                                        emailMessage.Send( out emailErrors );
+
+                                        if ( emailErrors?.Any() == true )
+                                        {
+                                            emailErrors.ForEach( e => warningMessages.Add( $"Unable to send exit email to '{groupName}' group member with person ID {targetPerson.PersonId}. Error: {e}" ) );
+                                        }
+                                    }
+                                }
+                            }
                         }
                         catch ( Exception ex )
                         {
-                            // If any error occurred trying get the 'where expression' from the sync-data-view,
-                            // just skip trying to sync that particular group's Sync Data View for now.
-                            var errorMessage = $"An error occurred while trying to GroupSync group '{groupName}' and data view '{dataViewName}' so the sync was skipped. Error: {ex.Message}";
-                            errors.Add( errorMessage );
-                            ExceptionLogService.LogException( new Exception( errorMessage, ex ) );
+                            warningExceptions.Add( new RockJobWarningException( $"Unable to delete person with ID {targetPerson.PersonId} from group '{groupName}'.", ex ) );
                             continue;
                         }
+                    }
 
-                        stopwatch.Stop();
-                        DataViewService.AddRunDataViewTransaction( sync.SyncDataView.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
+                    // Now find all the people in the source list who are NOT already in the target list (as Unarchived)
+                    var targetPersonIdsToAdd = sourcePersonIds.Where( s => !existingGroupMemberPersonList.Any( t => t.PersonId == s && t.IsArchived == false ) ).ToList();
 
-                        // Get the person id's in the group (target) for the role being synced.
-                        // Note: targetPersonIds must include archived group members
-                        // so we don't try to delete anyone who's already archived, and
-                        // it must include deceased members so we can remove them if they
-                        // are no longer in the data view.
-                        var existingGroupMemberPersonList = new GroupMemberService( rockContext )
-                            .Queryable( true, true ).AsNoTracking()
-                            .Where( gm => gm.GroupId == sync.GroupId )
-                            .Where( gm => gm.GroupRoleId == sync.GroupTypeRoleId )
-                            .Select( gm => new
-                            {
-                                PersonId = gm.PersonId,
-                                IsArchived = gm.IsArchived
-                            } )
-                            .ToList();
+                    // Make a list of PersonIds that have an Archived group member record
+                    // if this person isn't already a member of the list as an Unarchived member, we can Restore the group member for that PersonId instead
+                    var archivedTargetPersonIds = existingGroupMemberPersonList.Where( t => t.IsArchived == true ).Select( a => a.PersonId ).ToList();
 
-                        var targetPersonIdsToDelete = existingGroupMemberPersonList.Where( t => !sourcePersonIds.Contains( t.PersonId ) && t.IsArchived != true ).ToList();
-                        if ( targetPersonIdsToDelete.Any() )
+                    this.UpdateLastStatusMessage( $"Adding {targetPersonIdsToAdd.Count()} group member records for group '{groupName}'." );
+                    foreach ( var personId in targetPersonIdsToAdd )
+                    {
+                        if ( ( addedMemberCount + notAddedMemberCount ) % 100 == 0 )
                         {
-                            this.UpdateLastStatusMessage( $"Deleting or archiving {targetPersonIdsToDelete.Count()} group records in {syncInfo.GroupName} that are no longer in the sync data view" );
+                            string notAddedMessage = string.Empty;
+                            if ( notAddedMemberCount > 0 )
+                            {
+                                notAddedMessage = $"{Environment.NewLine}There are {notAddedMemberCount} members that could not be added.";
+                            }
+
+                            this.UpdateLastStatusMessage( $"Added {addedMemberCount} of {targetPersonIdsToAdd.Count()} group member records to group '{groupName}'. {notAddedMessage}" );
                         }
 
-                        int deletedCount = 0;
-
-                        // Delete people from the group/role that are no longer in the data view --
-                        // but not the ones that are already archived.
-                        foreach ( var targetPerson in targetPersonIdsToDelete )
+                        try
                         {
-                            deletedCount++;
-                            if ( deletedCount % 100 == 0 )
+                            // Use a new context to limit the amount of change-tracking required
+                            using ( var groupMemberContext = new RockContext() )
                             {
-                                this.UpdateLastStatusMessage( $"Deleted or archived {deletedCount} of {targetPersonIdsToDelete.Count()} group member records for group {syncInfo.GroupName}" );
-                            }
+                                var groupMemberService = new GroupMemberService( groupMemberContext );
+                                var groupService = new GroupService( groupMemberContext );
 
-                            try
-                            {
-                                // Use a new context to limit the amount of change-tracking required
-                                using ( var groupMemberContext = new RockContext() )
+                                // If this person is currently archived...
+                                if ( archivedTargetPersonIds.Contains( personId ) )
                                 {
-                                    // Delete the records for that person's group and role.
-                                    // NOTE: just in case there are duplicate records, delete all group member records for that person and role
-                                    var groupMemberService = new GroupMemberService( groupMemberContext );
-                                    foreach ( var groupMember in groupMemberService
-                                        .Queryable( true, true )
-                                        .Where( m =>
-                                            m.GroupId == sync.GroupId &&
-                                            m.GroupRoleId == sync.GroupTypeRoleId &&
-                                            m.PersonId == targetPerson.PersonId )
-                                        .ToList() )
+                                    // ...then we'll just restore them;
+                                    GroupMember archivedGroupMember = groupService.GetArchivedGroupMember( sync.Group, personId, sync.GroupTypeRoleId );
+
+                                    if ( archivedGroupMember == null )
                                     {
-                                        groupMemberService.Delete( groupMember );
+                                        // shouldn't happen, but just in case
+                                        continue;
                                     }
 
-                                    groupMemberContext.SaveChanges();
+                                    archivedGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
 
-                                    // If the Group has an exit email, and person has an email address, send them the exit email
-                                    if ( sync.ExitSystemCommunication != null )
+                                    // GroupMember.PreSave() will NOT call GroupMember.IsValidGroupMember() in this scenario - since we're restoring
+                                    // a previously-archived member - so we must manually validate here before attempting to save.
+                                    if ( archivedGroupMember.IsValidGroupMember( groupMemberContext ) )
                                     {
-                                        var person = new PersonService( groupMemberContext ).Get( targetPerson.PersonId );
-                                        if ( person.CanReceiveEmail( false ) )
-                                        {
-                                            // Send the exit email
-                                            var mergeFields = new Dictionary<string, object>();
-                                            mergeFields.Add( "Group", sync.Group );
-                                            mergeFields.Add( "Person", person );
-                                            var emailMessage = new RockEmailMessage( sync.ExitSystemCommunication );
-                                            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
-                                            var emailErrors = new List<string>();
-                                            emailMessage.Send( out emailErrors );
-                                            errors.AddRange( emailErrors );
-                                        }
-                                    }
-                                }
-                            }
-                            catch ( Exception ex )
-                            {
-                                ExceptionLogService.LogException( ex );
-                                continue;
-                            }
-
-                            hasSyncChanged = true;
-                        }
-
-                        // Now find all the people in the source list who are NOT already in the target list (as Unarchived)
-                        var targetPersonIdsToAdd = sourcePersonIds.Where( s => !existingGroupMemberPersonList.Any( t => t.PersonId == s && t.IsArchived == false ) ).ToList();
-
-                        // Make a list of PersonIds that have an Archived group member record
-                        // if this person isn't already a member of the list as an Unarchived member, we can Restore the group member for that PersonId instead
-                        var archivedTargetPersonIds = existingGroupMemberPersonList.Where( t => t.IsArchived == true ).Select( a => a.PersonId ).ToList();
-
-                        this.UpdateLastStatusMessage( $"Adding {targetPersonIdsToAdd.Count()} group member records for group {syncInfo.GroupName}" );
-                        int addedCount = 0;
-                        int notAddedCount = 0;
-                        foreach ( var personId in targetPersonIdsToAdd )
-                        {
-                            if ( ( addedCount + notAddedCount ) % 100 == 0 )
-                            {
-                                string notAddedMessage = string.Empty;
-                                if ( notAddedCount > 0 )
-                                {
-                                    notAddedMessage = $"{Environment.NewLine} There are {notAddedCount} members that could not be added due to group requirements.";
-                                }
-
-                                this.UpdateLastStatusMessage( $"Added {addedCount} of {targetPersonIdsToAdd.Count()} group member records for group {syncInfo.GroupName}. {notAddedMessage}" );
-                            }
-
-                            try
-                            {
-                                // Use a new context to limit the amount of change-tracking required
-                                using ( var groupMemberContext = new RockContext() )
-                                {
-                                    var groupMemberService = new GroupMemberService( groupMemberContext );
-                                    var groupService = new GroupService( groupMemberContext );
-
-                                    // If this person is currently archived...
-                                    if ( archivedTargetPersonIds.Contains( personId ) )
-                                    {
-                                        // ...then we'll just restore them;
-                                        GroupMember archivedGroupMember = groupService.GetArchivedGroupMember( sync.Group, personId, sync.GroupTypeRoleId );
-
-                                        if ( archivedGroupMember == null )
-                                        {
-                                            // shouldn't happen, but just in case
-                                            continue;
-                                        }
-
-                                        archivedGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                                        if ( archivedGroupMember.IsValidGroupMember( groupMemberContext ) )
-                                        {
-                                            addedCount++;
-                                            groupMemberService.Restore( archivedGroupMember );
-                                            groupMemberContext.SaveChanges();
-                                        }
-                                        else
-                                        {
-                                            notAddedCount++;
-
-                                            // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
-                                            var ex = new GroupMemberValidationException( "Archived group member: " + string.Join( ",", archivedGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
-                                            ExceptionLogService.LogException( ex );
-                                            continue;
-                                        }
+                                        addedMemberCount++;
+                                        groupMemberService.Restore( archivedGroupMember );
+                                        groupMemberContext.SaveChanges();
                                     }
                                     else
                                     {
-                                        // ...otherwise we will add a new person to the group with the role specified in the sync.
-                                        var newGroupMember = new GroupMember { Id = 0 };
-                                        newGroupMember.PersonId = personId;
-                                        newGroupMember.GroupId = sync.GroupId;
-                                        newGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                                        newGroupMember.GroupRoleId = sync.GroupTypeRoleId;
-
-                                        if ( newGroupMember.IsValidGroupMember( groupMemberContext ) )
-                                        {
-                                            addedCount++;
-                                            groupMemberService.Add( newGroupMember );
-                                            groupMemberContext.SaveChanges();
-                                        }
-                                        else
-                                        {
-                                            notAddedCount++;
-
-                                            // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
-                                            var ex = new GroupMemberValidationException( "New group member: " + string.Join( ",", newGroupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
-                                            ExceptionLogService.LogException( ex );
-                                            continue;
-                                        }
+                                        // Validation errors will have been added to the ValidationResults collection. Add those results to the log and then move on to the next person.
+                                        warningMessages.Add( $"Unable to restore archived group member with person ID {personId} (group Member ID {archivedGroupMember.Id}) to group '{groupName}'. {archivedGroupMember.ValidationResults.AsDelimited( "; " )}" );
+                                        notAddedMemberCount++;
+                                        continue;
                                     }
+                                }
+                                else
+                                {
+                                    // ...otherwise we will add a new person to the group with the role specified in the sync.
+                                    var newGroupMember = new GroupMember { Id = 0 };
+                                    newGroupMember.PersonId = personId;
+                                    newGroupMember.GroupId = sync.GroupId;
+                                    newGroupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                                    newGroupMember.GroupRoleId = sync.GroupTypeRoleId;
 
-                                    // If the Group has a welcome email, and person has an email address, send them the welcome email and possibly create a login
-                                    if ( sync.WelcomeSystemCommunication != null )
+                                    groupMemberService.Add( newGroupMember );
+
+                                    try
                                     {
-                                        var person = new PersonService( groupMemberContext ).Get( personId );
-                                        if ( person.CanReceiveEmail( false ) )
+                                        // GroupMember.PreSave() WILL call GroupMember.IsValidGroupMember() in this scenario, so there is no need
+                                        // to manually validate here before attempting to save. In fact, doing so would be redundant and result in
+                                        // duplicate db queries. If this group member fails the validation check, we'll catch the exception below
+                                        // and log all validation results.
+                                        groupMemberContext.SaveChanges();
+                                        addedMemberCount++;
+                                    }
+                                    catch ( GroupMemberValidationException ex )
+                                    {
+                                        // Validation errors will have been added to the ValidationResults collection. Add those results to the log and then move on to the next person.
+                                        warningMessages.Add( $"Unable to add group member with person ID {personId} to group '{groupName}'. {newGroupMember.ValidationResults.AsDelimited( "; " )}" );
+                                        notAddedMemberCount++;
+                                        continue;
+                                    }
+                                }
+
+                                hasSyncChanged = true;
+
+                                // If the Group has a welcome email, and person has an email address, send them the welcome email and possibly create a login
+                                if ( sync.WelcomeSystemCommunication != null )
+                                {
+                                    var person = new PersonService( groupMemberContext ).Get( personId );
+                                    if ( person.CanReceiveEmail( false ) )
+                                    {
+                                        // If the group is configured to add a user account for anyone added to the group, and person does not yet have an
+                                        // account, add one for them.
+                                        string newPassword = string.Empty;
+                                        bool createLogin = sync.AddUserAccountsDuringSync;
+
+                                        // Only create a login if requested, no logins exist and we have enough information to generate a user name.
+                                        if ( createLogin && !person.Users.Any() && !string.IsNullOrWhiteSpace( person.NickName ) && !string.IsNullOrWhiteSpace( person.LastName ) )
                                         {
-                                            // If the group is configured to add a user account for anyone added to the group, and person does not yet have an
-                                            // account, add one for them.
-                                            string newPassword = string.Empty;
-                                            bool createLogin = sync.AddUserAccountsDuringSync;
+                                            newPassword = System.Web.Security.Membership.GeneratePassword( 9, 1 );
+                                            string username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
 
-                                            // Only create a login if requested, no logins exist and we have enough information to generate a user name.
-                                            if ( createLogin && !person.Users.Any() && !string.IsNullOrWhiteSpace( person.NickName ) && !string.IsNullOrWhiteSpace( person.LastName ) )
-                                            {
-                                                newPassword = System.Web.Security.Membership.GeneratePassword( 9, 1 );
-                                                string username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
+                                            UserLogin login = UserLoginService.Create(
+                                                groupMemberContext,
+                                                person,
+                                                AuthenticationServiceType.Internal,
+                                                EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                                username,
+                                                newPassword,
+                                                true,
+                                                requirePasswordReset );
+                                        }
 
-                                                UserLogin login = UserLoginService.Create(
-                                                    groupMemberContext,
-                                                    person,
-                                                    AuthenticationServiceType.Internal,
-                                                    EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
-                                                    username,
-                                                    newPassword,
-                                                    true,
-                                                    requirePasswordReset );
-                                            }
+                                        // Send the welcome email
+                                        var mergeFields = new Dictionary<string, object>();
+                                        mergeFields.Add( "Group", sync.Group );
+                                        mergeFields.Add( "Person", person );
+                                        mergeFields.Add( "NewPassword", newPassword );
+                                        mergeFields.Add( "CreateLogin", createLogin );
+                                        var emailMessage = new RockEmailMessage( sync.WelcomeSystemCommunication );
+                                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
+                                        var emailErrors = new List<string>();
+                                        emailMessage.Send( out emailErrors );
 
-                                            // Send the welcome email
-                                            var mergeFields = new Dictionary<string, object>();
-                                            mergeFields.Add( "Group", sync.Group );
-                                            mergeFields.Add( "Person", person );
-                                            mergeFields.Add( "NewPassword", newPassword );
-                                            mergeFields.Add( "CreateLogin", createLogin );
-                                            var emailMessage = new RockEmailMessage( sync.WelcomeSystemCommunication );
-                                            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
-                                            var emailErrors = new List<string>();
-                                            emailMessage.Send( out emailErrors );
-                                            errors.AddRange( emailErrors );
+                                        if ( emailErrors?.Any() == true )
+                                        {
+                                            emailErrors.ForEach( e => warningMessages.Add( $"Unable to send welcome email to '{groupName}' group member with person ID {personId}. Error: {e}" ) );
                                         }
                                     }
                                 }
                             }
-                            catch ( Exception ex )
-                            {
-                                ExceptionLogService.LogException( ex );
-                                continue;
-                            }
-
-                            hasSyncChanged = true;
                         }
-
-                        // Increment Groups Changed Counter (if people were deleted or added to the group)
-                        if ( hasSyncChanged )
+                        catch ( Exception ex )
                         {
-                            groupsChanged++;
+                            ExceptionLogService.LogException( ex );
+                            continue;
                         }
-
-                        // Increment the Groups Synced Counter
-                        groupsSynced++;
                     }
 
-                    // Update last refresh datetime in different context to avoid side-effects.
-                    using ( var rockContext = new RockContext() )
+                    if ( hasSyncChanged )
                     {
-                        var sync = new GroupSyncService( rockContext )
-                            .Queryable()
-                            .FirstOrDefault( s => s.Id == syncId );
-
-                        sync.LastRefreshDateTime = RockDateTime.Now;
-
-                        rockContext.SaveChanges();
+                        groupIdsChanged.Add( groupId );
                     }
+
+                    groupIdsSynced.Add( groupId );
                 }
 
-                // Format the result message
-                var resultMessage = string.Empty;
-                if ( groupsSynced == 0 )
+                // Update last refresh datetime in different context to avoid side-effects.
+                using ( var rockContext = new RockContext() )
                 {
-                    resultMessage = "No groups to sync";
-                }
-                else if ( groupsSynced == 1 )
-                {
-                    resultMessage = "1 group was synced";
-                }
-                else
-                {
-                    resultMessage = string.Format( "{0} groups were synced", groupsSynced );
-                }
+                    var sync = new GroupSyncService( rockContext )
+                        .Queryable()
+                        .FirstOrDefault( s => s.Id == syncId );
 
-                resultMessage += string.Format( " and {0} groups were changed", groupsChanged );
+                    sync.LastRefreshDateTime = RockDateTime.Now;
 
-                if ( errors.Any() )
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine();
-                    sb.Append( "Errors: " );
-                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
-                    string errorMessage = sb.ToString();
-                    resultMessage += errorMessage;
-                    throw new Exception( errorMessage );
+                    rockContext.SaveChanges();
                 }
-
-                this.Result = resultMessage;
             }
-            catch ( System.Exception ex )
+
+            // Format the result message
+            var groupsSyncedCount = groupIdsSynced.Count();
+            var groupsChangedCount = groupIdsChanged.Count();
+
+            var resultSb = new StringBuilder();
+            var circleSuccess = "<i class='fa fa-circle text-success'></i>";
+            resultSb.AppendLine( $"{circleSuccess} {groupsSyncedCount} {"group".PluralizeIf( groupsSyncedCount != 1 ).Titleize()} Synced{( groupsSyncedCount > 0 ? $" ({groupIdsSynced.AsDelimited( ", " )})" : string.Empty )}" );
+            resultSb.AppendLine( $"{circleSuccess} {groupsChangedCount} {"group".PluralizeIf( groupsChangedCount != 1 ).Titleize()} Changed{( groupsChangedCount > 0 ? $" ({groupIdsChanged.AsDelimited( ", " )})" : string.Empty )}" );
+
+            if ( groupsChangedCount > 0 )
             {
-                HttpContext context2 = HttpContext.Current;
-                ExceptionLogService.LogException( ex, context2 );
-                throw;
+                resultSb.AppendLine( $"{circleSuccess} {deletedMemberCount} {"person".PluralizeIf( deletedMemberCount != 1 ).Titleize()} Deleted" );
+                resultSb.AppendLine( $"{circleSuccess} {addedMemberCount} {"person".PluralizeIf( addedMemberCount != 1 ).Titleize()} Added" );
+            }
+
+            var circleWarning = "<i class='fa fa-circle text-warning'></i>";
+            if ( notAddedMemberCount > 0 )
+            {
+                resultSb.AppendLine( $"{circleWarning} {notAddedMemberCount} {"person".PluralizeIf( notAddedMemberCount != 1 ).Titleize()} Could Not be Added" );
+            }
+
+            this.Result = resultSb.ToString();
+
+            if ( warningMessages.Any() || warningExceptions.Any() )
+            {
+                resultSb.AppendLine();
+
+                var warningException = new RockJobWarningException( "GroupSync completed with warnings." );
+
+                if ( warningMessages.Any() )
+                {
+                    resultSb.AppendLine( $"{circleWarning} Enable 'Warning' logging level for 'Jobs' domain in Rock Logs and re-run this job to get a full list of issues." );
+                    Log( Logging.RockLogLevel.Warning, $"{warningMessages.Count} {"warning".PluralizeIf( warningMessages.Count > 1 ).Titleize()}: {warningMessages.AsDelimited( " | " )}" );
+                }
+
+                if ( warningExceptions.Any() )
+                {
+                    resultSb.AppendLine( $"{circleWarning} One or more exceptions occurred. See exception log for details." );
+
+                    var exceptionList = new AggregateException( "One or more exceptions occurred in GroupSync.", warningExceptions );
+                    warningException = new RockJobWarningException( "GroupSync completed with warnings.", exceptionList );
+                }
+
+                this.Result = resultSb.ToString();
+
+                throw warningException;
             }
         }
 
