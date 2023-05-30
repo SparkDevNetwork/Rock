@@ -83,6 +83,9 @@ registerFieldType(FieldTypeGuids.File, new FileFieldType());
 import { GenderFieldType } from "./genderField.partial";
 registerFieldType(FieldTypeGuids.Gender, new GenderFieldType());
 
+import { GroupAndRoleFieldType } from "./groupAndRoleField.partial";
+registerFieldType(FieldTypeGuids.GroupAndRole, new GroupAndRoleFieldType());
+
 import { GroupFieldType } from "./groupField.partial";
 registerFieldType(FieldTypeGuids.Group, new GroupFieldType());
 
