@@ -1160,6 +1160,39 @@ namespace Rock.Client.Enums.Event
 
 }
 
+namespace Rock.Client.Enums.Core
+{
+    /// <summary>
+    /// </summary>
+    public enum ColorRecipe
+    {
+        Primary = 0x0,
+        Darkest = 0x1,
+        Dark = 0x2,
+        Medium = 0x3,
+        Light = 0x4,
+        Lightest = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ColorScheme
+    {
+        Light = 0x0,
+        Dark = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum NotificationMessageActionType
+    {
+        Invalid = 0x0,
+        ShowMessage = 0x1,
+        LinkToPage = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Communication
 {
     /// <summary>
@@ -1310,19 +1343,6 @@ namespace Rock.Client.Enums.Blocks.Security.Login
 
 }
 
-namespace Rock.Client.Enums.Core
-{
-    /// <summary>
-    /// </summary>
-    public enum NotificationMessageActionType
-    {
-        Invalid = 0x0,
-        ShowMessage = 0x1,
-        LinkToPage = 0x2,
-    }
-
-}
-
 namespace Rock.Client.Enums.Blocks.Engagement.SignUp
 {
     /// <summary>
@@ -1332,6 +1352,30 @@ namespace Rock.Client.Enums.Blocks.Engagement.SignUp
         Family = 0x0,
         Anonymous = 0x1,
         Group = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Group.Scheduling
+{
+    /// <summary>
+    /// </summary>
+    public enum ResourceListSourceType
+    {
+        GroupMembers = 0x0,
+        GroupMatchingPreference = 0x1,
+        AlternateGroup = 0x2,
+        ParentGroup = 0x3,
+        DataView = 0x4,
+        GroupMatchingAssignment = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UpdateSchedulePreferenceMode
+    {
+        ReplacePreference = 0x0,
+        AddToPreference = 0x1,
     }
 
 }

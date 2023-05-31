@@ -73,6 +73,8 @@ export const ServiceJob = {
     DataMigrations150ReplaceWebFormsBlocksWithObsidianBlocks: "EA00D1D4-709A-4102-863D-08471AA2C345",
     /** The Job to run Post v15.1 Data Migrations for System Phone Numbers. */
     DataMigrations150SystemPhoneNumbers: "6DFE731E-F28B-40B3-8383-84212A301214",
+    /** The Job to run Post v15.1 Data Migrations to cleanup duplicate mobile interaction entries. */
+    DataMigrations151DuplicateMobileInteractionsCleanup: "D3D60B90-48D1-4718-905E-39638B44C665",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */

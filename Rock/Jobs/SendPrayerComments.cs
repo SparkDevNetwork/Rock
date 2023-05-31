@@ -116,7 +116,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Returns the log device for this job.
         /// </summary>
-        public TaskLog Log
+        public TaskLog SendPrayerCommentsLog
         {
             get
             {
@@ -200,7 +200,7 @@ namespace Rock.Jobs
         /// </summary>
         private void GetSettings()
         {
-            Log.LogVerbose( $"Reading configuration from job execution context..." );
+            SendPrayerCommentsLog.LogVerbose( $"Reading configuration from job execution context..." );
 
             this.SystemEmailTemplateGuid = this.GetAttributeValue( AttributeKey.SystemEmail ).ToString().AsGuid();
 
@@ -301,7 +301,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            Log.LogProgress( $"Job Started: SendPrayerComments" );
+            SendPrayerCommentsLog.LogProgress( $"Job Started: SendPrayerComments" );
 
             GetSettings();
 
@@ -362,7 +362,7 @@ namespace Rock.Jobs
 
             Rock.Web.SystemSettings.SetValue( GetSystemSettingsKey(), lastRunDate.ToISO8601DateString() );
 
-            Log.LogProgress( $"Job Completed: SendPrayerComments" );
+            SendPrayerCommentsLog.LogProgress( $"Job Completed: SendPrayerComments" );
         }
 
         /// <summary>
@@ -582,18 +582,18 @@ namespace Rock.Jobs
         /// <param name="rockContext"></param>
         private void GetPrayerRequests( RockContext rockContext )
         {
-            Log.LogVerbose( $"Job Configuration:" );
-            Log.LogVerbose( $"SystemEmailTemplateGuid = {this.SystemEmailTemplateGuid}" );
+            SendPrayerCommentsLog.LogVerbose( $"Job Configuration:" );
+            SendPrayerCommentsLog.LogVerbose( $"SystemEmailTemplateGuid = {this.SystemEmailTemplateGuid}" );
 
             if ( this.CategoryGuidList != null
                  && this.CategoryGuidList.Any() )
             {
-                Log.LogVerbose( $"CategoryGuidList = [{this.CategoryGuidList.AsDelimited( "," )}]" );
-                Log.LogVerbose( $"IncludeChildCategories = {this.IncludeChildCategories}" );
+                SendPrayerCommentsLog.LogVerbose( $"CategoryGuidList = [{this.CategoryGuidList.AsDelimited( "," )}]" );
+                SendPrayerCommentsLog.LogVerbose( $"IncludeChildCategories = {this.IncludeChildCategories}" );
             }
 
-            Log.LogVerbose( $"CreateCommunicationRecord = {this.CreateCommunicationRecord}" );
-            Log.LogVerbose( $"Report Period = {this.StartDate} to {this.EndDate}" );
+            SendPrayerCommentsLog.LogVerbose( $"CreateCommunicationRecord = {this.CreateCommunicationRecord}" );
+            SendPrayerCommentsLog.LogVerbose( $"Report Period = {this.StartDate} to {this.EndDate}" );
 
             var prayerRequestService = new PrayerRequestService( rockContext );
 
