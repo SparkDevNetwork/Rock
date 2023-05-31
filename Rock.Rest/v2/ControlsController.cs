@@ -4601,7 +4601,7 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var registrationInstance = new Rock.Model.RegistrationInstanceService( new RockContext() ).Get( options.RegistrationInstanceGuid );
+                var registrationInstance = new Rock.Model.RegistrationInstanceService( rockContext ).Get( options.RegistrationInstanceGuid );
                 if (registrationInstance == null)
                 {
                     return NotFound();
@@ -5240,6 +5240,65 @@ namespace Rock.Rest.v2
             }
 
             return categorizedActions;
+        }
+
+        #endregion
+
+        #region Workflow Picker
+
+        /// <summary>
+        /// Gets the workflows and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which workflows to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of workflows.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "WorkflowPickerGetWorkflows" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "93024bbe-4941-4f84-a5e7-754cf30c03d3" )]
+        public IHttpActionResult WorkflowPickerGetWorkflows( [FromBody] WorkflowPickerGetWorkflowsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( options.WorkflowTypeGuid == null )
+                {
+                    return NotFound();
+                }
+
+                    var workflowService = new Rock.Model.WorkflowService( rockContext );
+                    var workflows = workflowService.Queryable()
+                        .Where( w =>
+                            w.WorkflowType.Guid == options.WorkflowTypeGuid &&
+                            w.ActivatedDateTime.HasValue &&
+                            !w.CompletedDateTime.HasValue )
+                        .OrderBy( w => w.Name )
+                        .Select( w => new ListItemBag { Value = w.Guid.ToString(), Text = w.Name } )
+                        .ToList();
+
+                return Ok( workflows );
+            }
+        }
+
+        /// <summary>
+        /// Gets the workflow type that the given instance uses.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> object that represents the workflow type.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "WorkflowPickerGetWorkflowTypeForWorkflow" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "a41c755c-ffcb-459c-a67a-f0311158976a" )]
+        public IHttpActionResult WorkflowPickerGetWorkflowTypeForWorkflow( [FromBody] WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var workflow = new Rock.Model.WorkflowService( rockContext ).Get( options.WorkflowGuid );
+                if ( workflow == null )
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = workflow.WorkflowType.Name, Value = workflow.WorkflowType.Guid.ToString() } );
+            }
         }
 
         #endregion

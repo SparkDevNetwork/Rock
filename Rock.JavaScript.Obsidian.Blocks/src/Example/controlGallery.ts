@@ -137,7 +137,7 @@ import ComponentPicker from "@Obsidian/Controls/componentPicker";
 import Modal from "@Obsidian/Controls/modal";
 import EventItemPicker from "@Obsidian/Controls/eventItemPicker";
 import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
-import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker";
+import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
 import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker";
 import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker";
 import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
@@ -221,6 +221,7 @@ import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
 import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
 import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
 import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/interactionChannelInteractionComponentPicker.obs";
+import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
 
 // #region Gallery Support
 
@@ -3677,7 +3678,7 @@ const workflowTypePickerGallery = defineComponent({
             includeInactiveItems: ref(false),
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("workflowTypePicker"),
+            importCode: getSfcControlImportPath("workflowTypePicker"),
             exampleCode: `<WorkflowTypePicker label="Data View" v-model="value" />`
         };
     },
@@ -7886,8 +7887,7 @@ const registrationInstancePickerGallery = defineComponent({
         GalleryAndResult,
         RegistrationInstancePicker,
         RegistrationTemplatePicker,
-        DropDownList,
-        NumberUpDown
+        CheckBox
     },
     setup() {
         return {
@@ -7897,6 +7897,8 @@ const registrationInstancePickerGallery = defineComponent({
                 "text": "Joe's Test Registration",
                 "category": null
             }),
+            required: ref(false),
+            disabled: ref(false),
             importCode: getSfcControlImportPath("registrationInstancePicker"),
             exampleCode: `<RegistrationInstancePicker label="Registration Instance" v-model="value" />`
         };
@@ -7911,12 +7913,20 @@ const registrationInstancePickerGallery = defineComponent({
     <RegistrationInstancePicker
         v-model="value"
         label="Registration Instance"
-        :registrationTemplateGuid="registrationTemplateGuid?.value" />
+        :registrationTemplateGuid="registrationTemplateGuid?.value"
+        :disabled="disabled"
+        :rules="required ? 'required' : ''" />
 
     <template #settings>
         <div class="row mb-3">
             <div class="col-md-3">
                 <RegistrationTemplatePicker label="Default Registration Template" v-model="registrationTemplateGuid" showBlankItem />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
             </div>
         </div>
 
@@ -7946,7 +7956,7 @@ const interactionChannelInteractionComponentPickerGallery = defineComponent({
                 "category": null
             }),
             importCode: getSfcControlImportPath("interactionChannelInteractionComponentPicker"),
-            exampleCode: `<InteractionChannelInteractionComponentPicker label="Registration Instance" v-model="value" />`
+            exampleCode: `<InteractionChannelInteractionComponentPicker label="Interaction Channel > Interaction Component" v-model="value" />`
         };
     },
     template: `
@@ -7970,6 +7980,60 @@ const interactionChannelInteractionComponentPickerGallery = defineComponent({
 
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates Workflow Picker */
+const workflowPickerGallery = defineComponent({
+    name: "WorkflowPickerGallery",
+    components: {
+        GalleryAndResult,
+        WorkflowTypePicker,
+        WorkflowPicker,
+        CheckBox,
+    },
+    setup() {
+        return {
+            value: ref({
+                "value": "969b09e5-d830-46b7-86ab-2f0fbd12cf51",
+                "text": "New Request",
+                "category": null
+            }),
+            workflowType: ref({}),
+            workflowTypeGuid: ref(""),
+            required: ref(false),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("workflowPicker"),
+            exampleCode: `<WorkflowPicker label="Choose a Workflow" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <WorkflowPicker label="Choose a Workflow"
+        v-model="value"
+        :workflowTypeGuid="workflowTypeGuid?.value"
+        :rules="required ? 'required' : ''"
+        :disabled="disabled" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <WorkflowTypePicker label="Workflow Type" v-model="workflowTypeGuid" showBlankItem help="If this workflowTypeGuid prop is set, the Workflow Type selector will not be shown and the Workflows will be based on that type." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
+            </div>
+        </div>
     </template>
 </GalleryAndResult>`
 });
@@ -8121,6 +8185,7 @@ const controlGalleryComponents: Record<string, Component> = [
     structuredContentEditorGallery,
     registrationInstancePickerGallery,
     interactionChannelInteractionComponentPickerGallery,
+    workflowPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

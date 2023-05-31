@@ -8,8 +8,8 @@
                                     :multiple="false"
                                     :disabled="disabled"
                                     showBlankItem
-                                    formGroupClasses="mt-0"
-                                    :displayStyle="PickerDisplayStyle.Condensed" />
+                                    autoExpand
+                                    formGroupClasses="mt-0" />
         <RegistrationInstanceBasePicker
                                         v-if="internalTemplateGuid"
                                         v-model="internalValue"

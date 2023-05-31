@@ -95,6 +95,9 @@
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Controls\wordCloud.obs" />
     <Content Include="Framework\Controls\workflowActionTypePicker.obs" />
+    <Content Include="Framework\Controls\workflowBasePicker.obs" />
+    <Content Include="Framework\Controls\workflowPicker.obs" />
+    <Content Include="Framework\Controls\workflowTypePicker.obs" />
     <Content Include="Framework\Core\tsconfig.json" />
     <Content Include="Framework\Directives\tsconfig.json" />
     <Content Include="Framework\FieldTypes\tsconfig.json" />
@@ -307,7 +310,6 @@
     <TypeScriptCompile Include="Framework\Controls\tabbedContent.ts" />
     <TypeScriptCompile Include="Framework\Controls\entityTagList.ts" />
     <TypeScriptCompile Include="Framework\Controls\valueDetailList.ts" />
-    <TypeScriptCompile Include="Framework\Controls\workflowTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Core\Controls\valueDetailListItemBuilder.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragDrop.ts" />
     <TypeScriptCompile Include="Framework\Controls\auditDetail.ts" />
@@ -1124,6 +1126,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorGetConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowActionTypePickerGetChildrenOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowPickerGetWorkflowsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowPickerGetWorkflowTypeForWorkflowOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowTypePickerGetWorkflowTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesAccessedOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesOptionsBag.d.ts" />
