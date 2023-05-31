@@ -314,39 +314,12 @@ namespace Rock.Utility
         public static ColorPair CalculateColorPair( RockColor color, ColorScheme colorScheme = ColorScheme.Light )
         {
             var colorPair = new ColorPair();
-            RockColor matchedColor = null;
 
             // Create dark contrast using the Practical UI darkest recipe
-            var darkestColor =  RockColor.CalculateColorRecipe( color , ColorRecipe.Darkest);
+            colorPair.ForegroundColor =  RockColor.CalculateColorRecipe( color , ColorRecipe.Darkest);
 
             // Create light contrast using the Practical UI lightest recipe
-            var lightestColor = RockColor.CalculateColorRecipe( color, ColorRecipe.Lightest );
-
-            // Find the color with the greatest contrast
-            var darkContrast = RockColor.CalculateContrastRatio( color, darkestColor );
-            var lightContrast = RockColor.CalculateContrastRatio( color, lightestColor );
-                        
-            if (lightContrast > darkContrast )
-            {
-                matchedColor = lightestColor;
-            }
-            else
-            {
-                matchedColor = darkestColor;
-            }
-
-            // We'll create the pairing for light mode. This means we want the lightest
-            // color of the pair to be the background color. Higher luminosity is a lighter color
-            if ( color.Luminosity > matchedColor.Luminosity )
-            {
-                colorPair.BackgroundColor = color;
-                colorPair.ForegroundColor = matchedColor;
-            }
-            else
-            {
-                colorPair.BackgroundColor = matchedColor;
-                colorPair.ForegroundColor = color;
-            }
+            colorPair.BackgroundColor = RockColor.CalculateColorRecipe( color, ColorRecipe.Lightest );
 
             // If dark theme then flip the foreground and background making the darker color is the background.
             if ( colorScheme == ColorScheme.Dark )
