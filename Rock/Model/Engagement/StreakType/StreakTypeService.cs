@@ -802,6 +802,7 @@ namespace Rock.Model
                 if ( batchCounter == 100 )
                 {
                     batchCounter = 0;
+                    rockContext.Dispose();
                     progress?.Report( ( int ) ( decimal.Divide( totalCounter, totalCount ) * 100 ) );
                 }
             }

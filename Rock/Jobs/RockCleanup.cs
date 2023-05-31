@@ -785,19 +785,35 @@ namespace Rock.Jobs
             using ( var personRockContext = CreateRockContext() )
             {
                 var personService = new PersonService( personRockContext );
-                var personAliasService = new PersonAliasService( personRockContext );
-                int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
                 var personSearchKeyService = new PersonSearchKeyService( personRockContext );
-                var alternateKeyQuery = personSearchKeyService.Queryable().AsNoTracking().Where( a => a.SearchTypeValueId == alternateValueId );
 
-                // Only process people that have a person alias, since that is required.
-                var personAliasServiceQry = personAliasService.Queryable();
-                var personQuery = personService.Queryable( includeDeceased: true )
+                var alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                var alternateKeyQuery = personSearchKeyService.Queryable()
                     .AsNoTracking()
-                    .Where( p => personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) );
+                    .Where( a => a.SearchTypeValueId == alternateValueId );
 
-                // Make a list of items that we're going to bulk insert.
-                var itemsToInsert = new List<PersonSearchKey>();
+                var personQuery = personService.Queryable( includeDeceased: true )
+                    .AsNoTracking();
+
+                // Get a limited batch of people who do not yet have an alternate identifier,
+                // to ensure the job completes in a timely manner.
+                // Ensure that the person has a matching person alias record with which the identifier can be associated.
+                // If not, a previous cleanup action will need to fix the PersonAlias before we can process it.
+                var personAliasIdList = personQuery
+                    .Where( p => !alternateKeyQuery.Any( f => f.PersonAlias.PersonId == p.Id ) )
+                    .Take( 150000 )
+                    .Select( p => p.Aliases.Where( a => a.AliasPersonId == p.Id )
+                        .Select( a => a.Id )
+                        .FirstOrDefault() )
+                    .Where( id => id > 0 )
+                    .OrderBy( id => id )
+                    .ToList();
+
+                // If no items found to process, exit.
+                if ( !personAliasIdList.Any() )
+                {
+                    return 0;
+                }
 
                 // Get all existing keys so we can keep track and quickly check them while we're bulk adding new ones.
                 var keys = new HashSet<string>( personSearchKeyService.Queryable().AsNoTracking()
@@ -805,16 +821,9 @@ namespace Rock.Jobs
                     .Select( a => a.SearchValue )
                     .ToList() );
 
+                // Make a list of items that we're going to bulk insert.
+                var itemsToInsert = new List<PersonSearchKey>();
                 var alternateId = string.Empty;
-
-                // Get a limited batch of people who do not yet have an alternate identifier,
-                // to ensure the job completes in a timely manner.
-                var personAliasIdList = personQuery
-                    .Where( p => !alternateKeyQuery.Any( f => f.PersonAlias.PersonId == p.Id ) )
-                    .Take( 150000 )
-                    .Select( p => p.Aliases.Where( a => a.AliasPersonId == p.Id ).FirstOrDefault() )
-                    .Select( a => a.Id )
-                    .ToList();
 
                 foreach ( var personAliasId in personAliasIdList )
                 {

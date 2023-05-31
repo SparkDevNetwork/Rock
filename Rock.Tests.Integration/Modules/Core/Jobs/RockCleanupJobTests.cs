@@ -544,25 +544,48 @@ namespace Rock.Tests.Integration.Core.Jobs
         {
             var job = new Rock.Jobs.RockCleanup();
             var rockContext = new RockContext();
+            int recordsAffected;
 
             // Remove the existing Person Search Keys.
             var personSearchKeyService = new PersonSearchKeyService( rockContext );
 
             var initialSearchKeyCount = personSearchKeyService.Queryable().Count();
 
-            var sql = "DELETE FROM PersonSearchKey";
+            var sql = @"
+DELETE FROM PersonSearchKey
+";
             DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
 
-            // Remove a PersonAlias record to verify that this will not cause a problem processing the cleanup.
-            sql = $"DELETE FROM PersonAlias WHERE AliasPersonId IN (SELECT Id FROM Person WHERE [Guid] = '{TestGuids.TestPeople.SamHanks}')";
-            DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
+            /* Add some faulty data to verify that this will not cause a problem processing the cleanup. */
+
+            // Remove a PersonAlias record.
+            sql = $@"
+DELETE FROM PersonAlias
+WHERE AliasPersonId IN (SELECT Id FROM Person WHERE [Guid] = '{TestGuids.TestPeople.SamHanks}')
+";
+            recordsAffected = DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
+            Assert.AreEqual( 1, recordsAffected, "Test data is invalid." );
+
+            // Modify a PersonAlias record to point to the wrong Person.
+            sql = $@"
+DECLARE @validPersonId int = ( SELECT [Id] FROM [Person] WHERE [Guid] = '{TestGuids.TestPeople.SamHanks}')
+UPDATE PersonAlias
+SET [AliasPersonId] = @validPersonId
+WHERE PersonId IN ( SELECT Id FROM Person WHERE [Guid] = '{TestGuids.TestPeople.MaddieLowe}' )
+";
+            recordsAffected = DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
+            Assert.AreEqual( 1, recordsAffected, "Test data is invalid." );
 
             // Execute the cleanup job and verify that all of the search keys have been regenerated.
             job.PersonCleanup();
 
             var finalSearchKeyCount = personSearchKeyService.Queryable().Count();
 
-            Assert.AreEqual( initialSearchKeyCount, finalSearchKeyCount, "Invalid search key count." );
+            // Verify that the initial search keys have been restored, less the two invalid records.
+            Assert.AreEqual( initialSearchKeyCount - 2, finalSearchKeyCount, "Invalid search key count." );
+
+            // Restore the database for subsequent tests.
+            TestDatabaseHelper.ResetDatabase();
         }
 
         #endregion
