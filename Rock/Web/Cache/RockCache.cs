@@ -130,7 +130,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The object cache key references.
         /// </value>
-        [Obsolete("Use thread safe StringConcurrentCacheKeyReferences instead.")]
+        [Obsolete("Use thread safe ObjectConcurrentCacheKeyReferences instead.")]
         [RockObsolete("1.14")]
         public static List<CacheKeyReference> ObjectCacheKeyReferences
         {
