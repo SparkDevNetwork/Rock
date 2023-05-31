@@ -49,24 +49,32 @@
                     label="Linked Activity"
                     :items="streakStructureTypes"
                     blankValue="None"
-                    help="This specifies what linked activity types this Streak Type may interface with.  Something very broad like “Attendance: Any” could
+                    help="This specifies what linked activity types this Streak Type may interface with. Something very broad like “Attendance: Any” could
                         help measure general engagement with the church. Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
 
-                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == StreakStructureType.GroupType" v-model="structureEntityId" :isSortedByName="true"/>
+                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == StreakStructureType.GroupType" v-model="structureEntity" :isSortedByName="true"/>
 
-                <GroupPicker label="Group" v-if="modelValue.structureType == StreakStructureType.Group" v-model="structureEntityId" />
+                <GroupPicker label="Group" v-if="modelValue.structureType == StreakStructureType.Group" v-model="structureEntity" />
 
-                <DefinedValuePicker label="Group Type Purpose" v-if="modelValue.structureType == StreakStructureType.GroupTypePurpose" v-model="structureEntityId" :definedTypeGuid="DefinedType.GrouptypePurpose" showBlankItem />
+                <DefinedValuePicker label="Group Type Purpose" v-if="modelValue.structureType == StreakStructureType.GroupTypePurpose" v-model="structureEntity" :definedTypeGuid="DefinedType.GrouptypePurpose" showBlankItem />
 
-                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == StreakStructureType.CheckInConfig" v-model="structureEntityId" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids"/>
+                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == StreakStructureType.CheckInConfig" v-model="structureEntity" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids"/>
 
-                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionChannel" v-model="structureEntityId"  />
+                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionChannel" v-model="structureEntity"  />
 
                 <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="interactionComponentInteractionChannel"  />
 
-                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntityId" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" />
+                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntity" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" />
 
-                <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == StreakStructureType.InteractionMedium" v-model="structureEntityId" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
+                <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == StreakStructureType.InteractionMedium" v-model="structureEntity" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
+
+                <div class="col-sm-6 col-xs-12">
+                    <AccountPicker label="Account" v-if="modelValue.structureType == StreakStructureType.FinancialTransaction" v-model="structureEntity" enhanceForLongLists :multiple="false" />
+                </div>
+
+                <div class="col-sm-6 col-xs-12">
+                    <CheckBox label="Include Child Accounts" v-if="modelValue.structureType == StreakStructureType.FinancialTransaction" v-model="includeChildAccounts" />
+                </div>
             </div>
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
@@ -88,6 +96,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch, computed } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
@@ -105,7 +114,7 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
     import { StreakTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeDetailOptionsBag";
-	import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { StreakOccurrenceFrequencyDescription } from "@Obsidian/Enums/Engagement/streakOccurrenceFrequency";
 
@@ -139,7 +148,8 @@
     const firstDayOfWeek = propertyRef(props.modelValue?.firstDayOfWeek?.toString() ?? null, "FirstDayOfWeek");
     const occurrenceFrequency = propertyRef(props.modelValue?.occurrenceFrequency?.toString() ?? null, "OccurrenceFrequency");
     const structureType = propertyRef(props.modelValue?.structureType?.toString() ?? "None", "StructureType");
-    const structureEntityId = propertyRef(props.modelValue?.structureEntityId, "StructureEntityId");
+    const structureEntity = propertyRef(props.modelValue?.structureEntity ?? {}, "StructureEntity");
+    const includeChildAccounts = propertyRef(props.modelValue?.includeChildAccounts ?? {}, "IncludeChildAccounts");
     const interactionComponentInteractionChannel = ref(props.modelValue.interactionComponentInteractionChannel);
     const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
     const streakOccurrenceFrequencies = ref<ListItemBag[]>(enumToListItemBag(StreakOccurrenceFrequencyDescription));
@@ -151,7 +161,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek, occurrenceFrequency, structureType, structureEntityId];
+    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek, occurrenceFrequency, structureType, structureEntity, includeChildAccounts];
 
     // #endregion
 
@@ -180,7 +190,8 @@
         updateRefValue(firstDayOfWeek, props.modelValue?.firstDayOfWeek?.toString() ?? null);
         updateRefValue(occurrenceFrequency, props.modelValue?.occurrenceFrequency.toString() ?? null);
         updateRefValue(structureType, props.modelValue?.structureType?.toString() ?? "");
-        updateRefValue(structureEntityId, props.modelValue?.structureEntityId);
+        updateRefValue(structureEntity, props.modelValue?.structureEntity ?? {});
+        updateRefValue(includeChildAccounts, props.modelValue?.includeChildAccounts ?? false);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -188,7 +199,7 @@
     watch([attributeValues, ...propRefs], () => {
         // set the value of structure entity id to null if the structure type changes
         if(props.modelValue?.structureType?.toString() != structureType.value){
-            structureEntityId.value = null;
+            structureEntity.value = null;
         }
 
         const newValue: StreakTypeBag = {
@@ -203,7 +214,8 @@
             firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
             occurrenceFrequency: toNumber(occurrenceFrequency.value),
             structureType: toNumber(structureType.value),
-            structureEntityId: structureEntityId.value
+            structureEntity: structureEntity.value,
+            includeChildAccounts: includeChildAccounts.value
         };
 
         emit("update:modelValue", newValue);

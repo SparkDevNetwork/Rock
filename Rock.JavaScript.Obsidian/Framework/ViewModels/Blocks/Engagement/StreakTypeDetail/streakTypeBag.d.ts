@@ -67,7 +67,12 @@ export type StreakTypeBag = {
      * Gets or sets the Id of the Entity associated with attendance for this streak type. If not set, this streak type
      * will account for any attendance record.
      */
-    structureEntityId?: ListItemBag | null;
+    structureEntity?: ListItemBag | null;
+
+    /**
+     * Gets or sets the flag to include the child accounts in case of financial transaction
+     */
+    includeChildAccounts: boolean;
 
     /** Gets or sets the value of the first day of the week when the frequency is set to weekly */
     firstDayOfWeek?: number | null

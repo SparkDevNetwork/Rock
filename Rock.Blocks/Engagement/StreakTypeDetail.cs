@@ -243,7 +243,8 @@ namespace Rock.Blocks.Engagement
                 OccurrenceFrequency = entity.OccurrenceFrequency,
                 RequiresEnrollment = entity.RequiresEnrollment,
                 StartDate = entity.StartDate,
-                FirstDayOfWeek = ( int ) ( entity.FirstDayOfWeek ?? 0 )
+                FirstDayOfWeek = ( int ) ( entity.FirstDayOfWeek ?? 0 ),
+                IncludeChildAccounts = entity.StructureSettings.IncludeChildAccounts
             };
         }
 
@@ -329,6 +330,8 @@ namespace Rock.Blocks.Engagement
                     return interactionComponent.ToListItemBag();
                 case StreakStructureType.InteractionMedium:
                     return DefinedValueCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
+                case StreakStructureType.FinancialTransaction:
+                    return FinancialAccountCache.Get( entity.StructureEntityId ?? 0 ).ToListItemBag();
             }
             return null;
         }
@@ -383,8 +386,11 @@ namespace Rock.Blocks.Engagement
                     entity.StructureEntityId = GetStructureEntityId( entity, box, rockContext ).ToIntSafe();
                 } );
 
-            box.IfValidProperty( nameof( box.Entity.StructureSettingsJSON ),
-                () => entity.StructureSettingsJSON = box.Entity.StructureSettingsJSON );
+            if ( entity.StructureType == StreakStructureType.FinancialTransaction )
+            {
+                box.IfValidProperty( nameof( box.Entity.IncludeChildAccounts ),
+                () => entity.StructureSettings.IncludeChildAccounts = box.Entity.IncludeChildAccounts );
+            }
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -399,7 +405,7 @@ namespace Rock.Blocks.Engagement
 
         private static int? GetStructureEntityId( StreakType entity, DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag> box, RockContext rockContext )
         {
-            if( box.Entity.StructureEntity == null )
+            if ( box.Entity.StructureEntity == null )
             {
                 return null;
             }
@@ -423,6 +429,8 @@ namespace Rock.Blocks.Engagement
                     return InteractionComponentCache.GetId( box.Entity.StructureEntity.Value.AsGuid() );
                 case StreakStructureType.InteractionMedium:
                     return DefinedValueCache.GetId( box.Entity.StructureEntity.Value.AsGuid() );
+                case StreakStructureType.FinancialTransaction:
+                    return FinancialAccountCache.GetId( box.Entity.StructureEntity.Value.AsGuid() );
             }
             return null;
         }

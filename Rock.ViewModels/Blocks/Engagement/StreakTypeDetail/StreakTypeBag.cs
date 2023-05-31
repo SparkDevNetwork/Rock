@@ -87,7 +87,7 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// <summary>
         /// Gets or sets the structure settings JSON.
         /// </summary>
-        public string StructureSettingsJSON { get; set; }
+        public Boolean IncludeChildAccounts { get; set; }
 
         /// <summary>
         /// Gets or sets the first day of the week when the frequency is set to weekly
