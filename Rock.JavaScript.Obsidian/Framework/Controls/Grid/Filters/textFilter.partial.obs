@@ -14,7 +14,7 @@
     import TextBox from "@Obsidian/Controls/textBox";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import { standardFilterProps } from "@Obsidian/Core/Controls/grid";
-    import { TextFilterMethod, TextFilterMethodDescription } from "@Obsidian/Enums/Controls/Grid/textFilterMethod";
+    import { TextFilterMethod, TextFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/textFilterMethod";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ref, watch } from "vue";
     import { TextSearchBag } from "@Obsidian/Types/Controls/grid";

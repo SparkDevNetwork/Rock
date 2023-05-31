@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
@@ -10,18 +11,19 @@ using System.Runtime.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 
-using Rock;
 using Rock.CodeGeneration.Dialogs;
 using Rock.CodeGeneration.FileGenerators;
 using Rock.CodeGeneration.Lava;
 using Rock.CodeGeneration.Utility;
 
+using PropertyItem = Rock.CodeGeneration.Pages.ObsidianDetailBlockPage.PropertyItem;
+
 namespace Rock.CodeGeneration.Pages
 {
     /// <summary>
-    /// Interaction logic for ObsidianDetailBlock.xaml
+    /// Interaction logic for ObsidianListBlockPage.xaml
     /// </summary>
-    public partial class ObsidianDetailBlockPage : Page
+    public partial class ObsidianListBlockPage : Page
     {
         #region Fields
 
@@ -31,9 +33,19 @@ namespace Rock.CodeGeneration.Pages
         private Type _selectedEntityType;
 
         /// <summary>
-        /// The properties for the currently selected entity type.
+        /// The properties that are known on the entity.
         /// </summary>
-        private List<PropertyItem> _propertyItems;
+        private List<PropertyItem> _entityProperties;
+
+        /// <summary>
+        /// The properties that are valid on columns.
+        /// </summary>
+        private List<PropertyItem> _columnProperties;
+
+        /// <summary>
+        /// The columns to be included in the list block.
+        /// </summary>
+        private IList<ColumnItem> _columnItems = new ObservableCollection<ColumnItem>();
 
         /// <summary>
         /// The properties that are considered system level and always excluded.
@@ -68,9 +80,9 @@ namespace Rock.CodeGeneration.Pages
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ObsidianDetailBlockPage"/> class.
+        /// Initializes a new instance of the <see cref="ObsidianListBlockPage"/> class.
         /// </summary>
-        public ObsidianDetailBlockPage()
+        public ObsidianListBlockPage()
         {
             InitializeComponent();
 
@@ -93,31 +105,69 @@ namespace Rock.CodeGeneration.Pages
             _selectedEntityType = entityType;
 
             SelectedEntityName.Content = _selectedEntityType?.FullName ?? string.Empty;
-            UpdateEntityProperties();
+            UpdateEntityProperties( true );
 
+            // Set default for Use Attribute Values.
             UseAttributeValuesCheckBox.IsChecked = typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( entityType );
             UseAttributeValuesCheckBox.IsEnabled = UseAttributeValuesCheckBox.IsChecked ?? false;
+
+            // Set default for Security From.
+            if ( typeof( Rock.Security.ISecured ).IsAssignableFrom( entityType ) )
+            {
+                SecurityFromEntityRadioButton.IsChecked = true;
+            }
+            else
+            {
+                SecurityFromCmsRadioButton.IsChecked = true;
+            }
+
+            // Set default for Show Reorder.
+            ShowReorder.IsChecked = typeof( Rock.Data.IOrdered ).IsAssignableFrom( entityType );
+            ShowReorder.IsEnabled = ShowReorder.IsChecked ?? false;
+
+            // Set default for Show Security.
+            ShowSecurity.IsChecked = typeof( Rock.Security.ISecured ).IsAssignableFrom( entityType );
+            ShowSecurity.IsEnabled = ShowSecurity.IsChecked ?? false;
+
+            // Set default for Show Delete.
+            ShowDelete.IsChecked = true;
         }
 
         /// <summary>
         /// Updates the list of entity properties for the selected entity.
         /// </summary>
-        private void UpdateEntityProperties()
+        private void UpdateEntityProperties( bool resetColumns )
         {
-            _propertyItems = GetEntityProperties( _selectedEntityType )
+            _entityProperties = GetEntityProperties( _selectedEntityType )
+                .Where( p => IsValidPropertyType( p ) )
                 .Select( p => new PropertyItem( p ) )
                 .ToList();
 
-            // Check all the properties and see if any of them are unsupported.
-            foreach ( var item in _propertyItems )
+            _columnProperties = GetColumnProperties( _entityProperties ).ToList();
+
+            var stringProperties = _entityProperties
+                .Where( p => p.Property.PropertyType == typeof( string ) )
+                .OrderBy( p => p.Name )
+                .Select( p => p.Name )
+                .ToList();
+
+            stringProperties.Insert( 0, string.Empty );
+
+            ToolTipSource.ItemsSource = stringProperties;
+
+            if ( resetColumns )
             {
-                if ( !IsValidPropertyType( item.Property ) )
+                ColumnsListBox.ItemsSource = _columnItems = new ObservableCollection<ColumnItem>();
+                ToolTipSource.Text = string.Empty;
+                SkeletonCount.Text = "";
+            }
+            else
+            {
+                foreach ( var columnItem in _columnItems )
                 {
-                    item.InvalidReason = $"Property type {item.Property.PropertyType.GetFriendlyName()} is not supported.";
+                    columnItem.ValidNames = _columnProperties.Select( p => p.Name );
                 }
             }
-
-            PropertiesListBox.ItemsSource = _propertyItems;
         }
 
         /// <summary>
@@ -128,13 +178,44 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>An enumeration of the valid properties that match the filtering options.</returns>
         private IEnumerable<PropertyInfo> GetProperties( Type entityType )
         {
-            return entityType?.GetProperties( BindingFlags.Public | BindingFlags.Instance )
+            var properties = entityType?.GetProperties( BindingFlags.Public | BindingFlags.Instance )
                 .Where( p => p.GetCustomAttribute<DataMemberAttribute>() != null || typeof( Data.IEntity ).IsAssignableFrom( p.PropertyType ) )
                 .Where( p => p.GetCustomAttribute<NotMappedAttribute>() == null )
                 .Where( p => !_systemProperties.Contains( p.Name ) )
                 .Where( p => ShowAdvancedPropertiesCheckBox.IsChecked == true || !_advancedProperties.Contains( p.Name ) )
+                .OrderBy( p => p.Name )
                 .ToList()
                 ?? new List<PropertyInfo>();
+
+            // Filter out any EntityId properties if we have a navigation
+            // property to the entity.
+            if ( ShowAdvancedPropertiesCheckBox.IsChecked != true )
+            {
+                properties = properties
+                    .Where( p => !p.Name.EndsWith( "Id" )
+                        || !properties.Any( p2 => p2.Name == p.Name.Substring( 0, p.Name.Length - 2 ) ) )
+                    .ToList();
+            }
+
+            return properties;
+        }
+
+        /// <summary>
+        /// Gets the properties that are valid to use when generating columns.
+        /// </summary>
+        /// <param name="properties">The properties that exist on the entity.</param>
+        /// <returns>A set of <see cref="PropertyItem"/> objects.</returns>
+        private IEnumerable<PropertyItem> GetColumnProperties( IEnumerable<PropertyItem> properties )
+        {
+            return properties
+                .Where( p => p.Property.PropertyType == typeof( string )
+                    || p.Property.PropertyType == typeof( Guid ) || p.Property.PropertyType == typeof( Guid? )
+                    || p.Property.PropertyType == typeof( bool ) || p.Property.PropertyType == typeof( bool? )
+                    || p.Property.PropertyType == typeof( int ) || p.Property.PropertyType == typeof( int? )
+                    || p.Property.PropertyType == typeof( decimal ) || p.Property.PropertyType == typeof( decimal? )
+                    || p.Property.PropertyType == typeof( float ) || p.Property.PropertyType == typeof( float? )
+                    || p.Property.PropertyType == typeof( double ) || p.Property.PropertyType == typeof( double? )
+                    || typeof(Rock.Data.IEntity).IsAssignableFrom( p.Property.PropertyType ) );
         }
 
         /// <summary>
@@ -157,24 +238,24 @@ namespace Rock.CodeGeneration.Pages
         /// <returns><c>true</c> if the property type is known and valid, <c>false</c> otherwise.</returns>
         private static bool IsValidPropertyType( PropertyInfo property )
         {
-            return EntityProperty.IsSupportedPropertyType( property.PropertyType );
+            return EntityColumn.IsSupportedPropertyType( property.PropertyType );
         }
 
         /// <summary>
-        /// Generates all the files required to make a skeleton detail block
+        /// Generates all the files required to make a skeleton list block
         /// for the selected entity type.
         /// </summary>
         /// <param name="options">The options that describe all the options to use when generating code.</param>
         /// <returns>A collection of <see cref="GeneratedFile"/> objects that represent the files to be created or updated.</returns>
-        private IList<GeneratedFile> GenerateFiles( DetailBlockOptions options )
+        private IList<GeneratedFile> GenerateFiles( ListBlockOptions options )
         {
             var files = new List<GeneratedFile>();
             var domain = options.EntityType.GetCustomAttribute<Data.RockDomainAttribute>()?.Name ?? "Unknown";
             var domainNamespace = SupportTools.GetDomainFolderName( domain );
-            var bagPath = $"Rock.ViewModels\\Blocks\\{domainNamespace}\\{options.EntityType.Name}Detail";
+            var bagPath = $"Rock.ViewModels\\Blocks\\{domainNamespace}\\{options.EntityType.Name}List";
             var blockPath = $"Rock.Blocks\\{domainNamespace}";
             var typeScriptBlockPath = $"Rock.JavaScript.Obsidian.Blocks\\src\\{domainNamespace}";
-            var bagNamespace = $"Rock.ViewModels.Blocks.{domainNamespace}.{options.EntityType.Name}Detail";
+            var bagNamespace = $"Rock.ViewModels.Blocks.{domainNamespace}.{options.EntityType.Name}List";
             var generator = new CSharpViewModelGenerator();
             var tsGenerator = new TypeScriptViewModelGenerator();
 
@@ -186,70 +267,48 @@ namespace Rock.CodeGeneration.Pages
                 ["ServiceName"] = options.ServiceType.Name,
                 ["Domain"] = domain,
                 ["DomainNamespace"] = domainNamespace,
-                ["Properties"] = options.Properties,
+                ["Columns"] = options.Columns,
+                ["GridImports"] = options.Columns.SelectMany( c => c.GridImports ).Distinct().OrderBy( i => i ).ToList(),
+                ["UseIsSystem"] = options.EntityType.GetProperty( "IsSystem" ) != null,
                 ["UseAttributeValues"] = options.UseAttributeValues,
-                ["UseDescription"] = options.Properties.Any( p => p.Name == "Description" ),
                 ["UseEntitySecurity"] = options.UseEntitySecurity,
-                ["UseIsActive"] = options.Properties.Any( p => p.Name == "IsActive" ),
-                ["UseIsSystem"] = options.Properties.Any( p => p.Name == "IsSystem" ),
-                ["UseOrder"] = options.Properties.Any( p => p.Name == "Order" ),
-                ["UseName"] = options.Properties.Any( p => p.Name == "Name" )
+                ["ToolTipSource"] = options.ToolTipSource,
+                ["ShowReorder"] = options.ShowReorder,
+                ["ShowSecurity"] = options.ShowSecurity,
+                ["ShowDelete"] = options.ShowDelete,
+                ["ExpectedRowCount"] = options.ExpectedRowCount
             };
 
-            // Generate the <Entity>Bag.cs file.
-            var content = generator.GenerateEntityBag( options.EntityType.Name, bagNamespace, options.Properties );
-            files.Add( new GeneratedFile( $"{options.EntityType.Name}Bag.cs", bagPath, content ) );
+            // Generate the <Entity>ListOptionsBag.cs file.
+            var content = generator.GenerateOptionsBag( $"{options.EntityType.Name}ListOptionsBag", bagNamespace );
+            files.Add( new GeneratedFile( $"{options.EntityType.Name}ListOptionsBag.cs", bagPath, content ) );
 
-            // Generate the <Entity>DetailOptionsBag.cs file.
-            content = generator.GenerateOptionsBag( $"{options.EntityType.Name}DetailOptionsBag", bagNamespace );
-            files.Add( new GeneratedFile( $"{options.EntityType.Name}DetailOptionsBag.cs", bagPath, content ) );
-
-            // Generate the main <Entity>Detail.cs file.
-            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EntityDetailBlock-cs.lava" ) ) )
+            // Generate the main <Entity>List.cs file.
+            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EntityListBlock-cs.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"{options.EntityType.Name}Detail.cs", blockPath, result ) );
+                files.Add( new GeneratedFile( $"{options.EntityType.Name}List.cs", blockPath, result ) );
             }
 
-            // Generate the Obsidian <entity>Detail.obs file.
-            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EntityDetailBlock-ts.lava" ) ) )
+            // Generate the Obsidian <entity>List.obs file.
+            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EntityListBlock-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}Detail.obs", typeScriptBlockPath, result ) );
+                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}List.obs", typeScriptBlockPath, result ) );
             }
 
-            // Generate the Obsidian <Entity>Detail\viewPanel.partial.obs file.
-            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.ViewPanel-ts.lava" ) ) )
+            // Generate the Obsidian <Entity>List\types.partial.ts file.
+            content = tsGenerator.GenerateListBlockTypeDefinitionFile( new Dictionary<string, string>
             {
-                var lavaTemplate = reader.ReadToEnd();
-
-                var result = LavaHelper.Render( lavaTemplate, mergeFields );
-
-                files.Add( new GeneratedFile( $"viewPanel.partial.obs", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
-            }
-
-            // Generate the Obsidian <Entity>Detail\editPanel.partial.obs file.
-            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EditPanel-ts.lava" ) ) )
-            {
-                var lavaTemplate = reader.ReadToEnd();
-
-                var result = LavaHelper.Render( lavaTemplate, mergeFields );
-
-                files.Add( new GeneratedFile( $"editPanel.partial.obs", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
-            }
-
-            // Generate the Obsidian <Entity>Detail\types.partial.ts file.
-            content = tsGenerator.GenerateDetailBlockTypeDefinitionFile( new Dictionary<string, string>
-            {
-                ["ParentPage"] = "ParentPage"
+                ["DetailPage"] = "DetailPage"
             } );
-            files.Add( new GeneratedFile( "types.partial.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", content ) );
+            files.Add( new GeneratedFile( "types.partial.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}List", content ) );
 
             return files;
         }
@@ -336,7 +395,7 @@ namespace Rock.CodeGeneration.Pages
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void ShowAdvancedPropertiesCheckBox_CheckChanged( object sender, RoutedEventArgs e )
         {
-            UpdateEntityProperties();
+            UpdateEntityProperties( false );
         }
 
         /// <summary>
@@ -346,10 +405,10 @@ namespace Rock.CodeGeneration.Pages
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Preview_Click( object sender, RoutedEventArgs e )
         {
-            // Get the properties that should be included in the detail block.
-            var selectedProperties = _propertyItems
-                .Where( p => p.IsSelected )
-                .Select( p => p.Property )
+            // Get the properties that should be included in the list block.
+            var selectedProperties = _columnItems
+                .Select( p => _columnProperties.FirstOrDefault( cp => cp.Name == p.Name )?.Property )
+                .Where( cp => cp != null )
                 .ToList();
 
             // Find the entity service object type.
@@ -363,13 +422,18 @@ namespace Rock.CodeGeneration.Pages
             }
 
             // Build the list of files the need to be written to disk.
-            var options = new DetailBlockOptions
+            var options = new ListBlockOptions
             {
                 EntityType = _selectedEntityType,
                 ServiceType = serviceType,
-                Properties = selectedProperties.Select( p => new EntityProperty( p ) ).ToList(),
+                Columns = selectedProperties.Select( p => new EntityColumn( p ) ).ToList(),
+                ExpectedRowCount = SkeletonCount.Text.AsIntegerOrNull(),
                 UseAttributeValues = UseAttributeValuesCheckBox.IsChecked == true,
-                UseEntitySecurity = SecurityFromEntityRadioButton.IsChecked == true
+                UseEntitySecurity = SecurityFromEntityRadioButton.IsChecked == true,
+                ShowReorder = ShowReorder.IsChecked == true,
+                ShowSecurity = ShowSecurity.IsChecked == true,
+                ShowDelete = ShowDelete.IsChecked == true,
+                ToolTipSource = ToolTipSource.SelectedItem?.ToString()
             };
 
             var files = GenerateFiles( options );
@@ -385,29 +449,36 @@ namespace Rock.CodeGeneration.Pages
         }
 
         /// <summary>
-        /// Handles the Click event of the SelectAll control.
+        /// Handles the Click event of the AddColumn control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void SelectAll_Click( object sender, RoutedEventArgs e )
+        private void AddColumn_Click( object sender, RoutedEventArgs e )
         {
-            _propertyItems
-                .Where( p => !p.IsInvalid )
-                .ToList()
-                .ForEach( i => i.IsSelected = true );
+            _columnItems.Add( new ColumnItem( _columnProperties?.Select( p => p.Name ) ) );
         }
 
         /// <summary>
-        /// Handles the Click event of the SelectNone control.
+        /// Handles the Click event of the RemoveAll control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void SelectNone_Click( object sender, RoutedEventArgs e )
+        private void RemoveAll_Click( object sender, RoutedEventArgs e )
         {
-            _propertyItems
-                .Where( p => !p.IsInvalid )
-                .ToList()
-                .ForEach( i => i.IsSelected = false );
+            _columnItems.Clear();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the RemoveColumn control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void RemoveColumn_Click( object sender, RoutedEventArgs e )
+        {
+            if ( e.Source is Button button )
+            {
+                _columnItems.Remove( button.DataContext as ColumnItem );
+            }
         }
 
         #endregion
@@ -415,11 +486,9 @@ namespace Rock.CodeGeneration.Pages
         #region Support Classes
 
         /// <summary>
-        /// An item that can be displayed in the listbox and handles tracking
-        /// the IsChecked state.
+        /// An item that can be displayed in the listbox.
         /// </summary>
-        /// <seealso cref="INotifyPropertyChanged" />
-        internal class PropertyItem : INotifyPropertyChanged
+        private class ColumnItem : INotifyPropertyChanged
         {
             #region Events
 
@@ -433,55 +502,52 @@ namespace Rock.CodeGeneration.Pages
             #region Properties
 
             /// <summary>
-            /// Gets the property that is being displayed.
-            /// </summary>
-            /// <value>The property that is being displayed.</value>
-            public PropertyInfo Property { get; }
-
-            /// <summary>
             /// Gets the name of the property.
             /// </summary>
             /// <value>The name of the property.</value>
-            public string Name => Property.Name;
-
-            /// <summary>
-            /// Gets or sets a value indicating whether this property is selected.
-            /// </summary>
-            /// <value><c>true</c> if this property is selected; otherwise, <c>false</c>.</value>
-            public bool IsSelected
+            public string Name
             {
-                get => _isSelected;
+                get => _name;
                 set
                 {
-                    _isSelected = value;
+                    _name = value;
                     OnPropertyChanged();
                 }
             }
-            private bool _isSelected;
+            private string _name;
 
             /// <summary>
-            /// Gets a value indicating whether this instance is invalid.
+            /// Gets or sets the valid property names.
             /// </summary>
-            /// <value><c>true</c> if this instance is invalid; otherwise, <c>false</c>.</value>
-            public bool IsInvalid => InvalidReason.IsNotNullOrWhiteSpace();
+            /// <value>The valid property names.</value>
+            public IEnumerable<string> ValidNames
+            {
+                get => _validNames;
+                set
+                {
+                    _validNames = value ?? new List<string>();
+                    OnPropertyChanged();
 
-            /// <summary>
-            /// Gets or sets the invalid reason.
-            /// </summary>
-            /// <value>The invalid reason.</value>
-            public string InvalidReason { get; set; }
+                    if ( !_validNames.Contains( _name ) )
+                    {
+                        Name = string.Empty;
+                    }
+                }
+            }
+            private IEnumerable<string> _validNames;
 
             #endregion
 
             #region Constructors
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="PropertyItem"/> class.
+            /// Initializes a new instance of the <see cref="ColumnItem"/> class.
             /// </summary>
-            /// <param name="propertyInfo">The property information.</param>
-            public PropertyItem( PropertyInfo propertyInfo )
+            /// <param name="validNames">The property names that can be selected.</param>
+            public ColumnItem( IEnumerable<string> validNames )
             {
-                Property = propertyInfo;
+                _validNames = validNames ?? new List<string>();
+                _name = _validNames.FirstOrDefault() ?? string.Empty;
             }
 
             #endregion
@@ -501,9 +567,9 @@ namespace Rock.CodeGeneration.Pages
         }
 
         /// <summary>
-        /// Contains the options to use when generating the detail block files.
+        /// Contains the options to use when generating the list block files.
         /// </summary>
-        private class DetailBlockOptions
+        private class ListBlockOptions
         {
             /// <summary>
             /// Gets or sets the type of the entity that will be edited by the block.
@@ -521,7 +587,7 @@ namespace Rock.CodeGeneration.Pages
             /// Gets or sets the properties to be included in the block.
             /// </summary>
             /// <value>The properties to be included in the block.</value>
-            public List<EntityProperty> Properties { get; set; }
+            public List<EntityColumn> Columns { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether code for working with
@@ -536,6 +602,36 @@ namespace Rock.CodeGeneration.Pages
             /// </summary>
             /// <value><c>true</c> if entity security should be used; otherwise, <c>false</c>.</value>
             public bool UseEntitySecurity { get; set; }
+
+            /// <summary>
+            /// Gets or sets the tool tip source field.
+            /// </summary>
+            /// <value>The tool tip source field.</value>
+            public string ToolTipSource { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether to show the reorder column.
+            /// </summary>
+            /// <value><c>true</c> if the reorder column should be visible; otherwise, <c>false</c>.</value>
+            public bool ShowReorder { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether to show the security column.
+            /// </summary>
+            /// <value><c>true</c> if the security column should be visible; otherwise, <c>false</c>.</value>
+            public bool ShowSecurity { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether to show the delete column.
+            /// </summary>
+            /// <value><c>true</c> if the delete column should be visible; otherwise, <c>false</c>.</value>
+            public bool ShowDelete { get; set; }
+
+            /// <summary>
+            /// Gets or sets the expected row count.
+            /// </summary>
+            /// <value>The expected row count.</value>
+            public int? ExpectedRowCount { get; set; }
         }
 
         #endregion

@@ -12,10 +12,22 @@
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { confirmDelete } from "@Obsidian/Utility/dialogs";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
-    import { ref } from "vue";
+    import { computed, ref } from "vue";
 
     const props = defineProps(standardCellProps);
-    const isDisabled = ref(false);
+    const isDeleting = ref(false);
+
+    const isDisabled = computed((): boolean => {
+        if (isDeleting.value) {
+            return true;
+        }
+
+        if (props.row["isSystem"] === true) {
+            return true;
+        }
+
+        return false;
+    });
 
     async function onClick(event: Event): Promise<void> {
         const key = props.grid.getRowKey(props.row);
@@ -31,7 +43,7 @@
         }
 
         // Disable the button until the action completes.
-        isDisabled.value = true;
+        isDeleting.value = true;
 
         try {
             // Unless we have been requested to disable confirmation, show
@@ -53,7 +65,7 @@
         }
         finally {
             // Re-enable the button at the end.
-            isDisabled.value = false;
+            isDeleting.value = false;
         }
     }
 </script>

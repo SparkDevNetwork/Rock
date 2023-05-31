@@ -143,7 +143,6 @@
     <Folder Include="Framework\Enums\Communication\" />
     <Folder Include="Framework\Enums\Connection\" />
     <Folder Include="Framework\Enums\Controls\" />
-    <Folder Include="Framework\Enums\Controls\Grid\" />
     <Folder Include="Framework\Enums\Core\" />
     <Folder Include="Framework\Enums\Core\Grid\" />
     <Folder Include="Framework\Enums\Crm\" />
@@ -359,11 +358,6 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\detailPanelMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\gatewayEmitStrings.ts" />
-    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\dateFilterMethod.ts" />
-    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\numberFilterMethod.ts" />
-    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\pickExistingFilterMethod.ts" />
-    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\stringFilterMethod.ts" />
-    <TypeScriptCompile Include="Framework\Enums\Controls\Grid\textFilterMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mergeTemplateOwnership.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\modalAlertType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\pickerDisplayStyle.ts" />
@@ -380,7 +374,12 @@
     <TypeScriptCompile Include="Framework\Enums\Core\colorScheme.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\followingSuggestedStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\format.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\Grid\booleanFilterMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\Grid\columnPositionAnchor.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\Grid\dateFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\Grid\numberFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\Grid\pickExistingFilterMethod.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\Grid\textFilterMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\jobNotificationStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\kioskType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\matchFlag.ts" />
@@ -769,6 +768,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridEntitySetBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridEntitySetItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\personFieldBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\notificationMessageActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\personPreferenceValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Crm\renderedBadgeBag.d.ts" />

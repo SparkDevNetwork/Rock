@@ -23,7 +23,7 @@
     import { ref, watch, computed } from "vue";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { NumberFilterMethod, NumberFilterMethodDescription } from "@Obsidian/Enums/Controls/Grid/numberFilterMethod";
+    import { NumberFilterMethod, NumberFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/numberFilterMethod";
     import { standardFilterProps } from "@Obsidian/Core/Controls/grid";
     import { NumberSearchBag } from "@Obsidian/Types/Controls/grid";
 

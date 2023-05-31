@@ -1,0 +1,53 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="d-flex flex-fill align-items-center">
+        <div class="mr-2 flex-shrink-0"
+             :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${photoUrl}')`, 'background-size': 'cover' }">
+        </div>
+        <div class="flex-grow-1">
+            {{ formattedName }}
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    /** Contains the URL for the avatar. */
+    const photoUrl = computed((): string => {
+        if (!props.column.field) {
+            return "";
+        }
+
+        const value = props.row[props.column.field] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.photoUrl ?? "";
+    });
+
+    /** Contains the full name in the correct format. */
+    const formattedName = computed((): string => {
+        if (!props.column.field) {
+            return "";
+        }
+
+        const value = props.row[props.column.field] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        if (props.column.props.showLastNameFirst === true || props.column.props.showLastNameFirst === "") {
+            return `${value.lastName ?? ""}, ${value.nickName ?? ""}`;
+        }
+
+        return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
+    });
+</script>

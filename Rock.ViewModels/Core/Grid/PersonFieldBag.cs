@@ -15,21 +15,30 @@
 // </copyright>
 //
 
-namespace Rock.Enums.Controls.Grid
+namespace Rock.ViewModels.Core.Grid
 {
     /// <summary>
-    /// The filtering method used by the pick existing filter.
+    /// The data bag that contains all the information required to display
+    /// a PersonColumn in a Grid.
     /// </summary>
-    public enum PickExistingFilterMethod
+    public class PersonFieldBag
     {
         /// <summary>
-        /// The cell value must match any of the selected filter values.
+        /// Gets or sets the nick name.
         /// </summary>
-        Any = 0,
+        /// <value>The nick name.</value>
+        public string NickName { get; set; }
 
         /// <summary>
-        /// The cell value must not match any of the selected filter values.
+        /// Gets or sets the last name.
         /// </summary>
-        Exclude = 1
+        /// <value>The last name.</value>
+        public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the photo URL.
+        /// </summary>
+        /// <value>The photo URL.</value>
+        public string PhotoUrl { get; set; }
     }
 }

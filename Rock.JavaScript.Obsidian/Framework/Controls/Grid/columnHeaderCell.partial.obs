@@ -87,21 +87,13 @@
 
     /** Will be `true` if we have a filter and it should be visible. */
     const isFilterVisible = computed((): boolean => {
-        return props.column.filter !== undefined && isFilteringEnabled.value;
+        return props.column.filter !== undefined;
     });
 
     /** Will be `true` if sorting is enabled on the grid. */
     const isSortingEnabled = computed((): boolean => {
-        // Sorting is not supported if re-ordering is enabled.
         // Sorting is not supported if this is not a data column.
-        return !props.grid.columns.some(c => c.name === "__reorder")
-            || props.column.name.startsWith("__");
-    });
-
-    /** Will be `true` if filtering is enabled on the grid. */
-    const isFilteringEnabled = computed((): boolean => {
-        // Filtering is not supported if re-ordering is enabled.
-        return !props.grid.columns.some(c => c.name === "__reorder");
+        return !props.column.name.startsWith("__");
     });
 
     /** The CSS classes to apply to the filter button */
@@ -150,7 +142,7 @@
             }
         }
 
-        if (isFilterVisible && props.column.title !== undefined) {
+        if (isSortingEnabled.value && props.column.title !== undefined) {
             classes += " sortable";
         }
 

@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.Enums.Controls.Grid
+namespace Rock.Enums.Core.Grid
 {
     /// <summary>
     /// The filtering method used for a number column filter.

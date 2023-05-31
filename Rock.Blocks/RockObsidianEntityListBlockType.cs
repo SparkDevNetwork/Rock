@@ -69,8 +69,7 @@ namespace Rock.Blocks
         /// <inheritdoc/>
         protected override IQueryable<T> GetListQueryable( RockContext rockContext )
         {
-            return ( IQueryable<T> ) Rock.Reflection.GetQueryableForEntityType( typeof( T ), rockContext )
-                .AsNoTracking();
+            return ( IQueryable<T> ) Rock.Reflection.GetQueryableForEntityType( typeof( T ), rockContext );
         }
 
         /// <inheritdoc/>
@@ -127,7 +126,7 @@ namespace Rock.Blocks
         protected override GridDataBag GetGridDataBag( RockContext rockContext )
         {
             // Get the queryable and make sure it is ordered correctly.
-            var qry = GetListQueryable( rockContext );
+            var qry = GetListQueryable( rockContext ).AsNoTracking();
             qry = GetOrderedListQueryable( qry, rockContext );
 
             // Get the entities from the database.

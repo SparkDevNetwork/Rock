@@ -30,6 +30,7 @@
                       :rows="visibleRows"
                       :grid="gridState"
                       :tooltipField="tooltipField"
+                      :isSelectable="isSelectionEnabled"
                       @click="onRowClick" />
         </div>
 
@@ -186,7 +187,7 @@
 .grid-sort-direction {
     display: flex;
     align-items: center;
-    transition: transform .11s cubic-bezier(.2,0,.38,.9);
+    transition: transform .11s cubic-bezier(.2, 0, .38, .9);
     accent-color: var(--color-info);
 }
 
@@ -215,11 +216,14 @@
     height: 24px;
     border-radius: 4px;
     color: var(--theme-medium);
-    opacity: 0.5;
+    opacity: 0;
     transition: opacity 250ms, color 250ms;
     z-index: 10;
 }
 
+.grid-column-heading:hover .btn-grid-column-filter {
+    opacity: 0.5;
+}
 .grid-column-header > .btn-grid-column-filter:hover {
     opacity: 1;
     background-color: var(--theme-white);
@@ -248,7 +252,7 @@
     border-radius: 0;
     border-bottom-right-radius: 6px;
     border-bottom-left-radius: 6px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.1);;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
     font-weight: initial;
     z-index: 10;
     /* Temporary Fix Until JS */
@@ -279,7 +283,7 @@
     display: flex;
     background-color: #fff;
     border-bottom: 1px solid var(--theme-light);
-    transition: background-color 70ms cubic-bezier(0,0,.38,.9);
+    transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
 }
 
 .grid-row.grid-row-selectable {
@@ -318,6 +322,10 @@
 
 .grid-columncommand .btn:hover {
     opacity: 1;
+}
+
+.grid-columnreorder {
+    align-items: center;
 }
 
 .grid-paging-footer {
@@ -454,8 +462,7 @@
          * asynchronously until the data is ready.
          */
         data: {
-            type: [Object, Function] as PropType<GridDataBag | (() => GridDataBag | Promise<GridDataBag>)>,
-            default: []
+            type: Object as PropType<GridDataBag | Promise<GridDataBag>>
         },
 
         /**
@@ -508,7 +515,7 @@
         /**
          * Determines if the grid will monitor for changes in the data of
          * existing rows, new rows and removed rows. Should not be used for
-         * grids with more than 1,000 rows. This property is not reactive.
+         * grids with more than 10,000 rows. This property is not reactive.
          */
         liveUpdates: {
             type: Boolean as PropType<boolean>,
@@ -744,7 +751,7 @@
      * The number of skeleton rows to display while loading.
      */
     const skeletonRowCount = computed((): number => {
-        return Math.min(30, props.expectedRowCount ?? 10);
+        return Math.min(50, props.expectedRowCount ?? 50);
     });
 
     /**
@@ -1201,19 +1208,12 @@
         // Show an indicator that we are loading data from the server.
         loadingData.value = true;
 
-        // Check if they gave us real data or a function to call.
-        if (typeof props.data === "object") {
-            // We got real data. Just set it on the grid strate.
-            gridState.setDataRows(props.data.rows ?? []);
+        if (!props.data) {
+            gridState.setDataRows([]);
         }
-        else if (typeof props.data === "function") {
-            // We got a function to be called.
+        else if (isPromise(props.data)) {
             try {
-                let data = props.data();
-
-                if (isPromise(data)) {
-                    data = await data;
-                }
+                const data = await props.data;
 
                 gridState.setDataRows(data.rows ?? []);
                 gridErrorMessage.value = "";
@@ -1221,6 +1221,10 @@
             catch (error) {
                 gridErrorMessage.value = error instanceof Error ? error.message : new String(error).toString();
             }
+        }
+        else {
+            gridState.setDataRows(props.data.rows ?? []);
+            gridErrorMessage.value = "";
         }
 
         // If we don't have any error, then proceed with final setup of the
@@ -1264,16 +1268,16 @@
 
             // We don't have type information, so cast it to what they are
             // supposed to provide.
-            const fn = reorderColumn.props.onOrderChanged as (item: Record<string, unknown>, beforeItem: Record<string, unknown> | null, order: number) => void | Promise<void> | boolean | Promise<boolean>;
+            const fn = reorderColumn.props.onOrderChanged as (item: Record<string, unknown>, beforeItem: Record<string, unknown> | null) => void | Promise<void> | boolean | Promise<boolean>;
 
             // Indicate to the cells that a drop operation is in progress.
             dropOperationInProgress.value = true;
 
             try {
-                const result = fn(item, beforeItem, visibleRows.value.indexOf(item));
+                let result = fn(item, beforeItem);
 
                 if (isPromise(result)) {
-                    await result;
+                    result = await result;
                 }
 
                 // If they returned anything other than false then allow the

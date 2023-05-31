@@ -15,12 +15,12 @@
 // </copyright>
 //
 
-import { Component, defineComponent, PropType, toRaw, unref, VNode, watch, WatchStopHandle } from "vue";
-import { NumberFilterMethod } from "@Obsidian/Enums/Controls/Grid/numberFilterMethod";
-import { DateFilterMethod } from "@Obsidian/Enums/Controls/Grid/dateFilterMethod";
-import { PickExistingFilterMethod } from "@Obsidian/Enums/Controls/Grid/pickExistingFilterMethod";
-import { TextFilterMethod } from "@Obsidian/Enums/Controls/Grid/textFilterMethod";
-import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength } from "@Obsidian/Types/Controls/grid";
+import { Component, createElementVNode, defineComponent, PropType, toRaw, unref, VNode, watch, WatchStopHandle } from "vue";
+import { NumberFilterMethod } from "@Obsidian/Enums/Core/Grid/numberFilterMethod";
+import { DateFilterMethod } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
+import { PickExistingFilterMethod } from "@Obsidian/Enums/Core/Grid/pickExistingFilterMethod";
+import { TextFilterMethod } from "@Obsidian/Enums/Core/Grid/textFilterMethod";
+import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength, BooleanSearchBag } from "@Obsidian/Types/Controls/grid";
 import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 import { extractText, getVNodeProp, getVNodeProps } from "@Obsidian/Utility/component";
 import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -34,6 +34,7 @@ import { Guid } from "@Obsidian/Types";
 import mitt, { Emitter } from "mitt";
 import { CustomColumnDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/customColumnDefinitionBag";
 import { ColumnPositionAnchor } from "@Obsidian/Enums/Core/Grid/columnPositionAnchor";
+import { BooleanFilterMethod } from "@Obsidian/Enums/Core/Grid/booleanFilterMethod";
 
 // #region Internal Types
 
@@ -304,6 +305,31 @@ export function textFilterMatches(needle: unknown, haystack: unknown): boolean {
     else {
         return false;
     }
+}
+
+/**
+ * The boolean column filter that performs a comparison of `haystack` and
+ * the comparison type inside `needle` to see if it matches.
+ *
+ * @private This is used internally by Rock and should not be used directly.
+ *
+ * @param needle The filter value defined in the UI component.
+ * @param haystack The filter value from the row that must match the `needle`.
+ *
+ * @returns True if `haystack` matches the `needle` and should be included in the results.
+ */
+export function booleanFilterMatches(needle: unknown, haystack: unknown): boolean {
+    if (!needle || typeof needle !== "object" || typeof needle["method"] !== "number") {
+        return false;
+    }
+
+    const needleBag = needle as BooleanSearchBag;
+
+    if (needleBag.method === BooleanFilterMethod.Yes && haystack === true) {
+        return true;
+    }
+
+    return false;
 }
 
 /**
@@ -874,8 +900,8 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
             filter: undefined, // TODO: Fill this in somehow.
             filterValue: (r, c) => c.field ? String(r[c.field]) : undefined,
             exportValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            formatComponent: defaultCell,
-            condensedComponent: defaultCell,
+            formatComponent: htmlCell,
+            condensedComponent: htmlCell,
             headerClass: customColumn.headerClass ?? undefined,
             itemClass: customColumn.itemClass ?? undefined,
             hideOnScreen: false,
@@ -936,7 +962,21 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     if (!sortValue) {
         const sortField = getVNodeProp<string>(node, "sortField") || field;
 
-        sortValue = sortField ? (r) => String(r[sortField]) : undefined;
+        if (sortField) {
+            sortValue = (r) => {
+                const v = r[sortField];
+
+                if (typeof v === "string" || typeof v === "number") {
+                    return v;
+                }
+                else {
+                    return String(r[sortField]);
+                }
+            };
+        }
+        else {
+            sortValue = undefined;
+        }
     }
     else if (typeof sortValue === "string") {
         const template = sortValue;
@@ -1771,7 +1811,7 @@ export class GridState implements IGridState {
      */
     private detectRowChanges(): void {
         const rows = unref(this.internalRows);
-        const knownKeys: string[] = [];
+        const knownKeys = new Map<string, boolean>();
 
         // Loop through all the rows we still have and check for any that
         // are new or have been modified.
@@ -1783,7 +1823,7 @@ export class GridState implements IGridState {
             }
 
             // Save the key for later.
-            knownKeys.push(key);
+            knownKeys.set(key, true);
 
             if (!this.rowReactiveTracker[key]) {
                 this.emitter.emit("rowsChanged", this);
@@ -1798,7 +1838,7 @@ export class GridState implements IGridState {
         // see if any no longer exist in our data set.
         const oldKeys = Object.keys(this.rowReactiveTracker);
         for (let i = 0; i < oldKeys.length; i++) {
-            if (!knownKeys.includes(oldKeys[i])) {
+            if (!knownKeys.has(oldKeys[i])) {
                 this.rowCache.removeByRowKey(oldKeys[i], undefined);
                 delete this.rowReactiveTracker[oldKeys[i]];
                 this.emitter.emit("rowsChanged", this);
@@ -2002,7 +2042,10 @@ export class GridState implements IGridState {
         this.columnFilters = columnFilters ?? {};
         this.updateFilteredRows();
 
-        this.isFiltered = this.quickFilter !== "" || Object.keys(this.columnFilters).length > 0;
+        const hasColumnFilter = Object.values(this.columnFilters)
+            .some(v => v !== undefined);
+
+        this.isFiltered = this.quickFilter !== "" || hasColumnFilter;
     }
 
     /**
@@ -2032,6 +2075,27 @@ const defaultCell = defineComponent({
 
     setup(props) {
         return () => props.column.field ? props.row[props.column.field] : "";
+    }
+});
+
+/**
+ * This is a special cell we use to display custom column cells.
+ */
+const htmlCell = defineComponent({
+    props: standardCellProps,
+
+    setup(props) {
+        return () => {
+            let html = props.column.field ? props.row[props.column.field] : "";
+
+            if (typeof html !== "string") {
+                html = "";
+            }
+
+            return createElementVNode("div", {
+                innerHTML: html
+            });
+        };
     }
 });
 

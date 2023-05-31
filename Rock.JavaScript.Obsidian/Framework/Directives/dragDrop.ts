@@ -817,14 +817,13 @@ export function useDragReorder<T>(values: Ref<T[] | undefined | null>, reorder?:
         id: newGuid(),
         copyElement: false,
         handleSelector: ".reorder-handle",
-        startDrag() {
-            if (dragState === "none") {
-                dragState = "dragging";
-                return true;
-            }
-            else {
+        startDrag(operation, handle) {
+            if (dragState !== "none") {
                 return false;
             }
+
+            return Array.from(operation.sourceContainer.querySelectorAll(".reorder-handle"))
+                .some(n => n.contains(handle));
         },
         dragEnd() {
             // This catches any canceled states.

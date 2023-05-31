@@ -5,22 +5,17 @@
 
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { computed } from "vue";
 
     const props = defineProps(standardCellProps);
 
-    /** Contains the human friendly formatted value of the number. */
-    const formattedValue = computed((): string => {
-        if (!props.column.field) {
+    const formattedValue = computed(() => {
+        if (props.column.field) {
+            return RockDateTime.parseISO(props.row[props.column.field] as string)?.toASPString("g") ?? "";
+        }
+        else {
             return "";
         }
-
-        const value = props.row[props.column.field];
-
-        if (typeof value !== "number") {
-            return "";
-        }
-
-        return value.toLocaleString();
     });
 </script>
