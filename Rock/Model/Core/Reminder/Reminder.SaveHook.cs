@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Linq;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -29,13 +29,21 @@ namespace Rock.Model
         {
             protected override void PostSave()
             {
+                var reminder = this.Entity;
+
+                var person = reminder.PersonAlias?.Person;
+                if ( person == null )
+                {
+                    person = new PersonAliasService( RockContext ).GetPerson( reminder.PersonAliasId );
+                }
+
                 if ( this.State == EntityContextState.Added )
                 {
-                    HandleAddedReminderCount();
+                    HandleAddedReminderCount( person );
                 }
                 else if ( this.State == EntityContextState.Modified )
                 {
-                    HandleModifiedReminderCount();
+                    HandleModifiedReminderCount( person );
                 }
                 else if ( this.State == EntityContextState.Deleted )
                 {
@@ -71,10 +79,10 @@ namespace Rock.Model
             /// <summary>
             /// Updates a Person's reminder count when appropriate after a reminder has been added.
             /// </summary>
-            private void HandleAddedReminderCount()
+            private void HandleAddedReminderCount( Person person )
             {
                 var reminder = this.Entity;
-                var person = reminder.PersonAlias.Person;
+
                 var reminderCount = ( person.ReminderCount ?? 0 );
 
                 if ( reminder.IsActive )
@@ -88,10 +96,9 @@ namespace Rock.Model
             /// <summary>
             /// Updates a Person's reminder count when appropriate after a reminder has been modified.
             /// </summary>
-            private void HandleModifiedReminderCount()
+            private void HandleModifiedReminderCount( Person person )
             {
                 var reminder = this.Entity;
-                var person = reminder.PersonAlias.Person;
                 var reminderCount = ( person.ReminderCount ?? 0 );
 
                 bool isActive = reminder.IsActive;
@@ -147,10 +154,12 @@ namespace Rock.Model
                 // If an active reminder was deleted, decrement the counter.
                 var personAliasId = ( int ) this.OriginalValues[nameof( this.Entity.PersonAliasId )];
                 var personAlias = new PersonAliasService( this.RockContext ).Get( personAliasId );
+
                 if ( personAlias.Person.ReminderCount != null && personAlias.Person.ReminderCount > 0 )
                 {
                     personAlias.Person.ReminderCount -= 1;
                 }
+
                 this.RockContext.SaveChanges();
             }
 

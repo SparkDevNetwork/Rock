@@ -719,6 +719,9 @@
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleToolbox.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleUnavailability.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerCardView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Reminders\ReminderDashboard.cs" />
+    <Compile Include="Blocks\Types\Mobile\Reminders\ReminderEdit.cs" />
+    <Compile Include="Blocks\Types\Mobile\Reminders\ReminderList.cs" />
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
