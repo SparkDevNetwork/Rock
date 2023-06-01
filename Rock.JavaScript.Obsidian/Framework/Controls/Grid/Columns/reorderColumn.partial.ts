@@ -55,7 +55,7 @@ export default defineComponent({
          * the grid.
          */
         onOrderChanged: {
-            type: Function as PropType<(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null, order: number) => void | Promise<void> | boolean | Promise<boolean>>,
+            type: Function as PropType<(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null) => void | Promise<void> | boolean | Promise<boolean>>,
             required: false
         }
     }

@@ -57,12 +57,11 @@ namespace Rock.Obsidian.UI
                     return null;
                 }
 
-                return new
+                return new PersonFieldBag
                 {
-                    person.FirstName,
-                    person.NickName,
-                    person.LastName,
-                    person.PhotoUrl
+                    NickName = person.NickName,
+                    LastName = person.LastName,
+                    PhotoUrl = person.PhotoUrl
                 };
             } );
         }

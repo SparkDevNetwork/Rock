@@ -27,7 +27,7 @@ import { ColumnDefinition, ExportValueFunction } from "@Obsidian/Types/Controls/
  * @param row The row that will be exported.
  * @param column The column that will be exported.
  *
- * @returns A RockDateTime value or undefined if the cell has no value.
+ * @returns A number value or undefined if the cell has no value.
  */
 function getExportValue(row: Record<string, unknown>, column: ColumnDefinition): number | undefined {
     if (!column.field) {

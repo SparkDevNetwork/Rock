@@ -173,7 +173,19 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
         }
 
         [TestMethod]
-        public void RemoveFromDictionary_AppliedToArrayOfIntegers_ReturnsCorrectSum()
+        public void AddToDictionary_AddExistingKey_ReplacesExistingValue()
+        {
+            var lavaTemplate = @"
+        {% assign dict = '' | AddToDictionary:'key1','value1' %}
+        {% assign dict = dict | AddToDictionary:'key1','value2' %}
+        {{ dict | ToJSON }}
+";
+
+            TestHelper.AssertTemplateOutput( @"{""key1"":""value2""}", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
+        }
+
+        [TestMethod]
+        public void RemoveFromDictionary_RemoveExistingKey_ReturnsUpdatedDictionary()
         {
             var lavaTemplate = @"
 {% assign dict = '' | AddToDictionary:'key1','value2' | AddToDictionary:'key2','value2' | AddToDictionary:'key3','value3' %}

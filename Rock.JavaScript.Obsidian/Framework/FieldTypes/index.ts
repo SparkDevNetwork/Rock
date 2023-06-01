@@ -26,6 +26,9 @@ export { ConfigurationValues, getFieldEditorProps } from "./utils";
 import { AddressFieldType } from "./addressField.partial";
 registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 
+import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
+registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
+
 import { BooleanFieldType } from "./booleanField.partial";
 registerFieldType(FieldTypeGuids.Boolean, new BooleanFieldType());
 
@@ -34,6 +37,9 @@ registerFieldType(FieldTypeGuids.Campus, new CampusFieldType());
 
 import { CampusesFieldType } from "./campusesField.partial";
 registerFieldType(FieldTypeGuids.Campuses, new CampusesFieldType());
+
+import { CategoryFieldType } from "./categoryField.partial";
+registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 
 import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
@@ -79,6 +85,9 @@ registerFieldType(FieldTypeGuids.File, new FileFieldType());
 
 import { GenderFieldType } from "./genderField.partial";
 registerFieldType(FieldTypeGuids.Gender, new GenderFieldType());
+
+import { GroupAndRoleFieldType } from "./groupAndRoleField.partial";
+registerFieldType(FieldTypeGuids.GroupAndRole, new GroupAndRoleFieldType());
 
 import { GroupFieldType } from "./groupField.partial";
 registerFieldType(FieldTypeGuids.Group, new GroupFieldType());

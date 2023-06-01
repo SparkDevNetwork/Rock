@@ -31,8 +31,22 @@ export type ListBlockBox<TOptions> = {
      */
     errorMessage?: string | null;
 
+    /**
+     * Gets or sets the expected row count. This is used to determine
+     * optimization settings and also the number of skeleton rows to show.
+     * A value of null implies no fast way to estimate the number
+     * of expected rows.
+     */
+    expectedRowCount?: number | null;
+
     /** Gets or sets the grid definition. */
     gridDefinition?: GridDefinitionBag | null;
+
+    /** Gets or sets a value indicating whether add item is enabled. */
+    isAddEnabled: boolean;
+
+    /** Gets or sets a value indicating whether delete is enabled. */
+    isDeleteEnabled: boolean;
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;

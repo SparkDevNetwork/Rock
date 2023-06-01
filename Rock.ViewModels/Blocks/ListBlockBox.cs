@@ -33,9 +33,30 @@ namespace Rock.ViewModels.Blocks
         public GridDefinitionBag GridDefinition { get; set; }
 
         /// <summary>
+        /// Gets or sets the expected row count. This is used to determine
+        /// optimization settings and also the number of skeleton rows to show.
+        /// A value of <c>null</c> implies no fast way to estimate the number
+        /// of expected rows.
+        /// </summary>
+        /// <value>The expected row count.</value>
+        public int? ExpectedRowCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the options.
         /// </summary>
         /// <value>The options.</value>
         public TOptions Options { get; set; } = new TOptions();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether add item is enabled.
+        /// </summary>
+        /// <value><c>true</c> if add item is enabled; otherwise, <c>false</c>.</value>
+        public bool IsAddEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether delete is enabled.
+        /// </summary>
+        /// <value><c>true</c> if delete is enabled; otherwise, <c>false</c>.</value>
+        public bool IsDeleteEnabled { get; set; }
     }
 }

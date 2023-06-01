@@ -1160,41 +1160,17 @@ namespace Rock.Client.Enums.Event
 
 }
 
-namespace Rock.Client.Enums.Core
-{
-    /// <summary>
-    /// </summary>
-    public enum ColorRecipe
-    {
-        Primary = 0x0,
-        Darkest = 0x1,
-        Dark = 0x2,
-        Medium = 0x3,
-        Light = 0x4,
-        Lightest = 0x5,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum ColorScheme
-    {
-        Light = 0x0,
-        Dark = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum NotificationMessageActionType
-    {
-        Invalid = 0x0,
-        ShowMessage = 0x1,
-        LinkToPage = 0x2,
-    }
-
-}
-
 namespace Rock.Client.Enums.Core.Grid
 {
+    /// <summary>
+    /// </summary>
+    public enum BooleanFilterMethod
+    {
+        All = 0x0,
+        No = 0x1,
+        Yes = 0x2,
+    }
+
     /// <summary>
     /// </summary>
     public enum ColumnPositionAnchor
@@ -1203,36 +1179,6 @@ namespace Rock.Client.Enums.Core.Grid
         LastColumn = 0x1,
     }
 
-}
-
-namespace Rock.Client.Enums.Communication
-{
-    /// <summary>
-    /// </summary>
-    public enum CommunicationMessageFilter
-    {
-        ShowUnreadReplies = 0x0,
-        ShowAllReplies = 0x1,
-        ShowAllMessages = 0x2,
-    }
-
-}
-
-namespace Rock.Client.Enums.Cms
-{
-    /// <summary>
-    /// </summary>
-    public enum ContentCollectionFilterControl
-    {
-        Pills = 0x0,
-        Dropdown = 0x1,
-        Boolean = 0x2,
-    }
-
-}
-
-namespace Rock.Client.Enums.Controls.Grid
-{
     /// <summary>
     /// </summary>
     public enum DateFilterMethod
@@ -1288,6 +1234,65 @@ namespace Rock.Client.Enums.Controls.Grid
         EndsWith = 0x3,
         Equals = 0x4,
         DoesNotEqual = 0x5,
+    }
+
+}
+
+namespace Rock.Client.Enums.Core
+{
+    /// <summary>
+    /// </summary>
+    public enum ColorRecipe
+    {
+        Primary = 0x0,
+        Darkest = 0x1,
+        Dark = 0x2,
+        Medium = 0x3,
+        Light = 0x4,
+        Lightest = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ColorScheme
+    {
+        Light = 0x0,
+        Dark = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum NotificationMessageActionType
+    {
+        Invalid = 0x0,
+        ShowMessage = 0x1,
+        LinkToPage = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Communication
+{
+    /// <summary>
+    /// </summary>
+    public enum CommunicationMessageFilter
+    {
+        ShowUnreadReplies = 0x0,
+        ShowAllReplies = 0x1,
+        ShowAllMessages = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Cms
+{
+    /// <summary>
+    /// </summary>
+    public enum ContentCollectionFilterControl
+    {
+        Pills = 0x0,
+        Dropdown = 0x1,
+        Boolean = 0x2,
     }
 
 }

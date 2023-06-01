@@ -197,6 +197,7 @@
     <Compile Include="Core\Grid\FieldDefinitionBag.cs" />
     <Compile Include="Core\Grid\GridDataBag.cs" />
     <Compile Include="Core\Grid\GridDefinitionBag.cs" />
+    <Compile Include="Core\Grid\PersonFieldBag.cs" />
     <Compile Include="Core\NotificationMessageActionBag.cs" />
     <Compile Include="Core\PersonPreferenceValueBag.cs" />
     <Compile Include="Entities\ContentTopicBag.cs" />
@@ -217,6 +218,7 @@
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualizerStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\ExperienceVisualStyleBag.cs" />
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
+    <Compile Include="Event\InteractiveExperiences\PingExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetPreviewItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetSearchedAccountsOptionsBag.cs" />
@@ -229,6 +231,9 @@
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PersonLinkGetPopupHtmlOptionsBag.cs" />
+    <Compile Include="Rest\Controls\InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag.cs" />
+    <Compile Include="Rest\Controls\RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag.cs" />
+    <Compile Include="Rest\Controls\RegistrationInstancePickerGetRegistrationInstancesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ReminderTypePickerGetReminderTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupRolePickerGetAllForGroupRoleResultsBag.cs" />
     <Compile Include="Rest\Controls\GroupRolePickerGetAllForGroupRoleOptionsBag.cs" />
@@ -254,6 +259,8 @@
     <Compile Include="Rest\Controls\GroupTypePickerGetGroupTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListGetLocationsOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationListSaveNewLocationOptionsBag.cs" />
+    <Compile Include="Rest\Controls\WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag.cs" />
+    <Compile Include="Rest\Controls\WorkflowPickerGetWorkflowOptionsBag.cs" />
     <Compile Include="Rest\Utilities\UpdatePersonPreferencesAccessedOptionsBag.cs" />
     <Compile Include="Rest\Utilities\UpdatePersonPreferencesOptionsBag.cs" />
     <Compile Include="Utility\IValidPropertiesBox.cs" />

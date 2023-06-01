@@ -18,10 +18,9 @@
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { IGridState } from "@Obsidian/Types/Controls/grid";
-    import { computed, ref } from "vue";
+    import { computed } from "vue";
 
     const props = defineProps(standardCellProps);
-    const isDisabled = ref(false);
 
     /** Contains the title that will be used for the modal window. */
     const itemTitle = computed((): string => {
@@ -42,6 +41,17 @@
             // They provided a function we should call to determine the title.
             return itemTitleProp(props.row, props.grid);
         }
+    });
+
+    /** Will be `true` if the button should be disabled. */
+    const isDisabled = computed((): boolean => {
+        const field = props.column.props.disabledField;
+
+        if (typeof field === "string" && props.row[field] === true) {
+            return true;
+        }
+
+        return false;
     });
 
     /**

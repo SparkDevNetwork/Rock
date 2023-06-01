@@ -1,15 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="configuration.gridDefinition"
-          :data="loadGridData"
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
           keyField="guid"
           personKeyField="guid"
           itemTerm="Person"
           tooltipField="email"
           stickyHeader
+          liveUpdates
           :entityTypeGuid="EntityType.Person"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
           :customActions="customActions"
-          @addItem="onAddPerson"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
         <SelectColumn />
 
@@ -49,9 +51,9 @@
                     :filter="dateValueFilter"
                     visiblePriority="md" />
 
-        <NumberColumn name="daysUntilBirthday"
-                      title="Days Until Birthday"
-                      field="daysUntilBirthday"
+        <NumberColumn name="age"
+                      title="Age"
+                      field="age"
                       :filter="numberValueFilter"
                       visiblePriority="lg" />
 
@@ -73,29 +75,33 @@
                      :filter="pickExistingValueFilter"
                      visiblePriority="md" />
 
-        <AttributeColumns :attributes="attributeFields" />
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
         <EditColumn @click="onEditClick" />
 
         <SecurityColumn />
 
-        <DeleteColumn @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
     import Grid, { AttributeColumns, BooleanColumn, Column, DateColumn, dateValueFilter, DeleteColumn, EditColumn, LabelColumn, NumberColumn, numberValueFilter, pickExistingValueFilter, SecurityColumn, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import { reactive, ref } from "vue";
 
-    const configuration = useConfigurationValues<{ gridDefinition: GridDefinitionBag }>();
+    const config = useConfigurationValues<ListBlockBox<Record<string, string>>>();
     const invokeBlockAction = useInvokeBlockAction();
 
-    const attributeFields = configuration.gridDefinition.attributeFields ?? [];
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
 
     const customActions: GridAction[] = [
         {
@@ -105,6 +111,10 @@
         }
     ];
 
+    // #endregion
+
+    // #region Functions
+
     /**
      * Called when the grid is requesting the row data be loaded.
      */
@@ -112,12 +122,17 @@
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
         if (result.isSuccess && result.data) {
-            return result.data;
+            gridData = reactive(result.data);
+            return gridData;
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
     }
+
+    // #endregion
+
+    // #region Event Handlers
 
     /**
      * Called when a row has been selected by the person.
@@ -140,15 +155,29 @@
     /**
      * Called when a row's delete button has been clicked by the person. This
      * happens only if they have confirmed the delete action.
+     *
+     * @param key The key of the row that should be deleted.
      */
-    async function onDeleteClick(): Promise<void> {
-        await alert("Deleting is not supported for this sample grid.");
+    async function onDeleteClick(key: string): Promise<void> {
+        await alert("Deleting is not supported for this sample grid, it will only be simulated.");
+
+        if (gridData) {
+            const index = (gridData.rows ?? []).findIndex(r => r["guid"] === key);
+
+            if (index !== -1) {
+                gridData.rows?.splice(index, 1);
+            }
+        }
     }
 
     /**
      * Called when the Add button has been clicked by the person.
      */
-    function onAddPerson(): void {
+    function onAddItem(): void {
         window.location.href = "/NewFamily";
     }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
 </script>

@@ -9,7 +9,7 @@
 
     const props = defineProps(standardCellProps);
 
-    /** Contains the human friendly formatted value of th enumber. */
+    /** Contains the human friendly formatted value of the number. */
     const formattedValue = computed((): string => {
         if (!props.column.field) {
             return "";

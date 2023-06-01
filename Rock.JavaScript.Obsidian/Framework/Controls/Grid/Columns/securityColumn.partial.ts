@@ -58,6 +58,16 @@ export default defineComponent({
         itemTitle: {
             type: [Function, String] as PropType<((row: Record<string, unknown>, grid: IGridState) => string) | string>,
             required: false
+        },
+
+        /**
+         * The field to use to determine if the security button for a single
+         * row should be disabled. If the value of this field is `true` then
+         * the security button will be disabled.
+         */
+        disabledField: {
+            type: String as PropType<string>,
+            default: "isSecurityDisabled"
         }
     }
 });

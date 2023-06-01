@@ -21,7 +21,7 @@
     import { ref, watch, computed } from "vue";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { DateFilterMethod, DateFilterMethodDescription } from "@Obsidian/Enums/Controls/Grid/dateFilterMethod";
+    import { DateFilterMethod, DateFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
     import { standardFilterProps } from "@Obsidian/Core/Controls/grid";
     import { DateSearchBag } from "@Obsidian/Types/Controls/grid";
 

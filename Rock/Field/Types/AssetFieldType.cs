@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -83,19 +84,20 @@ namespace Rock.Field.Types
                 return uri;
             }
 
-            AssetStorageProvider assetStorageProvider = new AssetStorageProvider();
-            int? assetStorageId = asset.AssetStorageProviderId;
-
-            if ( assetStorageId != null )
+            if ( asset.AssetStorageProviderId <= 0)
             {
-                var assetStorageService = new AssetStorageProviderService( new RockContext() );
-                assetStorageProvider = assetStorageService.Get( assetStorageId.Value );
-                assetStorageProvider.LoadAttributes();
+                return string.Empty;
             }
 
-            var component = assetStorageProvider.GetAssetStorageComponent();
+            var assetStorageProviderCache = AssetStorageProviderCache.Get( asset.AssetStorageProviderId );
 
-            uri = component.CreateDownloadLink( assetStorageProvider, asset );
+            var component = assetStorageProviderCache?.AssetStorageComponent;
+            if ( component == null )
+            {
+                return string.Empty;
+            }
+
+            uri = component.CreateDownloadLink( assetStorageProviderCache.ToEntity(), asset );
 
             // Cache for 60 seconds
             RockCache.AddOrUpdate( cacheKey, null, uri, RockDateTime.Now.AddSeconds( 60 ) );

@@ -1261,8 +1261,14 @@ namespace RockWeb.Blocks.Groups
         {
             var groupSyncService = new GroupSyncService( new RockContext() );
             var task = Task.Run( () =>
-                groupSyncService.SyncGroup( _group.Id )
-            );
+            {
+                var result = groupSyncService.SyncGroup( _group.Id );
+
+                if ( result.WarningExceptions.Any() )
+                {
+                    ExceptionLogService.LogException( new AggregateException( $"One or more exceptions occurred while syncing group with ID {_group.Id}.", result.WarningExceptions ) );
+                }
+            } );
             mdGridWarning.Show( "The group is scheduled to be synchronized and it may take several minutes to complete.", ModalAlertType.Information );
         }
 

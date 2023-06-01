@@ -59,6 +59,8 @@ namespace Rock.Blocks.Example
 
             return new ListBlockBox<Dictionary<string, object>>
             {
+                IsAddEnabled = true,
+                IsDeleteEnabled = true,
                 GridDefinition = builder.BuildDefinition()
             };
         }
@@ -68,7 +70,7 @@ namespace Rock.Blocks.Example
         {
             return base.GetListQueryable( rockContext )
                 .Include( p => p.PrimaryCampus )
-                .Take( 1_000 );
+                .Take( RequestContext.GetPageParameter( "count" ).AsIntegerOrNull() ?? 1_000 );
         }
 
         /// <summary>
@@ -89,7 +91,7 @@ namespace Rock.Blocks.Example
                 .AddDateTimeField( "birthDate", p => p.BirthDate )
                 .AddField( "campus", p => p.PrimaryCampus?.Name )
                 .AddField( "connectionStatus", p => GetConnectionStatus( p ) )
-                .AddField( "daysUntilBirthday", p => p.DaysUntilBirthday )
+                .AddField( "age", p => p.Age )
                 .AddAttributeFields( GetGridAttributes() );
         }
 

@@ -5,7 +5,7 @@
             {{ props.grid.itemTerm }} List
         </div>
 
-        <div v-if="isFilterable" class="grid-quick-filter grid-actions" :class="{ 'active': isSearchVisible }">
+        <div class="grid-quick-filter grid-actions" :class="{ 'active': isSearchVisible }">
             <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">
                 <i class="fa fa-search fa-fw"></i>
             </button>
@@ -68,7 +68,6 @@
     // #region Values
 
     const quickFilterContainerElement = ref<HTMLElement>();
-    const isFilterable = !props.grid.columns.some(c => c.name === "__reorder");
     const isSearchVisible = ref(false);
     const quickFilterValue = useVModelPassthrough(props, "quickFilterValue", emit);
 

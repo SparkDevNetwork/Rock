@@ -14,16 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Web;
+
+using Humanizer;
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -69,88 +71,78 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            // Get the job setting(s)   
+            // Get the job setting(s).
             bool requirePasswordReset = GetAttributeValue( "RequirePasswordReset" ).AsBoolean();
             var commandTimeout = GetAttributeValue( "CommandTimeout" ).AsIntegerOrNull() ?? 180;
 
-            // Counters for displaying results
-            int groupsSynced = 0;
-            int groupsChanged = 0;
-            string groupName = string.Empty;
-            string dataViewName = string.Empty;
-            var errors = new List<string>();
-
-            try
+            // Get groups to sync.
+            var activeSyncList = new List<GroupSyncInfo>();
+            using ( var rockContextReadOnly = new RockContextReadOnly() )
             {
-                // get groups set to sync
-                var activeSyncList = new List<GroupSyncInfo>();
-                using ( var rockContextReadOnly = new RockContextReadOnly() )
-                {
-                    // Get groups that are not archived and are still active.
-                    activeSyncList = new GroupSyncService( rockContextReadOnly )
-                        .Queryable()
-                        .AsNoTracking()
-                        .AreNotArchived()
-                        .AreActive()
-                        .NeedToBeSynced()
-                        .Select( x => new GroupSyncInfo { SyncId = x.Id, GroupName = x.Group.Name } )
-                        .ToList();
-                }
-
-                GroupSyncService.SyncGroups( activeSyncList, commandTimeout, requirePasswordReset, out errors, out groupsChanged, out groupsSynced, UpdateLastStatusMessage );
-
-                // Format the result message
-                var resultMessage = string.Empty;
-                if ( groupsSynced == 0 )
-                {
-                    resultMessage = "No groups to sync";
-                }
-                else if ( groupsSynced == 1 )
-                {
-                    resultMessage = "1 group was synced";
-                }
-                else
-                {
-                    resultMessage = string.Format( "{0} groups were synced", groupsSynced );
-                }
-
-                resultMessage += string.Format( " and {0} groups were changed", groupsChanged );
-
-                if ( errors.Any() )
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine();
-                    sb.Append( "Errors: " );
-                    errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
-                    string errorMessage = sb.ToString();
-                    resultMessage += errorMessage;
-                    throw new Exception( errorMessage );
-                }
-
-                this.Result = resultMessage;
+                // Get groups that are not archived and are still active.
+                activeSyncList = new GroupSyncService( rockContextReadOnly )
+                    .Queryable()
+                    .AsNoTracking()
+                    .AreNotArchived()
+                    .AreActive()
+                    .NeedToBeSynced()
+                    .Select( x => new GroupSyncInfo { SyncId = x.Id, GroupName = x.Group.Name } )
+                    .ToList();
             }
-            catch ( System.Exception ex )
+
+            var result = GroupSyncService.SyncGroups( activeSyncList, commandTimeout, requirePasswordReset, UpdateLastStatusMessage );
+
+            // Format the result message.
+            var groupsSyncedCount = result.GroupIdsSynced.Count();
+            var groupsChangedCount = result.GroupIdsChanged.Count();
+
+            var resultSb = new StringBuilder();
+            var circleSuccess = "<i class='fa fa-circle text-success'></i>";
+            resultSb.AppendLine( $"{circleSuccess} {groupsSyncedCount} {"group".PluralizeIf( groupsSyncedCount != 1 ).Titleize()} Synced{( groupsSyncedCount > 0 ? $" ({result.GroupIdsSynced.AsDelimited( ", " )})" : string.Empty )}" );
+            resultSb.AppendLine( $"{circleSuccess} {groupsChangedCount} {"group".PluralizeIf( groupsChangedCount != 1 ).Titleize()} Changed{( groupsChangedCount > 0 ? $" ({result.GroupIdsChanged.AsDelimited( ", " )})" : string.Empty )}" );
+
+            if ( groupsChangedCount > 0 )
             {
-                HttpContext context2 = HttpContext.Current;
-                ExceptionLogService.LogException( ex, context2 );
-                throw;
+                resultSb.AppendLine( $"{circleSuccess} {result.DeletedMemberCount} {"person".PluralizeIf( result.DeletedMemberCount != 1 ).Titleize()} Deleted" );
+                resultSb.AppendLine( $"{circleSuccess} {result.AddedMemberCount} {"person".PluralizeIf( result.AddedMemberCount != 1 ).Titleize()} Added" );
             }
-        }
 
-        /// <summary>
-        /// A POCO to store the SyncId and the GroupName of a <seealso cref="GroupSync"/>
-        /// </summary>
-        public class GroupSyncInfo
-        {
-            /// <summary>
-            /// The Sync Id of the <seealso cref="GroupSync"/>
-            /// </summary>
-            public int SyncId { get; set; }
+            var circleWarning = "<i class='fa fa-circle text-warning'></i>";
+            if ( result.NotAddedMemberCount > 0 )
+            {
+                resultSb.AppendLine( $"{circleWarning} {result.NotAddedMemberCount} {"person".PluralizeIf( result.NotAddedMemberCount != 1 ).Titleize()} Could Not be Added" );
+            }
 
-            /// <summary>
-            /// The Name of the Group which the <seealso cref="GroupSync"/> is Associated with 
-            /// </summary>
-            public string GroupName { get; set; }
+            this.Result = resultSb.ToString();
+
+            if ( result.WarningMessages.Any() || result.WarningExceptions.Any() )
+            {
+                resultSb.AppendLine();
+
+                var warningExceptionMessage = "GroupSync completed with warnings.";
+                AggregateException exceptionList = null;
+
+                if ( result.WarningMessages.Any() )
+                {
+                    var enableLoggingMessage = "Enable 'Warning' logging level for 'Jobs' domain in Rock Logs and re-run this job to get a full list of issues.";
+                    warningExceptionMessage = $"{warningExceptionMessage} {enableLoggingMessage}";
+
+                    Log( Logging.RockLogLevel.Warning, $"{result.WarningMessages.Count} {"warning".PluralizeIf( result.WarningMessages.Count > 1 ).Titleize()}: {result.WarningMessages.AsDelimited( " | " )}" );
+
+                    resultSb.AppendLine( $"{circleWarning} {enableLoggingMessage}" );
+                }
+
+                if ( result.WarningExceptions.Any() )
+                {
+                    exceptionList = new AggregateException( "One or more exceptions occurred in GroupSync.", result.WarningExceptions );
+
+                    resultSb.AppendLine( $"{circleWarning} One or more exceptions occurred. See exception log for details." );
+                }
+
+                this.Result = resultSb.ToString();
+
+                throw new RockJobWarningException( warningExceptionMessage, exceptionList );
+            }
         }
     }
 }

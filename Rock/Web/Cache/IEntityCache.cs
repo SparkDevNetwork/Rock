@@ -66,7 +66,7 @@ namespace Rock.Web.Cache
         string ForeignKey { get; }
 
         /// <summary>
-        /// Set's the cached objects properties from the model/entities properties.
+        /// Sets the cached object's properties from the model/entity's properties.
         /// </summary>
         /// <param name="entity">The entity.</param>
         void SetFromEntity( IEntity entity );

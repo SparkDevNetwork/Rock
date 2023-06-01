@@ -18,10 +18,11 @@
 import { Component, PropType } from "vue";
 import { Guid } from "@Obsidian/Types";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { DateFilterMethod } from "@Obsidian/Enums/Controls/Grid/dateFilterMethod";
-import { NumberFilterMethod } from "@Obsidian/Enums/Controls/Grid/numberFilterMethod";
-import { PickExistingFilterMethod } from "@Obsidian/Enums/Controls/Grid/pickExistingFilterMethod";
-import { TextFilterMethod } from "@Obsidian/Enums/Controls/Grid/textFilterMethod";
+import { BooleanFilterMethod } from "@Obsidian/Enums/Core/Grid/booleanFilterMethod";
+import { DateFilterMethod } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
+import { NumberFilterMethod } from "@Obsidian/Enums/Core/Grid/numberFilterMethod";
+import { PickExistingFilterMethod } from "@Obsidian/Enums/Core/Grid/pickExistingFilterMethod";
+import { TextFilterMethod } from "@Obsidian/Enums/Core/Grid/textFilterMethod";
 
 // #region Entity Sets
 
@@ -538,6 +539,16 @@ export type StandardFilterProps = {
 // #endregion
 
 // #region Column Filter Types
+
+/**
+ * Defines the structure of the boolean column search bag.
+ *
+ * @private This is an internal type and should not be used by plugins.
+ */
+export type BooleanSearchBag = {
+    /** The filtering method to use. */
+    method: BooleanFilterMethod;
+};
 
 /**
  * Defines the structure of the date column search bag.

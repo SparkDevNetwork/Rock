@@ -1852,16 +1852,6 @@ mission. We are so grateful for your commitment.</p>
                 }
             }
 
-            ConfigureCampusAccountAmountPicker();
-
-            // if Gateways are configured, show a warning if no Accounts are configured (we don't want to show an Accounts warning if they haven't configured a gateway yet)
-            if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
-            {
-                ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "At least one Financial Account must be selected in the configuration for this block." );
-                pnlTransactionEntry.Visible = false;
-                return;
-            }
-
             bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
             bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
 
@@ -1874,6 +1864,16 @@ mission. We are so grateful for your commitment.</p>
 
             if ( !SetInitialTargetPersonControls() )
             {
+                return;
+            }
+
+            ConfigureCampusAccountAmountPicker();
+
+            // if Gateways are configured, show a warning if no Accounts are configured (we don't want to show an Accounts warning if they haven't configured a gateway yet)
+            if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
+            {
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "At least one Financial Account must be selected in the configuration for this block." );
+                pnlTransactionEntry.Visible = false;
                 return;
             }
 
@@ -2287,6 +2287,13 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         private Person GetTargetPerson( RockContext rockContext )
         {
+            string personActionId = PageParameter( PageParameterKey.Person );
+            if ( personActionId.IsNullOrWhiteSpace() )
+            {
+                // If there is no person action identifier, just use the currently logged in Person.
+                return CurrentPerson;
+            }
+
             var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
             if ( targetPersonValue.IsNullOrWhiteSpace() )
             {
@@ -2560,22 +2567,11 @@ mission. We are so grateful for your commitment.</p>
             ddlPersonSavedAccount.Visible = false;
             var currentSavedAccountSelection = ddlPersonSavedAccount.SelectedValue;
 
-            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
-            if ( targetPersonValue.IsNullOrWhiteSpace() )
-            {
-                return;
-            }
-
-            var targetPersonGuid = targetPersonValue.AsGuidOrNull();
-            if ( targetPersonGuid == null )
-            {
-                return;
-            }
 
             var rockContext = new RockContext();
-            var targetPersonId = new PersonService( rockContext ).Get( targetPersonGuid.Value ).Id;
+            var targetPerson = GetTargetPerson( rockContext );
             var personSavedAccountsQuery = new FinancialPersonSavedAccountService( rockContext )
-                .GetByPersonId( targetPersonId )
+                .GetByPersonId( targetPerson.Id )
                 .Where( a => !a.IsSystem )
                 .AsNoTracking();
 
@@ -3713,9 +3709,7 @@ mission. We are so grateful for your commitment.</p>
             var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetInclude( scheduledTransactionGuid.Value, s => s.AuthorizedPersonAlias.Person );
             var personService = new PersonService( rockContext );
 
-            // If there is no person action identifier, GetTargetPerson() will return a null value and we can substitute
-            // CurrentPerson to ensure that the transaction we are modifying belongs to the logged in user.
-            var targetPerson = GetTargetPerson( rockContext ) ?? CurrentPerson;
+            var targetPerson = GetTargetPerson( rockContext );
 
             // get business giving id
             var givingIds = personService.GetBusinesses( targetPerson.Id ).Select( g => g.GivingId ).ToList();
