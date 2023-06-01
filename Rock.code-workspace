@@ -89,7 +89,10 @@
 		"css.format.spaceAroundSelectorSeparator": true,
 		"typescript.tsdk": "node_modules/typescript/lib",
 		"workbench.settings.openDefaultSettings": false,
-		"workbench.settings.openDefaultKeybindings": false
+		"workbench.settings.openDefaultKeybindings": false,
+		"css.lint.duplicateProperties": "warning",
+		"css.lint.zeroUnits": "warning",
+		"css.lint.propertyIgnoredDueToDisplay": "warning"
 	},
 	"tasks": {
 		"version": "2.0.0",
