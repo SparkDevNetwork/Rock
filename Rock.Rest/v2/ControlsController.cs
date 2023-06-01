@@ -2940,7 +2940,7 @@ namespace Rock.Rest.v2
                     return NotFound();
                 }
 
-                var channel = component.Channel;
+                var channel = component.InteractionChannel;
 
                 return Ok( new ListItemBag { Text = $"{channel.Name} ({ channel.ChannelTypeMediumValue.Value ?? string.Empty })", Value = channel.Guid.ToString() } );
             }

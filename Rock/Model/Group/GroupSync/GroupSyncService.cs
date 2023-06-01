@@ -295,7 +295,7 @@ namespace Rock.Model
                                         groupMemberContext.SaveChanges();
                                         result.AddedMemberCount++;
                                     }
-                                    catch ( GroupMemberValidationException ex )
+                                    catch ( GroupMemberValidationException )
                                     {
                                         // Validation errors will have been added to the ValidationResults collection.
                                         // Add those results to the overall results object and then move on to the next person.
