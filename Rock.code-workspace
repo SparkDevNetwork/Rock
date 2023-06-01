@@ -60,6 +60,7 @@
 			"html": true
 		},
 		"volar.completion.preferredAttrNameCase": "camel",
+		"volar.completion.preferredTagNameCase": "pascal",
 		"volar.vueserver.additionalExtensions": [
 			"obs"
 		],
