@@ -341,6 +341,11 @@ namespace Rock.Blocks.Security
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
+            if ( PageParameter( "caption" ).ToLower() == "success" && GetCurrentPerson() != null )
+            {
+                return GetInitializationBox( step: AccountEntryStep.Completed );
+            }
+
             return GetInitializationBox();
         }
 
@@ -598,7 +603,7 @@ namespace Rock.Blocks.Security
                 {
                     continue;
                 }
-                
+
                 var phoneNumber = new PhoneNumber
                 {
                     NumberTypeValueId = DefinedValueCache.Get( item.Guid ).Id,
@@ -784,7 +789,7 @@ namespace Rock.Blocks.Security
         /// </summary>
         /// <param name="encryptedStateOverride">The encrypted passwordless state override. If not specified, the encrypted passwordless state is retrieved from page parameters.</param>
         /// <returns>The initialization box.</returns>
-        private AccountEntryInitializationBox GetInitializationBox( string encryptedStateOverride = null )
+        private AccountEntryInitializationBox GetInitializationBox( string encryptedStateOverride = null, AccountEntryStep? step = null )
         {
             // Automatically set the phone number or email if this user is coming from the passwordless login flow.
             var passwordlessLoginStateString = encryptedStateOverride ?? Uri.UnescapeDataString( PageParameter( "State" ) );
@@ -845,10 +850,11 @@ namespace Rock.Blocks.Security
                 PhoneNumbers = phoneNumberBags,
                 SentLoginCaption = GetAttributeValue( AttributeKey.SentLoginCaption ),
                 State = passwordlessLoginStateString,
-                SuccessCaption = GetAttributeValue( AttributeKey.SuccessCaption ),
+                SuccessCaption = GetCurrentPerson() == null ? GetAttributeValue( AttributeKey.SuccessCaption ) : GetSuccessCaption( GetCurrentPerson() ),
                 UsernameFieldLabel = GetAttributeValue( AttributeKey.UsernameFieldLabel ),
                 UsernameRegex = isEmailRequiredForUsername ? @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ),
-                UsernameRegexDescription = isEmailRequiredForUsername ? string.Empty : GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" )
+                UsernameRegexDescription = isEmailRequiredForUsername ? string.Empty : GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ),
+                Step = step
             };
         }
 
@@ -886,7 +892,16 @@ namespace Rock.Blocks.Security
                 return returnUrl;
             }
 
-            return null;
+            return GetCurrentPageUrl();
+        }
+
+        /// <summary>
+        /// Gets the current page URL.
+        /// </summary>
+        /// <returns>The current page URL.</returns>
+        private string GetCurrentPageUrl()
+        {
+            return $"{this.RequestContext.RootUrlPath}/page/{PageCache.Id}?caption=success";
         }
 
         /// <summary>
