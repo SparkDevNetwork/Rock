@@ -108,6 +108,14 @@
     <Compile Include="Migrations\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.designer.cs">
       <DependentUpon>202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202306011936445_Rollup_20230601.cs" />
+    <Compile Include="Migrations\202306011936445_Rollup_20230601.designer.cs">
+      <DependentUpon>202306011936445_Rollup_20230601.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306011959060_CodeGenerated_20230601.cs" />
+    <Compile Include="Migrations\202306011959060_CodeGenerated_20230601.designer.cs">
+      <DependentUpon>202306011959060_CodeGenerated_20230601.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1694,6 +1702,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.resx">
       <DependentUpon>202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306011936445_Rollup_20230601.resx">
+      <DependentUpon>202306011936445_Rollup_20230601.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306011959060_CodeGenerated_20230601.resx">
+      <DependentUpon>202306011959060_CodeGenerated_20230601.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
