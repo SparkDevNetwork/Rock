@@ -91,7 +91,7 @@ namespace Rock.Blocks.Example
                 .AddDateTimeField( "birthDate", p => p.BirthDate )
                 .AddField( "campus", p => p.PrimaryCampus?.Name )
                 .AddField( "connectionStatus", p => GetConnectionStatus( p ) )
-                .AddField( "daysUntilBirthday", p => p.DaysUntilBirthday )
+                .AddField( "age", p => p.Age )
                 .AddAttributeFields( GetGridAttributes() );
         }
 

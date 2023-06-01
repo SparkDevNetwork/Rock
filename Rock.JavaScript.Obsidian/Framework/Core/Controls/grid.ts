@@ -1920,7 +1920,8 @@ export class GridState implements IGridState {
         const order = columnSort.isDescending ? -1 : 1;
 
         if (!column) {
-            throw new Error("Invalid sort definition");
+            console.warn("Ignoring invalid sort definition.", toRaw(this.columnSort));
+            return [...rows];
         }
 
         const sortValue = column.sortValue;

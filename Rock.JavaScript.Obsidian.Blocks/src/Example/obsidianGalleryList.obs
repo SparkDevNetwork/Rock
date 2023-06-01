@@ -51,9 +51,9 @@
                     :filter="dateValueFilter"
                     visiblePriority="md" />
 
-        <NumberColumn name="daysUntilBirthday"
-                      title="Days Until Birthday"
-                      field="daysUntilBirthday"
+        <NumberColumn name="age"
+                      title="Age"
+                      field="age"
                       :filter="numberValueFilter"
                       visiblePriority="lg" />
 
