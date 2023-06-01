@@ -1431,7 +1431,7 @@ namespace Rock.Blocks.Security
                 {
                     Caption = GetSuccessCaption( person ),
                     RedirectUrl = GetRedirectUrlAfterRegistration(),
-                    IsRedirectAutomatic = isFromPasswordlessAuthentication
+                    IsRedirectAutomatic = true
                 }
             } );
         }
