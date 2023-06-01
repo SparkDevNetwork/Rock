@@ -80,7 +80,9 @@
 			"editor.defaultFormatter": "Vue.volar"
 		},
 		"css.format.spaceAroundSelectorSeparator": true,
-		"typescript.tsdk": "node_modules/typescript/lib"
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"workbench.settings.openDefaultSettings": false,
+		"workbench.settings.openDefaultKeybindings": false
 	},
 	"tasks": {
 		"version": "2.0.0",
@@ -101,8 +103,7 @@
 				},
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian"
-				},
-				"problemMatcher": []
+				}
 			},
 			{
 				"label": "Build Obsidian Blocks",
@@ -119,8 +120,7 @@
 				},
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
-				},
-				"problemMatcher": []
+				}
 			},
 			{
 				"label": "Build All Obsidian",
@@ -142,14 +142,14 @@
 					"showReuseMessage": false,
 					"clear": true,
 					"echo": false,
-					"panel":"dedicated"
+					"panel": "dedicated"
 				},
 				"options": {
 					"cwd": "${workspaceFolder:Rock.JavaScript.Obsidian}"
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"pattern": [],
+					"base": "$vite",
 					"background": {
 						"beginsPattern": "^rollup v",
 						"endsPattern": "waiting for changes\\.\\.\\.$"
@@ -171,7 +171,7 @@
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"pattern": [],
+					"base": "$vite",
 					"background": {
 						"beginsPattern": "^rollup v",
 						"endsPattern": "waiting for changes\\.\\.\\.$"
