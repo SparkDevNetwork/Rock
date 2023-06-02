@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
-
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -34,6 +34,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="groupId">The ID of the group to sync.</param>
         /// <returns>An object representing the outcome of the group sync attempt.</returns>
+        [RockInternal( "1.16.0" )]
         public GroupSyncResult SyncGroup( int groupId )
         {
             var groupSyncsForGroup = Queryable()
@@ -55,6 +56,7 @@ namespace Rock.Model
         /// <param name="requirePasswordReset">Whether to require a password reset for new logins.</param>
         /// <param name="updateStatusAction">The method to invoke to update the caller of sync status/progress.</param>
         /// <returns>An object representing the outcome of the group sync attempt.</returns>
+        [RockInternal( "1.16.0" )]
         public static GroupSyncResult SyncGroups( List<GroupSyncInfo> activeSyncList, int? commandTimeout, bool requirePasswordReset, Action<string> updateStatusAction = null )
         {
             var result = new GroupSyncResult();
