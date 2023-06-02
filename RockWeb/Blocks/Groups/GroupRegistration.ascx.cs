@@ -683,8 +683,8 @@ namespace RockWeb.Blocks.Groups
                 if ( groupIsFromQryString && groupTypeGuids.Any() && !groupTypeGuids.Contains( _group.GroupType.Guid ) )
                 {
                     _group = null;
-                    nbNotice.Heading = "Invalid Group";
-                    nbNotice.Text = "<p>The selected group is a restricted group type therefore this block cannot be used to add people to these groups (unless configured to allow).</p>";
+                    nbNotice.Heading = "Invalid Group Type";
+                    nbNotice.Text = "<p>The chosen group cannot be used with this block. To enable registration for this group, please update the block settings accordingly.</p>";
                     return false;
                 }
                 else
