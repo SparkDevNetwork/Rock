@@ -68,6 +68,7 @@
 
 .grid-heading {
     background: var(--theme-white);
+    border-radius: 4px 4px 0 0;
 }
 
 .grid-obsidian.grid-sticky > .grid-heading {
@@ -334,6 +335,7 @@
     color: var(--theme-darkest);
     background-color: var(--theme-white);
     align-items: center;
+    border-radius: 0 0 4px 4px;
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes {
