@@ -165,8 +165,11 @@ namespace Rock.Model
                 dataViewQuery = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } ) as IQueryable<IEntity>;
             }
 
-            // Add a comment to the query with the data view id for debugging.
-            dataViewQuery = dataViewQuery.TagWith( $"Data View Id: {this.Id}" );
+            if ( !dataViewGetQueryArgs.DisableQueryTags )
+            {
+                // Add a comment to the query with the data view id for debugging.
+                dataViewQuery = dataViewQuery.TagWith( $"Data View Id: {this.Id}" );
+            }
 
             return dataViewQuery;
         }

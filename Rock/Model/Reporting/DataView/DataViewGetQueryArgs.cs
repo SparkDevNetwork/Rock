@@ -54,5 +54,13 @@ namespace Rock.Model
         /// The database timeout seconds.
         /// </value>
         public int? DatabaseTimeoutSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to disable query tags.
+        /// </summary>
+        /// <value>
+        /// Whether to disable query tags.
+        /// </value>
+        public bool DisableQueryTags { get; set; }
     }
 }
