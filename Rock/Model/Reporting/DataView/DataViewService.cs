@@ -20,6 +20,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
 using System.Data.SqlClient;
+using EF6.TagWith;
 using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
@@ -324,8 +325,7 @@ namespace Rock.Model
                 {
                     DbContext = this.Context,
                     DataViewFilterOverrides = overrides,
-                    DatabaseTimeoutSeconds = databaseTimeoutSeconds,
-                    DisableQueryTags = true
+                    DatabaseTimeoutSeconds = databaseTimeoutSeconds
                 } )
                 .Select( entity => entity.Id )
                 .ToObjectQuery();
@@ -336,8 +336,8 @@ namespace Rock.Model
                 return;
             }
 
-            var dataViewSql = dataViewObjectQuery.ToTraceString();
-            var dataViewParameters = dataViewObjectQuery.Parameters;
+            var tagger = new SqlServerTagger();
+            var taggedSql = tagger.GetTaggedSqlQuery( dataViewObjectQuery.ToTraceString(), new TaggingOptions { TagMode = TagMode.Prefix } );
 
             var tempTableName = $"DataView_{dataView.Id}_{RockDateTime.Now:yyyyMMddHHmmssfff}";
 
@@ -352,7 +352,7 @@ BEGIN TRY
 
     -- Select the new entity IDs that should be added/remain in the persisted set.
     INSERT INTO #{tempTableName}
-    {dataViewSql};
+    {taggedSql};
 
     -- Delete any old Entity IDs that should no longer be in the persisted set.
     -- We'll delete these in batches to prevent locking the table.
@@ -398,7 +398,7 @@ END CATCH;";
                 new SqlParameter( "DataViewId", dataView.Id )
             }
             .Concat(
-                dataViewParameters.Select( p => new SqlParameter( p.Name, p.Value ) )
+                dataViewObjectQuery.Parameters.Select( p => new SqlParameter( p.Name, p.Value ) )
             )
             .ToArray();
 
