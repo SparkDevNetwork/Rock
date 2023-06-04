@@ -185,6 +185,36 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
         }
 
         [TestMethod]
+        public void AddToDictionary_DocumentationExample1_ProducesExpectedOutput()
+        {
+            var lavaTemplate = @"
+{% assign colors = '' | AddToDictionary:'success','green' | AddToDictionary:'warning','orange' | AddToDictionary:'error','red' %}
+<div style='color:{{ colors[""success""]}}'>
+    This request is approved.
+</div>
+<div style='color:{{ colors[""warning""]}}'>
+    This request is incomplete.
+</div>
+<div style='color:{{ colors[""error""]}}'>
+    This request is denied.
+</div>
+";
+            var expectedOutput = @"
+<div style='color:green'>
+    This request is approved.
+</div>
+<div style='color:orange'>
+    This request is incomplete.
+</div>
+<div style='color:red'>
+    This request is denied.
+</div>
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
+        }
+
+        [TestMethod]
         public void RemoveFromDictionary_RemoveExistingKey_ReturnsUpdatedDictionary()
         {
             var lavaTemplate = @"
