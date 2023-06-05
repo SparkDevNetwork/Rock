@@ -39,6 +39,9 @@
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
+    <Content Include="src\Core\followingEventTypeDetail.obs" />
+    <Content Include="src\Core\FollowingEventTypeDetail\editPanel.partial.obs" />
+    <Content Include="src\Core\FollowingEventTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\scheduleDetail.obs" />
     <Content Include="src\Core\ScheduleDetail\editPanel.partial.obs" />
     <Content Include="src\Core\ScheduleDetail\viewPanel.partial.obs" />
@@ -201,6 +204,7 @@
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
+    <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\ScheduleDetail\" />
     <Folder Include="src\Crm\DocumentTypeDetail\" />
     <Folder Include="src\Core\LocationDetail\" />
@@ -324,6 +328,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\ScheduleDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\DocumentTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\locationDetail.ts" />

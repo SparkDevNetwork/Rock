@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\Core\FollowingEventTypeDetail\FollowingEventTypeBag.cs" />
+    <Compile Include="Blocks\Core\FollowingEventTypeDetail\FollowingEventTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeBag.cs" />
