@@ -80,8 +80,7 @@ namespace Rock.Chart
             var firstItem = chartDataItems.FirstOrDefault();
             var isChartJsDataPoint = firstItem is IChartJsCategorySeriesDataPoint;
             var isTimeSeries = chartDataItems.Any( x => x.DateTimeStamp != 0 );
-             
-            //var datasets = new List<ChartJsCategorySeriesDataset>();
+
             var dataset = new ChartJsCategorySeriesDataset();
             dataset.DataPoints = new List<IChartJsCategorySeriesDataPoint>();
 
@@ -139,18 +138,36 @@ namespace Rock.Chart
             var tooltipsConfiguration = this.GetTooltipsConfigurationObject( args.ContainerControlId, args.YValueFormatString );
 
             // Set segment labels.
+            string segmentScript;
+            if ( args.YValueFormatString == "percentage" )
+            {
+                // Display percentage if > 15%.
+                segmentScript = @"
+function( value, context ) {
+    if ( value >= 15 )
+    {
+        return value + '%';
+    }
+    return '';
+}
+";
+            }
+            else
+            {
+                // Display raw value.
+                segmentScript = @"
+function( value, context ) {
+    return Intl.NumberFormat().format(value);
+}
+";
+            }
+
             var pluginsConfiguration = new
             {
                 datalabels = new
                 {
                     display = args.ShowSegmentLabels,
-                    formatter = new JRaw( @"
-function(value, context) {
-    if ( value >= 15 ) {
-        return value + '%';
-    }
-    return '';
-}" )
+                    formatter = new JRaw( segmentScript )
                 }
             };
 
