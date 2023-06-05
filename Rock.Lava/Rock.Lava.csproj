@@ -146,6 +146,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="Constants.cs" />
     <Compile Include="Core\Blocks\LavaBlockInfo.cs" />
     <Compile Include="Core\ILiquidFrameworkDataObjectProxy.cs" />
