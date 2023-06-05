@@ -22,7 +22,6 @@ import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
     Values = "values",
-    RepeatColumns = "repeatColumns",
     EntityTypeName = "entityTypeName",
     QualifierColumn = "qualifierColumn",
     QualifierValue = "qualifierValue",
@@ -32,18 +31,18 @@ export const enum ConfigurationValueKey {
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
-    return (await import("./noteTypesFieldComponents")).EditComponent;
+    return (await import("./noteTypeFieldComponents")).EditComponent;
 });
 
 // Load the configuration component only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
-    return (await import("./noteTypesFieldComponents")).ConfigurationComponent;
+    return (await import("./noteTypeFieldComponents")).ConfigurationComponent;
 });
 
 /**
  * The field type handler for the MultiSelect field.
  */
-export class NoteTypesField extends FieldTypeBase {
+export class NoteTypeField extends FieldTypeBase {
     public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (value === "") {
             return "";
