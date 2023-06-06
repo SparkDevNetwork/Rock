@@ -1,0 +1,23 @@
+.btn {
+  border: 0;
+  transition: all 0.1s ease-in-out;
+}
+
+.btn-secondary {
+  .button-variant(@btn-secondary-color; @btn-secondary-bg; @btn-secondary-border);
+}
+
+.btn-tertiary {
+  .button-variant(@btn-tertiary-color; @btn-tertiary-bg; @btn-tertiary-border);
+}
+
+.btn-dark {
+  .button-variant(@white; @gray-darker; @gray-darker);
+}
+
+.dropdown-menu > li > a {
+  text-decoration: none;
+  font-family: @font-family-headings;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}

@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.CheckIn
                         lbSelect.Attributes.Add( "data-loading-text", "Loading..." );
                     }
                     else
-                    { 
+                    {
                         CheckInPerson person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).SelectMany( f => f.People.Where( p => p.Selected ) ).FirstOrDefault();
                         CheckInGroup group = null;
                         CheckInLocation location = null;
@@ -230,7 +230,7 @@ namespace RockWeb.Blocks.CheckIn
             var selectedLocation = selectedGroup?.Locations.Where( l => l.Selected ).FirstOrDefault()?.Location;
 
             var selectedIndividuals = CurrentCheckInState.CheckIn.CurrentFamily.People.Where( p => p.Selected == true ).Select( p => p.Person );
-            
+
             var mergeFields = new Dictionary<string, object>
             {
                 { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group },
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( KioskCurrentlyActive )
             {
                 var schedules = new List<CheckInSchedule>();
-                bool validateSelection = false; 
+                bool validateSelection = false;
 
                 var selectedIDs = hfTimes.Value.SplitDelimitedValues().AsIntegerList();
                 if ( CurrentCheckInType != null && CurrentCheckInType.TypeOfCheckin == TypeOfCheckin.Family )

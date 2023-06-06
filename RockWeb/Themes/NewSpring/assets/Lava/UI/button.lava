@@ -1,0 +1,1 @@
+<a href="{{ linkurl }}" {% if linktarget and linktarget != empty %}target="{{ linktarget }}"{% endif %} class="btn btn-{{ buttontype }} {% if buttonsize and buttonsize != empty %}btn-{{ buttonsize }}{% endif %}" role="button" data-scroll>{{ linktext }}</a>

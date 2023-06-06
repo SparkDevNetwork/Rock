@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{{ Communication.Subject }} </title>
+        <noscript>
+            {% assign headerimage = headerimage | Default:'https://s3.amazonaws.com/ns.images/all/email/newspring_logo_email_header10.jpg' %}
+            {% assign footerimage = footerimage | Default:'https://s3.amazonaws.com/ns.images/all/email/GuestServices_Training_Footer.jpg' %}
+            {% assign linkcolor = linkcolor | Default:'#6bac43' %}
+            {% assign recipientreason = recipientreason | Default:'You’re receiving this email because of your activity at NewSpring Church.' %}
+            {% assign facebookurl = facebookurl | Default:'https://www.facebook.com/newspring' %}
+            {% assign twitterurl = twitterurl | Default:'https://twitter.com/newspring' %}
+            {% assign instagramurl = instagramurl | Default:'https://www.instagram.com/newspring_church' %}
+            {% assign websiteurl = websiteurl | Default:'https://newspring.cc' %}
+            {% assign organizationname = organizationname | Default:'NewSpring Church' %}
+            {% assign organizationaddress = organizationaddress | Default:'PO Box 1407 Anderson, SC 29622-1407' %}
+
+            {% comment %}
+                Link color hex code validation.
+            {% endcomment %}
+            {% if linkcolor contains '#' %}
+            {% else %}
+                {% assign linkcolor = linkcolor | Prepend:'#' %}
+            {% endif %}
+        </noscript>
+
+        <style type="text/css">
+            /* Mobile */
+            @media only all and (max-width:600px) {
+                body {
+                    padding-left: 20px !important;
+                    padding-right: 20px !important;
+                }
+
+                /* remove wrapper padding on gmail only as it adds its own */
+                u + div {
+                    padding-right: 0 !important;
+                    padding-left: 0 !important;
+                }
+
+                blockquote h1,
+                blockquote h2,
+                blockquote h3,
+                blockquote h4,
+                blockquote h5,
+                blockquote h6 {
+                    letter-spacing: -.5px !important;
+                }
+
+                .wrapper {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                }
+
+                .link-list a {
+                    width: 100% !important;
+                    padding: 12px 0 10px !important;
+                    border-bottom: 1px solid #eaeaea !important;
+                }
+
+                .link-list a:last-child {
+                    border-bottom: 0px !important;
+                }
+
+                .float-left,
+                .float-right { float: none !important; }
+
+                .width-half,
+                .width-third { max-width: 100% !important; width: 100% !important; }
+
+                .xs-text-center { text-align: center; }
+
+                .xs-soft { padding: 20px !important; }
+                .xs-soft-sides { padding-left: 20px !important; padding-right: 20px !important; }
+                .xs-soft-ends { padding-top: 20px !important; padding-bottom: 20px !important; }
+                .xs-soft-top { padding-top: 20px !important; }
+                .xs-soft-right { padding-right: 20px !important; }
+                .xs-soft-bottom { padding-bottom: 20px !important; }
+                .xs-soft-left { padding-left: 20px !important; }
+
+                .xs-soft-half { padding: 10px !important; }
+                .xs-soft-half-sides { padding-left: 10px !important; padding-right: 10px !important; }
+                .xs-soft-half-ends { padding-top: 10px !important; padding-bottom: 10px !important; }
+                .xs-soft-half-top { padding-top: 10px !important; }
+                .xs-soft-half-right { padding-right: 10px !important; }
+                .xs-soft-half-bottom { padding-bottom: 10px !important; }
+                .xs-soft-half-left { padding-left: 10px !important; }
+
+                .xs-push { margin: 20px !important; }
+                .xs-push-sides { margin-right: 20px !important; margin-left: 20px !important; }
+                .xs-push-ends { margin-top: 20px !important; margin-bottom: 20px !important; }
+                .xs-push-top { margin-top: 20px !important; }
+                .xs-push-right { margin-right: 20px !important; }
+                .xs-push-bottom { margin-bottom: 20px !important; }
+                .xs-push-left { margin-left: 20px !important; }
+
+                .xs-push-half { margin: 10px !important; }
+                .xs-push-half-sides { margin-right: 10px !important; margin-left: 10px !important; }
+                .xs-push-half-ends { margin-top: 10px !important; margin-bottom: 10px !important; }
+                .xs-push-half-top { margin-top: 10px !important; }
+                .xs-push-half-right { margin-right: 10px !important; }
+                .xs-push-half-bottom { margin-bottom: 10px !important; }
+                .xs-push-half-left { margin-left: 10px !important; }
+
+                .xs-flush { margin: 0 !important; }
+                .xs-flush-sides { margin-left: 0 !important; margin-right: 0 !important; }
+                .xs-flush-ends { margin-top: 0 !important; margin-bottom: 0 !important; }
+                .xs-flush-top { margin-top: 0 !important; }
+                .xs-flush-right { margin-right: 0 !important; }
+                .xs-flush-bottom { margin-bottom: 0 !important; }
+                .xs-flush-left { margin-left: 0 !important; }
+            }
+        </style>
+
+        <style type="text/css">
+            /* Reset */
+            body{
+                margin:0;
+                padding:0;
+            }
+
+            img{
+                border:0 none;
+                height:auto;
+                line-height:100%;
+                outline:none;
+                text-decoration:none;
+            }
+
+            a img{
+                border:0 none;
+            }
+
+            .imageFix{
+                display:block;
+            }
+
+            table, td{
+                border-collapse:collapse;
+            }
+
+            #bodyTable{
+                height:100% !important;
+                margin:0;
+                padding:0;
+                width:100% !important;
+            }
+
+            /*
+                Fonts
+            */
+            @font-face {
+                font-family: 'Colfax';
+                font-style: normal;
+                font-weight: 500;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular.woff2") format("woff2"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Colfax';
+                font-style: italic;
+                font-weight: 500;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular-italic.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular-italic.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular-italic.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular-italic.woff2") format("woff2"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular-italic.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Colfax';
+                font-style: normal;
+                font-weight: 700;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold.woff2") format("woff2"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Colfax';
+                font-style: italic;
+                font-weight: 700;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold-italic.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold-italic.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold-italic.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold-italic.woff2") format("woff2"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold-italic.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Colfax';
+                font-style: normal;
+                font-weight: 900;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black.woff2") format("woff2"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Colfax';
+                font-style: italic;
+                font-weight: 900;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black-italic.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black-italic.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black-italic.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black-italic.woff2") format("woff2"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/colfax/black-italic.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Meta Serif';
+                font-style: normal;
+                font-weight: 500;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBook.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBook.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBook.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBook.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Meta Serif';
+                font-style: italic;
+                font-weight: 500;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBookItalic.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBookItalic.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBookItalic.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBookItalic.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Meta Serif';
+                font-style: normal;
+                font-weight: 700;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBold.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBold.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBold.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBold.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Meta Serif';
+                font-style: italic;
+                font-weight: 700;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBoldItalic.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBoldItalic.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBoldItalic.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBoldItalic.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Meta Serif';
+                font-style: normal;
+                font-weight: 900;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBlack.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBlack.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBlack.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBlack.ttf") format("truetype");
+            }
+            @font-face {
+                font-family: 'Meta Serif';
+                font-style: italic;
+                font-weight: 900;
+                src: url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBlackItalic.eot");
+                src:    url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBlackItalic.eot?#") format("eot"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBlackItalic.woff") format("woff"),
+                        url("https://d3n6tjerleuu41.cloudfront.net/fonts/meta-serif/MetaSerifBlackItalic.ttf") format("truetype");
+            }
+
+            /* Theme */
+
+            html {
+                background-color: #fff;
+            }
+            body {
+                -webkit-text-size-adjust: 100%;
+                -ms-text-size-adjust: 100%;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+
+            body * {
+                font-family: 'Meta Serif', Georgia, Times New Roman, Times, serif;
+                font-size: 20px;
+                line-height: 140%;
+            }
+
+            .content td {
+                display: inline-block;
+                width: 100%;
+                margin-bottom: 45px;
+            }
+
+            h1, h2, h3, h4, h5, h6, ul, ol, p, blockquote, hr {
+                margin-top: 0;
+                margin-bottom: 20px;
+            }
+
+            h1,
+            h1 *,
+            h2,
+            h2 *,
+            h3,
+            h3 *,
+            h4,
+            h4 *,
+            h5,
+            h5 *,
+            h6,
+            h6 * {
+                font-family: 'Colfax', -apple-system, Roboto, sans-serif;
+                line-height: 115%;
+            }
+
+            h1, h1 * { font-size: 32px; }
+            h2, h2 * { font-size: 28px; }
+            h3, h3 * { font-size: 24px; }
+            h4, h4 * { font-size: 22px; }
+            h5, h5 * { font-size: 20px; }
+            h6, h6 * { font-size: 18px; }
+
+            h1, h1 *, h2, h2 * { letter-spacing: -1px; }
+            h3, h3 *, h4, h4 * { letter-spacing: -.5px; }
+
+            small, small * { font-size: 16px; line-height: 12px; }
+
+            body a[href] {
+                color: {{ linkcolor }};
+            }
+
+            hr {
+                border: 1px solid #eee;
+                border-radius: 0;
+                margin-top: 20px;
+                margin-bottom: 40px;
+            }
+
+            blockquote {
+                margin: 0;
+            }
+
+            blockquote * {
+                color: {{ linkcolor }};
+            }
+
+            blockquote footer {
+                text-align: right;
+            }
+
+            .wrapper {
+                width: 600px;
+                padding-top: 20px;
+                margin: 0 auto;
+            }
+
+            .wrapper > * {
+                width: 100%;
+            }
+
+            .social-links a {
+                display: inline-block;
+                width: 35px;
+                margin-right: 20px;
+                color: {{ linkcolor }};
+            }
+
+            .social-links a:last-child {
+                margin-right: 0;
+            }
+
+            .well {
+                background-color: #f5f5f5;
+                padding: 20px;
+                padding-bottom: 0;
+                margin-bottom: 20px;
+                overflow: hidden;
+                border-radius: 5px;
+            }
+
+            .link-list, .link-list a {
+                font-family: 'Colfax', -apple-system, Roboto, sans-serif !important;
+                font-size: 16px;
+                line-height: 30px;
+                letter-spacing: -.25px;
+                font-weight: 600;
+            }
+
+            .link-list a {
+                display: inline-block;
+                text-decoration: none;
+                margin-right: 15px;
+            }
+
+            .link-list a:last-child {
+                margin-right: 0;
+            }
+
+            img {
+                display: block;
+                margin: 0;
+                margin-bottom: 20px;
+                width: 100%;
+                max-width: 100%;
+                border-radius: 10px;
+            }
+
+            .circular { border-radius: 10000px; }
+
+            .text-serif,
+            .text-serif * { font-family: 'Meta Serif', Georgia, Times New Roman, Times, serif !important; }
+            .text-sans-serif,
+            .text-sans-serif * { font-family: 'Colfax', -apple-system, Roboto, sans-serif !important; }
+
+            .text-italic { font-style: italic; }
+            .text-center { text-align: center; }
+            .width-half { max-width: 50%; width: 50%; }
+            .width-third { max-width: 40%; width: 40%; }
+            .vert-align-top { vertical-align: top; }
+
+            .float-left { float: left; }
+            .float-right { float: right; }
+
+            .soft { padding: 20px; }
+            .soft-sides { padding-left: 20px; padding-right: 20px; }
+            .soft-ends { padding-top: 20px; padding-bottom: 20px; }
+            .soft-top { padding-top: 20px; }
+            .soft-right { padding-right: 20px; }
+            .soft-bottom { padding-bottom: 20px; }
+            .soft-left { padding-left: 20px; }
+
+            .soft-half { padding: 10px; }
+            .soft-half-sides { padding-left: 10px; padding-right: 10px; }
+            .soft-half-ends { padding-top: 10px; padding-bottom: 10px; }
+            .soft-half-top { padding-top: 10px; }
+            .soft-half-right { padding-right: 10px; }
+            .soft-half-bottom { padding-bottom: 10px; }
+            .soft-half-left { padding-left: 10px; }
+
+            .push-double { margin: 30px; }
+            .push-double-sides { margin-right: 30px; margin-left: 30px; }
+            .push-double-ends { margin-top: 30px; margin-bottom: 30px; }
+            .push-double-top { margin-top: 30px; }
+            .push-double-right { margin-right: 30px; }
+            .push-double-bottom { margin-bottom: 30px; }
+            .push-double-left { margin-left: 30px; }
+
+            .push { margin: 20px; }
+            .push-sides { margin-right: 20px; margin-left: 20px; }
+            .push-ends { margin-top: 20px; margin-bottom: 20px; }
+            .push-top { margin-top: 20px; }
+            .push-right { margin-right: 20px; }
+            .push-bottom { margin-bottom: 20px; }
+            .push-left { margin-left: 20px; }
+
+            .push-half { margin: 10px; }
+            .push-half-sides { margin-right: 10px; margin-left: 10px; }
+            .push-half-ends { margin-top: 10px; margin-bottom: 10px; }
+            .push-half-top { margin-top: 10px; }
+            .push-half-right { margin-right: 10px; }
+            .push-half-bottom { margin-bottom: 10px; }
+            .push-half-left { margin-left: 10px; }
+
+            .flush { margin: 0; }
+            .flush-sides { margin-left: 0; margin-right: 0; }
+            .flush-ends { margin-top: 0; margin-bottom: 0; }
+            .flush-top { margin-top: 0; }
+            .flush-right { margin-right: 0; }
+            .flush-bottom { margin-bottom: 0; }
+            .flush-left { margin-left: 0; }
+        </style>
+    </head>
+    <body class="body">
+        <div class="wrapper">
+            <table border="0" cellspacing="0" cellpadding="0">
+                <tbody>
+
+                    <!-- Header Image -->
+                    <tr>
+                        <td>
+                            <div class="structure-dropzone">
+                                <div class="dropzone">
+                                    <div class="component component-image" data-state="component">
+                                        <img src="{{ headerimage }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="preheader-text" valign="top" align="center" style="{% if visiblepreviewtext != 'true' %}display: none;{% endif %}">
+                            
+                        </td>
+                    </tr>
+                    {% if visiblepreviewtext == 'true' %}
+                    <tr>
+                        <td>
+                            <hr>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <table class="content" border="0" cellspacing="0" cellpadding="0">
+                <tbody>
+                    <tr>
+                        <td>
+
+                            <div class="structure-dropzone">
+                                <div class="dropzone">
+
+                                    {{ blockContent }}
+
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+
+
+
+
+                    <tr>
+                        <td>
+                            <img class="float-left width-half push-double-right xs-flush-right" src="https://mcusercontent.com/8cab5d8fae757e5b3683a83ca/images/a2d99a9e-e3b7-1660-7434-36429c4adef5.png" alt="">
+
+                            <h2>Our new series "Overflow" starts this Sunday!</h2>
+                            <p>As God's children, “we love because he first loved us” (1 John 4:19). Starting Sunday, Nov. 7, our new series will explore how to live a life of overflow — reflecting His character and discovering the generous, joyful way of living available to those who love God.</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <img class="float-right width-half push-double-left xs-flush-left" src="https://mcusercontent.com/8cab5d8fae757e5b3683a83ca/images/d3a2a4a8-0c7f-413e-887c-7a5078240bd8.png" alt="">
+
+                            <h2>We can know God's voice through His Word</h2>
+                            <p>We want to see everyone everywhere in an everyday relationship with Jesus — and we know sometimes the Bible can be hard to understand or follow along. That's why we're reading through the Bible together! <a href="#">Start reading along with us.</a></p>
+                        </td>
+                    </tr>
+
+
+
+
+
+
+                    <tr>
+                        <td>
+                            <blockquote class="text-serif text-italic">
+                                <h2>"One thing have I asked of the Lord, that will I seek after: that I may dwell in the house of the Lord all the days of my life, to gaze upon the beauty of the Lord and to inquire in His temple."</h2>
+                                <footer>
+                                    <h3>&mdash; Psalm 27:4</h3>
+                                </footer>
+                            </blockquote>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <img class="float-left width-half push-double-right xs-flush-right circular" src="https://mcusercontent.com/8cab5d8fae757e5b3683a83ca/images/3c07b219-d844-e9de-e511-d26cfea80a35.png" alt="">
+                            <div class="xs-text-center">
+                                <h2>This Sunday at NewSpring</h2>
+                                <p>Lee McDerment is kicking off our new series, "Overflow!" Join us Sunday, Nov. 7 at 9:15am or 11:15am at a campus or online anytime after 9:15am!  💻</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table border="0" cellspacing="0" cellpadding="0">
+                <tbody>
+
+                    <tr>
+                        <td>
+                            <p class="link-list text-center"><a href="#">Apps</a><a href="#">Read My Bible</a><a href="#">Fuse News</a><a href="#">KidSpring Scoop</a><a href="#">Contact Us</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <div class="well xs-text-center xs-push-half-bottom">
+                                <p><b>Do you enjoy Need To Know?</b> Forward this email 📩 to a friend. Did someone send you this email? Sign up to get it every week.</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <p class="social-links text-center push-top flush-bottom">
+                                <a href="{{ facebookurl }}"><img src="{{ 'Global' | Attribute:'ns.images','RawValue' | Append:'/Rock/email-templates/icon-facebook.png' }}" alt="{{ organizationname }} Facebook"></a>
+                                <a href="{{ twitterurl }}"><img src="{{ 'Global' | Attribute:'ns.images','RawValue' | Append:'/Rock/email-templates/icon-twitter.png' }}" alt="{{ organizationname }} Twitter"></a>
+                                <a href="{{ instagramurl }}"><img src="{{ 'Global' | Attribute:'ns.images','RawValue' | Append:'/Rock/email-templates/icon-instagram.png' }}" alt="{{ organizationname }} Instagram"></a>
+                                <a href="{{ websiteurl }}"><img src="{{ 'Global' | Attribute:'ns.images','RawValue' | Append:'/Rock/email-templates/icon-website.png' }}" alt="{{ organizationname }} Website"></a>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer Image -->
+                    <tr>
+                        <td>
+                            <div class="structure-dropzone">
+                                <div class="dropzone">
+                                    <div class="component component-image" data-state="component">
+                                        <img src="{{ footerimage }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="soft-sides text-center">
+                            {% if recipientreason and recipientreason != empty %}
+                            <p class="push-half-bottom"><small>{{ recipientreason }}</small></p>
+                            {% endif %}
+
+                            <p class="push-half-bottom"><small>
+                                <a href="{{ websiteurl | Append:'/account/subscriptions' }}">Update Subscription Preferences</a> &middot;
+                                <!-- <a href="#">Unsubscribe</a> -->
+                            </small></p>
+                            <p class="push-half-bottom"><small>
+                                &copy; {{ 'Now' | Date:'yyyy' }} {{ organizationname }}. All Rights Reserved.
+                            </small></p>
+                            <p><small>
+                                <b>Our mailing address is:</b><br>
+                                {{ organizationaddress }}
+                            </small></p>
+                        </td>
+                    </tr>
+                    {% if Communication.Guid and Communication.Guid != empty %}
+                        <tr>
+                            <td>
+                                Having trouble viewing this email? <a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetCommunication.ashx?c={{ Communication.Guid }}&p={{ Person.UrlEncodedKey }}">View it in your web browser.</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>

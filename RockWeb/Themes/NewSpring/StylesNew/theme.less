@@ -1,0 +1,207 @@
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_typography.less";
+@import "_buttons.less";
+@import "_colors.less";
+@import "_swiper.less";
+@import "_shadows.less";
+@import "_borders.less";
+@import "_timeline.less";
+@import "_utilities.less";
+@import "_print.less";
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overrides
+    3. Theme Styling
+    4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// 2. Bootstrap Overrides
+// -------------------------
+
+.btn {
+  font-family: @font-family-headings;
+  letter-spacing: -0.25px;
+  text-decoration: none;
+  border-width: 2px;
+}
+
+.btn-link {
+  font-weight: @btn-font-weight;
+}
+
+// 3. Theme Styling
+// -------------------------
+
+:root {
+  --brand-primary: @brand-primary;
+  --brand-secondary: @brand-secondary;
+  --brand-tertiary: @brand-tertiary;
+  --brand-kraft: @brand-kraft;
+  --brand-info: @brand-info;
+  --brand-warning: @brand-warning;
+  --brand-danger: @brand-danger;
+  --gray-darker: @gray-darker;
+  --gray-dark: @gray-dark;
+  --gray: @gray;
+  --gray-light: @gray-light;
+  --gray-lighter: @gray-lighter;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#navigation-wrapper {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1001;
+  transition: all 0.1s ease-in-out;
+}
+
+#navigation-secondary {
+  font-size: 90%;
+  background-color: var(--brand-primary);
+  color: white;
+
+  ul {
+    background-color: var(--gray-darker);
+  }
+
+  a:hover,
+  a:focus { 
+    color: white;
+  }
+}
+
+.js-container {
+  padding: 0 !important;
+}
+
+section {
+  padding: @spacer*24 @spacer*8;
+}
+
+.fullscreen {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.background-cover {
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.background-center {
+  background-position: center;
+}
+.background-top {
+  background-position: top;
+}
+.background-bottom {
+  background-position: bottom;
+}
+.background-left {
+  background-position: left;
+}
+.background-right {
+  background-position: right;
+}
+.background-fixed {
+  background-attachment: fixed;
+}
+.bring-forward {
+  position: relative;
+  z-index: 1;
+}
+.height-max-content {
+  height: max-content;
+}
+.grayscale {
+  filter: grayscale(1);
+}
+.page-constrained {
+  max-width: 1200px;
+}
+.text-constrained {
+  max-width: 700px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+footer a:hover {
+  color: @white;
+}
+
+@media @sm {
+  section {
+    padding-left: @spacer*24;
+    padding-right: @spacer*24;
+  }
+}
+
+@media @md {
+  section {
+    padding-top: @spacer*48;
+    padding-bottom: @spacer*48;
+  }
+
+  .background-md-center {
+    background-position: center;
+  }
+  .background-md-top {
+    background-position: top;
+  }
+  .background-md-bottom {
+    background-position: bottom;
+  }
+  .background-md-left {
+    background-position: left;
+  }
+  .background-md-right {
+    background-position: right;
+  }
+
+  #navigation-secondary {
+    background-color: var(--gray-darker);
+
+    .collapse {
+      display: flex;
+      height: auto !important;
+    }
+  }
+}
+
+@media @lg {
+}
+
+@media @xl {
+  section {
+    padding-top: @spacer*64;
+    padding-bottom: @spacer*64;
+  }
+}
+
+@import "_css-overrides.less";

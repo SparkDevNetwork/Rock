@@ -1,0 +1,51 @@
+{% assign currentpage = 'Global' | PageParameter:'Page' | WithFallback:'', '1' | AsInteger %}
+{% assign pagesize = 9 %}
+{% assign offset = pagesize | Times:currentpage | Minus:pagesize %}
+
+{% contentchannelitem where:'ContentChannelId == 714' iterator:'items' %}
+
+  {% assign itemcount = items | Size %}
+
+  {% if items and items != empty %}
+    <div class="row">
+
+      {% for item in items limit:pagesize offset:offset %}<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 flush">
+
+        {% assign fallbackImage = item.ContentChannel | Attribute:'ImageLandscape' %}
+        {% assign relatedItemGuid = item | Attribute:'RelatedEntry','RawValue' | WithFallback:'',null %}
+        {% assign format = item | Attribute:'ContentFormat' %}
+        {% assign verb = item | Attribute:'ContentFormat','Object' | Attribute:'Verb' %}
+
+        {% if relatedItemGuid and relatedItemGuid != emtpy and relatedItemGuid != '' %}
+
+          {% contentchannelitem where:'Guid == "{{ relatedItemGuid }}"' iterator:'relatedItems' %}
+            {% assign relatedItem = relatedItems | First %}
+          {% endcontentchannelitem %}
+
+          {% assign title = relatedItem.Title | Replace:"'","’" %}
+          {% assign subtitle = relatedItem | Attribute:'Subtitle' | Replace:"'","’" | | WithFallback:'', null %}
+          {% capture permalink %}{[ getPermalink cciid:'{{ relatedItem.Id }}' ]}{% endcapture %}
+          {% assign linkurl = '/groups/resources/entry?ResourceId=' | Append:item.Id | Append:'&ResourceUrl=' | Append:permalink %}
+          {% assign imageurl = relatedItem | Attribute:"ImageLandscape" | WithFallback:"", fallbackImage %}
+          {% assign target = null %}
+
+        {% else %}
+
+          {% assign title = item.Title | Replace:"'","’" %}
+          {% assign subtitle = item | Attribute:'Subtitle' | Replace:"'","’" | | WithFallback:'', null %}
+          {% assign imageurl = item | Attribute:"ImageLandscape" | WithFallback:"", fallbackImage %}
+          {% assign resourcelink = item | Attribute:'Link','RawValue' %}
+          {% assign linkurl = '/groups/resources/entry?ResourceId=' | Append:item.Id | Append:'&ResourceUrl=' | Append:resourcelink %}
+          {% assign target = '_blank' %}
+
+        {% endif %}
+
+        {[ card title:'{{ title }}' titlesize:'h4' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' type:'{{ format }}' linkurl:'{{ linkurl }}' linktext:'{{ verb }} {{ format }}' target:'{{ target }}' ]}
+
+      </div>{% endfor %}
+
+    </div>
+  {% endif %}
+{% endcontentchannelitem %}
+
+{[ pagination ]}

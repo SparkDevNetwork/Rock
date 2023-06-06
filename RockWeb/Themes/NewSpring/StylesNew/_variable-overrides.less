@@ -1,0 +1,229 @@
+// Theme Colors *show in editor*
+@theme-1: #6bac43; // bootstrap primary blue #color
+@theme-1-text: #fff; // #color
+//--
+@theme-2: @gray-darker; // admin bar
+@theme-2-text: lighten(@gray-darker, 70%);
+//--
+@theme-3: lighten(@theme-1, 20%); // header #color
+@theme-3-text: darken(@theme-3, 55%); // #color
+//--
+@theme-4: #1c683e; // page title #color
+@theme-4-text: #fff; // #color
+//--
+@theme-5: lighten(@theme-1, 40%); // badge bar #color
+@theme-5-text: darken(@theme-5, 45%); // #color
+//--
+@theme-6: lighten(@theme-1, 45%); // family bar #color
+@theme-6-text: darken(@theme-6, 40%); // #color
+//--
+@theme-7: spin(@theme-1, -135); // accent color #color
+@theme-7-text: #fff; // #color
+//--
+@theme-8: @gray-light; // action buttons / type labels #color
+@theme-8-text: #fff; // #color
+//--
+@body-bg: #fff; // The background color of the page. #color
+
+// Text *show in editor*
+@text-color: @gray-darker; // The default text color. #color
+@link-color: @brand-primary; // The color for all links. #color
+@link-hover-color: @theme-4; // The rollover color for all links. #color
+@text-muted: @gray-light; // The muted color for text #color #color
+@text-selection-bg: #afd074; // Text selection background color (used when people select text with the mouse). #color
+@text-selection-color: #fff; // Text selection text color (used when people select text with the mouse). #color
+@font-family-headings: "colfax-web", sans-serif;
+@font-family-sans-serif: "ff-meta-serif-web-pro", serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
+@font-size-base: 20px; // The default text size.
+@line-height-base: 1.4; // The default line height.
+//--
+@required-field-color: #eca9a7; // Color of the small dot that denotes required fields. #color
+@well-bg: darken(@body-bg, 5%); // The background color for wells. Wells are used to group like content. #color
+@help-color: #86b8cc;
+
+// Bootstrap Colors *show in editor*
+
+//// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
+@brand-primary: @theme-1; // #color
+@brand-secondary: #1c683e; // #color
+@brand-tertiary: #2a4930; // #color
+@brand-kraft: #bd9b68; // #color
+@brand-success: @theme-1; // #color
+@brand-info: #1698da; // #color
+@brand-warning: #f0ad4e; // #color
+@brand-danger: #c64f55; // #color
+//--
+@gray-darker: #1c1c1c; // #color
+@gray-dark: #303030; // #color
+@gray: #b4b4b4; // #color
+@gray-light: #ccc; // #color
+@gray-lighter: #efefef; // #color
+
+// Font Sizes
+//// Heading Sizes
+@font-size-display-1: floor(@font-size-base * 3.2); // 64px
+@font-size-display-2: floor(@font-size-base * 2.8); // 56px
+@font-size-display-3: floor(@font-size-base * 2.4); // 48px
+@font-size-h1: floor(@font-size-base * 2); // 40px
+@font-size-h2: ceil(@font-size-base * 1.8); // 36px
+@font-size-h3: ceil(@font-size-base * 1.6); // 32px
+@font-size-h4: floor(@font-size-base * 1.5); // 30px
+@font-size-h5: floor(@font-size-base * 1.4); // 28px
+@font-size-h6: ceil(@font-size-base * 1.3); // 26px
+@font-size-blockquote: ceil(@font-size-base * 1.6); // 32px
+@font-size-lead: floor(@font-size-base * 1.2); // 24px
+
+// Buttons
+@btn-font-weight: normal;
+//--
+@btn-default-color: @gray-darker;
+@btn-default-bg: #fff;
+@btn-default-border: @brand-primary;
+//--
+@btn-primary-color: #fff;
+@btn-primary-bg: @brand-primary;
+@btn-primary-border: @btn-primary-bg;
+//--
+@btn-secondary-color: #fff;
+@btn-secondary-bg: @brand-secondary;
+@btn-secondary-border: @brand-secondary;
+//--
+@btn-tertiary-color: #fff;
+@btn-tertiary-bg: @brand-tertiary;
+@btn-tertiary-border: @brand-tertiary;
+//--
+@btn-success-color: #fff;
+@btn-success-bg: @brand-success;
+@btn-success-border: @brand-success;
+//--
+@btn-warning-color: #fff;
+@btn-warning-bg: @brand-warning;
+@btn-warning-border: @brand-warning;
+//--
+@btn-danger-color: #fff;
+@btn-danger-bg: @brand-danger;
+@btn-danger-border: @brand-danger;
+//--
+@btn-info-color: #fff;
+@btn-info-bg: @brand-info;
+@btn-info-border: @brand-info;
+//--
+@btn-action-color: @theme-4-text;
+@btn-action-bg: @theme-4;
+@btn-action-border: darken(@btn-action-bg, 5%);
+//--
+@btn-security-color: @btn-default-color;
+@btn-security-bg: @btn-default-bg;
+@btn-security-border: @btn-default-border;
+//--
+@btn-link-disabled-color: @gray-light;
+
+@spacer: 4px;
+@spacing-1: 2; // 8px
+@spacing-2: 4; // 16px
+@spacing-3: 6; // 24px
+@spacing-4: 8; // 32px
+@spacing-5: 10; // 40px
+@spacing-6: 12; // 64px
+@spacing-7: 24; // 96px
+@spacing-8: 36; // 128px
+@spacing-9: 48; // 192px
+@spacing-10: 64; // 256px
+@spacing-11: 80; // 320px
+@spacing-12: 96; // 384px
+
+// Media Queries
+@screen-sm: 576px;
+@screen-sm-min: @screen-sm;
+
+@screen-md: 768px;
+@screen-md-min: @screen-md;
+
+@screen-lg: 992px;
+@screen-lg-min: @screen-lg;
+
+@screen-xl: 1441px;
+@screen-xl-min: @screen-xl;
+
+// Media queries
+// Example usage:
+// @media @xl {
+//   body {
+//     background: red;
+//   }
+// }
+@xl: ~"(min-width: @{screen-xl-min})";
+
+// @spacers: {
+//   0: 0;
+//   1: (@base-spacing-unit*2); // 8px
+//   2: (@base-spacing-unit*4); // 16px
+//   3: (@base-spacing-unit*6); // 24px
+//   4: (@base-spacing-unit*8); // 32px
+//   5: (@base-spacing-unit*10); // 40px
+//   6: (@base-spacing-unit*12); // 64px
+//   7: (@base-spacing-unit*24); // 96px
+//   8: (@base-spacing-unit*32); // 128px
+//   9: (@base-spacing-unit*48); // 192px
+//   10: (@base-spacing-unit*64); // 256px
+//   11: (@base-spacing-unit*80); // 320px
+//   12: (@base-spacing-unit*96); // 384px
+//   auto: auto;
+// };
+
+// @sizes: {
+//   0: 0;
+//   25: 25;
+//   50: 50;
+//   75: 75;
+//   100: 100;
+//   vh: vh;
+//   vw: vw;
+//   auto: auto;
+// };
+
+// @breakpoints: {
+//   sm: 576px;
+//   md: 768px;
+//   lg: 992px;
+//   xl: 1441px;
+// };
+
+// Bootstrap Overrides
+
+//== Components
+//
+//## Define common padding and border radius sizes and more. Values based on 14px text and 1.428 line-height (~20px to start).
+
+@padding-base-vertical: @spacer * 3;
+@padding-base-horizontal: @spacer * 6;
+
+@padding-large-vertical: @spacer * 4;
+@padding-large-horizontal: @spacer * 8;
+
+@padding-small-vertical: @spacer * 2;
+@padding-small-horizontal: @spacer * 5;
+
+@padding-xs-vertical: @spacer * 2;
+@padding-xs-horizontal: @spacer * 4;
+
+@line-height-large: 1.3333333; // extra decimals for Win 8.1 Chrome
+@line-height-small: 1.5;
+
+@border-radius-base: 8px;
+@border-radius-large: 16px;
+@border-radius-small: 4px;
+
+@btn-font-weight: 500;
+
+// Allows for customizing button radius independently from global border radius
+@btn-border-radius-base: 1000px;
+@btn-border-radius-large: 1000px;
+@btn-border-radius-small: 1000px;
+
+.button-size(@padding-vertical; @padding-horizontal; @font-size; @line-height; @border-radius) {
+  padding: (@padding-vertical + 1) @padding-horizontal (@padding-vertical - 1);
+  font-size: @font-size;
+  line-height: @line-height;
+  border-radius: @border-radius;
+}

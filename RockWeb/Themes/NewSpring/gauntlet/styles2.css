@@ -1,0 +1,571 @@
+/*
+  
+  Variables
+
+*/
+
+:root {
+  --bible-page: #ede4df;
+  --lakeside: #3333cc;
+  --riggs-field: #5f8c46;
+  --prayers-up: #de6588;
+  --tiger-paw: #de7840;
+  --group-hug: #645ca0;
+  --new-wave: #63aece;
+  --dandy-lion: #daba4d;
+  --not-quite-black: #302e35;
+  --gatorade: #c0d164;
+  --heat-stroke: #da5e56;
+  --lakeside-darker: #262698;
+  --riggs-field-darker: #3c592c;
+  --prayers-up-darker: #612c3b;
+  --tiger-paw-darker: #ab5c31;
+  --group-hug-darker: #2d2852;
+  --new-wave-darker: #265467;
+  --dandy-lion-darker: #a58d3a;
+  --gatorade-darker: #5c642e;
+  --heat-stroke-darker: #622723;
+}
+
+/*
+
+  Page Overrides
+
+*/
+
+#zone-main > .zone-content > .js-container {
+  padding: 0 !important;
+}
+
+#zone-main > .zone-content > .js-container .js-row {
+  margin: 0 !important;
+}
+
+#zone-main > .zone-content > .js-container .js-col {
+  padding: 0 !important;
+}
+
+section {
+  padding: 90px 30px;
+}
+
+.hero .bring-forward {
+  margin-top: -100px;
+}
+
+.alert+.position-absolute {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Combined.png);
+  background-color: transparent !important;
+  background-repeat: repeat;
+  background-size: 65%;
+  opacity: .1;
+  background-attachment: fixed;
+}
+
+.gauntlet:not(.btn) {
+  font-family: "colfax-web";
+  letter-spacing: -0.5px;
+  color: var(--not-quite-black);
+}
+
+.gauntlet h1,
+.gauntlet h2,
+.gauntlet h3,
+.gauntlet h4,
+.gauntlet h5,
+.gauntlet h6 {
+  font-family: bd-geminis, sans-serif !important;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal !important;
+}
+
+.gauntlet h2,
+.gauntlet .h2 {
+  font-size: 52px;
+}
+
+.gauntlet h3,
+.gauntlet .h3 {
+  font-size: 42px;
+}
+
+.gauntlet h4, 
+.gauntlet .h4 {
+  font-size: 36px;
+}
+
+.gauntlet .accordion > .panel {
+  margin-bottom: 10px;
+}
+
+/*
+  
+  Utility Classes
+
+*/
+
+.text-geminis {
+  font-family: bd-geminis, sans-serif !important;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal !important;
+}
+
+.lead {
+  font-weight: 500;
+  font-style: italic;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-screen {
+  height: 100vh;
+}
+
+.w-screen {
+  width: 100vw;
+}
+
+.max-w-full {
+  max-width: 100%;
+}
+
+.max-h-full {
+  max-height: 100%;
+}
+
+.min-w-full {
+  min-width: 100%;
+}
+
+.min-h-full {
+  min-height: 100%;
+}
+
+.negative-top-100 {
+  top: -100%;
+}
+
+.negative-bottom-100 {
+  bottom: -100%;
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.opacity-20 {
+  opacity: 0.2;
+}
+
+.opacity-10 {
+  opacity: 0.1;
+}
+
+.opacity-5 {
+  opacity: 0.05;
+}
+
+.object-cover {
+  object-fit: cover;
+}
+
+.page-constrained {
+  max-width: 1200px;
+}
+
+.section-divider {
+  position: relative;
+  top: 3px;
+}
+.section-divider.flip {
+  position: relative;
+  top: -3px;
+  transform: rotate(180deg);
+}
+
+/* 
+
+  COLORS 
+  
+*/
+
+.text-bible-page {
+  color: var(--bible-page);
+}
+a.text-bible-page:hover {
+  color: var(--bible-page-darker);
+}
+.bg-bible-page {
+  background-color: var(--bible-page);
+}
+.fill-bible-page {
+  fill: var(--bible-page);
+}
+
+.text-lakeside {
+  color: var(--lakeside);
+}
+a.text-lakeside:hover {
+  color: var(--lakeside-darker);
+}
+.bg-lakeside {
+  background-color: var(--lakeside);
+}
+.bg-lakeside-darker {
+  background-color: var(--lakeside-darker);
+}
+.fill-lakeside {
+  fill: var(--lakeside);
+}
+
+.text-riggs-field {
+  color: var(--riggs-field);
+}
+a.text-riggs-field:hover {
+  color: var(--riggs-field-darker);
+}
+.bg-riggs-field {
+  background-color: var(--riggs-field);
+}
+.bg-riggs-field-darker {
+  background-color: var(--riggs-field-darker);
+}
+.fill-riggs-field {
+  fill: var(--riggs-field);
+}
+
+.text-prayers-up {
+  color: var(--prayers-up);
+}
+a.text-prayers-up:hover {
+  color: var(--prayers-up-darker);
+}
+.bg-prayers-up {
+  background-color: var(--prayers-up);
+}
+.fill-prayers-up {
+  fill: var(--prayers-up);
+}
+
+.text-tiger-paw {
+  color: var(--tiger-paw);
+}
+a.text-tiger-paw:hover {
+  color: var(--tiger-paw-darker);
+}
+.bg-tiger-paw {
+  background-color: var(--tiger-paw);
+}
+.bg-tiger-paw-darker {
+  background-color: var(--tiger-paw-darker);
+}
+.fill-tiger-paw {
+  fill: var(--tiger-paw);
+}
+
+.text-group-hug {
+  color: var(--group-hug);
+}
+a.text-group-hug:hover {
+  color: var(--group-hug-darker);
+}
+
+.text-group-hug-darker {
+  color: var(--group-hug-darker);
+}
+a.text-group-hug-darker:hover {
+  color: var(--group-hug-darker-darker);
+}
+
+.bg-group-hug {
+  background-color: var(--group-hug);
+}
+.bg-group-hug-darker {
+  background-color: var(--group-hug-darker);
+}
+.fill-group-hug {
+  fill: var(--group-hug);
+}
+
+.text-new-wave {
+  color: var(--new-wave);
+}
+a.text-new-wave:hover {
+  color: var(--new-wave-darker);
+}
+.bg-new-wave {
+  background-color: var(--new-wave);
+}
+.bg-new-wave-darker {
+  background-color: var(--new-wave-darker);
+}
+.fill-new-wave {
+  fill: var(--new-wave);
+}
+
+.text-dandy-lion {
+  color: var(--dandy-lion);
+}
+a.text-dandy-lion:hover {
+  color: var(--dandy-lion-darker);
+}
+.bg-dandy-lion {
+  background-color: var(--dandy-lion);
+}
+.bg-dandy-lion-darker {
+  background-color: var(--dandy-lion-darker);
+}
+.fill-dandy-lion {
+  fill: var(--dandy-lion);
+}
+
+.text-black {
+  color: var(--not-quite-black);
+}
+.bg-black {
+  background-color: var(--not-quite-black);
+}
+.fill-black {
+  fill: var(--not-quite-black);
+}
+
+.text-gatorade {
+  color: var(--gatorade);
+}
+a.text-gatorade:hover {
+  color: var(--gatorade-darker);
+}
+.bg-gatorade {
+  background-color: var(--gatorade);
+}
+.bg-gatorade-darker {
+  background-color: var(--gatorade-darker);
+}
+.fill-gatorade {
+  fill: var(--gatorade);
+}
+
+.text-heat-stroke {
+  color: var(--heat-stroke);
+}
+a.text-heat-stroke:hover {
+  color: var(--heat-stroke-darker);
+}
+.bg-heat-stroke {
+  background-color: var(--heat-stroke);
+}
+.bg-heat-stroke-darker {
+  background-color: var(--heat-stroke-darker);
+}
+.fill-heat-stroke {
+  fill: var(--heat-stroke);
+}
+
+/*
+  
+  Buttons
+
+*/
+
+.btn-heat-stroke,
+.btn-heat-stroke:hover,
+.btn-heat-stroke:focus {
+  background-color: var(--heat-stroke);
+  color: #fff;
+  box-shadow: 1px 1px 0 var(--heat-stroke-darker), 2px 2px 0 var(--heat-stroke-darker), 3px 3px 0 var(--heat-stroke-darker), 4px 4px 0 var(--heat-stroke-darker),
+    5px 5px 0 var(--heat-stroke-darker);
+}
+
+.btn-group-hug,
+.btn-group-hug:hover,
+.btn-group-hug:focus {
+  background-color: var(--group-hug);
+  color: #fff;
+  box-shadow: 1px 1px 0 var(--group-hug-darker), 2px 2px 0 var(--group-hug-darker), 3px 3px 0 var(--group-hug-darker), 4px 4px 0 var(--group-hug-darker),
+    5px 5px 0 var(--group-hug-darker);
+}
+
+.btn-prayers-up,
+.btn-prayers-up:hover,
+.btn-prayers-up:focus {
+  background-color: var(--prayers-up);
+  color: #fff;
+  box-shadow: 1px 1px 0 var(--prayers-up-darker), 2px 2px 0 var(--prayers-up-darker), 3px 3px 0 var(--prayers-up-darker), 4px 4px 0 var(--prayers-up-darker),
+    5px 5px 0 var(--prayers-up-darker);
+}
+
+.btn-new-wave,
+.btn-new-wave:hover,
+.btn-new-wave:focus {
+  background-color: var(--new-wave);
+  color: #fff;
+  box-shadow: 1px 1px 0 var(--new-wave-darker), 2px 2px 0 var(--new-wave-darker), 3px 3px 0 var(--new-wave-darker), 4px 4px 0 var(--new-wave-darker),
+    5px 5px 0 var(--new-wave-darker);
+}
+
+.btn-gatorade,
+.btn-gatorade:hover,
+.btn-gatorade:focus {
+  background-color: var(--gatorade);
+  color: #fff;
+  box-shadow: 1px 1px 0 var(--gatorade-darker), 2px 2px 0 var(--gatorade-darker), 3px 3px 0 var(--gatorade-darker), 4px 4px 0 var(--gatorade-darker),
+    5px 5px 0 var(--gatorade-darker);
+}
+
+/*
+
+  Backgrounds
+
+*/
+
+.bg-pattern {
+  background-color: transparent !important;
+  background-repeat: repeat;
+  background-size: 45%;
+  background-attachment: fixed;
+}
+
+.bg-pattern-combined {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Combined.png);
+}
+
+.bg-pattern-bolts {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Bolts2.png);
+}
+
+.bg-pattern-exclamation {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Exclamation2.png);
+}
+
+.bg-pattern-flowers {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Flowers2.png);
+}
+
+.bg-pattern-stars {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Stars2.png);
+}
+
+@media only screen and (min-width: 500px) {
+  .alert+.position-absolute {
+    background-size: 50%;
+  }
+  .bg-pattern {
+    background-size: 35%;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  .alert+.position-absolute {
+    background-size: 25%;
+  }
+  .bg-pattern {
+    background-size: 25%;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .alert+.position-absolute {
+    background-size: 20%;
+  }
+  .bg-pattern {
+    background-size: 15%;
+  }
+}
+
+/*
+  
+
+
+
+
+
+  MEDIA QUERIES
+
+
+
+
+
+
+*/
+
+@media only screen and (min-width: 768px) {
+  section {
+    padding: 90px 30px;
+  }
+
+  .hero .bring-forward {
+    margin-top: 0px;
+  }
+
+  .md-btn-inline {
+    display: inline-block;
+    width: auto;
+  }
+
+  .md-push-half-right {
+    margin-right: 15px;
+  }
+
+  .md-text-center {
+    text-align: center;
+  }
+
+  .btn-shadowed {
+    transition-duration: 60ms;
+  }
+
+  .gauntlet .btn:hover,
+  .gauntlet .btn-shadowed:hover {
+    box-shadow: none !important;
+    transform: translate(5px, 5px);
+    transition-duration: 60ms;
+    transition-timing-function: ease-in-out;
+  }
+
+  .gauntlet:not(.btn) {
+    font-size: 20px;
+  }
+
+  .gauntlet h2,
+  .gauntlet .h2 {
+    font-size: 62px;
+  }
+
+  .gauntlet h3,
+  .gauntlet .h3 {
+    font-size: 52px;
+  }
+
+  .gauntlet h4,
+  .gauntlet .h4 {
+    font-size: 42px;
+  }
+
+  .btn-lg {
+    font-size: 20px;
+    padding: 12px 18px 11px;
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  section {
+    padding: 150px 30px;
+  }
+}
+
