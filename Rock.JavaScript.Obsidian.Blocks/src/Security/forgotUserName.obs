@@ -1,13 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="step === Step.Success" alertType="success" v-html="config.captions?.successCaption"></Alert>
+    <NotificationBox v-if="step === Step.Success" alertType="success" v-html="config.captions?.successCaption"></NotificationBox>
 
     <template v-else-if="step === Step.EmailEntry">
         <div v-html="config.captions?.headingCaption"></div>
 
-        <Alert v-if="isErrorShown" alertType="danger">{{ errorMessage }}</Alert>
+        <NotificationBox v-if="isErrorShown" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-        <Alert v-if="isWarningShown" alertType="validation">
+        <NotificationBox v-if="isWarningShown" alertType="validation">
             <template v-if="changePasswordNotSupportedWarningOptions">
                 <p>We were able to find the following accounts for this email, but none of them are able to be reset from this website.</p>
                 <p>Accounts:<br /> {{ changePasswordNotSupportedWarningOptions.accountTypes }}</p>
@@ -15,7 +15,7 @@
             </template>
 
             <div v-else v-html="config.captions?.invalidEmailCaption"></div>
-        </Alert>
+        </NotificationBox>
 
         <RockForm @submit="onSubmitted" :hideErrors="true">
             <EmailBox v-model="email"
@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
     import { ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";

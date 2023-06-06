@@ -2,7 +2,7 @@
 <template>
     <fieldset>
 
-        <Alert v-if="isInMemoryTransport" alertType="warning">The Web Farm will not function correctly with the In-Memory bus transport. Please configure a different bus transport before using the Web Farm.</Alert>
+        <NotificationBox v-if="isInMemoryTransport" alertType="warning">The Web Farm will not function correctly with the In-Memory bus transport. Please configure a different bus transport before using the Web Farm.</NotificationBox>
 
         <ValueDetailList :modelValue="topValues" />
 
@@ -24,7 +24,7 @@
     import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { WebFarmSettingsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsBag";

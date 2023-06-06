@@ -5,7 +5,7 @@
            :saveText="saveButtonText"
            @save="onSave">
 
-        <Alert v-if="errorMessage"
+        <NotificationBox v-if="errorMessage"
                v-text="errorMessage"
                alertType="warning" />
 
@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";

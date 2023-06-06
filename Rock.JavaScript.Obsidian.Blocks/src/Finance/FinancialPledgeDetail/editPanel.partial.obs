@@ -33,8 +33,8 @@
         </div>
 
         <div v-else>
-            <Alert v-if="duplicatePledgeWarningText" v-html="duplicatePledgeWarningText" :dismissable="false"
-                alertType="warning"></Alert>
+            <NotificationBox v-if="duplicatePledgeWarningText" v-html="duplicatePledgeWarningText" :dismissable="false"
+                alertType="warning"></NotificationBox>
 
             <div v-else>
                 <div class="form-group" v-if="currentPerson">
@@ -88,7 +88,7 @@ import RockLabel from "@Obsidian/Controls/rockLabel";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeBag";
 import { FinancialPledgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeDetailOptionsBag";

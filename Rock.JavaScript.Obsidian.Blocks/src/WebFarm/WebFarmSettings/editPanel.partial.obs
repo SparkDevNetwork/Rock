@@ -2,9 +2,9 @@
 <template>
     <fieldset>
 
-        <Alert v-if="isInMemoryTransport" alertType="warning">The Web Farm will not function correctly with the In-Memory bus transport. Please configure a different bus transport before using the Web Farm.</Alert>
+        <NotificationBox v-if="isInMemoryTransport" alertType="warning">The Web Farm will not function correctly with the In-Memory bus transport. Please configure a different bus transport before using the Web Farm.</NotificationBox>
 
-        <Alert alertType="info">In order to respect any new setting changes made here, please restart this node after saving.</Alert>
+        <NotificationBox alertType="info">In order to respect any new setting changes made here, please restart this node after saving.</NotificationBox>
 
         <div class="row">
             <div class="col-md-6">
@@ -49,7 +49,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";
     import NumberBox from "@Obsidian/Controls/numberBox";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { WebFarmSettingsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsBag";
     import { WebFarmSettingsDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsDetailOptionsBag";
 

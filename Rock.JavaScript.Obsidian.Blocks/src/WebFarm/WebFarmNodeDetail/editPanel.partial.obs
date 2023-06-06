@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <Alert alertType="info">In order to respect any new setting changes made here, please restart this node after saving.</Alert>
+        <NotificationBox alertType="info">In order to respect any new setting changes made here, please restart this node after saving.</NotificationBox>
 
         <div class="row">
             <div class="col-md-6">
@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";

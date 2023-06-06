@@ -18,7 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
@@ -53,7 +53,7 @@ export default defineComponent({
     components: {
         AddressControl,
         AttributeValuesContainer,
-        Alert,
+        NotificationBox,
         CheckBox,
         DefinedValuePicker,
         DropDownList,
@@ -247,7 +247,7 @@ export default defineComponent({
 
             <AddressControl label="" v-model="addressFields" />
 
-            <Alert v-if="standardizationResults" alertType="info" v-html="standardizationResults" />
+            <NotificationBox v-if="standardizationResults" alertType="info" v-html="standardizationResults" />
 
             <RockButton
                 btnSize="sm"

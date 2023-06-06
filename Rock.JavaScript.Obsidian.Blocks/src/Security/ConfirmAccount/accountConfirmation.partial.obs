@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
-        <Alert v-if="options.errorCaption" alertType="danger" v-html="options.errorCaption"></Alert>
+        <NotificationBox v-if="options.errorCaption" alertType="danger" v-html="options.errorCaption"></NotificationBox>
 
         <RockForm :hideErrors="true" @validationChanged="onFormValidationChanged">
             <fieldset>
@@ -34,7 +34,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import { ConfirmAccountEvent, ShowChangePasswordViewEvent, ShowDeleteConfirmationViewEvent } from "./events";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
     import TextBox from "@Obsidian/Controls/textBox";

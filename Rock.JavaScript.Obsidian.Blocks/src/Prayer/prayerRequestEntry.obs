@@ -3,11 +3,11 @@
         <Panel title="Add Prayer Request" titleIconCssClass="fa fa-praying-hands">
             <template #default>
                 <RockForm v-if="!isEntryHidden" @submit="onSubmitted">
-                    <Alert v-if="errors.length" id="nbWarningMessage" alertType="warning" label="Warning">
+                    <NotificationBox v-if="errors.length" id="nbWarningMessage" alertType="warning" label="Warning">
                         <ul>
                             <li v-for="error in errors">{{ error }}</li>
                         </ul>
-                    </Alert>
+                    </NotificationBox>
 
                     <fieldset>
 
@@ -98,7 +98,7 @@
                 <template v-else>
                     <h2>Request Submitted</h2>
 
-                    <Alert v-if="successMessage" alertType="success" v-html="successMessage" />
+                    <NotificationBox v-if="successMessage" alertType="success" v-html="successMessage" />
 
                     <RockButton btnType="link" @click="onAddAnotherRequestClicked">Add Another Request</RockButton>
                 </template>
@@ -109,7 +109,7 @@
 
 <script setup lang="ts">
     import { computed, nextTick, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";

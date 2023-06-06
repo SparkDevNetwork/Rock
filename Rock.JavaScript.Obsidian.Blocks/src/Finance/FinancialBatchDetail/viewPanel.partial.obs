@@ -6,8 +6,8 @@
 
         <div class="row">
             <div class="col-md-12">
-                <Alert alert-type="info" v-if="modelValue?.isAutomated">{{ options.automatedToolTip }}</Alert>
-                <Alert alert-type="info" v-if="options.isStatusChangeDisabled">{{ options.editModeMessage }}</Alert>
+                <NotificationBox alert-type="info" v-if="modelValue?.isAutomated">{{ options.automatedToolTip }}</NotificationBox>
+                <NotificationBox alert-type="info" v-if="options.isStatusChangeDisabled">{{ options.editModeMessage }}</NotificationBox>
             </div>
             <div class="col-md-6">
                 <ValueDetailList :modelValue="leftSideValues" />
@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";

@@ -4,7 +4,7 @@
 
         <div v-if="rebuildActionSuccessMessage" class="row">
             <div class="col-md-12">
-                <Alert alertType="success">{{ rebuildActionSuccessMessage }}</Alert>
+                <NotificationBox alertType="success">{{ rebuildActionSuccessMessage }}</NotificationBox>
             </div>
         </div>
 
@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";

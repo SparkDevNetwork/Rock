@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Alert v-if="$props.options.exclusions?.length ?? 0" alertType="warning">
+    <NotificationBox v-if="$props.options.exclusions?.length ?? 0" alertType="warning">
         <strong>Exclusions</strong> <br />
         <span class="js-notification-text">
             <p>This schedule will not be active during the following dates due to being excluded by the schedule's category:</p>
@@ -10,7 +10,7 @@
                 </template>
             </p>
         </span>
-    </Alert>
+    </NotificationBox>
     <fieldset>
 
         <ValueDetailList :modelValue="topValues" />
@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import Alert from "@Obsidian/Controls/alert.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";

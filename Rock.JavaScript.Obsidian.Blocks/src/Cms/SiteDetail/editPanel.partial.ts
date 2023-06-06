@@ -27,7 +27,7 @@ import PanelWidget from "@Obsidian/Controls/panelWidget";
 import CodeEditor from "@Obsidian/Controls/codeEditor";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import Modal from "@Obsidian/Controls/modal";
 import RockButton from "@Obsidian/Controls/rockButton";
 import AttributeEditor from "@Obsidian/Controls/attributeEditor";
@@ -63,7 +63,7 @@ export default defineComponent({
         PanelWidget,
         NumberBox,
         CodeEditor,
-        Alert,
+        NotificationBox,
         Modal,
         CategoryPicker,
         FieldTypePicker,
@@ -326,9 +326,9 @@ export default defineComponent({
     template: `
 <fieldset>
 
-    <Alert alertType="info">
+    <NotificationBox alertType="info">
         <strong>Note</strong> If a Default Page is not specified, Rock will automatically create a new page at the root and set it as the default page for this new site.
-    </Alert>
+    </NotificationBox>
 
     <div class="row">
         <div class="col-md-6">
@@ -459,9 +459,9 @@ export default defineComponent({
 
     <PanelWidget :isDefaultOpen="false">
         <template #header>Page Attributes</template>
-        <Alert alertType="info">
+        <NotificationBox alertType="info">
             Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes.
-        </Alert>
+        </NotificationBox>
 
         <RockButton class="btn-add btn-grid-action" btnType="link" @click="onAddAttribute"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
 
