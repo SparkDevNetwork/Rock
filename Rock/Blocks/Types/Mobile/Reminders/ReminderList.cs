@@ -157,10 +157,16 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 var filteredReminders = FilterRemindersFromFilterBagValues( filter, reminders )
                     .ToList();
 
+
                 // Order by modified date time if we're limiting to complete reminders.
-                if( filter.CompletionFilter == FilterBag.CompletionFilterValue.Complete )
+                if ( filter.CompletionFilter == FilterBag.CompletionFilterValue.Complete )
                 {
                     filteredReminders = filteredReminders.OrderByDescending( r => r.ModifiedDateTime )
+                        .ToList();
+                }
+                else
+                {
+                    filteredReminders = filteredReminders.OrderByDescending( r => r.Id )
                         .ToList();
                 }
 
@@ -176,18 +182,25 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                     IsComplete = r.IsComplete,
                     EntityTypeGuid = EntityTypeCache.GetGuid( r.ReminderType.EntityTypeId ).Value,
                     EntityGuid = Reflection.GetEntityGuidForEntityType( r.ReminderType.EntityType.Id, r.EntityId.ToStringSafe(), true, rockContext ).Value
-                } )
+                } );
+
+                List<ReminderInfoBag> reminderBagList = new List<ReminderInfoBag>();
 
                 // We do this so we can support querying sequential data.
-                .Skip( startIndex )
-                .Take( count )
-                .ToList();
+                if ( startIndex >= 0 && count > 0 )
+                {
+                    reminderBags = reminderBags
+                    .Skip( startIndex )
+                    .Take( count );
+                }
+
+                reminderBagList = reminderBags.ToList();
 
                 // We need some more data post query (such as a specific photo url generated based on the entity)
                 // so let's loop over our bags and populate those properties.
-                reminderBags.ForEach( ( bag ) => PopulateAdditionalPropertiesForReminderInfoBag( bag, personService ) );
+                reminderBagList.ForEach( ( bag ) => PopulateAdditionalPropertiesForReminderInfoBag( bag, personService ) );
 
-                return reminderBags;
+                return reminderBagList;
             }
         }
 
@@ -252,7 +265,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 {
                     reminders = reminders.Where( r => r.IsComplete );
                 }
-                else if( filter.CompletionFilter == FilterBag.CompletionFilterValue.Incomplete )
+                else if ( filter.CompletionFilter == FilterBag.CompletionFilterValue.Incomplete )
                 {
                     reminders = reminders.Where( r => !r.IsComplete );
                 }
