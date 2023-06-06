@@ -1,0 +1,138 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="element" :title="tooltipText" class="grid-row" :class="additionalRowClasses">
+        <DataCell v-for="column in props.columns"
+                  :column="column"
+                  :row="props.row"
+                  :grid="props.grid"
+                  :isSelectable="isSelectable"
+                  @click="onCellClick" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, onBeforeUnmount, onMounted, ref } from "vue";
+    import DataCell from "./dataCell.partial.obs";
+    import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps({
+        /**
+         * The array of columns that should be displayed in the data row.
+         * This may be different than the columns defined in the grid but
+         * must be a subset of them.
+         */
+        columns: {
+            type: Array as PropType<ReadonlyArray<ColumnDefinition>>,
+            required: true
+        },
+
+        /** The data row that contains the values to be displayed. */
+        row: {
+            type: Object as PropType<Record<string, unknown>>,
+            required: true
+        },
+
+        /** The grid this row is being displayed for. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        },
+
+        /** The field that contains the tooltip string for the row. */
+        tooltipField: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** True if this row is selectable. */
+        isSelectable: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** True if this row is an even numbered row. */
+        isEven: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** True if the height of the row is monitored. */
+        monitorHeight: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "click", key: string): void;
+        (e: "resize", key: string, size: number): void;
+    }>();
+
+    const element = ref<HTMLElement>();
+    let resizeObserver: ResizeObserver | undefined;
+
+    const additionalRowClasses = computed((): string => {
+        let classValue = props.isEven ? "grid-row-even" : "grid-row-odd";
+
+        if (props.isSelectable) {
+            classValue += " grid-row-selectable";
+        }
+
+        return classValue;
+    });
+
+    /** Contains the text to display in the tooltip for the entire row. */
+    const tooltipText = computed((): string | undefined => {
+        if (!props.tooltipField) {
+            return undefined;
+        }
+
+        const fieldValue = props.row[props.tooltipField];
+
+        if (typeof fieldValue === "string") {
+            return fieldValue || undefined;
+        }
+        else if (typeof fieldValue === "number") {
+            return fieldValue.toString();
+        }
+        else if (fieldValue) {
+            return String(fieldValue);
+        }
+        else {
+            return undefined;
+        }
+    });
+
+    /**
+     * Called when a cell is clicked. Check if we have a valid row key and
+     * then emit our own clicked event with it.
+     */
+    function onCellClick(): void {
+        const rowKey = props.grid.getRowKey(props.row);
+
+        if (rowKey) {
+            emit("click", rowKey);
+        }
+    }
+
+    onMounted(() => {
+        if (typeof ResizeObserver !== "undefined" && element.value) {
+            resizeObserver = new ResizeObserver(() => {
+                const rowKey = props.grid.getRowKey(props.row);
+
+                if (rowKey && element.value) {
+                    emit("resize", rowKey, element.value.offsetHeight);
+                }
+            });
+
+            resizeObserver.observe(element.value);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+            resizeObserver = undefined;
+        }
+    });
+</script>

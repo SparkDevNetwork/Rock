@@ -634,10 +634,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         {
                             if ( !groupMemberService.CanDelete( groupMember, out string groupMemberErrorMessage ) )
                             {
-                                /*
-                                 * Just swallow this error, as there's really no need to show the user.
-                                 * The Attendee (Group Member Assignment) record itself will be deleted, but we cannot delete the underlying GroupMember record.
-                                 */
+                                // Just swallow this error, as there's really no need to show the user.
+                                // The Attendee (Group Member Assignment) record itself will be deleted, but we cannot delete the underlying GroupMember record.
                             }
                             else
                             {

@@ -80,7 +80,7 @@
 }
 
 .message-container {
-    margin: 0px 0px 12px 0px;
+    margin: 0 0 12px 0;
     display: flex;
 }
 
@@ -95,8 +95,8 @@
     background: inherit;
     border: none;
     color: inherit;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }
 
 .message-text :deep(pre .string) {

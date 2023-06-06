@@ -6,6 +6,7 @@
   },
   "include": [ "./*.ts" ],
   "references": [
-    { "path": "../Enums" }
+    { "path": "../Enums" },
+    { "path": "../Libs" }
   ]
 }

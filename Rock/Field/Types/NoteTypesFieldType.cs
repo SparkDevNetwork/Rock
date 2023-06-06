@@ -26,6 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,13 +35,83 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.NOTE_TYPES )]
     public class NoteTypesFieldType : CategoryFieldType, IEntityReferenceFieldType
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
+        private const string VALUES_PUBLIC_KEY = "values";
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeName = privateConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY );
+                if ( string.IsNullOrWhiteSpace( entityTypeName ) )
+                {
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
+                        .Queryable()
+                        .OrderBy( n => n.EntityType.Name )
+                        .ThenBy( n => n.Name )
+                        .Select( n => new
+                        {
+                            EntityTypeFriendlyName = n.EntityType.FriendlyName,
+                            n.Name,
+                            n.Guid
+                        } ) // creating this anonymous object to prevent further calls database
+                        .ToList() // getting the results to the memory so that the subsequent operations do not throw InvalidOperationException
+                        .Select( n => new ListItemBag
+                        {
+                            Text = $"{n.EntityTypeFriendlyName}: {n.Name}",
+                            Value = n.Guid.ToString().ToUpper()
+                        } )
+                        .ToCamelCaseJson( false, true );
+                }
+                else
+                {
+                    int entityTypeId = 0;
+                    string qualifierColumn = string.Empty;
+                    string qualifierValue = string.Empty;
+
+                    if ( publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+                    {
+                        entityTypeName = publicConfigurationValues[ENTITY_TYPE_NAME_KEY];
+                        if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
+                        {
+                            var entityType = EntityTypeCache.Get( entityTypeName );
+                            if ( entityType != null )
+                            {
+                                entityTypeId = entityType.Id;
+                            }
+                        }
+                    }
+                    if ( publicConfigurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) )
+                    {
+                        qualifierColumn = publicConfigurationValues[QUALIFIER_COLUMN_KEY];
+                    }
+
+                    if ( publicConfigurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
+                    {
+                        qualifierValue = publicConfigurationValues[QUALIFIER_VALUE_KEY];
+                    }
+
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
+                        .Get( entityTypeId, qualifierColumn, qualifierValue )
+                        .OrderBy( n => n.Name )
+                        .Select( n => new ListItemBag
+                        {
+                            Text = n.Name,
+                            Value = n.Guid.ToString().ToUpper()
+                        } ).ToCamelCaseJson( false, true );
+                }
+            }
+            return publicConfigurationValues;
+        }
 
         #endregion Configuration
 

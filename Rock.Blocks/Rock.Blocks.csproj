@@ -60,7 +60,10 @@
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
+    <Compile Include="Example\ObsidianGalleryList.cs" />
     <Compile Include="Group\GroupAttendanceDetail.cs" />
+    <Compile Include="RockObsidianEntityListBlockType.cs" />
+    <Compile Include="RockObsidianListBlockType.cs" />
     <Compile Include="Group\Scheduling\GroupScheduler.cs" />
     <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />

@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Reminders
 
     [ReminderTypesField(
         "Reminder Types Include",
-        Description = "Select any specific remindeder types to show in this block. Leave all unchecked to show all active reminder types ( except for excluded reminder types ).",
+        Description = "Select any specific reminder types to show in this block. Leave all unchecked to show all active reminder types ( except for excluded reminder types ).",
         IsRequired = false,
         Order = 2,
         Key = AttributeKey.ReminderTypesInclude )]

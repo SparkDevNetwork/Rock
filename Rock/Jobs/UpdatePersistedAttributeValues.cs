@@ -688,7 +688,7 @@ namespace Rock.Jobs
         /// <param name="message">The message to be logged.</param>
         private void LogInformation( string message )
         {
-            this.Log( RockLogLevel.Info, message );
+            Log( RockLogLevel.Info, message );
         }
 
         /// <summary>
@@ -697,7 +697,7 @@ namespace Rock.Jobs
         /// <param name="message">The message to be logged.</param>
         private void LogDebug( string message )
         {
-            this.Log( RockLogLevel.Debug, message );
+            Log( RockLogLevel.Debug, message );
         }
 
         /// <summary>

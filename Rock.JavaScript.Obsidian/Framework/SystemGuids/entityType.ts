@@ -491,6 +491,12 @@ export const EntityType = {
     MobileProfileDetailsBlockType: "A1ED4948-0778-4E13-B434-E97795DDB68B",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Register */
     MobileRegisterBlockType: "4459357F-E422-45D1-855D-C4681101F848",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Reminders.ReminderDashboard. */
+    MobileRemindersReminderDashboard: "AD29BE7E-00B2-4AE3-8DA4-756C348E7AFA",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Reminders.ReminderEdit. */
+    MobileRemindersReminderEdit: "A07DA3CE-4598-4177-AD47-B0D1EBFB1E7A",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Reminders.ReminderList. */
+    MobileRemindersReminderList: "35B1CA9F-DCD9-453F-892E-33E0E09E7CB3",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Security.OnboardPerson. */
     MobileSecurityOnboardPerson: "C9B7F36A-F70A-4ABF-9422-B18E579F927F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.WorkflowEntry */

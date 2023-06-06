@@ -367,6 +367,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 { "PhotoId", "Person.PhotoId" }
             };
 
+            string publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" ).RemoveTrailingForwardslash();
+
             //
             // Add a custom field for the PhotoUrl since it needs to be custom formatted.
             //
@@ -374,7 +376,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 Key = "PhotoUrl",
                 FieldFormat = FieldFormat.String,
-                Value = "{{ 'Global' | Attribute:'PublicApplicationRoot' | Append:item.Person.PhotoUrl }}"
+                Value = $@"{{{{ '{publicApplicationRoot}' | Append:item.Person.PhotoUrl }}}}"
             } );
 
             return MobileHelper.CreateItemLavaTemplate( properties, fields );

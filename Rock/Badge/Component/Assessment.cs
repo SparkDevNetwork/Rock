@@ -212,7 +212,7 @@ namespace Rock.Badge.Component
                         badgeColorHtml = assessmentType.BadgeColor.IsNotNullOrWhiteSpace() ? $"style='color:{assessmentType.BadgeColor};' " : string.Empty;
 
                         badgeIcons.AppendLine( $@"<div {badgeColorHtml} class='rockbadge {assessmentTypeClass} {assessmentStatusClass}'>" );
-                        badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank'>" );
+                        badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank' rel='noopener noreferrer'>" );
 
                         mergeFields.Add( "Person", person );
                         mergedBadgeSummaryLava = assessmentType.BadgeSummaryLava.ResolveMergeFields( mergeFields );

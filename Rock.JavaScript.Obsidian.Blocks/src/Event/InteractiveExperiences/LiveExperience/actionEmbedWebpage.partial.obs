@@ -9,8 +9,8 @@
 <style>
 .experience-action-type-3aefe3aa-41a1-4812-86e2-38255b965001 > iframe {
     position: absolute;
-    left: 0px;
-    top: 0px;
+    left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
 }

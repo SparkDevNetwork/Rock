@@ -19,7 +19,7 @@ namespace Rock.Plugin.HotFixes {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class HotFixMigrationResource {
@@ -434,7 +434,8 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -860,11 +861,31 @@ namespace Rock.Plugin.HotFixes {
         ///    &lt;/div&gt;
         ///{% endif %}
         ///
-        ///{% assign url = &apos;&apos;https://maps.googleapis.com/maps/api/staticmap?&apos;&apos; | Append:&apos;&apos;size=&apos;&apos; | Append:imagesize | Append:&apos;&apos;&amp;maptype=&apos;&apos; | Append:maptype | Append:&apos;&apos;&amp;scale=&apos;&apos; | Append:scale | [rest of string was truncated]&quot;;.
+        ///{% assign url = &apos;&apos;https://maps.googleapis.com/maps/api/staticmap?&apos;&apos; | Append:&apos;&apos;size=&apos;&apos; | Append:imagesize | Append:&apos;&apos;&amp;maptype=&apos;&apos; | Append:maptype | Append:&apos;&apos;&amp;scale=&apos;&apos; | Append [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap {
             get {
                 return ResourceManager.GetString("_167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE[dbo].[spCheckin_BadgeAttendance]
+        ///                  @PersonId int
+        ///                  , @RoleGuid uniqueidentifier = null
+        ///                  , @ReferenceDate datetime = null
+        ///                  , @MonthCount int = 24
+        ///				  , @ShowAsIndividual bit = 0
+        ///              AS
+        ///              BEGIN
+        ///                  DECLARE @cROLE_ADULT uniqueidentifier = &apos;2639F9A5-2AAE-4E48-A8C3-4FFE86681E42&apos;
+        ///              
+        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429CB9&apos;
+        ///      [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge {
+            get {
+                return ResourceManager.GetString("_177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge", resourceCulture);
             }
         }
     }

@@ -962,7 +962,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             return string.Format(
-                "<a href='{0}' target='_blank'><img src='{0}'/></a>",
+                "<a href='{0}' target='_blank' rel='noopener noreferrer'><img src='{0}'/></a>",
                 ResolveRockUrl( string.Format(
                     "~/GetImage.ashx?id={0}",
                     financialTransactionImage.BinaryFileId ) ) );

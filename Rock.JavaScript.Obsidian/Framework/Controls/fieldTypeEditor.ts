@@ -47,7 +47,12 @@ export default defineComponent({
         },
 
         isFieldTypeReadOnly: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
+            default: false
+        },
+
+        showConfigOnly: {
+            type: Boolean,
             default: false
         }
     },
@@ -304,7 +309,7 @@ export default defineComponent({
 
     template: `
 <div>
-    <template v-if="isFieldTypesReady">
+    <template v-if="isFieldTypesReady && !showConfigOnly">
         <StaticFormControl v-if="isFieldTypeReadOnly" label="Field Type" v-model="fieldTypeName" />
         <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" enhanceForLongLists />
     </template>
@@ -312,7 +317,7 @@ export default defineComponent({
         {{ fieldErrorMessage }}
     </NotificationBox>
     <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
-    <RockField v-if="hasDefaultValue" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode />
+    <RockField v-if="hasDefaultValue && !showConfigOnly" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode />
 </div>
 `
 });

@@ -1269,6 +1269,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes the trailing forwardslash.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>System.String.</returns>
+        public static string RemoveTrailingForwardslash( this string value )
+        {
+            return value.TrimEnd( new char[] { '/' } );
+        }
+
+        /// <summary>
         /// Evaluates string, and if null or empty, returns nullValue instead.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -1469,6 +1479,49 @@ namespace Rock
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Returns true/false based on whether the provided string is in a valid hex color format.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static bool IsValidHexColor( this string str )
+        {
+            if (str == null )
+            {
+                return false;
+            }
+
+            return Regex.IsMatch( str, @"^#(([0-9a-fA-F]{2}){3}|([0-9a-fA-F]){3})$" );
+        }
+
+        /// <summary>
+        /// Returns the hex color as a string if it is valid otherwise it will return the fallback or null.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="fallback"></param>
+        /// <returns></returns>
+        public static string AsHexColorString( this string str, string fallback = null )
+        {
+            if ( str.IsValidHexColor() )
+            {
+                return str;
+            }
+
+            // Return null if no fallback provided
+            if ( fallback == null )
+            {
+                return null;
+            }
+
+            // Check if fallback is a valid hex color
+            if ( fallback.IsValidHexColor() )
+            {
+                return fallback;
+            }
+
+            return null;
         }
 
         #endregion String Extensions

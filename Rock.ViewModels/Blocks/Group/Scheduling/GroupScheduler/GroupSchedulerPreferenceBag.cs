@@ -38,6 +38,6 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         /// <value>
         /// The date this schedule preference should take effect.
         /// </value>
-        public DateTime? ScheduleStartDate { get; set; }
+        public DateTimeOffset? ScheduleStartDate { get; set; }
     }
 }

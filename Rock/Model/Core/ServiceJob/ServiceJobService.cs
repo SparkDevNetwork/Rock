@@ -197,16 +197,7 @@ namespace Rock.Model
                 rockContext.SaveChanges();
 
                 var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                var jobHistory = new ServiceJobHistory
-                {
-                    ServiceJobId = job.Id,
-                    StartDateTime = RockDateTime.Now,
-                    StopDateTime = RockDateTime.Now,
-                    Status = job.LastStatus,
-                    StatusMessage = job.LastStatusMessage
-                };
-
-                jobHistoryService.Add( jobHistory );
+                jobHistoryService.AddErrorServiceJobHistory( job );
                 rockContext.SaveChanges();
 
                 return await Task.FromResult( false );
@@ -443,16 +434,7 @@ namespace Rock.Model
                         rockContext.SaveChanges();
 
                         var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                        var jobHistory = new ServiceJobHistory()
-                        {
-                            ServiceJobId = job.Id,
-                            StartDateTime = RockDateTime.Now,
-                            StopDateTime = RockDateTime.Now,
-                            Status = job.LastStatus,
-                            StatusMessage = job.LastStatusMessage
-                        };
-
-                        jobHistoryService.Add( jobHistory );
+                        jobHistoryService.AddErrorServiceJobHistory( job );
                         rockContext.SaveChanges();
                     }
                 }

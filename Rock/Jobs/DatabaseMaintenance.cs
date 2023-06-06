@@ -358,7 +358,7 @@ namespace Rock.Jobs
                        || RockInstanceConfig.Database.Edition.Contains( "Enterprise" ) ) )
             {
                 // Online index rebuild is only available for Azure SQL or SQL Enterprise.
-                this.Log( RockLogLevel.Info, "Online Index Rebuild option is selected but not available for the current database platform." );
+                Log( RockLogLevel.Info, "Online Index Rebuild option is selected but not available for the current database platform." );
 
                 useONLINEIndexRebuild = false;
             }

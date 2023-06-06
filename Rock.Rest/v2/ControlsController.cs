@@ -34,16 +34,16 @@ using Rock.Extension;
 using Rock.Field.Types;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
-using Rock.Utility;
 using Rock.Workflow;
 
 namespace Rock.Rest.v2
@@ -595,16 +595,10 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = new AssetStorageProviderService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( g => g.EntityTypeId.HasValue && g.IsActive )
-                    .OrderBy( g => g.Name )
-                    .Select( t => new ListItemBag
-                    {
-                        Value = t.Guid.ToString(),
-                        Text = t.Name
-                    } )
-                    .ToList();
+                var items = AssetStorageProviderCache.All()
+                    .Where( a => a.EntityTypeId.HasValue && a.IsActive )
+                    .OrderBy( a => a.Name )
+                    .ToListItemBagList();
 
                 return Ok( items );
             }
@@ -2441,6 +2435,39 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group and Role Picker
+
+        /// <summary>
+        /// Gets the roles that can be displayed in the group and role picker for the specified group.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupAndRolePickerGetRoles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "285de6f4-0bf0-47e4-bda5-bcaa5a18b990" )]
+        public IHttpActionResult GroupAndRolePickerGetRoles( [FromBody] GroupAndRolePickerGetRolesOptionsBag options )
+        {
+            using( var rockContext = new RockContext() )
+            {
+                var groupRoles = new List<ListItemBag>();
+                if ( options.GroupTypeGuid != Guid.Empty )
+                {
+                    var groupTypeRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
+                    groupRoles = groupTypeRoleService.Queryable()
+                        .Where( r => r.GroupType.Guid == options.GroupTypeGuid )
+                        .OrderBy( r => r.Order )
+                        .ThenBy( r => r.Name )
+                        .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
+                        .ToList();
+                }
+
+                return Ok( groupRoles );
+            }
+        }
+
+        #endregion
+
         #region Group Member Picker
 
         /// <summary>
@@ -2887,6 +2914,36 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return groupRoles;
+        }
+
+        #endregion
+
+        #region Interaction Channel Interaction Component Picker
+
+        /// <summary>
+        /// Gets the interaction channel that the given interaction component is a part of.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> object that represents the interaction channel.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "InteractionChannelInteractionComponentPickerGetChannelFromComponent" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "ebef7cb7-f20d-40d9-9f70-1f30aff1cd8f" )]
+        public IHttpActionResult InteractionChannelInteractionComponentPickerGetChannelFromComponent( [FromBody] InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionComponentService = new InteractionComponentService( rockContext );
+                var component = interactionComponentService.Get(options.InteractionComponentGuid);
+
+                if (component == null)
+                {
+                    return NotFound();
+                }
+
+                var channel = component.InteractionChannel;
+
+                return Ok( new ListItemBag { Text = $"{channel.Name} ({ channel.ChannelTypeMediumValue.Value ?? string.Empty })", Value = channel.Guid.ToString() } );
+            }
         }
 
         #endregion
@@ -4507,6 +4564,55 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Registration Instance Picker
+
+        /// <summary>
+        /// Gets the instances that can be displayed in the registration instance picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the registration instances for the control.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RegistrationInstancePickerGetRegistrationInstances" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "26ecd3a7-9c55-4052-afc9-b59e84ab890b" )]
+        public IHttpActionResult RegistrationInstancePickerGetRegistrationInstances( [FromBody] RegistrationInstancePickerGetRegistrationInstancesOptionsBag options )
+        {
+            using (var rockContext = new RockContext())
+            {
+                var registrationInstanceService = new Rock.Model.RegistrationInstanceService( new RockContext() );
+                var registrationInstances = registrationInstanceService.Queryable()
+                    .Where( ri => ri.RegistrationTemplate.Guid == options.RegistrationTemplateGuid && ri.IsActive )
+                    .OrderBy( ri => ri.Name )
+                    .Select(ri => new ListItemBag { Text = ri.Name, Value = ri.Guid.ToString() } )
+                    .ToList();
+
+                return Ok( registrationInstances );
+            }
+        }
+
+        /// <summary>
+        /// Gets the registration template that the given instance uses.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> object that represents the registration template.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RegistrationInstancePickerGetRegistrationTemplateForInstance" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "acbccf4f-54d6-4c7c-8201-07fdefe87352" )]
+        public IHttpActionResult RegistrationInstancePickerGetRegistrationTemplateForInstance( [FromBody] RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstance = new Rock.Model.RegistrationInstanceService( rockContext ).Get( options.RegistrationInstanceGuid );
+                if (registrationInstance == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = registrationInstance.RegistrationTemplate.Name, Value = registrationInstance.RegistrationTemplate.Guid.ToString() } );
+            }
+        }
+
+        #endregion
+
         #region Registration Template Picker
 
         /// <summary>
@@ -5009,6 +5115,46 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Structured Content Editor
+
+        /// <summary>
+        /// Gets the structured content editor configuration.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>The structured content editor configuration.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "StructuredContentEditorGetConfiguration" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "71AD8E7A-3B38-4FC0-A4C7-95DB77F070F6" )]
+        public IHttpActionResult StructuredContentEditorGetConfiguration( [FromBody] StructuredContentEditorGetConfigurationOptionsBag options )
+        {
+            var structuredContentToolsConfiguration = string.Empty;
+            if ( options.StructuredContentToolsValueGuid.HasValue )
+            {
+                var structuredContentToolsValue = DefinedValueCache.Get( options.StructuredContentToolsValueGuid.Value );
+                if ( structuredContentToolsValue != null )
+                {
+                    structuredContentToolsConfiguration = structuredContentToolsValue.Description;
+                }
+            }
+
+            if ( structuredContentToolsConfiguration.IsNullOrWhiteSpace() )
+            {
+                var structuredContentToolsValue = DefinedValueCache.Get( SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_DEFAULT );
+                if ( structuredContentToolsValue != null )
+                {
+                    structuredContentToolsConfiguration = structuredContentToolsValue.Description;
+                }
+            }
+
+            return Ok( new StructuredContentEditorConfigurationBag
+            {
+                ToolsScript = structuredContentToolsConfiguration
+            } );
+        }
+
+        #endregion
+
         #region Workflow Action Type Picker
 
         /// <summary>
@@ -5094,6 +5240,65 @@ namespace Rock.Rest.v2
             }
 
             return categorizedActions;
+        }
+
+        #endregion
+
+        #region Workflow Picker
+
+        /// <summary>
+        /// Gets the workflows and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which workflows to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of workflows.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "WorkflowPickerGetWorkflows" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "93024bbe-4941-4f84-a5e7-754cf30c03d3" )]
+        public IHttpActionResult WorkflowPickerGetWorkflows( [FromBody] WorkflowPickerGetWorkflowsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( options.WorkflowTypeGuid == null )
+                {
+                    return NotFound();
+                }
+
+                    var workflowService = new Rock.Model.WorkflowService( rockContext );
+                    var workflows = workflowService.Queryable()
+                        .Where( w =>
+                            w.WorkflowType.Guid == options.WorkflowTypeGuid &&
+                            w.ActivatedDateTime.HasValue &&
+                            !w.CompletedDateTime.HasValue )
+                        .OrderBy( w => w.Name )
+                        .Select( w => new ListItemBag { Value = w.Guid.ToString(), Text = w.Name } )
+                        .ToList();
+
+                return Ok( workflows );
+            }
+        }
+
+        /// <summary>
+        /// Gets the workflow type that the given instance uses.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> object that represents the workflow type.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "WorkflowPickerGetWorkflowTypeForWorkflow" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "a41c755c-ffcb-459c-a67a-f0311158976a" )]
+        public IHttpActionResult WorkflowPickerGetWorkflowTypeForWorkflow( [FromBody] WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var workflow = new Rock.Model.WorkflowService( rockContext ).Get( options.WorkflowGuid );
+                if ( workflow == null )
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = workflow.WorkflowType.Name, Value = workflow.WorkflowType.Guid.ToString() } );
+            }
         }
 
         #endregion
