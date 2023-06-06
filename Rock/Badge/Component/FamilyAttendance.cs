@@ -53,7 +53,7 @@ namespace Rock.Badge.Component
 
     [BooleanField(
         "Adult Attendance Type",
-        Description = "Determine if the individual attendance be shown instead of the family attendance while displaying the family attendance badge",
+        Description = "Determines if the individual attendance should be shown instead of the family attendance while displaying the family attendance badge",
         TrueText = "Individual",
         FalseText = "Family",
         IsRequired = false,
