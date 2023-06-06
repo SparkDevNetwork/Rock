@@ -107,6 +107,12 @@ export const BlockType = {
     MobileGroupsGroupScheduleUnavailability: "AEFF246D-A514-4D46-801E-D717E1D1D209",
     /** The mobile Prayer &gt; Prayer Card View block type. */
     MobilePrayerPrayerCardView: "CA75C558-9345-47E7-99AF-D8191D31D00D",
+    /** The mobile Reminders &gt; Reminder Dashboard block type. */
+    MobileRemindersReminderDashboard: "223F5122-C93A-44CD-BFB7-AF990A2B6B65",
+    /** The mobile Reminders &gt; Reminder Edit block type. */
+    MobileRemindersReminderEdit: "BA26C29E-660C-470D-9FEA-5830DB15E935",
+    /** The mobile Reminders &gt; Reminder List block type. */
+    MobileRemindersReminderList: "E3FD3E7B-BF9D-4008-B71D-DF857DC20D7B",
     /** The motivators block type guid */
     Motivators: "18CF8DA8-5DE0-49EC-A279-D5507CFA5713",
     /** The notes */

@@ -32,7 +32,7 @@
 
 <ul class="socialsharing margin-b-lg">
 	<li>
-		<a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
+		<a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" rel="noopener noreferrer" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
 			<i class="fa fa-fw fa-facebook"></i>
 		</a>
 	</li>

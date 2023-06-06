@@ -980,25 +980,6 @@ mission. We are so grateful for your commitment.</p>
         #region Properties
 
         /// <summary>
-        /// Gets or sets the host payment information submit JavaScript.
-        /// </summary>
-        /// <value>
-        /// The host payment information submit script.
-        /// </value>
-        protected string HostPaymentInfoSubmitScript
-        {
-            get
-            {
-                return ViewState[ViewStateKey.HostPaymentInfoSubmitScript] as string;
-            }
-
-            set
-            {
-                ViewState[ViewStateKey.HostPaymentInfoSubmitScript] = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the payment transaction code.
         /// </summary>
         protected string TransactionCode
@@ -1048,7 +1029,11 @@ mission. We are so grateful for your commitment.</p>
             {
                 _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
-                this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+
+                if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
+                {
+                    hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+                }
             }
 
             if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
@@ -1074,6 +1059,7 @@ mission. We are so grateful for your commitment.</p>
 
             var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
             cpCaptcha.Visible = !disableCaptchaSupport;
+            cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
         }
 
         /// <summary>
@@ -1128,6 +1114,21 @@ mission. We are so grateful for your commitment.</p>
             {
                 nbPaymentTokenError.Visible = false;
                 btnGetPaymentInfoNext_Click( sender, e );
+            }
+        }
+
+        /// <summary>
+        /// Handles the TokenReceived event of the CpCaptcha control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void CpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
+        {
+            if ( e.IsValid )
+            {
+                hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+                cpCaptcha.Visible = false;
             }
         }
 
@@ -1851,16 +1852,6 @@ mission. We are so grateful for your commitment.</p>
                 }
             }
 
-            ConfigureCampusAccountAmountPicker();
-
-            // if Gateways are configured, show a warning if no Accounts are configured (we don't want to show an Accounts warning if they haven't configured a gateway yet)
-            if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
-            {
-                ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "At least one Financial Account must be selected in the configuration for this block." );
-                pnlTransactionEntry.Visible = false;
-                return;
-            }
-
             bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
             bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
 
@@ -1873,6 +1864,16 @@ mission. We are so grateful for your commitment.</p>
 
             if ( !SetInitialTargetPersonControls() )
             {
+                return;
+            }
+
+            ConfigureCampusAccountAmountPicker();
+
+            // if Gateways are configured, show a warning if no Accounts are configured (we don't want to show an Accounts warning if they haven't configured a gateway yet)
+            if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
+            {
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "At least one Financial Account must be selected in the configuration for this block." );
+                pnlTransactionEntry.Visible = false;
                 return;
             }
 
@@ -2286,6 +2287,13 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         private Person GetTargetPerson( RockContext rockContext )
         {
+            string personActionId = PageParameter( PageParameterKey.Person );
+            if ( personActionId.IsNullOrWhiteSpace() )
+            {
+                // If there is no person action identifier, just use the currently logged in Person.
+                return CurrentPerson;
+            }
+
             var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
             if ( targetPersonValue.IsNullOrWhiteSpace() )
             {
@@ -2559,22 +2567,11 @@ mission. We are so grateful for your commitment.</p>
             ddlPersonSavedAccount.Visible = false;
             var currentSavedAccountSelection = ddlPersonSavedAccount.SelectedValue;
 
-            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
-            if ( targetPersonValue.IsNullOrWhiteSpace() )
-            {
-                return;
-            }
-
-            var targetPersonGuid = targetPersonValue.AsGuidOrNull();
-            if ( targetPersonGuid == null )
-            {
-                return;
-            }
 
             var rockContext = new RockContext();
-            var targetPersonId = new PersonService( rockContext ).Get( targetPersonGuid.Value ).Id;
+            var targetPerson = GetTargetPerson( rockContext );
             var personSavedAccountsQuery = new FinancialPersonSavedAccountService( rockContext )
-                .GetByPersonId( targetPersonId )
+                .GetByPersonId( targetPerson.Id )
                 .Where( a => !a.IsSystem )
                 .AsNoTracking();
 
@@ -3542,7 +3539,7 @@ mission. We are so grateful for your commitment.</p>
         protected void btnGiveNow_Click( object sender, EventArgs e )
         {
             var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
-            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
+            if ( !disableCaptchaSupport && cpCaptcha.Visible )
             {
                 nbPromptForAmountsWarning.Visible = true;
                 nbPromptForAmountsWarning.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";

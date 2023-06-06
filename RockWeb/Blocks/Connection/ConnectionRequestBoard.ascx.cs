@@ -1185,7 +1185,7 @@ namespace RockWeb.Blocks.Connection
 
                 // Status control
                 ddlRequestModalViewModeTransferModeStatus.Items.Clear();
-                var statuses = GetConnectionType().ConnectionStatuses.OrderBy( a => a.Name ).ThenByDescending( cs => cs.IsDefault ).ThenBy( a => a.Name );
+                var statuses = GetConnectionType().ConnectionStatuses.OrderBy( a => a.Order ).ThenByDescending( cs => cs.IsDefault ).ThenBy( a => a.Name );
 
                 foreach ( var status in statuses )
                 {

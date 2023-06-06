@@ -73,7 +73,8 @@ namespace Rock.Lava.Blocks
                 sql = sqlWriter.ToString();
             }
 
-            var parms = ParseMarkup( _markup, context );
+            var settings = GetAttributesFromMarkup( _markup, context );
+            var parms = settings.Attributes;
 
             var sqlTimeout = (int?)null;
             if ( parms.ContainsKey( "timeout" ) )
@@ -177,42 +178,15 @@ namespace Rock.Lava.Blocks
             }
         }
 
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
+        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
         {
-            // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            // Create default settings
+            var settings = LavaElementAttributes.NewFromMarkup( markup, context );
 
-            var parms = new Dictionary<string, string>();
-            parms.Add( "return", "results" );
-            parms.Add( "statement", "select" );
+            settings.AddOrIgnore( "return", "results" );
+            settings.AddOrIgnore( "statement", "select" );
 
-            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    var value = itemParts[1];
-
-                    if ( value.IsLavaTemplate() )
-                    {
-                        value = value.ResolveMergeFields( internalMergeFields );
-                    }
-
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), value.Substring( 1, value.Length - 2 ).Trim() );
-                }
-            }
-            return parms;
+            return settings;
         }
 
         #region ILavaSecured

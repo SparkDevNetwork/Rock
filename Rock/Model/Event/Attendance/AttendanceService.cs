@@ -2358,13 +2358,43 @@ namespace Rock.Model
             else
             {
                 var personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId );
-                var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).Get( attendanceOccurrenceId );
-                var scheduledDateTime = attendanceOccurrence.OccurrenceDate.Add( attendanceOccurrence.Schedule.StartTimeOfDay );
-                int? campusId = new LocationService( rockContext ).GetCampusIdForLocation( attendanceOccurrence.LocationId ) ?? new GroupService( rockContext ).Get( attendanceOccurrence.GroupId.Value ).CampusId;
-                if ( attendanceOccurrence.GroupId.HasValue && attendanceOccurrence.Group.GetScheduleConfirmationLogic() == Enums.Group.ScheduleConfirmationLogic.AutoAccept )
+                var attendanceOccurrence = new AttendanceOccurrenceService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Include( a => a.Group )
+                    .Include( a => a.Schedule )
+                    .FirstOrDefault( a => a.Id == attendanceOccurrenceId );
+
+                if ( attendanceOccurrence == null )
                 {
-                    rsvp = RSVP.Yes;
-                    scheduledToAttend = true;
+                    return null;
+                }
+
+                var scheduledDateTime = RockDateTime.Now;
+                if ( attendanceOccurrence.Schedule != null )
+                {
+                    scheduledDateTime = attendanceOccurrence.OccurrenceDate.Add( attendanceOccurrence.Schedule.StartTimeOfDay );
+                }
+
+                int? campusId = null;
+
+                if ( attendanceOccurrence.LocationId.HasValue )
+                {
+                    campusId = new LocationService( rockContext ).GetCampusIdForLocation( attendanceOccurrence.LocationId );
+                }
+
+                if ( attendanceOccurrence.Group != null )
+                {
+                    if ( !campusId.HasValue )
+                    {
+                        campusId = attendanceOccurrence.Group.CampusId;
+                    }
+
+                    if ( attendanceOccurrence.Group.GetScheduleConfirmationLogic() == Enums.Group.ScheduleConfirmationLogic.AutoAccept )
+                    {
+                        rsvp = RSVP.Yes;
+                        scheduledToAttend = true;
+                    }
                 }
 
                 scheduledAttendance = new Attendance

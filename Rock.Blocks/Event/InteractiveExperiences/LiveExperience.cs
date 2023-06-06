@@ -141,6 +141,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     box.ExperienceToken = Encryption.EncryptString( experienceToken.ToJson() );
                     box.Style = experienceCache.GetExperienceStyleBag();
                     box.IsExperienceInactive = !occurrence.IsOccurrenceActive;
+                    box.ExperienceEndedContent = GetExperienceEndedContent( occurrence, experienceCache );
                 }
                 else
                 {
@@ -151,6 +152,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     box.ExperienceToken = token;
                     box.Style = experienceCache.GetExperienceStyleBag();
                     box.IsExperienceInactive = !occurrence.IsOccurrenceActive;
+                    box.ExperienceEndedContent = GetExperienceEndedContent( occurrence, experienceCache );
                 }
 
                 box.SecurityGrantToken = GetSecurityGrantToken();
@@ -207,6 +209,25 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             var seconds = GetAttributeValue( AttributeKey.KeepAliveInterval ).AsInteger();
 
             return Math.Max( 1, seconds );
+        }
+
+        /// <summary>
+        /// Gets the content to display when the experience has ended.
+        /// </summary>
+        /// <param name="occurrence">The occurrence that will be monitored.</param>
+        /// <param name="experience">The experience the occurrences belongs to.</param>
+        /// <returns>A string that contains the content to be displayed.</returns>
+        private string GetExperienceEndedContent( InteractiveExperienceOccurrence occurrence, InteractiveExperienceCache experience )
+        {
+            var mergeFields = RequestContext.GetCommonMergeFields();
+
+            mergeFields.AddOrReplace( "Occurrence", occurrence );
+            mergeFields.AddOrReplace( "Experience", experience );
+
+            return experience.ExperienceSettings
+                .ExperienceEndedTemplate
+                .ResolveMergeFields( mergeFields )
+                .Trim();
         }
 
         #endregion

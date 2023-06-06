@@ -13,7 +13,7 @@
 }
 
 .realtime-visualizer-container > .realtime-visualizer-item {
-    height: 0px;
+    height: 0;
 }
 
 /* IN transition initial states. */

@@ -222,7 +222,7 @@ namespace Rock
             var result = Regex.Replace(
                 text,
                 @"((http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)",
-                "<a target='_blank' href='$1'>$1</a>" );
+                "<a target='_blank' rel='noopener noreferrer' href='$1'>$1</a>" );
 
             return result;
         }

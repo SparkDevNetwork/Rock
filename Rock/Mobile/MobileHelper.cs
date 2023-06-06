@@ -877,6 +877,25 @@ namespace Rock.Mobile
         #endregion
 
         /// <summary>
+        /// Builds a URL from the public application root global attribute and provided path.
+        /// </summary>
+        /// <param name="path">The path to append to the public application root (e.g. '/GetImage.ashx/foo</param>
+        /// <returns>The built URL.</returns>
+        public static string BuildPublicApplicationRootUrl( string path )
+        {
+            // The public application root.
+            var applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+
+            // We want to trim so we don't end up with URLs that look like this: church.com//GetImage.ashx
+            if( path.StartsWith("/") )
+            {
+                path = path.RemoveLeadingForwardslash();
+            }
+
+            return $"{applicationRoot}{path}";
+        }
+
+        /// <summary>
         /// Creates a lava template that constructs an array of JSON objects
         /// that represent the specified properties and fields.
         /// </summary>

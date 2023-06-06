@@ -58,7 +58,7 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            writer.Write( String.Format( "<div class='rockbadge rockbadge-ingroupwithpurpose rockbadge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
+            writer.Write( String.Format( "<div class='rockbadge rockbadge-icon rockbadge-ingroupwithpurpose rockbadge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
 
             writer.Write( "</div>" );
         }
@@ -94,6 +94,7 @@ $.ajax({{
                 var labelText = data.NickName + ' is in group with the ' + data.Purpose + ' purpose.';
             }} else {{
                 badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\'></i>';
+                $('.rockbadge-ingroupwithpurpose.rockbadge-id-{3}').addClass('rockbadge-disabled');
                 var labelText = data.NickName + ' is not in a group with the ' + data.Purpose + ' purpose.';
             }}
             $('.rockbadge-ingroupwithpurpose.rockbadge-id-{3}').html(badgeHtml);

@@ -1,0 +1,99 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <li :class="actionItemClass">
+        <a href="#" class="d-flex align-items-center"
+           :class="actionButtonClass"
+           @click.prevent.stop="onActionClick">
+            <i :class="actionIconClass"></i>
+
+            <span class="ml-2 action-title flex-grow-1">{{ action.title }}</span>
+
+            <span v-if="actionTooltip" class="ml-2">
+                <i class="fa fa-info-circle" :title="actionTooltip"></i>
+            </span>
+        </a>
+    </li>
+</template>
+
+<script setup lang="ts">
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { PropType, computed, ref } from "vue";
+
+    const props = defineProps({
+        /** The grid action to be represented by this button. */
+        action: {
+            type: Object as PropType<GridAction>,
+            required: true
+        },
+
+        /**
+         * The grid state that this action belongs to.
+         */
+         grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "click"): void
+    }>();
+
+    /**
+     * Will be `true` if the action is currently executing. In which case
+     * any further attempts to execute the action should be prevented.
+     */
+    const isExecuting = ref(false);
+
+    const actionItemClass = computed((): string => {
+        return props.action.disabled || isExecuting.value || !props.action.handler ? "disabled" : "";
+    });
+
+    const actionButtonClass = computed((): string => {
+        return props.action.buttonCssClass ?? "";
+    });
+
+    const actionIconClass = computed((): string => {
+        if (props.action.iconCssClass) {
+            let iconClass = props.action.iconCssClass;
+
+            return `${iconClass} fa-fw`;
+        }
+        else {
+            return "fa fa-fw";
+        }
+    });
+
+    /** The tooltip text to display for the action. */
+    const actionTooltip = computed((): string | undefined => {
+        if (props.action.tooltip && props.action.tooltip !== props.action.title) {
+            return props.action.tooltip;
+        }
+        else {
+            return undefined;
+        }
+    });
+
+    async function onActionClick(): Promise<void> {
+        if (!props.action.handler || props.action.disabled || isExecuting.value) {
+            return;
+        }
+
+        // Allow the parent component to close the popup.
+        emit("click");
+
+        isExecuting.value = true;
+
+        try {
+            const result = props.action.handler(props.grid);
+
+            if (isPromise(result)) {
+                await result;
+            }
+        }
+        finally {
+            isExecuting.value = false;
+        }
+    }
+</script>

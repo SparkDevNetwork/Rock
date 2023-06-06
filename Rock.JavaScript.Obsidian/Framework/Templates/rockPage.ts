@@ -110,6 +110,8 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 
                 isLoaded = true;
 
+                rootElement.classList.remove("obsidian-block-loading");
+
                 // Get the number of pending blocks. If this is the last one
                 // then signal the page that all blocks are loaded and ready.
                 let pendingCount = parseInt(document.body.getAttribute("data-obsidian-pending-blocks") ?? "0");

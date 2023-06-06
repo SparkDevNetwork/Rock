@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Rock.Enums.Core;
+using Rock.Utilities;
 
 namespace Rock.Utility
 {
@@ -26,11 +28,11 @@ namespace Rock.Utility
     /// </summary>
     /// 9/30/2018 - JME
     /// A good piece of this class came from the color class of dotLess. Several other
-    /// resources were used to create the algorthms used. For instance the conversion
-    /// between HSL and RGB. Becuase of that it is a bit of frankencode, but it is
+    /// resources were used to create the algorithms used. For instance the conversion
+    /// between HSL and RGB. Because of that it is a bit of frankencode, but it is
     /// working and I did put in quite a bit of effort to clean up the code to our
     /// standards and document it as best as possible.
-    public class RockColor
+    public class RockColor 
     {
         #region Private Members
         private static readonly Dictionary<string, int> Html4Colors = new Dictionary<string, int>
@@ -273,16 +275,126 @@ namespace Rock.Utility
         }
 
         /// <summary>Calculates the contrast ratio.</summary>
-        /// <param name="foregroundColor">The color1.</param>
-        /// <param name="backgroundColor">The color2.</param>
+        /// <param name="color1">The color1.</param>
+        /// <param name="color2">The color2.</param>
         /// <returns>System.Double.</returns>
-        public static double CalculateContrastRatio( RockColor foregroundColor, RockColor backgroundColor )
+        public static double CalculateContrastRatio( RockColor color1, RockColor color2 )
         {
             // Formula: (L1 + 0.05) / (L2 + 0.05)
             // https://medium.muz.li/the-science-of-color-contrast-an-expert-designers-guide-33e84c41d156
             // https://www.w3.org/TR/2012/NOTE-WCAG20-TECHS-20120103/G17.html
-            return ( backgroundColor.Luma + 0.05 ) / ( foregroundColor.Luma + 0.05 );
+            // L1 = Lighter color
+            // L2 = Darker color
+
+            RockColor l1 = null;
+            RockColor l2 = null;
+
+            // Determine the lighter and darker color
+            if ( color1.Luminosity > color2.Luminosity )
+            {
+                // Higher luminosity = lighter color
+                l1 = color1;
+                l2 = color2;
+            }
+            else
+            {
+                l1 = color2;
+                l2 = color1;
+            }
+
+            return ( l1.Luma + 0.05 ) / ( l2.Luma + 0.05 );
         }
+
+        /// <summary>
+        /// Creates a color pair from a single color with logic for light and dark modes.
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="colorScheme"></param>
+        /// <returns></returns>
+        public static ColorPair CalculateColorPair( RockColor color, ColorScheme colorScheme = ColorScheme.Light )
+        {
+            var colorPair = new ColorPair();
+
+            // Create dark contrast using the Practical UI darkest recipe
+            colorPair.ForegroundColor =  RockColor.CalculateColorRecipe( color , ColorRecipe.Darkest);
+
+            // Create light contrast using the Practical UI lightest recipe
+            colorPair.BackgroundColor = RockColor.CalculateColorRecipe( color, ColorRecipe.Lightest );
+
+            // If dark theme then flip the foreground and background making the darker color is the background.
+            if ( colorScheme == ColorScheme.Dark )
+            {
+                colorPair.Flip();
+            }
+
+            return colorPair;
+        }
+
+        /// <summary>
+        /// Creates a recipe color from the provided color.
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="recipe"></param>
+        /// <returns></returns>
+        public static RockColor CalculateColorRecipe( RockColor color, ColorRecipe recipe )
+        {
+            var recipeColor = color.Clone();
+            var recipeSaturation = .00;
+            var recipeLuminosity = .00;
+
+            switch ( recipe )
+            {
+                case ColorRecipe.Lightest:
+                    {
+                        recipeSaturation = .88;
+                        recipeLuminosity = .87;
+                        break;
+                    }
+                case ColorRecipe.Light:
+                    {
+                        recipeSaturation = .10;
+                        recipeLuminosity = .95;
+                        break;
+                    }
+                case ColorRecipe.Medium:
+                    {
+                        recipeSaturation = .20;
+                        recipeLuminosity = .66;
+                        break;
+                    }
+                case ColorRecipe.Dark:
+                    {
+                        recipeSaturation = .30;
+                        recipeLuminosity = .45;
+                        break;
+                    }
+                case ColorRecipe.Darkest:
+                    {
+                        recipeSaturation = .60;
+                        recipeLuminosity = .20;
+                        break;
+                    }
+                case ColorRecipe.Primary:
+                    {
+                        recipeSaturation = .70;
+                        recipeLuminosity = .80;
+                        break;
+                    }
+            }          
+
+            // If the saturation of the original color is very low then we'll use a different recipe so the color looks
+            // more like the original (which would be gray).
+            if ( color.Saturation <= .15 )
+            {
+                recipeSaturation = .15;                
+            }
+
+            recipeColor.Saturation = recipeSaturation;
+            recipeColor.Luminosity = recipeLuminosity;
+
+            return recipeColor;
+        }
+
         #endregion 
 
         #region Constructors
@@ -598,6 +710,46 @@ namespace Rock.Utility
             }
         }
 
+        /// <summary>
+        /// Gets the color as a hex string.
+        /// </summary>
+        public string Hex
+        {
+            get
+            {
+                return this.ToHex();
+            }
+        }
+
+        /// <summary>
+        /// Determines if the color is a light color.
+        /// </summary>
+        public bool IsLight
+        {
+            get
+            {
+                if (Luminosity > .5 )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines if the color is a dark color.
+        /// </summary>
+        public bool IsDark
+        {
+            get
+            {
+                return !IsLight;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -711,6 +863,15 @@ namespace Rock.Utility
         public void Grayscale()
         {
             Saturate( -100 );
+        }
+
+        /// <summary>
+        /// Creates a clone of this color.
+        /// </summary>
+        /// <returns></returns>
+        public RockColor Clone()
+        {
+            return new RockColor(R, G, B);
         }
 
         /// <summary>
@@ -953,7 +1114,15 @@ namespace Rock.Utility
         /// <returns></returns>
         private static double Parse( string hex )
         {
-            return int.Parse( hex, NumberStyles.HexNumber );
+            var returnValue = 0;
+
+            try
+            {
+                returnValue = int.Parse( hex, NumberStyles.HexNumber );
+            }
+            catch { }
+
+            return returnValue;
         }
 
         /// <summary>

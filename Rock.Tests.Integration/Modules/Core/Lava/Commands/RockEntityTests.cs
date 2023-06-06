@@ -247,10 +247,10 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         }
 
         [TestMethod]
-        public void EntityCommandBlock_WhereFilterByCoreAttribute_ReturnsMatchedEntitiesOnly()
+        public void EntityCommandBlock_WhereFilterWithAlphanumericFieldName_IsParsedCorrectly()
         {
             var template = @"
-{% person where:'core_CurrentlyAnEra == true' iterator:'items' %}
+{% person where:'core_TimesCheckedIn16Wks > 1' iterator:'items' %}
 <ul>
   {% for item in items %}
     <li>{{ item.NickName }} {{ item.LastName }}</li>
@@ -266,7 +266,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "Ted Decker" );
-                Assert.That.DoesNotContain( output, "Pete Foster" );
+                Assert.That.DoesNotContain( output, "Bill Marble" );
             } );
         }
 
@@ -342,6 +342,51 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 
                 Assert.IsTrue( output.Text.Contains( "No parameters were found in your command." ), "Expected message not found." );
             } );
+		}
+
+        /// Verify that Lava Entity Block parameter names are case-insensitive.
+        /// Parameter names should be parsed and stored internally as lowercase.
+        /// </summary>
+        [TestMethod]
+        public void EntityCommandBlock_ParameterNames_AreCaseInsentitive()
+        {
+            var options = new LavaTestRenderOptions() { EnabledCommands = "RockEntity" };
+
+            // Verify parameters: "where", "sort".
+            var input1 = @"
+{% person WHERE:'LastName == ""Decker""' Sort:'NickName' iterator:'people' %}
+    {% for person in people %}
+        {{ person.FullName }} <br/>
+    {% endfor %}
+{% endperson %}
+";
+
+            var expectedOutput1 = @"
+Alex Decker<br/>
+Cindy Decker<br/>
+Noah Decker<br/>
+Ted Decker<br/>
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput1, input1, options );
+
+            // Verify parameters: "id", "iterator".
+            var tedPerson = TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker );
+
+            var input2 = @"
+{% person ID:$personId iTeRaToR:'people' %}
+    {% for person in people %}
+        {{ person.FullName }} <br/>
+    {% endfor %}
+{% endperson %}
+";
+
+            var expectedOutput2 = @"
+TedDecker<br/>
+";
+
+            input2 = input2.Replace( "$personId", tedPerson.Id.ToString() );
+            TestHelper.AssertTemplateOutput( expectedOutput2, input2, options );
         }
     }
 }

@@ -1407,19 +1407,15 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 {
                     // Edit existing opportunity.
 
-                    /*
-                     * GroupMemberAssignments are tied to a specific Schedule & Location combo.
-                     * If either of these change for an existing opportunity, we'll have to reassign any members.
-                     */
+                    // GroupMemberAssignments are tied to a specific Schedule & Location combo.
+                    // If either of these change for an existing opportunity, we'll have to reassign any members.
                     var shouldReassignMembers = false;
                     var groupLocationChanged = false;
 
                     if ( !newLocationId.Equals( existingGroupLocation.LocationId ) )
                     {
-                        /*
-                         * The Location changed from what was previously saved.
-                         * Let's try to find another existing GroupLocation matching this opportunity's Group and newly-specified Location, or create a new one if needed.
-                         */
+                        // The Location changed from what was previously saved.
+                        // Let's try to find another existing GroupLocation matching this opportunity's Group and newly-specified Location, or create a new one if needed.
                         groupLocationToSave = GetNewOrMatchingGroupLocation();
                         shouldReassignMembers = true;
                         groupLocationChanged = true;
@@ -1440,12 +1436,10 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                         else
                         {
-                            /*
-                             * If we got here, this means:
-                             *   1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and exisingGroupLocation now point to the same object).
-                             *   2) We found an existing Schedule based on the previous Schedule Id.
-                             *   3) The last thing we need to do is compare the existing Schedule with the new/edited instance.
-                             */
+                            // If we got here, this means:
+                            //  1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and exisingGroupLocation now point to the same object).
+                            //  2) We found an existing Schedule based on the previous Schedule Id.
+                            //  3) The last thing we need to do is compare the existing Schedule with the new/edited instance.
 
                             if ( newScheduleType != existingSchedule.ScheduleType )
                             {
@@ -1620,23 +1614,18 @@ namespace RockWeb.Blocks.Engagement.SignUp
             var locationId = e.RowKeyValues[DataKeyName.LocationId].ToIntSafe();
             var scheduleId = e.RowKeyValues[DataKeyName.ScheduleId].ToIntSafe();
 
-            /*
-             * We should consider moving this logic to a service (probably the GroupLocationService), as this code block is identical
-             * to that found within the SignUpOverview block's dfOpportunities_Click() method.
-             */
+            // We should consider moving this logic to a service (probably the GroupLocationService), as this code block is identical
+            // to that found within the SignUpOverview block's dfOpportunities_Click() method.
 
             using ( var rockContext = new RockContext() )
             {
-                /*
-                 * An Opportunity is a GroupLocationSchedule with possible GroupMemberAssignments (and therefore, GroupMembers).
-                 * When deleting an Opportunity we should delete the following:
-                 * 
-                 * 1) GroupMemberAssignments
-                 * 2) GroupMembers (if no more GroupMemberAssignments for a given GroupMember)
-                 * 3) GroupLocationSchedule & GroupLocationScheduleConfig
-                 * 4) GroupLocation (if no more Schedules tied to it)
-                 * 5) Schedule (if non-named and nothing else is using it)
-                 */
+                // An Opportunity is a GroupLocationSchedule with possible GroupMemberAssignments (and therefore, GroupMembers).
+                // When deleting an Opportunity we should delete the following:
+                // 1) GroupMemberAssignments
+                // 2) GroupMembers (if no more GroupMemberAssignments for a given GroupMember)
+                // 3) GroupLocationSchedule & GroupLocationScheduleConfig
+                // 4) GroupLocation (if no more Schedules tied to it)
+                // 5) Schedule (if non-named and nothing else is using it)
 
                 var groupMemberAssignmentService = new GroupMemberAssignmentService( rockContext );
                 var groupMemberAssignments = groupMemberAssignmentService
@@ -1653,11 +1642,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     .Select( gma => gma.GroupMember )
                     .ToList();
 
-                /*
-                 * For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
-                 * We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
-                 * delete approach) if this changes in the future.
-                 */
+                // For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
+                // We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
+                // delete approach) if this changes in the future.
                 groupMemberAssignmentService.DeleteRange( groupMemberAssignments );
 
                 // Get the GroupType to check if this Group has history enabled below, so we know whether to call GroupMemberService.CanDelete() for each GroupMember.
@@ -1722,11 +1709,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                     }
 
-                    /*
-                     * We cannot safely remove referenced Locations (even non-named ones):
-                     *   1) because of the way we reuse/share Locations across entities (the LocationPicker control auto-searches/matches and saves Locations).
-                     *   2) because of the cascade deletes many of the referencing entities have on their LocationId FK constraints (we might accidentally delete a lot of unintended stuff).
-                     */
+                    // We cannot safely remove referenced Locations (even non-named ones):
+                    //  1) because of the way we reuse/share Locations across entities (the LocationPicker control auto-searches/matches and saves Locations).
+                    //  2) because of the cascade deletes many of the referencing entities have on their LocationId FK constraints (we might accidentally delete a lot of unintended stuff).
 
                     // Follow-up save for deleted referenced entities.
                     rockContext.SaveChanges();
@@ -2296,7 +2281,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 if ( anyGroupTypeGroupRequirements )
                 {
-                    lGroupTypeGroupRequirements.Text = $"(From <a href='{this.CurrentGroupTypeUrl}' target='_blank'>{this.CurrentGroupType.Name}</a>)";
+                    lGroupTypeGroupRequirements.Text = $"(From <a href='{this.CurrentGroupTypeUrl}' target='_blank' rel='noopener noreferrer'>{this.CurrentGroupType.Name}</a>)";
 
                     gGroupTypeGroupRequirements.DataSource = groupTypeGroupRequirements;
                     gGroupTypeGroupRequirements.DataBind();
@@ -2677,12 +2662,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                     if ( whole > 0 )
                     {
-                        int GetPercentageOfWhole( int part, bool isThreshold = true )
+                        int GetPercentageOfWhole( int part, bool isThreshold = true, bool isMax = false )
                         {
-                            if ( isThreshold )
+                            if ( isThreshold && !isMax )
                             {
                                 // Show threshold "ticks" to the left of the spot that will satisfy a given value.
-                                part = part > 1 ? part - 1 : part;
+                                part--;
                             }
 
                             var percentage = ( int ) ( ( double ) part / whole * 100 );
@@ -2691,7 +2676,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                         minPercentage = GetPercentageOfWhole( min );
                         desiredPercentage = GetPercentageOfWhole( desired );
-                        maxPercentage = GetPercentageOfWhole( max );
+                        maxPercentage = GetPercentageOfWhole( max, true, true );
                         filledPercentage = GetPercentageOfWhole( filled, false );
                     }
 
@@ -2714,10 +2699,10 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                     }
 
-                    string GetIndicator( int percentage, bool isMaxIndicator = false )
+                    string GetIndicator( int percentage, bool isMax = false )
                     {
                         var shouldShow = percentage > 0 && percentage < 100;
-                        if ( shouldShow && isMaxIndicator )
+                        if ( shouldShow && isMax )
                         {
                             shouldShow = filled > max;
                         }
@@ -2920,7 +2905,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         private void ShowNoAllowedScheduleTypesMessage()
         {
-            nbNoAllowedScheduleTypes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow Custom or Named Group Schedule Options. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank'>enable at least one of these types</a> to edit opportunities.";
+            nbNoAllowedScheduleTypes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow Custom or Named Group Schedule Options. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank' rel='noopener noreferrer'>enable at least one of these types</a> to edit opportunities.";
             nbNoAllowedScheduleTypes.Visible = true;
         }
 
@@ -2929,7 +2914,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         private void ShowNoAllowedLocationPickerModesMessage()
         {
-            nbNoAllowedLocationPickerModes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow any Location Selection Modes. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank'>enable at least one mode</a> to edit opportunities.";
+            nbNoAllowedLocationPickerModes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow any Location Selection Modes. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank' rel='noopener noreferrer'>enable at least one mode</a> to edit opportunities.";
             nbNoAllowedLocationPickerModes.Visible = true;
         }
 
