@@ -199,14 +199,23 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             var reminderService = new ReminderService( rockContext );
             var reminderType = new ReminderTypeService( rockContext ).Get( reminderTypeGuid );
 
-            IEntity entity = new EntityTypeService( rockContext ).GetEntity( reminderType.EntityTypeId, entityGuid );
+            if( reminderType == null )
+            {
+                return;
+            }
+
+            var entityId = Reflection.GetEntityIdForEntityType( reminderType.EntityType.Id, entityGuid, rockContext );
+            if( entityId == null )
+            {
+                return;
+            }
 
             //
             // Create a new reminder.
             //
             var reminder = new Reminder
             {
-                EntityId = entity.Id,
+                EntityId = entityId.Value,
                 ReminderTypeId = reminderType.Id,
                 ReminderDate = reminderDate,
                 Note = note,
