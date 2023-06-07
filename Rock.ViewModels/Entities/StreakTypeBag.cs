@@ -91,7 +91,7 @@ namespace Rock.ViewModels.Entities
         /// <value>
         /// The structure settings JSON.
         /// </value>
-        public Boolean IncludeChildAccounts { get; set; }
+        public string StructureSettingsJSON { get; set; }
 
         /// <summary>
         /// Gets or sets the attendance association (Rock.Model.StreakStructureType). If not set, this streak type

@@ -92,6 +92,7 @@ namespace Rock.Model
                 StartDate = model.StartDate,
                 StructureEntityId = model.StructureEntityId,
                 StructureType = ( int? ) model.StructureType,
+                StructureSettingsJSON = model.StructureSettingsJSON,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
