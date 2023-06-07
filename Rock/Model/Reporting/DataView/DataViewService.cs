@@ -339,7 +339,7 @@ namespace Rock.Model
             var tagger = new SqlServerTagger();
             var taggedSql = tagger.GetTaggedSqlQuery( dataViewObjectQuery.ToTraceString(), new TaggingOptions { TagMode = TagMode.Prefix } );
 
-            var tempTableName = $"DataView_{dataView.Id}_{RockDateTime.Now:yyyyMMddHHmmssfff}";
+            var tempTableName = $"DataView_{dataView.Id}";
 
             var sql = $@"
 BEGIN TRY
@@ -347,7 +347,7 @@ BEGIN TRY
 
     CREATE TABLE #{tempTableName}
     (
-        [EntityId] [int] NOT NULL INDEX [CLIX_{tempTableName}_EntityId] CLUSTERED
+        [EntityId] [int] NOT NULL
     );
 
     -- Select the new entity IDs that should be added/remain in the persisted set.
