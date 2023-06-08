@@ -132,6 +132,8 @@
     <Compile Include="CodeGenerated\ContentChannelType.cs" />
     <Compile Include="CodeGenerated\ContentCollection.cs" />
     <Compile Include="CodeGenerated\ContentCollectionSource.cs" />
+    <Compile Include="CodeGenerated\ContentTopic.cs" />
+    <Compile Include="CodeGenerated\ContentTopicDomain.cs" />
     <Compile Include="CodeGenerated\ControlTotalResult.cs" />
     <Compile Include="CodeGenerated\DataView.cs" />
     <Compile Include="CodeGenerated\DataViewFilter.cs" />
@@ -336,6 +338,7 @@
     <Compile Include="CodeGenerated\SystemCommunication.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
     <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
+    <Compile Include="CodeGenerated\SystemPhoneNumber.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />
     <Compile Include="CodeGenerated\TaggedItem.cs" />
     <Compile Include="CodeGenerated\UserLogin.cs" />

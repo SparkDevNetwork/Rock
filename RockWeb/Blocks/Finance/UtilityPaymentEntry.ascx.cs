@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Finance
 
     [BooleanField( "Enable Account Hierarchy for Additional Accounts",
         Key = AttributeKey.EnableAccountHierarchy,
-        Description = "When enabled this will group accounts under their parents. This allows a person to keep the current behavior if desired. Note: This setting is not compatible with the \"Use Account Campus Mapping Logic\" setting.",
+        Description = "When \"Additional Accounts\" is enabled, this setting allows for the grouping of accounts under their respective parents, creating an account hierarchy. However, please note that if the \"Use Account Campus Mapping Logic\" setting is enabled, accounts mapped to campuses WILL BE displayed within the Account Hierarchy.",
         TrueText = "Enable",
         FalseText = "Disable",
         DefaultBooleanValue = false,
@@ -253,6 +253,13 @@ namespace RockWeb.Blocks.Finance
         Description = "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.",
         DefaultBooleanValue = false,
         Order = 26 )]
+
+    [BooleanField(
+        "Disable Captcha Support",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Key = AttributeKey.DisableCaptchaSupport,
+        DefaultBooleanValue = false,
+        Order = 29 )]
 
     #endregion Default Category
 
@@ -545,6 +552,7 @@ namespace RockWeb.Blocks.Finance
             public const string EnableAnonymousGiving = "EnableAnonymousGiving";
             public const string AdditionalAccounts = "AdditionalAccounts";
             public const string EnableAccountHierarchy = "EnableAccountHierarchy";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
 
             // Email Templates Category
             public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
@@ -839,25 +847,6 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
-        /// <summary>
-        /// Gets or sets the host payment information submit JavaScript.
-        /// </summary>
-        /// <value>
-        /// The host payment information submit script.
-        /// </value>
-        protected string HostPaymentInfoSubmitScript
-        {
-            get
-            {
-                return ViewState[ViewStateKey.HostPaymentInfoSubmitScript] as string;
-            }
-
-            set
-            {
-                ViewState[ViewStateKey.HostPaymentInfoSubmitScript] = value;
-            }
-        }
-
         #endregion Fields
 
         #region Base Control Methods
@@ -888,7 +877,25 @@ mission. We are so grateful for your commitment.</p>
 
             RegisterScript();
 
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            cpCaptcha.Visible = !disableCaptchaSupport;
+            cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
+
             InitializeFinancialGatewayControls();
+        }
+
+        /// <summary>
+        /// Handles the TokenReceived event of the CpCaptcha control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
+        private void CpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
+        {
+            if ( e.IsValid )
+            {
+                hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+                cpCaptcha.Visible = false;
+            }
         }
 
         private void InitializeFinancialGatewayControls()
@@ -899,7 +906,11 @@ mission. We are so grateful for your commitment.</p>
             {
                 _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
-                this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+
+                if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
+                {
+                    hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+                }
             }
 
             if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
@@ -1087,6 +1098,7 @@ mission. We are so grateful for your commitment.</p>
             caapPromptForAccountAmounts.UseAccountCampusMappingLogic = this.GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic ).AsBooleanOrNull() ?? false;
             caapPromptForAccountAmounts.AskForCampusIfKnown = this.GetAttributeValue( AttributeKey.AskForCampusIfKnown ).AsBoolean();
             caapPromptForAccountAmounts.IncludeInactiveCampuses = this.GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
+            caapPromptForAccountAmounts.OrderBySelectableAccountsIndex = true;
             var includedCampusStatusIds = this.GetAttributeValues( AttributeKey.IncludedCampusStatuses )
                 .ToList()
                 .AsGuidList()
@@ -1156,7 +1168,7 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="rockContext">The rock context.</param>
         private void ConfigureAvailableAccounts( RockContext rockContext )
         {
-            // If there no SelectableAccountIds on the CampusAccountAmountPicker, then all the available accounts will be displayed
+            // If there are no SelectableAccountIds on the CampusAccountAmountPicker, then all the available accounts will be displayed
             // so there is no need to configure the add account button
             if ( caapPromptForAccountAmounts.SelectableAccountIds.Length == 0 )
             {
@@ -1628,18 +1640,6 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void HandlePaymentInfoNextButton()
         {
-            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
-            {
-                /* 03/22/2021 MDP
-
-                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                */
-
-                ShowMessage( NotificationBoxType.Validation, "Validation", "Invalid Form Value" );
-                return;
-            }
-
             if ( ValidatePaymentInfo( out string errorMessage ) )
             {
                 SetConfirmationText();
@@ -3737,7 +3737,10 @@ mission. We are so grateful for your commitment.</p>
                 mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
             }
 
-            var accountDetails = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 );
+            var accountDetails = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 )
+                .Select( a => new TransactionAccountDetail( a.AccountId, a.Amount ?? 0.0M, caapPromptForAccountAmounts.CampusId ) )
+                .ToList();
+
             mergeFields.Add( "TransactionAccountDetails", accountDetails );
 
             var paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
@@ -3839,6 +3842,57 @@ mission. We are so grateful for your commitment.</p>
                         parent.HasChildren = parent.Children.Any();
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// This POCO is intended to provide backwards compatibility to RockWeb.Blocks.Financial.TransactionEntry.AccountItem,
+        /// which is used in parsing the Payment Comment Lava Template.  This is necessary so that Lava templates from that
+        /// block can be used on this block.
+        /// </summary>
+        protected class TransactionAccountDetail : RockDynamic
+        {
+            public int Id { get; set; }
+
+            public int Order { get; set; }
+
+            public string Name { get; set; }
+
+            public int? CampusId { get; set; }
+
+            public decimal Amount { get; set; }
+
+            public bool Enabled { get; set; }
+
+            public string PublicName { get; set; }
+
+            public string AmountFormatted
+            {
+                get
+                {
+                    return this.Amount > 0 ? this.Amount.FormatAsCurrency() : string.Empty;
+                }
+            }
+
+            public TransactionAccountDetail( int accountId, decimal amount, int? campusId )
+            {
+                this.Id = accountId;
+                this.Amount = amount;
+                this.CampusId = campusId;
+
+                var account = FinancialAccountCache.Get( this.Id );
+                if ( account == null )
+                {
+                    return;
+                }
+
+                this.PublicName = account.PublicName;
+                this.Order = account.Order;
+                this.Name = account.Name;
+
+                // this was used for tracking whether accounts passed in to the query string were enabled in the TransactionEntry block.
+                // We (probably?) don't need it here, but it's being kept for backwards compatibilty.
+                this.Enabled = true;
             }
         }
 

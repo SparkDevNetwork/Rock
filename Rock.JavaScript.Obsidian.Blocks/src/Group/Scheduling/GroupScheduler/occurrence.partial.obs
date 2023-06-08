@@ -1,0 +1,235 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!isValidAttendanceOccurrence" :alertType="AlertType.Warning">
+        Unable to schedule this occurrence.
+    </NotificationBox>
+
+    <div v-else class="location js-schedule-location">
+        <div class="d-flex">
+            <span class="d-block text-sm">
+                {{ title }}
+            </span>
+        </div>
+
+        <NotificationBox v-if="updateResourceWarningMessage" :alertType="AlertType.Warning">
+            {{ updateResourceWarningMessage }}
+        </NotificationBox>
+
+        <NotificationBox v-if="getResourcesWarningMessage" :alertType="AlertType.Warning">
+            {{ getResourcesWarningMessage }}
+        </NotificationBox>
+
+        <ul v-else class="list-group list-group-sched">
+
+            <ScheduledResource v-for="resource in resources" :key="resource.AttendanceId"
+                               :occurrence="occurrence"
+                               :resource="resource"
+                               v-model:updateResourceWarningMessage="updateResourceWarningMessage"
+                               :disabled="schedulingDisabled"
+                               @resourceUpdated="onResourceUpdated"
+                               @preferenceUpdated="$emit('preferenceUpdated', resource.PersonId)"></ScheduledResource>
+
+            <li class="list-group-item d-flex align-items-center">
+                <ProgressBar :progress="scheduleProgress"></ProgressBar>
+                <div v-no-drag-scroll>
+                    <RockButton type="button"
+                                class="circle-plus"
+                                :disabled="schedulingDisabled"
+                                @click="onSelectIndividualsClick">
+                        <Loading :isLoading="isLoadingResources" :isSmall="true">
+                            <i class="fa fa-plus"></i>
+                        </Loading>
+                    </RockButton>
+                </div>
+            </li>
+        </ul>
+
+        <SelectIndividuals v-model:isVisible="isSelectingIndividuals"
+                           :occurrence="occurrence"
+                           :spotsFilledCount="totalCount"
+                           @partialAssignmentSuccess="getCurrentResources"></SelectIndividuals>
+
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, inject, PropType, ref, watch } from "vue";
+    import ProgressBar from "./progressBar.partial.obs";
+    import ScheduledResource from "./scheduledResource.partial.obs";
+    import SelectIndividuals from "./selectIndividuals.partial.obs";
+    import { IScheduleProgress, ISchedulerResourceAttend, ReloadAllOccurrences, ReloadOccurrencesContainingResource, ReloadScheduleOccurrences, ResourceAction } from "./types.partial";
+    import Loading from "@Obsidian/Controls/loading";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import { NoDragScroll as vNoDragScroll } from "@Obsidian/Directives/dragScroll";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { ScheduledAttendanceItemStatus, ScheduledAttendanceItemStatusDescription } from "@Obsidian/Enums/Event/scheduledAttendanceItemStatus";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+
+    const http = useHttp();
+
+    const props = defineProps({
+        occurrence: {
+            type: Object as PropType<GroupSchedulerOccurrenceBag>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "resourceListUpdated", attendanceOccurrenceId: number): void,
+        (e: "preferenceUpdated", personId: number): void
+    }>();
+
+    // #region Values
+
+    const isSelectingIndividuals = ref(false);
+    const isLoadingResources = ref(true);
+    const getResourcesWarningMessage = ref("");
+    const updateResourceWarningMessage = ref("");
+
+    const resources = ref<ISchedulerResourceAttend[]>([]);
+
+    const reloadAllOccurrences = inject(ReloadAllOccurrences, ref(false));
+    const reloadScheduleOccurrences = inject(ReloadScheduleOccurrences, ref(null));
+    const reloadOccurrencesContainingResource = inject(ReloadOccurrencesContainingResource, ref(null));
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.occurrence?.locationName || "Location";
+    });
+
+    const attendanceOccurrenceId = computed((): number => {
+        return props.occurrence?.attendanceOccurrenceId ?? 0;
+    });
+
+    const isValidAttendanceOccurrence = computed((): boolean => {
+        return attendanceOccurrenceId.value > 0;
+    });
+
+    const confirmedCount = computed((): number => {
+        var confirmed = ScheduledAttendanceItemStatusDescription[ScheduledAttendanceItemStatus.Confirmed].toLowerCase();
+        return resources.value
+            .filter((r: ISchedulerResourceAttend) => r.ConfirmationStatus === confirmed)
+            .length;
+    });
+
+    const pendingCount = computed((): number => {
+        var pending = ScheduledAttendanceItemStatusDescription[ScheduledAttendanceItemStatus.Pending].toLowerCase();
+        return resources.value
+            .filter((r: ISchedulerResourceAttend) => r.ConfirmationStatus === pending)
+            .length;
+    });
+
+    const totalCount = computed((): number => {
+        return confirmedCount.value + pendingCount.value;
+    });
+
+    const scheduleProgress = computed((): IScheduleProgress => {
+        let minimumCapacity: number | null | undefined;
+        let desiredCapacity: number | null | undefined;
+        let maximumCapacity: number | null | undefined;
+
+        if (props.occurrence) {
+            minimumCapacity = props.occurrence.minimumCapacity;
+            desiredCapacity = props.occurrence.desiredCapacity;
+            maximumCapacity = props.occurrence.maximumCapacity;
+        }
+
+        const progress = {
+            minimumCapacity,
+            desiredCapacity,
+            maximumCapacity,
+            confirmedCount: confirmedCount.value,
+            pendingCount: pendingCount.value
+        };
+
+        return progress;
+    });
+
+    const schedulingDisabled = computed((): boolean => {
+        return props.disabled || isLoadingResources.value || !props.occurrence.isSchedulingEnabled;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    async function getCurrentResources(): Promise<void> {
+        isLoadingResources.value = true;
+        getResourcesWarningMessage.value = "";
+        updateResourceWarningMessage.value = "";
+
+        const result = await http.get<ISchedulerResourceAttend[]>(`/api/Attendances/GetAttendingSchedulerResources?attendanceOccurrenceId=${attendanceOccurrenceId.value}`);
+        isLoadingResources.value = false;
+
+        if (!result.isSuccess) {
+            getResourcesWarningMessage.value = result.errorMessage ?? "Unknown error when trying to get current resources.";
+            return;
+        }
+
+        resources.value = result.data ?? [];
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `resourceUpdated` event of the scheduled resource component.
+     *
+     * @param action The update action performed.
+     */
+    function onResourceUpdated(action: ResourceAction): void {
+        getCurrentResources();
+
+        if (action === ResourceAction.Remove) {
+            emit("resourceListUpdated", attendanceOccurrenceId.value);
+        }
+    }
+
+    /**
+     * Handles the click event of the select individuals button.
+     */
+    function onSelectIndividualsClick(): void {
+        isSelectingIndividuals.value = true;
+    }
+
+    // #endregion
+
+    getCurrentResources();
+
+    watch(isSelectingIndividuals, () => {
+        if (!isSelectingIndividuals.value) {
+            getCurrentResources();
+            emit("resourceListUpdated", attendanceOccurrenceId.value);
+        }
+    });
+
+    watch(reloadAllOccurrences, () => {
+        if (reloadAllOccurrences.value) {
+            getCurrentResources();
+        }
+    });
+
+    watch(reloadScheduleOccurrences, ((triggeredById: number | null) => {
+        if (triggeredById && triggeredById !== attendanceOccurrenceId.value) {
+            getCurrentResources();
+        }
+    }));
+
+    watch(reloadOccurrencesContainingResource, ((personId: number | null) => {
+        if (personId && resources.value
+            ?.some((r: ISchedulerResourceAttend) => r?.PersonId === personId)) {
+            getCurrentResources();
+        }
+    }));
+</script>

@@ -41,18 +41,37 @@ namespace Rock.Lava
             _template = template;
         }
 
-        public override string Message
+        /// <inheritdoc />
+        public override string GetUserMessage()
         {
-            get
+            if ( !string.IsNullOrWhiteSpace( _message ) )
             {
-                if ( string.IsNullOrWhiteSpace( _message ) )
-                {
-                    return $"Lava Template Render failed. [Engine={ _engineName }, Template=\"{ _template }\"]";
-                }
-                else
-                {
-                    return $"Lava Template Render failed: { _message } [Engine={ _engineName }, Template=\"{ _template }\"]";
-                }
+                return $"Lava Error: { _message }";
+            }
+
+            if ( this.InnerException is LavaException le )
+            {
+                // Try to get a user-friendly error message from the wrapped exception.
+                return le.GetUserMessage();
+            }
+            else if ( this.InnerException != null )
+            {
+                return $"Lava Error: { this.InnerException.Message }";
+            }
+
+            return "Lava Template Render failed.";
+        }
+
+        /// <inheritdoc />
+        public override string GetDiagnosticMessage()
+        {
+            if ( string.IsNullOrWhiteSpace( _message ) )
+            {
+                return $"Lava Template Render failed. [Template=\"{ _template }\", Engine={ _engineName }]";
+            }
+            else
+            {
+                return $"Lava Template Render failed: { _message } [Template=\"{ _template }\", Engine={ _engineName }]";
             }
         }
     }

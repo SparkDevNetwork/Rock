@@ -1,4 +1,41 @@
 {
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Debug Framework",
+				"request": "launch",
+				"port": 9222,
+				"type": "chrome",
+				"url": "http://localhost:6229",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+			},
+			{
+				"name": "Debug Framework (Attach to existing Chrome)",
+				"request": "attach",
+				"port": 9222,
+				"type": "chrome",
+				"urlFilter": "http://localhost:6229*",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+			},
+			{
+				"name": "Debug Blocks",
+				"request": "launch",
+				"port": 9222,
+				"type": "chrome",
+				"url": "http://localhost:6229",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+			},
+			{
+				"name": "Debug Blocks (Attach to existing Chrome)",
+				"request": "attach",
+				"port": 9222,
+				"type": "chrome",
+				"urlFilter": "http://localhost:6229*",
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+			}
+		]
+	},
 	"extensions": {
 		"recommendations": [
 			"dbaeumer.vscode-eslint",
@@ -23,7 +60,14 @@
 			"html": true
 		},
 		"volar.completion.preferredAttrNameCase": "camel",
+		"volar.completion.preferredTagNameCase": "pascal",
 		"volar.vueserver.additionalExtensions": [
+			"obs"
+		],
+		"vue.features.complete.propNameCasing": "camel",
+		"vue.complete.casing.props": "camel",
+		"vue.complete.casing.tags": "pascal",
+		"vue.server.additionalExtensions": [
 			"obs"
 		],
 		"files.trimTrailingWhitespace": true,
@@ -42,7 +86,13 @@
 		"[vue]": {
 			"editor.defaultFormatter": "Vue.volar"
 		},
-		"css.format.spaceAroundSelectorSeparator": true
+		"css.format.spaceAroundSelectorSeparator": true,
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"workbench.settings.openDefaultSettings": false,
+		"workbench.settings.openDefaultKeybindings": false,
+		"css.lint.duplicateProperties": "warning",
+		"css.lint.zeroUnits": "warning",
+		"css.lint.propertyIgnoredDueToDisplay": "warning"
 	},
 	"tasks": {
 		"version": "2.0.0",
@@ -63,9 +113,6 @@
 				},
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian"
-				},
-				"problemMatcher": {
-					"base": "$tsc-watch"
 				}
 			},
 			{
@@ -83,9 +130,6 @@
 				},
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
-				},
-				"problemMatcher": {
-					"base": "$tsc-watch"
 				}
 			},
 			{
@@ -108,17 +152,17 @@
 					"showReuseMessage": false,
 					"clear": true,
 					"echo": false,
-					"panel":"dedicated"
+					"panel": "dedicated"
 				},
 				"options": {
 					"cwd": "${workspaceFolder:Rock.JavaScript.Obsidian}"
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"base": "$tsc-watch",
+					"base": "$vite",
 					"background": {
-						"beginsPattern": "^\\[    0.000s\\]",
-						"endsPattern": "(Build completed.|Build failed.)$"
+						"beginsPattern": "^rollup v",
+						"endsPattern": "waiting for changes\\.\\.\\.$"
 					}
 				}
 			},
@@ -137,10 +181,10 @@
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"base": "$tsc-watch",
+					"base": "$vite",
 					"background": {
-						"beginsPattern": "^\\[    0.000s\\]",
-						"endsPattern": "(Build completed.|Build failed.)$"
+						"beginsPattern": "^rollup v",
+						"endsPattern": "waiting for changes\\.\\.\\.$"
 					}
 				}
 			},

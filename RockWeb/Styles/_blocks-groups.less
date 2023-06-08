@@ -37,101 +37,56 @@
 
 // 2. Sign-Up Detail
 // -------------------------
-.sign-up-opportunities-grid-header-title {
-  font-size: 22px;
-  font-weight: 600;
-}
-
-.sign-up-opportunities-grid-header-description {
-  display: flex;
-  flex-direction: column;
-  border-bottom: solid 1px #767676;
-
-  .btn-group {
-    align-self: flex-end;
-    margin-top: 12px;
-  }
-
-  @media (min-width: @screen-md-min) {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-
-    .btn-group {
-      align-self: auto;
-      margin-top: 0;
-    }
-  }
-}
-
-.sign-up-opportunities-grid-slots-badge {
+.progress-sign-ups-cell {
   .tooltip-inner {
     max-width: 100%;
   }
 }
 
-.sign-up-slots-badge {
-  width: 215px;
-  background-color: @gray-200;
+.text-critical {
+  color: @brand-critical;
+}
+
+.progress-sign-ups {
   position: relative;
+  width: 215px;
+  height: 14px;
+  overflow: visible;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 50px;
+  box-shadow: none;
 
-  .sign-up-slots {
-    box-sizing: border-box;
+  .indicator {
     position: absolute;
-    top: 0;
-    left: 0;
-  }
+    top: -1px;
+    bottom: -1px;
+    width: 5px;
 
-  .slots-filled {
-    &-warning {
-      background-color: @brand-warning;
+    &::before,
+    &::after {
+      position: absolute;
+      left: 0;
+      width: 2px;
+      height: 3px;
+      content: "";
+      background: currentColor;
+      box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .25);
     }
 
-    &-success {
-      background-color: @brand-success;
+    &::before {
+      top: -1px;
     }
 
-    &-success-plus {
-      background-color: #13a473;
-    }
-
-    &-danger {
-      background-color: @brand-danger;
-    }
-  }
-
-  .slots-min,
-  .slots-desired {
-    &-warning {
-      border-right: solid 2px @brand-warning;
-    }
-
-    &-success {
-      border-right: solid 2px @brand-success;
-    }
-
-    &-white {
-      border-right: solid 2px @white;
+    &::after {
+      bottom: -1px;
     }
   }
 }
 
-[id^=sign-up-slots-badge-tooltip-] {
-  display: none;
-}
-
-.sign-up-slots-badge-tooltip {
-  display: flex;
-
-  .slot-counts {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    white-space: nowrap;
-
-    span {
-      white-space: nowrap;
-    }
-  }
+.progress-bar-sign-ups {
+  position: absolute;
+  left: 0;
+  border-radius: 50px;
+  box-shadow: none;
 }

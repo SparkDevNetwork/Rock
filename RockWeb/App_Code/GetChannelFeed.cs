@@ -30,13 +30,27 @@ namespace RockWeb
     /// <summary>
     /// Handles retrieving file data from storage
     /// </summary>
-    public class GetChannelFeed : IHttpHandler
+    public class GetChannelFeed : IHttpAsyncHandler
     {
-
         private HttpRequest request;
         private HttpResponse response;
 
+        private AsyncProcessorDelegate _delegate;
+        protected delegate void AsyncProcessorDelegate( HttpContext context );
+
         private int rssItemLimit = 10;
+
+        public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
+        {
+            _delegate = new AsyncProcessorDelegate( ProcessRequest );
+
+            return _delegate.BeginInvoke( context, cb, extraData );
+        }
+
+        public void EndProcessRequest( IAsyncResult result )
+        {
+            _delegate.EndInvoke( result );
+        }
 
         public void ProcessRequest( HttpContext context )
         {
@@ -239,7 +253,7 @@ namespace RockWeb
                 {
                     RockCache.AddOrUpdate( cacheKey + ":MimeType", null, response.ContentType, expiration );
                     RockCache.AddOrUpdate( cacheKey, null, outputContent, expiration );
-                };
+                }
             }
         }
 

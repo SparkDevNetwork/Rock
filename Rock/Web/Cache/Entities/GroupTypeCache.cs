@@ -641,18 +641,17 @@ namespace Rock.Web.Cache
                 {
                     lock ( _obj )
                     {
-                        if ( _roles == null )
+                        using ( var rockContext = new RockContext() )
                         {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                _roles = new List<GroupTypeRoleCache>();
-                                new GroupTypeRoleService( rockContext )
-                                    .Queryable().AsNoTracking()
-                                    .Where( r => r.GroupTypeId == Id )
-                                    .OrderBy( r => r.Order )
-                                    .ToList()
-                                    .ForEach( r => _roles.Add( new GroupTypeRoleCache( r ) ) );
-                            }
+                            var roles = new List<GroupTypeRoleCache>();
+                            new GroupTypeRoleService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( r => r.GroupTypeId == Id )
+                                .OrderBy( r => r.Order )
+                                .ToList()
+                                .ForEach( r => roles.Add( new GroupTypeRoleCache( r ) ) );
+
+                            _roles = roles;
                         }
                     }
                 }

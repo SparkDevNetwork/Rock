@@ -38,6 +38,9 @@ export type SignUpRegistrantBag = {
     /** Gets or sets the registrant's full name. */
     fullName?: string | null;
 
+    /** Gets or sets whether this Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag instance represents a child. */
+    isChild: boolean;
+
     /** Gets or sets whether this Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag instance represents the registrar. */
     isRegistrar: boolean;
 

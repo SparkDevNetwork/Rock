@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -22,6 +23,7 @@ using Rock;
 using Rock.Data;
 using Rock.Drawing.Avatar;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -29,7 +31,7 @@ namespace RockWeb
     /// <summary>
     /// Handles retrieving file (image) data from storage
     /// </summary>
-    public class GetAvatar : IHttpHandler
+    public class GetAvatar : IHttpAsyncHandler
     {
         // Implemented this as an IHttpAsyncHandler instead of IHttpHandler to improve performance
         // https://stackoverflow.com/questions/48528773/ihttphandler-versus-httptaskasynchandler-performance
@@ -70,8 +72,14 @@ namespace RockWeb
         /// <exception cref="System.NotImplementedException"></exception>
         public void ProcessRequest( HttpContext context )
         {
-            // Read query string parms
+            // Read query string parameters
             var settings = ReadSettingsFromRequest( context.Request );
+
+            if ( settings.PhotoId.HasValue && !IsAuthorized( settings.PhotoId.Value ) )
+            {
+                SendNotAuthorized( context );
+                return;
+            }
 
             string cacheFolder = context.Request.MapPath( $"~/App_Data/Avatar/Cache/" );
             string cachedFilePath = $"{cacheFolder}{settings.CacheKey}.png";
@@ -135,10 +143,7 @@ namespace RockWeb
             }
             finally
             {
-                if ( fileContent != null )
-                {
-                    fileContent.Dispose();
-                }
+                fileContent?.Dispose();
             }
         }
 
@@ -225,8 +230,21 @@ namespace RockWeb
             settings.CachePath = request.MapPath( $"~/App_Data/Avatar/Cache/" );
 
             // Colors
-            settings.AvatarColors.BackgroundColor = ( request.QueryString["BackgroundColor"] ?? "" ).ToString();
-            settings.AvatarColors.ForegroundColor = ( request.QueryString["ForegroundColor"] ?? "" ).ToString();
+            var backgroundColor = string.Empty;
+            var foregroundColor = string.Empty;
+
+            if ( request.QueryString["BackgroundColor"] != null )
+            {
+                backgroundColor = $"#{request.QueryString["BackgroundColor"]}".AsHexColorString();
+            }
+
+            if ( request.QueryString["ForegroundColor"] != null )
+            {
+                foregroundColor = $"#{request.QueryString["ForegroundColor"]}".AsHexColorString();
+            }
+
+            settings.AvatarColors.BackgroundColor = backgroundColor;
+            settings.AvatarColors.ForegroundColor = foregroundColor;
             
             // Size
             if ( request.QueryString["Size"] != null )
@@ -393,6 +411,61 @@ namespace RockWeb
                 // if it fails, return null, which will result in fetching it from the database instead
                 return null;
             }
+        }
+
+
+        /// <summary>
+        /// Determines whether the current user is authorized to view the Person Image.
+        /// Returns true without security check if the Person Image BinaryFileType has RequiresViewSecurity set to false.
+        /// The file type will need to be checked before fetching the file (see RockImage.GetPersonImageFromBinaryFileService())
+        /// Validates security and the BinaryFileType if RequiresViewSecurity is true.
+        /// </summary>
+        /// <param name="photoId"></param>
+        /// <returns>
+        ///   <c>true</c> if the current user is authorized; otherwise, <c>false</c>.</returns>
+        private Boolean IsAuthorized( int photoId )
+        {
+            var binaryFileTypeCache = BinaryFileTypeCache.Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+            if ( binaryFileTypeCache.RequiresViewSecurity == false )
+            {
+                return true;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFile = new BinaryFileService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == photoId );
+                if ( binaryFile == null || binaryFile.BinaryFileTypeId != binaryFileTypeCache.Id )
+                {
+                    return false;
+                }
+
+                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                Person currentPerson = currentUser?.Person;
+                var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
+
+                // If no parent entity is specified then check if there is security on the BinaryFileType
+                if ( parentEntityAllowsView == null )
+                {
+                    if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        return false;
+                    }
+                }
+
+                // Check if there is parent security and use it if it exists, otherwise return true.
+                return parentEntityAllowsView ?? true;
+            }
+        }
+
+        /// <summary>
+        /// Sends a 403 (forbidden)
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void SendNotAuthorized( HttpContext context )
+        {
+            context.Response.StatusCode = System.Net.HttpStatusCode.Forbidden.ConvertToInt();
+            context.Response.StatusDescription = "Not authorized to view image";
+            context.ApplicationInstance.CompleteRequest();
         }
 
         #endregion

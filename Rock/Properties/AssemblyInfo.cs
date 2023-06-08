@@ -39,6 +39,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.Performance" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.AI.OpenAI" )]
 
@@ -131,3 +132,6 @@ using System.Runtime.InteropServices;
 [assembly: TypeForwardedTo( typeof( Rock.Model.WorkflowTriggerType) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.WorkflowTriggerValueChangeType) )]
 [assembly: TypeForwardedTo( typeof( Rock.Utility.TimeIntervalUnit ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemMatchesPreference ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemStatus ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.SchedulerResourceGroupMemberFilterType ) )]

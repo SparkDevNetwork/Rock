@@ -1,0 +1,330 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <li v-if="resource" class="list-group-item text-sm">
+        <img :src="imgSrc" :class="imgCssClass" draggable="false">
+        <span class="resource-name">
+            {{ personName }}
+            <i v-if="conflictTooltip"
+               ref="conflictElement"
+               class="fa fa-exclamation-triangle"
+               data-toggle="tooltip"
+               :title="conflictTooltip"></i>
+            <i v-if="preferenceTooltip"
+               ref="preferenceElement"
+               class="fa fa-minus-circle"
+               data-toggle="tooltip"
+               :title="preferenceTooltip"></i>
+        </span>
+        <span class="resource-role">{{ resource?.GroupRoleName }}</span>
+
+        <div v-no-drag-scroll class="dropdown">
+            <button type="button"
+                    class="btn btn-link btn-overflow"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    :disabled="isSchedulingDisabled">
+                <i class="fa fa-ellipsis-v"></i>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-right">
+                <li>
+                    <button type="button"
+                            class="dropdown-item btn-link"
+                            :disabled="isSchedulingDisabled"
+                            @click="onUpdateResource(ResourceAction.MarkConfirmed)">
+                        Mark Confirmed
+                    </button>
+                </li>
+                <li>
+                    <button type="button"
+                            class="dropdown-item btn-link"
+                            :disabled="isSchedulingDisabled"
+                            @click="onUpdateResource(ResourceAction.MarkPending)">
+                        Mark Pending
+                    </button>
+                </li>
+                <li>
+                    <button type="button"
+                            class="dropdown-item btn-link"
+                            :disabled="isSchedulingDisabled"
+                            @click="onUpdateResource(ResourceAction.MarkDeclined)">
+                        Mark Declined
+                    </button>
+                </li>
+                <li>
+                    <button type="button"
+                            class="dropdown-item btn-link"
+                            :disabled="isSchedulingDisabled"
+                            @click="onUpdateResource(ResourceAction.ResendConfirmation)">
+                        Resend Confirmation
+                    </button>
+                </li>
+                <li v-if="groupMemberId">
+                    <button type="button"
+                            class="dropdown-item btn-link"
+                            :disabled="isSchedulingDisabled"
+                            @click="onUpdateResource(ResourceAction.UpdatePreference)">
+                        Update Preference
+                    </button>
+                </li>
+                <li>
+                    <button type="button"
+                            class="dropdown-item dropdown-item-danger btn-link"
+                            :disabled="isSchedulingDisabled"
+                            @click="onUpdateResource(ResourceAction.Remove)">
+                        Remove
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+    </li>
+
+    <UpdatePreference v-model:isVisible="isUpdatingPreference"
+                      :occurrence="occurrence"
+                      :resource="resource"
+                      @preferenceUpdated="$emit('preferenceUpdated')"></UpdatePreference>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ISchedulerResourceAssignment, ISchedulerResourceAttend, Preference, ResourceAction } from "./types.partial";
+    import UpdatePreference from "./updatePreference.partial.obs";
+    import { NoDragScroll as vNoDragScroll } from "@Obsidian/Directives/dragScroll";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+
+    const http = useHttp();
+
+    const props = defineProps({
+        occurrence: {
+            type: Object as PropType<GroupSchedulerOccurrenceBag>,
+            required: true
+        },
+
+        resource: {
+            type: Object as PropType<ISchedulerResourceAttend>,
+            required: true
+        },
+
+        updateResourceWarningMessage: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "resourceUpdated", action: ResourceAction): void,
+        (e: "preferenceUpdated"): void
+        (e: "update:updateResourceWarningMessage"): void
+    }>();
+
+    // #region Values
+
+    const updateResourceWarningMessage = useVModelPassthrough(props, "updateResourceWarningMessage", emit);
+
+    const isUpdatingResource = ref(false);
+    const isUpdatingPreference = ref(false);
+
+    const imgSrc = ref<string>(props.resource?.PersonPhotoUrl ?? "");
+    const personName = ref<string>(props.resource?.PersonName ?? "");
+
+    const conflictElement = ref<HTMLElement | null>(null);
+    const preferenceElement = ref<HTMLElement | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const status = computed((): string => {
+        return props.resource?.ConfirmationStatus ?? "";
+    });
+
+    const imgCssClass = computed((): string => {
+        return `avatar avatar-status${(status.value ? ` ${status.value.toLowerCase()}` : "")}`;
+    });
+
+    const attendanceId = computed((): number => {
+        return props.resource?.AttendanceId ?? 0;
+    });
+
+    const groupMemberId = computed((): number => {
+        return props.resource?.GroupMemberId ?? 0;
+    });
+
+    const isSchedulingDisabled = computed((): boolean => {
+        return props.disabled || isUpdatingResource.value;
+    });
+
+    const preferenceList = computed((): ISchedulerResourceAssignment[] => {
+        return props.resource
+            ?.ResourcePreferenceList
+            ?.filter((a: ISchedulerResourceAssignment) => a.ScheduleName) ?? [];
+    });
+
+    const preferenceTooltip = computed((): string => {
+        let tooltip = "";
+
+        if (props.resource?.MatchesPreference === Preference.notMatches
+            && preferenceList.value.length) {
+            tooltip += "<div class='font-weight-semibold'>Preference</div>";
+            preferenceList.value.forEach((preference: ISchedulerResourceAssignment) => {
+                const locationName = preference.LocationName ? ` - ${preference.LocationName}` : "";
+                tooltip += `<div>${preference.ScheduleName}${locationName}</div>`;
+            });
+        }
+
+        return tooltip;
+    });
+
+    const schedulingConflictList = computed((): ISchedulerResourceAssignment[] => {
+        return props.resource
+            ?.SchedulingConflicts
+            ?.filter((a: ISchedulerResourceAssignment) => a.ScheduleName) ?? [];
+    });
+
+    const conflictTooltip = computed((): string => {
+        let tooltip = "";
+
+        if (props.resource?.HasBlackoutConflict) {
+            tooltip += "<div class='conflict-type'>Cannot be scheduled due to a blackout.</div>";
+        }
+
+        if (props.resource?.HasGroupRequirementsConflict) {
+            tooltip += "<div class='conflict-type'>Does not meet the requirements for this group.</div>";
+        }
+
+        if (schedulingConflictList.value?.length) {
+            tooltip += "<div class='conflict-type font-weight-semibold'>Scheduling Conflicts:</div>";
+            schedulingConflictList.value.forEach((conflict: ISchedulerResourceAssignment) => {
+                const locationName = conflict.LocationName ? ` - ${conflict.LocationName}` : "";
+                tooltip += `<div>${conflict.ScheduleName}${locationName}</div>`;
+            });
+        }
+
+        return tooltip;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Returns a friendly action that can be used in messaging, based on the provided action.
+     *
+     * @param action The action for which to return a friendly action.
+     */
+    function getFriendlyAction(action: ResourceAction): string {
+        switch (action) {
+            case ResourceAction.MarkConfirmed:
+                return `marking ${personName.value} as confirmed`;
+            case ResourceAction.MarkPending:
+                return `marking ${personName.value} as pending`;
+            case ResourceAction.MarkDeclined:
+                return `marking ${personName.value} as declined`;
+            case ResourceAction.ResendConfirmation:
+                return `resending confirmation to ${personName.value}`;
+            case ResourceAction.UpdatePreference:
+                return `updating preferences for ${personName.value}`;
+            case ResourceAction.Remove:
+                return `removing ${personName.value}`;
+            default:
+                return `updating ${personName.value}`;
+        }
+    }
+
+    /**
+     * Configures the conflict & preference tooltips.
+     */
+    function configureTooltips(): void {
+        if (conflictElement.value) {
+            tooltip(conflictElement.value, { html: true });
+        }
+
+        if (preferenceElement.value) {
+            tooltip(preferenceElement.value, { html: true });
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Updates the resource according to the specified action.
+     *
+     * @param action The update action to perform.
+     */
+    async function onUpdateResource(action: ResourceAction): Promise<void> {
+        isUpdatingResource.value = true;
+        updateResourceWarningMessage.value = "";
+
+        const warningMessage = `There was an error while ${getFriendlyAction(action)}`;
+
+        let endpoint = "";
+        switch (action) {
+            case ResourceAction.MarkConfirmed:
+                endpoint = "ScheduledPersonConfirm";
+                break;
+            case ResourceAction.MarkPending:
+                endpoint = "ScheduledPersonPending";
+                break;
+            case ResourceAction.MarkDeclined:
+                endpoint = "ScheduledPersonDecline";
+                break;
+            case ResourceAction.ResendConfirmation:
+                endpoint = "ScheduledPersonSendConfirmationCommunication";
+                break;
+            case ResourceAction.Remove:
+                endpoint = "ScheduledPersonRemove";
+                break;
+            case ResourceAction.UpdatePreference:
+                isUpdatingPreference.value = true;
+                return;
+            default:
+                updateResourceWarningMessage.value = warningMessage;
+                isUpdatingResource.value = false;
+                return;
+        }
+
+        const result = await http.doApiCall("PUT", `/api/Attendances/${endpoint}?attendanceId=${attendanceId.value}`);
+        isUpdatingResource.value = false;
+
+        if (!result.isSuccess) {
+            updateResourceWarningMessage.value = warningMessage;
+            return;
+        }
+
+        emit("resourceUpdated", action);
+    }
+
+    // #endregion
+
+    watch([
+        conflictElement,
+        preferenceElement
+    ], () => {
+        configureTooltips();
+    });
+
+    watch([
+        conflictTooltip,
+        preferenceTooltip
+    ], () => {
+        configureTooltips();
+    });
+
+    watch(isUpdatingPreference, () => {
+        if (!isUpdatingPreference.value) {
+            isUpdatingResource.value = false;
+        }
+    });
+</script>

@@ -27,6 +27,7 @@ using DotLiquid;
 
 using Rock.Lava.Blocks;
 using Rock.Model;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Shortcodes
@@ -49,6 +50,13 @@ namespace Rock.Lava.Shortcodes
         /// </summary>
         public override void OnStartup()
         {
+            // If the database is not connected, we do not have access to dynamic shortcodes.
+            // This can occur when the Lava engine is started without an attached database.
+            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            {
+                return;
+            }
+
             // get all the block dynamic shortcodes and register them
             var blockShortCodes = LavaShortcodeCache.All().Where( s => s.TagType == TagType.Block );
 

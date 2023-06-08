@@ -6,7 +6,7 @@
     "incremental": true,
     "noImplicitAny": false,
     "noImplicitOverride": true,
-    "noEmitOnError": true,
+    "noEmitOnError": false,
     "removeComments": true,
     "allowUnreachableCode": false,
     "forceConsistentCasingInFileNames": true,
@@ -52,6 +52,11 @@
     { "path": "../Rock.JavaScript.Obsidian/Framework/Utility" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/ValidationRules" }
   ],
+  "vueCompilerOptions": {
+    "extensions": [
+      ".obs"
+    ]
+  },
   "include": [
     "./src/**/*.ts",
     "./src/**/*.obs"

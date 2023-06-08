@@ -471,5 +471,25 @@ WELCOME TO THE LAVA TAG
         }
 
         #endregion
+
+        #region Raw Tag
+
+        /// <summary>
+        /// The raw tag should preserve all whitespace in its content.
+        /// </summary>
+        [TestMethod]
+        public void RawTag_ContainingWhitespace_PreservesWhitespace()
+        {
+            var template = @"{% raw %}{{- -}}{% endraw %}";
+
+            var expectedOutput = @"{{- -}}";
+
+            // This only works correctly in the Fluid engine.
+            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, template, ignoreWhitespace: false );
+
+        }
+
+        #endregion
+
     }
 }

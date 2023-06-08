@@ -240,8 +240,16 @@
                 // delete/archive prompt
                 $('.btn-transaction-save').on('click', function (e) {
                     var isZeroTransaction = $('.is-zero-transaction').val();
+                    var isSingleAccountAmountMinusFeeCoverageAmountVisible = $('#<%= tbSingleAccountAmountMinusFeeCoverageAmount.ClientID %>').is(":visible");
 
-                    if (isZeroTransaction !== 'True') {
+                    if (isSingleAccountAmountMinusFeeCoverageAmountVisible) {
+                        if ($('#<%= tbSingleAccountAmountMinusFeeCoverageAmount.ClientID %>').val() > 0) {
+                            var isSingleAccountFeeCoverageAmountVisible = $('#<%= tbSingleAccountFeeCoverageAmount.ClientID %>').is(":visible");
+                            if (!isSingleAccountFeeCoverageAmountVisible || $('#<%= tbSingleAccountFeeCoverageAmount.ClientID %>').val() > 0) {
+                                return true;
+                            }
+                        }
+                    } else if (isZeroTransaction !== 'True') {
                         return true;
                     }
 
@@ -302,16 +310,3 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
-<style>
-    .person-photo {
-        width: 43px;
-        height: 43px;
-        background-repeat: no-repeat;
-        background-size: cover;
-        border-radius: 50%;
-    }
-
-    .label-campus {
-        border-radius: 10px;
-    }
-</style>

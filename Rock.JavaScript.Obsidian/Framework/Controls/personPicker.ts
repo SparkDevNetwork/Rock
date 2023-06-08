@@ -91,7 +91,17 @@ export default defineComponent({
     props: {
         modelValue: {
             type: Object as PropType<ListItemBag>
-        }
+        },
+
+        includeBusinesses: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        formGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
     },
 
     setup(props, { emit }) {
@@ -145,7 +155,8 @@ export default defineComponent({
 
             const options: Partial<PersonPickerSearchOptionsBag> = {
                 name: text,
-                includeDetails: true
+                includeDetails: true,
+                includeBusinesses: props.includeBusinesses
             };
 
             // Make the API call to get the search results.
@@ -399,7 +410,7 @@ export default defineComponent({
     template: `
 <RockFormField
     :modelValue="internalValue"
-    formGroupClasses="person-picker"
+    :formGroupClasses="'person-picker ' + formGroupClasses"
     name="personpicker">
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">

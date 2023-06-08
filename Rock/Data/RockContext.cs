@@ -779,6 +779,22 @@ namespace Rock.Data
         public DbSet<ContentCollectionSource> ContentCollectionSources { get; set; }
 
         /// <summary>
+        /// Gets or sets the content topics.
+        /// </summary>
+        /// <value>
+        /// The content topics.
+        /// </value>
+        public DbSet<ContentTopic> ContentTopics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content topic domains.
+        /// </summary>
+        /// <value>
+        /// The content topic domains.
+        /// </value>
+        public DbSet<ContentTopicDomain> ContentTopicDomains { get; set; }
+
+        /// <summary>
         /// Gets or sets the data views.
         /// </summary>
         /// <value>
@@ -1184,6 +1200,8 @@ namespace Rock.Data
         /// <value>
         /// The group location historical schedules.
         /// </value>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Consider using 'History' entity instead." )]
         public DbSet<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
 
         /// <summary>
@@ -1677,6 +1695,14 @@ namespace Rock.Data
         /// the Person aliases.
         /// </value>
         public DbSet<PersonAlias> PersonAliases { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Preferences.
+        /// </summary>
+        /// <value>
+        /// The Person Preferences.
+        /// </value>
+        public DbSet<PersonPreference> PersonPreferences { get; set; }
 
         /// <summary>
         /// Gets or sets the badges.

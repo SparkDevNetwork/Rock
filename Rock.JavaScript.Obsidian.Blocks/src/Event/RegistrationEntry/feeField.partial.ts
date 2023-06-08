@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";
@@ -25,7 +25,7 @@ import NumberUpDownGroup, { NumberUpDownGroupOption } from "@Obsidian/Controls/n
 import Number from "@Obsidian/Utility/numberUtils";
 import GuidHelper from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types";
+import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.FeeField",
@@ -34,7 +34,7 @@ export default defineComponent({
         NumberUpDownGroup,
         DropDownList,
         CheckBox,
-        Alert
+        NotificationBox
     },
     props: {
         modelValue: {
@@ -49,7 +49,8 @@ export default defineComponent({
     data() {
         return {
             dropDownValue: "",
-            checkboxValue: false
+            checkboxValue: false,
+            disabled: false
         };
     },
     methods: {
@@ -77,7 +78,7 @@ export default defineComponent({
                 return null;
             }
 
-            return this.fee.items[ 0 ];
+            return this.fee.items[0];
         },
         isHidden(): boolean {
             return !this.fee.items.length;
@@ -110,6 +111,9 @@ export default defineComponent({
         },
         rules(): string {
             return this.fee.isRequired ? "required" : "";
+        },
+        isDisabled(): string | undefined {
+            return this.disabled ? "disabled" : undefined;
         }
     },
     watch: {
@@ -138,6 +142,21 @@ export default defineComponent({
                 if (this.isCheckbox && this.singleItem) {
                     this.checkboxValue = !!this.modelValue[this.singleItem.guid];
                     this.modelValue[this.singleItem.guid] = this.checkboxValue ? 1 : 0;
+
+                    // If the fee is required and available then select and disable the checkbox
+                    if (this.fee.isRequired && (this.fee.items[0].countRemaining === null || this.fee.items[0].countRemaining > 0)) {
+                        this.checkboxValue = true;
+                        this.modelValue[this.singleItem.guid] = this.checkboxValue ? 1 : 0;
+                        this.disabled = true;
+                    }
+
+                    // If the fee is not required and used up then disable the checkbox.
+                    if (this.fee.items[0].countRemaining !== null && this.fee.items[0].countRemaining <= 0) {
+                        // If the checkbox is already checked then leave it checked in case this form is being revisited.
+                        this.checkboxValue = this.checkboxValue ? this.checkboxValue : false;
+                        this.modelValue[this.singleItem.guid] = this.checkboxValue ? 1 : 0;
+                        this.disabled = true;
+                    }
                 }
             }
         },
@@ -165,10 +184,10 @@ export default defineComponent({
     },
     template: `
 <template v-if="!isHidden">
-    <CheckBox v-if="isCheckbox" :label="label" v-model="checkboxValue" :rules="rules" />
+    <CheckBox v-if="isCheckbox" :label="label" v-model="checkboxValue" :rules="rules" :disabled="isDisabled" />
     <NumberUpDown v-else-if="isNumberUpDown" :label="label" :min="0" :max="singleItem.countRemaining || 100" v-model="modelValue[singleItem.guid]" :rules="rules" />
     <DropDownList v-else-if="isDropDown" :label="label" :items="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
     <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="modelValue" :rules="rules" />
-    <Alert v-else alertType="danger">This fee configuration is not supported</Alert>
+    <NotificationBox v-else alertType="danger">This fee configuration is not supported</NotificationBox>
 </template>`
 });

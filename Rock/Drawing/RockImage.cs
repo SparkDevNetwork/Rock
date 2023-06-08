@@ -19,6 +19,11 @@ using Rock.Model;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing.Processors.Drawing;
 using SixLabors.ImageSharp;
+using System.Threading;
+using System;
+using System.Web;
+using System.IO;
+using Rock.Web.Cache;
 
 namespace Rock.Drawing
 {
@@ -62,29 +67,35 @@ namespace Rock.Drawing
         }
 
         /// <summary>
-        /// Returns a Image Sharp image from a binary file 
+        /// Returns a Image Sharp Person Image from a BinaryFile ID. All security checks need to be done prior to this method.
         /// </summary>
         /// <param name="photoId"></param>
-        /// <returns></returns>
-        public static Image GetImageFromBinaryFileService( int photoId )
-        {          
+        /// <returns>null if the image could not be retrieved for any reason, or if the requested image file is not of type PERSON_IMAGE.</returns>
+        public static Image GetPersonImageFromBinaryFileService( int photoId )
+        {
             var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
+            var personImageFileTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
 
-            if ( binaryFile == null || binaryFile.ContentStream == null )
+            // This will only return a file of type PERSON_IMAGE.
+            if ( binaryFile == null || binaryFile.BinaryFileTypeId != personImageFileTypeId )
             {
-                // Image does not exist so return a blank image
-                return new Image<Rgba32>( 1, 1 );
+                return null;
             }
 
-            // Load image from stream
             try
             {
-                return Image.Load<Rgba32>( binaryFile.ContentStream );
+                // Load image from stream if the file exists and can be loaded from the stream
+                if ( binaryFile.ContentStream != null )
+                {
+                    return Image.Load<Rgba32>( binaryFile.ContentStream );
+                }
             }
+
+            // if the retrival fails due to some exception, swallow the exception
             catch { }
 
             // There was a problem with the content in the binary file so return a blank image
-            return new Image<Rgba32>( 1, 1 );
+            return null;
         }
     }
 }

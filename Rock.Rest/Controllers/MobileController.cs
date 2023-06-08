@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net.Http;
 using System.ServiceModel.Channels;
@@ -24,7 +23,6 @@ using System.Web.Http;
 
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
-using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Rest.Filters;

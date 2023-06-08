@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Administration
             if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 btnEdit.Visible = false;
+                btnDeleteLog.Visible = false;
             }
 
             if ( !Page.IsPostBack )
@@ -103,11 +104,7 @@ namespace RockWeb.Blocks.Administration
 
             RockLogger.Log.Delete();
 
-            ShowHideEditForm( false, null );
-
-            nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
-            nbLoggingMessage.Title = string.Empty;
-            nbLoggingMessage.Text = "The log files were successfully deleted.";
+            this.NavigateToCurrentPage();
         }
 
         protected void btnEdit_Click( object sender, EventArgs e )
@@ -117,6 +114,12 @@ namespace RockWeb.Blocks.Administration
 
             ShowHideEditForm( true, null );
         }
+
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            ShowHideEditForm( false, null );
+        }
+
         #endregion
 
         #region Internal Methods

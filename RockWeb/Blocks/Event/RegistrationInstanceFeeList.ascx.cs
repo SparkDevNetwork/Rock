@@ -133,16 +133,16 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fFees_ClearFilterCick( object sender, EventArgs e )
         {
-            fFees.DeleteUserPreferences();
+            fFees.DeleteFilterPreferences();
 
             BindFeesFilter();
         }
 
         protected void fFees_ApplyFilterClick( object sender, EventArgs e )
         {
-            fFees.SaveUserPreference( UserPreferenceKeyBase.GridFilter_FeeDateRange, "Fee Date Range", sdrpFeeDateRange.DelimitedValues );
-            fFees.SaveUserPreference( UserPreferenceKeyBase.GridFilter_FeeName, "Fee Name", ddlFeeName.SelectedItem.Text );
-            fFees.SaveUserPreference( UserPreferenceKeyBase.GridFilter_FeeOptions, "Fee Options", cblFeeOptions.SelectedValues.AsDelimited( ";" ) );
+            fFees.SetFilterPreference( UserPreferenceKeyBase.GridFilter_FeeDateRange, "Fee Date Range", sdrpFeeDateRange.DelimitedValues );
+            fFees.SetFilterPreference( UserPreferenceKeyBase.GridFilter_FeeName, "Fee Name", ddlFeeName.SelectedItem.Text );
+            fFees.SetFilterPreference( UserPreferenceKeyBase.GridFilter_FeeOptions, "Fee Options", cblFeeOptions.SelectedValues.AsDelimited( ";" ) );
 
             BindFeesGrid();
         }
@@ -183,9 +183,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindFeesFilter()
         {
-            sdrpFeeDateRange.DelimitedValues = fFees.GetUserPreference( UserPreferenceKeyBase.GridFilter_FeeDateRange );
+            sdrpFeeDateRange.DelimitedValues = fFees.GetFilterPreference( UserPreferenceKeyBase.GridFilter_FeeDateRange );
             Populate_ddlFeeName();
-            ddlFeeName.SelectedIndex = ddlFeeName.Items.IndexOf( ddlFeeName.Items.FindByText( fFees.GetUserPreference( UserPreferenceKeyBase.GridFilter_FeeName ) ) );
+            ddlFeeName.SelectedIndex = ddlFeeName.Items.IndexOf( ddlFeeName.Items.FindByText( fFees.GetFilterPreference( UserPreferenceKeyBase.GridFilter_FeeName ) ) );
             Populate_cblFeeOptions();
         }
 
@@ -307,7 +307,7 @@ namespace RockWeb.Blocks.Event
                     cblFeeOptions.Items.Add( new ListItem( feeItem.Name, feeItem.Guid.ToString() ) );
                 }
 
-                string feeOptionValues = fFees.GetUserPreference( UserPreferenceKeyBase.GridFilter_FeeOptions );
+                string feeOptionValues = fFees.GetFilterPreference( UserPreferenceKeyBase.GridFilter_FeeOptions );
                 if ( !string.IsNullOrWhiteSpace( feeOptionValues ) )
                 {
                     cblFeeOptions.SetValues( feeOptionValues.Split( ';' ).ToList() );

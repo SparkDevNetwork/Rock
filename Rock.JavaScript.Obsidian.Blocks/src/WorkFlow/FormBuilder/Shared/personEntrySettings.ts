@@ -23,8 +23,8 @@ import TextBox from "@Obsidian/Controls/textBox";
 import RockForm from "@Obsidian/Controls/rockForm";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { FormPersonEntry } from "./types";
-import { FormFieldVisibility } from "./types";
+import { FormPersonEntry } from "./types.partial";
+import { FormFieldVisibility } from "./types.partial";
 
 /**
  * The list of options for the individual to pick from when defining if or how

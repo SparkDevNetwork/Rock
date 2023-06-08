@@ -1,0 +1,315 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="visualizerContainer"
+         :id="visualizerId"
+         :style="containerStyles"
+         v-html="contentTemplate"></div>
+</template>
+
+<style>
+.realtime-visualizer-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item {
+    height: 0;
+}
+
+/* IN transition initial states. */
+.realtime-visualizer-container > .realtime-visualizer-item.left-in {
+    transform: translateX(calc(var(--animation-translate-size) * -1));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.top-in {
+    transform: translateY(calc(var(--animation-translate-size) * -1));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.right-in {
+    transform: translateX(var(--animation-translate-size));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.bottom-in {
+    transform: translateY(var(--animation-translate-size));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.fade-in {
+    opacity: 0;
+}
+
+/* IN transition final states. */
+.realtime-visualizer-container > .realtime-visualizer-item.left-in.in,
+.realtime-visualizer-container > .realtime-visualizer-item.top-in.in,
+.realtime-visualizer-container > .realtime-visualizer-item.right-in.in,
+.realtime-visualizer-container > .realtime-visualizer-item.bottom-in.in {
+    transform: initial;
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.fade-in.in {
+    opacity: 1;
+}
+
+/* OUT transition final states. */
+.realtime-visualizer-container > .realtime-visualizer-item.left-out.out {
+    transform: translateX(calc(var(--animation-translate-size) * -1));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.top-out.out {
+    transform: translateY(calc(var(--animation-translate-size) * -1));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.right-out.out {
+    transform: translateX(var(--animation-translate-size));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.bottom-out.out {
+    transform: translateY(var(--animation-translate-size));
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.fade-out.out {
+    opacity: 0;
+    overflow-y: initial;
+}
+
+/* Transition Timings. */
+.realtime-visualizer-container > .realtime-visualizer-item.in {
+    transition: height var(--animation-duration) ease-out, transform var(--animation-duration) ease-out, opacity var(--animation-duration) ease-out;
+}
+
+.realtime-visualizer-container > .realtime-visualizer-item.out {
+    transition: opacity var(--animation-duration) ease-in, transform var(--animation-duration) ease-in, height var(--animation-duration) ease-in;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, unref } from "vue";
+    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+
+    type Configuration = {
+        hasItemTemplate: boolean;
+        pageTemplate: string;
+        script: string;
+        style: string;
+        topics: string[];
+        settings: Record<string, string>;
+    };
+
+    const config = useConfigurationValues<Configuration>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    let realTimeTopics: Record<string, ITopic> = {};
+    const isReconnecting = ref(false);
+    const isAutoConnecting = ref(false);
+    const isDisconnected = ref(false);
+    const contentTemplate = ref(config.pageTemplate);
+    const wrappedScriptName = `wrappedScript${newGuid().replace(/-/g, "")}`;
+    const visualizerContainer = ref<HTMLElement | null>(null);
+    const visualizerId = `visualizer-${newGuid()}`;
+    const containerStyles: Record<string, string> = {};
+    let wrappedSetupComplete: boolean = false;
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Attempt to reconnect to the server and rejoin all channels that were
+     * previously joined.
+     */
+    async function startConnect(reconnecting: boolean): Promise<void> {
+        if (isAutoConnecting.value) {
+            return;
+        }
+
+        isAutoConnecting.value = true;
+        isReconnecting.value = reconnecting;
+
+        try {
+            realTimeTopics = {};
+
+            for (const topicIdentifier of config.topics) {
+                await joinTopic(topicIdentifier);
+            }
+
+            if (Object.keys(realTimeTopics).length > 0) {
+                const connectionId = realTimeTopics[Object.keys(realTimeTopics)[0]].connectionId;
+
+                await invokeBlockAction("Subscribe", {
+                    connectionId
+                });
+            }
+
+            isAutoConnecting.value = false;
+            isReconnecting.value = false;
+        }
+        catch (error) {
+            console.error(error instanceof Error ? error.message : error);
+            isDisconnected.value = true;
+        }
+    }
+
+    /**
+     * Joins the specified topic.
+     *
+     * @param topicIdentifier The identifier of the topic that will be joined.
+     */
+    async function joinTopic(topicIdentifier: string): Promise<void> {
+        let topic = realTimeTopics[topicIdentifier];
+
+        if (!topic) {
+            topic = await getTopic(topicIdentifier);
+
+            topic.onMessage((message, args) => onMessageReceived(topicIdentifier, message, args));
+            topic.onReconnecting(() => isReconnecting.value = true);
+            topic.onReconnected(() => isReconnecting.value = false);
+            topic.onDisconnected(() => startConnect(true));
+
+            realTimeTopics[topicIdentifier] = topic;
+        }
+    }
+
+    /**
+     * Injects the script tag that will contain the user-specified script
+     * from the block settings.
+     */
+    function injectScriptTag(): void {
+        // This creates a unique function name we can use. It is constructed
+        // by nesting the custom JavaScript from the block settings and then
+        // returning an object that gives us access to the showItem and setup
+        // functions. This ensures that we don't pollute the global namespace.
+        const script = `window["${wrappedScriptName}"] = (function() { ${config.script}; return { showItem: typeof showItem !== "undefined" ? showItem : function () {}, setup: typeof setup !== "undefined" ? setup : function() {} }; })();`;
+
+        const scriptNode = document.createElement("script");
+        scriptNode.type = "text/javascript";
+        scriptNode.appendChild(document.createTextNode(script));
+        document.body.appendChild(scriptNode);
+    }
+
+    function injectStyleTag(): void {
+        const styleNode = document.createElement("style");
+        const css = scopeCss(config.style, `#${visualizerId}`);
+        styleNode.appendChild(document.createTextNode(css));
+        document.body.appendChild(styleNode);
+    }
+
+    /**
+     * Shows the item that was received.
+     *
+     * @param content The content to be shown.
+     */
+    async function showItem(content: unknown): Promise<void> {
+        if (visualizerContainer.value) {
+            if (!wrappedSetupComplete) {
+                const setupResult = window[wrappedScriptName].setup(visualizerContainer.value, unref(config.settings));
+
+                if (isPromise(setupResult)) {
+                    await setupResult;
+                }
+
+                wrappedSetupComplete = true;
+            }
+
+            window[wrappedScriptName].showItem(content,
+                visualizerContainer.value,
+                unref(config.settings));
+        }
+    }
+
+    function scopeCss(css: string, parent: string): string {
+        css = css.replace(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g, parent + " $1$2");
+
+        //regexp.escape
+        var parentRe = parent.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+        //replace self-selectors
+        css = css.replace(new RegExp("(" + parentRe + ")\\s*\\1(?=[\\s\\r\\n,{])", "g"), "$1");
+
+        //revoke wrongly replaced @ statements, like @supports, @import, @media etc.
+        css = css.replace(new RegExp("(" + parentRe + ")\\s*@", "g"), "@");
+
+        //revoke wrongly replaced :root blocks
+        css = css.replace(new RegExp("(" + parentRe + ")\\s*:root", "g"), ":root");
+
+        //revoke wrongly replaced ::view-transition-old blocks
+        css = css.replace(new RegExp("(" + parentRe + ")\\s*::view-transition-old", "g"), "::view-transition-old");
+
+        //animations: prefix animation anmes
+        const animations: string[] = [];
+        const animationNameRe = /@keyframes\s+([a-zA-Z0-9_-]+)\s*{/g;
+        let match: RegExpExecArray | null;
+        while ((match = animationNameRe.exec(css)) !== null) {
+            if (animations.indexOf(match[1]) < 0) {
+                animations.push(match[1]);
+            }
+        }
+
+        var slug = parent.replace(/[^A-Za-z0-9\s]/g, "")
+            .trim()
+            .replace(/\s+/g, "-");
+
+        animations.forEach(function (name) {
+            var newName = `${slug}-${name}`;
+
+            css = css.replace(new RegExp("(@keyframes\\s+)" + name + "(\\s*{)", "g"),
+                "$1" + newName + "$2");
+            css = css.replace(new RegExp("(animation(?:-name)?\\s*:[^;]*\\s*)" + name + "([\\s;}])", "g"),
+                "$1" + newName + "$2");
+        });
+        //animation: revoke wrongly replaced keyframes
+        css = css.replace(new RegExp("(" + parentRe + " )(\\s*(?:to|from|[+-]?(?:(?:\\.\\d+)|(?:\\d+(?:\\.\\d*)?))%))(?=[\\s\\r\\n,{])", "g"), "$2");
+
+        return css;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the topic receives any message.
+     *
+     * @param topicIdentifier The topic that received the message.
+     * @param message The name of the message that was received.
+     * @param args The arguments that were passed to the message.
+     */
+    async function onMessageReceived(topicIdentifier: string, message: string, args: unknown[]): Promise<void> {
+        if (config.hasItemTemplate) {
+            const result = await invokeBlockAction<string>("Resolve", {
+                topicIdentifier,
+                message,
+                arguments: args
+            });
+
+            if (result.data) {
+                showItem(result.data);
+            }
+        }
+        else {
+            showItem({
+                topic: topicIdentifier,
+                message,
+                arguments: args
+            });
+        }
+    }
+
+    // #endregion
+
+    for (const k in config.settings) {
+        containerStyles[`--${k}`] = config.settings[k];
+    }
+
+    injectScriptTag();
+    injectStyleTag();
+
+    startConnect(false);
+</script>

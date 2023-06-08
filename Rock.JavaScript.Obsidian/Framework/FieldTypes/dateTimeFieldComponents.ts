@@ -18,7 +18,7 @@ import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ConfigurationValueKey } from "./dateTimeField.partial";
-import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
+import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
 import TextBox from "@Obsidian/Controls/textBox";
 import CheckBox from "@Obsidian/Controls/checkBox";

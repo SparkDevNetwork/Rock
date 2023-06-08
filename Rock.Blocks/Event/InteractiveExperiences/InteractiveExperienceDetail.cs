@@ -223,6 +223,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     }
                     : null,
                 Description = entity.Description,
+                ExperienceEndedTemplate = settings.ExperienceEndedTemplate ?? string.Empty,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
                 NoActionHeaderImageBinaryFile = entity.NoActionHeaderImageBinaryFile.ToListItemBag(),
@@ -350,6 +351,9 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
+
+            box.IfValidProperty( nameof( box.Entity.ExperienceEndedTemplate ),
+                () => settings.ExperienceEndedTemplate = box.Entity.ExperienceEndedTemplate );
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
@@ -605,7 +609,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                     schedule.Schedule.iCalendarContent = scheduleBag.Schedule.Value;
                     schedule.DataViewId = scheduleBag.DataView.GetEntityId<DataView>( rockContext );
-                    schedule.GroupId = scheduleBag.Group.GetEntityId<Group>( rockContext );
+                    schedule.GroupId = scheduleBag.Group.GetEntityId<Rock.Model.Group>( rockContext );
 
                     // Force the cache to refresh if the only thing that
                     // changed was the schedule content.
@@ -1020,6 +1024,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new InteractiveExperienceService( rockContext );
+                var interactiveExperienceAnswerService = new InteractiveExperienceAnswerService( rockContext );
 
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -1031,8 +1036,18 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     return ActionBadRequest( errorMessage );
                 }
 
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
+                var answers = interactiveExperienceAnswerService.Queryable()
+                    .Where( a => a.InteractiveExperienceAction.InteractiveExperienceId == entity.Id )
+                    .ToList();
+
+                rockContext.WrapTransaction( () =>
+                {
+                    interactiveExperienceAnswerService.DeleteRange( answers );
+                    rockContext.SaveChanges();
+
+                    entityService.Delete( entity );
+                    rockContext.SaveChanges();
+                } );
 
                 return ActionOk( this.GetParentPageUrl() );
             }

@@ -31,19 +31,9 @@
                         </asp:Panel>
 
                         <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="card-section js-group-attribute-section">
-                            <asp:Label ID="lblShowGroupAttributeTitle" runat="server" Visible="false" CssClass="pull-left"></asp:Label>
-                            <asp:Panel ID="pnlShowExpandChevorn" runat="server" CssClass="pull-right">
-                                <a class="js-show-more-family-attributes"><i class="fa fa-chevron-down"></i></a>
-                            </asp:Panel>
-                            <dl class="m-0">
-                                <asp:Literal ID="litGroupAttributes" runat="server"></asp:Literal>
-                            </dl>
-                            <div class="js-more-group-attributes" style="display:none">
-                                <br />
-                                <dl class="m-0">
-                                    <asp:Literal ID="litMoreGroupAttributes" runat="server"></asp:Literal>
-                                </dl>
-                            </div>
+                            <asp:Label ID="lblShowGroupAttributeTitle" runat="server" />
+                            <asp:Literal ID="litGroupAttributes" runat="server" />
+                            <asp:Literal ID="litMoreGroupAttributes" runat="server" />
                         </asp:panel>
 
                         <asp:Repeater ID="rptrAddresses" runat="server" OnItemDataBound="rptrAddresses_ItemDataBound" OnItemCommand="rptrAddresses_ItemCommand">
@@ -112,6 +102,7 @@
                     });
 
                     $('.js-show-more-family-attributes').on('click', function (e) {
+                        e.preventDefault();
                         var $pnl = $(this).closest('.js-group-attribute-section');
                         var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
                         if ($moreAttributes.is(':visible')) {

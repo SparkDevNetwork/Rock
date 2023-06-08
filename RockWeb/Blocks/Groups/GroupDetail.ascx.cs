@@ -257,7 +257,20 @@ namespace RockWeb.Blocks.Groups
 
         private List<GroupRequirement> GroupRequirementsState { get; set; }
 
-        private List<InheritedAttribute> GroupAttributesInheritedState { get; set; }
+        private List<Attribute> GroupDateAttributesState { get; set; }
+
+        private static List<int> DateFieldTypeIds
+        {
+            get
+            {
+                // Set the field types that are related to dates for group requirements.
+                return new List<int>
+                {
+                    FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE.AsGuid() ).Value,
+                    FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ).Value
+                };
+            }
+        }
 
         private bool AllowMultipleLocations { get; set; }
 
@@ -333,14 +346,14 @@ namespace RockWeb.Blocks.Groups
                 GroupMemberAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
             }
 
-            json = ViewState["GroupAttributesInheritedState"] as string;
+            json = ViewState["GroupDateAttributesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                GroupAttributesInheritedState = new List<InheritedAttribute>();
+                GroupDateAttributesState = new List<Attribute>();
             }
             else
             {
-                GroupAttributesInheritedState = JsonConvert.DeserializeObject<List<InheritedAttribute>>( json );
+                GroupDateAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
             }
 
             json = ViewState["GroupRequirementsState"] as string;
@@ -541,6 +554,7 @@ namespace RockWeb.Blocks.Groups
             ViewState["GroupMemberAttributesInheritedState"] = JsonConvert.SerializeObject( GroupMemberAttributesInheritedState, Formatting.None, jsonSetting );
             ViewState["GroupMemberAttributesState"] = JsonConvert.SerializeObject( GroupMemberAttributesState, Formatting.None, jsonSetting );
             ViewState["GroupRequirementsState"] = JsonConvert.SerializeObject( GroupRequirementsState, Formatting.None, jsonSetting );
+            ViewState["GroupDateAttributesState"] = JsonConvert.SerializeObject( GroupDateAttributesState, Formatting.None, jsonSetting );
             ViewState["AllowMultipleLocations"] = AllowMultipleLocations;
             ViewState["GroupSyncState"] = JsonConvert.SerializeObject( GroupSyncState, Formatting.None, jsonSetting );
             ViewState["MemberWorkflowTriggersState"] = JsonConvert.SerializeObject( MemberWorkflowTriggersState, Formatting.None, jsonSetting );
@@ -2696,6 +2710,7 @@ namespace RockWeb.Blocks.Groups
         private void BindInheritedAttributes( int? inheritedGroupTypeId, AttributeService attributeService )
         {
             GroupMemberAttributesInheritedState = new List<InheritedAttribute>();
+            GroupDateAttributesState = new List<Attribute>();
 
             while ( inheritedGroupTypeId.HasValue )
             {
@@ -2718,6 +2733,16 @@ namespace RockWeb.Blocks.Groups
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
                             inheritedGroupType.Name ) );
                     }
+
+                    // Get group attributes with a date or datetime field.
+                    GroupDateAttributesState.AddRange( attributeService.GetByEntityTypeId( new Group().TypeId, true ).AsQueryable()
+                        .Where( a =>
+                            a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                            a.EntityTypeQualifierValue.Equals( qualifierValue ) &&
+                            DateFieldTypeIds.Contains( a.FieldTypeId ) )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() );
 
                     inheritedGroupTypeId = inheritedGroupType.InheritedGroupTypeId;
                 }
@@ -3491,16 +3516,24 @@ namespace RockWeb.Blocks.Groups
             var selectedGroupRequirement = this.GroupRequirementsState.FirstOrDefault( a => a.Guid == groupRequirementGuid );
             grpGroupRequirementGroupRole.GroupTypeId = this.CurrentGroupTypeId;
 
-            // Get a list of Field Types that are for dates.
-            HashSet<int> fieldTypeIds = new HashSet<int>();
-            fieldTypeIds.Add( FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE.AsGuid() ).Value );
-            fieldTypeIds.Add( FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ).Value );
-
             Group group = GetGroup( hfGroupId.Value.AsInteger() );
-            group.LoadAttributes();
-            foreach ( var attribute in group.Attributes.Select( a => a.Value ).Where( a => fieldTypeIds.Contains( a.FieldTypeId ) ).ToList() )
+            ddlDueDateGroupAttribute.Items.Clear();
+
+            // If the group is null (new and unsaved, with a groupId of 0), look to the inherited attributes for the current group type.
+            if ( group == null )
             {
-                ddlDueDateGroupAttribute.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
+                foreach ( var attribute in GroupDateAttributesState.ToList() )
+                {
+                    ddlDueDateGroupAttribute.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
+                }
+            }
+            else
+            {
+                group.LoadAttributes();
+                foreach ( var attribute in group.Attributes.Select( a => a.Value ).Where( a => DateFieldTypeIds.Contains( a.FieldTypeId ) ).ToList() )
+                {
+                    ddlDueDateGroupAttribute.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
+                }
             }
 
             ddlDueDateGroupAttribute.DataBind();
@@ -4069,7 +4102,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( CurrentGroupTypeCache != null )
             {
-                lGroupTypeGroupRequirementsFrom.Text = string.Format( "(From <a href='{0}' target='_blank'>{1}</a>)", this.ResolveUrl( "~/GroupType/" + CurrentGroupTypeCache.Id ), CurrentGroupTypeCache.Name );
+                lGroupTypeGroupRequirementsFrom.Text = string.Format( "(From <a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a>)", this.ResolveUrl( "~/GroupType/" + CurrentGroupTypeCache.Id ), CurrentGroupTypeCache.Name );
                 rcwGroupRequirements.Visible = CurrentGroupTypeCache.EnableSpecificGroupRequirements || groupGroupRequirements.Any();
                 gGroupRequirements.Actions.ShowAdd = CurrentGroupTypeCache.EnableSpecificGroupRequirements;
                 wpGroupRequirements.Visible = groupTypeGroupRequirements.Any() || groupGroupRequirements.Any() || CurrentGroupTypeCache.EnableSpecificGroupRequirements;

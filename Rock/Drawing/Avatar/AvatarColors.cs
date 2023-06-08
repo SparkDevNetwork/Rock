@@ -34,13 +34,42 @@ namespace Rock.Drawing.Avatar
         /// Gets or sets the foreground color for the avatar.
         /// </summary>
         /// <value>The color of the foreground.</value>
-        public string ForegroundColor { get; set; }
+        public string ForegroundColor {
+            get
+            {
+                if ( _foregroundColor == null )
+                {
+                    return string.Empty;
+                }
+                return _foregroundColor;
+            }
+            set
+            {
+                _foregroundColor = value;
+            }
+        }
+        private string _foregroundColor = null;
 
         /// <summary>
         /// Gets or sets the background color for the avatar.
         /// </summary>
         /// <value>The color of the background.</value>
-        public string BackgroundColor { get; set; }
+        public string BackgroundColor
+        {
+            get
+            {
+                if ( _backgroundColor == null )
+                {
+                    return string.Empty;
+                }
+                return _backgroundColor;
+            }
+            set
+            {
+                _backgroundColor = value;
+            }
+        }
+        private string _backgroundColor = null;
 
         /// <summary>
         /// Generates any missing colors.

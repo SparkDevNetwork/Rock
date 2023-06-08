@@ -99,7 +99,7 @@
 }
 
 .message-container {
-    margin: 0px 0px 12px 0px;
+    margin: 0 0 12px 0;
     display: flex;
 }
 

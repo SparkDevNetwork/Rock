@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, nextTick, ref } from "vue";
-import Alert from "@Obsidian/Controls/alert.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Badges/badgesConfigurationBox";
@@ -29,7 +29,7 @@ export default defineComponent({
     name: "Crm.PersonDetail.Badges",
 
     components: {
-        Alert,
+        NotificationBox,
         EntityTagList
     },
 

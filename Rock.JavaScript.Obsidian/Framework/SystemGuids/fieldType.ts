@@ -124,7 +124,7 @@ export const FieldType = {
     /** Defined Value field type */
     DefinedValue: "59D5A94C-94A0-4630-B80A-BB25697D74C7",
     /** Categorized Defined Value field type */
-    DefinedValueCategorized: "3D986B5C-A706-4C69-B0F2-7C81286194CF",
+    DefinedValueCategorized: "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D",
     /** Defined Value Range field type */
     DefinedValueRange: "B5C07B16-844D-4620-82E3-4CCA8F5FC350",
     /** Email field type */
@@ -191,6 +191,8 @@ export const FieldType = {
     LavaCommands: "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D",
     /** Location field type */
     Location: "B0B9EFE3-F09F-4604-AD1B-76B298A85D83",
+    /** Location List field type */
+    LocationList: "A58A0CBF-C3E6-4054-85D7-05118035980B",
     /** Markdown field type */
     Markdown: "C2FBCF94-0FDF-4DFD-93A5-19FE6A409C84",
     /** Matrix field type */
@@ -235,6 +237,12 @@ export const FieldType = {
     RegistrationInstance: "5F0F6D6A-DEB7-47AD-93C7-4CCC88EF932D",
     /** Registration Template field type */
     RegistrationTemplate: "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620",
+    /** Registration Entry field type */
+    RegistryEntry: "D98E1D88-2240-4248-B93B-0512BD3BB61A",
+    /** Registration Template field type */
+    ReminderType: "94A5DF3C-A7E0-451E-9DBA-86A6CFD5DF70",
+    /** Registration Template field type */
+    ReminderTypes: "C66E6BF9-4A73-4429-ACAD-D94D5E3A89B7",
     /** Remote Auths field type */
     RemoteAuths: "ECA90666-E7A0-4406-8559-0153DCB908FD",
     /** Report field type */

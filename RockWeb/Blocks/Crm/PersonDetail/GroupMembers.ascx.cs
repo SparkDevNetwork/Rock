@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Drawing.Avatar;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -95,6 +96,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = false,
         Order = 6 )]
 
+    [EnumField(
+        "Avatar Style",
+        Key = AttributeKey.AvatarStyle,
+        Description = "Allows control of the person photo avatar to use either an icon to represent the person's gender and age classification, or first and last name initials when the person does not have a photo.",
+        IsRequired = true,
+        EnumSourceType = typeof( AvatarStyle ),
+        DefaultEnumValue = ( int ) AvatarStyle.Icon,
+        Order = 7 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F" )]
@@ -111,6 +121,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string ShowCounty = "ShowCounty";
             public const string GroupHeaderLava = "GroupHeaderLava";
             public const string GroupFooterLava = "GroupFooterLava";
+            public const string AvatarStyle = "AvatarStyle";
         }
 
         #endregion Attribute Keys
@@ -357,7 +368,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 litGroupMemberInfo.Text = $@"
                     <div class=""{FormatPersonCssClass( groupMember.Person.IsDeceased ) }"">
                         <a href=""{personLink}"" class=""photo-link"">
-                            <img src=""{Person.GetPersonPhotoUrl( groupMember.Person, 156 )}"" alt class=""img-cover inset-0"">
+                            <img src=""{GetPersonPhotoUrl( groupMember.Person, 156 )}"" alt class=""img-cover inset-0"">
                             <div class=""photo-shadow inset-0""></div>
                         </a>
                         <a href=""{personLink}"" class=""name-link"">
@@ -661,7 +672,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var litGroupAttributes = e.Item.FindControl( "litGroupAttributes" ) as Literal;
             var litMoreGroupAttributes = e.Item.FindControl( "litMoreGroupAttributes" ) as Literal;
             var lblShowGroupAttributeTitle = e.Item.FindControl( "lblShowGroupAttributeTitle" ) as Label;
-            var pnlShowExpandChevorn = e.Item.FindControl( "pnlShowExpandChevorn" ) as Panel;
 
             if ( pnlGroupAttributes == null || litGroupAttributes == null || litMoreGroupAttributes == null )
             {
@@ -708,13 +718,38 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if( litGroupAttributes.Text.IsNullOrWhiteSpace() && litMoreGroupAttributes.Text.IsNotNullOrWhiteSpace() )
             {
-                lblShowGroupAttributeTitle.Visible = true;
-                lblShowGroupAttributeTitle.Text = group.GroupType.Name + " Attributes";
+                lblShowGroupAttributeTitle.Text = group.GroupType.Name + " Attributes <a class='js-show-more-family-attributes stretched-link' href='#' title='Show More " + group.GroupType.Name +" Attributes'><i class='fa fa-chevron-down'></i></a>";
+                lblShowGroupAttributeTitle.AddCssClass( "d-flex justify-content-between position-relative" );
             }
-            if( litMoreGroupAttributes.Text.IsNullOrWhiteSpace() ) {
-                
-                pnlShowExpandChevorn.Visible = false;
+            else 
+            {
+                lblShowGroupAttributeTitle.Text = "<a class='js-show-more-family-attributes' href='#' title='Show More " + group.GroupType.Name +" Attributes'><i class='fa fa-chevron-down'></i></a>";
+                lblShowGroupAttributeTitle.AddCssClass( "pull-right" );
             }
+
+            if( litMoreGroupAttributes.Text.IsNotNullOrWhiteSpace() ) 
+            {
+                litMoreGroupAttributes.Text = $"<div class='js-more-group-attributes mt-2' style='display:none'><dl class='m-0'>{litMoreGroupAttributes.Text}</dl></div>";
+            }
+
+            if( litGroupAttributes.Text.IsNotNullOrWhiteSpace()) 
+            {
+                litGroupAttributes.Text = $"<dl class='m-0'>{litGroupAttributes.Text}</dl>";
+            }
+        }
+
+        private string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
+        {
+            var personPhotoUrl = Person.GetPersonPhotoUrl( person, maxWidth, maxHeight );
+
+            var avatarStyle = GetAttributeValue( AttributeKey.AvatarStyle ).ConvertToEnum<AvatarStyle>( AvatarStyle.Icon );
+            if ( avatarStyle == AvatarStyle.Icon )
+            {
+                var iconUrlParameters = "&style=icon&BackgroundColor=E4E4E7&ForegroundColor=A1A1AA";
+                personPhotoUrl += iconUrlParameters;
+            }
+
+            return personPhotoUrl;
         }
 
         #endregion Methods

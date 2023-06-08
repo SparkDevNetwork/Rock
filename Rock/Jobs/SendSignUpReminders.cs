@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -121,13 +137,11 @@ namespace Rock.Jobs
                 return null;
             }
 
-            /*
-             * Ensure we haven't already sent reminders to a given recipient today. The way this is currently written, we could send
-             * reminders at 11:59:59 PM today and then again at 12:00:00 AM tomorrow. If this is problematic, we could change this to
-             * be a true 24 hour TimeSpan requirement.
-             * 
-             * We'll also use this value to compare against Schedule.EffectiveEndDate below, in order to filter out past opportunities.
-             */
+            // Ensure we haven't already sent reminders to a given recipient today. The way this is currently written, we could send
+            // reminders at 11:59:59 PM today and then again at 12:00:00 AM tomorrow. If this is problematic, we could change this to
+            // be a true 24 hour TimeSpan requirement.
+            // 
+            // We'll also use this value to compare against Schedule.EffectiveEndDate below, in order to filter out past opportunities.
             var startOfToday = now.StartOfDay();
 
             var recipientsByOpportunity = new GroupLocationService( rockContext )
@@ -137,15 +151,13 @@ namespace Rock.Jobs
                     && gl.Group.ReminderSystemCommunicationId.HasValue
                     && ( gl.Group.GroupTypeId == groupTypeId.Value || gl.Group.GroupType.InheritedGroupTypeId == groupTypeId.Value )
                 )
-                /*
-                 * Adding the following commented-out line to point out that it won't work for our purposes, because:
-                 *  1) The Attribute we care about exists on the Group Entity, and not the GroupLocation Entity that our IQueryable is querying against.
-                 *  2) According to our 202 guide, "Group attributes are the most complicated to load since they can inherit attributes from their parent
-                 *     GroupType(s) and the [below] snippet wouldn't work if a Group inherited an attribute value from a GroupType." This is our exact
-                 *     scenario: we can have GroupTypes that inherit from the default "Sign-Up Group" GroupType, and the Attribute we care about filtering
-                 *     against - "ProjectType" - exists on the parent "Sign-Up Group" GroupType; we'll need to get all Groups up front, and filter out
-                 *     the ones we don't care about below, in-memory.
-                 */
+                // Adding the following commented-out line to point out that it won't work for our purposes, because:
+                //  1) The Attribute we care about exists on the Group Entity, and not the GroupLocation Entity that our IQueryable is querying against.
+                //  2) According to our 202 guide, "Group attributes are the most complicated to load since they can inherit attributes from their parent
+                //     GroupType(s) and the [below] snippet wouldn't work if a Group inherited an attribute value from a GroupType." This is our exact
+                //     scenario: we can have GroupTypes that inherit from the default "Sign-Up Group" GroupType, and the Attribute we care about filtering
+                //     against - "ProjectType" - exists on the parent "Sign-Up Group" GroupType; we'll need to get all Groups up front, and filter out
+                //     the ones we don't care about below, in-memory.
                 //.WhereAttributeValue( rockContext, "ProjectType", Rock.SystemGuid.DefinedValue.PROJECT_TYPE_IN_PERSON )
                 .SelectMany( gl => gl.Schedules, ( gl, s ) => new
                 {
@@ -154,15 +166,11 @@ namespace Rock.Jobs
                     Schedule = s,
                     Config = gl.GroupLocationScheduleConfigs.FirstOrDefault( glsc => glsc.ScheduleId == s.Id )
                 } )
-                /*
-                 * We now have GroupLocationSchedules & each respective GroupLocationScheduleConfig (if defined):
-                 * One instance for each combination of [active] Group, Location & Schedule, where GroupType (or inherited GroupType) == Sign-Up Group.
-                 */
+                // We now have GroupLocationSchedules & each respective GroupLocationScheduleConfig (if defined):
+                // One instance for each combination of [active] Group, Location & Schedule, where GroupType (or inherited GroupType) == Sign-Up Group.
                 .Where( gls => !gls.Schedule.EffectiveEndDate.HasValue || gls.Schedule.EffectiveEndDate.Value >= startOfToday )
-                /*
-                 * We've now filtered out past Schedules to reduce the initial results set returned; note that we'll need to perform additional
-                 * Schedule filtering below, once we materialize the Schedule objects.
-                 */
+                // We've now filtered out past Schedules to reduce the initial results set returned; note that we'll need to perform additional
+                // Schedule filtering below, once we materialize the Schedule objects.
                 .Select( gls => new
                 {
                     gls.Group,
@@ -187,10 +195,8 @@ namespace Rock.Jobs
                         )
                 } )
                 .Where( opportunities => opportunities.Recipients.Any() )
-                /*
-                 * We now have a collection of People and their associated GroupMember & GroupMemberAssignment records,
-                 * who we haven't sent a reminder to within the last day, grouped by sign-up opportunity.
-                 */
+                // We now have a collection of People and their associated GroupMember & GroupMemberAssignment records,
+                // who we haven't sent a reminder to within the last day, grouped by sign-up opportunity.
                 .ToList();
 
             if ( !recipientsByOpportunity.Any() )
@@ -198,15 +204,13 @@ namespace Rock.Jobs
                 return null;
             }
 
-            /*
-             * Next, we need to further refine these initial results to include only:
-             *  1) Groups whose "Project Type" is "In Person".
-             *  2) Schedules that actually have an upcoming start date equal to today +
-             *      a) their Group's ReminderOffsetDays, or
-             *      b) a default offset of 2 days if not defined.
-             * 
-             * Let's perform the Schedule filtering first, so we only look up the attributes for Groups that we actually care about.
-             */
+            // Next, we need to further refine these initial results to include only:
+            //  1) Groups whose "Project Type" is "In Person".
+            //  2) Schedules that actually have an upcoming start date equal to today +
+            //      a) their Group's ReminderOffsetDays, or
+            //      b) a default offset of 2 days if not defined.
+            // 
+            // Let's perform the Schedule filtering first, so we only look up the attributes for Groups that we actually care about.
             recipientsByOpportunity = recipientsByOpportunity
                 .Where( o =>
                 {

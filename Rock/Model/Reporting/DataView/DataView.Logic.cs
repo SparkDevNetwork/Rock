@@ -58,7 +58,7 @@ namespace Rock.Model
         /// <returns><c>true</c> if this instance is persisted; otherwise, <c>false</c>.</returns>
         public bool IsPersisted()
         {
-            return this.PersistedScheduleIntervalMinutes.HasValue;
+            return this.PersistedScheduleIntervalMinutes.HasValue || this.PersistedScheduleId.HasValue;
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace Rock.Model
                 throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"DataViewFilter is null for DataView { this.Name } ({this.Id})." );
             }
 
-            bool usePersistedValues = this.PersistedScheduleIntervalMinutes.HasValue && this.PersistedLastRefreshDateTime.HasValue;
+            var usePersistedValues = this.IsPersisted() && this.PersistedLastRefreshDateTime.HasValue;
             if ( dataViewFilterOverrides != null )
             {
                 // don't use persisted values if this DataView in the list of DataViews that should not be persisted due to override
@@ -303,7 +303,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Persists the DataView to the database by updating the DataViewPersistedValues for this DataView. Returns true if successful
+        /// Persists the DataView to the database by updating the DataViewPersistedValues for this DataView.
         /// </summary>
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         public void PersistResult( int? databaseTimeoutSeconds = null )
@@ -316,51 +316,10 @@ namespace Rock.Model
             */
             using ( var rockContext = new RockContext() )
             {
+                var dataViewService = new DataViewService( rockContext );
                 var persistStopwatch = Stopwatch.StartNew();
-                var dataViewFilterOverrides = new DataViewFilterOverrides();
 
-                dataViewFilterOverrides.ShouldUpdateStatics = false;
-
-                // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
-                dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
-                var dataViewGetQueryArgs = new DataViewGetQueryArgs
-                {
-                    DbContext = rockContext,
-                    DataViewFilterOverrides = dataViewFilterOverrides,
-                    DatabaseTimeoutSeconds = databaseTimeoutSeconds,
-                };
-
-                var qry = this.GetQuery( dataViewGetQueryArgs );
-
-                rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
-                var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
-
-                var updatedEntityIdsQry = qry.Select( a => a.Id );
-
-                var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
-                var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
-
-                var removeCount = persistedValuesToRemove.Count();
-                if ( removeCount > 0 )
-                {
-                    // increase the batch size if there are a bunch of rows (and this is a narrow table with no references to it)
-                    int? deleteBatchSize = removeCount > 50000 ? 25000 : ( int? ) null;
-
-                    int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove, deleteBatchSize );
-                }
-
-                if ( persistedEntityIdsToInsert.Any() )
-                {
-                    List<DataViewPersistedValue> persistedValuesToInsert = persistedEntityIdsToInsert.OrderBy( a => a )
-                        .Select( a =>
-                        new DataViewPersistedValue
-                        {
-                            DataViewId = this.Id,
-                            EntityId = a
-                        } ).ToList();
-
-                    rockContext.BulkInsert( persistedValuesToInsert );
-                }
+                dataViewService.UpdateDataViewPersistedValues( this, databaseTimeoutSeconds );
 
                 persistStopwatch.Stop();
 

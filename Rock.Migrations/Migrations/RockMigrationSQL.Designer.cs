@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -1379,6 +1379,87 @@ namespace Rock.Migrations.Migrations {
             get {
                 return ResourceManager.GetString("_202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleSta" +
                         "ticMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [AttributeValue] SET [Value]=N&apos;{
+        ///    &quot;SeriesColors&quot;: [
+        ///      &quot;#38BDF8&quot;,
+        ///      &quot;#A3E635&quot;,
+        ///      &quot;#34D399&quot;,
+        ///      &quot;#FB7185&quot;,
+        ///      &quot;#818CF8&quot;,
+        ///      &quot;#FB923C&quot;,
+        ///      &quot;#C084FC&quot;,
+        ///      &quot;#FBBF24&quot;,
+        ///      &quot;#A8A29E&quot;
+        ///    ],
+        ///    &quot;GoalSeriesColor&quot;: &quot;red&quot;,
+        ///    &quot;Grid&quot;: {
+        ///      &quot;ColorGradient&quot;: null,
+        ///      &quot;Color&quot;: null,
+        ///      &quot;BackgroundColorGradient&quot;: null,
+        ///      &quot;BackgroundColor&quot;: &quot;transparent&quot;,
+        ///      &quot;BorderWidth&quot;: {
+        ///        &quot;top&quot;: 0,
+        ///        &quot;right&quot;: 0,
+        ///        &quot;bottom&quot;: 1,
+        ///        &quot;left&quot; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202303231713546_Rollup_20230323_ChartColorUpdate {
+            get {
+                return ResourceManager.GetString("_202303231713546_Rollup_20230323_ChartColorUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [SystemCommunication] SET [Body]=N&apos;{% assign peopleReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,true %}
+        ///{% assign otherReminders = Reminders | Where:&apos;&apos;IsPersonReminder&apos;&apos;,false %}
+        ///{% assign currentDate = &apos;&apos;Now&apos;&apos; | Date:&apos;&apos;MMMM d, yyyy&apos;&apos; %}
+        ///{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///&lt;h1 style=&quot;margin:0;&quot;&gt;Your Reminders&lt;/h1&gt;
+        ///
+        ///&lt;p&gt;
+        ///    Below are {{ MaxRemindersPerEntityType }} of the most recent reminders for each feature as of {{ currentDate }}. &lt;a href=&quot;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicAp [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars {
+            get {
+                return ResourceManager.GetString("_202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look at eac [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202304042314453_Rollup_20230404_updatechartjs {
+            get {
+                return ResourceManager.GetString("_202304042314453_Rollup_20230404_updatechartjs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE[dbo].[spCheckin_BadgeAttendance]
+        ///                  @PersonId int
+        ///                  , @RoleGuid uniqueidentifier = null
+        ///                  , @ReferenceDate datetime = null
+        ///                  , @MonthCount int = 24
+        ///				  , @ShowAsIndividual bit = 0
+        ///              AS
+        ///              BEGIN
+        ///                  DECLARE @cROLE_ADULT uniqueidentifier = &apos;2639F9A5-2AAE-4E48-A8C3-4FFE86681E42&apos;
+        ///              
+        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429CB9&apos;
+        ///      [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge {
+            get {
+                return ResourceManager.GetString("_202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge", resourceCulture);
             }
         }
     }

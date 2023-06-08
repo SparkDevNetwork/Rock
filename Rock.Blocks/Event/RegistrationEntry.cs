@@ -270,6 +270,15 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
+                if ( PageParameter( PageParameterKey.GroupId).AsIntegerOrNull() == null )
+                {
+                    var groupId = GetRegistrationGroupId( rockContext );
+                    if ( groupId.HasValue )
+                    {
+                        RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
+                    }
+                }
+
                 var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
@@ -625,7 +634,9 @@ namespace Rock.Blocks.Event
                 Registrants = args.Registrants,
                 Registrar = args.Registrar,
                 RegistrationGuid = context.Registration?.Guid,
-                RegistrationSessionGuid = args.RegistrationSessionGuid
+                RegistrationSessionGuid = args.RegistrationSessionGuid,
+                Slug = PageParameter( PageParameterKey.Slug ),
+                GroupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull()
             };
 
             var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
@@ -855,7 +866,7 @@ namespace Rock.Blocks.Event
             // If the Registration Instance linkage specified a group, load it now
             var groupId = GetRegistrationGroupId( rockContext );
 
-            Group group = null;
+            Rock.Model.Group group = null;
 
             if ( groupId.HasValue )
             {
@@ -916,7 +927,10 @@ namespace Rock.Blocks.Event
 
                 foreach ( var registrantInfo in args.Registrants )
                 {
-                    var forceWaitlist = context.SpotsRemaining < 1;
+                    // Force the waitlist if there are no spots remaining, and this is an existing registration or if the registrant is already on the waitlist.
+                    // Rock should not force the waitlist when existing registrants are making payments
+                    // Rock should force the waitlist if there are no spots remaining and a registrant is being added
+                    var forceWaitlist = context.SpotsRemaining < 1 && ( isNewRegistration == true || registrantInfo.IsOnWaitList == true );
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
                     UpsertRegistrant(
@@ -1209,7 +1223,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="forms">The forms.</param>
         /// <returns></returns>
-        private Dictionary<Guid, object> GetCurrentValueFieldValues( RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms )
+        private Dictionary<Guid, object> GetCurrentValueFieldValues( RegistrationContext registrationContext, RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms )
         {
             var fieldValues = new Dictionary<Guid, object>();
 
@@ -1218,6 +1232,9 @@ namespace Rock.Blocks.Event
                 return fieldValues;
             }
 
+            var familySelection = registrationContext?.RegistrationSettings.AreCurrentFamilyMembersShown ?? true;
+
+                    
             foreach ( var form in forms )
             {
                 var fields = form.Fields.Where( f =>
@@ -1227,7 +1244,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName
                             || f.PersonFieldType == RegistrationPersonFieldType.LastName;
@@ -1602,17 +1619,23 @@ namespace Rock.Blocks.Event
             if ( registrant != null )
             {
                 person = registrant.Person;
-                if ( person != null && (
-                    ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
-                    registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) ) )
+                if ( person != null )
                 {
-                    // Do nothing
-                }
-                else
-                {
-                    person = null;
-                    registrant.PersonAlias = null;
-                    registrant.PersonAliasId = null;
+                    // If the form has first or last name fields and they have data then match the registrant.Person with the form values.
+                    // If the form values are blank then this is an existing registration and a payment is being made and we do not want to null out the registrant(s).
+                    var firstNameMatch = firstName.IsNullOrWhiteSpace() ? true : ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) );
+                    var lastNameMatch = lastName.IsNullOrWhiteSpace() ? true : registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase );
+
+                    if ( firstNameMatch && lastNameMatch )
+                    {
+                        // Do nothing
+                    }
+                    else
+                    {
+                        person = null;
+                        registrant.PersonAlias = null;
+                        registrant.PersonAliasId = null;
+                    }
                 }
             }
             else if ( registrantInfo.PersonGuid.HasValue )
@@ -2010,7 +2033,7 @@ namespace Rock.Blocks.Event
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
-            registrant.Cost = isWaitlist ? 0 : context.RegistrationSettings.PerRegistrantCost;
+            registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
 
             // Check if discount applies
             var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
@@ -2300,6 +2323,16 @@ namespace Rock.Blocks.Event
                     RegistrationSessionGuid = session.RegistrationSessionGuid
                 };
 
+                if ( session.GroupId.HasValue )
+                {
+                    RequestContext.PageParameters.Add( PageParameterKey.GroupId, session.GroupId.ToString() );
+                }
+
+                if ( session.Slug.IsNotNullOrWhiteSpace() )
+                {
+                    RequestContext.PageParameters.Add( PageParameterKey.Slug, session.Slug );
+                }
+
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
 
@@ -2359,7 +2392,7 @@ namespace Rock.Blocks.Event
                         Guid = gm.Person.Guid,
                         FamilyGuid = gm.FamilyGuid,
                         FullName = gm.Person.FullName,
-                        FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, null, formModels )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels )
                     } )
                     .ToList() :
                     new List<RegistrationEntryBlockFamilyMemberViewModel>();
@@ -2590,7 +2623,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = currentPerson.Guid,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, null, formModels )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels )
                     } );
                 }
                 else
@@ -2604,7 +2637,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = null,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( rockContext, currentPerson, null, formModels ) : new Dictionary<Guid, object>()
+                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels ) : new Dictionary<Guid, object>()
                     } );
                 }
             }
@@ -2615,6 +2648,11 @@ namespace Rock.Blocks.Event
             var allowRegistrationUpdates = !isExistingRegistration || allowExternalRegistrationUpdates;
             var startAtBeginning = !isExistingRegistration ||
                 ( allowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
+
+            // Adjust the spots remaining if this is an existing registration. Add to the Spots remaining the number of registrants that are not on the waitlist.
+            var adjustedSpotsRemaining = isExistingRegistration && session != null
+                ? context.SpotsRemaining + session.Registrants.Where( r => r.IsOnWaitList == false ).Count()
+                : context.SpotsRemaining;
 
             var viewModel = new RegistrationEntryBlockViewModel
             {
@@ -2641,7 +2679,7 @@ namespace Rock.Blocks.Event
                     Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, null ) ?? new object()
                 },
                 IsRedirectGateway = isRedirectGateway,
-                SpotsRemaining = context.SpotsRemaining,
+                SpotsRemaining = adjustedSpotsRemaining,
                 WaitListEnabled = context.RegistrationSettings.IsWaitListEnabled,
                 InstanceName = context.RegistrationSettings.Name,
                 PluralRegistrationTerm = pluralRegistrationTerm,
@@ -3376,7 +3414,9 @@ namespace Rock.Blocks.Event
                 Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo>(),
                 Registrar = new RegistrarInfo(),
                 RegistrationGuid = registration.Guid,
-                PreviouslyPaid = alreadyPaid
+                PreviouslyPaid = alreadyPaid,
+                Slug = PageParameter( PageParameterKey.Slug ),
+                GroupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull()
             };
 
             // Add attributes about the registration itself
@@ -3401,9 +3441,10 @@ namespace Rock.Blocks.Event
                     FamilyGuid = person?.GetFamily( rockContext )?.Guid,
                     Guid = registrant.Guid,
                     PersonGuid = person?.Guid,
-                    FieldValues = GetCurrentValueFieldValues( rockContext, person, registrant, settings.Forms ),
+                    FieldValues = GetCurrentValueFieldValues( null, rockContext, person, registrant, settings.Forms ),
                     FeeItemQuantities = new Dictionary<Guid, int>(),
-                    IsOnWaitList = registrant.OnWaitList
+                    IsOnWaitList = registrant.OnWaitList,
+                    Cost = registrant.Cost
                 };
 
                 // Person fields and person attribute fields are already loaded via GetCurrentValueFieldValues, but we still need
@@ -3637,7 +3678,7 @@ namespace Rock.Blocks.Event
         /// <param name="group">The group the person will be added to.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns>A new <see cref="GroupMember"/> instance.</returns>
-        private GroupMember BuildGroupMember( Person person, Group group, RegistrationSettings settings )
+        private GroupMember BuildGroupMember( Person person, Rock.Model.Group group, RegistrationSettings settings )
         {
             var groupMember = new GroupMember();
             groupMember.GroupId = group.Id;

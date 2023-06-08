@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using DotLiquid;
 using Quartz;
@@ -42,7 +43,7 @@ namespace Rock.Jobs
     [IntegerField(
         "Command Timeout",
         Key = AttributeKey.CommandTimeout,
-        Description = "Maximum amount of time (in seconds) to wait for any SQL based operations to complete. Leave blank to use the default for this job (300). Note, some metrics do not use SQL so this timeout will only apply to metrics that are SQL based.",
+        Description = "Maximum amount of time (in seconds) to wait for any operations (SQL based) to complete. Leave blank to use the default for this job (300).",
         IsRequired = false,
         DefaultIntegerValue = 60 * 5,
         Category = "General",
@@ -69,14 +70,14 @@ namespace Rock.Jobs
     [ReminderTypesField(
         "Reminder Types Include",
         Key = AttributeKey.ReminderTypesInclude,
-        Description = "Select any specific remindeder types to show in this block. Leave all unchecked to show all active reminder types ( except for excluded reminder types ).",
+        Description = "Select any specific reminder types to show in this block. Leave all unchecked to show all active reminder types (except for excluded reminder types).",
         IsRequired = false,
         Order = 4 )]
 
     [ReminderTypesField(
         "Reminder Types Exclude",
         Key = AttributeKey.ReminderTypesExclude,
-        Description = "Select group types to exclude from this block. Note that this setting is only effective if 'Reminder Types Include' has no specific group types selected.",
+        Description = "Select reminder types to exclude from this block. Note that this setting is only effective if 'Reminder Types Include' has no specific items selected.",
         IsRequired = false,
         Order = 5 )]
 
@@ -157,7 +158,8 @@ namespace Rock.Jobs
             _jobErrors = new List<string>();
             _totalProcessedReminders = 0;
             var currentDate = RockDateTime.Now;
-            WriteLog( $"ProcessReminders job started at {currentDate}." );
+            var stopwatch = Stopwatch.StartNew();
+            WriteLog( $"Started.", currentDate );
 
             using ( var rockContext = new RockContext() )
             {
@@ -181,7 +183,8 @@ namespace Rock.Jobs
                 UpdateReminderCounts( activeReminders, rockContext );
             }
 
-            WriteLog( $"ProcessReminders job completed at {RockDateTime.Now}." );
+            stopwatch.Stop();
+            WriteLog( $"Completed.", currentDate, stopwatch.ElapsedMilliseconds );
 
             if ( _jobErrors.Any() )
             {
@@ -274,7 +277,7 @@ namespace Rock.Jobs
         /// <param name="rockContext"></param>
         private void ProcessWorkflowNotifications( IQueryable<Reminder> activeReminders, RockContext rockContext )
         {
-            WriteLog( $"ProcessReminders job:  Initiated workflow notification processing." );
+            WriteLog( $"Initiated workflow notification processing." );
 
             var workflowReminderQuery = activeReminders
                 .Where(r => r.ReminderType.NotificationType == ReminderNotificationType.Workflow);
@@ -283,7 +286,7 @@ namespace Rock.Jobs
 
             var workflowReminderList = workflowReminderQuery.ToList();
 
-            WriteLog( $"ProcessReminders job:  Processing {workflowReminderList.Count} reminders for notification by workflow." );
+            WriteLog( $"Processing {workflowReminderList.Count} reminders for notification by workflow." );
 
             foreach ( var workflowReminder in workflowReminderList )
             {
@@ -309,11 +312,11 @@ namespace Rock.Jobs
         {
             if ( notificationSystemCommunication == null )
             {
-                WriteError( $"ProcessReminders job:  Aborted SystemCommunication notification for Reminders.  No SystemCommunication was specified." );
+                WriteError( $"Aborted SystemCommunication notification for Reminders. No SystemCommunication was specified." );
                 return;
             }
 
-            WriteLog( $"ProcessReminders job:  Initiated communication notification processing." );
+            WriteLog( $"Initiated communication notification processing." );
 
             var remindersPerEntityType = GetAttributeValue( AttributeKey.MaxRemindersPerEntityType ).AsIntegerOrNull() ?? 20;
 
@@ -324,11 +327,11 @@ namespace Rock.Jobs
                 .Distinct()
                 .ToList();
 
-            WriteLog( $"ProcessReminders job:  Processing reminder notifications for {communicationReminderRecipientList.Count} recipients." );
+            WriteLog( $"Processing reminder notifications for {communicationReminderRecipientList.Count} recipients." );
 
             foreach ( var reminderRecipient in communicationReminderRecipientList )
             {
-                WriteLog( $"ProcessReminders job:  Processing reminder notifications for recipient {reminderRecipient.Id}." );
+                WriteLog( $"Processing reminder notifications for recipient {reminderRecipient.Id}." );
 
                 var communicationRemindersForRecipient = communicationReminders
                     .Where( r => r.PersonAlias.PersonId == reminderRecipient.Id );
@@ -345,7 +348,7 @@ namespace Rock.Jobs
         /// <param name="entity">The entity.</param>
         private void InitiateNotificationWorkflow( Reminder reminder, RockContext rockContext, IEntity entity )
         {
-            WriteLog( $"ProcessReminders job:  Creating notification workflow for reminder {reminder.Id}." );
+            WriteLog( $"Creating notification workflow for reminder {reminder.Id}." );
 
             try
             {
@@ -353,9 +356,9 @@ namespace Rock.Jobs
                 {
                     { "Reminder", reminder.Guid.ToString() },
                     { "ReminderType", reminder.ReminderType.Guid.ToString() },
-                    { "PersonAlias", reminder.PersonAlias.Guid.ToString() },
+                    { "Person", reminder.PersonAlias.Guid.ToString() },
                     { "EntityType", reminder.ReminderType.EntityType.Guid.ToString() },
-                    { "Entity", entity.Guid.ToString() },
+                    { "Entity", $"{reminder.ReminderType.EntityType.Guid}|{entity.Id}" },
                 };
 
                 reminder.LaunchWorkflow( reminder.ReminderType.NotificationWorkflowTypeId, reminder.ToString(), workflowParameters, null );
@@ -384,7 +387,7 @@ namespace Rock.Jobs
         /// <param name="remindersPerEntityType"></param>
         private void SendReminderCommunication( Person recipient, IQueryable<Reminder> reminders, SystemCommunication notificationSystemCommunication, RockContext rockContext, int remindersPerEntityType )
         {
-            WriteLog( $"ProcessReminders job:  Creating SystemCommunication for recipient {recipient.Id}." );
+            WriteLog( $"Creating SystemCommunication for recipient {recipient.Id}." );
 
             var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
 
@@ -424,7 +427,7 @@ namespace Rock.Jobs
                 otherReminderList.AddRange( entityReminderList );
             }
 
-            WriteLog( $"ProcessReminders job:  Creating SystemCommunication for {personReminderList.Count} Person Reminders, " +
+            WriteLog( $"Creating SystemCommunication for {personReminderList.Count} Person Reminders, " +
                 $"{groupReminderList.Count} Group Reminders, and {otherReminderList.Count} other reminders for {otherReminderEntityList.Count} entity types." );
 
             var reminderDataObjects = new List<ReminderViewModel>();
@@ -475,7 +478,7 @@ namespace Rock.Jobs
                         .Where( r => r.ReminderType.ShouldAutoCompleteWhenNotified )
                         .ToList();
 
-                    WriteLog( $"ProcessReminders job:  Notification sent for {processedReminderList.Count} reminders.  Auto-completing {autoCompleteReminderList.Count} reminders." );
+                    WriteLog( $"Notification sent for {processedReminderList.Count} reminders. Auto-completing {autoCompleteReminderList.Count} reminders." );
 
                     foreach ( var autoCompleteReminder in autoCompleteReminderList )
                     {
@@ -532,7 +535,7 @@ namespace Rock.Jobs
                             && !activeReminders.Select( r => r.PersonAlias.PersonId ).Contains( p.Id ) );
 
             int zeroedCount = peopleWithNoReminders.Count();
-            WriteLog( $"ProcessReminders job:  Resetting reminder counts to 0 for {zeroedCount} people." );
+            WriteLog( $"Resetting reminder counts to 0 for {zeroedCount} people." );
 
             rockContext.BulkUpdate( peopleWithNoReminders, p => new Person { ReminderCount = 0 } );
             rockContext.SaveChanges();
@@ -553,7 +556,7 @@ namespace Rock.Jobs
                 }
             }
 
-            WriteLog( $"ProcessReminders job:  Updated reminder counts for {updatedCount} people." );
+            WriteLog( $"Updated reminder counts for {updatedCount} people." );
         }
 
         #endregion Job Logic Methods
@@ -564,9 +567,11 @@ namespace Rock.Jobs
         /// Writes a message to the job log.
         /// </summary>
         /// <param name="logMessage"></param>
-        private void WriteLog( string logMessage )
+        /// <param name="start">The optional start date time for the process described by this message.</param>
+        /// <param name="elapsedMs">The optional elapsed time (in milliseconds) for the process described by this message.</param>
+        private void WriteLog( string logMessage, DateTime? start = null, long? elapsedMs = null )
         {
-            RockLogger.Log.Debug( RockLogDomains.Jobs, logMessage);
+            Log( RockLogLevel.Debug, logMessage, start, elapsedMs );
         }
 
         /// <summary>
@@ -577,7 +582,7 @@ namespace Rock.Jobs
         private void WriteError( string errorMessage, Exception ex = null )
         {
             _jobErrors.Add( errorMessage );
-            WriteLog( $"ProcessReminders job:  {errorMessage}" );
+            WriteLog( errorMessage );
 
             if ( ex != null )
             {

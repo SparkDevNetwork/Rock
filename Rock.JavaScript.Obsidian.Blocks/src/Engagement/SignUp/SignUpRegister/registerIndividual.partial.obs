@@ -6,13 +6,13 @@
         <div class="col-md-6">
             <TextBox v-model="firstName"
                      label="First Name"
-                     :rules="nameRules"
+                     rules="required"
                      :disabled="disabled" />
         </div>
         <div class="col-md-6">
             <TextBox v-model="lastName"
                      label="Last Name"
-                     :rules="nameRules"
+                     rules="required"
                      :disabled="disabled" />
         </div>
     </div>
@@ -30,12 +30,19 @@
                             label="Mobile Phone"
                             :rules="mobilePhoneRules"
                             :disabled="disabled" />
+        </div>
+    </div>
+
+    <div class="row -mt-form-group">
+        <div class="col-md-6 col-md-offset-6">
             <CheckBox v-model="registrant.allowSms"
                       label=""
                       text="Allow SMS Messages"
                       :disabled="disabled || !mobilePhoneNumber" />
         </div>
     </div>
+
+    <hr>
 </template>
 
 <script setup lang="ts">
@@ -91,12 +98,6 @@
         set(newValue: string) {
             props.registrant.lastName = newValue;
         }
-    });
-
-    const nameRules = computed((): string => {
-        return props.registrant.firstName || props.registrant.lastName
-            ? "required"
-            : "";
     });
 
     const email = computed<string>({

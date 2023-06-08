@@ -1407,19 +1407,15 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 {
                     // Edit existing opportunity.
 
-                    /*
-                     * GroupMemberAssignments are tied to a specific Schedule & Location combo.
-                     * If either of these change for an existing opportunity, we'll have to reassign any members.
-                     */
+                    // GroupMemberAssignments are tied to a specific Schedule & Location combo.
+                    // If either of these change for an existing opportunity, we'll have to reassign any members.
                     var shouldReassignMembers = false;
                     var groupLocationChanged = false;
 
                     if ( !newLocationId.Equals( existingGroupLocation.LocationId ) )
                     {
-                        /*
-                         * The Location changed from what was previously saved.
-                         * Let's try to find another existing GroupLocation matching this opportunity's Group and newly-specified Location, or create a new one if needed.
-                         */
+                        // The Location changed from what was previously saved.
+                        // Let's try to find another existing GroupLocation matching this opportunity's Group and newly-specified Location, or create a new one if needed.
                         groupLocationToSave = GetNewOrMatchingGroupLocation();
                         shouldReassignMembers = true;
                         groupLocationChanged = true;
@@ -1440,12 +1436,10 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                         else
                         {
-                            /*
-                             * If we got here, this means:
-                             *   1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and exisingGroupLocation now point to the same object).
-                             *   2) We found an existing Schedule based on the previous Schedule Id.
-                             *   3) The last thing we need to do is compare the existing Schedule with the new/edited instance.
-                             */
+                            // If we got here, this means:
+                            //  1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and exisingGroupLocation now point to the same object).
+                            //  2) We found an existing Schedule based on the previous Schedule Id.
+                            //  3) The last thing we need to do is compare the existing Schedule with the new/edited instance.
 
                             if ( newScheduleType != existingSchedule.ScheduleType )
                             {
@@ -1620,23 +1614,18 @@ namespace RockWeb.Blocks.Engagement.SignUp
             var locationId = e.RowKeyValues[DataKeyName.LocationId].ToIntSafe();
             var scheduleId = e.RowKeyValues[DataKeyName.ScheduleId].ToIntSafe();
 
-            /*
-             * We should consider moving this logic to a service (probably the GroupLocationService), as this code block is identical
-             * to that found within the SignUpOverview block's dfOpportunities_Click() method.
-             */
+            // We should consider moving this logic to a service (probably the GroupLocationService), as this code block is identical
+            // to that found within the SignUpOverview block's dfOpportunities_Click() method.
 
             using ( var rockContext = new RockContext() )
             {
-                /*
-                 * An Opportunity is a GroupLocationSchedule with possible GroupMemberAssignments (and therefore, GroupMembers).
-                 * When deleting an Opportunity we should delete the following:
-                 * 
-                 * 1) GroupMemberAssignments
-                 * 2) GroupMembers (if no more GroupMemberAssignments for a given GroupMember)
-                 * 3) GroupLocationSchedule & GroupLocationScheduleConfig
-                 * 4) GroupLocation (if no more Schedules tied to it)
-                 * 5) Schedule (if non-named and nothing else is using it)
-                 */
+                // An Opportunity is a GroupLocationSchedule with possible GroupMemberAssignments (and therefore, GroupMembers).
+                // When deleting an Opportunity we should delete the following:
+                // 1) GroupMemberAssignments
+                // 2) GroupMembers (if no more GroupMemberAssignments for a given GroupMember)
+                // 3) GroupLocationSchedule & GroupLocationScheduleConfig
+                // 4) GroupLocation (if no more Schedules tied to it)
+                // 5) Schedule (if non-named and nothing else is using it)
 
                 var groupMemberAssignmentService = new GroupMemberAssignmentService( rockContext );
                 var groupMemberAssignments = groupMemberAssignmentService
@@ -1653,11 +1642,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     .Select( gma => gma.GroupMember )
                     .ToList();
 
-                /*
-                 * For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
-                 * We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
-                 * delete approach) if this changes in the future.
-                 */
+                // For now, this is safe, as GroupMemberAssignment is a pretty low-level Entity with no child Entities.
+                // We'll need to check `GroupMemberAssignmentService.CanDelete()` for each assignment (and abandon the bulk
+                // delete approach) if this changes in the future.
                 groupMemberAssignmentService.DeleteRange( groupMemberAssignments );
 
                 // Get the GroupType to check if this Group has history enabled below, so we know whether to call GroupMemberService.CanDelete() for each GroupMember.
@@ -1722,11 +1709,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         }
                     }
 
-                    /*
-                     * We cannot safely remove referenced Locations (even non-named ones):
-                     *   1) because of the way we reuse/share Locations across entities (the LocationPicker control auto-searches/matches and saves Locations).
-                     *   2) because of the cascade deletes many of the referencing entities have on their LocationId FK constraints (we might accidentally delete a lot of unintended stuff).
-                     */
+                    // We cannot safely remove referenced Locations (even non-named ones):
+                    //  1) because of the way we reuse/share Locations across entities (the LocationPicker control auto-searches/matches and saves Locations).
+                    //  2) because of the cascade deletes many of the referencing entities have on their LocationId FK constraints (we might accidentally delete a lot of unintended stuff).
 
                     // Follow-up save for deleted referenced entities.
                     rockContext.SaveChanges();
@@ -2296,7 +2281,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 if ( anyGroupTypeGroupRequirements )
                 {
-                    lGroupTypeGroupRequirements.Text = $"(From <a href='{this.CurrentGroupTypeUrl}' target='_blank'>{this.CurrentGroupType.Name}</a>)";
+                    lGroupTypeGroupRequirements.Text = $"(From <a href='{this.CurrentGroupTypeUrl}' target='_blank' rel='noopener noreferrer'>{this.CurrentGroupType.Name}</a>)";
 
                     gGroupTypeGroupRequirements.DataSource = groupTypeGroupRequirements;
                     gGroupTypeGroupRequirements.DataBind();
@@ -2634,160 +2619,120 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
             }
 
-            private class BadgeColor
+            private class ProgressState
             {
-                public const string Danger = "danger";
                 public const string Success = "success";
-                public const string SuccessPlus = "success-plus";
                 public const string Warning = "warning";
-                public const string White = "white";
+                public const string Critical = "critical";
+                public const string Danger = "danger";
             }
 
-            private class BadgeThreshold
-            {
-                public const string Minimum = "min";
-                public const string Desired = "desired";
-            }
-
-            public string SlotsBadge
+            public string ProgressBar
             {
                 get
                 {
-                    var htmlSb = new StringBuilder( $"<div class='sign-up-slots-badge' data-tip='{SlotsBadgeTooltipId}'>&nbsp;" );
-                    var slotsFilled = SlotsFilled.GetValueOrDefault();
-                    string fillColor;
-                    string thresholdColor;
+                    var min = this.SlotsMin.GetValueOrDefault();
+                    var desired = this.SlotsDesired.GetValueOrDefault();
+                    var max = this.SlotsMax.GetValueOrDefault();
+                    var filled = this.SlotsFilled.GetValueOrDefault();
+                    var whole = 0;
 
-                    int GetPercentageOf( int whole, int part )
+                    if ( max > 0 )
                     {
-                        var percentage = ( int ) ( ( double ) part / whole * 100 );
-                        return percentage > 100 ? 100 : percentage;
+                        whole = max;
+                    }
+                    else if ( desired > 0 )
+                    {
+                        whole = desired;
+                    }
+                    else if ( min > 0 )
+                    {
+                        whole = min;
                     }
 
-                    string GetFilledVisual( string color, int whole, int? partOverride = null )
+                    if ( filled > whole )
                     {
-                        return $"<div class='sign-up-slots slots-filled-{color}' style='width: {GetPercentageOf( whole, partOverride ?? slotsFilled )}%'>&nbsp;</div>";
+                        whole = filled;
                     }
 
-                    string GetThresholdVisual( string threshold, string color, int whole, int part )
-                    {
-                        return $"<div class='sign-up-slots slots-{threshold}-{color}' style='width: {GetPercentageOf( whole, part )}%'>&nbsp;</div>";
-                    }
+                    var minPercentage = 0;
+                    var desiredPercentage = 0;
+                    var maxPercentage = 0;
+                    var filledPercentage = 0;
 
-                    if ( SlotsMax.GetValueOrDefault() > 0 )
+                    if ( whole > 0 )
                     {
-                        if ( slotsFilled > 0 )
+                        int GetPercentageOfWhole( int part, bool isThreshold = true, bool isMax = false )
                         {
-                            fillColor = slotsFilled < SlotsMin.GetValueOrDefault()
-                                ? BadgeColor.Warning
-                                : slotsFilled < SlotsMax.Value
-                                    ? BadgeColor.Success
-                                    : BadgeColor.Danger;
-
-                            int? partOverride = null;
-                            if ( fillColor == BadgeColor.Success )
+                            if ( isThreshold && !isMax )
                             {
-                                if ( SlotsDesired.GetValueOrDefault() > 0 && slotsFilled > SlotsDesired.Value )
-                                {
-                                    fillColor = BadgeColor.SuccessPlus;
-                                    partOverride = SlotsDesired;
-                                }
-                                else if ( SlotsDesired.GetValueOrDefault() <= 0 && SlotsMin.GetValueOrDefault() > 0 && slotsFilled > SlotsMin.Value )
-                                {
-                                    fillColor = BadgeColor.SuccessPlus;
-                                    partOverride = SlotsMin;
-                                }
+                                // Show threshold "ticks" to the left of the spot that will satisfy a given value.
+                                part--;
                             }
 
-                            htmlSb.Append( GetFilledVisual( fillColor, SlotsMax.Value ) );
-
-                            if ( fillColor == BadgeColor.SuccessPlus )
-                            {
-                                htmlSb.Append( GetFilledVisual( BadgeColor.Success, SlotsMax.Value, partOverride ) );
-                            }
+                            var percentage = ( int ) ( ( double ) part / whole * 100 );
+                            return percentage > 100 ? 100 : percentage;
                         }
 
-                        if ( SlotsMin.GetValueOrDefault() > 0 )
-                        {
-                            thresholdColor = slotsFilled < SlotsMin.Value ? BadgeColor.Warning : BadgeColor.White;
-                            htmlSb.Append( GetThresholdVisual( BadgeThreshold.Minimum, thresholdColor, SlotsMax.Value, SlotsMin.Value ) );
-                        }
-
-                        if ( SlotsDesired.GetValueOrDefault() > 0 )
-                        {
-                            thresholdColor = slotsFilled < SlotsDesired.Value ? BadgeColor.Success : BadgeColor.White;
-                            htmlSb.Append( GetThresholdVisual( BadgeThreshold.Desired, thresholdColor, SlotsMax.Value, SlotsDesired.Value ) );
-                        }
+                        minPercentage = GetPercentageOfWhole( min );
+                        desiredPercentage = GetPercentageOfWhole( desired );
+                        maxPercentage = GetPercentageOfWhole( max, true, true );
+                        filledPercentage = GetPercentageOfWhole( filled, false );
                     }
-                    else if ( SlotsDesired.GetValueOrDefault() > 0 )
+
+                    var progressState = ProgressState.Danger;
+                    if ( filled > 0 )
                     {
-                        if ( slotsFilled > 0 )
+                        progressState = ProgressState.Success;
+
+                        if ( max > 0 && filled > max )
                         {
-                            fillColor = slotsFilled < SlotsMin.GetValueOrDefault()
-                                ? BadgeColor.Warning
-                                : BadgeColor.Success;
-
-                            if ( fillColor == BadgeColor.Success && SlotsMin.GetValueOrDefault() > 0 && slotsFilled > SlotsMin.Value )
-                            {
-                                fillColor = BadgeColor.SuccessPlus;
-                            }
-
-                            htmlSb.Append( GetFilledVisual( fillColor, SlotsDesired.Value ) );
-
-                            if ( fillColor == BadgeColor.SuccessPlus )
-                            {
-                                htmlSb.Append( GetFilledVisual( BadgeColor.Success, SlotsDesired.Value, SlotsMin ) );
-                            }
+                            progressState = ProgressState.Critical;
                         }
-
-                        if ( SlotsMin.GetValueOrDefault() > 0 )
+                        else if ( filled < min )
                         {
-                            thresholdColor = SlotsFilled < SlotsMin.Value ? BadgeColor.Warning : BadgeColor.White;
-                            htmlSb.Append( GetThresholdVisual( BadgeThreshold.Minimum, thresholdColor, SlotsDesired.Value, SlotsMin.Value ) );
+                            progressState = ProgressState.Danger;
+                        }
+                        else if ( filled < desired )
+                        {
+                            progressState = ProgressState.Warning;
                         }
                     }
-                    else if ( SlotsMin.GetValueOrDefault() > 0 )
+
+                    string GetIndicator( int percentage, bool isMax = false )
                     {
-                        if ( slotsFilled > 0 )
+                        var shouldShow = percentage > 0 && percentage < 100;
+                        if ( shouldShow && isMax )
                         {
-                            fillColor = slotsFilled < SlotsMin.Value ? BadgeColor.Warning : BadgeColor.Success;
-                            htmlSb.Append( GetFilledVisual( fillColor, SlotsMin.Value ) );
+                            shouldShow = filled > max;
                         }
-                    }
-                    else
-                    {
-                        if ( slotsFilled > 0 )
+
+                        if ( !shouldShow )
                         {
-                            fillColor = BadgeColor.Success;
-                            htmlSb.Append( GetFilledVisual( fillColor, slotsFilled, slotsFilled ) );
+                            return string.Empty;
                         }
+
+                        return $@"
+    <div class=""indicator"" style=""left: {percentage}%;""></div>";
                     }
 
-                    return $"{htmlSb}</div><span class='hide js-slots-filled'>{SlotsFilled.GetValueOrDefault()}</span>{SlotsBadgeTooltip}";
+                    return $@"<div class=""progress progress-sign-ups text-{progressState} m-0 flex-fill js-progress-sign-ups"" role=""progressbar"" title=""{ProgressBarTooltip.EncodeHtml()}"" aria-label=""Sign-Ups Progress"">
+    <div class=""progress-bar progress-bar-sign-ups bg-{progressState}"" style=""width: {filledPercentage}%""></div>{GetIndicator( minPercentage )}{GetIndicator( desiredPercentage )}{GetIndicator( maxPercentage, true )}
+</div>";
                 }
             }
 
-            public string SlotsBadgeTooltipId
+            private string ProgressBarTooltip
             {
                 get
                 {
-                    return $"sign-up-slots-badge-tooltip-{GroupLocationId}-{LocationId}-{ScheduleId}";
-                }
-            }
-
-            private string SlotsBadgeTooltip
-            {
-                get
-                {
-                    return $@"<div id='{SlotsBadgeTooltipId}'>
-    <div class='sign-up-slots-badge-tooltip'>
-        <span class='slot-counts mr-5'>Slots Filled: {SlotsFilled.GetValueOrDefault():N0}</span>
-        <span class='slot-counts'>
-            <span{( SlotsMin.GetValueOrDefault() > 0 ? string.Empty : " class='hide'" )}>Minimum: {SlotsMin.GetValueOrDefault():N0}</span>
-            <span{( SlotsDesired.GetValueOrDefault() > 0 ? string.Empty : " class='hide'" )}>Desired: {SlotsDesired.GetValueOrDefault():N0}</span>
-            <span{( SlotsMax.GetValueOrDefault() > 0 ? string.Empty : " class='hide'" )}>Maximum: {SlotsMax.GetValueOrDefault():N0}</span>
-        </span>
-    </div>
+                    return $@"<div class='d-flex justify-content-between align-items-center'>
+    <span class='text-nowrap mr-5'>Slots Filled: {SlotsFilled.GetValueOrDefault():N0}</span>
+    <span class='text-nowrap'>
+        <div class='{( SlotsMin.GetValueOrDefault() > 0 ? "text-nowrap" : "hide" )}'>Minimum: {SlotsMin.GetValueOrDefault():N0}</div>
+        <div class='{( SlotsDesired.GetValueOrDefault() > 0 ? "text-nowrap" : "hide" )}'>Desired: {SlotsDesired.GetValueOrDefault():N0}</div>
+        <div class='{( SlotsMax.GetValueOrDefault() > 0 ? "text-nowrap" : "hide" )}'>Maximum: {SlotsMax.GetValueOrDefault():N0}</div>
+    </span>
 </div>";
                 }
             }
@@ -2894,7 +2839,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                                 Name = gls.Config?.ConfigurationName,
                                 NextStartDateTime = nextStartDateTime,
                                 LastStartDateTime = lastStartDateTime,
-                                FriendlyDateTime = gls.Schedule.ToString(),
+                                FriendlyDateTime = gls.Schedule.ToFriendlyScheduleText( true ),
                                 FriendlyLocation = gls.Location.ToString( true ),
                                 SlotsMin = gls.Config?.MinimumCapacity,
                                 SlotsDesired = gls.Config?.DesiredCapacity,
@@ -2960,7 +2905,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         private void ShowNoAllowedScheduleTypesMessage()
         {
-            nbNoAllowedScheduleTypes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow Custom or Named Group Schedule Options. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank'>enable at least one of these types</a> to edit opportunities.";
+            nbNoAllowedScheduleTypes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow Custom or Named Group Schedule Options. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank' rel='noopener noreferrer'>enable at least one of these types</a> to edit opportunities.";
             nbNoAllowedScheduleTypes.Visible = true;
         }
 
@@ -2969,7 +2914,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         private void ShowNoAllowedLocationPickerModesMessage()
         {
-            nbNoAllowedLocationPickerModes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow any Location Selection Modes. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank'>enable at least one mode</a> to edit opportunities.";
+            nbNoAllowedLocationPickerModes.Text = $"The <b>{this.CurrentGroupType.Name}</b> group type does not allow any Location Selection Modes. Please <a href='{this.CurrentGroupTypeUrl}' target='_blank' rel='noopener noreferrer'>enable at least one mode</a> to edit opportunities.";
             nbNoAllowedLocationPickerModes.Visible = true;
         }
 
@@ -3054,7 +2999,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 if ( sbSchedule.IsValid && calEvent != null && calEvent.DtStart != null )
                 {
                     var tempSchedule = new Schedule { iCalendarContent = sbSchedule.iCalendarContent };
-                    lScheduleText.Text = $"<span class='text-sm'>{tempSchedule.FriendlyScheduleText ?? "Custom"}</span>";
+                    lScheduleText.Text = $"<span class='text-sm'>{tempSchedule.ToFriendlyScheduleText( true )}</span>";
                     lScheduleText.Visible = true;
                 }
             }

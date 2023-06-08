@@ -18,6 +18,15 @@
                     <Rock:RockLiteral runat="server" ID="litDomains" Label="Domains" CssClass="col-sm-9" />
                     <div class="actions">
                         <asp:Button runat="server" ID="btnEdit" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+
+                        <Rock:BootstrapButton
+                            ID="btnDeleteLog"
+                            runat="server"
+                            CssClass="btn btn-link"
+                            Text="Delete Log"
+                            DataLoadingText="Deleting Log ..."
+                            OnClick="btnDeleteLog_Click" />
+
                     </div>
                 </asp:Panel>
 
@@ -58,14 +67,15 @@
                             DataLoadingText="Saving..."
                             ValidationGroup="LoggingSetting"
                             OnClick="btnLoggingSave_Click" />
-
-                        <Rock:BootstrapButton
-                            ID="btnDeleteLog"
+                        <asp:LinkButton
+                            ID="btnCancel"
                             runat="server"
+                            AccessKey="c"
+                            ToolTip="Alt+c"
+                            Text="Cancel"
                             CssClass="btn btn-link"
-                            Text="Delete Log"
-                            DataLoadingText="Deleting Log ..."
-                            OnClick="btnDeleteLog_Click" />
+                            CausesValidation="false"
+                            OnClick="btnCancel_Click" />
                     </div>
                 </asp:Panel>
             </div>

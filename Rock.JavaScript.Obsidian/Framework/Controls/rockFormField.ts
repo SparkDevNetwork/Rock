@@ -118,7 +118,7 @@ export default defineComponent({
 <slot name="pre" />
 <div v-if="label || help" class="form-group" :class="[classAttr, formGroupClasses, isRequired && !isRequiredIndicatorHidden ? 'required' : '', errorClasses]">
     <RockLabel :for="uniqueId" :help="help">
-        {{label}}
+        {{label}} <slot name="besideLabel" />
     </RockLabel>
     <slot v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
 </div>

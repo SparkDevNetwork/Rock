@@ -187,9 +187,9 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Name", tbName.Text );
-            rFilter.SaveUserPreference( "Description", tbDescription.Text );
-            rFilter.SaveUserPreference( "Active", rblActive.SelectedValue );
+            rFilter.SetFilterPreference( "Name", tbName.Text );
+            rFilter.SetFilterPreference( "Description", tbDescription.Text );
+            rFilter.SetFilterPreference( "Active", rblActive.SelectedValue );
 
             BindGrid();
         }
@@ -332,9 +332,9 @@ namespace RockWeb.Blocks.Core
         {
             if ( !Page.IsPostBack )
             {
-                tbName.Text = rFilter.GetUserPreference( "Name" );
-                tbDescription.Text = rFilter.GetUserPreference( "Description" );
-                rblActive.SelectedValue = rFilter.GetUserPreference( "Active" );
+                tbName.Text = rFilter.GetFilterPreference( "Name" );
+                tbDescription.Text = rFilter.GetFilterPreference( "Description" );
+                rblActive.SelectedValue = rFilter.GetFilterPreference( "Active" );
             }
         }
 
@@ -374,19 +374,19 @@ namespace RockWeb.Blocks.Core
 
             var items = dataSource.AsQueryable();
 
-            string name = rFilter.GetUserPreference( "Name" );
+            string name = rFilter.GetFilterPreference( "Name" );
             if ( !string.IsNullOrWhiteSpace( name ) )
             {
                 items = items.Where( c => c.Name.ToLower().Contains( name.ToLower() ) );
             }
 
-            string description = rFilter.GetUserPreference( "Description" );
+            string description = rFilter.GetFilterPreference( "Description" );
             if ( !string.IsNullOrWhiteSpace( description ) )
             {
                 items = items.Where( c => c.Name.Contains( description ) );
             }
 
-            string active = rFilter.GetUserPreference( "Active" );
+            string active = rFilter.GetFilterPreference( "Active" );
             if ( !string.IsNullOrWhiteSpace( active ) )
             {
                 if ( active == "Yes" )

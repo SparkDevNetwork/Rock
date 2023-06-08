@@ -1,0 +1,98 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-cell" :class="additionalItemClass" :style="additionalCellStyles" @click="onClick" role="gridcell">
+        <component :is="props.column.formatComponent"
+                   :row="props.row"
+                   :column="props.column"
+                   :grid="props.grid" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { getColumnStyles } from "@Obsidian/Core/Controls/grid";
+
+    const props = defineProps({
+        /** The column definition of this cell. */
+        column: {
+            type: Object as PropType<ColumnDefinition>,
+            required: true
+        },
+
+        /** The data row that contains the value to be displayed. */
+        row: {
+            type: Object as PropType<Record<string, unknown>>,
+            required: true
+        },
+
+        /** This grid this cell belongs to. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        },
+
+        /** True if this cell is selectable. */
+        isSelectable: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "click"): void
+    }>();
+
+    /** Contains any additional CSS classes for the td element. */
+    const additionalItemClass = computed((): string => {
+        let classes = props.column.itemClass ?? "";
+
+        if (["sm", "md", "lg", "xl"].includes(props.column.visiblePriority)) {
+            // We don't have support for lg just yet, but it's coming.
+            if (props.column.visiblePriority === "xl") {
+                classes += ` d-none d-lg-flex`;
+            }
+            else {
+                classes += ` d-none d-${props.column.visiblePriority}-flex`;
+            }
+        }
+
+        if (isSelectable.value) {
+            classes += " grid-select-cell";
+        }
+
+        return classes.trim();
+    });
+
+    /** Contains the additional styles to be applied to the cell. */
+    const additionalCellStyles = computed((): Record<string, string> => {
+        const styles: Record<string, string> = {
+            ...getColumnStyles(props.column)
+        };
+
+        return styles;
+    });
+
+    /**
+     * Contains `true` if this cell should be considered selectable by the
+     * individual and emit the clicked event.
+     */
+    const isSelectable = computed((): boolean => {
+        return props.isSelectable && !props.column.name.startsWith("__");
+    });
+
+    /**
+     * Called when the cell has been clicked if selection has been enabled.
+     */
+    function onClick(ev: Event): void {
+        if (!isSelectable.value) {
+            return;
+        }
+
+        ev.stopPropagation();
+
+        if (props.isSelectable) {
+            emit("click");
+        }
+    }
+</script>

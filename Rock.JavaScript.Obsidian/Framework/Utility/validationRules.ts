@@ -67,10 +67,10 @@ export function parseRule(rule: string): ValidationRuleReference {
 export function normalizeRules(rules: ValidationRule | ValidationRule[]): ValidationRule[] {
     if (typeof rules === "string") {
         if (rules.indexOf("|") !== -1) {
-            return rules.split("|").filter(r => r !== "");
+            return rules.split("|").filter(r => r.trim() !== "");
         }
-        else if (rules !== "") {
-            return [rules];
+        else if (rules.trim() !== "") {
+            return [rules.trim()];
         }
     }
     else if (Array.isArray(rules)) {

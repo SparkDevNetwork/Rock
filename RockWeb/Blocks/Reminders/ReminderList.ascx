@@ -2,6 +2,36 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+
+        <script type="text/javascript">
+            var currentReminderStartDate = '';
+            var currentReminderEndDate = '';
+
+            $(document).ready(function () {
+                currentReminderStartDate = $('#<%= drpCustomDate.ClientID %>').find('.js-lower').children('input').val();
+                currentReminderEndDate = $('#<%= drpCustomDate.ClientID %>').find('.js-upper').children('input').val();
+
+                $(".js-slidingdaterange-text-value").change(function () { handleDateRangeChange(); });
+            });
+
+            function handleDateRangeChange() {
+                if ($("div.datepicker")[0]) {
+                    // If the date picker is still open, don't do anything.
+                    return false;
+                }
+
+                var inputStartDate = $('#<%= drpCustomDate.ClientID %>').find('.js-lower').children('input').val();
+                var inputEndDate = $('#<%= drpCustomDate.ClientID %>').find('.js-upper').children('input').val();
+
+                // if date values changed, trigger the postback.
+                if (currentReminderStartDate != inputStartDate || currentReminderEndDate != inputEndDate) {
+                    var validationGroup = eval('<%= this.ClientID %>_drpCustomDate_nbNumber_drpCustomDate_customValidator.validationGroup');
+                    var postBackElement = '<%= this.ClientID %>'.replace(/\_/g, "$") + '$btnDueFilter_Custom';
+                    WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(postBackElement, '', true, validationGroup, '', false, true));
+                }
+            }
+        </script>
+
         <asp:HiddenField ID="hfReminderTypesInclude" runat="server" />
         <asp:HiddenField ID="hfReminderTypesExclude" runat="server" />
 
@@ -166,7 +196,7 @@
                                 <div class="flex-grow-0">
                                     <asp:LinkButton ID="btnComplete" runat="server" class="success-on-hover" CommandArgument='<%# Eval("Id") %>' OnClick="btnComplete_Click">
                                         <asp:Literal ID="lCheckIcon_Complete" runat="server" Visible='<%# Eval("IsComplete") %>'><i class="fa fa-lg fa-check-circle text-success"></i></asp:Literal>
-                                        <asp:Literal ID="lCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="fa fa-lg fa-check-circle-o"></i></asp:Literal>
+                                        <asp:Literal ID="lCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="fa fa-lg fa-circle-o"></i></asp:Literal>
                                     </asp:LinkButton>
                                 </div>
                                 <div class="d-flex flex-wrap flex-eq">

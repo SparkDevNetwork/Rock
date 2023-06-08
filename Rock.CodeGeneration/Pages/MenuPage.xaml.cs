@@ -43,6 +43,16 @@ namespace Rock.CodeGeneration.Pages
         }
 
         /// <summary>
+        /// Handles the Click event of the ObsidianListBlock control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private async void ObsidianListBlock_Click( object sender, RoutedEventArgs e )
+        {
+            await this.Navigation().PushPageAsync( new ObsidianListBlockPage() );
+        }
+
+        /// <summary>
         /// Handles the Click event of the ObsidianViewModelsButton control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>

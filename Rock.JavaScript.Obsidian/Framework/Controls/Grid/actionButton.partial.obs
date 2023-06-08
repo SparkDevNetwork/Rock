@@ -1,0 +1,97 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <button type="button"
+            :class="buttonCssClass"
+            :title="actionTooltip"
+            @click.prevent.stop="onActionClick">
+        <i :class="iconCssClass"></i>
+    </button>
+</template>
+
+<script setup lang="ts">
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { computed, PropType, ref } from "vue";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps({
+        /** The action that should be displayed in this button. */
+        action: {
+            type: Object as PropType<GridAction>,
+            required: true
+        },
+
+        /**
+         * The grid state that this action belongs to.
+         */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    /**
+     * Will be `true` if the action is currently executing. In which case
+     * any further attempts to execute the action should be prevented.
+     */
+    const isExecuting = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The tooltip text to display for the action. */
+    const actionTooltip = computed((): string | undefined => {
+        return props.action.tooltip;
+    });
+
+    /** The CSS classes to be applied to the button. */
+    const buttonCssClass = computed((): string => {
+        let classes = "btn btn-grid-action";
+
+        if (props.action.buttonCssClass) {
+            classes += ` ${props.action.buttonCssClass}`;
+        }
+
+        if (isExecuting.value || props.action.disabled || !props.action.handler) {
+            classes += " disabled";
+        }
+
+        return classes;
+    });
+
+    /** The CSS classes to be applied to the icon. */
+    const iconCssClass = computed((): string => {
+        return `${props.action.iconCssClass || "fa fa-square"} fa-fw`;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the action button has been clicked. Execute the user defined
+     * action and wait for it to complete.
+     */
+    const onActionClick = async (): Promise<void> => {
+        if (!props.action.handler || props.action.disabled || isExecuting.value) {
+            return;
+        }
+
+        isExecuting.value = true;
+
+        try {
+            const result = props.action.handler(props.grid);
+
+            if (isPromise(result)) {
+                await result;
+            }
+        }
+        finally {
+            isExecuting.value = false;
+        }
+    };
+
+    // #endregion
+</script>

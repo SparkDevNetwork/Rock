@@ -56,6 +56,15 @@
           border-radius: 4px;
         }
       }
+
+      // Hide the action buttons on small screens
+      @media screen and (max-width: @screen-sm-max) {
+        .panel-action-zoom,
+        .panel-action-zoom-control,
+        .panel-action-fullscreen {
+          display: none;
+        }
+      }
     }
   }
 
@@ -65,6 +74,14 @@
 
   .footer-secondary-actions {
     margin: 0 0 0 auto !important;
+  }
+
+  .panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0 @panel-body-padding @panel-body-padding;
+    margin: @panel-body-padding -@panel-body-padding -@panel-body-padding -@panel-body-padding;
   }
 }
 

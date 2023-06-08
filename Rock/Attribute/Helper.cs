@@ -104,16 +104,23 @@ namespace Rock.Attribute
 
             rockContext = rockContext ?? new RockContext();
 
+            var customizedGrid = type.GetCustomAttribute<Blocks.CustomizedGridAttribute>();
+
             bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
-            if ( customGridColumnsBlock )
+            if ( customGridColumnsBlock || customizedGrid?.IsCustomColumnsSupported == true )
             {
                 entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
             }
 
             bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
-            if ( customGridOptionsBlock )
+
+            if ( customGridOptionsBlock || customizedGrid?.IsStickyHeaderSupported == true )
             {
                 entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
+            }
+
+            if ( customGridOptionsBlock || customizedGrid?.IsCustomActionsSupported == true )
+            {
                 entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
                 entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
             }

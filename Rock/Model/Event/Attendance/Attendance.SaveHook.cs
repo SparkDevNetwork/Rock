@@ -60,7 +60,7 @@ namespace Rock.Model
                 else
                 {
                     // get original values so we can detect whether the value changed
-                    previousDidAttendValue = ( bool ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "DidAttend", false );
+                    previousDidAttendValue = ( bool? )Entry.OriginalValues.GetReadOnlyValueOrDefault( "DidAttend", false ) == true;
                     previouslyDeclined = ( Entry.OriginalValues.GetReadOnlyValueOrDefault( "RSVP", null ) as RSVP? ) == RSVP.No;
                 }
 
@@ -241,7 +241,7 @@ namespace Rock.Model
                         if ( !valid )
                         {
                             // Only use changes where DidAttend was previously not true
-                            valid = !( bool ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "DidAttend", false );
+                            valid = ( bool? ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "DidAttend", false ) != true;
                         }
 
                         if ( valid )

@@ -35,6 +35,12 @@
         .featured-content {
             --block-min-height: 100px;
         }
+
+        .featured-content,
+        .featured-content > .col-md-12,
+        .main-content {
+            padding: 0 !important;
+        }
         .block-content-main > .panel.panel-block,
         .panel.panel-block {
             margin-bottom: 0;

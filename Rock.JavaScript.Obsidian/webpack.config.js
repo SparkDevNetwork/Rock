@@ -22,18 +22,19 @@ module.exports = {
         }
     },
     output: {
-        path: path.resolve(__dirname, "dist"),
+        path: path.resolve(__dirname, path.join("dist", "System")),
         filename: "[name].js",
     },
     resolve: {
         alias: {
-            vue: path.resolve(__dirname, 'node_modules/vue/dist/vue.esm-bundler.js')
+            vue: path.resolve(__dirname, "node_modules/vue/dist/vue.esm-bundler.js"),
+            mitt: path.resolve(__dirname, "node_modules/mitt/dist/mitt.mjs")
         },
         extensions: [".ts", ".js"]
     },
     /* Enable caching so rebuilds are faster. */
     cache: {
-        type: 'filesystem',
+        type: "filesystem",
         buildDependencies: {
             config: [__filename],
         },

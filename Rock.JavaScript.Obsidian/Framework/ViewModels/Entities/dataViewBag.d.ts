@@ -80,6 +80,12 @@ export type DataViewBag = {
     persistedLastRunDurationMilliseconds?: number | null;
 
     /**
+     * Gets or sets the Persisted Schedule Id.
+     * If this is null, then the DataView does not have a persisted schedule.
+     */
+    persistedScheduleId?: number | null;
+
+    /**
      * Gets or sets the persisted schedule interval minutes.
      * If this is null, then the DataView is not persisted.
      */

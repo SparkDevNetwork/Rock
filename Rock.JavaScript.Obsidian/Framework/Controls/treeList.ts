@@ -53,6 +53,14 @@ const treeItem = defineComponent({
         autoExpand: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * Whether to show the number of children a parent node has, if provided
+         */
+        showChildCount: {
+            type: Boolean,
+            default: false
         }
     },
 
@@ -121,7 +129,7 @@ const treeItem = defineComponent({
             else if (children.value.length == 0) {
                 showChildren.value = false;
             }
-        }, { immediate: true });
+        }, { immediate: true, deep: true });
 
         /**
          * Determine if a child item is a selected value
@@ -237,9 +245,10 @@ const treeItem = defineComponent({
     <span :class="itemNameClass" :title="itemName" @click.prevent.stop="onSelect">
         <i :class="itemIconClass"></i>
         {{ itemName }}
+        <span class="label label-tree" v-if="showChildCount && item.childCount">{{item.childCount}}</span>
     </span>
     <ul v-if="hasChildren" v-show="showChildren" class="rocktree-children" v-for="child in children">
-        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
+        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
     </ul>
 </li>
 `
@@ -278,10 +287,18 @@ export default defineComponent({
         },
 
         /**
-         * Automatically expand parents who have (sub)children that are selected
+         * Whether to automatically expand parents who have (sub)children that are selected
          */
         autoExpand: {
             type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether to show the number of children a parent node has, if provided
+         */
+        showChildCount: {
+            type: Boolean,
             default: false
         }
     },
@@ -332,8 +349,7 @@ export default defineComponent({
          */
         const onItemExpanded = async (item: TreeItemBag): Promise<void> => {
             if (props.provider) {
-                // We have a provider, check if the item needs it's children
-                // loaded still.
+                // We have a provider, check if the item needs it's children loaded still.
                 if (item.hasChildren && item.children === null) {
                     const result = props.provider.getChildItems(item);
                     const children = isPromise(result) ? await result : result;
@@ -379,7 +395,7 @@ export default defineComponent({
     template: `
 <div style="overflow-x: hidden; max-width: 100%;">
     <ul class="rocktree">
-        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
+        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
     </ul>
 </div>
 `

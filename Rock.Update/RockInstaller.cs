@@ -84,15 +84,10 @@ namespace Rock.Update
             // Record the current version to the database
             Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID, _targetVersion.ToString() );
 
-            // register any new REST controllers
-            try
-            {
-                RestControllerService.RegisterControllers();
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex );
-            }
+            /* 
+             * ETD 2023-04-10
+             * Removed logic to register any new REST controllers here. The static collection could still have elements being added. Also this is done on Rock startup anyway and so is not needed here.
+             */
 
             return targetRelease;
         }
@@ -331,11 +326,11 @@ namespace Rock.Update
         {
             var exceptionList = new Dictionary<string, Exception>
             {
-                { "exception", new Exception("Test Exception") },
-                { "ioexception", new IOException("Test IO Exception") },
-                { "outofmemoryexception", new OutOfMemoryException("Test Out of Memory Exception") },
-                { "versionvalidationexception", new Exception("Test Version Validation Exception") },
-                { "xmlexception", new Exception("XML Exception") },
+                { "rock.tests.integration.exception", new Exception("Test Exception") },
+                { "rock.tests.integration.ioexception", new IOException("Test IO Exception") },
+                { "rock.tests.integration.outofmemoryexception", new OutOfMemoryException("Test Out of Memory Exception") },
+                { "rock.tests.integration.versionvalidationexception", new Exception("Test Version Validation Exception") },
+                { "rock.tests.integration.xmlexception", new Exception("XML Exception") },
             };
 
             exception = exception.ToLower();

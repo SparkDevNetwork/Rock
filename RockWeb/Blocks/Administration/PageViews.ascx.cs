@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( pageCache != null )
             {
-                rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", pageCache.Guid );
+                rFilter.PreferenceKeyPrefix = string.Format( "{0}-", pageCache.Guid );
             }
 
             BindFilter();
@@ -136,9 +136,9 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindFilter()
         {
-            sdrpDateRange.DelimitedValues = rFilter.GetUserPreference( FilterKey.DateRange );
-            rblIsAuthenticated.SelectedValue = rFilter.GetUserPreference( FilterKey.LoginStatus );
-            tbUrlContains.Text = rFilter.GetUserPreference( FilterKey.UrlContains );
+            sdrpDateRange.DelimitedValues = rFilter.GetFilterPreference( FilterKey.DateRange );
+            rblIsAuthenticated.SelectedValue = rFilter.GetFilterPreference( FilterKey.LoginStatus );
+            tbUrlContains.Text = rFilter.GetFilterPreference( FilterKey.UrlContains );
         }
 
         /// <summary>
@@ -206,9 +206,9 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterKey.DateRange, "Date Range", sdrpDateRange.DelimitedValues );
-            rFilter.SaveUserPreference( FilterKey.LoginStatus, "Login Status", rblIsAuthenticated.SelectedValue.AsBooleanOrNull().ToStringSafe() );
-            rFilter.SaveUserPreference( FilterKey.UrlContains, "URL Contains", tbUrlContains.Text );
+            rFilter.SetFilterPreference( FilterKey.DateRange, "Date Range", sdrpDateRange.DelimitedValues );
+            rFilter.SetFilterPreference( FilterKey.LoginStatus, "Login Status", rblIsAuthenticated.SelectedValue.AsBooleanOrNull().ToStringSafe() );
+            rFilter.SetFilterPreference( FilterKey.UrlContains, "URL Contains", tbUrlContains.Text );
 
             BindGrid();
         }
@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
             BindFilter();
         }
 

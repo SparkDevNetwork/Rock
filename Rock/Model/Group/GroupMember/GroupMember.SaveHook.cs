@@ -20,8 +20,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Humanizer;
-
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
@@ -45,20 +43,21 @@ namespace Rock.Model
             protected override void PreSave()
             {
                 var rockContext = ( RockContext ) this.RockContext;
-                string errorMessage;
                 if ( this.State != EntityContextState.Deleted
                      && Entity.IsArchived == false
                      && Entity.GroupMemberStatus != GroupMemberStatus.Inactive )
                 {
-                    // Bypass Group Member requirement check when group member is unarchived instead we will show 'does not meet' symbol in group member list.
+                    // Bypass Group Member requirement check when group member is unarchived; instead, we'll show "does not meet" symbol in group member list.
                     var previousIsArchived = this.State == EntityContextState.Modified && OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
                     if ( !previousIsArchived )
                     {
-                        if ( !Entity.ValidateGroupMembership( rockContext, out errorMessage ) )
+                        if ( !Entity.IsValidGroupMember( rockContext ) )
                         {
-                            var ex = new GroupMemberValidationException( errorMessage );
-                            ExceptionLogService.LogException( ex );
-                            throw ex;
+                            var message = Entity.ValidationResults != null
+                                ? Entity.ValidationResults.AsDelimited( "; " )
+                                : string.Empty;
+
+                            throw new GroupMemberValidationException( message );
                         }
                     }
                 }

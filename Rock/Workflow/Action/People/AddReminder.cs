@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
     #region Workflow Attributes
 
     [ReminderTypeField( "Reminder Type",
-    Description = "The type of note to add.",
+    Description = "The type of reminder to add.",
     Key = AttributeKey.ReminderType,
     IsRequired = true,
     Order = 1 )]
@@ -185,14 +185,9 @@ namespace Rock.Workflow.Action
             Reminder reminder = new Reminder
             {
                 ReminderTypeId = reminderType.Id,
-
                 PersonAliasId = person.PrimaryAliasId.Value
             };
 
-            if ( reminder.PersonAlias == null )
-            {
-                reminder.PersonAlias = new PersonAliasService( rockContext ).Get( person.PrimaryAliasId.Value );
-            }
 
             reminder.EntityId = entityObject.Id;
 

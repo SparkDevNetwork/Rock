@@ -32,6 +32,7 @@ using Rock.Reporting;
 using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -141,7 +142,8 @@ namespace Rock.Lava.Blocks
                     Expression queryExpression = null; // the base expression we'll use to build our query from
 
                     // Parse markup
-                    var parms = ParseMarkup( _markup, context );
+                    var settings = GetAttributesFromMarkup( _markup, context, this.EntityName );
+                    var parms = settings.Attributes;
 
                     if ( parms.Any( p => p.Key == "id" ) )
                     {
@@ -219,7 +221,7 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
-                    // Make the query from the expression.                    
+                    // Make the query from the expression.
                     /* [2020-10-08] DL
                      * "Get" is intentionally used here rather than "GetNoTracking" to allow lazy-loading of navigation properties from the Lava context.
                      * (Refer https://github.com/SparkDevNetwork/Rock/issues/4293)
@@ -305,35 +307,36 @@ namespace Rock.Lava.Blocks
                                 }
                                 else
                                 {
-                                    // sorting on an attribute
+                                    // Sort by Attribute.
+                                    // Get all of the Attributes for this EntityType that have a matching Key and apply the same sort for each of them.
+                                    // This situation may occur, for example, where the target entity is a DefinedValue and the same Attribute Key exists for multiple Defined Types.
+                                    var attributeIdListForAttributeKey = AttributeCache.GetByEntityType( entityTypeCache.Id )
+                                                                .Where( a => a != null && a.Key == propertyName )
+                                                                .Select( a => a.Id )
+                                                                .ToList();
 
-                                    // get attribute id
-                                    int? attributeId = null;
-                                    foreach ( var attribute in AttributeCache.GetByEntityType( entityTypeCache.Id ) )
-                                    {
-                                        if ( attribute.Key == propertyName )
-                                        {
-                                            attributeId = attribute.Id;
-                                            break;
-                                        }
-                                    }
-
-                                    if ( attributeId.HasValue )
+                                    if ( attributeIdListForAttributeKey.Any() )
                                     {
                                         // get AttributeValue queryable and parameter
-                                        if ( dbContext is RockContext )
+                                        var rockContext = dbContext as RockContext;
+                                        if ( rockContext == null  )
                                         {
-                                            var attributeValues = new AttributeValueService( dbContext as RockContext ).Queryable();
-                                            ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
-                                            MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
-                                            var attributeExpression = Attribute.Helper.GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, attributeId.Value );
-
-                                            LambdaExpression sortSelector = Expression.Lambda( attributeExpression, paramExpression );
-                                            queryResultExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { queryResult.ElementType, sortSelector.ReturnType }, queryResultExpression, sortSelector );
+                                            throw new Exception( $"The database context for type {entityTypeCache.FriendlyName} does not support RockContext attribute value queries." );
                                         }
-                                        else
+
+                                        var attributeValues = new AttributeValueService( rockContext ).Queryable();
+                                        foreach ( var attributeId in attributeIdListForAttributeKey )
                                         {
-                                            throw new Exception( string.Format( "The database context for type {0} does not support RockContext attribute value queries.", entityTypeCache.FriendlyName ) );
+                                            methodName = ( direction == SortDirection.Descending ) ? orderByMethod + "Descending" : orderByMethod;
+
+                                            var attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
+                                            var idExpression = Expression.Property( paramExpression, "Id" );
+                                            var attributeExpression = Attribute.Helper.GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, attributeId );
+
+                                            var sortSelector = Expression.Lambda( attributeExpression, paramExpression );
+                                            queryResultExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { queryResult.ElementType, sortSelector.ReturnType }, queryResultExpression, sortSelector );
+
+                                            orderByMethod = "ThenBy";
                                         }
                                     }
                                 }
@@ -608,6 +611,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         public static void RegisterEntityCommands( ILavaEngine engine )
         {
+            // If the database is not connected, we do not have access to entity definitions.
+            // This can occur when the Lava engine is started without an attached database.
+            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            {
+                return;
+            }
+
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
@@ -684,63 +694,21 @@ namespace Rock.Lava.Blocks
             return currentPerson;
         }
 
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
+        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context, string entityName )
         {
-            // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            // Create default settings
+            var settings = LavaElementAttributes.NewFromMarkup( markup, context );
 
-            /*
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.GetScopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            if ( context.GetEnvironments.Count > 0 )
-            {
-                foreach ( var item in context.GetEnvironments[0] )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-            */
-
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-            parms.Add( "iterator", string.Format( "{0}Items", EntityName ) );
-            parms.Add( "securityenabled", "true" );
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            if ( markupItems.Count == 0 )
+            if ( settings.Attributes.Count == 0 )
             {
                 throw new Exception( "No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes)." );
             }
 
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
+            settings.AddOrIgnore( "iterator", string.Format( "{0}Items", entityName ) );
+            settings.AddOrIgnore( "securityenabled", "true" );
+            settings.AddOrIgnore( "cacheduration", "0" );
+
+            var parms = settings.Attributes;
 
             // override any dynamic parameters
             List<string> dynamicFilters = new List<string>(); // will be used to process dynamic filters
@@ -793,8 +761,7 @@ namespace Rock.Lava.Blocks
                 parms.AddOrReplace( "dynamicparameters", string.Join( ",", dynamicFilters ) );
             }
 
-
-            return parms;
+            return settings;
         }
 
         /// <summary>
@@ -863,7 +830,7 @@ namespace Rock.Lava.Blocks
                 }
 
                 // parse the part to get the expression
-                var regexPattern = @"((?!_=|_!)[a-zA-Z_]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
+                var regexPattern = @"((?!_=|_!)[a-zA-Z0-9_]+)|(==|<=|>=|<|!=|\^=|\*=|\*!|_=|_!|>|\$=|#=)|("".*""|\d+)";
                 var expressionParts = Regex.Matches( component, regexPattern )
                .Cast<Match>()
                .Select( m => m.Value )

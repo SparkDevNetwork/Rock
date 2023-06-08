@@ -28,8 +28,8 @@ import CompletionSettings from "../Shared/completionSettings";
 import ConfirmationEmail from "../Shared/confirmationEmail";
 import PersonEntrySettings from "../Shared/personEntrySettings";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
-import { FormCompletionAction } from "../Shared/types";
-import { TemplateEditDetail } from "./types";
+import { FormCompletionAction } from "../Shared/types.partial";
+import { TemplateEditDetail } from "./types.partial";
 import { useSources } from "./utils.partial";
 
 /**

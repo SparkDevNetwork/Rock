@@ -67,13 +67,20 @@
 .person-profile-row {
   display: flex;
   flex-wrap: wrap;
-  margin: 24px -9px 0;
+  margin: 24px 0 0;
   > * {
     flex-shrink: 0;
     width: 100%;
     max-width: 100%;
-    padding-right: 9px !important;
-    padding-left: 9px !important;
+  }
+
+  @media (min-width: @grid-float-breakpoint) {
+    margin: 24px -9px 0;
+
+    > * {
+      padding-right: 9px !important;
+      padding-left: 9px !important;
+    }
   }
 }
 
@@ -92,12 +99,15 @@
 @media (min-width: 647px) {
   .person-profile {
     flex-wrap: nowrap;
+    margin: 24px 8px 0;
+    gap: 8px;
   }
 }
 
 @media (min-width: @screen-sm) {
   .person-profile {
     margin: 24px 15px 0;
+    gap: 0;
   }
 
   .profile-content + .main-footer {
@@ -108,6 +118,25 @@
 .person-profile-ext {
   margin-right: 24px;
   margin-left: 24px;
+}
+
+@media (max-width: @grid-float-breakpoint-max) {
+  .person-profile-ext {
+    overflow-x: hidden;
+    margin-left: 0;
+    margin-right: 0;
+
+    > .row {
+      margin-left: 0;
+      margin-right: 0;
+
+      > .col,
+      > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
 }
 
 @media (min-width: 647px) {
@@ -365,11 +394,12 @@
 .family-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(60px, 78px));
-  gap: 6px;
+  gap: 8px;
   justify-content: space-evenly;
+  margin-bottom: 8px;
 
   @media screen and (min-width: 480px) {
-    gap: 6px 18px;
+    gap: 8px 18px;
   }
 }
 

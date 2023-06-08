@@ -235,6 +235,10 @@ namespace Rock.Web.Cache
 
             CacheManager.Clear();
             CacheWasUpdatedMessage.Publish<T>();
+
+            // This is somewhat temporary. In the future this should be updated
+            // to use it's own domain.
+            RockLogger.Log.WriteToLog( RockLogLevel.Debug, RockLogDomains.Other, $"Cache was cleared for {typeof(T).Name}. StackTrace: {Environment.StackTrace}" );
         }
 
         /// <summary>
@@ -365,16 +369,19 @@ namespace Rock.Web.Cache
         /// <param name="item">Type of the item.</param>
         private void UpdateCacheReferences( string key, string region, T item )
         {
+            var cacheReferenceItem = new RockCache.CacheKeyReference { Key = key, Region = region };
+
             if ( item is List<string> )
             {
-                RockCache.StringCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+                RockCache.StringConcurrentCacheKeyReferences.AddOrIgnore( cacheReferenceItem.ToString(), cacheReferenceItem );
             }
 
             if ( item is List<object> )
             {
-                RockCache.ObjectCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+                RockCache.ObjectConcurrentCacheKeyReferences.AddOrIgnore( cacheReferenceItem.ToString(), cacheReferenceItem );
             }
         }
+
         #endregion
     }
 

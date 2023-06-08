@@ -452,8 +452,6 @@ function onTaskCompleted( resultData )
                 communication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
                 communication.SenderPersonAlias = this.CurrentPersonAlias;
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
-                communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
                 communication.CommunicationType = CommunicationType.Email;
             }
             else
@@ -481,6 +479,14 @@ function onTaskCompleted( resultData )
                     PushOpenMessage = communication.PushOpenMessage,
                     PushOpenAction = communication.PushOpenAction
                 };
+            }
+
+            // If the communication is not yet edited by a user, apply any appropriate block default settings.
+            // This occurs for new communications or those passed in from another process, such as an action on a Person list from a data grid or report.
+            if ( communication.Status == CommunicationStatus.Transient )
+            {
+                communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
             }
 
             var allowedCommunicationTypes = GetAllowedCommunicationTypes();
@@ -1552,7 +1558,9 @@ function onTaskCompleted( resultData )
         /// </summary>
         private void ShowTemplateSelection()
         {
-            cpCommunicationTemplate.SetValue( GetBlockUserPreference( CATEGORY_COMMUNICATION_TEMPLATE ).AsIntegerOrNull() );
+            var preferences = GetBlockPersonPreferences();
+
+            cpCommunicationTemplate.SetValue( preferences.GetValue( CATEGORY_COMMUNICATION_TEMPLATE ).AsIntegerOrNull() );
             pnlTemplateSelection.Visible = true;
             nbTemplateSelectionWarning.Visible = false;
             SetNavigationHistory( pnlTemplateSelection );
@@ -1821,7 +1829,11 @@ function onTaskCompleted( resultData )
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCommunicationTemplate_SelectItem( object sender, EventArgs e )
         {
-            SetBlockUserPreference( CATEGORY_COMMUNICATION_TEMPLATE, cpCommunicationTemplate.SelectedValue );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( CATEGORY_COMMUNICATION_TEMPLATE, cpCommunicationTemplate.SelectedValue );
+            preferences.Save();
+
             BindTemplatePicker();
         }
 
@@ -2348,7 +2360,7 @@ function onTaskCompleted( resultData )
             {
                 var attachmentUrl = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFileAttachment.Key );
                 var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfEmailAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
-                sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
+                sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
             }
 
             sbAttachmentsHtml.AppendLine( "  </ul>" );

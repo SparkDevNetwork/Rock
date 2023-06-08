@@ -102,7 +102,7 @@ namespace Rock.Field.Types
                     .Select( v => new ListItemBag
                     {
                         Value = v.Guid.ToString(),
-                        Text = displayDescription ? v.Description : v.Value
+                        Text = v.Value
                     } )
                     .ToList();
 
@@ -265,7 +265,7 @@ namespace Rock.Field.Types
                     var definedValue = DefinedValueCache.Get( guid );
                     if ( definedValue != null )
                     {
-                        names.Add( useDescription ? definedValue.Description : definedValue.Value );
+                        names.Add( useDescription && definedValue.Description.IsNotNullOrWhiteSpace() ? definedValue.Description : definedValue.Value );
                     }
                 }
 
@@ -292,14 +292,14 @@ namespace Rock.Field.Types
                     var definedValue = DefinedValueCache.Get( guid );
                     if ( definedValue != null )
                     {
-                        names.Add( useDescription ? definedValue.Description : definedValue.Value );
+                        names.Add( useDescription && definedValue.Description.IsNotNullOrWhiteSpace() ? definedValue.Description : definedValue.Value );
                     }
                 }
 
                 formattedValue = names.AsDelimited( ", " );
             }
 
-            return formattedValue.Truncate( 100 );
+            return formattedValue.Truncate( CondensedTruncateLength );
         }
 
         #endregion
@@ -1057,7 +1057,7 @@ namespace Rock.Field.Types
                 if ( definedValue != null )
                 {
                     // sort by Order then Description/Value (using a padded string)
-                    var sortValue = definedValue.Order.ToString().PadLeft( 10 ) + "," + ( useDescription ? definedValue.Description : definedValue.Value );
+                    var sortValue = definedValue.Order.ToString().PadLeft( 10 ) + "," + ( useDescription && definedValue.Description.IsNotNullOrWhiteSpace() ? definedValue.Description : definedValue.Value );
                     return sortValue;
                 }
             }

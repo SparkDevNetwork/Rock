@@ -194,6 +194,16 @@ namespace Rock.SystemGuid
         public const string CONTENT_COLLECTION_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
 
         /// <summary>
+        /// The guid for the Rock.Model.ContentTopic entity
+        /// </summary>
+        public const string CONTENT_TOPIC = "CD4BE244-147E-4A90-9137-B35FC35B5A52";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentTopicDomain entity
+        /// </summary>
+        public const string CONTENT_TOPIC_DOMAIN = "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51";
+
+        /// <summary>
         /// The guid for the Rock.Model.DataView entity.
         /// </summary>
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
@@ -556,6 +566,21 @@ namespace Rock.SystemGuid
         public const string MOBILE_SECURITY_ONBOARD_PERSON = "C9B7F36A-F70A-4ABF-9422-B18E579F927F";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderList"/>.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_LIST = "35B1CA9F-DCD9-453F-892E-33E0E09E7CB3";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderDashboard"/>.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_DASHBOARD = "AD29BE7E-00B2-4AE3-8DA4-756C348E7AFA";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderEdit"/>.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_EDIT = "A07DA3CE-4598-4177-AD47-B0D1EBFB1E7A";
+
+        /// <summary>
         /// The obsidian event registration entry
         /// </summary>
         public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "06AAC065-BF89-483D-B671-80F0F72779A6";
@@ -614,6 +639,11 @@ namespace Rock.SystemGuid
         /// The GUID for the Rock.Follow.Event.PersonPrayerRequest entity
         /// </summary>
         public const string PERSON_PRAYER_REQUEST = "DAE05FAE-A26F-465A-836C-BAA0EFA1267B";
+
+        /// <summary>
+        /// The GUID for the Rock.Model.PersonPreference entity
+        /// </summary>
+        public const string PERSON_PREFERENCE = "FDCF766C-F36B-403B-89F3-7030DA65507E";
 
         /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity

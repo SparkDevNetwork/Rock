@@ -71,7 +71,7 @@
                              :items="campusBehaviorItems"
                              rules="required"
                              horizontal
-                             help="&lt;p&gt;Determines the role of campus with the experience.&lt;/p&gt;&lt;p&gt;Filter Schedules will only show the schedules that match the individual's location using the geofence of the campuses.&lt;/p&gt;&lt;p&gt;Dermine Campus will use the campus geofence to determine which campus to use for the individual's interactions.&lt;/p&gt;&lt;p&gt;Use Individual's Campus will not consider campus geofences and simply use the campus set on the individual.&lt;/p&gt;" />
+                             help="&lt;p&gt;Determines the role of campus with the experience.&lt;/p&gt;&lt;p&gt;Filter Schedules will only show the schedules that match the individual's location using the geofence of the campuses. It will also use the geofence to determine which campus to use for the individual's interactions.&lt;/p&gt;&lt;p&gt;Dermine Campus will use the campus geofence to determine which campus to use for the individual's interactions.&lt;/p&gt;&lt;p&gt;Use Individual's Campus will not consider campus geofences and simply use the campus set on the individual.&lt;/p&gt;" />
 
             <TransitionVerticalCollapse>
                 <div v-if="isDefaultCampusVisible" class="row">
@@ -235,6 +235,13 @@
             </TransitionVerticalCollapse>
         </SectionContainer>
 
+        <SectionContainer title="Experience Ended"
+                          description="This optional lava template will be shown after the experience has ended. The additional lava variables &quot;Occurrence&quot; and &quot;Experience&quot; are available.">
+            <CodeEditor v-model="experienceEndedTemplate"
+                        label="Template"
+                        mode="lava" />
+        </SectionContainer>
+
         <SectionContainer title="Audience Appearance"
                           description="The settings below can help override the default appearance on the audience visuals to provide a custom theme for the experience.">
             <div class="row">
@@ -371,6 +378,7 @@
     const campusBehavior = ref(props.modelValue.campusBehavior.toString());
     const defaultCampus = ref(props.modelValue.defaultCampus);
     const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const experienceEndedTemplate = ref(props.modelValue.experienceEndedTemplate ?? "");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const publicLabel = propertyRef(props.modelValue.publicLabel ?? "", "PublicLabel");
@@ -608,6 +616,7 @@
         updateRefValue(campusBehavior, props.modelValue.campusBehavior.toString());
         updateRefValue(defaultCampus, props.modelValue.defaultCampus);
         updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(experienceEndedTemplate, props.modelValue.experienceEndedTemplate ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(publicLabel, props.modelValue.publicLabel ?? "");
@@ -640,13 +649,14 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, campusBehavior, defaultCampus, schedules, ...propRefs], () => {
+    watch([attributeValues, campusBehavior, defaultCampus, experienceEndedTemplate, schedules, ...propRefs], () => {
         const newValue: InteractiveExperienceBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
             campusBehavior: toNumber(campusBehavior.value) as InteractiveExperienceCampusBehavior,
             defaultCampus: defaultCampus.value,
             description: description.value,
+            experienceEndedTemplate: experienceEndedTemplate.value,
             isActive: isActive.value,
             name: name.value,
             publicLabel: publicLabel.value,

@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
 using Rock.Financial;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -119,7 +120,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Attribute Keys
         /// </summary>
-        private static class AttributeKey
+        internal static class AttributeKey
         {
             public const string ProcessPersonBIAnalytics = "ProcessPersonBIAnalytics";
             public const string ProcessFamilyBIAnalytics = "ProcessFamilyBIAnalytics";
@@ -614,6 +615,17 @@ UPDATE [{analyticsTableName}]
 
             try
             {
+                // Remove any analytics records that do not correspond to an existing Person.
+                using ( var rockContext = GetNewConfiguredDataContext() )
+                {
+                    var recordsDeleted = rockContext.Database.ExecuteSqlCommand( "DELETE FROM [AnalyticsSourcePersonHistorical] WHERE [PersonId] NOT IN (SELECT [Id] FROM [Person])" );
+
+                    if ( recordsDeleted > 0 )
+                    {
+                        Log( RockLogLevel.Debug, $"Removed {recordsDeleted} history records that do not correspond to a Person record." );
+                    }
+                }
+
                 // Ensure that the Schema of AnalyticsSourcePersonHistorical matches the current fields for Attributes that are marked as IsAnalytic
                 UpdateAnalyticsSchemaForModel( analyticsSourcePersonHistoricalFields, personAnalyticAttributes, "AnalyticsSourcePersonHistorical", _personJobStats );
 
@@ -925,7 +937,7 @@ INSERT INTO [dbo].[AnalyticsSourcePersonHistorical] (
         @MaxExpireDate [ExpireDate],
         p.PrimaryFamilyId [PrimaryFamilyId],
         convert(INT, (convert(CHAR(8), BirthDate, 112))) [BirthDateKey],
-        dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
+        p.Age [Age], 
         1 [Count],
 " + propertyColumns.Select( a => $"        [{a.FromClause}]" ).ToList().AsDelimited( ",\n" ) + @",
         NEWID() [Guid]
@@ -1034,7 +1046,7 @@ AND asph.PersonId NOT IN ( -- Ensure that there isn't already a History Record f
         p.Id [PersonId],
         p.PrimaryFamilyId [PrimaryFamilyId],
         convert(INT, (convert(CHAR(8), BirthDate, 112))) [BirthDateKey],
-        dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
+        p.Age [Age], 
 ";
 
             updateETLScript += personValueColumns.Select( a => $"        [{a.ColumnName}]" ).ToList().AsDelimited( ",\n" );
@@ -1112,7 +1124,7 @@ WITH cte1 as (
     SELECT 
         p.Id [PersonId],
         p.PrimaryFamilyId [PrimaryFamilyId],
-        dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
+        p.Age [Age], 
 ";
 
             countCandidatePersonScript += propertyColumns.Select( a => $"        [{a.ColumnName}]" ).ToList().AsDelimited( ",\n" );

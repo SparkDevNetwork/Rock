@@ -33,6 +33,7 @@ using Rock.Security;
 using Rock.ViewModels;
 using Rock.ViewModels.Entities;
 using Rock.Web.UI.Controls;
+using Rock.Attribute;
 
 namespace Rock.Web.Cache
 {
@@ -202,7 +203,19 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <value><c>true</c> if this attribute supports persisted values; otherwise, <c>false</c>.</value>
         [DataMember]
-        public bool IsPersistedValueSupported { get; private set; }
+        public bool IsPersistedValueSupported
+        {
+            get
+            {
+                if ( !_isPersistedValueSupported.HasValue )
+                {
+                    _isPersistedValueSupported = FieldType.Field?.IsPersistedValueSupported( ConfigurationValues ) == true;
+                }
+
+                return _isPersistedValueSupported.Value;
+            }
+        }
+        private bool? _isPersistedValueSupported;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is multi value.
@@ -344,7 +357,19 @@ namespace Rock.Web.Cache
         /// Gets a value indicating whether the <see cref="FieldType"/> is a referenced entity field type.
         /// </summary>
         /// <value><c>true</c> if this the <see cref="FieldType"/> is a referenced entity field type; otherwise, <c>false</c>.</value>
-        public bool IsReferencedEntityFieldType { get; private set; }
+        public bool IsReferencedEntityFieldType
+        {
+            get
+            {
+                if ( !_isReferencedEntityFieldType.HasValue )
+                {
+                    _isReferencedEntityFieldType = FieldType?.Field is IEntityReferenceFieldType;
+                }
+
+                return _isReferencedEntityFieldType.Value;
+            }
+        }
+        private bool? _isReferencedEntityFieldType;
 
         /// <summary>
         /// Gets the categories.
@@ -458,7 +483,13 @@ namespace Rock.Web.Cache
         internal static AttributeCache[] GetByEntityType( int? entityTypeId )
         {
             var attributeIds = EntityTypeAttributesCache.Get( entityTypeId ).AttributeIds;
-            return attributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
+
+            if ( attributeIds.Length == 0 )
+            {
+                return new AttributeCache[0];
+            }
+
+            return GetMany( attributeIds, null ).ToArray();
         }
 
         /// <summary>
@@ -546,9 +577,6 @@ namespace Rock.Web.Cache
             }
 
             CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
-
-            IsPersistedValueSupported = FieldType.Field?.IsPersistedValueSupported( ConfigurationValues ) == true;
-            IsReferencedEntityFieldType = FieldType?.Field is IEntityReferenceFieldType;
         }
 
         /// <summary>
@@ -805,6 +833,22 @@ namespace Rock.Web.Cache
         public static List<AttributeCache> GetByEntityTypeQualifier( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, bool includeInactive )
         {
             return EntityTypeAttributesCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, includeInactive ).ToList();
+        }
+
+        /// <summary>
+        /// Gets an ordered list of attributes that match the <paramref name="entityQualifierColumn"/>
+        /// and <paramref name="entityQualifierValue"/> values for the <paramref name="entityTypeId"/>.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        [RockInternal( "1.16" )]
+        internal static List<AttributeCache> GetOrderedGridAttributes( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
+        {
+            return GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, false )
+                .Where( a => a.IsGridColumn )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ThenBy( a => a.Id )
+                .ToList();
         }
 
         /// <summary>

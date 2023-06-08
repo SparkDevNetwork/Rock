@@ -28,8 +28,17 @@ namespace Rock.Tests.Shared
         // A Guid Reference that does not match any entity in a Rock database.
         public const string NoMatch = "00000000-0000-0000-0000-000000000001";
 
+        public static class Crm
+        {
+            public const string CampusMain = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
+            public const string CampusSouth = "5434F90B-BB91-4A34-8B09-8C117A9E5D95";
+            public const string CampusSteppingStone = "089844AF-6310-4C20-9434-A845F982B0C5";
+        }
+
         public static class Category
         {
+            public const string DataViewLocations = "1D45C0A7-3DE8-428C-94A8-14E5ED5E2E36";
+
             public const string PrayerRequestAllChurch = "5A94E584-35F0-4214-91F1-D72531CC6325";
             public const string PrayerRequestFinancesAndJob = "C35752E2-A575-4182-8B5A-8AE9D0694B97";
             public const string PrayerRequestComfortAndGrief = "D12837CF-EEE7-4822-9899-36E8884CD848";
@@ -59,12 +68,20 @@ namespace Rock.Tests.Shared
             public static string UnknownPerson1MobileNumber = "4807770101";
         }
 
-        public static class Groups
+        public static class DataViews
         {
             // A DataView that returns all of the locations outside the state of Arizona.
-            public static string DataViewLocationsOutsideArizonaGuid = "14B1854D-4F45-4F4D-AFFF-C0A1E06353DF";
-            public static string DataViewLocationsInsideArizonaGuid = "C39B353E-3E44-42C0-9D85-2107FB5E8C04";
+            public static string LocationsOutsideArizona = "14B1854D-4F45-4F4D-AFFF-C0A1E06353DF";
+            public static string LocationsInsideArizona = "C39B353E-3E44-42C0-9D85-2107FB5E8C04";
+        }
 
+        public static class Events
+        {
+            public const string EventIdentifierRockSolidFinancesClass = "Rock Solid Finances Class";
+        }
+
+        public static class Groups
+        {
             public static string CategoryGroupsGuid = "5CF5224C-F01D-4904-91D0-E58B723F0D2A";
             public static string CategoryLocationsGuid = "1D45C0A7-3DE8-428C-94A8-14E5ED5E2E36";
 
@@ -76,6 +93,9 @@ namespace Rock.Tests.Shared
         public static class TestPeople
         {
             public static string TedDecker = "8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4";
+            public static string CindyDecker = "B71494DB-D809-451A-A950-28898D0FD92C";
+            public static string AlexDecker = "27919690-3CCE-4FA6-95C4-CD21419EB51F";
+
             public static string BillMarble = "1EA811BB-3118-42D1-B020-32A82BC8081A";
             public static string AlishaMarble = "69DC0FDC-B451-4303-BD91-EF17C0015D23";
 
@@ -83,7 +103,6 @@ namespace Rock.Tests.Shared
             public static string BrianJones = "3D7F6605-3666-4AB5-9F4E-D7FEBF93278E";
 
             public static string BenJones = "3C402382-3BD2-4337-A996-9E62F1BAB09D";
-            //public static string BenJonesStepAlphaAttenderGuid = "D5DDBBE4-9D62-4EDE-840D-E9DAB8F99430";
 
             public static string MariahJackson = "9C2A020B-CF34-403E-A948-3E91FDFB958B";
             public static string MaddieLowe = "C398A8E3-C9BC-4017-A3F6-7C2BFF654056";
@@ -118,6 +137,8 @@ namespace Rock.Tests.Shared
 
             public const string BenJonesComment1 = "7C5173DF-B11B-4EF2-8CCB-30DC53A4522B";
             public const string BenJonesComment2 = "4619DEFF-DA42-4A75-AA24-77A7F3292EBA";
+
+            public const string SarahSimmonsComment1 = "1CD643A0-DED5-4550-81C7-A6C6CACF0C87";
         }
 
         public static class Schedules
@@ -213,6 +234,5 @@ namespace Rock.Tests.Shared
             public const string Fluid = "605445FE-6ECC-4E67-9A95-98F7173F7389";
 
         }
-
     }
 }

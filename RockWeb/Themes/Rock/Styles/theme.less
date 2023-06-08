@@ -13,7 +13,7 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 @import "_root.less";
-
+@import "_new-group-scheduler.less";
 
 @import "_navbar.less";
 /*
@@ -426,6 +426,7 @@ textarea,
   display: inline-flex;
   padding: @label-padding;
   font-weight: 500; // make the font light
+  gap: .5em;
 }
 
 .grid-filter {
@@ -1710,6 +1711,33 @@ td.grid-actions {
   transition: .2s color;
   &:hover {
     color: @brand-success;
+  }
+}
+
+@media (max-width: @grid-float-breakpoint-max) {
+  .main-content {
+    padding-left: 0;
+    padding-right: 0;
+
+    .page-header {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+  
+
+  #page-content {
+    // Don't add overflow hidden because it breaks sticky positioning
+    > .row {
+      margin-left: 0;
+      margin-right: 0;
+
+      > .col,
+      > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
   }
 }
 

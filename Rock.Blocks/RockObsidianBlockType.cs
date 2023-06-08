@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Cms;
 using Rock.Web.Cache;
 
@@ -74,6 +75,14 @@ namespace Rock.Blocks
             }
         }
 
+        /// <summary>
+        /// Gets the initial height of the block. This is used during the
+        /// momentary render stage where the HTML has rendered but the JavaScript
+        /// has not yet run.
+        /// </summary>
+        /// <value>The initial height of the block.</value>
+        protected virtual int? InitialBlockHeight => 400;
+
         #endregion Properties
 
         #region Methods
@@ -123,16 +132,24 @@ namespace Rock.Blocks
         public string GetControlMarkup()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
+            var rootElementStyle = "";
 
             if ( !IsBrowserSupported() )
             {
                 return BrowserNotSupportedMarkup;
             }
 
+            var initialHeight = InitialBlockHeight;
+
+            if ( initialHeight.HasValue )
+            {
+                rootElementStyle += $" --initial-block-height: {initialHeight.Value}px";
+            }
+
             var config = GetConfigBag( rootElementId );
 
             return
-$@"<div id=""{rootElementId}""></div>
+$@"<div id=""{rootElementId}"" class=""obsidian-block-loading"" style=""{rootElementStyle.Trim()}""></div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
@@ -160,13 +177,21 @@ Obsidian.onReady(() => {{
                 configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
             }
 
+            var blockPreferences = new ObsidianBlockPreferencesBag
+            {
+                EntityTypeKey = EntityTypeCache.Get<Rock.Model.Block>().IdKey,
+                EntityKey = BlockCache.IdKey,
+                Values = GetBlockPersonPreferences().GetAllValueBags().ToList()
+            };
+
             return new ObsidianBlockConfigBag
             {
                 BlockFileUrl = BlockFileUrl,
                 RootElementId = rootElementId,
                 BlockGuid = BlockCache.Guid,
                 ConfigurationValues = GetBlockInitialization( RockClientType.Web ),
-                CustomConfigurationActions = configActions
+                CustomConfigurationActions = configActions,
+                Preferences = blockPreferences
             };
 
         }

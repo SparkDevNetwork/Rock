@@ -42,6 +42,7 @@ using Rock.Tasks;
 using Rock.Utility;
 using Rock.RealTime.Topics;
 using Rock.RealTime;
+using Rock.Logging;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -1430,7 +1431,7 @@ namespace RockWeb.Blocks.Crm
             public int TaskCount { get; set; }
 
             /// <summary>
-            /// The maximum size of a processing batch size formaximum number work items assigned to each task.
+            /// The maximum size of a processing batch size for maximum number work items assigned to each task.
             /// </summary>
             public int BatchSize { get; set; }
 
@@ -1459,7 +1460,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             /// <summary>
-            /// Gets a unique identifier for this instance of the processer that can be used for trace and diagnostic purposes.
+            /// Gets a unique identifier for this instance of the processor that can be used for trace and diagnostic purposes.
             /// </summary>
             public string InstanceId { get; set; }
 
@@ -1873,7 +1874,7 @@ namespace RockWeb.Blocks.Crm
                         }
                         else
                         {
-                            finalStatus = string.Format( "{0} {1} updated with {2} error(s). Please look in the exception log for more details. ({3:0.0}s)",
+                            finalStatus = string.Format( "{0} {1} updated with {2} error(s). ({3:0.0}s)",
                                 PersonIdList.Count().ToString( "N0" ), ( PersonIdList.Count() > 1 ? "people were" : "person was" ),
                                 _errorCount,
                                 elapsedTime.TotalSeconds );
@@ -2360,12 +2361,11 @@ namespace RockWeb.Blocks.Crm
                                             }
                                             else
                                             {
-                                                // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
+                                                // Validation errors will get added to the ValidationResults collection.
+                                                // Add those results to the log and then move on to the next person.
                                                 var validationMessage = string.Join( ",", groupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() );
-                                                var person = new PersonService( rockContext ).GetNoTracking( groupMember.PersonId );
-                                                var ex = new GroupMemberValidationException( string.Format( "Unable to add {0} to group: {1}", person, validationMessage ) );
                                                 Interlocked.Increment( ref _errorCount );
-                                                ExceptionLogService.LogException( ex );
+                                                RockLogger.Log.Information( RockLogDomains.Group, validationMessage );
                                             }
                                         }
 

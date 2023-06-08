@@ -25,7 +25,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import EmailSource from "../Shared/emailSource";
 import SegmentedPicker from "../Shared/segmentedPicker";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
-import { FormNotificationEmail, FormNotificationEmailDestination } from "../Shared/types";
+import { FormNotificationEmail, FormNotificationEmailDestination } from "../Shared/types.partial";
 
 const notificationDestinationOptions: ListItemBag[] = [
     {

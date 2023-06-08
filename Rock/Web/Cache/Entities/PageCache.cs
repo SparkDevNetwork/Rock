@@ -385,6 +385,39 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets or sets the rate limit request per period.
+        /// </summary>
+        /// <value>
+        /// The rate limit request per period.
+        /// </value>
+        [DataMember]
+        public int? RateLimitRequestPerPeriod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rate limit period.
+        /// </summary>
+        /// <value>
+        /// The rate limit period.
+        /// </value>
+        [DataMember]
+        public int? RateLimitPeriod { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is rate limited.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is rate limited; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsRateLimited
+        {
+            get
+            {
+                return RateLimitPeriod != null && RateLimitRequestPerPeriod != null;
+            }
+        }
+
+        /// <summary>
         /// Gets the parent page.
         /// </summary>
         /// <value>
@@ -695,6 +728,8 @@ namespace Rock.Web.Cache
             IconBinaryFileId = page.IconBinaryFileId;
             AdditionalSettings = page.AdditionalSettings;
             MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
+            RateLimitPeriod = page.RateLimitPeriod;
+            RateLimitRequestPerPeriod = page.RateLimitRequestPerPeriod;
 
             PageContexts = new Dictionary<string, string>();
             page.PageContexts?.ToList().ForEach( c => PageContexts.Add( c.Entity, c.IdParameter ) );

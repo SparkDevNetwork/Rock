@@ -193,6 +193,14 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             if ( !Page.IsPostBack )
             {
+                // Prevent the Save button from being clicked if already clicked.
+                // This duration ensures the button is only disabled for 5 seconds,
+                // in case an exception is thrown from the server.
+                var disabledDuration = 5000;
+
+                // This needs to be set in OnLoad since ValidationGroup is not available in the OnInit event handler.
+                btnSave.OnClientClick = $"return workflowTypeDetailHelper.onButtonClicked('{btnSave.ClientID}', '{btnSave.ValidationGroup}', {disabledDuration})";
+
                 ShowDetail();
             }
             else
@@ -1449,7 +1457,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( workflowType.ProcessingIntervalSeconds.HasValue )
             {
                 int mins = workflowType.ProcessingIntervalSeconds.Value / 60;
-                tbProcessingInterval.Text = mins.ToString( "N0" );
+                tbProcessingInterval.Text = mins.ToString();
             }
             else
             {

@@ -315,20 +315,25 @@ namespace Rock.Lava.Fluid
             options.Filters.AddFilter( "Join", global::Fluid.Filters.ArrayFilters.Join );
             options.Filters.AddFilter( "First", global::Fluid.Filters.ArrayFilters.First );
             options.Filters.AddFilter( "Last", global::Fluid.Filters.ArrayFilters.Last );
+            options.Filters.AddFilter( "Concat", global::Fluid.Filters.ArrayFilters.Concat );
             options.Filters.AddFilter( "Map", global::Fluid.Filters.ArrayFilters.Map );
             options.Filters.AddFilter( "Reverse", global::Fluid.Filters.ArrayFilters.Reverse );
             options.Filters.AddFilter( "Size", global::Fluid.Filters.ArrayFilters.Size );
             options.Filters.AddFilter( "Sort", global::Fluid.Filters.ArrayFilters.Sort );
+            options.Filters.AddFilter( "SortNatural", global::Fluid.Filters.ArrayFilters.SortNatural );
             options.Filters.AddFilter( "Uniq", global::Fluid.Filters.ArrayFilters.Uniq );
             options.Filters.AddFilter( "Where", global::Fluid.Filters.ArrayFilters.Where );
 
             options.Filters.AddFilter( "Default", global::Fluid.Filters.MiscFilters.Default );
             options.Filters.AddFilter( "Date", global::Fluid.Filters.MiscFilters.Date );
+            options.Filters.AddFilter( "Compact", global::Fluid.Filters.MiscFilters.Compact );
             options.Filters.AddFilter( "UnescapeDataString", global::Fluid.Filters.MiscFilters.UrlDecode );
             options.Filters.AddFilter( "EscapeDataString", global::Fluid.Filters.MiscFilters.UrlEncode );
+            options.Filters.AddFilter( "EscapeOnce", global::Fluid.Filters.MiscFilters.EscapeOnce );
             options.Filters.AddFilter( "StripHtml", global::Fluid.Filters.MiscFilters.StripHtml );
             options.Filters.AddFilter( "Escape", global::Fluid.Filters.MiscFilters.Escape );
 
+            options.Filters.AddFilter( "Abs", global::Fluid.Filters.NumberFilters.Abs );
             options.Filters.AddFilter( "AtLeast", global::Fluid.Filters.NumberFilters.AtLeast );
             options.Filters.AddFilter( "AtMost", global::Fluid.Filters.NumberFilters.AtMost );
             options.Filters.AddFilter( "Ceiling", global::Fluid.Filters.NumberFilters.Ceil );
@@ -337,6 +342,7 @@ namespace Rock.Lava.Fluid
             options.Filters.AddFilter( "Minus", global::Fluid.Filters.NumberFilters.Minus );
             options.Filters.AddFilter( "Modulo", global::Fluid.Filters.NumberFilters.Modulo );
             options.Filters.AddFilter( "Plus", global::Fluid.Filters.NumberFilters.Plus );
+            options.Filters.AddFilter( "Round", global::Fluid.Filters.NumberFilters.Round );
             options.Filters.AddFilter( "Times", global::Fluid.Filters.NumberFilters.Times );
 
             options.Filters.AddFilter( "Append", global::Fluid.Filters.StringFilters.Append );

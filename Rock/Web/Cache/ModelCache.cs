@@ -43,7 +43,7 @@ namespace Rock.Web.Cache
         where TT : Model<TT>, new()
     {
         /// <summary>
-        /// Set's the cached objects properties from the model/entities properties.
+        /// Sets the cached object's properties from the model/entity's properties.
         /// </summary>
         /// <param name="entity">The entity.</param>
         public override void SetFromEntity( IEntity entity )
@@ -69,7 +69,7 @@ namespace Rock.Web.Cache
 
             // If this model implements IHasAttributes
             var attributeModel = entity as IHasAttributes;
-            if ( attributeModel == null )
+            if ( attributeModel == null || typeof ( T ) == typeof( AttributeCache ) )
             {
                 return;
             }
