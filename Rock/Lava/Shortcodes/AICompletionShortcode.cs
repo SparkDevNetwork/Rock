@@ -82,7 +82,7 @@ namespace Rock.Lava.Shortcodes
 <p>This shortcode allows you to interact with AI models to provide dynamic responses to various prompts you provide. These APIs can be
 slow. It's recommended that they not be used on public facing websites. They're better used in back-end or batch processes.</p>
 
-<pre>{[ mediaplayer media:'18' ]}{[ endmediaplayer ]}</pre>
+<pre>{[ aicompletion ]}give me three options for greeting ted decker{[ endaicompletion ]}</pre>
 
 <p>Let's take a look at some of the parameters and options that are available so
 so you can customize this to be exactly what you want.</p>

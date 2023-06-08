@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class AIShortcodeCategory : IMigrationMetadata
+    public sealed partial class AiSetup : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(UpdateShortTermServingProjects));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AiSetup));
         
         string IMigrationMetadata.Id
         {
-            get { return "202303272228476_AIShortcodeCategory"; }
+            get { return "202306082032176_AiSetup"; }
         }
         
         string IMigrationMetadata.Source
