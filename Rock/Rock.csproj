@@ -540,6 +540,19 @@
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
+    <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsRequestMessage.cs" />
+    <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsRequest.cs" />
+    <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsResponse.cs" />
+    <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsResponseChoice.cs" />
+    <Compile Include="AI\Classes\TextCompletions\TextCompletionsRequest.cs" />
+    <Compile Include="AI\Classes\TextCompletions\TextCompletionsResponse.cs" />
+    <Compile Include="AI\Classes\TextCompletions\TextCompletionsResponseChoice.cs" />
+    <Compile Include="AI\Classes\Moderations\ModerationsRequest.cs" />
+    <Compile Include="AI\Classes\Moderations\ModerationsResponseCategories.cs" />
+    <Compile Include="AI\Classes\Moderations\ModerationsResponse.cs" />
+    <Compile Include="AI\Provider\AIProviderComponent.cs" />
+    <Compile Include="AI\Provider\AIProviderContainer.cs" />
+    <Compile Include="AI\Utilities\AIHelpers.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\AddressFieldAttribute.cs" />
@@ -958,6 +971,7 @@
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
+    <Compile Include="Lava\Shortcodes\AICompletionShortcode.cs" />
     <Compile Include="Lava\WebsiteLavaHost.cs" />
     <Compile Include="Logging\RockLoggerMemoryBuffer.cs" />
     <Compile Include="Model\CMS\ContentTopicDomain\ContentTopicDomain.cs" />
