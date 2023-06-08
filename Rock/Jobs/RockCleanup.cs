@@ -3063,7 +3063,7 @@ END
         /// <returns></returns>
         private int RemoveUnneededDataViewPersistedValues()
         {
-            const string UpdateAgeAndAgeRangeSql = @"
+            var removePersistedDataViewValueSql = @"
     DECLARE @dataViewIds table (id int);
     
     INSERT INTO @dataViewIds
@@ -3081,7 +3081,7 @@ END
             using ( var rockContext = new RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
-                int result = rockContext.Database.ExecuteSqlCommand( UpdateAgeAndAgeRangeSql );
+                int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
                 return result;
             }
         }
