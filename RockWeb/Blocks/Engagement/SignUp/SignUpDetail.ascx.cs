@@ -1437,7 +1437,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         else
                         {
                             // If we got here, this means:
-                            //  1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and exisingGroupLocation now point to the same object).
+                            //  1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and existingGroupLocation now point to the same object).
                             //  2) We found an existing Schedule based on the previous Schedule Id.
                             //  3) The last thing we need to do is compare the existing Schedule with the new/edited instance.
 

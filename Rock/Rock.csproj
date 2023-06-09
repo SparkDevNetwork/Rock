@@ -4088,6 +4088,8 @@
     <Compile Include="Workflow\Action\Groups\AddNoteToGroupMember.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroupAttribute.cs" />
+    <Compile Include="Workflow\Action\Groups\AddSchedule.cs" />
+    <Compile Include="Workflow\Action\Groups\AddSignUpOpportunity.cs" />
     <Compile Include="Workflow\Action\Groups\GroupGetChildGroupForCampus.cs" />
     <Compile Include="Workflow\Action\Groups\GroupMemberRequirementMet.cs" />
     <Compile Include="Workflow\Action\Groups\PostAttendanceToGroup.cs" />
