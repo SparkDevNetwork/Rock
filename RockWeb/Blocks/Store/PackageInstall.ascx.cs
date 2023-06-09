@@ -314,7 +314,7 @@ namespace RockWeb.Blocks.Store
 
             if ( !wasActionTaken )
             {
-                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Package Installation Error</strong> Package version {0} was installed without completing any action.  Please contact the package administrator for support.</div>", installStep.VersionLabel );
+                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Package Installation Error</strong> Package version {0} failed to install because no actions were completed.  This may be due to an improperly packaged plugin file.  Please contact the package administrator for support.</div>", installStep.VersionLabel );
                 return false;
             }
 
