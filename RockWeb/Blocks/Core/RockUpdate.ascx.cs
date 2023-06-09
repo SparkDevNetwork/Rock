@@ -111,7 +111,10 @@ namespace RockWeb.Blocks.Core
                 nbCompileThreadsIssue.Visible = false;
             }
 
+            HasPendingRunOnceJobs();
+
             DisplayRockVersion();
+
             if ( !IsPostBack )
             {
                 btnIssues.NavigateUrl = rockUpdateService.GetRockEarlyAccessRequestUrl();
@@ -510,16 +513,82 @@ namespace RockWeb.Blocks.Core
         protected void mdConfirmInstall_SaveClick( object sender, EventArgs e )
         {
             nbCompileThreadsIssue.Visible = false;
+            nbPendingMigrationJobs.Visible = false;
 
             if ( Global.CompileThemesThread.IsAlive || Global.BlockTypeCompilationThread.IsAlive )
             {
                 // Show message here and return
                 nbCompileThreadsIssue.Visible = true;
+                mdConfirmInstall.Hide();
+                return;
+            }
+
+            if ( HasPendingRunOnceJobs() )
+            {
+                mdConfirmInstall.Hide();
                 return;
             }
 
             mdConfirmInstall.Hide();
             Update( hdnInstallVersion.Value );
+        }
+
+        private Boolean HasPendingRunOnceJobs()
+        {
+            var pendingStartupRunOnceJobs = new Rock.Model.ServiceJobService( new Rock.Data.RockContext() )
+                .Queryable()
+                .Where( j => Rock.Migrations.RockStartup.DataMigrationsStartup.startupRunOnceJobGuids.Contains( j.Guid ) )
+                .Select( j => j.Name )
+                .ToList();
+
+            var pendingScheduledRunOnceJobs = new Rock.Model.ServiceJobService( new Rock.Data.RockContext() )
+                .Queryable()
+                .Where( j => Rock.Migrations.RockStartup.DataMigrationsStartup.scheduledRunOnceJobGuids.Contains( j.Guid)  )
+                .Select( j => j.Name )
+                .ToList();
+
+            if ( pendingStartupRunOnceJobs.Any() || pendingScheduledRunOnceJobs.Any() )
+            {
+                // Show message and return without updating
+                nbPendingMigrationJobs.Text = CreatePendingRunOnceJobsMessage( pendingStartupRunOnceJobs, pendingScheduledRunOnceJobs );
+                nbPendingMigrationJobs.Visible = true;
+                return true;
+            }
+
+            nbPendingMigrationJobs.Visible = false;
+            return false;
+        }
+
+        private string CreatePendingRunOnceJobsMessage( List<string> pendingStartupRunOnceJobs, List<string> pendingScheduledRunOnceJobs )
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine( "<strong><i class=\"fa fa-exclamation-triangle\"></i> Cannot Update Rock: Migration Jobs Pending</strong>" );
+            stringBuilder.AppendLine( "<p>" );
+            stringBuilder.AppendLine( "The following jobs need to complete before updating to the latest version of Rock.<br>" );
+
+            if ( pendingStartupRunOnceJobs.Any() )
+            {
+                stringBuilder.AppendLine( "These jobs run automatically when Rock starts after an update and should finish soon.<br>" );
+                stringBuilder.AppendLine( "<ul>" );
+
+                pendingStartupRunOnceJobs.ForEach( j => stringBuilder.AppendLine( $"<li>{j}</li>" ) );
+
+                stringBuilder.AppendLine( "</ul>" );
+            }
+
+            if ( pendingScheduledRunOnceJobs.Any() )
+            {
+                stringBuilder.AppendLine( "These jobs are scheduled to run at 2 AM when usage is low because they could affect performance. If needed they can be run manually by going to Admin Tools --> System Settings --> Jobs Administration.<br>" );
+                stringBuilder.AppendLine( "<ul>" );
+
+                pendingScheduledRunOnceJobs.ForEach( j => stringBuilder.AppendLine( $"<li>{j}</li>" ) );
+
+                stringBuilder.AppendLine( "</ul>" );
+            }
+
+            stringBuilder.AppendLine( "</p>" );
+
+            return stringBuilder.ToString();
         }
     }
 }
