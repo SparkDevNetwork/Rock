@@ -360,17 +360,19 @@
     display: inline-flex;
     justify-content: center;
     align-items: stretch;
-    border-radius: 4px;
     line-height: 1;
     color: var(--theme-darker);
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button {
+    display: inline-flex;
+    justify-content: center;
     border: 1px solid var(--theme-light);
     background-color: transparent;
     padding: 8px 12px;
     font-size: 14px;
     line-height: 16px;
+    min-width: 2.75em;
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button:hover {
@@ -378,7 +380,6 @@
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button ~ button {
-    margin-right: 0;
     margin-left: -1px;
 }
 
