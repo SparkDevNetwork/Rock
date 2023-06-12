@@ -15,7 +15,11 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -140,6 +144,58 @@ namespace Rock.Blocks
         protected Person GetCurrentPerson()
         {
             return RequestContext.CurrentPerson;
+        }
+
+        /// <summary>
+        /// Gets the entity object for this block based on the configuration of the
+        /// <see cref="Rock.Web.UI.ContextAwareAttribute"/> attribute.
+        /// </summary>
+        /// <returns>A reference to the <see cref="IEntity"/> or <c>null</c> if none was found.</returns>
+        public IEntity GetContextEntity()
+        {
+            var type = GetContextEntityType();
+
+            if ( type == null )
+            {
+                return null;
+            }
+
+            return RequestContext.GetContextEntity( type );
+        }
+
+        /// <summary>
+        /// Gets the entity type for this block based on the configuration of the
+        /// <see cref="Rock.Web.UI.ContextAwareAttribute"/> attribute.
+        /// </summary>
+        /// <returns>A <see cref="Type"/> that identifies the expected context entity type or <c>null</c> if not configured.</returns>
+        public Type GetContextEntityType()
+        {
+            var contextAttribute = this.GetType().GetCustomAttribute<Rock.Web.UI.ContextAwareAttribute>();
+
+            if ( contextAttribute == null )
+            {
+                return null;
+            }
+
+            if ( contextAttribute.IsConfigurable )
+            {
+                var contextEntityTypeGuid = GetAttributeValue( "ContextEntityType" ).AsGuidOrNull();
+
+                if ( !contextEntityTypeGuid.HasValue )
+                {
+                    return null;
+                }
+
+                return EntityTypeCache.Get( contextEntityTypeGuid.Value )
+                    ?.GetEntityType();
+            }
+            else
+            {
+                return contextAttribute.Contexts
+                    .FirstOrDefault()
+                    ?.EntityType
+                    ?.GetEntityType();
+            }
         }
 
         #endregion
