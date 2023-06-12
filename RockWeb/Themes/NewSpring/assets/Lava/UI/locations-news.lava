@@ -16,7 +16,10 @@
 
 //- Filter news by campus
 {% for item in datasetItems %}
-    {% if item.Campuses == '' or item.Campuses contains campusName %}
+
+    {% assign campusesArray = item.Campuses | Split:',' | RemoveFromArray:'' %}
+    {% assign campusCount = campusesArray | Size %}
+    {% if campusCount == 0 or campusesArray contains campusName %}
     {% else %}
         {% assign datasetItems = datasetItems | RemoveFromArray:item %}
     {% endif %}
