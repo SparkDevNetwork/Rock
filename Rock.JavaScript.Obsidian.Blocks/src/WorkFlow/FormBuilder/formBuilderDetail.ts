@@ -18,7 +18,7 @@
 import { nextTick } from "vue";
 import { computed, defineComponent, ref, watch } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
