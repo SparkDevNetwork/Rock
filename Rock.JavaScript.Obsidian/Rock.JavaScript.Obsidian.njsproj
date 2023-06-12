@@ -55,7 +55,7 @@
     <Content Include="Framework\Controls\dayOfWeekPicker.obs" />
     <Content Include="Framework\Controls\definedValuePicker.obs" />
     <Content Include="Framework\Controls\entityTag.obs" />
-    <Content Include="Framework\Controls\entityTagList.obs" />
+    <Content Include="Framework\Controls\tagList.obs" />
     <Content Include="Framework\Controls\ethnicityPicker.obs" />
     <Content Include="Framework\Controls\eventCalendarPicker.obs" />
     <Content Include="Framework\Controls\geoPicker.obs" />

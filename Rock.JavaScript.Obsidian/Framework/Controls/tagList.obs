@@ -92,7 +92,7 @@
     import { nextTick, PropType, Ref, ref, watch } from "vue";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
-    import Tag from "./entityTag.obs";
+    import Tag from "./tag.obs";
     import type { SelectHandler } from "ant-design-vue/lib/vc-select/Select.d";
     import type { SelectOption } from "@Obsidian/Types/Controls/autocomplete.d";
 

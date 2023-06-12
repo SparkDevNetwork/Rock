@@ -17,7 +17,7 @@
 
 import { computed, defineComponent, nextTick, ref } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import EntityTagList from "@Obsidian/Controls/entityTagList.obs";
+import EntityTagList from "@Obsidian/Controls/tagList.obs";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Badges/badgesConfigurationBox";
 import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";

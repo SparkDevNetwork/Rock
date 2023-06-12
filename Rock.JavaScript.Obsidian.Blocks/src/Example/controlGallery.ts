@@ -106,7 +106,7 @@ import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
-import EntityTagList from "@Obsidian/Controls/entityTagList.obs";
+import TagList from "@Obsidian/Controls/tagList.obs";
 import Following from "@Obsidian/Controls/following";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
 import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
@@ -3058,13 +3058,13 @@ const copyButtonGallery = defineComponent({
 });
 
 /** Demonstrates entity tag list */
-const entityTagListGallery = defineComponent({
-    name: "EntityTagListGallery",
+const tagListGallery = defineComponent({
+    name: "TagListGallery",
     components: {
         GalleryAndResult,
         CheckBox,
         RockButton,
-        EntityTagList
+        TagList
     },
     setup() {
         const store = useStore();
@@ -3078,8 +3078,8 @@ const entityTagListGallery = defineComponent({
             entityTypeGuid: EntityType.Person,
             entityKey: store.state.currentPerson?.idKey ?? "",
             btnType: BtnType.Primary,
-            importCode: getSfcControlImportPath("entityTagList"),
-            exampleCode: `<EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
+            importCode: getSfcControlImportPath("tagList"),
+            exampleCode: `<TagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
         };
     },
     template: `
@@ -3088,7 +3088,7 @@ const entityTagListGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode">
 
-    <EntityTagList
+    <TagList
         :entityTypeGuid="entityTypeGuid"
         :entityKey="entityKey"
         :disabled="disabled"
@@ -8153,7 +8153,7 @@ const controlGalleryComponents: Record<string, Component> = [
     categoryPickerGallery,
     locationItemPickerGallery,
     copyButtonGallery,
-    entityTagListGallery,
+    tagListGallery,
     followingGallery,
     achievementTypePickerGallery,
     badgeComponentPickerGallery,
