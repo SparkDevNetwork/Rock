@@ -106,7 +106,7 @@ import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
-import EntityTagList from "@Obsidian/Controls/entityTagList";
+import EntityTagList from "@Obsidian/Controls/entityTagList.obs";
 import Following from "@Obsidian/Controls/following";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
 import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
@@ -3063,16 +3063,22 @@ const entityTagListGallery = defineComponent({
     components: {
         GalleryAndResult,
         CheckBox,
+        RockButton,
         EntityTagList
     },
     setup() {
         const store = useStore();
 
         return {
+            control: ref(null),
             disabled: ref(false),
+            delaySave: ref(false),
+            showInactive: ref(false),
+            disallowNewTags: ref(false),
             entityTypeGuid: EntityType.Person,
             entityKey: store.state.currentPerson?.idKey ?? "",
-            importCode: getControlImportPath("entityTagList"),
+            btnType: BtnType.Primary,
+            importCode: getSfcControlImportPath("entityTagList"),
             exampleCode: `<EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
         };
     },
@@ -3081,10 +3087,67 @@ const entityTagListGallery = defineComponent({
     :value="value"
     :importCode="importCode"
     :exampleCode="exampleCode">
-    <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
+
+    <EntityTagList
+        :entityTypeGuid="entityTypeGuid"
+        :entityKey="entityKey"
+        :disabled="disabled"
+        :showInactiveTags="showInactive"
+        :disallowNewTags="disallowNewTags"
+        :delaySave="delaySave"
+        ref="control" />
 
     <template #settings>
-        <CheckBox label="Disabled" v-model="disabled" />
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox label="Disabled" v-model="disabled" help="Makes it read-only. You can't add or remove tags if it's disabled." />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Delay Saving Value" v-model="delaySave" help="If checked, creating new tags, adding tags and removing tags is not saved to the server until the component's <code>saveTagValues</code> method is called." />
+                <RockButton v-if="delaySave" :btnType="btnType" type="button" @click="control.saveTagValues()"><i class="fa fa-save" /> Save Values</RockButton>
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Disallow New Tags" v-model="disallowNewTags" help="If checked, no new tags can be created, though you can still add existing tags" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Show Inactive Tags" v-model="showInactive" />
+            </div>
+        </div>
+        <p>
+            This control takes multiple props for filtering the tags to show and giving specifiers about what it tags. Below is a list of those props:
+        </p>
+        <table class="table" style="max-width:450px;">
+            <tr>
+                <th scope="col">Prop</th>
+                <th scope="col">Type</th>
+                <th scope="col" class="text-center">Required</th>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityTypeGuid</code></th>
+                <td>GUID String</td>
+                <td class="text-center"><i class="fa fa-check text-success"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityKey</code></th>
+                <td>String</td>
+                <td class="text-center"><i class="fa fa-check text-success"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>categoryGuid</code></th>
+                <td>GUID String</td>
+                <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityQualifierColumn</code></th>
+                <td>String</td>
+                <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityQualifierValue</code></th>
+                <td>String</td>
+                <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+            </tr>
+        </table>
     </template>
 </GalleryAndResult>`
 });
