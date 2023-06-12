@@ -256,7 +256,7 @@
     import Loading from "@Obsidian/Controls/loading";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Panel from "@Obsidian/Controls/panel";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";

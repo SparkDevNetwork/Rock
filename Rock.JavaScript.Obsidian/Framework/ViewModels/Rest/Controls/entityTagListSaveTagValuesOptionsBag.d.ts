@@ -22,12 +22,13 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { EntityTagListTagBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListTagBag";
 
 /**
  * The options that can be passed to the GetAvailableTags API action of
  * the EntityTagList control.
  */
-export type EntityTagListGetAvailableTagsOptionsBag = {
+export type EntityTagListSaveTagValuesOptionsBag = {
     /**
      * Gets or sets the category unique identifier to limit tags to. If a
      * value is specified then any tags must match the category.
@@ -35,7 +36,7 @@ export type EntityTagListGetAvailableTagsOptionsBag = {
     categoryGuid?: Guid | null;
 
     /**
-     * Gets or sets the entity key used with Rock.ViewModels.Rest.Controls.EntityTagListGetAvailableTagsOptionsBag.EntityTypeGuid
+     * Gets or sets the entity key used with Rock.ViewModels.Rest.Controls.EntityTagListSaveTagValuesOptionsBag.EntityTypeGuid
      * to locate the entity.
      */
     entityKey?: string | null;
@@ -60,4 +61,7 @@ export type EntityTagListGetAvailableTagsOptionsBag = {
 
     /** Gets or sets whether to include inactive tags. */
     showInactiveTags: boolean;
+
+    /** Gets or sets the list of tags. */
+    tags?: EntityTagListTagBag[] | null;
 };

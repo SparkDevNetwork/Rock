@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Rest.Controls
 {
@@ -23,8 +24,16 @@ namespace Rock.ViewModels.Rest.Controls
     /// The options that can be passed to the GetAvailableTags API action of
     /// the EntityTagList control.
     /// </summary>
-    public class EntityTagListGetAvailableTagsOptionsBag
+    public class EntityTagListSaveTagValuesOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the list of tags.
+        /// </summary>
+        /// <value>
+        /// The list of tags currently set.
+        /// </value>
+        public List<EntityTagListTagBag> Tags { get; set; }
+
         /// <summary>
         /// Gets or sets the entity type unique identifier.
         /// </summary>
@@ -53,12 +62,6 @@ namespace Rock.ViewModels.Rest.Controls
         /// The entity qualifier value.
         /// </value>
         public string EntityQualifierValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the partial name match to search for.
-        /// </summary>
-        /// <value>The partial name match to search for.</value>
-        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the category unique identifier to limit tags to. If a

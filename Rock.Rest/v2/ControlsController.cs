@@ -1611,7 +1611,7 @@ namespace Rock.Rest.v2
                 }
 
                 var taggedItemService = new TaggedItemService( rockContext );
-                var items = taggedItemService.Get( entityTypeId.Value, string.Empty, string.Empty, RockRequestContext.CurrentPerson?.Id, entityGuid.Value, options.CategoryGuid, false )
+                var items = taggedItemService.Get( entityTypeId.Value, options.EntityQualifierColumn, options.EntityQualifierValue, RockRequestContext.CurrentPerson?.Id, entityGuid.Value, options.CategoryGuid, options.ShowInactiveTags )
                     .Include( ti => ti.Tag.Category )
                     .Select( ti => ti.Tag )
                     .ToList()
@@ -1646,7 +1646,7 @@ namespace Rock.Rest.v2
                 }
 
                 var tagService = new TagService( rockContext );
-                var items = tagService.Get( entityTypeId.Value, string.Empty, string.Empty, RockRequestContext.CurrentPerson?.Id, options.CategoryGuid, false )
+                var items = tagService.Get( entityTypeId.Value, options.EntityQualifierColumn, options.EntityQualifierValue, RockRequestContext.CurrentPerson?.Id, options.CategoryGuid, options.ShowInactiveTags )
                     .Where( t => t.Name.StartsWith( options.Name )
                         && !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) )
                     .ToList()
@@ -1685,7 +1685,7 @@ namespace Rock.Rest.v2
                 }
 
                 var tagService = new TagService( rockContext );
-                var tag = tagService.Get( entityTypeId.Value, string.Empty, string.Empty, RockRequestContext.CurrentPerson?.Id, options.Name, options.CategoryGuid, true );
+                var tag = tagService.Get( entityTypeId.Value, options.EntityQualifierColumn, options.EntityQualifierValue, RockRequestContext.CurrentPerson?.Id, options.Name, options.CategoryGuid, true );
 
                 // If the personal tag already exists, use a 409 to indicate
                 // it already exists and return the existing tag.
@@ -1830,6 +1830,119 @@ namespace Rock.Rest.v2
                 }
 
                 return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Removes a tag from the given entity.
+        /// </summary>
+        /// <param name="options">The options that describe the tag and the entity to be untagged.</param>
+        /// <returns>A response code that indicates success or failure.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityTagListSaveTagValues" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "02886e54-6088-40ea-98be-9157ec2a3369" )]
+        public IHttpActionResult EntityTagListSaveTagValues( [FromBody] EntityTagListSaveTagValuesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                Person currentPerson = RockRequestContext.CurrentPerson;
+                int? currentPersonId = currentPerson.Id;
+                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
+                var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
+
+                if ( entityGuid != Guid.Empty && entityGuid != null )
+                {
+                    var tagService = new TagService( rockContext );
+                    var taggedItemService = new TaggedItemService( rockContext );
+                    var person = currentPersonId.HasValue ? new PersonService( rockContext ).Get( currentPersonId.Value ) : null;
+
+                    // Get the existing tagged items for this entity
+                    var existingTaggedItems = new List<TaggedItem>();
+                    foreach ( var taggedItem in taggedItemService.Get( entityTypeId ?? 0, options.EntityQualifierColumn, options.EntityQualifierValue, currentPersonId, entityGuid.Value, options.CategoryGuid, options.ShowInactiveTags ) )
+                    {
+                        if ( taggedItem.IsAuthorized( Authorization.VIEW, person ) )
+                        {
+                            existingTaggedItems.Add( taggedItem );
+                        }
+                    }
+
+                    // Get tag values after user edit
+                    var currentTags = new List<Tag>();
+                    foreach ( var tagBag in options.Tags )
+                    {
+                        var tagName = tagBag.Name;
+
+                        if ( tagName.IsNullOrWhiteSpace() )
+                        {
+                            continue;
+                        }
+
+                        // Only if this is a new tag, create it
+                        var tag = tagService.Get( entityTypeId ?? 0, options.EntityQualifierColumn, options.EntityQualifierValue, currentPersonId, tagName, options.CategoryGuid, options.ShowInactiveTags );
+
+                        if ( currentPerson.PrimaryAlias != null && tag == null )
+                        {
+                            var cat = CategoryCache.Get( options.CategoryGuid ?? Guid.Empty );
+                            var categoryId = cat != null ? cat.Id : ( int? ) null;
+
+                            tag = new Tag();
+                            tag.EntityTypeId = entityTypeId;
+                            tag.CategoryId = categoryId;
+                            tag.EntityTypeQualifierColumn = options.EntityQualifierColumn;
+                            tag.EntityTypeQualifierValue = options.EntityQualifierValue;
+                            tag.OwnerPersonAliasId = currentPerson.PrimaryAlias.Id;
+                            tag.Name = tagName;
+                            tagService.Add( tag );
+                        }
+
+                        if ( tag != null )
+                        {
+                            currentTags.Add( tag );
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+
+                    var currentNames = currentTags.Select( t => t.Name ).ToList();
+                    var existingNames = existingTaggedItems.Select( t => t.Tag.Name ).ToList();
+
+                    // Delete any tagged items that user removed
+                    foreach ( var taggedItem in existingTaggedItems )
+                    {
+                        if ( !currentNames.Contains( taggedItem.Tag.Name, StringComparer.OrdinalIgnoreCase ) && taggedItem.IsAuthorized( Rock.Security.Authorization.TAG, person ) )
+                        {
+                            existingNames.Remove( taggedItem.Tag.Name );
+                            taggedItemService.Delete( taggedItem );
+                        }
+                    }
+                    rockContext.SaveChanges();
+
+                    // Add any tagged items that user added
+                    foreach ( var tag in currentTags )
+                    {
+                        // If the tagged item was not already there, and (it's their personal tag OR they are authorized to use it) then add it.
+                        if ( !existingNames.Contains( tag.Name, StringComparer.OrdinalIgnoreCase ) &&
+                             (
+                                ( tag.OwnerPersonAliasId != null && tag.OwnerPersonAliasId == currentPerson.PrimaryAlias.Id ) ||
+                                tag.IsAuthorized( Rock.Security.Authorization.TAG, person )
+                             )
+                           )
+                        {
+                            var taggedItem = new TaggedItem();
+                            taggedItem.TagId = tag.Id;
+                            taggedItem.EntityTypeId = entityTypeId ?? 0;
+                            taggedItem.EntityGuid = entityGuid.Value;
+                            taggedItemService.Add( taggedItem );
+                        }
+                    }
+                    rockContext.SaveChanges();
+
+                    var currentTagBags = currentTags.Select( t => GetTagBagFromTag( t ) ).ToList();
+                    return Ok( currentTagBags );
+                }
+
+                return BadRequest( "Cannot get entity guid from given entity key and entity type GUID." );
             }
         }
 
