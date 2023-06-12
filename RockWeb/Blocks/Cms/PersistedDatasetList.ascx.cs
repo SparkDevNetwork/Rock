@@ -187,33 +187,34 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void lbPreview_Click( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
-            PersistedDatasetService persistedDatasetService = new PersistedDatasetService( rockContext );
-            PersistedDataset persistedDataset = persistedDatasetService.GetNoTracking( e.RowKeyId );
-            if ( persistedDataset.LastRefreshDateTime == null )
-            {
-                persistedDataset.UpdateResultData();
-            }
-
-            // limit preview size (default is 1MB)
-            var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
-
-            // make sure they didn't put in a negative number
-            maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
-
-            var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
-
-            lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", persistedDataset.ResultData ) ).Truncate( maxPreviewSizeLength );
-
-            nbPreviewMessage.Visible = false;
-            nbPreviewMaxLengthWarning.Visible = false;
-
             try
             {
-                var preViewObject = persistedDataset.ResultData.FromJsonDynamic();
+                var rockContext = new RockContext();
+                PersistedDatasetService persistedDatasetService = new PersistedDatasetService( rockContext );
+                PersistedDataset persistedDataset = persistedDatasetService.GetNoTracking( e.RowKeyId );
+                if ( persistedDataset.LastRefreshDateTime == null )
+                {
+                    persistedDataset.UpdateResultData();
+                }
+
+                // limit preview size (default is 1MB)
+                var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
+
+                // make sure they didn't put in a negative number
+                maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
+
+                var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
+
+                var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
+
+                lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", preViewObject ) ).Truncate( maxPreviewSizeLength );
+
+                nbPreviewMessage.Visible = false;
+                nbPreviewMaxLengthWarning.Visible = false;
+
                 if ( persistedDataset.ResultData.Length > maxPreviewSizeLength )
                 {
-                    nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", persistedDataset.ResultData.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
+                    nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", preViewObject.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
                     nbPreviewMaxLengthWarning.Visible = true;
                 }
 
