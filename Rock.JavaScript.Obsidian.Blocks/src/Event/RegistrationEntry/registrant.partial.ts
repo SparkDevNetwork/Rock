@@ -205,20 +205,12 @@ export default defineComponent({
 
         /** The people that can be picked from because they are members of the same family. */
         familyMemberOptions (): ListItemBag[] {
-            const selectedFamily = this.currentRegistrant.familyGuid;
-
-            if (!selectedFamily) {
-                return [];
-            }
-
             const usedFamilyMemberGuids = this.registrationEntryState.registrants
                 .filter(r => r.personGuid && r.personGuid !== this.currentRegistrant.personGuid)
                 .map(r => r.personGuid);
 
             return this.viewModel.familyMembers
-                .filter(fm =>
-                    areEqual(fm.familyGuid, selectedFamily) &&
-                    !usedFamilyMemberGuids.includes(fm.guid))
+                .filter(fm => !usedFamilyMemberGuids.includes(fm.guid))
                 .map(fm => ({
                     text: fm.fullName,
                     value: fm.guid

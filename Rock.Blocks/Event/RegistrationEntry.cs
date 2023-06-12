@@ -2356,6 +2356,7 @@ namespace Rock.Blocks.Event
                         FamilyGuid = gm.Group.Guid,
                         Person = gm.Person
                     } )
+                    .DistinctBy( gm => gm.Person.Guid )
                     .ToList()
                     .Select( gm => new RegistrationEntryBlockFamilyMemberViewModel
                     {
