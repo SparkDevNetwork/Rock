@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Cms
                 nbPreviewMessage.Visible = false;
                 nbPreviewMaxLengthWarning.Visible = false;
 
-                if ( persistedDataset.ResultData.Length > maxPreviewSizeLength )
+                if ( preViewObject.Length > maxPreviewSizeLength )
                 {
                     nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", preViewObject.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
                     nbPreviewMaxLengthWarning.Visible = true;
