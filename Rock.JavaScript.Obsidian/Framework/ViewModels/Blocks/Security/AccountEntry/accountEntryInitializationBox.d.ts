@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { AccountEntryStep } from "@Obsidian/Enums/Blocks/Security/AccountEntry/accountEntryStep";
 import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
 
 /** A box that contains the required information to render an account entry block. */
@@ -78,6 +79,9 @@ export type AccountEntryInitializationBox = {
 
     /** The registration state. */
     state?: string | null;
+
+    /** The account entry step. */
+    step?: AccountEntryStep | null;
 
     /** The success caption. */
     successCaption?: string | null;

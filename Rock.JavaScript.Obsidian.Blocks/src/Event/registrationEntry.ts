@@ -105,6 +105,10 @@ export default defineComponent({
             // There is no need to show the number of registrants selector or instructions. Start at the second page.
             currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
         }
+        else if (viewModel.isExistingRegistration && viewModel.startAtBeginning) {
+            // An existing registration with StartAtBeginning set to true, go right to the attributes.
+            currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
+        }
 
         const staticRegistrationEntryState: RegistrationEntryState = {
             steps: steps,

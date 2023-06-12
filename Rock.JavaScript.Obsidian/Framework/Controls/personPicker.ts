@@ -93,6 +93,11 @@ export default defineComponent({
             type: Object as PropType<ListItemBag>
         },
 
+        includeBusinesses: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         formGroupClasses: {
             type: String as PropType<string>,
             default: ""
@@ -150,7 +155,8 @@ export default defineComponent({
 
             const options: Partial<PersonPickerSearchOptionsBag> = {
                 name: text,
-                includeDetails: true
+                includeDetails: true,
+                includeBusinesses: props.includeBusinesses
             };
 
             // Make the API call to get the search results.

@@ -52,7 +52,7 @@ namespace Rock.Tests.Integration
         private static bool _IsDatabaseInitialized = false;
         private static DatabaseRefreshStrategySpecifier _databaseDeleteStrategy = DatabaseRefreshStrategySpecifier.Verified;
 
-        public static string DatabaseCreatorId = "RockIntegrationTestProject";
+        public static string DatabaseCreatorKey = "RockIntegrationTestProject";
         public static bool DatabaseMigrateIsAllowed = false;
         public static string ConnectionString = null;
         public static string SampleDataUrl = null;
@@ -404,16 +404,22 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// </summary>
         private static bool InitializeSqlServerDatabaseForLocal( bool recreateArchive )
         {
-            if ( recreateArchive )
+            if ( DatabaseExists( ConnectionString ) )
             {
-                TestHelper.Log( $"Removing existing database archive..." );
-
-                if ( DatabaseExists( ConnectionString ) )
+                if ( recreateArchive )
                 {
                     // Remove the database from the local server, and delete the associated archive file.
                     DeleteDatabase( ConnectionString );
                 }
+            }
+            else
+            {
+                // If the database has been manually deleted, make sure that the archive is recreated.
+                recreateArchive = true;
+            }
 
+            if ( recreateArchive )
+            {
                 var fileName = GetCurrentArchiveFileName();
                 DeleteArchiveFile( new FileInfo( fileName ) );
             }
@@ -595,10 +601,15 @@ ALTER DATABASE [{targetDbName}] SET RECOVERY SIMPLE;";
             }
 
             // Verify that the target database is a test database.
+            if ( string.IsNullOrWhiteSpace( DatabaseCreatorKey ) )
+            {
+                throw new Exception( $"Delete database failed. The DatabaseCreatorKey configuration setting must have a value." );
+            }
+
             var sql = $@"
 SELECT [Value]
 FROM [_TestDatabaseSettings]
-WHERE [Key] = 'DatabaseCreatorId';";
+WHERE [Key] = 'DatabaseCreatorKey';";
 
             var creatorId = DbService.ExecuteScalar( csbTarget.ConnectionString, sql ).ToStringSafe();
 
@@ -607,9 +618,9 @@ WHERE [Key] = 'DatabaseCreatorId';";
                 creatorId = "(not found)";
             }
             if ( DatabaseRefreshStrategy == DatabaseRefreshStrategySpecifier.Verified
-                && creatorId != DatabaseCreatorId )
+                && creatorId != DatabaseCreatorKey )
             {
-                throw new Exception( $"Delete database failed. Database Creator key mismatch. [Database={databaseDescription}, ExpectedCreatorId={DatabaseCreatorId}, ActualCreatorId={creatorId}]" );
+                throw new Exception( $"Delete database failed. Database Creator key mismatch. [Database={databaseDescription}, ExpectedCreatorId={DatabaseCreatorKey}, ActualCreatorId={creatorId}]" );
             }
 
             var sqlDrop = $@"
@@ -768,7 +779,7 @@ CREATE TABLE [_TestDatabaseSettings]
 INSERT INTO [_TestDatabaseSettings]
     ( [Key], [Value] )
 VALUES
-    ( 'DatabaseCreatorId','{DatabaseCreatorId}' );
+    ( 'DatabaseCreatorKey','{DatabaseCreatorKey}' );
 ";
 
             // Execute a test query to ensure that the database is ready.

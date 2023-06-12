@@ -310,7 +310,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             UserLogin user = null;
             Person person = null;
 
-            // Query for an existing user from the Auth0 user name.
+            // Query for an existing user from the external authentication user name.
             var userLoginService = new UserLoginService( rockContext );
             user = userLoginService.GetByUserName( username );
 

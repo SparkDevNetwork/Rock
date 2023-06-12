@@ -32,6 +32,7 @@ namespace Rock.Tests.Shared
         {
             public const string CampusMain = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
             public const string CampusSouth = "5434F90B-BB91-4A34-8B09-8C117A9E5D95";
+            public const string CampusSteppingStone = "089844AF-6310-4C20-9434-A845F982B0C5";
         }
 
         public static class Category
@@ -72,6 +73,11 @@ namespace Rock.Tests.Shared
             // A DataView that returns all of the locations outside the state of Arizona.
             public static string LocationsOutsideArizona = "14B1854D-4F45-4F4D-AFFF-C0A1E06353DF";
             public static string LocationsInsideArizona = "C39B353E-3E44-42C0-9D85-2107FB5E8C04";
+        }
+
+        public static class Events
+        {
+            public const string EventIdentifierRockSolidFinancesClass = "Rock Solid Finances Class";
         }
 
         public static class Groups

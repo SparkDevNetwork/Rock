@@ -46,10 +46,8 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        /*
-         * It's assumed that all occurrences provided will belong to the same group;
-         * just grab the first groupName, since they should all be the same.
-         */
+        // It's assumed that all occurrences provided will belong to the same group;
+        // just grab the first groupName, since they should all be the same.
         let groupName: string | null | undefined;
         if (props.occurrences?.length) {
             groupName = props.occurrences[0].groupName;

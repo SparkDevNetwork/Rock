@@ -399,10 +399,8 @@ function () {
             var endDate = dateRange?.End;
             if ( endDate.HasValue )
             {
-                /*
-                 * We'll add a day since the above returns the selected end date @ 11:59.999PM.
-                 * This way, we can use "less than" in our filtering below, to follow Rock's rule: let your start be "inclusive" and your end be "exclusive".
-                 */
+                // We'll add a day since the above returns the selected end date @ 11:59.999PM.
+                // This way, we can use "less than" in our filtering below, to follow Rock's rule: let your start be "inclusive" and your end be "exclusive".
                 endDate = endDate.Value.AddDays( 1 ).StartOfDay();
             }
 
@@ -421,59 +419,57 @@ function () {
                     gl.LocationId,
                     Schedule = s
                 } )
-                /*
-                 * We now have [GroupLocationSchedule] instances:
-                 * One for each combination of Group, Location & Schedule, where [Group].[GroupTypeId] == selectionConfig's GroupTypeId.
-                 * 
-                 * Adding the following commented-out line to point out that it won't work for our purposes, because:
-                 *  1) The Attribute we care about exists on the Group Entity, and not the GroupLocation Entity that our IQueryable is querying against.
-                 *  2) According to our 202 guide, "Group attributes are the most complicated to load since they can inherit attributes from their parent
-                 *     GroupType(s) and the [below] snippet wouldn't work if a Group inherited an attribute value from a GroupType." This is our exact
-                 *     scenario: we can have GroupTypes that inherit from the default "Sign-Up Group" GroupType, and the Attribute we care about filtering
-                 *     against - "ProjectType" - exists on the parent "Sign-Up Group" GroupType; we'll need to get all Groups up front, and filter out
-                 *     the ones we don't care about below, in memory.
-                 */
+                // We now have [GroupLocationSchedule] instances:
+                // One for each combination of Group, Location & Schedule, where [Group].[GroupTypeId] == selectionConfig's GroupTypeId.
+                // 
+                // Adding the following commented-out line to point out that it won't work for our purposes, because:
+                //  1) The Attribute we care about exists on the Group Entity, and not the GroupLocation Entity that our IQueryable is querying against.
+                //  2) According to our 202 guide, "Group attributes are the most complicated to load since they can inherit attributes from their parent
+                //     GroupType(s) and the [below] snippet wouldn't work if a Group inherited an attribute value from a GroupType." This is our exact
+                //     scenario: we can have GroupTypes that inherit from the default "Sign-Up Group" GroupType, and the Attribute we care about filtering
+                //     against - "ProjectType" - exists on the parent "Sign-Up Group" GroupType; we'll need to get all Groups up front, and filter out
+                //     the ones we don't care about below, in memory.
                 //.WhereAttributeValue( rockContext, "ProjectType", Rock.SystemGuid.DefinedValue.PROJECT_TYPE_IN_PERSON )
                 .Where( gls =>
-                    !startDate.HasValue || !endDate.HasValue // Either the individual did not choose a date range, OR...
-                    /*
-                     * We need to perform phase 1 of Schedule filtering to minimize the number of records being returned by the query; we'll
-                     * perform additional, in-memory Schedule filtering below, once we materialize the opportunities' Schedule instances.
-                     * 
-                     * Keep in mind that Schedules with a null EffectiveEndDate represent recurring schedules that have no end date.
-                     * 
-                     * This logic seems a little backwards at first, but the plan is to get opportunities whose Schedule's:
-                     *  1) EffectiveStartDate < endDate (so we don't get any Schedules that start AFTER the specified date range), AND
-                     *  2) EffectiveEndDate is null OR >= startDate (so we don't get any Schedules that have already ended BEFORE the specified date range).
-                     * 
-                     **********************************
-                     * Consider the following example:
-                     **********************************
-                     * 
-                     * Opportunity A (EffectiveStartDate: 01/01/2023, EffectiveEndDate: 01/29/2023, Recurrences: Once a week on Sundays, end after 5 occurrences)
-                     * Opportunity B (EffectiveStartDate: 01/29/2023, EffectiveEndDate: null      , Recurrences: Once a month on the last Sunday, no end date)
-                     * Opportunity C (EffectiveStartDate: 02/05/2023, EffectiveEndDate: 02/05/2023, Recurrences: none)
-                     * Opportunity D (EffectiveStartDate: 02/05/2023, EffectiveEndDate: 02/26/2023, Recurrences: Once a week on Sundays, end after 4 occurrences)
-                     * Opportunity E (EffectiveStartDate: 02/26/2023, EffectiveEndDate: null      , Recurrences: Once a month on the last Sunday, no end date)
-                     * Opportunity F (EffectiveStartDate: 04/30/2023, EffectiveEndDate: 08/27/2023, Recurrences: Once a month on the last Sunday, end after 5 occurrences)
-                     * 
-                     * Today is 03/03/2023.
-                     * Selected date range for this filter is "Previous 30 Days", which translates to "02/01/2023 12:00 AM to 03/03/2023 12:00 AM".
-                     * In this example, we want opportunities B, C, D & E to be returned from the query.
-                     * 
-                     *                    ( DateRange )
-                     *                    (           )
-                     *                    (           )
-                     *    |---Jan--------Feb--------Mar--------Apr--------May--------Jun--------Jul--------Aug--------Sep--------Oct-->>
-                     *  A |    |x-x-x-x-x|(           )
-                     *  B |            |x-(--------x--)-------x----------x----------x----------x----------x----------x----------x----->>
-                     *  C |               ( |x|       )
-                     *  D |               ( |x-x-x-x| )
-                     *  E |               (       |x--)-------x----------x----------x----------x----------x----------x----------x----->>
-                     *  F |               (           )                 |x----------x----------x----------x----------x|
-                     *    |---------------(-----------)------------------------------------------------------------------------------->>
-                     *                    (           )
-                     */
+                    !startDate.HasValue || !endDate.HasValue
+                    // Either the individual did not choose a date range, OR...
+                    // 
+                    // We need to perform phase 1 of Schedule filtering to minimize the number of records being returned by the query; we'll
+                    // perform additional, in-memory Schedule filtering below, once we materialize the opportunities' Schedule instances.
+                    // 
+                    // Keep in mind that Schedules with a null EffectiveEndDate represent recurring schedules that have no end date.
+                    // 
+                    // This logic seems a little backwards at first, but the plan is to get opportunities whose Schedule's:
+                    //  1) EffectiveStartDate < endDate (so we don't get any Schedules that start AFTER the specified date range), AND
+                    //  2) EffectiveEndDate is null OR >= startDate (so we don't get any Schedules that have already ended BEFORE the specified date range).
+                    // 
+                    // ********************************
+                    // Consider the following example:
+                    // ********************************
+                    // 
+                    // Opportunity A (EffectiveStartDate: 01/01/2023, EffectiveEndDate: 01/29/2023, Recurrences: Once a week on Sundays, end after 5 occurrences)
+                    // Opportunity B (EffectiveStartDate: 01/29/2023, EffectiveEndDate: null      , Recurrences: Once a month on the last Sunday, no end date)
+                    // Opportunity C (EffectiveStartDate: 02/05/2023, EffectiveEndDate: 02/05/2023, Recurrences: none)
+                    // Opportunity D (EffectiveStartDate: 02/05/2023, EffectiveEndDate: 02/26/2023, Recurrences: Once a week on Sundays, end after 4 occurrences)
+                    // Opportunity E (EffectiveStartDate: 02/26/2023, EffectiveEndDate: null      , Recurrences: Once a month on the last Sunday, no end date)
+                    // Opportunity F (EffectiveStartDate: 04/30/2023, EffectiveEndDate: 08/27/2023, Recurrences: Once a month on the last Sunday, end after 5 occurrences)
+                    // 
+                    // Today is 03/03/2023.
+                    // Selected date range for this filter is "Previous 30 Days", which translates to "02/01/2023 12:00 AM to 03/03/2023 12:00 AM".
+                    // In this example, we want opportunities B, C, D & E to be returned from the query.
+                    // 
+                    //                    ( DateRange )
+                    //                    (           )
+                    //                    (           )
+                    //    |---Jan--------Feb--------Mar--------Apr--------May--------Jun--------Jul--------Aug--------Sep--------Oct-->>
+                    //  A |    |x-x-x-x-x|(           )
+                    //  B |            |x-(--------x--)-------x----------x----------x----------x----------x----------x----------x----->>
+                    //  C |               ( |x|       )
+                    //  D |               ( |x-x-x-x| )
+                    //  E |               (       |x--)-------x----------x----------x----------x----------x----------x----------x----->>
+                    //  F |               (           )                 |x----------x----------x----------x----------x|
+                    //    |---------------(-----------)------------------------------------------------------------------------------->>
+                    //                    (           )
                     || (
                         gls.Schedule.EffectiveStartDate.HasValue
                         && gls.Schedule.EffectiveStartDate.Value < endDate
@@ -483,13 +479,11 @@ function () {
                         )
                     )
                 )
-                /* 
-                 * If indicated by selectionConfig.EventDateWithin, we've now filtered out any opportunities whose Schedule cannot have any occurrences
-                 * within the specified date range. This doesn't yet guarantee all of the returned Schedules will have occurrences that match; we'll
-                 * determine this with additional, in-memory filtering below.
-                 * 
-                 * If not, we have all opportunities (GroupLocationSchedules): past, present and future (this could be a big list).
-                 */
+                // If indicated by selectionConfig.EventDateWithin, we've now filtered out any opportunities whose Schedule cannot have any occurrences
+                // within the specified date range. This doesn't yet guarantee all of the returned Schedules will have occurrences that match; we'll
+                // determine this with additional, in-memory filtering below.
+                // 
+                // If not, we have all opportunities (GroupLocationSchedules): past, present and future (this could be a big list).
                 .Select( gls => new
                 {
                     gls.Group,
@@ -521,14 +515,12 @@ function () {
                 } )
                 .ToList();
 
-            /*
-             * And lastly, we have:
-             *  1) A collection of members (if any), as well as each member's list of PersonAlias IDs & whether they're a leader within this Group;
-             *  2) A collection AttendanceOccurrences (if any), as well as each occurrence's Attendance records.
-             * All grouped by opportunity and materialized in-memory.
-             * 
-             * We'll be able to perform the final filtering against this data.
-             */
+            // And lastly, we have:
+            //  1) A collection of members (if any), as well as each member's list of PersonAlias IDs & whether they're a leader within this Group;
+            //  2) A collection AttendanceOccurrences (if any), as well as each occurrence's Attendance records.
+            // All grouped by opportunity and materialized in-memory.
+            // 
+            // We'll be able to perform the final filtering against this data.
 
             // We need to have start and end dates to compare against below, so provide defaults if no date range was selected.
             startDate = startDate ?? DateTime.MinValue.Date;
@@ -545,12 +537,10 @@ function () {
                     continue;
                 }
 
-                /*
-                 * Narrow down the results to include only those Schedules that:
-                 *  1) Actually have at least one occurrence within the selected date range AND
-                 *  2a) Any of those occurrences don't have a corresponding AttendanceOccurrence record, OR
-                 *  2b) Any of those occurrences don't have at least one non-leader, [DidAttend] == true Attendance record.
-                 */
+                // Narrow down the results to include only those Schedules that:
+                //  1) Actually have at least one occurrence within the selected date range AND
+                //  2a) Any of those occurrences don't have a corresponding AttendanceOccurrence record, OR
+                //  2b) Any of those occurrences don't have at least one non-leader, [DidAttend] == true Attendance record.
                 var occurrenceDateTimes = opportunity.Schedule.GetScheduledStartTimes( startDate.Value, endDate.Value );
                 if ( !occurrenceDateTimes.Any() )
                 {
@@ -587,10 +577,8 @@ function () {
 
             var groupIdsToInclude = new List<int>();
 
-            /*
-             * The last check is to compare each Group's project type, if indicated by the presence of any selections within
-             * selectionConfig.IncludeProjectTypes. Otherwise, we'll just include the IDs for all Groups missing attendance.
-             */
+            // The last check is to compare each Group's project type, if indicated by the presence of any selections within
+            // selectionConfig.IncludeProjectTypes. Otherwise, we'll just include the IDs for all Groups missing attendance.
             if ( selectionConfig.IncludeProjectTypes.Any() && groupsMissingAttendance.Any() )
             {
                 groupsMissingAttendance.LoadAttributes( new RockContext() );

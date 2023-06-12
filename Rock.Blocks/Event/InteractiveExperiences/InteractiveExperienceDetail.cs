@@ -223,6 +223,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     }
                     : null,
                 Description = entity.Description,
+                ExperienceEndedTemplate = settings.ExperienceEndedTemplate ?? string.Empty,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
                 NoActionHeaderImageBinaryFile = entity.NoActionHeaderImageBinaryFile.ToListItemBag(),
@@ -350,6 +351,9 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
+
+            box.IfValidProperty( nameof( box.Entity.ExperienceEndedTemplate ),
+                () => settings.ExperienceEndedTemplate = box.Entity.ExperienceEndedTemplate );
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );

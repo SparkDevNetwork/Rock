@@ -76,6 +76,11 @@
     <Compile Include="Connection\ConnectionTypeViewMode.cs" />
     <Compile Include="Connection\ConnectionWorkflowTriggerType.cs" />
     <Compile Include="Connection\GroupRequirementsFilter.cs" />
+    <Compile Include="Core\Grid\BooleanFilterMethod.cs" />
+    <Compile Include="Core\Grid\DateFilterMethod.cs" />
+    <Compile Include="Core\Grid\NumberFilterMethod.cs" />
+    <Compile Include="Core\Grid\PickExistingFilterMethod.cs" />
+    <Compile Include="Core\Grid\TextFilterMethod.cs" />
     <Compile Include="Controls\MergeTemplateOwnership.cs" />
     <Compile Include="Controls\RequirementLevel.cs" />
     <Compile Include="Controls\SlidingDateRangePicker.cs" />
@@ -83,9 +88,12 @@
     <Compile Include="Core\AuditType.cs" />
     <Compile Include="Core\CameraBarcodeConfiguration.cs" />
     <Compile Include="Core\ChangeType.cs" />
+    <Compile Include="Core\ColorRecipe.cs" />
+    <Compile Include="Core\ColorScheme.cs" />
     <Compile Include="Core\ColorDepth.cs" />
     <Compile Include="Core\FollowingSuggestedStatus.cs" />
     <Compile Include="Core\Format.cs" />
+    <Compile Include="Core\Grid\ColumnPositionAnchor.cs" />
     <Compile Include="Core\JobNotificationStatus.cs" />
     <Compile Include="Core\KioskType.cs" />
     <Compile Include="Core\MatchFlag.cs" />

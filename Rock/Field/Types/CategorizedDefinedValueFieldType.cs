@@ -21,9 +21,11 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Attribute;
 #endif
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using TreeNode = Rock.Web.UI.Controls.TreeNode;
@@ -34,13 +36,17 @@ namespace Rock.Field.Types
     /// Field used to save and display a selection from a Defined Type that supports categorized values.
     /// </summary>
     [Serializable]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D" )]
     public class CategorizedDefinedValueFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
         private const string DEFINED_TYPE_KEY = "DefinedType";
+        private const string DEFINED_TYPES_KEY = "DefinedTypes";
+        private const string DEFINED_TYPE_VALUES_KEY = "DefinedTypeValues";
         private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValues";
+        private const string CONFIGURATION_MODE_KEY = "ConfigurationMode";
 
         /// <summary>
         /// The settings for this Field Type.
@@ -135,6 +141,147 @@ namespace Rock.Field.Types
 
         private const string AllCategoriesListItemText = "All Categories";
 
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var editValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( editValue != null )
+            {
+                var definedValue = DefinedValueCache.Get( editValue.Value );
+                return definedValue?.Id.ToString() ?? string.Empty;
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) && int.TryParse( privateValue, out int definedValueId ) )
+            {
+                var definedValue = DefinedValueCache.Get( definedValueId );
+
+                if ( definedValue != null )
+                {
+                    return new ListItemBag()
+                    {
+                        Text = definedValue.Value,
+                        Value = definedValue.Guid.ToString(),
+                        Category = CategoryCache.Get( definedValue.CategoryId ?? 0 )?.Name ?? AllCategoriesListItemText
+                    }.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return base.GetPublicEditValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue(string privateValue, Dictionary<string, string> privateConfigurationValues)
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( privateConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
+            {
+                var definedTypeValue = publicConfigurationValues[DEFINED_TYPE_KEY].FromJsonOrNull<ListItemBag>();
+                if ( definedTypeValue != null && Guid.TryParse( definedTypeValue.Value, out Guid definedTypeGuid ) )
+                {
+                    var definedType = DefinedTypeCache.Get( definedTypeGuid );
+                    if ( definedType != null )
+                    {
+                        privateConfigurationValues[DEFINED_TYPE_KEY] = definedType.Id.ToString();
+                    }
+                }
+            }
+
+            if ( privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
+            {
+                var selectedValueGuids = privateConfigurationValues[SELECTABLE_VALUES_KEY].FromJsonOrNull<List<Guid>>();
+                privateConfigurationValues[SELECTABLE_VALUES_KEY] = selectedValueGuids.ConvertAll( i => DefinedValueCache.Get( i )?.Id ).AsDelimited( "," );
+            }
+
+            privateConfigurationValues.Remove( DEFINED_TYPES_KEY );
+            privateConfigurationValues.Remove( DEFINED_TYPE_VALUES_KEY );
+            privateConfigurationValues.Remove( CONFIGURATION_MODE_KEY );
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+            var definedTypes = new List<DefinedTypeCache>();
+
+            if ( publicConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
+            {
+                var selectedValueIds = publicConfigurationValues[SELECTABLE_VALUES_KEY].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
+                publicConfigurationValues[SELECTABLE_VALUES_KEY] = selectedValueIds.ConvertAll( i => DefinedValueCache.Get( i )?.Guid ).ToCamelCaseJson( false, true );
+            }
+
+            if ( publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
+            {
+                var definedTypeValue = publicConfigurationValues[DEFINED_TYPE_KEY];
+                if ( int.TryParse( definedTypeValue, out int definedTypeId ) )
+                {
+                    var definedType = DefinedTypeCache.Get( definedTypeId );
+                    if ( definedType != null )
+                    {
+                        publicConfigurationValues[DEFINED_TYPE_KEY] = new ListItemBag()
+                        {
+                            Text = definedType.Name,
+                            Value = definedType.Guid.ToString()
+                        }.ToCamelCaseJson( false, true );
+
+                        // If in Edit mode add CategorizedDefinedTypes if any so we get its DefinedValues.
+                        if ( usage == ConfigurationValueUsage.Edit && definedType != null )
+                        {
+                            definedTypes.Add( definedType );
+                        }
+                    }
+                }
+            }
+
+            // If in Configure mode get all CategorizedDefinedTypes so we can get their DefinedValues
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                definedTypes = DefinedTypeCache.All()
+                    .Where( x => x.CategorizedValuesEnabled ?? false )
+                    .OrderBy( d => d.Order )
+                    .ToList();
+
+                publicConfigurationValues[DEFINED_TYPES_KEY] = definedTypes.ConvertAll( dt => new ListItemBag()
+                {
+                    Text = dt.Name,
+                    Value = dt.Guid.ToString()
+                } ).ToCamelCaseJson( false, true );
+            }
+
+            var definedValues = new Dictionary<string, string>();
+            foreach ( var definedType in definedTypes )
+            {
+                var definedValueValues = definedType.DefinedValues
+                    .ConvertAll( g => new ListItemBag()
+                    {
+                        Text = g.Value,
+                        Value = g.Guid.ToString(),
+                        Category = CategoryCache.Get( g.CategoryId ?? 0 )?.Name ?? "All Categories"
+                    } );
+                definedValues.Add( definedType.Guid.ToString(), definedValueValues.ToCamelCaseJson( false, true ) );
+            }
+
+            publicConfigurationValues.Add( DEFINED_TYPE_VALUES_KEY, definedValues.ToCamelCaseJson( false, true ) );
+
+            publicConfigurationValues[CONFIGURATION_MODE_KEY] = usage.ToString();
+
+            return publicConfigurationValues;
+        }
         #endregion
 
         #region Filter Control

@@ -16,11 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -28,12 +30,64 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of <see cref="System.TimeZoneInfo"/>
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.TIME_ZONE )]
     public class TimeZoneFieldType : FieldType
     {
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            var timeZones = TimeZoneInfo.GetSystemTimeZones().Select( tz => new ListItemBag() { Text = tz.DisplayName, Value = tz.Id } );
+
+            publicConfigurationValues["timezones"] = timeZones.ToCamelCaseJson( false, true );
+
+            return publicConfigurationValues;
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                var timeZoneInfo = TimeZoneInfo.GetSystemTimeZones().FirstOrDefault( tz => tz.Id == privateValue );
+
+                if ( timeZoneInfo != null )
+                {
+                    return timeZoneInfo.DisplayName;
+                }
+            }
+
+            return base.GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl

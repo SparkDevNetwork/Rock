@@ -3,6 +3,7 @@ ALTER PROCEDURE[dbo].[spCheckin_BadgeAttendance]
                   , @RoleGuid uniqueidentifier = null
                   , @ReferenceDate datetime = null
                   , @MonthCount int = 24
+				  , @ShowAsIndividual bit = 0
               AS
               BEGIN
                   DECLARE @cROLE_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
@@ -53,13 +54,11 @@ SET @StartDay = DATEADD( M, DATEDIFF(M, 0, DATEADD(month, ((@MonthCount -1) * -1
 
     DECLARE @familyMemberPersonIds table( [PersonId] int);
 
-        IF( @RoleGuid = @cROLE_ADULT )
-
-        INSERT INTO @familyMemberPersonIds SELECT[Id] FROM[dbo].[ufnCrm_FamilyMembersOfPersonId]
-        (@PersonId)
-  ELSE IF( @RoleGuid = @cROLE_CHILD )
-
-        INSERT INTO @familyMemberPersonIds SELECT @PersonId
+		IF( @RoleGuid = @cROLE_CHILD OR @ShowAsIndividual = 1 )
+	        INSERT INTO @familyMemberPersonIds SELECT @PersonId
+        ELSE IF( @RoleGuid = @cROLE_ADULT )
+			INSERT INTO @familyMemberPersonIds SELECT[Id] FROM[dbo].[ufnCrm_FamilyMembersOfPersonId]
+        (@PersonId) 
 
 	-- query for attendance data
 

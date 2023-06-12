@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Field.Types
 {
@@ -33,11 +34,109 @@ namespace Rock.Field.Types
     /// Field used to display or upload a new binary file of a specific type.
     /// Stored as BinaryFile.Guid.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BACKGROUNDCHECK )]
     public class BackgroundCheckFieldType : BinaryFileFieldType, IEntityReferenceFieldType
     {
+        private const string BINARY_FILE_TYPE = "binaryFileType";
+
         #region Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( privateConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
+            {
+                var binaryFileTypeValue = publicConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
+
+                if ( binaryFileTypeValue != null )
+                {
+                    privateConfigurationValues[BINARY_FILE_TYPE] = binaryFileTypeValue.Value;
+                }
+            }
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( publicConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) && Guid.TryParse( publicConfigurationValues[BINARY_FILE_TYPE], out Guid binaryFileTypeGuid ) )
+            {
+                publicConfigurationValues[BINARY_FILE_TYPE] = new ListItemBag()
+                {
+                    Text = BinaryFileTypeCache.Get( binaryFileTypeGuid )?.Name,
+                    Value = binaryFileTypeGuid.ToString()
+                }.ToCamelCaseJson( false, true );
+            }
+
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                if ( Guid.TryParse( privateValue, out Guid binaryFileGuid ) )
+                {
+                    var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid() );
+                    return $"{entityType.Guid},{entityType.FriendlyName},{privateValue},{GetFileName( privateValue )}";
+                }
+
+                var valueSplit = privateValue.Split( ',' );
+                if ( valueSplit?.Length == 2 )
+                {
+                    var entityTypeId = valueSplit[0];
+                    var entityType = EntityTypeCache.Get( entityTypeId.AsInteger() );
+
+                    if ( entityType != null )
+                    {
+                        return $"{entityType.Guid},{entityType.FriendlyName},{valueSplit[1]}";
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( publicValue ) )
+            {
+                var valueSplit = publicValue.Split( ',' );
+
+                if ( valueSplit.Length > 2 && Guid.TryParse( valueSplit[0], out Guid entityTypeGuid ) )
+                {
+                    var entityType = EntityTypeCache.Get( entityTypeGuid );
+
+                    if ( entityType != null )
+                    {
+                        if ( entityType.Guid == SystemGuid.EntityType.CHECKR_PROVIDER.AsGuid() )
+                        {
+                            return $"{entityType.Id},{valueSplit[2]}";
+                        }
+                        else
+                        {
+                            return $"{valueSplit[2]}";
+                        }
+                    }
+                }
+            }
+
+            return publicValue;
+        }
 
         #endregion
 

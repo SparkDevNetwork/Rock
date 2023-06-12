@@ -1,12 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div>
-        <div v-if="hasExternalLogins" v-html="caption"></div>
+    <div class="external-logins">
+        <p v-if="hasExternalLogins" v-html="caption"></p>
 
         <RockButton
             v-for="login in externalLogins"
             :btnType="BtnType.Authentication"
-            :class="login.cssClass || ''"
+            :class="login.cssClass + ' btn-authentication-v2' || ''"
             :disabled="disabled"
             @click="onExternalLoginClick(login)">
             {{ login.text }}

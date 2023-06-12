@@ -340,14 +340,7 @@ namespace Rock.Model
                 var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
                 var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
 
-                var removeCount = persistedValuesToRemove.Count();
-                if ( removeCount > 0 )
-                {
-                    // increase the batch size if there are a bunch of rows (and this is a narrow table with no references to it)
-                    int? deleteBatchSize = removeCount > 50000 ? 25000 : ( int? ) null;
-
-                    int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove, deleteBatchSize );
-                }
+                int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove );
 
                 if ( persistedEntityIdsToInsert.Any() )
                 {

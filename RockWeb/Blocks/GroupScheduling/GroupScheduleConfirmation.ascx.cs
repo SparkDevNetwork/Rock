@@ -539,6 +539,7 @@ namespace RockWeb.Blocks.GroupScheduling
                         .Where( a => a.Id == attendanceId && a.PersonAlias.PersonId == _selectedPerson.Id )
                         .Include( a => a.PersonAlias.Person )
                         .Include( a => a.ScheduledByPersonAlias.Person )
+                        .Include( a => a.Occurrence.Group )
                         .FirstOrDefault();
 
                     if ( attendance == null )
@@ -606,6 +607,7 @@ namespace RockWeb.Blocks.GroupScheduling
                             .Where( a => a.Id == attendanceId && a.PersonAlias.PersonId == _selectedPerson.Id )
                             .Include( a => a.PersonAlias.Person )
                             .Include( a => a.ScheduledByPersonAlias.Person )
+                            .Include( a => a.Occurrence.Group )
                             .FirstOrDefault();
 
                         if ( attendance != null )

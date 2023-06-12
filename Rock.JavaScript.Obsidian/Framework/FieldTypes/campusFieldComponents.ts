@@ -67,7 +67,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<DropDownList v-model="internalValue" :items="options" />
+<DropDownList v-if="options.length > 1" v-model="internalValue" :items="options" />
 `
 });
 
@@ -220,7 +220,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

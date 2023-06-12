@@ -276,7 +276,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Categorized Defined Value field type
         /// </summary>
-        public const string DEFINED_VALUE_CATEGORIZED = "3D986B5C-A706-4C69-B0F2-7C81286194CF";
+        public const string DEFINED_VALUE_CATEGORIZED = "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D";
 
         /// <summary>
         /// Defined Value Range field type

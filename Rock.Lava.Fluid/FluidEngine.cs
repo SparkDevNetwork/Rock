@@ -338,6 +338,7 @@ namespace Rock.Lava.Fluid
             options.Filters.AddFilter( "Minus", global::Fluid.Filters.NumberFilters.Minus );
             options.Filters.AddFilter( "Modulo", global::Fluid.Filters.NumberFilters.Modulo );
             options.Filters.AddFilter( "Plus", global::Fluid.Filters.NumberFilters.Plus );
+            options.Filters.AddFilter( "Round", global::Fluid.Filters.NumberFilters.Round );
             options.Filters.AddFilter( "Times", global::Fluid.Filters.NumberFilters.Times );
 
             options.Filters.AddFilter( "Append", global::Fluid.Filters.StringFilters.Append );
