@@ -21,7 +21,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-
+using EF6.TagWith;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.IpAddress;
@@ -626,6 +626,7 @@ namespace Rock.Jobs
                     && s.Id > minId )
                 .OrderBy( s => s.Id )
                 .Take( maxRecordsToReturn )
+                .TagWith( this.GetType().FullName + $" ({this.GetJobId()})" )
                 .ToList();
 
                 return sessions;
