@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Examples
     {
         #region Fields
 
-        private const string DEFINED_TYPE_ROUTE = "/admintools/general/defined-type/";
+        private const string DEFINED_TYPE_ROUTE = "/admin/general/defined-types/";
 
         #endregion Fields
 
