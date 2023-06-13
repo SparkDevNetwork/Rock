@@ -187,6 +187,8 @@
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleSignup\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\AccountEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\Login\" />
@@ -683,6 +685,14 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\landingPageContentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetMetricsRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetMetricsResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetServiceTimesRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetWeekendDatesRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryMetricCategoryBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryMetricItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AccountEntry\accountEntryAccountInfoBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AccountEntry\accountEntryCompletedStepBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AccountEntry\accountEntryConfirmationSentStepBag.d.ts" />
