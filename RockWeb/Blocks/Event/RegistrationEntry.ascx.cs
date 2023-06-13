@@ -862,19 +862,19 @@ namespace RockWeb.Blocks.Event
 
             if ( registrationInstance == null )
             {
-                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+                ShowWarning( String.Empty, string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
             }
             else if ( registrationInstance.EndDateTime < RockDateTime.Now )
             {
-                ShowWarning( "Sorry", string.Format( "{0} closed on {1}.", registrationInstance.Name, registrationInstance.EndDateTime.ToShortDateString() ) );
+                ShowWarning( String.Empty, string.Format( "{0} for {1} closed on {2}.", RegistrationTerm, registrationInstance.Name, registrationInstance.EndDateTime.ToShortDateString() ) );
             }
             else if ( registrationInstance.StartDateTime > RockDateTime.Today )
             {
-                ShowWarning( "Sorry", string.Format( "{0} for {1} does not open until {2}.", RegistrationTerm, registrationInstance.Name, registrationInstance.StartDateTime.ToShortDateString() ) );
+                ShowWarning( String.Empty, string.Format( "{0} for {1} does not open until {2}.", RegistrationTerm, registrationInstance.Name, registrationInstance.StartDateTime.ToShortDateString() ) );
             }
             else
             {
-                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+                ShowWarning( String.Empty, string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
             }
         }
 
@@ -3018,7 +3018,7 @@ namespace RockWeb.Blocks.Event
 
                     /**
                       * 06/07/2022 - KA
-                      * 
+                      *
                       * Logic is as follows. If the Template RegistrarOption was set to UseFirstRegistrant
                       * then chances are a Person was created or found for the first Registrant and used
                       * as the Registrar. In that case then we don't create a new Person for the first
@@ -4755,7 +4755,7 @@ namespace RockWeb.Blocks.Event
         private void ShowWarning( string heading, string text )
         {
             nbMain.Heading = heading;
-            nbMain.Text = string.Format( "<p>{0}</p>", text );
+            nbMain.Text = text;
             nbMain.NotificationBoxType = NotificationBoxType.Warning;
             nbMain.Visible = true;
         }
