@@ -28,6 +28,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The block template for the mobile notes block.
         /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBERS = "89322C87-CA36-4169-9361-FDA4EFEF07C1";
+
+        /// <summary>
+        /// The block template for the mobile notes block.
+        /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_NOTES = "37F44005-C4D8-4527-BA86-B6F8B72BF243";
 
         /// <summary>
