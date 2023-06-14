@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            RockContext rockContext = new RockContext();
+            var rockContext = new RockContext();
             PersistedDatasetService persistedDatasetService = new PersistedDatasetService( rockContext );
 
             // Use AsNoTracking() since these records won't be modified, and therefore don't need to be tracked by the EF change tracker
@@ -300,7 +300,18 @@ namespace RockWeb.Blocks.Cms
                 qry = qry.OrderBy( a => a.Name ).ThenBy( a => a.AccessKey );
             }
 
-            gList.SetLinqDataSource( qry );
+            // Get data. We need to do this so we can get the size of the return set. Confirmed that the anonymous type below does a SQL LEN() function.
+            var persistedDataSet = qry.Select( d => new
+            {
+                d.Name,
+                d.Id,
+                Size = d.ResultData.Length / 1024,
+                d.AccessKey,
+                d.TimeToBuildMS,
+                d.LastRefreshDateTime,
+            } ).ToList();
+
+            gList.DataSource = persistedDataSet;
             gList.DataBind();
         }
 
