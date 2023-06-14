@@ -413,7 +413,7 @@ END CATCH;";
                         };
                     }
 
-                    return new SqlParameter( objectParameter.Name, objectParameter.Value );
+                    return new SqlParameter( objectParameter.Name, objectParameter.Value ?? DBNull.Value );
                 } )
             )
             .ToArray();
