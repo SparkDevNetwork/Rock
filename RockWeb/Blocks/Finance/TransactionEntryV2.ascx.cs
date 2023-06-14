@@ -2240,27 +2240,16 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         private Person GetTargetPerson( RockContext rockContext )
         {
+            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
             string personActionId = PageParameter( PageParameterKey.Person );
-            if ( personActionId.IsNullOrWhiteSpace() )
+            if ( personActionId.IsNullOrWhiteSpace() && targetPersonValue.IsNullOrWhiteSpace() )
             {
                 // If there is no person action identifier, just use the currently logged in Person.
                 return CurrentPerson;
             }
 
-            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
-            if ( targetPersonValue.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            var targetPersonGuid = targetPersonValue.AsGuidOrNull();
-            if ( targetPersonGuid == null )
-            {
-                return null;
-            }
-
-            var targetPerson = new PersonService( rockContext ).Get( targetPersonGuid.Value );
-            return targetPerson;
+            var targetPersonGuid = targetPersonValue?.AsGuidOrNull();
+            return targetPersonGuid != null ? new PersonService( rockContext ).Get( targetPersonGuid.Value ) : null;
         }
 
         /// <summary>
@@ -2518,11 +2507,18 @@ mission. We are so grateful for your commitment.</p>
         private void BindPersonSavedAccounts()
         {
             ddlPersonSavedAccount.Visible = false;
-            var currentSavedAccountSelection = ddlPersonSavedAccount.SelectedValue;
-
+            ddlPersonSavedAccount.Items.Clear();
+            pnlSavedAccounts.Visible = false;
 
             var rockContext = new RockContext();
             var targetPerson = GetTargetPerson( rockContext );
+
+            // No person, no accounts
+            if ( targetPerson == null )
+            {
+                return;
+            }
+
             var personSavedAccountsQuery = new FinancialPersonSavedAccountService( rockContext )
                 .GetByPersonId( targetPerson.Id )
                 .Where( a => !a.IsSystem )
@@ -2587,6 +2583,7 @@ mission. We are so grateful for your commitment.</p>
 
             ddlPersonSavedAccount.Items.Add( new ListItem( "Use a different payment method", 0.ToString() ) );
 
+            var currentSavedAccountSelection = ddlPersonSavedAccount.SelectedValue;
             if ( currentSavedAccountSelection.IsNotNullOrWhiteSpace() )
             {
                 ddlPersonSavedAccount.SetValue( currentSavedAccountSelection );
@@ -3100,7 +3097,7 @@ mission. We are so grateful for your commitment.</p>
 
             // If target person does not have a login, have them create a UserName and password
             var targetPerson = GetTargetPerson( rockContext );
-            var hasUserLogin = new UserLoginService( rockContext ).GetByPersonId( targetPerson.Id ).Any();
+            var hasUserLogin = targetPerson != null ? new UserLoginService( rockContext ).GetByPersonId( targetPerson.Id ).Any() : false;
             pnlCreateLogin.Visible = !hasUserLogin;
 
             NavigateToStep( EntryStep.ShowTransactionSummary );
