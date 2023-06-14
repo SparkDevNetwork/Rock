@@ -29,16 +29,6 @@
     <Parameter name="GoogleBucketName" value="" />
     <Parameter name="GoogleServiceAccountJsonKey" value="" />
 
-    <!-- Test Database Configuration -->
-    <Parameter name="SampleDataUrl" value="http://storage.rockrms.com/sampledata/sampledata_1_14_1.xml" />
-    <Parameter name="DatabaseCreatorKey" value="RockIntegrationTestProject" />
-    <!-- The DatabaseRefreshStrategy setting determines if the test database is replaced for each test run.
-         * "never" prevents an existing database from being replaced. 
-         * "verified" (recommended) only replaces an existing database if the DatabaseCreatorKey matches this configuration.
-         * "force" always overwrites the existing database - use with caution!
-    -->
-    <Parameter name="DatabaseRefreshStrategy" value="verified" />
-
   </TestRunParameters>
 
   <!-- MSTest adapter -->

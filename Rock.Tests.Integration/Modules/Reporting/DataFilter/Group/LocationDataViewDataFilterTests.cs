@@ -33,15 +33,13 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            var helper = new ReportingModuleTestHelper( "TestData" );
-            helper.AddDataViewsForGroupsModule();
+            TestDataHelper.Reporting.AddDataViewsForGroupsModule();
         }
 
         [ClassCleanup]
         public static void Cleanup()
         {
-            var helper = new ReportingModuleTestHelper();
-            helper.DeleteDataViewsByRecordTag( new RockContext() );
+            TestDataHelper.Reporting.DeleteDataViewsByRecordTag( new RockContext(), "TestData" );
         }
 
         /// <summary>
@@ -83,7 +81,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
             // Verify all Groups have at least one Location where State = "AZ".
             var countOfGroupsNotInArizona = results.Where( x => !x.GroupLocations.Any( gl => gl.Location.State == "AZ" ) ).Count();
-            
+
             Assert.That.IsTrue( countOfGroupsNotInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
         }
 
