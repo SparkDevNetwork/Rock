@@ -222,6 +222,7 @@ import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.
 import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
 import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/interactionChannelInteractionComponentPicker.obs";
 import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
+import ValueList from "@Obsidian/Controls/valueList.obs";
 
 // #region Gallery Support
 
@@ -5324,6 +5325,7 @@ const keyValueListGallery = defineComponent({
             displayValueFirst,
             valueOptions,
             value: ref(null),
+            fullWidth: ref(false),
             keyPlaceholder: ref("Key"),
             valuePlaceholder: ref("Value"),
             importCode: getControlImportPath("keyValueList"),
@@ -5338,14 +5340,17 @@ const keyValueListGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" />
+    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" :fullWidth="fullWidth" />
 
     <template #settings>
         <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Limit Possible Values" v-model="limitValues" />
-            <CheckBox formGroupClasses="col-md-3" label="Show Value First" v-model="displayValueFirst" />
-            <TextBox formGroupClasses="col-md-3" label="Placeholder for Key Field" v-model="keyPlaceholder" />
-            <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePlaceholder" />
+            <CheckBox formGroupClasses="col-md-4" label="Limit Possible Values" v-model="limitValues" />
+            <CheckBox formGroupClasses="col-md-4" label="Show Value First" v-model="displayValueFirst" />
+            <CheckBox formGroupClasses="col-md-4" label="Full Width" v-model="fullWidth" />
+        </div>
+        <div class="row">
+            <TextBox formGroupClasses="col-md-4" label="Placeholder for Key Field" v-model="keyPlaceholder" />
+            <TextBox formGroupClasses="col-md-4" label="Placeholder for Value Field" v-model="valuePlaceholder" />
         </div>
     </template>
 </GalleryAndResult>`
@@ -8101,6 +8106,75 @@ const workflowPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates value list component */
+const valueListGallery = defineComponent({
+    name: "ValueListGallery",
+    components: {
+        GalleryAndResult,
+        ValueList,
+        CheckBox,
+        TextBox
+    },
+    setup() {
+        const usePredefinedValues = ref(false);
+        const displayValueFirst = ref(false);
+        const options: ListItemBag[] = [
+            {
+                text: "Option 1",
+                value: "1"
+            },
+            {
+                text: "Option 2",
+                value: "2"
+            },
+            {
+                text: "Option 3",
+                value: "3"
+            },
+        ];
+
+        const customValues = computed(() => usePredefinedValues.value ? options : null);
+
+        return {
+            usePredefinedValues: usePredefinedValues,
+            displayValueFirst,
+            customValues,
+            fullWidth: ref(false),
+            useDefinedType: ref(false),
+            value: ref(null),
+            definedTypeGuid: DefinedType.PersonConnectionStatus,
+            valuePrompt: ref("Value"),
+            importCode: getSfcControlImportPath("valueList"),
+            exampleCode: `<ValueList label="List of Values" v-model="value" :customValues="customValues" :valuePrompt="valuePrompt" :definedTypeGuid="definedTypeGuid" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <ValueList label="List of Values" v-model="value" :customValues="customValues" :valuePrompt="valuePrompt" :fullWidth="fullWidth" :definedTypeGuid="useDefinedType ? definedTypeGuid : null" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-md-3" label="Use Predefined Values" v-model="usePredefinedValues" help="Enabling this will pass a pre-made <code>ListItemBag[]</code> of options to the ValueList component via the <code>customValues</code> prop." :disabled="useDefinedType" />
+            <CheckBox formGroupClasses="col-md-3" label="Use Defined Type" v-model="useDefinedType" help="Enabling this will pass the Connection Status Defined Type's GUID to the ValueList component via the <code>definedTypeGuid</code> prop." :disabled="usePredefinedValues" />
+            <CheckBox formGroupClasses="col-md-3" label="Full Width" v-model="fullWidth" />
+            <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePrompt" />
+        </div>
+        <p>
+            There are 2 different props that control what options users can choose/enter.
+            The <code>definedTypeGuid</code> prop takes a GUID string and will limit users to choosing values from a list of defined values of that type.
+            The <code>customValues</code> option allows you to pass a <code>ListItemBag</code> array in as a list of options that the user can choose from a dropdown.
+            If both of those props are specified, the <code>definedTypeGuid</code> prop will take precedence.
+            If neither option is used, a text box is shown, allowing users to manually type in any values.
+        </p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -8249,6 +8323,7 @@ const controlGalleryComponents: Record<string, Component> = [
     registrationInstancePickerGallery,
     interactionChannelInteractionComponentPickerGallery,
     workflowPickerGallery,
+    valueListGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
