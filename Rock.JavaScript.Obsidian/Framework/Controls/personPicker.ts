@@ -418,10 +418,11 @@ export default defineComponent({
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i class="fa fa-user fa-fw"></i>
                     <span class="selected-name">{{ selectedName }}</span>
-                    <button role="button" type="button" aria-label="Clear selection" v-if="showClear" class="btn picker-select-none" @click.prevent.stop="onClear">
-                        <i class="fa fa-times"></i>
-                    </button>
-                    <b class="fa fa-caret-down"></b>
+                    <b class="fa fa-caret-down pull-right"></b>
+                </a>
+
+                <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onClear">
+                    <i class="fa fa-times"></i>
                 </a>
 
                 <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search">
