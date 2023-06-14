@@ -3453,7 +3453,7 @@ mission. We are so grateful for your commitment.</p>
                     else if ( financialPaymentDetail?.CurrencyTypeValue != null )
                     {
                         accountTitle = $"Text-To-Give - {financialPaymentDetail.CurrencyTypeValue.Value}";
-                    }    
+                    }
 
                     CreateSavedAccount( accountTitle, rockContext, true );
                 }
@@ -3686,7 +3686,6 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void RegisterScript()
         {
-            RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             var currencyCodeInfo = new RockCurrencyCodeInfo();
 

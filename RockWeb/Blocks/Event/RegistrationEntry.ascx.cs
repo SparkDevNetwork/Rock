@@ -4811,6 +4811,7 @@ namespace RockWeb.Blocks.Event
                 return;
             }
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Shared/CardSprites.css", true );
             RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             var controlFamilyGuid = Guid.Empty;
