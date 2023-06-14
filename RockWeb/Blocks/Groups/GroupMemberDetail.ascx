@@ -128,20 +128,15 @@
                     <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false" />
                     <Rock:ModalDialog ID="mdRestoreArchivedPrompt" runat="server" Visible="false" Title="Restore Group Member" CancelLinkVisible="false">
                         <Content>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <asp:HiddenField ID="hfRestoreGroupMemberId" runat="server" />
-                                    <Rock:NotificationBox ID="nbRestoreError" runat="server" NotificationBoxType="Danger" Visible="false"/>
-                                    <Rock:NotificationBox ID="nbRestoreArchivedGroupMember" runat="server" NotificationBoxType="Info" Text="There is an archived record for the person in this role in this group. Do you want to restore the previous settings? Notes will be retained." />
-                                </div>
-                            </div>
-                            <br />
-                            <div class="actions">
-                                <asp:LinkButton ID="btnRestoreArchivedGroupMember" runat="server" CssClass="btn btn-primary" Text="Restore" OnClick="btnRestoreArchivedGroupMember_Click" />
-                                <asp:LinkButton ID="btnDontRestoreArchiveGroupmember" runat="server" CssClass="btn btn-default" Text="Don't Restore" OnClick="btnDontRestoreArchiveGroupmember_Click" />
-                                <asp:LinkButton ID="btnCancelRestore" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelRestore_Click" />
-                            </div>
+                            <asp:HiddenField ID="hfRestoreGroupMemberId" runat="server" />
+                            <Rock:NotificationBox ID="nbRestoreError" runat="server" NotificationBoxType="Danger" Visible="false"/>
+                            <Rock:NotificationBox ID="nbRestoreArchivedGroupMember" runat="server" NotificationBoxType="Info" Text="There is an archived record for the person in this role in this group. Do you want to restore the previous settings? Notes will be retained." />
                         </Content>
+                        <Footer>
+                            <asp:LinkButton ID="btnRestoreArchivedGroupMember" runat="server" CssClass="btn btn-primary" Text="Restore" OnClick="btnRestoreArchivedGroupMember_Click" />
+                            <asp:LinkButton ID="btnDontRestoreArchiveGroupmember" runat="server" CssClass="btn btn-default" Text="Don't Restore" OnClick="btnDontRestoreArchiveGroupmember_Click" />
+                            <asp:LinkButton ID="btnCancelRestore" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelRestore_Click" />
+                        </Footer>
                     </Rock:ModalDialog>
 
                     <div class="actions">
@@ -161,23 +156,18 @@
         <Rock:ModalDialog ID="mdMoveGroupMember" runat="server" Title="Move Group Member" ValidationGroup="vgMoveGroupMember" Visible="false" CancelLinkVisible="false">
             <Content>
                 <asp:ValidationSummary ID="vsMoveGroupMember" runat="server" ValidationGroup="vgMoveGroupMember" HeaderText="Please correct the following:" CssClass="alert alert-validation"  />
-                <div class="row">
-                    <div class="col-md-12">
                         <Rock:RockLiteral ID="lCurrentGroup" runat="server" Label="Current Group" />
                         <Rock:GroupPicker ID="gpMoveGroupMember" runat="server" Required="true" Label="Destination Group" ValidationGroup="vgMoveGroupMember" OnSelectItem="gpMoveGroupMember_SelectItem" />
                         <Rock:GroupRolePicker ID="grpMoveGroupMember" runat="server" Label="Role" ValidationGroup="vgMoveGroupMember" GroupTypeId="0" />
                         <Rock:RockCheckBox ID="cbMoveGroupMemberMoveNotes" runat="server" ValidationGroup="vgMoveGroupMember" Label="Move Notes" Help="If this group member has notes, move these notes with them to their new group." />
                         <Rock:RockCheckBox ID="cbMoveGroupMemberFundraisingTransactions" runat="server" ValidationGroup="vgMoveGroupMember" Label="Move Fundraising Financial Transactions" Help="If enabled the related fundraising financial transactions will be re-linked to the new fundraising group. If the new group has different financial accounts configured adjustment financial transactions may be created to move the dollars from one account to another.  This will only occur if the batches for the original accounts are closed. The new transactions will be placed in a new batch." />
                         <Rock:NotificationBox ID="nbMoveGroupMemberWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
-                    </div>
-                </div>
-                <br />
-                <div class="actions">
-                    <asp:LinkButton ID="btnMoveGroupMember" runat="server" CssClass="btn btn-primary" Text="Move" ValidationGroup="vgMoveGroupMember" OnClick="btnMoveGroupMember_Click" />
-                </div>
             </Content>
+            <Footer>
+                <asp:LinkButton ID="btnMoveGroupMember" runat="server" CssClass="btn btn-primary" Text="Move" ValidationGroup="vgMoveGroupMember" OnClick="btnMoveGroupMember_Click" />
+            </Footer>
         </Rock:ModalDialog>
-        
+
         <Rock:ModalDialog ID="mdQuickCommunication" runat="server" Title="Send Group Member Communication" ValidationGroup="vgSendGroupMemberCommunication" Visible="false" SaveButtonText="Send" SaveButtonCausesValidation="true" OnSaveClick="mdQuickCommunication_SaveClick" CancelLinkVisible ="true">
             <Content>
                 <asp:ValidationSummary ID="vsSendGroupMemberCommunication" runat="server" ValidationGroup="vgSendGroupMemberCommunication" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
