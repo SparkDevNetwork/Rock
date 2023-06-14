@@ -496,10 +496,11 @@ namespace Rock.MergeTemplates
                     // sweep thru any remaining un-merged body parts for any Lava having to do with Global merge fields
                     foreach ( var bodyTextPart in outputDoc.MainDocumentPart.Document.Body.Descendants<Text>() )
                     {
-                        string nodeText = bodyTextPart.Text.ReplaceWordChars();
+                        var nodeText = bodyTextPart.Text.ReplaceWordChars();
                         if ( lavaRegEx.IsMatch( nodeText ) )
                         {
-                            bodyTextPart.Text = nodeText.ResolveMergeFields( globalMergeHash, true, true );
+                            nodeText = nodeText.ResolveMergeFields( globalMergeHash, encodeStrings: false, throwExceptionOnErrors: true );
+                            bodyTextPart.Text = nodeText;
                         }
                     }
 
@@ -537,10 +538,11 @@ namespace Rock.MergeTemplates
                     {
                         foreach ( var currentText in currentRun.Descendants<DocumentFormat.OpenXml.Wordprocessing.Text>() )
                         {
-                            string nodeText = currentText.Text.ReplaceWordChars();
+                            var nodeText = currentText.Text.ReplaceWordChars();
                             if ( lavaRegEx.IsMatch( nodeText ) )
                             {
-                                currentText.Text = nodeText.ResolveMergeFields( globalMergeHash, true, true );
+                                nodeText = nodeText.ResolveMergeFields( globalMergeHash, encodeStrings: false, throwExceptionOnErrors: true );
+                                currentText.Text = nodeText;
                             }
                         }
                     }
