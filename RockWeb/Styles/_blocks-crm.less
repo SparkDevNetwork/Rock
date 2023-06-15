@@ -47,7 +47,6 @@
   align-items: center;
   justify-content: center;
   margin: 0 .133333em;
-  font-size: 45px;
   font-size: var(--badge-size, 45px);
   line-height: 1;
   color: #fff;
@@ -584,7 +583,6 @@
 
   .rockbadge-attendance & {
     width: 220px;
-    height: 40px;
     height: var(--badge-size, 40px);
   }
 
@@ -1147,81 +1145,6 @@ tr.inactive {
 }
 
 
-@disc-chart-height: 425px;
-.discchart {
-  position: relative;
-  width: 80%;
-  max-width: 650px;
-  height: @disc-chart-height;
-  padding: 0;
-  margin: 36px auto;
-  clear: both;
-  font-size: 0;
-  background-image:
-    linear-gradient(
-      to bottom,
-      @ui-4 0%,
-      transparent 2%,
-      transparent 100%
-    );
-  background-size: 100% (@disc-chart-height/10);
-
-  li {
-    position: relative;
-    display: inline-block;
-    width: 22.5%;
-    height: 425px;
-    padding: 0;
-    margin: 0 2% 0 0;
-    color: @btn-primary-color;
-    text-align: center;
-    vertical-align: bottom;
-    background-color: lighten(@brand-primary, 10%);
-
-    &.discchart-midpoint {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 70%;
-      margin: 0;
-      background-color: transparent;
-      border-top: 2px solid @brand-danger;
-      border-radius: 0;
-    }
-  }
-
-  .discbar-label {
-    position: absolute;
-    bottom: 10px;
-    width: 100%;
-    overflow: hidden;
-    font-size: 28px;
-    font-weight: @font-weight-bold;
-    text-shadow: 0 0 3px @brand-primary;
-  }
-
-  .discbar {
-    &::before {
-      position: absolute;
-      top: -25px;
-      right: 0;
-      left: 0;
-      z-index: 1;
-      display: block;
-      font-size: 20px;
-      line-height: 1em;
-      color: @text-color;
-      text-align: center;
-      word-wrap: break-word;
-      content: attr(title);
-    }
-
-    &.discbar-primary {
-      background: @brand-primary;
-    }
-  }
-}
-
 .question-row {
   margin-bottom: @padding-base-vertical * 8;
 
@@ -1333,16 +1256,14 @@ tr.inactive {
 .col-steps {
   position: relative;
   float: left;
-  width: 25%;
-  width: ~"calc(100% / var(--stepsPerRowMobile))";
+  width: ~"calc(100% / var(--stepsPerRowMobile, 4))";
   min-height: 1px;
   padding-right: 15px;
   padding-left: 15px;
   margin-bottom: 15px;
 
   @media (min-width: @steps-breakpoint) {
-    width: 100%;
-    width: ~"calc(100% / var(--stepsPerRow))";
+    width: ~"calc(100% / var(--stepsPerRow, 1))";
   }
 }
 
@@ -1550,8 +1471,7 @@ tr.inactive {
   border: 1px solid @panel-border;
 
   &.active {
-    border-color: @brand-primary;
-    border-color: var(--brand-primary, @brand-primary);
+    border-color: var(--brand-primary);
   }
 
   a {
