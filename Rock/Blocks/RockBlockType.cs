@@ -198,6 +198,16 @@ namespace Rock.Blocks
             }
         }
 
+        /// <summary>
+        /// Returns a page parameter.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public string PageParameter( string name )
+        {
+            return RequestContext?.GetPageParameter( name );
+        }
+
         #endregion
 
         #region Person Preferences

@@ -88,16 +88,6 @@ namespace Rock.Blocks
         #region Methods
 
         /// <summary>
-        /// Returns a page parameter.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
-        public string PageParameter( string name )
-        {
-            return RequestContext?.GetPageParameter( name );
-        }
-
-        /// <summary>
         /// Gets the property values that will be sent to the block.
         /// </summary>
         /// <param name="clientType"></param>
