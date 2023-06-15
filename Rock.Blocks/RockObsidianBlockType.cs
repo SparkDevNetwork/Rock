@@ -250,23 +250,11 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity whose attributes will be inspected.</typeparam>
         /// <returns>A list of distinct EntityTypeQualifiedColumn values for <typeparamref name="TEntity"/>.</returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the GetAttributeQualifiedColumns method on AttributeCache instead.")]
         protected List<string> GetAttributeQualifiedColumns<TEntity>()
         {
-            var entityTypeId = EntityTypeCache.Get<TEntity>( false )?.Id;
-
-            if ( !entityTypeId.HasValue )
-            {
-                return new List<string>();
-            }
-
-            var attributes = AttributeCache.GetByEntityType( entityTypeId );
-
-            var qualifiedColumns = attributes.Select( a => a.EntityTypeQualifierColumn )
-                .Distinct()
-                .Where( c => !c.IsNullOrWhiteSpace() )
-                .ToList();
-
-            return qualifiedColumns;
+            return AttributeCache.GetAttributeQualifiedColumns<TEntity>();
         }
 
         #endregion Methods

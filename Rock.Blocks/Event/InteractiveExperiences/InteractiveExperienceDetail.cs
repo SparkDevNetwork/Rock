@@ -81,7 +81,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<InteractiveExperience>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<InteractiveExperience>();
 
                 return box;
             }

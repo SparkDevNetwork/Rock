@@ -79,7 +79,7 @@ namespace Rock.Blocks.Communication
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<SystemPhoneNumber>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<SystemPhoneNumber>();
 
                 return box;
             }

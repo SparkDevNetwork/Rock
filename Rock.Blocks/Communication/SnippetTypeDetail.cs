@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Communication.SnippetTypeDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication
 {
@@ -77,7 +78,7 @@ namespace Rock.Blocks.Communication
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<SnippetType>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<SnippetType>();
 
                 return box;
             }

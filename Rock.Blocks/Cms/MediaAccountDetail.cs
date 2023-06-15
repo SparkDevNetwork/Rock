@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaAccountDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
 {
@@ -75,7 +76,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<MediaAccount>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<MediaAccount>();
 
                 return box;
             }
