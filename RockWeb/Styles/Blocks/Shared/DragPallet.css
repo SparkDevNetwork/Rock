@@ -64,3 +64,14 @@
     border-bottom: 3px solid var(--color-primary);
     border-radius: 0;
 }
+
+.component.gu-mirror, .sms-action.gu-mirror {
+    list-style: none;
+    cursor: -moz-grabbing !important;
+    cursor: -webkit-grabbing !important;
+    cursor: grabbing !important;
+}
+
+.component.gu-mirror::before, .component.gu-mirror::after, .sms-action.gu-mirror::before, .sms-action.gu-mirror::after {
+    display: none;
+}

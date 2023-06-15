@@ -89,6 +89,7 @@ namespace RockWeb.Blocks.Mobile
             base.OnInit( e );
 
             RockPage.AddCSSLink( "~/Styles/Blocks/Shared/DragPallet.css", true );
+            RockPage.AddCSSLink( "~/Styles/Blocks/Mobile/Mobile.css", true );
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js" );
 
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Page ) ).Id;
