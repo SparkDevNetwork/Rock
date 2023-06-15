@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -640,30 +641,26 @@ namespace RockWeb.Blocks.Administration
             }
 
             // Get a list of BlockTypes that does not include Mobile block types.
-            var allExceptMobileBlockTypes = BlockTypeCache.All();
-            foreach ( var cachedBlockType in BlockTypeCache.All().Where( b => string.IsNullOrEmpty( b.Path ) ) )
-            {
-                try
+            var webBlockTypes = BlockTypeCache.All()
+                .Where( bt =>
                 {
-                    var blockCompiledType = cachedBlockType.GetCompiledType();
+                    var type = bt.GetCompiledType();
 
-                    if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    if ( typeof( IRockObsidianBlockType ).IsAssignableFrom( type ) )
                     {
-                        allExceptMobileBlockTypes.Remove( cachedBlockType );
+                        return true;
                     }
-                }
-                catch ( Exception )
-                {
-                    // Intentionally ignored
-                }
-            }
 
-            var blockTypes = allExceptMobileBlockTypes.Select( b => new {
+                    return !typeof( IRockMobileBlockType ).IsAssignableFrom( type );
+                } )
+                .ToList();
+
+            var blockTypes = webBlockTypes.Select( b => new {
                 b.Id,
                 b.Name,
                 b.Category,
                 b.Description,
-                IsObsidian = typeof( Rock.Blocks.IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() )
+                IsObsidian = typeof( IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() )
             } ).ToList();
 
             ddlBlockType.Items.Clear();
