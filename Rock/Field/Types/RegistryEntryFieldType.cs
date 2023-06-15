@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
-    [Rock.SystemGuid.FieldTypeGuid( "D98E1D88-2240-4248-B93B-0512BD3BB61A" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REGISTRY_ENTRY )]
     public class RegistryEntryFieldType : FieldType
     {
 
