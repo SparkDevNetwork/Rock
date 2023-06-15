@@ -1,0 +1,138 @@
+.sms-action-components {
+  background: var(--theme-lightest);
+}
+
+.sms-actions-container {
+  padding: 20px 50px !important;
+  counter-reset: section;
+}
+
+.sms-actions-container .component {
+  display: none;
+}
+
+.sms-actions-container .component.gu-transit {
+  display: block;
+}
+
+.sms-action {
+  --connector-size: 28px;
+  position: relative;
+  max-width: 500px;
+  padding: 20px 16px;
+  margin: 0 auto 20px;
+  font-size: 21px;
+  cursor: pointer;
+  background-color: rgba(255,255,255,.9);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
+}
+
+.sms-action::after {
+  position: absolute;
+  top: 20px;
+  left: calc((var(--connector-size) + 12px) * -1);
+  display: block;
+  width: var(--connector-size);
+  height: var(--connector-size);
+  font-size: 14px;
+  color: #fff;
+  text-align: center;
+  content: counter(section);
+  counter-increment: section;
+  background-color: #737475;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+
+.sms-action::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--connector-size) * -1);
+  width: 2px;
+  height: calc(100% + 20px);
+  margin-left: 1px;
+  content: "";
+  background: #dddbda;
+}
+
+.sms-action.inactive {
+  color: rgba(45,46,49,.5);
+  background-color: rgba(255,255,255,.5);
+}
+
+.sms-action.inactive::after {
+  display: none;
+}
+
+.sms-action:first-child::before {
+  top: 20px;
+}
+
+.sms-action:last-child::before {
+  height: calc(100% - var(--connector-size));
+}
+
+.sms-action.editing {
+  box-shadow: 0 0 0 4px var(--color-primary);
+}
+
+.sms-action .reorder {
+  cursor: grab;
+}
+
+.sms-action > .fa {
+  width: 30px;
+  padding-right: 2px;
+  color: #737475;
+  text-align: center;
+}
+
+.sms-pipeline-detail .sms-heading {
+  max-width: 500px;
+  padding: 20px 16px;
+  margin: 0 auto 20px;
+  font-size: 21px;
+  text-align: center;
+  cursor: pointer;
+  background-color: var(--theme-lightest);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
+}
+
+.sms-pipeline-detail .drag-container {
+  height: 100%;
+}
+
+.sms-pipeline-detail .drag-container-empty::after {
+  display: block;
+  max-width: 500px;
+  height: 200px;
+  padding: 80px 0;
+  margin: 0 auto 20px;
+  font-size: 20px;
+  text-align: center;
+  content: "Drag and Drop Here";
+  border: 3px dashed rgba(0,0,0,.2);
+}
+
+/* Replace 18px with panel-body-padding */
+.sms-pipeline-detail h4 {
+  padding: 12px 18px;
+  margin: 1px -18px 16px;
+  font-size: 18px;
+  font-weight: 500;
+  background: var(--theme-lightest);
+  border-top: 1px solid #eee;
+}
+
+.sms-pipeline-detail .component.gu-transit {
+  max-width: 500px;
+  padding: 20px 0;
+  margin: 0 auto 20px;
+  font-size: 20px;
+  text-align: center;
+  list-style: none;
+  border: 3px solid rgba(0,0,0,.2);
+}

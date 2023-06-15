@@ -61,6 +61,8 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Communication/SmsPipelineDetail.css", true );
+
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js" );
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", SmsPipeline.FriendlyTypeName );
         }

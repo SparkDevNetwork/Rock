@@ -180,9 +180,6 @@ iframe.email-body {
 // -------------------------
 
 
-.sms-action-components {
-  background: @panel-heading-bg;
-}
 
 .components-list {
   margin: 6px;
@@ -264,96 +261,6 @@ iframe.email-body {
   }
 }
 
-.sms-actions-container {
-  padding: 20px 50px !important;
-  counter-reset: section;
-
-  .component {
-    display: none;
-  }
-
-  .component.gu-transit {
-    display: block;
-  }
-}
-
-.sms-action {
-  position: relative;
-  max-width: 500px;
-  padding: 20px 16px;
-  margin: 0 auto 20px;
-  font-size: 21px;
-  cursor: pointer;
-  background-color: rgba(255, 255, 255, .9);
-  border-radius: 2px;
-  box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
-
-  @connector-size: 28px;
-  @connector-offset: 0;
-
-  &::after {
-    position: absolute;
-    top: 20px;
-    left: -(@connector-size + @connector-offset + 12px);
-    display: block;
-    width: @connector-size;
-    height: @connector-size;
-    font-size: 14px;
-    color: #fff;
-    text-align: center;
-    content: counter(section);
-    counter-increment: section;                 /* Increment the value of section counter by 1 */
-    background-color: @btn-action-bg;
-    border: 2px solid #fff;
-    border-radius: 50%;
-  }
-
-  &::before {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -(@connector-size + @connector-offset);
-    width: 2px;
-    height: ~"calc(100% + 20px)";
-    margin-left: 1px;
-    content: "";
-    background: #dddbda;
-  }
-
-  &.inactive {
-    color: fade(@text-color, 50%);
-    background-color: rgba(255, 255, 255, .5);
-
-    &::after {
-      display: none;
-    }
-  }
-
-  &:first-child::before {
-    top: 20px;
-  }
-
-  &:last-child::before {
-    height: ~"calc(100% - 28px)";
-  }
-
-  &.editing {
-    box-shadow: 0 0 0 4px @brand-primary;
-  }
-
-  .reorder {
-    cursor: move;
-    cursor: -webkit-grab;
-    cursor: grab;
-  }
-
-  > .fa {
-    width: 30px;
-    padding-right: 2px;
-    color: @text-muted;
-    text-align: center;
-  }
-}
 
 .panel-palette {
   margin: 0;
@@ -367,55 +274,6 @@ iframe.email-body {
     background: @panel-heading-bg;
     border-bottom: 3px solid @brand-primary;
     border-radius: 0;
-  }
-}
-
-.sms-pipeline-detail {
-  .sms-heading {
-    max-width: 500px;
-    padding: 20px 16px;
-    margin: 0 auto 20px;
-    font-size: 21px;
-    text-align: center;
-    cursor: pointer;
-    background-color: @panel-heading-bg;
-    border-radius: 2px;
-    box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
-  }
-
-  .drag-container {
-    height: 100%;
-  }
-
-  .drag-container-empty::after {
-    display: block;
-    max-width: 500px;
-    height: 200px;
-    padding: 80px 0;
-    margin: 0 auto 20px;
-    font-size: 20px;
-    text-align: center;
-    content: "Drag and Drop Here";
-    border: 3px dashed rgba(0,0,0,.2);
-  }
-
-  h4 {
-    padding: 12px @panel-body-padding;
-    margin: 1px -@panel-body-padding 16px;
-    font-size: 18px;
-    font-weight: 500;
-    background: @panel-heading-bg;
-    border-top: 1px solid @panel-border;
-  }
-
-  .component.gu-transit {
-    max-width: 500px;
-    padding: 20px 0;
-    margin: 0 auto 20px;
-    font-size: 20px;
-    text-align: center;
-    list-style: none;
-    border: 3px solid fade(#000, 20%);
   }
 }
 
