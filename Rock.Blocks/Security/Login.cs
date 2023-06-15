@@ -738,7 +738,8 @@ namespace Rock.Blocks.Security
         /// <returns>The current page URL.</returns>
         private string GetCurrentPageUrl()
         {
-            return $"{this.RequestContext.RootUrlPath}page/{PageCache.Id}";
+            var rootUrl = this.RequestContext.RootUrlPath?.TrimEnd( '/' );
+            return $"{rootUrl}/page/{PageCache.Id}";
         }
 
         /// <summary>
