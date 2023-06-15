@@ -262,10 +262,12 @@ namespace Rock.Jobs
                             {
                                 Count = s.Interactions.Count(),
                                 MaxDateTime = s.Interactions.Max( i => ( DateTime? ) i.InteractionDateTime ),
-                                MinDateTime = s.Interactions.Min( i => ( DateTime? ) i.InteractionDateTime )
+                                MinDateTime = s.Interactions.Min( i => ( DateTime? ) i.InteractionDateTime ),
+                                InteractionChannelId = s.Interactions.FirstOrDefault().InteractionComponent.InteractionChannelId
                             } ).FirstOrDefault();
 
                             interactionSession.InteractionCount = interactionStats?.Count ?? 0;
+                            interactionSession.InteractionChannelId = interactionStats?.InteractionChannelId;
 
                             // Calculate the session duration depending on the number of interactions. Note that we won't know the
                             // duration of time spend on the last page so we'll assume 60 seconds as the average amount of time

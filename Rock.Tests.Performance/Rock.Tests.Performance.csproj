@@ -292,7 +292,6 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="app.ConnectionStrings.config.example" />
-    <None Include="app.TestSettings.config" />
     <None Include="app.TestSettings.config.example" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -359,7 +358,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y</PostBuildEvent>
+    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y
+IF EXIST "$(ProjectDir)app.TestSettings.config" xcopy "$(ProjectDir)app.TestSettings.config" "$(TargetDir)" /y</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

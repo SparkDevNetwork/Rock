@@ -1307,7 +1307,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 Email = details.Email,
                 Gender = ToWeb( details.Gender ) ?? Rock.Model.Gender.Unknown,
                 IsEmailActive = true,
-                EmailPreference = EmailPreference.EmailAllowed,
+                EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
                 RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                 ConnectionStatusValueId = dvcConnectionStatus?.Id,
                 RecordStatusValueId = dvcRecordStatus?.Id

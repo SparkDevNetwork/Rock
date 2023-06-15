@@ -124,6 +124,10 @@
     <Compile Include="Migrations\202306121854027_NamePronunciationOverrideAddedToPerson.designer.cs">
       <DependentUpon>202306121854027_NamePronunciationOverrideAddedToPerson.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202306131734421_UpdateInteractionSessionIndices.cs" />
+    <Compile Include="Migrations\202306131734421_UpdateInteractionSessionIndices.designer.cs">
+      <DependentUpon>202306131734421_UpdateInteractionSessionIndices.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1722,6 +1726,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202306121854027_NamePronunciationOverrideAddedToPerson.resx">
       <DependentUpon>202306121854027_NamePronunciationOverrideAddedToPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306131734421_UpdateInteractionSessionIndices.resx">
+      <DependentUpon>202306131734421_UpdateInteractionSessionIndices.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>

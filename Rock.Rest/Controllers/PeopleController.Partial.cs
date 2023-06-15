@@ -1202,7 +1202,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetCurrentPersonImpersonationToken" )]
         [Rock.SystemGuid.RestActionGuid( "A4765A37-043B-49CE-AA9F-C3FFF055176C" )]
-        public string GetCurrentPersonImpersonationToken( DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
+        public string GetCurrentPersonImpersonationToken( DateTimeOffset? expireDateTime = null, int? usageLimit = null, int? pageId = null )
         {
             var currentPerson = GetPerson();
 
@@ -1211,7 +1211,15 @@ namespace Rock.Rest.Controllers
                 return string.Empty;
             }
 
-            return GetImpersonationParameter( currentPerson.Id, expireDateTime, usageLimit, pageId ).Substring( 8 );
+            // Convert to organization date time so that we don't expire
+            // the token from timezone differences.
+            DateTime? orgExpireDateTime = null;
+            if ( expireDateTime.HasValue )
+            {
+                orgExpireDateTime = expireDateTime.Value.ToOrganizationDateTime();
+            }
+
+            return GetImpersonationParameter( currentPerson.Id, orgExpireDateTime, usageLimit, pageId ).Substring( 8 );
         }
 
         /// <summary>
