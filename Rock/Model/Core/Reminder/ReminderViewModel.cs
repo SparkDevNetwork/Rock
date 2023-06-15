@@ -127,16 +127,12 @@ namespace Rock.Model
             {
                 var entityUrlMergeFields = new Dictionary<string, object>
                 {
-                    { "Entity", this.Entity }
+                    { "Entity", this.Entity },
+                    { "InternalApplicationRoot", GlobalAttributesCache.Value( "InternalApplicationRoot" ) },
+                    { "ExternalApplicationRoot", GlobalAttributesCache.Value( "ExternalApplicationRoot" ) }
                 };
 
                 entityUrl = entityUrlPattern.ResolveMergeFields( entityUrlMergeFields );
-
-                if ( entityUrl.StartsWith( "~/" ) )
-                {
-                    var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
-                    entityUrl = entityUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
-                }
             }
 
             return entityUrl;
