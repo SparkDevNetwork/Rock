@@ -54,6 +54,8 @@
     <Content Include="Framework\Controls\datePicker.obs" />
     <Content Include="Framework\Controls\dayOfWeekPicker.obs" />
     <Content Include="Framework\Controls\definedValuePicker.obs" />
+    <Content Include="Framework\Controls\entityTag.obs" />
+    <Content Include="Framework\Controls\tagList.obs" />
     <Content Include="Framework\Controls\ethnicityPicker.obs" />
     <Content Include="Framework\Controls\eventCalendarPicker.obs" />
     <Content Include="Framework\Controls\geoPicker.obs" />
@@ -308,7 +310,6 @@
     <TypeScriptCompile Include="Framework\Controls\rockAttributeFilter.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionHeader.ts" />
     <TypeScriptCompile Include="Framework\Controls\tabbedContent.ts" />
-    <TypeScriptCompile Include="Framework\Controls\entityTagList.ts" />
     <TypeScriptCompile Include="Framework\Controls\valueDetailList.ts" />
     <TypeScriptCompile Include="Framework\Core\Controls\valueDetailListItemBuilder.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragDrop.ts" />
@@ -1067,6 +1068,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListGetAvailableTagsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListGetEntityTagsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListRemoveEntityTagOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListSaveTagValuesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListTagBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTypePickerGetEntityTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\ethnicityPickerGetEthnicitiesResultsBag.d.ts" />

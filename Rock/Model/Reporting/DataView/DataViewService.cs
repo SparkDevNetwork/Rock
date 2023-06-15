@@ -18,11 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
-using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Spatial;
 using System.Data.SqlClient;
-using EF6.TagWith;
 using System.Linq;
-using Rock.Attribute;
+using EF6.TagWith;
+using Microsoft.SqlServer.Types;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
@@ -339,7 +339,7 @@ namespace Rock.Model
             var tagger = new SqlServerTagger();
             var taggedSql = tagger.GetTaggedSqlQuery( dataViewObjectQuery.ToTraceString(), new TaggingOptions { TagMode = TagMode.Prefix } );
 
-            var tempTableName = $"DataView_{dataView.Id}_{RockDateTime.Now:yyyyMMddHHmmssfff}";
+            var tempTableName = $"DataView_{dataView.Id}";
 
             var sql = $@"
 BEGIN TRY
@@ -347,7 +347,7 @@ BEGIN TRY
 
     CREATE TABLE #{tempTableName}
     (
-        [EntityId] [int] NOT NULL INDEX [CLIX_{tempTableName}_EntityId] CLUSTERED
+        [EntityId] [int] NOT NULL
     );
 
     -- Select the new entity IDs that should be added/remain in the persisted set.
@@ -395,10 +395,26 @@ BEGIN CATCH
 END CATCH;";
 
             var parameters = new List<object> {
-                new SqlParameter( "DataViewId", dataView.Id )
+                new SqlParameter( "@DataViewId", dataView.Id )
             }
             .Concat(
-                dataViewObjectQuery.Parameters.Select( p => new SqlParameter( p.Name, p.Value ) )
+                dataViewObjectQuery.Parameters.Select( objectParameter => {
+                    if ( objectParameter.Value is DbGeography geography )
+                    {
+                        // We need to manually convert DbGeography to SqlGeography since we're sidestepping EF here.
+                        // https://stackoverflow.com/a/45099842 (Use SqlGeography instead of DbGeography)
+                        // https://stackoverflow.com/a/23187033 (Entity Framework: SqlGeography vs DbGeography)
+                        return new SqlParameter
+                        {
+                            ParameterName = objectParameter.Name,
+                            Value = SqlGeography.Parse( geography.AsText() ),
+                            SqlDbType = SqlDbType.Udt,
+                            UdtTypeName = "geography"
+                        };
+                    }
+
+                    return new SqlParameter( objectParameter.Name, objectParameter.Value ?? DBNull.Value );
+                } )
             )
             .ToArray();
 

@@ -19,7 +19,7 @@ import { computed, defineComponent, PropType, Ref, ref, watch } from "vue";
 import { PersonPickerSearchOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personPickerSearchOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
-import Panel from "./panel";
+import Panel from "./panel.obs";
 import TextBox from "./textBox";
 import { nextTick } from "vue";
 import { useHttp } from "@Obsidian/Utility/http";

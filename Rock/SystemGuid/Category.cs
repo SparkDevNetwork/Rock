@@ -319,5 +319,14 @@ namespace Rock.SystemGuid
         public const string WORKFLOW_TYPE_STAFF_FORMS = "25E6844F-59BA-4C0D-9284-ED2A558E18EC";
 
         #endregion FormBuilder Categories
+
+        #region Lava Shortcode Categories
+
+        /// <summary>
+        /// Lava Shortcode Category Guid
+        /// </summary>
+        public const string LAVA_SHORTCODE_AI = "125FB37E-5540-48A6-4A74-A49D1C1324F8";
+
+        #endregion
     }
 }

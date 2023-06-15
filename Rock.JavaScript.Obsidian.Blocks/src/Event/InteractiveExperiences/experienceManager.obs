@@ -37,7 +37,7 @@
     import LiveEventTab from "./ExperienceManager/liveEventTab.partial.obs";
     import LiveQuestionsTab from "./ExperienceManager/liveQuestionsTab.partial.obs";
     import ModerationTab from "./ExperienceManager/moderationTab.partial.obs";
-    import Panel from "@Obsidian/Controls/panel";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import PanelNavigationBar from "./ExperienceManager/panelNavigationBar.partial.obs";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { ExperienceManagerInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceManager/experienceManagerInitializationBox";

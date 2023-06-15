@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, PropType, ref } from "vue";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import RockForm from "@Obsidian/Controls/rockForm";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { FormError } from "@Obsidian/Utility/form";

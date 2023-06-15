@@ -708,6 +708,12 @@ namespace Rock.Web.UI.Controls
                 _ddlSingleAccountCampus.Visible = false;
                 _ddlMultiAccountCampus.Visible = false;
             }
+
+            // This will select the value in both campus ddls
+            if ( knownCampusId.HasValue )
+            {
+                this.CampusId = knownCampusId;
+            }
         }
 
         /// <summary>

@@ -37,7 +37,19 @@ namespace Rock.Tests.Integration
         [AssemblyInitialize]
         public static void AssemblyInitialize( TestContext context )
         {
+            Initialize( context );
+        }
+
+        /// <summary>
+        /// Initialize the Rock application environment for integration testing.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public static void Initialize( TestContext context )
+        {
             Rock.AssemblyInitializer.Initialize();
+
+            // Copy the configuration settings to the TestContext. so they can be accessed by the integration tests project initializer.
+            AddTestContextSettingsFromConfigurationFile( context );
 
             LogHelper.SetTestContext( context );
             LogHelper.Log( $"Initializing test environment..." );
@@ -53,7 +65,7 @@ namespace Rock.Tests.Integration
                 // Set properties of the database manager from the test context.
                 TestDatabaseHelper.ConnectionString = ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString;
                 TestDatabaseHelper.DatabaseCreatorKey = context.Properties["DatabaseCreatorKey"].ToStringSafe();
-                TestDatabaseHelper.DatabaseRefreshStrategy = context.Properties["DatabaseRefreshStrategy"].ToStringSafe().ConvertToEnum<DatabaseRefreshStrategySpecifier>(DatabaseRefreshStrategySpecifier.Verified);
+                TestDatabaseHelper.DatabaseRefreshStrategy = context.Properties["DatabaseRefreshStrategy"].ToStringSafe().ConvertToEnum<DatabaseRefreshStrategySpecifier>( DatabaseRefreshStrategySpecifier.Never );
                 TestDatabaseHelper.SampleDataUrl = context.Properties["SampleDataUrl"].ToStringSafe();
 
                 TestDatabaseHelper.InitializeTestDatabase();
@@ -68,10 +80,6 @@ namespace Rock.Tests.Integration
             {
                 LogHelper.Log( $"Initializing test database... (disabled)" );
             }
-
-            // TODO: Initializing the bus requires a database connection.
-            // TODO: When database is restored from archive, this fails - why?
-            //EntityTypeService.RegisterEntityTypes();
 
             LogHelper.Log( $"Initializing Rock Message Bus..." );
 
@@ -94,6 +102,14 @@ namespace Rock.Tests.Integration
             RockMessageBus.IsRockStarted = true;
 
             LogHelper.Log( $"Initialization completed." );
+        }
+        public static void AddTestContextSettingsFromConfigurationFile( TestContext context )
+        {
+            // Copy the application configuration settings to the TestContext.
+            foreach ( var key in ConfigurationManager.AppSettings.AllKeys )
+            {
+                context.Properties[key] = ConfigurationManager.AppSettings[key];
+            }
         }
     }
 

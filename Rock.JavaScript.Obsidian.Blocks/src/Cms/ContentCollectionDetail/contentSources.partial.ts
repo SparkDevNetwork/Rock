@@ -21,7 +21,7 @@ import CustomKeySource from "./customKeySource.partial.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import Modal from "@Obsidian/Controls/modal";
 import NumberBox from "@Obsidian/Controls/numberBox";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
 import { DragReorder, useDragReorder } from "@Obsidian/Directives/dragDrop";

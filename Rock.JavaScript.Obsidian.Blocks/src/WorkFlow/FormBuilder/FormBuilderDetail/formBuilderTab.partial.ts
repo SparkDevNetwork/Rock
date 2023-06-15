@@ -19,7 +19,7 @@ import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, reactive, Ref, ref, shallowRef, watch } from "vue";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import Modal from "@Obsidian/Controls/modal";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RockLabel from "@Obsidian/Controls/rockLabel";
 import RockForm from "@Obsidian/Controls/rockForm";

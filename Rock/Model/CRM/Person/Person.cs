@@ -594,6 +594,45 @@ namespace Rock.Model
         [DataMember]
         public AgeBracket AgeBracket { get; set; }
 
+        /// <summary>
+        /// Gets or sets the First Name pronunciation override.
+        /// </summary>
+        /// <value>
+        /// A string with a pronunciation of the first name.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string FirstNamePronunciationOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the nick Name pronunciation override.
+        /// </summary>
+        /// <value>
+        /// A string with a pronunciation of the nick name.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string NickNamePronunciationOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last Name pronunciation override.
+        /// </summary>
+        /// <value>
+        /// A string with a pronunciation of the last name.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string LastNamePronunciationOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notes for the pronunciation.
+        /// </summary>
+        /// <value>
+        /// A string with notes on the pronunciation.
+        /// </value>
+        [MaxLength( 1000 )]
+        [DataMember]
+        public string PronunciationNote { get; set; }
         #endregion
 
         #region Constructors

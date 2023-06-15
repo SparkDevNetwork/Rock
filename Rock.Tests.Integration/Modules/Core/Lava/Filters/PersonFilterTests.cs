@@ -484,7 +484,10 @@ User is in Role = {{ isInRole }}
                 GroupTypeIdentifier = SystemGuid.GroupType.GROUPTYPE_GENERAL,
             };
 
-            var group = TestDataHelper.Crm.AddGroup( rockContext, addGroupArgs );
+            TestDataHelper.Crm.AddGroup( addGroupArgs );
+
+            var groupService = new GroupService( rockContext );
+            var group = groupService.Queryable().GetByIdentifierOrThrow( _TestSecurityGroupGuid );
 
             group.IsSecurityRole = true;
             rockContext.SaveChanges();
@@ -493,10 +496,11 @@ User is in Role = {{ isInRole }}
             var addGroupMemberArgs = new TestDataHelper.Crm.AddGroupMemberArgs
             {
                 GroupIdentifier = _TestSecurityGroupGuid,
-                PersonIdentifier = TestGuids.TestPeople.AlishaMarble,
+                PersonIdentifiers = TestGuids.TestPeople.AlishaMarble,
                 GroupRoleIdentifier = "Member"
             };
-            TestDataHelper.Crm.AddGroupMember( rockContext, addGroupMemberArgs );
+            TestDataHelper.Crm.AddGroupMembers( rockContext, addGroupMemberArgs );
+            rockContext.SaveChanges();
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlishaMarble.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
