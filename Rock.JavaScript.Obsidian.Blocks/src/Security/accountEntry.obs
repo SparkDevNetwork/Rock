@@ -157,22 +157,16 @@
         return config.sentLoginCaption || "Your username has been emailed to you. If you've forgotten your password, the email includes a link to reset your password.";
     });
 
-    const successCaption = computed<string>(() => {
-        return config.successCaption || "{0}, Your account has been created.";
-    });
+    //#endregion
 
+    //#region Event Handlers
 
-
-        //#endregion
-
-        //#region Event Handlers
-
-        /**
-        * Event handler for the username being checked.
-        *
-        * @param username The username to check.
-        */
-        async function onCheckUsernameAvailability(username: string): Promise<void> {
+    /**
+     * Event handler for the username being checked.
+     *
+     * @param username The username to check.
+     */
+    async function onCheckUsernameAvailability(username: string): Promise<void> {
         if (config.isUsernameAvailabilityCheckDisabled) {
             isUsernameAvailable.value = null;
         }
@@ -460,15 +454,7 @@
     }
 
     //#endregion
-    if (config?.step || config?.step === AccountEntryStep.Completed) {
-        showCompletedStepNext({
-                isPlainCaption: true,
-                caption: successCaption.value,
-                isRedirectAutomatic: false
-            });
-    } else {
-        showRegistrationStepNext();
-    }
-    
+
+    showRegistrationStepNext();
     onConfigurationValuesChanged(useReloadBlock());
 </script>
