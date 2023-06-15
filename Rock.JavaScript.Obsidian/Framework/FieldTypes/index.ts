@@ -131,6 +131,9 @@ registerFieldType(FieldTypeGuids.MonthDay, new MonthDayFieldType());
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());
 
+import { NoteTypeField } from "./noteTypeField.partial";
+registerFieldType(FieldTypeGuids.NoteType, new NoteTypeField());
+
 import { NoteTypesField } from "./noteTypesField.partial";
 registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());
 

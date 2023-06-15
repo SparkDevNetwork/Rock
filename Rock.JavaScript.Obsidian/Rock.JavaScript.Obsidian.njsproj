@@ -54,6 +54,8 @@
     <Content Include="Framework\Controls\datePicker.obs" />
     <Content Include="Framework\Controls\dayOfWeekPicker.obs" />
     <Content Include="Framework\Controls\definedValuePicker.obs" />
+    <Content Include="Framework\Controls\entityTag.obs" />
+    <Content Include="Framework\Controls\tagList.obs" />
     <Content Include="Framework\Controls\ethnicityPicker.obs" />
     <Content Include="Framework\Controls\eventCalendarPicker.obs" />
     <Content Include="Framework\Controls\geoPicker.obs" />
@@ -132,6 +134,7 @@
     <Folder Include="Framework\Enums\" />
     <Folder Include="Framework\Directives\" />
     <Folder Include="Framework\Core\" />
+    <Folder Include="Framework\Enums\AI\" />
     <Folder Include="Framework\Enums\Blocks\" />
     <Folder Include="Framework\Enums\Blocks\Cms\" />
     <Folder Include="Framework\Enums\Blocks\Cms\ContentCollectionView\" />
@@ -308,7 +311,6 @@
     <TypeScriptCompile Include="Framework\Controls\rockAttributeFilter.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionHeader.ts" />
     <TypeScriptCompile Include="Framework\Controls\tabbedContent.ts" />
-    <TypeScriptCompile Include="Framework\Controls\entityTagList.ts" />
     <TypeScriptCompile Include="Framework\Controls\valueDetailList.ts" />
     <TypeScriptCompile Include="Framework\Core\Controls\valueDetailListItemBuilder.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragDrop.ts" />
@@ -326,6 +328,8 @@
     <TypeScriptCompile Include="Framework\Controls\treeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragScroll.ts" />
+    <TypeScriptCompile Include="Framework\Enums\AI\chatMessageRole.ts" />
+    <TypeScriptCompile Include="Framework\Enums\AI\moderationFlags.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Engagement\SignUp\registerMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailDateSelectionMode.ts" />
@@ -456,6 +460,8 @@
     <TypeScriptCompile Include="Framework\FieldTypes\imageFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListFieldComponents.ts" />
+    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryField.partial.ts" />
+    <TypeScriptCompile Include="Framework\FieldTypes\registryEntryFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypesField.partial.ts" />
@@ -1067,6 +1073,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListGetAvailableTagsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListGetEntityTagsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListRemoveEntityTagOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListSaveTagValuesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListTagBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTypePickerGetEntityTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\ethnicityPickerGetEthnicitiesResultsBag.d.ts" />

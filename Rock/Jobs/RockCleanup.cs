@@ -287,6 +287,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "unused person preference", () => RemoveUnusedPersonPreferences() );
 
+            RunCleanupTask( "data view persisted values", () => RemoveUnneededDataViewPersistedValues() );
+
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             /*
@@ -3054,6 +3056,35 @@ END
         }
 
         #endregion
+
+        /// <summary>
+        /// Removes the persisted values of DataViews that are no longer persisted.
+        /// </summary>
+        /// <returns></returns>
+        private int RemoveUnneededDataViewPersistedValues()
+        {
+            var removePersistedDataViewValueSql = @"
+    DECLARE @dataViewIds table (id int);
+    
+    INSERT INTO @dataViewIds
+    SELECT DISTINCT(dv.Id) FROM DataViewPersistedValue dvpv
+    JOIN DataView dv
+    ON dvpv.DataViewId = dv.Id
+    WHERE dv.PersistedScheduleIntervalMinutes IS NULL 
+    AND dv.PersistedScheduleId IS NULL
+    
+    WHILE (SELECT COUNT(*) FROM DataViewPersistedValue WHERE DataViewId IN (SELECT id from @dataViewIds)) > 0
+    BEGIN
+        DELETE TOP (1500) FROM DataViewPersistedValue WHERE DataViewId IN (SELECT id from @dataViewIds)
+    END
+";
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+                int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
+                return result;
+            }
+        }
 
         /// <summary>
         /// Creates a new <see cref="RockContext"/> that is properly configured

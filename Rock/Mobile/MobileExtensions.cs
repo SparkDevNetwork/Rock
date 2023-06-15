@@ -78,7 +78,7 @@ namespace Rock.Mobile
         /// <returns>DisplayInNavWhen.</returns>
         public static DisplayInNavWhen ToMobile( this Rock.Model.DisplayInNavWhen displayInNavWhen )
         {
-            switch( displayInNavWhen )
+            switch ( displayInNavWhen )
             {
                 case Model.DisplayInNavWhen.Always:
                     return DisplayInNavWhen.Always;
@@ -88,6 +88,52 @@ namespace Rock.Mobile
                     return DisplayInNavWhen.WhenAllowed;
                 default:
                     return DisplayInNavWhen.Never;
+            }
+        }
+
+        #endregion
+
+        #region Communication Type
+
+        /// <summary>
+        /// Converts the communication type enum to mobile.
+        /// </summary>
+        /// <param name="communicationType">Type of the communication.</param>
+        /// <returns>Rock.Common.Mobile.Enums.CommunicationType.</returns>
+        public static Rock.Common.Mobile.Enums.CommunicationType ToMobile( this Rock.Model.CommunicationType communicationType )
+        {
+            switch ( communicationType )
+            {
+                case Model.CommunicationType.PushNotification:
+                    return CommunicationType.PushNotification;
+
+                case Model.CommunicationType.SMS:
+                    return CommunicationType.Sms;
+
+                case Model.CommunicationType.Email:
+                    return CommunicationType.Email;
+
+                default:
+                    return CommunicationType.RecipientPreference;
+            }
+        }
+
+        /// <summary>
+        /// Convert the Email Preference Enum to Mobile Specific Email Preference
+        /// </summary>
+        /// <param name="emailPreference"></param>
+        /// <returns></returns>
+        public static Rock.Common.Mobile.Enums.EmailPreference ToMobile( this Model.EmailPreference emailPreference )
+        {
+            switch ( emailPreference )
+            {
+                case Model.EmailPreference.DoNotEmail:
+                    return EmailPreference.DoNotEmail;
+                case Model.EmailPreference.NoMassEmails:
+                    return EmailPreference.NoMassEmails;
+
+                default:
+                    return EmailPreference.EmailAllowed;
             }
         }
 
@@ -118,6 +164,58 @@ namespace Rock.Mobile
                     return Model.Gender.Unknown;
             }
         }
+    }
 
+
+    /// <summary>
+    /// Extension methods for <see cref="Rock.Common.Mobile.Enums.CommunicationType"/>.
+    /// </summary>
+    public static class MobileExtensionsCommunicationPreference
+    {
+        /// <summary>
+        /// Converts a mobile <see cref="EmailPreference"/> to a web native.
+        /// </summary>
+        /// <param name="communicationType">The email preference.</param>
+        /// <returns>Rock.Model.CommunicationType.</returns>
+        public static Rock.Model.CommunicationType ToNative( this CommunicationType communicationType )
+        {
+            switch ( communicationType )
+            {
+                case CommunicationType.RecipientPreference:
+                    return Model.CommunicationType.RecipientPreference;
+                case CommunicationType.PushNotification:
+                    return Model.CommunicationType.PushNotification;
+                case CommunicationType.Email:
+                    return Model.CommunicationType.Email;
+                case CommunicationType.Sms:
+                    return Model.CommunicationType.SMS;
+                default:
+                    return Model.CommunicationType.RecipientPreference;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for <see cref="Rock.Common.Mobile.Enums.EmailPreference"/>.
+    /// </summary>
+    public static class MobileExtensionsEmailPreference
+    {
+        /// <summary>
+        /// Converts a mobile <see cref="EmailPreference"/> to a web native.
+        /// </summary>
+        /// <param name="emailPreference">The email preference.</param>
+        /// <returns>Rock.Model.EmailPreference.</returns>
+        public static Rock.Model.EmailPreference ToNative( this EmailPreference emailPreference )
+        {
+            switch ( emailPreference )
+            {
+                case EmailPreference.DoNotEmail:
+                    return Model.EmailPreference.DoNotEmail;
+                case EmailPreference.NoMassEmails:
+                    return Model.EmailPreference.NoMassEmails;
+                default:
+                    return Model.EmailPreference.EmailAllowed;
+            }
+        }
     }
 }

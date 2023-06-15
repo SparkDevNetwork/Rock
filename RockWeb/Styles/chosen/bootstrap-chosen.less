@@ -46,8 +46,8 @@
   .chosen-results {
     position: relative;
     max-height: 240px;
-    padding: 0 0 0 4px;
-    margin: 4px 4px 4px 0;
+    padding: 0;
+    margin: 8px 0;
     overflow-x: hidden;
     overflow-y: auto;
     color: @gray;
@@ -59,6 +59,8 @@
       margin: 0;
       line-height: @line-height-base;
       list-style: none;
+      -webkit-user-select: none;
+      user-select: none;
 
       em {
         font-style: normal;
@@ -67,7 +69,7 @@
 
       &.group-result {
         display: list-item;
-        font-weight: bold;
+        font-weight: 700;
         color: #999;
         cursor: default;
       }
@@ -211,10 +213,7 @@
   }
 
   .chosen-search {
-    position: relative;
-    z-index: @zindex-dropdown;
-    padding: 3px 4px;
-    margin: 0;
+    padding: 8px 4px 0;
     white-space: nowrap;
 
     &::after {
@@ -222,13 +221,14 @@
       left: -28px;
       display: inline-block;
       font-family: @fa-font-face;
-      font-size: @font-size-base;
+      font-size: @input-font-size;
       font-weight: @fa-theme-weight;
       color: @chosen-svg-color;
+      pointer-events: none;
       content: @fa-var-search;
     }
 
-    input[type="text"] {
+    .chosen-search-input {
       width: 100%;
       padding: 4px 28px 4px 8px;
       background-color: @input-bg;
@@ -274,7 +274,7 @@
       margin: 0;
       white-space: nowrap;
 
-      input[type="text"] {
+      .chosen-search-input {
         width: 100% !important;
         height: @chosen-multi-height;
         padding: 0 0 0 .75rem;
@@ -306,7 +306,7 @@
       .border-bottom-radius(@chosen-border-radius);
 
       .search-choice-close {
-        &:after {
+        &::after {
           position: absolute;
           top: 3px;
           right: 1px;
@@ -362,7 +362,7 @@
     .box-shadow(@chosen-focus-box-shadow);
     .transition(@chosen-focus-transition);
 
-    .search-field input[type="text"] {
+    .search-field .chosen-search-input {
       color: #111 !important;
     }
   }

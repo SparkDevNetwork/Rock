@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Finance
             public const string SuccessHeader = "SuccessHeader";
             public const string SuccessFooter = "SuccessFooter";
 
-            // Keep this as "PaymentComment" for backwords compatibility 
+            // Keep this as "PaymentComment" for backwords compatibility
             public const string PaymentCommentTemplate = "PaymentComment";
 
             public const string AnonymousGivingTooltip = "AnonymousGivingTooltip";
@@ -2392,7 +2392,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Person should never be null at this point.
-            if ( person != null ) 
+            if ( person != null )
             {
                 person.Email = txtBusinessContactEmail.Text;
 
@@ -3623,6 +3623,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void RegisterScript()
         {
+            RockPage.AddCSSLink( "~/Styles/Blocks/Shared/CardSprites.css", true );
             RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             int oneTimeFrequencyId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;

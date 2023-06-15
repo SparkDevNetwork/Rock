@@ -58,6 +58,14 @@ namespace Rock.ViewModels.Entities
         public int? DurationSeconds { get; set; }
 
         /// <summary>
+        /// Gets or sets the interaction channel identifier.
+        /// </summary>
+        /// <value>
+        /// The interaction channel identifier.
+        /// </value>
+        public int? InteractionChannelId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Interaction Count.
         /// </summary>
         /// <value>

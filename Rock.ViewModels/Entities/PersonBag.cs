@@ -42,22 +42,6 @@ namespace Rock.ViewModels.Entities
         public int AccountProtectionProfile { get; set; }
 
         /// <summary>
-        /// Gets the Person's age.
-        /// </summary>
-        /// <value>
-        /// An System.Int32 representing the person's age. Returns null if the birthdate or birthyear is not available.
-        /// </value>
-        public int? Age { get; set; }
-
-        /// <summary>
-        /// Gets or sets the age bracket.
-        /// </summary>
-        /// <value>
-        /// The age range.
-        /// </value>
-        public int AgeBracket { get; set; }
-
-        /// <summary>
         /// Gets or sets the age classification of the Person.
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
@@ -181,6 +165,14 @@ namespace Rock.ViewModels.Entities
         public string FirstName { get; set; }
 
         /// <summary>
+        /// Gets or sets the First Name pronunciation override.
+        /// </summary>
+        /// <value>
+        /// A string with a pronunciation of the first name.
+        /// </value>
+        public string FirstNamePronunciationOverride { get; set; }
+
+        /// <summary>
         /// Gets or sets the gender of the Person. This property is required.
         /// </summary>
         /// <value>
@@ -264,6 +256,14 @@ namespace Rock.ViewModels.Entities
         public string LastName { get; set; }
 
         /// <summary>
+        /// Gets or sets the last Name pronunciation override.
+        /// </summary>
+        /// <value>
+        /// A string with a pronunciation of the last name.
+        /// </value>
+        public string LastNamePronunciationOverride { get; set; }
+
+        /// <summary>
         /// Gets or sets Id of the Marital Status Rock.Model.DefinedValue representing the Person's marital status.
         /// </summary>
         /// <value>
@@ -286,6 +286,14 @@ namespace Rock.ViewModels.Entities
         /// A System.String representing the nick name of the Person.
         /// </value>
         public string NickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the nick Name pronunciation override.
+        /// </summary>
+        /// <value>
+        /// A string with a pronunciation of the nick name.
+        /// </value>
+        public string NickNamePronunciationOverride { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the Rock.Model.BinaryFile that contains the photo of the Person.
@@ -320,6 +328,14 @@ namespace Rock.ViewModels.Entities
         /// The primary family id.
         /// </value>
         public int? PrimaryFamilyId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notes for the pronunciation.
+        /// </summary>
+        /// <value>
+        /// A string with notes on the pronunciation.
+        /// </value>
+        public string PronunciationNote { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the Race Rock.Model.DefinedValue representing the race of this person

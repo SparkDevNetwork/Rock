@@ -95,8 +95,6 @@ namespace Rock.Model
             {
                 IdKey = model.IdKey,
                 AccountProtectionProfile = ( int ) model.AccountProtectionProfile,
-                Age = model.Age,
-                AgeBracket = ( int ) model.AgeBracket,
                 AgeClassification = ( int ) model.AgeClassification,
                 AnniversaryDate = model.AnniversaryDate,
                 BirthDateKey = model.BirthDateKey,
@@ -112,6 +110,7 @@ namespace Rock.Model
                 EmailPreference = ( int ) model.EmailPreference,
                 EthnicityValueId = model.EthnicityValueId,
                 FirstName = model.FirstName,
+                FirstNamePronunciationOverride = model.FirstNamePronunciationOverride,
                 Gender = ( int ) model.Gender,
                 GivingGroupId = model.GivingGroupId,
                 GivingLeaderId = model.GivingLeaderId,
@@ -122,13 +121,16 @@ namespace Rock.Model
                 IsLockedAsChild = model.IsLockedAsChild,
                 IsSystem = model.IsSystem,
                 LastName = model.LastName,
+                LastNamePronunciationOverride = model.LastNamePronunciationOverride,
                 MaritalStatusValueId = model.MaritalStatusValueId,
                 MiddleName = model.MiddleName,
                 NickName = model.NickName,
+                NickNamePronunciationOverride = model.NickNamePronunciationOverride,
                 PhotoId = model.PhotoId,
                 PreferredLanguageValueId = model.PreferredLanguageValueId,
                 PrimaryCampusId = model.PrimaryCampusId,
                 PrimaryFamilyId = model.PrimaryFamilyId,
+                PronunciationNote = model.PronunciationNote,
                 RaceValueId = model.RaceValueId,
                 RecordStatusLastModifiedDateTime = model.RecordStatusLastModifiedDateTime,
                 RecordStatusReasonValueId = model.RecordStatusReasonValueId,
@@ -214,8 +216,6 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AccountProtectionProfile = source.AccountProtectionProfile;
-            target.Age = source.Age;
-            target.AgeBracket = source.AgeBracket;
             target.AgeClassification = source.AgeClassification;
             target.AnniversaryDate = source.AnniversaryDate;
             target.BirthDateKey = source.BirthDateKey;
@@ -231,6 +231,7 @@ namespace Rock.Model
             target.EmailPreference = source.EmailPreference;
             target.EthnicityValueId = source.EthnicityValueId;
             target.FirstName = source.FirstName;
+            target.FirstNamePronunciationOverride = source.FirstNamePronunciationOverride;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Gender = source.Gender;
@@ -243,13 +244,16 @@ namespace Rock.Model
             target.IsLockedAsChild = source.IsLockedAsChild;
             target.IsSystem = source.IsSystem;
             target.LastName = source.LastName;
+            target.LastNamePronunciationOverride = source.LastNamePronunciationOverride;
             target.MaritalStatusValueId = source.MaritalStatusValueId;
             target.MiddleName = source.MiddleName;
             target.NickName = source.NickName;
+            target.NickNamePronunciationOverride = source.NickNamePronunciationOverride;
             target.PhotoId = source.PhotoId;
             target.PreferredLanguageValueId = source.PreferredLanguageValueId;
             target.PrimaryCampusId = source.PrimaryCampusId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;
+            target.PronunciationNote = source.PronunciationNote;
             target.RaceValueId = source.RaceValueId;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;

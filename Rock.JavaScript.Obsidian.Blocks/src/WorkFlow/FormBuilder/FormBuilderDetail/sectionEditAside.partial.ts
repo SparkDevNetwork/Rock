@@ -22,7 +22,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
 import Modal from "@Obsidian/Controls/modal";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RockForm from "@Obsidian/Controls/rockForm";
 import Switch from "@Obsidian/Controls/switch";

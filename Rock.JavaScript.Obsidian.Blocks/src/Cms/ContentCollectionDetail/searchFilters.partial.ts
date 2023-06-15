@@ -18,7 +18,7 @@
 import { computed, defineComponent, PropType, ref } from "vue";
 import InlineSwitch from "@Obsidian/Controls/inlineSwitch";
 import Modal from "@Obsidian/Controls/modal";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList";
 import RockButton from "@Obsidian/Controls/rockButton";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";

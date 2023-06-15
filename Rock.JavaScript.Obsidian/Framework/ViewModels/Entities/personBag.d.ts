@@ -29,12 +29,6 @@ export type PersonBag = {
     /** Gets or sets the person's account protection profile, which is used by the duplication detection and merge processes. */
     accountProtectionProfile: number;
 
-    /** Gets the Person's age. */
-    age?: number | null;
-
-    /** Gets or sets the age bracket. */
-    ageBracket: number;
-
     /**
      * Gets or sets the age classification of the Person.
      * Note: This is computed on save, so any manual changes to this will be ignored.
@@ -95,6 +89,9 @@ export type PersonBag = {
     /** Gets or sets the first name of the Person. */
     firstName?: string | null;
 
+    /** Gets or sets the First Name pronunciation override. */
+    firstNamePronunciationOverride?: string | null;
+
     /** Gets or sets the full name. */
     fullName?: string | null;
 
@@ -137,6 +134,9 @@ export type PersonBag = {
     /** Gets or sets the last name (Sir Name) of the Person. */
     lastName?: string | null;
 
+    /** Gets or sets the last Name pronunciation override. */
+    lastNamePronunciationOverride?: string | null;
+
     /** Gets or sets Id of the Marital Status Rock.Model.DefinedValue representing the Person's marital status. */
     maritalStatusValueId?: number | null;
 
@@ -151,6 +151,9 @@ export type PersonBag = {
 
     /** Gets or sets the nick name of the Person.  If a nickname was not entered, the first name is used. */
     nickName?: string | null;
+
+    /** Gets or sets the nick Name pronunciation override. */
+    nickNamePronunciationOverride?: string | null;
 
     /** Gets or sets the Id of the Rock.Model.BinaryFile that contains the photo of the Person. */
     photoId?: number | null;
@@ -175,6 +178,9 @@ export type PersonBag = {
      * Note: This is computed on save, so any manual changes to this will be ignored.
      */
     primaryFamilyId?: number | null;
+
+    /** Gets or sets the notes for the pronunciation. */
+    pronunciationNote?: string | null;
 
     /** Gets or sets the Id of the Race Rock.Model.DefinedValue representing the race of this person */
     raceValueId?: number | null;

@@ -362,8 +362,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// A static facade over the instance method <see cref="Rock.Model.LocationService.ValidateAddressRequirements(Location, out string)" /> 
-        /// Try to use this facade over the instance method.
+        /// Validate the required parts of the Location Address according to the address requirement rules defined in the Defined Type "Countries".
+        /// Replaces the obsolete method <see cref="Rock.Model.LocationService.ValidateAddressRequirements(Location, out string)" /> 
         /// </summary>
         /// <param name="location"></param> 
         /// <param name="errorMessage"></param> Currently it is of type object, can be converted to string once the instance method is replaced.

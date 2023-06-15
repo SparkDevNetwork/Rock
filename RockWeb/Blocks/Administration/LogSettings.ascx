@@ -67,6 +67,15 @@
                             DataLoadingText="Saving..."
                             ValidationGroup="LoggingSetting"
                             OnClick="btnLoggingSave_Click" />
+                        <asp:LinkButton
+                            ID="btnCancel"
+                            runat="server"
+                            AccessKey="c"
+                            ToolTip="Alt+c"
+                            Text="Cancel"
+                            CssClass="btn btn-link"
+                            CausesValidation="false"
+                            OnClick="btnCancel_Click" />
                     </div>
                 </asp:Panel>
             </div>

@@ -123,6 +123,7 @@
     <Compile Include="Rock\Lava\LavaTypeAttributesTests.cs" />
     <Compile Include="Rock\Lava\RenderTests.cs" />
     <Compile Include="Rock\Model\ConnectionRequestTest.cs" />
+    <Compile Include="Rock\Model\PersonTest.cs" />
     <Compile Include="Rock\Security\EncryptionTests.cs" />
     <Compile Include="Rock\Slingshot\PersonCsvMapperTest.cs" />
     <Compile Include="Rock\Slingshot\PersonPhoneCsvMapperTest.cs" />
@@ -151,6 +152,7 @@
     <Compile Include="Rock\Utility\ExtensionMethods\TypeExtensionsTests.cs" />
     <Compile Include="Rock\Communication\EmailAddressFieldValidatorTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\ICollectionExtensionTests.cs" />
+    <Compile Include="Rock\Utility\RockColorTests.cs" />
     <Compile Include="Rock\Utility\RockDateTimeHelperTests.cs" />
     <Compile Include="Rock\Utility\RockSerializableListTests.cs" />
     <Compile Include="Rock\Utility\RockSerializableDictionaryTests.cs" />

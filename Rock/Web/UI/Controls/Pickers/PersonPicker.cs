@@ -255,8 +255,8 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbSearchPhone;
         private RockTextBox _tbSearchEmail;
 
-        private HtmlAnchor _btnSelect;
-        private HtmlAnchor _btnSelectNone;
+        private HtmlButton _btnSelect;
+        private HtmlButton _btnSelectNone;
 
         #endregion
 
@@ -559,6 +559,7 @@ namespace Rock.Web.UI.Controls
 
             _hiddenFieldsPanel = new Panel();
             _hiddenFieldsPanel.ID = "hiddenFieldsPanel";
+            _hiddenFieldsPanel.Attributes.Add( "style", "display: none" );
             Controls.Add( _hiddenFieldsPanel );
 
             _hfPersonId = new HiddenFieldWithClass();
@@ -644,7 +645,7 @@ namespace Rock.Web.UI.Controls
 
             #endregion search fields
 
-            _btnSelect = new HtmlAnchor();
+            _btnSelect = new HtmlButton();
             Controls.Add( _btnSelect );
             _btnSelect.Attributes["class"] = "btn btn-xs btn-primary js-personpicker-select";
             _btnSelect.ID = "btnSelect";
@@ -652,13 +653,15 @@ namespace Rock.Web.UI.Controls
             _btnSelect.CausesValidation = false;
             _btnSelect.ServerClick += btnSelect_Click;
 
-            _btnSelectNone = new HtmlAnchor();
+            _btnSelectNone = new HtmlButton();
             Controls.Add( _btnSelectNone );
-            _btnSelectNone.Attributes["class"] = "picker-select-none js-picker-select-none";
+            _btnSelectNone.Attributes["role"] = "button";
+            _btnSelectNone.Attributes["type"] = "button";
+            _btnSelectNone.Attributes["aria-label"] = "Clear selection";
+            _btnSelectNone.Attributes["class"] = "btn picker-select-none js-picker-select-none";
             _btnSelectNone.ID = "btnSelectNone";
             _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
-            _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
             _btnSelectNone.ServerClick += btnSelect_Click;
 
             RockControlHelper.CreateChildControls( this, Controls );
@@ -716,21 +719,28 @@ namespace Rock.Web.UI.Controls
                 pickerClasses.Add( "picker-select picker-person " + this.CssClass );
 
                 writer.AddAttribute( "class", pickerClasses.AsDelimited( " " ) );
-                
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _hiddenFieldsPanel.RenderControl( writer );
 
+                // render picker-label
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "picker-label js-personpicker-toggle" );
+                // href
+                writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+
                 writer.Write(
                     $@"
-            <a class='picker-label js-personpicker-toggle' href='#'>
                 <i class='fa fa-user'></i>
                 <span class='js-personpicker-selectedperson-label picker-selectedperson'>{selectedText}</span>
-                <b class='fa fa-caret-down pull-right'></b>
-            </a>
 " );
 
                 _btnSelectNone.RenderControl( writer );
+
+                writer.Write( $@"<b class='fa fa-caret-down'></b>" );
+
+                writer.RenderEndTag();
 
                 // render picker-menu dropdown-menu
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "picker-menu dropdown-menu js-personpicker-menu" );
@@ -741,13 +751,13 @@ namespace Rock.Web.UI.Controls
                 writer.Write( "<h4>Search</h4>" );
 
                 // actions div
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right ml-auto" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "ml-auto" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // Render Additional Search Fields toggler
                 writer.Write( @"
                     <span class='js-toggle-additional-search-fields toggle-additional-search-fields picker-search-action clickable' title='Advanced Search'>
-                        <i class='fa fa-search-plus' ></i>
+                        <i class='fa fa-search-plus'></i>
                     </span>" );
 
                 // Render Self Picker
@@ -755,7 +765,7 @@ namespace Rock.Web.UI.Controls
                 {
                     writer.Write( @"
                     <span class='js-select-self picker-search-action clickable' title='Select self'>
-                        <i class='fa fa-user' ></i>
+                        <i class='fa fa-user'></i>
                     </span>" );
                 }
 
@@ -781,7 +791,7 @@ namespace Rock.Web.UI.Controls
                 </div>
                 <div class='viewport'>
                     <div class='overview'>
-                        <ul class='picker-select js-personpicker-searchresults'>
+                        <ul class='picker-select-list js-personpicker-searchresults'>
                         </ul>
                     </div>
                 </div>
@@ -793,7 +803,7 @@ namespace Rock.Web.UI.Controls
                 _btnSelect.RenderControl( writer );
 
                 writer.Write( @"
-            <a class='btn btn-link btn-xs js-personpicker-cancel'>Cancel</a>
+            <button type='button' class='btn btn-link btn-xs js-personpicker-cancel'>Cancel</button>
             </div>
 " );
 

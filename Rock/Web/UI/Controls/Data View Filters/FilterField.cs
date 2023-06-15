@@ -759,9 +759,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            writer.AddAttribute( "class", "row js-filter-row filterfield" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.AddAttribute( "class", "col-md-12" );
+            writer.AddAttribute( "class", "js-filter-row filterfield" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( ShowCheckbox )
@@ -800,8 +798,7 @@ namespace Rock.Web.UI.Controls
                 component.RenderControls( FilteredEntityType, this, writer, filterControls, this.FilterMode );
             }
 
-            writer.RenderEndTag(); // "col-md-12"
-            writer.RenderEndTag(); // "row js-filter-row filter-row"
+            writer.RenderEndTag(); // "js-filter-row filter-row"
 
             if ( showFilterTypePicker )
             {

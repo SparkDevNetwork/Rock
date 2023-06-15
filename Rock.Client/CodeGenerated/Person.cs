@@ -38,12 +38,6 @@ namespace Rock.Client
         public int /* AccountProtectionProfile*/ AccountProtectionProfile { get; set; }
 
         /// <summary />
-        public int? Age { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.Crm.AgeBracket AgeBracket { get; set; }
-
-        /// <summary />
         public Rock.Client.Enums.AgeClassification AgeClassification { get; set; }
 
         /// <summary />
@@ -89,6 +83,9 @@ namespace Rock.Client
         public string FirstName { get; set; }
 
         /// <summary />
+        public string FirstNamePronunciationOverride { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -130,6 +127,9 @@ namespace Rock.Client
         public string LastName { get; set; }
 
         /// <summary />
+        public string LastNamePronunciationOverride { get; set; }
+
+        /// <summary />
         public int? MaritalStatusValueId { get; set; }
 
         /// <summary />
@@ -144,6 +144,9 @@ namespace Rock.Client
         public string NickName { get; set; }
 
         /// <summary />
+        public string NickNamePronunciationOverride { get; set; }
+
+        /// <summary />
         public int? PhotoId { get; set; }
 
         /// <summary />
@@ -154,6 +157,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? PrimaryFamilyId { get; set; }
+
+        /// <summary />
+        public string PronunciationNote { get; set; }
 
         /// <summary />
         public int? RaceValueId { get; set; }
@@ -234,8 +240,6 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AccountProtectionProfile = source.AccountProtectionProfile;
-            this.Age = source.Age;
-            this.AgeBracket = source.AgeBracket;
             this.AgeClassification = source.AgeClassification;
             this.AnniversaryDate = source.AnniversaryDate;
             this.BirthDateKey = source.BirthDateKey;
@@ -251,6 +255,7 @@ namespace Rock.Client
             this.EmailPreference = source.EmailPreference;
             this.EthnicityValueId = source.EthnicityValueId;
             this.FirstName = source.FirstName;
+            this.FirstNamePronunciationOverride = source.FirstNamePronunciationOverride;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.Gender = source.Gender;
@@ -264,14 +269,17 @@ namespace Rock.Client
             this.IsLockedAsChild = source.IsLockedAsChild;
             this.IsSystem = source.IsSystem;
             this.LastName = source.LastName;
+            this.LastNamePronunciationOverride = source.LastNamePronunciationOverride;
             this.MaritalStatusValueId = source.MaritalStatusValueId;
             this.MiddleName = source.MiddleName;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
+            this.NickNamePronunciationOverride = source.NickNamePronunciationOverride;
             this.PhotoId = source.PhotoId;
             this.PreferredLanguageValueId = source.PreferredLanguageValueId;
             this.PrimaryCampusId = source.PrimaryCampusId;
             this.PrimaryFamilyId = source.PrimaryFamilyId;
+            this.PronunciationNote = source.PronunciationNote;
             this.RaceValueId = source.RaceValueId;
             this.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
@@ -302,6 +310,12 @@ namespace Rock.Client
     /// </summary>
     public partial class Person : PersonEntity
     {
+        /// <summary />
+        public int? Age { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.Crm.AgeBracket AgeBracket { get; set; }
+
         /// <summary />
         public DateTime? BirthDate { get; set; }
 

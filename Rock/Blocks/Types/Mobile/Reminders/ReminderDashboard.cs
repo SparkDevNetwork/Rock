@@ -242,10 +242,11 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                     Name = "All",
                     CssClass = "reminders-all",
                     IconClass = "fa fa-inbox",
-                    TotalReminderCount = GetTotalRemindersForFilteredType( "", reminders ),
+                    TotalReminderCount = GetTotalRemindersForFilteredType( "all", reminders ),
                     Parameters = new Dictionary<string, string>
                     {
                         ["GroupByType"] = true.ToString(),
+                        ["CompletionFilter"] = FilterBag.CompletionFilterValue.Incomplete.ToString(),
                         ["CollectionHeader"] = "All"
                     },
                     Order = 3
@@ -283,7 +284,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             if ( filter == "due" )
             {
                 var currentDate = RockDateTime.Now;
-                reminders = reminders.Where( r => r.ReminderDate <= currentDate );
+                reminders = reminders.Where( r => r.ReminderDate <= currentDate && !r.IsComplete );
             }
             // Get the reminders that are upcoming.
             else if ( filter == "future" )
@@ -294,6 +295,10 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             else if ( filter == "completed" )
             {
                 reminders = reminders.Where( r => r.IsComplete );
+            }
+            else if( filter == "all" )
+            {
+                reminders = reminders.Where( r => !r.IsComplete );
             }
 
             return reminders.Count();
