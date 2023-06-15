@@ -22,6 +22,7 @@
 //
 
 import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
+import { AccountEntryRegisterResponseBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterResponseBox";
 
 /** A box that contains the required information to render an account entry block. */
 export type AccountEntryInitializationBox = {
@@ -90,4 +91,7 @@ export type AccountEntryInitializationBox = {
 
     /** The friendly description of the regular expression used to determine username validity. */
     usernameRegexDescription?: string | null;
+
+    /** Gets or sets the account Entry Register Step Box. */
+    accountEntryRegisterStepBox?: AccountEntryRegisterResponseBox | null;
 };

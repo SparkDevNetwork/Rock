@@ -826,6 +826,25 @@ namespace Rock.Blocks.Security
 
             var isEmailRequiredForUsername = GetAttributeValue( AttributeKey.RequireEmailForUsername ).AsBoolean();
 
+            var accountEntryRegisterStepBox = new AccountEntryRegisterResponseBox
+            {
+                Step = AccountEntryStep.Registration
+            };
+
+            if ( PageParameter( "status" ).ToLower() == "success" && GetCurrentPerson() != null )
+            {
+                accountEntryRegisterStepBox = new AccountEntryRegisterResponseBox()
+                {
+                    Step = AccountEntryStep.Completed,
+                    CompletedStepBag = new AccountEntryCompletedStepBag()
+                    {
+                        Caption = GetCurrentPerson() == null ? GetAttributeValue( AttributeKey.SuccessCaption ) : GetSuccessCaption( GetCurrentPerson() ),
+                        IsPlainCaption = true,
+                        IsRedirectAutomatic = true,
+                    }
+                };
+            }
+
             return new AccountEntryInitializationBox
             {
                 ArePhoneNumbersShown = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean(),
@@ -848,7 +867,8 @@ namespace Rock.Blocks.Security
                 SuccessCaption = GetAttributeValue( AttributeKey.SuccessCaption ),
                 UsernameFieldLabel = GetAttributeValue( AttributeKey.UsernameFieldLabel ),
                 UsernameRegex = isEmailRequiredForUsername ? @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ),
-                UsernameRegexDescription = isEmailRequiredForUsername ? string.Empty : GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" )
+                UsernameRegexDescription = isEmailRequiredForUsername ? string.Empty : GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ),
+                AccountEntryRegisterStepBox = accountEntryRegisterStepBox
             };
         }
 
@@ -886,7 +906,16 @@ namespace Rock.Blocks.Security
                 return returnUrl;
             }
 
-            return null;
+            return GetCurrentPageUrl();
+        }
+
+        /// <summary>
+        /// Gets the current page URL.
+        /// </summary>
+        /// <returns>The current page URL.</returns>
+        private string GetCurrentPageUrl()
+        {
+            return $"{this.RequestContext.RootUrlPath}/page/{PageCache.Id}?status=success";
         }
 
         /// <summary>
