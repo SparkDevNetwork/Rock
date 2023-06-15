@@ -343,12 +343,8 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="app.TestSettings.config.example" />
-    <None Include="app.TestSettings.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
     <None Include="app.ConnectionStrings.config.example" />
-    <None Include="app.ConnectionStrings.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
@@ -439,7 +435,8 @@
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y</PostBuildEvent>
+    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y
+IF EXIST "$(ProjectDir)app.TestSettings.config" xcopy "$(ProjectDir)app.TestSettings.config" "$(TargetDir)" /y</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
