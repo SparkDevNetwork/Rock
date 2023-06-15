@@ -1,0 +1,22 @@
+.trend-bar {
+  height: 11px;
+  margin-top: 4px;
+}
+
+.trend-bar li {
+  float: left;
+  height: 100%;
+}
+
+.trend-bar li span {
+  display: flex;
+  height: 100%;
+  margin-right: 2px;
+  background: var(--theme-light);
+}
+
+@media (min-width: 768px){
+  .percentile-giving {
+    border-left: 1px solid #cde1f1;
+  }
+}

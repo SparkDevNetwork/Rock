@@ -11,11 +11,11 @@
 :root {
   --theme-darkest: @gray-darker;
   --theme-dark: @gray-dark;
-  --theme-medium: @gray-600;
+  --theme-medium: @gray;
   --theme-light: @gray-lighter;
   --theme-lightest: @gray-lightest;
 
-  --theme-white: #FFFFFF;
+  --theme-white: @white;
   --theme-black: #343A40;
 
   --color-primary: @brand-primary;
@@ -23,6 +23,8 @@
   --color-info: @brand-info;
   --color-warning: @brand-warning;
   --color-danger: @brand-danger;
+
+  --gutter-x: @grid-gutter-width;
 
   --color-base-primary: @color-base-primary;
   --focus-state-border: 1px solid @input-border-focus;
@@ -865,7 +867,7 @@ th[align="right"] {
 
 .panel-analytics {
   .panel-body {
-    padding: 0 (@grid-gutter-width / 2);
+    padding: ~"0 calc(var(--gutter-x) * 0.5)";
 
     // & > .row > [class*="col-"]:first-child {
     //   padding-top: 15px;
@@ -897,7 +899,7 @@ th[align="right"] {
   }
 
   .analysis-types {
-    margin-bottom: (@grid-gutter-width / 2);
+    margin-bottom: ~"calc(var(--gutter-x) * 0.5)";
     border-bottom: 1px solid @panel-border;
   }
 }
@@ -1200,23 +1202,6 @@ h5.condensed,
 h6.condensed {
   margin-top: 0;
   margin-bottom: 0;
-}
-
-// add 10 column row
-.col-md-2-10 {
-  padding-right: 15px;
-  padding-left: 15px;
-}
-
-@media (min-width: 992px) {
-  .col-md-2-10 {
-    position: relative;
-    float: left;
-    width: 20%;
-    min-height: 1px;
-    padding-right: 15px;
-    padding-left: 15px;
-  }
 }
 
 
