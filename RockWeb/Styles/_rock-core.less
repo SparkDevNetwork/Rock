@@ -18,6 +18,8 @@
   --theme-white: @white;
   --theme-black: #343A40;
 
+  --text-color: @text-color;
+
   --color-primary: @brand-primary;
   --color-success: @brand-success;
   --color-info: @brand-info;
@@ -72,7 +74,6 @@
 @import "_blocks-finance.less";
 @import "_blocks-crm.less";
 @import "_blocks-communication.less";
-@import "_blocks-checkinadmin.less";
 @import "_blocks-workflow.less";
 @import "_blocks-events.less";
 @import "_components.less";
@@ -520,7 +521,6 @@ th[align="right"] {
     .btn {
       display: flex;
       justify-content: space-between;
-      padding-top: 0;
       padding-top: (@padding-base-vertical * 2) + 14px;
       text-align: left;
       background: transparent;
