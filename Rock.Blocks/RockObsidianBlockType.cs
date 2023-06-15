@@ -75,14 +75,6 @@ namespace Rock.Blocks
             }
         }
 
-        /// <summary>
-        /// Gets the initial height of the block. This is used during the
-        /// momentary render stage where the HTML has rendered but the JavaScript
-        /// has not yet run.
-        /// </summary>
-        /// <value>The initial height of the block.</value>
-        protected virtual int? InitialBlockHeight => 400;
-
         #endregion Properties
 
         #region Methods
@@ -129,7 +121,13 @@ namespace Rock.Blocks
                 return BrowserNotSupportedMarkup;
             }
 
-            var initialHeight = InitialBlockHeight;
+            int? initialHeight = 400;
+            var initialHeightAttribute = block.GetType().GetCustomAttribute<InitialBlockHeightAttribute>();
+
+            if ( initialHeightAttribute != null )
+            {
+                initialHeight = initialHeightAttribute.Height;
+            }
 
             if ( initialHeight.HasValue )
             {
