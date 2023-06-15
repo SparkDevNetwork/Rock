@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Shared/DragPallet.css", true );
             RockPage.AddCSSLink( "~/Styles/Blocks/Communication/SmsPipelineDetail.css", true );
 
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js" );

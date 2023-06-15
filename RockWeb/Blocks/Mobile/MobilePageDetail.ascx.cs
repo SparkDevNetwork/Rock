@@ -88,6 +88,7 @@ namespace RockWeb.Blocks.Mobile
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Shared/DragPallet.css", true );
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js" );
 
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Page ) ).Id;
@@ -720,7 +721,7 @@ namespace RockWeb.Blocks.Mobile
             tbName.Text = page.PageTitle;
             tbInternalName.Text = page.InternalName;
             tbDescription.Text = page.Description;
-           
+
             tbCssClass.Text = page.BodyCssClass;
             cbHideNavigationBar.Checked = additionalSettings.HideNavigationBar;
             cbShowFullScreen.Checked = additionalSettings.ShowFullScreen;
