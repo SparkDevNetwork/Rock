@@ -97,6 +97,7 @@ namespace Rock.Model
                 DeviceTypeId = model.DeviceTypeId,
                 DurationLastCalculatedDateTime = model.DurationLastCalculatedDateTime,
                 DurationSeconds = model.DurationSeconds,
+                InteractionChannelId = model.InteractionChannelId,
                 InteractionCount = model.InteractionCount,
                 InteractionMode = model.InteractionMode,
                 InteractionSessionLocationId = model.InteractionSessionLocationId,
@@ -177,6 +178,7 @@ namespace Rock.Model
             target.DurationSeconds = source.DurationSeconds;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InteractionChannelId = source.InteractionChannelId;
             target.InteractionCount = source.InteractionCount;
             target.InteractionMode = source.InteractionMode;
             target.InteractionSessionLocationId = source.InteractionSessionLocationId;

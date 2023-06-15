@@ -134,6 +134,7 @@
     <Folder Include="Framework\Enums\" />
     <Folder Include="Framework\Directives\" />
     <Folder Include="Framework\Core\" />
+    <Folder Include="Framework\Enums\AI\" />
     <Folder Include="Framework\Enums\Blocks\" />
     <Folder Include="Framework\Enums\Blocks\Cms\" />
     <Folder Include="Framework\Enums\Blocks\Cms\ContentCollectionView\" />
@@ -327,6 +328,8 @@
     <TypeScriptCompile Include="Framework\Controls\treeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragScroll.ts" />
+    <TypeScriptCompile Include="Framework\Enums\AI\chatMessageRole.ts" />
+    <TypeScriptCompile Include="Framework\Enums\AI\moderationFlags.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Engagement\SignUp\registerMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailDateSelectionMode.ts" />

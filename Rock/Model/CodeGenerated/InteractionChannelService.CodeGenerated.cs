@@ -61,6 +61,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionChannel.FriendlyTypeName, InteractionComponent.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<InteractionSession>( Context ).Queryable().Any( a => a.InteractionChannelId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionChannel.FriendlyTypeName, InteractionSession.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
