@@ -758,11 +758,30 @@
                 locationGuid: locationGuid.value,
                 scheduleGuid: scheduleGuid.value,
 
-                // This will ensure the expected attendance is updated on the existing or newly created occurrence.
-                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId),
+                // Pass all attendances...
+                // If a new occurrence is created,
+                // then attendances with a null didAttend value
+                // will be created with a false didAttend value.
+                // Otherwise, if another device already created the occurrence,
+                // then only attendances with a true/false didAttend value
+                // will be updated, while those with null didAttend values will be ignored.
+                updatedAttendances: attendances.value,
+            });
+        }
+        else if (attendances.value.some(a => (a.didAttend ?? null) === null)) {
+            // There are new people to add to the occurrence so
+            // invoke get/create to save multiple attendances.
+            await getOrCreateAttendanceOccurrence({
+                attendanceOccurrenceDate: attendanceForDateIsoString.value,
+                locationGuid: locationGuid.value,
+                scheduleGuid: scheduleGuid.value,
+
+                // Pass the attendance that changed and any new people (didAttend is null).
+                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || (attendance.didAttend ?? null === null))
             });
         }
         else {
+            // Mark the single attendance that has changed.
             await invokeBlockAction("MarkAttendance", { bag });
         }
     }
