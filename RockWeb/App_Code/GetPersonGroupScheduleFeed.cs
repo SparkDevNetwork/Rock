@@ -148,6 +148,7 @@ namespace RockWeb
                     iCalEvent.Location = locationName;
                     iCalEvent.DtStart = new CalDateTime( attendance.StartDateTime, icalendar.TimeZones[0].TzId );
                     iCalEvent.Duration = duration;
+                    iCalEvent.Uid = schedule.Guid.ToString();
 
                     // Don't set the description prop for outlook to force it to use the X-ALT-DESC property which can have markup.
                     if ( interactionDeviceType != "Outlook" )
