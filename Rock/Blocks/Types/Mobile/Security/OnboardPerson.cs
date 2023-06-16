@@ -111,6 +111,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         DefinedTypeGuid = SystemGuid.DefinedType.CAMPUS_TYPE,
         IsRequired = true,
         DefaultValue = SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL,
+        AllowMultiple = true,
         Category = AttributeCategories.Campus,
         Key = AttributeKeys.DisplayCampusTypes,
         Order = 0 )]
@@ -120,6 +121,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         DefinedTypeGuid = SystemGuid.DefinedType.CAMPUS_STATUS,
         IsRequired = true,
         DefaultValue = SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN,
+        AllowMultiple = true,
         Category = AttributeCategories.Campus,
         Key = AttributeKeys.DisplayCampusStatuses,
         Order = 1 )]
