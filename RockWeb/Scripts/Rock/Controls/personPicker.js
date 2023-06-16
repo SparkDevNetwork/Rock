@@ -255,6 +255,7 @@
 
                         setSelectedPerson(selectedPersonId, selectedText);
 
+                        $pickerSelect.trigger('onclick');
                         // Fire the postBack for the Select button.
                         var postBackUrl = $pickerSelect.prop('href');
                         if (postBackUrl) {
@@ -409,6 +410,7 @@
                 setSelectedPerson(selectedValue, selectedText);
 
                 // fire the postBack of the btnSelect if there is one
+                $pickerSelect.trigger('onclick');
                 var postBackUrl = $pickerSelect.prop('href');
                 if (postBackUrl) {
                     window.location = postBackUrl;
