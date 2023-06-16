@@ -981,22 +981,33 @@ namespace Rock.Blocks.Group
                 else
                 {
                     var campusId = occurrenceData.Campus?.Id;
+                    var existingAttendances = occurrenceData.AttendanceOccurrence.Attendees.ToList();
 
+                    // Add or update attendances with DidAttend = false.
                     foreach ( var attendee in GetAttendanceBags( rockContext, occurrenceData ) )
                     {
-                        var attendance = CreateAttendanceInstance(
-                            attendee.PersonAliasId,
-                            campusId,
-                            occurrenceData.AttendanceOccurrence.Schedule != null && occurrenceData.AttendanceOccurrence.Schedule.HasSchedule() ? occurrenceData.AttendanceOccurrence.OccurrenceDate.Date.Add( occurrenceData.AttendanceOccurrence.Schedule.StartTimeOfDay ) : occurrenceData.AttendanceOccurrence.OccurrenceDate,
-                            false );
+                        var existingAttendance = existingAttendances.FirstOrDefault( a => a.PersonAliasId == attendee.PersonAliasId );
 
-                        if ( !attendance.IsValid )
+                        if ( existingAttendance != null )
                         {
-                            occurrenceData.ErrorMessage = attendance.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                            return ActionBadRequest( occurrenceData.ErrorMessage );
+                            existingAttendance.DidAttend = false;
                         }
+                        else
+                        {
+                            var attendance = CreateAttendanceInstance(
+                                attendee.PersonAliasId,
+                                campusId,
+                                occurrenceData.AttendanceOccurrence.Schedule != null && occurrenceData.AttendanceOccurrence.Schedule.HasSchedule() ? occurrenceData.AttendanceOccurrence.OccurrenceDate.Date.Add( occurrenceData.AttendanceOccurrence.Schedule.StartTimeOfDay ) : occurrenceData.AttendanceOccurrence.OccurrenceDate,
+                                false );
 
-                        occurrenceData.AttendanceOccurrence.Attendees.Add( attendance );
+                            if ( !attendance.IsValid )
+                            {
+                                occurrenceData.ErrorMessage = attendance.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                                return ActionBadRequest( occurrenceData.ErrorMessage );
+                            }
+
+                            occurrenceData.AttendanceOccurrence.Attendees.Add( attendance );
+                        }
                     }
                 }
 

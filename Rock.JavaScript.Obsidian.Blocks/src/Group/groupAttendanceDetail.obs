@@ -777,7 +777,7 @@
                 scheduleGuid: scheduleGuid.value,
 
                 // Pass the attendance that changed and any new people (didAttend is null).
-                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || (attendance.didAttend ?? null === null))
+                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || ((attendance.didAttend ?? null) === null))
             });
         }
         else {
