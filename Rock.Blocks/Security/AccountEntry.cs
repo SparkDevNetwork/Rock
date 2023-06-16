@@ -831,14 +831,15 @@ namespace Rock.Blocks.Security
                 Step = AccountEntryStep.Registration
             };
 
-            if ( PageParameter( "status" ).ToLower() == "success" && GetCurrentPerson() != null )
+            var currentPerson = GetCurrentPerson();
+            if ( PageParameter( "status" ).ToLower() == "success" && currentPerson != null )
             {
                 accountEntryRegisterStepBox = new AccountEntryRegisterResponseBox()
                 {
                     Step = AccountEntryStep.Completed,
                     CompletedStepBag = new AccountEntryCompletedStepBag()
                     {
-                        Caption = GetCurrentPerson() == null ? GetAttributeValue( AttributeKey.SuccessCaption ) : GetSuccessCaption( GetCurrentPerson() ),
+                        Caption = GetSuccessCaption( currentPerson ),
                         IsPlainCaption = true,
                         IsRedirectAutomatic = true,
                     }
@@ -906,15 +907,6 @@ namespace Rock.Blocks.Security
                 return returnUrl;
             }
 
-            return GetCurrentPageUrl();
-        }
-
-        /// <summary>
-        /// Gets the current page URL.
-        /// </summary>
-        /// <returns>The current page URL.</returns>
-        private string GetCurrentPageUrl()
-        {
             return $"{this.RequestContext.RootUrlPath}/page/{PageCache.Id}?status=success";
         }
 

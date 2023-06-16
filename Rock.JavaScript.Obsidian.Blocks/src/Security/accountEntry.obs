@@ -329,7 +329,7 @@
             const response = await invokeBlockAction<AccountEntryRegisterResponseBox>("Register", { box: registrationInfo.value });
 
             if (response?.data?.step || response?.data?.step === AccountEntryStep.Registration) {
-                DisplayStep(response.data);
+                displayStep(response.data);
             }
             else {
                 showError(response?.errorMessage || "An unexpected error occurred");
@@ -426,7 +426,7 @@
     /**
      * Shows the "Registration" step.
      */
-    function DisplayStep(data: AccountEntryRegisterResponseBox ): void {
+    function displayStep(data: AccountEntryRegisterResponseBox ): void {
         switch (data.step) {
             case AccountEntryStep.Completed: {
                 showCompletedStepNext(data.completedStepBag);
@@ -461,6 +461,6 @@
     }
 
     //#endregion
-    DisplayStep(config.accountEntryRegisterStepBox || { step: AccountStepEntry.Registration });
+    displayStep(config.accountEntryRegisterStepBox || { step: AccountEntryStep.Registration });
     onConfigurationValuesChanged(useReloadBlock());
 </script>
