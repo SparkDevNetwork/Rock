@@ -713,11 +713,17 @@ namespace Rock.Blocks.Group
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), searchParameterOverrides: s =>
                 {
-                    s.AttendanceOccurrenceGuid = bag.AttendanceOccurrenceGuid;
+                    s.AttendanceOccurrenceGuid = bag.AttendanceOccurrenceGuid.IsEmpty() ? null : ( Guid? )bag.AttendanceOccurrenceGuid;
                 } );
                 var occurrenceData = clientService.GetOccurrenceData( searchParameters, withTracking: true );
 
                 GroupMember groupMember = null;
+
+                if ( occurrenceData.AttendanceOccurrence?.DidNotOccur == true )
+                {
+                    // This should not be able to happen as the Add Attendee/Group Member control should be hidden when DidNotOccur == true.
+                    return ActionBadRequest( "Unable to add person when the meeting did not occur." );
+                }
 
                 if ( string.Equals( this.AddPersonAs, "Group Member", StringComparison.OrdinalIgnoreCase ) )
                 {
