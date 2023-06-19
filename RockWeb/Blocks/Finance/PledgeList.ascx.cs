@@ -194,12 +194,12 @@ namespace RockWeb.Blocks.Finance
                 var pledge = ( FinancialPledge ) e.Row.DataItem;
                 if ( pledge.StartDate == DateTime.MinValue )
                 {
-                    var cell = e.Row.Cells[4].Text = string.Empty;
+                    var cell = e.Row.Cells[5].Text = string.Empty;
                 }
 
                 if ( pledge.EndDate.ToShortDateString() == DateTime.MaxValue.ToShortDateString() )
                 {
-                    var cell = e.Row.Cells[5].Text = string.Empty;
+                    var cell = e.Row.Cells[6].Text = string.Empty;
                 }
             }
         }
