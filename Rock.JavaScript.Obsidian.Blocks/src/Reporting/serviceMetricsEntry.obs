@@ -85,7 +85,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
-    import Panel from "@Obsidian/Controls/panel";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";

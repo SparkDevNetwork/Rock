@@ -42,7 +42,7 @@
     import { computed, onMounted, PropType, ref } from "vue";
     import MetricItem from "./metricItem.partial.obs";
     import { flattenBreadthFirst } from "./utils.partial";
-    import Panel from "@Obsidian/Controls/panel";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { ServiceMetricsEntryMetricCategoryBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryMetricCategoryBag";
     import { ServiceMetricsEntryMetricItemBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryMetricItemBag";
