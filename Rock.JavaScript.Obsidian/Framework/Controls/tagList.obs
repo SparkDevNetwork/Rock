@@ -95,6 +95,7 @@
     import Tag from "./tag.obs";
     import type { SelectHandler } from "ant-design-vue/lib/vc-select/Select.d";
     import type { SelectOption } from "@Obsidian/Types/Controls/autocomplete.d";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /** The unique identifier of the entity type described by entityKey. */
@@ -385,12 +386,9 @@
         const newTag: EntityTagListTagBag = {
             name: tagName,
             entityTypeGuid: props.entityTypeGuid,
-            isPersonal: true
+            isPersonal: true,
+            idKey: tagId || newGuid()
         };
-
-        if (tagId) {
-            newTag.idKey = tagId;
-        }
 
         return newTag;
     }
@@ -477,7 +475,6 @@
 
         const result = await http.post<EntityTagListTagBag[]>("/api/v2/Controls/EntityTagListGetAvailableTags", undefined, data);
 
-        console.debug("search time", { currentRequestTime, lastSearchCallTime }, currentRequestTime == lastSearchCallTime);
         if (result.isSuccess && result.data && currentRequestTime == lastSearchCallTime) {
             searchOptions.value = result.data.map(t => {
                 return {
@@ -494,7 +491,7 @@
      * @param ev The object that describes the event being handled.
      */
     function onInputKeyDown(ev: KeyboardEvent): void {
-        if (ev.keyCode === 13 && searchValue.value) {
+        if (ev.keyCode === 13 && searchValue.value && !props.disallowNewTags) {
             const tagName = searchValue.value;
             isAddNewTagCancelled = false;
 
