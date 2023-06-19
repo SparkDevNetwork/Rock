@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Reporting.ServiceMetricsEntry;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -188,6 +189,12 @@ namespace Rock.Blocks.Reporting
 
         #endregion
 
+        #region Fields
+
+        private PersonPreferenceCollection _personPreferences;
+
+        #endregion
+
         #region Properties
 
         /// <inheritdoc />
@@ -201,6 +208,22 @@ namespace Rock.Blocks.Reporting
             get
             {
                 return MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( AttributeKey.MetricCategories ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the person preferences.
+        /// </summary>
+        private PersonPreferenceCollection PersonPreferences
+        {
+            get
+            {
+                if ( _personPreferences == null )
+                {
+                    _personPreferences = GetBlockPersonPreferences();
+                }
+
+                return _personPreferences;
             }
         }
 
@@ -412,8 +435,8 @@ namespace Rock.Blocks.Reporting
                     var scheduleId = new ScheduleService( rockContext ).GetId( scheduleGuid.Value );
 
                     // Update the preferences for the selected campus and schedule.
-                    SetCurrentUserPreferenceForBlock( UserPreferenceKey.CampusId, campusId.HasValue ? campusId.Value.ToString() : string.Empty );
-                    SetCurrentUserPreferenceForBlock( UserPreferenceKey.ScheduleId, scheduleId.HasValue ? scheduleId.Value.ToString() : string.Empty );
+                    this.PersonPreferences.SetValue( UserPreferenceKey.CampusId, campusId.HasValue ? campusId.Value.ToString() : string.Empty );
+                    this.PersonPreferences.SetValue( UserPreferenceKey.ScheduleId, scheduleId.HasValue ? scheduleId.Value.ToString() : string.Empty );
 
                     var metricCategories = this.MetricCategories;
                     var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
@@ -527,16 +550,20 @@ namespace Rock.Blocks.Reporting
                     }
                 }
             }
-
-            if ( !campusGuid.HasValue )
+            else
             {
-                SetCurrentUserPreferenceForBlock( UserPreferenceKey.CampusId, string.Empty );
+                if ( !campusGuid.HasValue )
+                {
+                    this.PersonPreferences.SetValue( UserPreferenceKey.CampusId, string.Empty );
+                }
+
+                if ( !scheduleGuid.HasValue )
+                {
+                    this.PersonPreferences.SetValue( UserPreferenceKey.ScheduleId, string.Empty );
+                }
             }
 
-            if ( !scheduleGuid.HasValue )
-            {
-                SetCurrentUserPreferenceForBlock( UserPreferenceKey.ScheduleId, string.Empty );
-            }
+            this.PersonPreferences.Save();
 
             return ActionOk( new ServiceMetricsEntryGetMetricsResponseBag
             {
@@ -700,9 +727,9 @@ namespace Rock.Blocks.Reporting
         /// </summary>
         private ServiceMetricsEntryInitializationBox GetInitializationBox()
         {
-            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull() ?? GetCurrentUserPreferenceForBlock( UserPreferenceKey.CampusId ).AsIntegerOrNull();
+            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull() ?? this.PersonPreferences.GetValue( UserPreferenceKey.CampusId ).AsIntegerOrNull();
             var campusGuid = campusId.HasValue ? CampusCache.GetGuid( campusId.Value ) : null;
-            var scheduleId = GetCurrentUserPreferenceForBlock( UserPreferenceKey.ScheduleId ).AsIntegerOrNull();
+            var scheduleId = this.PersonPreferences.GetValue( UserPreferenceKey.ScheduleId ).AsIntegerOrNull();
             var scheduleGuid = scheduleId.HasValue ? new ScheduleService( new RockContext() ).GetGuid( scheduleId.Value ) : null;
 
             // If the Campus and Schedule both have initial values,
@@ -755,56 +782,6 @@ namespace Rock.Blocks.Reporting
             }
 
             return weekend;
-        }
-
-        /// <summary>
-        /// Gets a user preference for the current user.
-        /// </summary>
-        /// <param name="key">The user preference key.</param>
-        /// <returns>The user preference.</returns>
-        private string GetCurrentUserPreference( string key )
-        {
-            return PersonService.GetUserPreference( GetCurrentPerson(), key );
-        }
-
-        /// <summary>
-        /// Gets a user preference for the current user and block instance.
-        /// </summary>
-        /// <param name="key">The user preference key that will be converted to a block user preference key.</param>
-        /// <returns>The user preference.</returns>
-        private string GetCurrentUserPreferenceForBlock( string key )
-        {
-            return GetCurrentUserPreference( GetUserPreferenceKeyForBlock( key ) );
-        }
-
-        /// <summary>
-        /// Gets the user preference key for this block instance.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns>The block user preference key.</returns>
-        private string GetUserPreferenceKeyForBlock( string key )
-        {
-            return $"{PersonService.GetBlockUserPreferenceKeyPrefix( this.BlockId )}{key}";
-        }
-
-        /// <summary>
-        /// Sets a user preference for the current user.
-        /// </summary>
-        /// <param name="key">The user preference key.</param>
-        /// <param name="value">The user preference value.</param>
-        private void SetCurrentUserPreference( string key, string value )
-        {
-            PersonService.SaveUserPreference( this.GetCurrentPerson(), key, value );
-        }
-
-        /// <summary>
-        /// Sets a user preference for the current user and block instance.
-        /// </summary>
-        /// <param name="key">The user preference key that will be converted to a block user preference key.</param>
-        /// <param name="value">The user preference value.</param>
-        private void SetCurrentUserPreferenceForBlock( string key, string value )
-        {
-            SetCurrentUserPreference( GetUserPreferenceKeyForBlock( key ), value );
         }
 
         #endregion
