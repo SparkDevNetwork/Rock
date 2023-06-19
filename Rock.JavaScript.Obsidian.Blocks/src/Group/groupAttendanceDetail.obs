@@ -107,7 +107,7 @@
                                                  :modelValue="attendanceOccurrenceTypeGuid"
                                                  @update:modelValue="onAttendanceOccurrenceTypeChanged" />
 
-                                <div class="ml-auto d-flex align-items-end">
+                                <div v-if="!didNotOccur" class="ml-auto d-flex align-items-end">
                                     <PersonPicker
                                                   v-if="config.isNewAttendeeAdditionAllowed"
                                                   :disabled="!isAutoSaveOn"
@@ -483,6 +483,14 @@
                 },
                 async onSave(): Promise<void> {
                     didNotOccur.value = newDidNotOccur;
+
+                    // Mark all attendances as did not meet = null instead of waiting for real-time updates.
+                    for (const attendance of attendances.value) {
+                        if (attendance?.didAttend === true) {
+                            attendance.didAttend = null;
+                        }
+                    }
+
                     await autoUpdateDidNotOccur({
                         attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
                         didNotOccur: newDidNotOccur
@@ -777,7 +785,7 @@
                 scheduleGuid: scheduleGuid.value,
 
                 // Pass the attendance that changed and any new people (didAttend is null).
-                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || (attendance.didAttend ?? null === null))
+                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || ((attendance.didAttend ?? null) === null))
             });
         }
         else {
