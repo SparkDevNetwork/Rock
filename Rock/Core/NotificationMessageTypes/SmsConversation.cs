@@ -221,8 +221,16 @@ namespace Rock.Core.NotificationMessageTypes
         public override NotificationMessageActionBag GetActionForNotificationMessage( NotificationMessage message, SiteCache site, RockRequestContext context )
         {
             var siteTerm = site.SiteType == SiteType.Web ? "web site" : "application";
-            int? conversationPageId = 12; // = site.ConversationPageId
+            int? conversationPageId = null;
             var messageData = message.ComponentDataJson.FromJsonOrNull<MessageData>();
+
+            if ( site.SiteType == SiteType.Mobile )
+            {
+                var siteOptions = site.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalSiteSettings>();
+
+                conversationPageId = siteOptions?.SmsConversationPageId;
+            }
+
             var conversationPage = conversationPageId.HasValue ? PageCache.Get( conversationPageId.Value ) : null;
 
             if ( conversationPage == null )
