@@ -15,8 +15,10 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using Rock.Attribute;
 using Rock.Security;
@@ -122,7 +124,7 @@ namespace Rock.Blocks
             }
 
             int? initialHeight = 400;
-            var initialHeightAttribute = block.GetType().GetCustomAttribute<InitialBlockHeightAttribute>();
+            var initialHeightAttribute = GetType().GetCustomAttribute<InitialBlockHeightAttribute>();
 
             if ( initialHeightAttribute != null )
             {
