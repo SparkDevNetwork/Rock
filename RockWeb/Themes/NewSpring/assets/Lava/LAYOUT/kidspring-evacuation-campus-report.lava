@@ -1,0 +1,149 @@
+//- Set these page parameters up to pass through to SQL
+{% assign dateKey = 'Now' | Date:'yyyyMMdd' %}
+{% assign dateKey = '20230618' %}
+{% assign campusGuid = Context.Campus.Guid %}
+{% assign scheduleId = Context.Schedule.Id %}
+
+{% assign queryParamsArray = 'Global' | Page:'QueryString'  %}
+{% capture queryParams %}{% for item in queryParamsArray offset:1 %}{% assign kvItem = item | PropertyToKeyValue %}{{ kvItem.Key }}={{ kvItem.Value }}{% unless forloop.last %}&{% endunless %}{% endfor %}{% endcapture %}
+
+{% if dateKey == '' or campusGuid == '' or scheduleId == '' %}
+
+    <p class="p-3 alert alert-danger"><i class="fas fa-exclamation-triangle mr-1 text-danger"></i> Select a value for all filters in the filters drawer above to continue.</p>
+
+{% else %}
+
+    {% sql datekey:'{{ dateKey }}' campusguid:'{{ campusGuid }}' scheduleid:'{{ scheduleId }}' %}
+
+        -- Get Attendance Occurrences
+        SELECT
+            s.[Name] AS [Schedule]
+            ,   l.[Id] AS [LocationId]
+            ,   l.[Name] AS [LocationName]
+            ,   (
+                SELECT COUNT(*)
+                FROM [Attendance] a
+                WHERE a.[OccurrenceId] = ao.[Id]
+                AND a.[DidAttend] = 1
+            ) AS [Attended]
+            ,   (
+                SELECT COUNT(*)
+                FROM [Attendance] a
+                LEFT JOIN [AttributeValue] av ON av.[EntityId] = a.[Id] AND av.[AttributeId] = 157200
+                WHERE a.[OccurrenceId] = ao.[Id]
+                AND a.[DidAttend] = 1
+                AND av.[Value] IS NULL
+                AND a.[EndDateTime] IS NULL
+            ) AS [Unmarked]
+            ,   (
+                SELECT COUNT(*)
+                FROM [Attendance] a
+                LEFT JOIN [AttributeValue] av ON av.[EntityId] = a.[Id] AND av.[AttributeId] = 157200
+                WHERE a.[OccurrenceId] = ao.[Id]
+                AND a.[DidAttend] = 1
+                AND av.[Value] IS NOT NULL
+            ) AS [Marked]
+            ,   (
+                SELECT COUNT(*)
+                FROM [Attendance] a
+                WHERE a.[OccurrenceId] = ao.[Id]
+                AND a.[DidAttend] = 1
+                AND a.[EndDateTime] IS NOT NULL
+            ) AS [CheckedOut]
+        FROM [AttendanceOccurrence] ao
+        JOIN [Location] l ON ao.[LocationId] = l.[Id]
+        JOIN [Schedule] s ON ao.[ScheduleId] = s.[Id]
+        JOIN [Group] g ON ao.[GroupId] = g.[Id]
+        JOIN [Campus] c ON c.[Id] = g.[CampusId]
+        WHERE ao.[OccurrenceDateKey] = @datekey
+        AND s.[Id] = @scheduleid
+        AND g.[GroupTypeId] IN (
+            85 -- Nursery Attendee
+            ,   87 -- Preschool Attendee
+            ,   81 -- Elementary Attendee
+            ,   90 -- Special Needs Attendee
+        )
+        AND CONVERT(nvarchar(36), c.[Guid]) = @campusguid
+        -- AND s.[Id] = @scheduleid
+        ORDER BY s.[Id]
+        ,   CASE
+            WHEN g.[GroupTypeId] = 85 THEN 1
+            WHEN g.[GroupTypeId] = 87 THEN 2
+            WHEN g.[GroupTypeId] = 81 THEN 3
+            WHEN g.[GroupTypeId] = 90 THEN 4
+        END
+        , l.[Name]
+
+    {% endsql %}
+
+    <div class="px-3 px-sm-0">
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading hidden">Panel heading</div>
+
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="table">
+                        <colgroup>
+                            <col span="1" style="width: 5%;">
+                            <col span="1" style="width: 15%;">
+                            <col span="1" style="width: 15%;">
+                            <col span="1" style="width: 70%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th class="text-center">Roster</th>
+                                <th>Schedule</th>
+                                <th>Location</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                            <tr>
+                                <td class="text-center"><a href="/page/16085{{ queryParams | Prepend:'?' | Append:'&LocationId=' | Append:row.LocationId }}" class="btn btn-xs btn-default mb-0"><i class="fas fa-tasks"></i></a></td>
+                                <td>{{ row.Schedule }}</td>
+                                <td>{{ row.LocationName }}</td>
+                                <td>
+                                    {% assign unsafePercentage = row.Unmarked | DividedBy:row.Attended | Times:100 | Floor %}
+                                    {% assign safePercentage = row.Marked | DividedBy:row.Attended | Times:100 | Floor %}
+                                    {% assign checkedOutPercentage = row.CheckedOut | DividedBy:row.Attended | Times:100 | Floor %}
+
+                                    {% capture progressColor -%}
+                                        {%- if safePercentage == 100 -%}
+                                            success
+                                        {%- elseif safePercentage >= 50 -%}
+                                            info
+                                        {%- else -%}
+                                            danger
+                                        {%- endif -%}
+                                    {% endcapture %}
+
+                                    <div class="hidden progress mb-0">
+                                    <div class="progress-bar text-sans-serif font-weight-semibold progress-bar-{{ progressColor | Trim }} progress-bar-striped active" role="progressbar" aria-valuenow="{{ safePercentage }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ safePercentage }}%; min-width: 5em;">
+                                        <span class="text-sans-serif font-weight-bold">{{ safePercentage }}%</span>
+                                    </div>
+                                    </div>
+
+                                    <div class="progress mb-0">
+                                        <div class="progress-bar text-sans-serif font-weight-semibold progress-bar-danger progress-bar-striped active" style="width: {{ unsafePercentage }}%">
+                                            <span>{{ unsafePercentage }}% Pending</span>
+                                        </div>
+
+
+                                        <div class="progress-bar text-sans-serif font-weight-semibold progress-bar-success progress-bar-striped active" style="width: {{ checkedOutPercentage }}%">
+                                            <span>{{ checkedOutPercentage }}% Checked Out</span>
+                                        </div>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endif %}

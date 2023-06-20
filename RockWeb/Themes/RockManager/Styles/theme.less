@@ -3,7 +3,6 @@
 // http://192.241.236.31/test4.smartadmin/#ajax/dashboard.html
 // http://webapplayers.com/inspinia_admin-v1.2/form_basic.html
 
-
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/Bootstrap/variables.less";
@@ -107,7 +106,6 @@ h4 {
   justify-content: flex-end;
 }
 
-
 /* #region
 // 1. HTML Overrides         */
 // -------------------------
@@ -159,7 +157,6 @@ textarea,
 }
 
 /* #endregion */
-
 
 /* #region
 // 2. Bootstrap Overrides    */
@@ -219,7 +216,7 @@ textarea,
 }
 
 .label.btn-label {
-  padding: .2em .5em .3em;
+  padding: 0.2em 0.5em 0.3em;
   color: @btn-default-color !important;
   background: @btn-default-bg;
   box-shadow: inset 0 0 0 1px @btn-default-border;
@@ -263,7 +260,6 @@ textarea,
         }
       }
     }
-
 
     // Active state, and its :hover to override normal :hover
     &.active > a {
@@ -309,7 +305,6 @@ textarea,
   }
 }
 
-
 .tooltip-arrow {
   width: 10px;
   height: 10px;
@@ -328,10 +323,10 @@ textarea,
 }
 
 .close {
-  opacity: .5;
+  opacity: 0.5;
   &:focus,
   &:hover {
-    opacity: .75;
+    opacity: 0.75;
   }
 }
 
@@ -487,7 +482,8 @@ textarea,
 }
 
 .btn.active,
-.btn:active { // removes the shadow from the toggles
+.btn:active {
+  // removes the shadow from the toggles
   .box-shadow(none);
 }
 
@@ -566,7 +562,7 @@ textarea,
 
 .grid-actions .form-control {
   height: 37px;
-  font-size: .8em;
+  font-size: 0.8em;
   background-color: @grid-column-header-bg;
   border: 0;
   box-shadow: none;
@@ -592,7 +588,6 @@ textarea,
   overflow: hidden;
   box-shadow: @shadow-sm;
 }
-
 
 .panel-block {
   position: relative;
@@ -726,7 +721,6 @@ td.grid-actions {
 }
 
 .page-wrapper {
-
   @media (min-width: @screen-md-min) {
     padding-top: @navbar-top-height;
   }
@@ -947,7 +941,7 @@ td.grid-actions {
 
   &::-webkit-scrollbar-thumb {
     width: 6px;
-    background-color: rgba(0,0,0, .2);
+    background-color: rgba(0, 0, 0, 0.2);
     border-radius: 10px;
   }
 
@@ -1019,7 +1013,6 @@ td.grid-actions {
         }
       }
 
-
       &.login {
         border-top: 1px solid fade(@white, 10%);
       }
@@ -1031,7 +1024,6 @@ td.grid-actions {
     display: none !important;
   }
 }
-
 
 // expanded view
 @media (min-width: @screen-sm-min) {
@@ -1108,7 +1100,7 @@ td.grid-actions {
       > li + li::before {
         padding: 0 14px;
         font-family: @fa-font-face;
-        font-size: .8333em;
+        font-size: 0.8333em;
         font-weight: @fa-theme-weight;
         content: "@{breadcrumb-separator}";
       }
@@ -1119,7 +1111,6 @@ td.grid-actions {
   .page-title-addon {
     border-bottom: 1px solid @gray-lighter;
   }
-
 
   @media (min-width: @screen-md-min) {
     padding: 0;
@@ -1148,7 +1139,6 @@ td.grid-actions {
     margin: -35px -35px 0;
   }
 }
-
 
 // workflow page
 .workflow-activity {
@@ -1191,7 +1181,7 @@ td.grid-actions {
   }
 
   .name .firstname {
-    font-size: .488em;
+    font-size: 0.488em;
     font-weight: @font-weight-light;
   }
 
@@ -1261,10 +1251,10 @@ td.grid-actions {
 .picker-menu {
   -webkit-animation-name: picker-transition;
   animation-name: picker-transition;
-  -webkit-animation-duration: .367s;
-  animation-duration: .367s;
-  -webkit-animation-timing-function: cubic-bezier(.1, .9, .2, 1);
-  animation-timing-function: cubic-bezier(.1, .9, .2, 1);
+  -webkit-animation-duration: 0.367s;
+  animation-duration: 0.367s;
+  -webkit-animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+  animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
   -webkit-animation-fill-mode: both;
   animation-fill-mode: both;
 }
@@ -1293,7 +1283,6 @@ td.grid-actions {
   }
 }
 
-
 .picker-lg {
   .picker-label {
     display: flex;
@@ -1307,7 +1296,7 @@ td.grid-actions {
     box-shadow: none;
 
     &:focus {
-      background: fade(#000,8%);
+      background: fade(#000, 8%);
     }
 
     > i {
@@ -1356,7 +1345,6 @@ td.grid-actions {
 .avatar-column {
   width: 40px;
 }
-
 
 .badge-zone {
   --badge-size: 36px;
