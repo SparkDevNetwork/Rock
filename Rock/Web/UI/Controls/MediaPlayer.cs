@@ -246,7 +246,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string PrimaryColor
         {
-            get => ViewState[nameof( PrimaryColor )] as string ?? "var(--brand-primary)";
+            get => ViewState[nameof( PrimaryColor )] as string ?? "var(--color-primary)";
             set => ViewState[nameof( PrimaryColor )] = value;
         }
 

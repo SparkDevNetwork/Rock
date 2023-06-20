@@ -229,7 +229,7 @@ export default defineComponent({
             };
 
             if (result.primaryAliasGuid === selectedSearchResult.value) {
-                styles["border"] = "2px solid var(--brand-color)";
+                styles["border"] = "2px solid var(--color-primary)";
             }
             else {
                 styles["border"] = "2px solid transparent";

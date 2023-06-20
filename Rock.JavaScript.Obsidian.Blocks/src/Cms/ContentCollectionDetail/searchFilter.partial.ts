@@ -32,7 +32,7 @@ export default defineComponent({
             type: Boolean as PropType<boolean>,
             default: false
         },
-        
+
         /** True if the sources are in an inconsistent state which prevents editing. */
         isInconsistent: {
             type: Boolean as PropType<boolean>,
@@ -81,7 +81,7 @@ export default defineComponent({
     template: `
 <div class="search-filter-row">
     <div class="search-filter-icon">
-        <i v-if="isEnabled" class="fa fa-check-square" style="color: var(--brand-color);"></i>
+        <i v-if="isEnabled" class="fa fa-check-square" style="color: var(--color-primary);"></i>
         <i v-else class="fa fa-check-square-o" style="color: #c3c2c2;"></i>
     </div>
 

@@ -206,7 +206,7 @@ body {
             styles["--experience-action-primary-btn-bg"] = config.style.action.primaryButtonColor;
         }
         else {
-            styles["--experience-action-primary-btn-bg"] = "var(--brand-primary)";
+            styles["--experience-action-primary-btn-bg"] = "var(--color-primary)";
         }
 
         if (config.style?.action?.primaryButtonTextColor) {
@@ -220,7 +220,7 @@ body {
             styles["--experience-action-secondary-btn-bg"] = config.style.action.secondaryButtonColor;
         }
         else {
-            styles["--experience-action-secondary-btn-bg"] = "var(--brand-info)";
+            styles["--experience-action-secondary-btn-bg"] = "var(--color-info)";
         }
 
         if (config.style?.action?.secondaryButtonTextColor) {

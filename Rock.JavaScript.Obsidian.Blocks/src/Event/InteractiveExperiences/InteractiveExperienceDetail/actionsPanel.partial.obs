@@ -106,7 +106,7 @@
     min-width: 35px;
     padding: 8px 0;
     color: #fff;
-    background-color: var(--brand-info);
+    background-color: var(--color-info);
 }
 
 .action-item-body {
@@ -135,7 +135,7 @@
     height: 36px;
     padding: 0;
     color: #fff;
-    background-color: var(--brand-info);
+    background-color: var(--color-info);
     border-radius: 50%;
 }
 
