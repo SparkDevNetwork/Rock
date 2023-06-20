@@ -170,9 +170,6 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
             using ( var rockContext = new RockContext() )
             {
-
-                string photoUrl = null;
-
                 // Get the person via either their Guid.
                 var person = new PersonService( rockContext )
                     .GetQueryableByKey( personGuid.ToString() )
@@ -184,11 +181,6 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 if ( person == null )
                 {
                     return ActionBadRequest( "Individual was not found." );
-                }
-
-                if ( person.PhotoId.HasValue )
-                {
-                    photoUrl = MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Id={person.PhotoId.Value}&maxwidth=512&maxheight=512" );
                 }
 
                 var responses = new CommunicationResponseService( rockContext )
@@ -219,7 +211,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     Messages = messages,
                     PersonGuid = person.Guid,
                     PhoneNumber = person.PhoneNumbers.GetFirstSmsNumber(),
-                    PhotoUrl = photoUrl,
+                    PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( person.PhotoUrl ),
                     Snippets = snippets
                 };
 
