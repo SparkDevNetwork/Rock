@@ -359,7 +359,7 @@ namespace Rock.Mobile
             }
 
             // Run Lava on CSS to enable color utilities
-            cssStyles = cssStyles.ResolveMergeFields(Lava.LavaHelper.GetCommonMergeFields(null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false }));
+            cssStyles = cssStyles.ResolveMergeFields( Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } ) );
 
             // Get the Rock organization time zone. If not found back to the
             // OS time zone. If not found just use Greenwich.
@@ -576,7 +576,7 @@ namespace Rock.Mobile
                     PageGuid = page.Guid,
                     Order = page.Order,
                     ParentPageGuid = page.ParentPage?.Guid,
-                    IconUrl = page.IconBinaryFileId.HasValue ? $"{ applicationRoot }GetImage.ashx?Id={ page.IconBinaryFileId.Value }" : null,
+                    IconUrl = page.IconBinaryFileId.HasValue ? $"{applicationRoot}GetImage.ashx?Id={page.IconBinaryFileId.Value}" : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
                     CssClasses = page.BodyCssClass,
@@ -887,7 +887,7 @@ namespace Rock.Mobile
             var applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
 
             // We want to trim so we don't end up with URLs that look like this: church.com//GetImage.ashx
-            if( path.StartsWith("/") )
+            if ( path.StartsWith( "/" ) )
             {
                 path = path.RemoveLeadingForwardslash();
             }

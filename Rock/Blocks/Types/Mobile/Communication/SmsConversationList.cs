@@ -86,6 +86,13 @@ namespace Rock.Blocks.Types.Mobile.Communication
         Key = AttributeKey.ConversationPage,
         Order = 6 )]
 
+    [IntegerField( "Person Search Stopped Typing Behavior Threshold",
+        Description = "Changes the amount of time (in milliseconds) that a user must stop typing for the search command to execute. Set to 0 to disable entirely.",
+        IsRequired = true,
+        DefaultIntegerValue = 200,
+        Key = AttributeKey.StoppedTypingBehaviorThreshold,
+        Order = 7 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "77701BE2-1335-45F3-93B3-F06466CA391F" )]
@@ -106,6 +113,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
             public const string MaxConversations = "MaxConversations";
             public const string DatabaseTimeoutSeconds = "DatabaseTimeoutSeconds";
             public const string ConversationPage = "ConversationPage";
+            public const string StoppedTypingBehaviorThreshold = "StoppedTypingBehaviorThreshold";
         }
 
         #endregion
@@ -138,7 +146,8 @@ namespace Rock.Blocks.Types.Mobile.Communication
         {
             return new
             {
-                ConversationPageGuid = GetAttributeValue( AttributeKey.ConversationPage ).AsGuidOrNull()
+                ConversationPageGuid = GetAttributeValue( AttributeKey.ConversationPage ).AsGuidOrNull(),
+                StoppedTypingBehaviorThreshold = GetAttributeValue( AttributeKey.StoppedTypingBehaviorThreshold ).AsIntegerOrNull()
             };
         }
 
