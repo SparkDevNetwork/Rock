@@ -33,15 +33,18 @@
     <Content Include=".eslintrc.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <Content Include="src\plyr\custom.css" />
     <Content Include="tsconfig.json" />
     <Content Include="webpack-eol-plugin.js" />
     <Content Include="webpack.config.js" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\" />
+    <Folder Include="src\plyr\" />
     <Folder Include="src\realtime\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\plyr\index.ts" />
     <TypeScriptCompile Include="src\realtime\aspNetEngine.ts" />
     <TypeScriptCompile Include="src\realtime\engine.ts" />
     <TypeScriptCompile Include="src\realtime\index.ts" />

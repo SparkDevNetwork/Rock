@@ -1,0 +1,9 @@
+@import "~plyr/dist/plyr.css";
+
+.plyr__poster {
+    background-size: cover;
+}
+
+.plyr--youtube .plyr__poster {
+    display: none;
+}
