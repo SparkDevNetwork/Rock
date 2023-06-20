@@ -132,7 +132,6 @@ namespace Rock
         /// <returns>A collection of <see cref="ConversationMessageBag"/> objects that represent the responses.</returns>
         internal static IEnumerable<ConversationMessageBag> ToMessageBags( this IEnumerable<CommunicationRecipientResponse> responses )
         {
-            var publicUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
             var attachmentsLookup = new Dictionary<string, List<(Guid Guid, string FileName, string MimeType)>>();
 
             // Load the attachments for all responses in two queries rather
@@ -213,8 +212,8 @@ namespace Rock
                             bag.Attachments.Add( new ConversationAttachmentBag
                             {
                                 FileName = attachment.FileName,
-                                Url = $"{publicUrl}GetImage.ashx?Guid={attachment.Guid}",
-                                ThumbnailUrl = isImage ? $"{publicUrl}GetImage.ashx?Guid={attachment.Guid}&maxwidth=512&maxheight=512" : null
+                                Url = MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Guid={attachment.Guid}" ),
+                                ThumbnailUrl = isImage ? MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Guid={attachment.Guid}&maxwidth=512&maxheight=512" ) : null
                             } );
                         }
                     }
