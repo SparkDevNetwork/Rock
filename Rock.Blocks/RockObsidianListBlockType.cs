@@ -35,7 +35,7 @@ namespace Rock.Blocks
     /// release and should therefore not be directly used in any plug-ins.
     /// </remarks>
     [RockInternal( "1.16" )]
-    public abstract class RockObsidianListBlockType<T> : RockObsidianBlockType
+    public abstract class RockObsidianListBlockType<T> : RockBlockType
         where T : class
     {
         #region Methods

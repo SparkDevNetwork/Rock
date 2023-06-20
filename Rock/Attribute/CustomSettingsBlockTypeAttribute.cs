@@ -16,16 +16,16 @@
 //
 using System;
 
+using Rock.Model;
+
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Decorates a class as a custom settings provider for the specified block
+    /// type.
     /// </summary>
-    /// <seealso cref="System.Attribute" />
     [AttributeUsage( AttributeTargets.Class )]
-    [Obsolete( "Use CustomSettingsBlockType instead." )]
-    [RockObsolete( "1.16" )]
-    public class TargetTypeAttribute : System.Attribute
+    public class CustomSettingsBlockTypeAttribute : System.Attribute
     {
         /// <summary>
         /// Gets the type of the target.
@@ -36,12 +36,30 @@ namespace Rock.Attribute
         public Type TargetType { get; }
 
         /// <summary>
+        /// Gets the type of the site these custom settings will apply to.
+        /// </summary>
+        /// <value>The type of the site these custom settings will apply to.</value>
+        public SiteType? SiteType { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TargetTypeAttribute"/> class.
         /// </summary>
-        /// <param name="targetType">Type of the target.</param>
-        public TargetTypeAttribute( Type targetType )
+        /// <param name="targetType">Type of the target block type class.</param>
+        public CustomSettingsBlockTypeAttribute( Type targetType )
         {
             TargetType = targetType;
+            SiteType = null;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TargetTypeAttribute"/> class.
+        /// </summary>
+        /// <param name="targetType">Type of the target block type class.</param>
+        /// <param name="siteType">The type of site these custom settings will apply to or <c>null</c> to apply to all site types.</param>
+        public CustomSettingsBlockTypeAttribute( Type targetType, SiteType siteType )
+        {
+            TargetType = targetType;
+            SiteType = siteType;
         }
     }
 }

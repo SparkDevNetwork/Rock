@@ -42,6 +42,7 @@ namespace Rock.Blocks.Core
     [Category( "Obsidian > Core" )]
     [Description( "Displays the details of a particular campus." )]
     [IconCssClass( "fa fa-building" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

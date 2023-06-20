@@ -43,6 +43,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays the details of a particular interactive experience." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -66,7 +67,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

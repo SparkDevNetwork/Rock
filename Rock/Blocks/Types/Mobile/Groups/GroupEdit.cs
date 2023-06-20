@@ -33,12 +33,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// Displays custom XAML content on the page.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Group Edit" )]
     [Category( "Mobile > Groups" )]
     [Description( "Edits the basic settings of a group." )]
     [IconCssClass( "fa fa-users-cog" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -163,7 +164,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_EDIT_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "FEC66374-E38F-4651-BAA6-AC658409D9BD")]
-    public class GroupEdit : RockMobileBlockType
+    public class GroupEdit : RockBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the GroupEdit block.
@@ -383,21 +384,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupEdit";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

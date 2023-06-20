@@ -26,20 +26,21 @@ using Rock.Web.Cache;
 using Rock.Common.Mobile.Blocks.Crm.GroupMembers;
 using Rock.Web.UI;
 using Rock.Security;
+using System;
 
 namespace Rock.Blocks.Types.Mobile.Crm
 {
 
     /// <summary>
     /// The Rock Mobile Group Members block.
-    /// Implements the <see cref="Rock.Blocks.RockMobileBlockType" />
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Group Members" )]
     [Category( "Mobile > Crm" )]
     [IconCssClass( "fa fa-users" )]
     [Description( "Allows you to view the other members of a group person belongs to (e.g. Family groups)." )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -78,15 +79,12 @@ namespace Rock.Blocks.Types.Mobile.Crm
     [ContextAware( typeof( Rock.Model.Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CRM_GROUP_MEMBERS )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CRM_GROUP_MEMBERS )]
-    public class GroupMembers : RockMobileBlockType
+    public class GroupMembers : RockBlockType
     {
         #region IRockMobileBlockType
 
-        /// <inheritdoc />
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <inheritdoc />
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Crm.GroupMembers";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         #endregion
 

@@ -39,11 +39,12 @@ namespace Rock.Blocks.Security
     /// <summary>
     /// Allows the user to register.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Account Entry" )]
     [Category( "Obsidian > Security" )]
     [Description( "Allows the user to register." )]
     [IconCssClass( "fa fa-user-lock" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region "Block Attributes"
     [BooleanField(
@@ -293,7 +294,7 @@ namespace Rock.Blocks.Security
 
     [Rock.SystemGuid.EntityTypeGuid( "75704274-FDB8-4A0C-AE0E-510F1977BE0A" )]
     [Rock.SystemGuid.BlockTypeGuid( "E5C34503-DDAD-4881-8463-0E1E20B1675D" )]
-    public class AccountEntry : RockObsidianBlockType
+    public class AccountEntry : RockBlockType
     {
         #region Attribute Keys
 
@@ -336,7 +337,7 @@ namespace Rock.Blocks.Security
         #region IRockObsidianBlockType Implementation
 
         /// <inheritdoc/>
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()

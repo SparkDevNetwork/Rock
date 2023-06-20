@@ -34,13 +34,13 @@ namespace Rock.Blocks.Types.Mobile.Crm
     /// <summary>
     /// The Rock Mobile Person Profile block, used to display and edit
     /// a <see cref="Rock.Model.Person"/> in Rock.
-    /// Implements the <see cref="Rock.Blocks.RockMobileBlockType" />
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Person Profile" )]
     [Category( "Mobile > Crm" )]
     [Description( "The person profile block." )]
     [IconCssClass( "fa fa-user" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -96,15 +96,12 @@ namespace Rock.Blocks.Types.Mobile.Crm
     [ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CRM_PERSON_PROFILE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CRM_PERSON_PROFILE )]
-    public class PersonProfile : RockMobileBlockType
+    public class PersonProfile : RockBlockType
     {
         #region IRockMobileBlockType Implementation
 
-        /// <inheritdoc />
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <inheritdoc />
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Crm.PersonProfile";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         /// <inheritdoc />
         public override object GetMobileConfigurationValues()

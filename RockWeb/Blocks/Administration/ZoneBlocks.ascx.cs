@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -126,7 +127,7 @@ namespace RockWeb.Blocks.Administration
                 gPageBlocks.GridReorder += gPageBlocks_GridReorder;
                 gPageBlocks.GridRebind += gPageBlocks_GridRebind;
 
-                LoadBlockTypes( !Page.IsPostBack );
+                LoadBlockTypes( !Page.IsPostBack, _Page.Layout.Site.SiteType );
 
                 string script = string.Format(
                     @"Sys.Application.add_load(function () {{
@@ -623,7 +624,9 @@ namespace RockWeb.Blocks.Administration
         /// <summary>
         /// Loads the block types.
         /// </summary>
-        private void LoadBlockTypes( bool registerBlockTypes )
+        /// <param name="registerBlockTypes">If <c>true</c> then a search for unregistered blocks will be performed.</param>
+        /// <param name="siteType">The type of site the to use when filtering supported block types.</param>
+        private void LoadBlockTypes( bool registerBlockTypes, SiteType siteType )
         {
             if ( registerBlockTypes )
             {
@@ -646,12 +649,33 @@ namespace RockWeb.Blocks.Administration
                 {
                     var type = bt.GetCompiledType();
 
-                    if ( typeof( IRockObsidianBlockType ).IsAssignableFrom( type ) )
+                    if ( siteType == SiteType.Web )
                     {
-                        return true;
+                        if ( typeof( RockBlock ).IsAssignableFrom( type ) )
+                        {
+                            return true;
+                        }
+
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
+
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockObsidianBlockType ).IsAssignableFrom( type );
+                    }
+                    else if ( siteType == SiteType.Mobile )
+                    {
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
+
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockMobileBlockType ).IsAssignableFrom( type );
                     }
 
-                    return !typeof( IRockMobileBlockType ).IsAssignableFrom( type );
+                    return false;
                 } )
                 .ToList();
 

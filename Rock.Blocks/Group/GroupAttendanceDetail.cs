@@ -39,6 +39,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Attendance Detail" )]
     [Category( "Obsidian > Group" )]
     [Description( "Lists the group members for a specific occurrence date time and allows selecting if they attended or not." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -203,7 +204,7 @@ namespace Rock.Blocks.Group
 
     [Rock.SystemGuid.EntityTypeGuid( "64ECB2E0-218F-4EB4-8691-7DC94A767037" )]
     [Rock.SystemGuid.BlockTypeGuid( "308DBA32-F656-418E-A019-9D18235027C1" )]
-    public class GroupAttendanceDetail : RockObsidianBlockType
+    public class GroupAttendanceDetail : RockBlockType
     {
         #region Attribute Values
 
@@ -475,7 +476,7 @@ namespace Rock.Blocks.Group
         #region IRockObsidianBlockType Implementation
 
         /// <inheritdoc/>
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()

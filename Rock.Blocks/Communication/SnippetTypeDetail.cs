@@ -40,6 +40,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Displays the details of a particular snippet type." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -63,7 +64,7 @@ namespace Rock.Blocks.Communication
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

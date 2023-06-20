@@ -441,6 +441,15 @@ namespace RockWeb.Blocks.Mobile
                         continue;
                     }
 
+                    // Descendants of RockBlockType must provide the SupportedSiteTypes attribute.
+                    if ( typeof( Rock.Blocks.RockBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    {
+                        if ( blockCompiledType.GetCustomAttribute<Rock.Blocks.SupportedSiteTypesAttribute>()?.SiteTypes.Contains( SiteType.Mobile ) != true )
+                        {
+                            continue;
+                        }
+                    }
+
                     var iconCssClassAttribute = ( IconCssClassAttribute ) blockCompiledType.GetCustomAttribute( typeof( IconCssClassAttribute ) );
 
                     var item = new ComponentItem
@@ -626,12 +635,22 @@ namespace RockWeb.Blocks.Mobile
                 {
                     var blockCompiledType = blockType.GetCompiledType();
 
-                    if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    if ( !typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
                     {
-                        if ( !categories.Contains( blockType.Category ) )
+                        continue;
+                    }
+
+                    if ( typeof( Rock.Blocks.RockBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    {
+                        if ( blockCompiledType.GetCustomAttribute<Rock.Blocks.SupportedSiteTypesAttribute>()?.SiteTypes.Contains( SiteType.Mobile ) != true )
                         {
-                            categories.Add( blockType.Category );
+                            continue;
                         }
+                    }
+
+                    if ( !categories.Contains( blockType.Category ) )
+                    {
+                        categories.Add( blockType.Category );
                     }
                 }
                 catch

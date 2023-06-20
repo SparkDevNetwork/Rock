@@ -15,33 +15,29 @@
 // </copyright>
 //
 using System;
-
-using Rock.Mobile;
+using System.Collections.Generic;
 
 namespace Rock.Blocks
 {
     /// <summary>
-    /// 
+    /// Defines the site types that are supported by a block.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockBlockType" />
-    /// <seealso cref="Rock.Blocks.IRockMobileBlockType" />
-    [Obsolete( "Use RockBlockType instead." )]
-    [RockObsolete( "1.16.0" )]
-    public abstract class RockMobileBlockType : RockBlockType, IRockMobileBlockType
+    [AttributeUsage( AttributeTargets.Class )]
+    public class SupportedSiteTypesAttribute : System.Attribute
     {
-        #region Methods
+        /// <summary>
+        /// Gets the site types that the block type supports.
+        /// </summary>
+        /// <value>The site types that the block type supports.</value>
+        public IEnumerable<Model.SiteType> SiteTypes { get; }
 
         /// <summary>
-        /// Gets the additional settings defined for this block instance.
+        /// Initializes a new instance of the <see cref="SupportedSiteTypesAttribute"/> class.
         /// </summary>
-        /// <returns>An AdditionalBlockSettings object.</returns>
-        [Obsolete]
-        [RockObsolete( "1.16.0" )]
-        public AdditionalBlockSettings GetAdditionalSettings()
+        /// <param name="siteTypes">The supported site types.</param>
+        public SupportedSiteTypesAttribute( params Model.SiteType[] siteTypes )
         {
-            return BlockCache?.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
+            SiteTypes = siteTypes;
         }
-
-        #endregion
     }
 }

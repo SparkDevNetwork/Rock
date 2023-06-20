@@ -31,14 +31,14 @@ namespace Rock.Blocks.Types.Mobile.Core
 {
     /// <summary>
     /// Displays and allows edit of attribute values (that have a supported field type) in the mobile shell.
-    /// Implements the <see cref="Rock.Blocks.RockMobileBlockType" />
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Attribute Values" )]
     [Category( "Mobile > Core" )]
     [Description( "Used to display attribute values based on the category." )]
     [IconCssClass( "fa fa-edit" )]
     [ContextAware]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -70,15 +70,12 @@ namespace Rock.Blocks.Types.Mobile.Core
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_ATTRIBUTE_VALUES )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CORE_ATTRIBUTE_VALUES )]
-    public class AttributeValues : RockMobileBlockType
+    public class AttributeValues : RockBlockType
     {
         #region IRockMobileBlockType
 
-        /// <inheritdoc /> 
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <inheritdoc /> 
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Core.AttributeValues";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         #endregion
 

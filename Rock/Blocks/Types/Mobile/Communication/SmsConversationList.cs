@@ -32,12 +32,13 @@ namespace Rock.Blocks.Types.Mobile.Communication
     /// <summary>
     /// Displays a list of SMS conversations that the individual can interact with.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "SMS Conversation List" )]
     [Category( "Mobile > Communication" )]
     [Description( "Displays a list of SMS conversations that the individual can interact with." )]
     [IconCssClass( "fa fa-sms" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -90,7 +91,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "77701BE2-1335-45F3-93B3-F06466CA391F" )]
     [Rock.SystemGuid.BlockTypeGuid( "E16DC868-101F-4944-BE6C-29D858D9821D" )]
-    public class SmsConversationList : RockMobileBlockType
+    public class SmsConversationList : RockBlockType
     {
         #region Block Attributes
 
@@ -112,21 +113,8 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Communication.SmsConversationList";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

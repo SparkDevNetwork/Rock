@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,12 +30,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// Displays a page to allow the user to view the details about a specified group member.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Group Member View" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows the user to view the details about a specific group member." )]
     [IconCssClass( "fa fa-user-tie" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -57,7 +58,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_MEMBER_VIEW_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "6B3C23EA-A1C2-46FA-9F04-5B0BD004ED8B")]
-    public class GroupMemberView : RockMobileBlockType
+    public class GroupMemberView : RockBlockType
     {
         #region Block Attributes
 
@@ -112,21 +113,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupMemberView";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

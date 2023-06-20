@@ -37,6 +37,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Service Metrics Entry" )]
     [Category( "Reporting" )]
     [Description( "Block for easily adding/editing metric values for any metric that has partitions of campus and service time." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -153,7 +154,7 @@ namespace Rock.Blocks.Reporting
 
     [Rock.SystemGuid.EntityTypeGuid( "46199E9D-59CC-4CBC-BC05-83F6FF193147" )]
     [Rock.SystemGuid.BlockTypeGuid( "E6144C7A-2E95-431B-AB75-C588D151ACA4" )]
-    public class ServiceMetricsEntry : RockObsidianBlockType
+    public class ServiceMetricsEntry : RockBlockType
     {
         #region Keys
 
@@ -198,7 +199,7 @@ namespace Rock.Blocks.Reporting
         #region Properties
 
         /// <inheritdoc />
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         /// <summary>
         /// Gets the metric categories block setting.

@@ -32,13 +32,13 @@ namespace Rock.Blocks.Types.Mobile.Events
 {
     /// <summary>
     /// The Live Experience mobile block..
-    /// Implements the <see cref="Rock.Blocks.RockMobileBlockType" />
     /// </summary>
-    /// <seealso cref="RockMobileBlockType" />
+    /// <seealso cref="RockBlockType" />
     [DisplayName( "Live Experience" )]
     [Category( "Mobile > Events" )]
     [Description( "Block that is used to connect to a Live Experience from within your mobile application." )]
     [IconCssClass( "fa fa-tv" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -69,7 +69,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_LIVEEXPERIENCE_BLOCK_TYPE )]
     [SystemGuid.BlockTypeGuid( "969EB376-281C-41D8-B7E9-A183DEA751DB" )]
-    public class LiveExperience : RockMobileBlockType
+    public class LiveExperience : RockBlockType
     {
         #region Properties
 
@@ -83,17 +83,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version.
-        /// </summary>
-        /// <value>The required mobile application binary interface version.</value>
-        public override int RequiredMobileAbiVersion => 4;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>The class name of the mobile block to use during rendering on the device</value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Events.LiveExperience";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 4 );
 
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()

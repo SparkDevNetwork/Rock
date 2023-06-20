@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Mobile;
 using Rock.Web.UI;
 
 namespace Rock.Blocks.Types.Mobile.Cms
@@ -26,12 +28,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
     /// <summary>
     /// Displays custom XAML content on the page.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Content" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays custom XAML content on the page." )]
     [IconCssClass( "fa fa-align-center" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -72,7 +75,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [ContextAware]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONTENT_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "7258A210-E936-4260-B573-9FA1193AD9E2" )]
-    public class Content : RockMobileBlockType
+    public class Content : RockBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileContent block.
@@ -107,21 +110,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Content";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -131,7 +121,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            var additionalSettings = GetAdditionalSettings();
+            var additionalSettings = BlockCache?.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
 
             string content = null;
             var isDynamicContent = GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean();
@@ -170,7 +160,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [BlockAction]
         public object GetInitialContent()
         {
-            var additionalSettings = GetAdditionalSettings();
+            var additionalSettings = BlockCache?.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
             var content = GetAttributeValue( AttributeKeys.Content );
 
             //
