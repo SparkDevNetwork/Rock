@@ -2506,6 +2506,8 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void BindPersonSavedAccounts()
         {
+            // Get current selection before updating the drop down list items.
+            var currentSavedAccountSelection = ddlPersonSavedAccount.SelectedValue;
             ddlPersonSavedAccount.Visible = false;
             ddlPersonSavedAccount.Items.Clear();
             pnlSavedAccounts.Visible = false;
@@ -2583,7 +2585,6 @@ mission. We are so grateful for your commitment.</p>
 
             ddlPersonSavedAccount.Items.Add( new ListItem( "Use a different payment method", 0.ToString() ) );
 
-            var currentSavedAccountSelection = ddlPersonSavedAccount.SelectedValue;
             if ( currentSavedAccountSelection.IsNotNullOrWhiteSpace() )
             {
                 ddlPersonSavedAccount.SetValue( currentSavedAccountSelection );
