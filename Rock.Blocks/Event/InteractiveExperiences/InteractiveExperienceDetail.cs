@@ -37,7 +37,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Displays the details of a particular interactive experience.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Interactive Experience Detail" )]
     [Category( "Event > Interactive Experiences" )]
@@ -51,7 +51,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
     [Rock.SystemGuid.EntityTypeGuid( "e9e76f40-3e00-40e1-bd9d-3156e9208557" )]
     [Rock.SystemGuid.BlockTypeGuid( "dc997692-3bb4-470c-a2ee-83cb87d246b1" )]
-    public class InteractiveExperienceDetail : RockObsidianDetailBlockType
+    public class InteractiveExperienceDetail : RockDetailBlockType
     {
         #region Keys
 

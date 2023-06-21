@@ -36,7 +36,7 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular campus.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Campus Detail" )]
     [Category( "Obsidian > Core" )]
@@ -50,7 +50,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "A61EAF51-5DB4-451E-9F88-9D4C6ACCE73B")]
     [Rock.SystemGuid.BlockTypeGuid( "507F5108-FB55-48F0-A66E-CC3D5185D35D")]
-    public class CampusDetail : RockObsidianDetailBlockType
+    public class CampusDetail : RockDetailBlockType
     {
         #region Keys
 

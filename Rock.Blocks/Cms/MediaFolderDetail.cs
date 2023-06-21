@@ -35,7 +35,7 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular media folder.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Media Folder Detail" )]
     [Category( "Cms" )]
@@ -49,7 +49,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "29cf7521-2dcd-467a-98fa-1c28c16c8b69" )]
     [Rock.SystemGuid.BlockTypeGuid( "662af7bb-5b61-43c6-bda6-a6e7aab8fc00" )]
-    public class MediaFolderDetail : RockObsidianDetailBlockType
+    public class MediaFolderDetail : RockDetailBlockType
     {
         #region Keys
 

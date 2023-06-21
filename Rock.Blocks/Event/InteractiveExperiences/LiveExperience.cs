@@ -35,7 +35,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Displays a live interactive experience.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Live Experience" )]
     [Category( "Event > Interactive Experiences" )]

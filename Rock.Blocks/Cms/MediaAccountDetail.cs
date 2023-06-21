@@ -34,7 +34,7 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular media account.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Media Account Detail" )]
     [Category( "CMS" )]
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "704fa615-60eb-4fd2-99ed-6b5ae0879145" )]
     [Rock.SystemGuid.BlockTypeGuid( "a63f0145-d323-4b6e-ad21-bcda1f1d8d5d" )]
-    public class MediaAccountDetail : RockObsidianDetailBlockType
+    public class MediaAccountDetail : RockDetailBlockType
     {
         #region Keys
 

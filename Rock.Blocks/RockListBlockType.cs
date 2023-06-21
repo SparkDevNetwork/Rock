@@ -26,8 +26,8 @@ using Rock.ViewModels.Core.Grid;
 namespace Rock.Blocks
 {
     /// <summary>
-    /// Base for a standard Obsidian List block type. This is a block that
-    /// will display a list of items and usually links to a detail page.
+    /// Base for a standard List block type. This is a block that will
+    /// display a list of items and usually links to a detail page.
     /// </summary>
     /// <strong>This is an internal API</strong> that supports the Rock
     /// infrastructure and not subject to the same compatibility standards
@@ -35,7 +35,7 @@ namespace Rock.Blocks
     /// release and should therefore not be directly used in any plug-ins.
     /// </remarks>
     [RockInternal( "1.16" )]
-    public abstract class RockObsidianListBlockType<T> : RockBlockType
+    public abstract class RockListBlockType<T> : RockBlockType
         where T : class
     {
         #region Methods
