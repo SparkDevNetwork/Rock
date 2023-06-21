@@ -34,7 +34,7 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular page route.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Page Route Detail" )]
     [Category( "CMS" )]
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "3ed3c7c7-70b8-416b-819c-353011204f51" )]
     [Rock.SystemGuid.BlockTypeGuid( "e4302549-0bb8-4dde-9b9a-70f0b665e76f" )]
-    public class PageRouteDetail : RockObsidianDetailBlockType
+    public class PageRouteDetail : RockDetailBlockType
     {
         #region Keys
 

@@ -34,7 +34,7 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular following event type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Following Event Type Detail" )]
     [Category( "Core" )]
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "d9c32c98-434f-4975-8ebc-e64c628f02db" )]
     [Rock.SystemGuid.BlockTypeGuid( "78f27537-c05f-44e0-af84-2329c8b5d71d" )]
-    public class FollowingEventTypeDetail : RockObsidianDetailBlockType
+    public class FollowingEventTypeDetail : RockDetailBlockType
     {
         #region Keys
 

@@ -31,7 +31,7 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular block type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Block Type Detail" )]
     [Category( "CMS" )]
@@ -45,7 +45,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "81b9bfd5-621d-4e82-84f6-38cae1810332" )]
     [Rock.SystemGuid.BlockTypeGuid( "6c329001-9c04-4090-bed0-12e3f6b88fb6" )]
-    public class BlockTypeDetail : RockObsidianDetailBlockType
+    public class BlockTypeDetail : RockDetailBlockType
     {
         #region Keys
 

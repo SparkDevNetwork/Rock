@@ -35,7 +35,7 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular signature document template.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
     [DisplayName( "Signature Document Template Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular signature document template." )]
@@ -64,7 +64,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "525b6687-964e-4051-94a5-4b20d4575041" )]
     [Rock.SystemGuid.BlockTypeGuid( "e6a5bac5-c34c-421a-b536-eec3d9f1d1b5" )]
-    public class SignatureDocumentTemplateDetail : RockObsidianDetailBlockType
+    public class SignatureDocumentTemplateDetail : RockDetailBlockType
     {
         #region Keys
 

@@ -33,7 +33,7 @@ namespace Rock.Blocks.Crm
     /// <summary>
     /// Displays the details of a particular badge.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Badge Detail" )]
     [Category( "CRM" )]
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.EntityTypeGuid( "5b57bd74-416d-4fd0-a36b-c74955f4c691" )]
     [Rock.SystemGuid.BlockTypeGuid( "5bd4cd27-c1c1-4e12-8756-9c93e4edb28e" )]
-    public class BadgeDetail : RockObsidianDetailBlockType
+    public class BadgeDetail : RockDetailBlockType
     {
         #region Keys
 

@@ -34,7 +34,7 @@ namespace Rock.Blocks.Engagement
     /// <summary>
     /// Displays the details of a particular streak type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Streak Type Detail" )]
     [Category( "Engagement" )]
@@ -69,7 +69,7 @@ namespace Rock.Blocks.Engagement
 
     [Rock.SystemGuid.EntityTypeGuid( "8a8c5bea-6293-4ac0-8c2e-d89f541043aa" )]
     [Rock.SystemGuid.BlockTypeGuid( "a83a1f49-10a6-4362-acc3-8027224a2120" )]
-    public class StreakTypeDetail : RockObsidianDetailBlockType
+    public class StreakTypeDetail : RockDetailBlockType
     {
         #region Keys
 

@@ -34,7 +34,7 @@ namespace Rock.Blocks.Groups
     /// <summary>
     /// Displays the details of a particular group.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Group Registration" )]
     [Category( "Group" )]

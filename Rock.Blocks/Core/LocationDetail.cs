@@ -34,7 +34,7 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular location.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Location Detail" )]
     [Category( "Core" )]
@@ -69,7 +69,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "862067b0-8764-452e-9b4f-dc3e0cf5f876" )]
     [Rock.SystemGuid.BlockTypeGuid( "d0203b97-5856-437e-8700-8846309f8eed" )]
-    public class LocationDetail : RockObsidianDetailBlockType
+    public class LocationDetail : RockDetailBlockType
     {
         #region Keys
 

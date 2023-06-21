@@ -33,7 +33,7 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular tag.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Tag Detail" )]
     [Category( "Core" )]
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "919345d6-6e20-4501-b956-ebcb35d0b16e" )]
     [Rock.SystemGuid.BlockTypeGuid( "b150e767-e964-460c-9ed1-b293474c5f5d" )]
-    public class TagDetail : RockObsidianDetailBlockType
+    public class TagDetail : RockDetailBlockType
     {
         #region Keys
 

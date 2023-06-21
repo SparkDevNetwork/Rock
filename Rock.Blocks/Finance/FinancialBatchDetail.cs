@@ -33,7 +33,7 @@ namespace Rock.Blocks.Finance
     /// <summary>
     /// Displays the details of a particular financial batch.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Financial Batch Detail" )]
     [Category( "Finance" )]
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.EntityTypeGuid( "b5976e12-a3e4-4faf-95b5-3d54f25405da" )]
     [Rock.SystemGuid.BlockTypeGuid( "6be58680-8795-46a0-8bfa-434a01feb4c8" )]
-    public class FinancialBatchDetail : RockObsidianDetailBlockType
+    public class FinancialBatchDetail : RockDetailBlockType
     {
         private const string AuthorizationReopenBatch = "ReopenBatch";
 

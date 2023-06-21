@@ -32,7 +32,7 @@ namespace Rock.Blocks.Crm
     /// <summary>
     /// Displays the details of a particular assessment.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Assessment List" )]
     [Category( "CRM" )]

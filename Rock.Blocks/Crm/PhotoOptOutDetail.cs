@@ -30,7 +30,7 @@ namespace Rock.Blocks.Crm
     /// <summary>
     /// Allows a person to opt-out of future photo requests.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Photo Opt-Out" )]
     [Category( "CRM > PhotoRequest" )]

@@ -31,7 +31,7 @@ namespace Rock.Blocks.Security
     /// <summary>
     /// Block for user to confirm a newly created login account.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Confirm Account" )]
     [Category( "Obsidian > Security" )]

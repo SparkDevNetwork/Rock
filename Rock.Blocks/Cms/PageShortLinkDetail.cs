@@ -34,7 +34,7 @@ namespace Rock.Blocks.CMS
     /// <summary>
     /// Displays the details of a particular page short link.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Page Short Link Detail" )]
     [Category( "CMS" )]
@@ -55,7 +55,7 @@ namespace Rock.Blocks.CMS
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "AD614123-C7CA-40EE-B5D5-64D0D1C91378")]
-    public class PageShortLinkDetail : RockObsidianDetailBlockType
+    public class PageShortLinkDetail : RockDetailBlockType
     {
         private int _minTokenLength = 7;
 

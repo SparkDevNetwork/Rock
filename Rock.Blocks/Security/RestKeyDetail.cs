@@ -33,7 +33,7 @@ namespace Rock.Blocks.Security
     /// <summary>
     /// Displays the details of a particular user login.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Rest Key Detail" )]
     [Category( "Security" )]
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Security
 
     [Rock.SystemGuid.EntityTypeGuid( "aed330ca-40a4-407a-b2dc-a0c1310fdc39" )]
     [Rock.SystemGuid.BlockTypeGuid( "28A34F1C-80F4-496F-A598-180974ADEE61" )]
-    public class RestKeyDetail : RockObsidianDetailBlockType
+    public class RestKeyDetail : RockDetailBlockType
     {
         #region Keys
 

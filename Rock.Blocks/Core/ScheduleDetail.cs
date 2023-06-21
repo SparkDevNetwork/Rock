@@ -34,7 +34,7 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular schedule.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Schedule Detail" )]
     [Category( "Core" )]
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "ce4859a1-3e47-442f-8442-2671a89a5656" )]
     [Rock.SystemGuid.BlockTypeGuid( "7c10240a-7ee5-4720-aac9-5c162e9f5aac" )]
-    public class ScheduleDetail : RockObsidianDetailBlockType
+    public class ScheduleDetail : RockDetailBlockType
     {
         #region Keys
 

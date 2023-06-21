@@ -36,7 +36,7 @@ namespace Rock.Blocks.WebFarm
     /// <summary>
     /// Displays the details of a web farm.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Web Farm Settings" )]
     [Category( "WebFarm" )]
@@ -63,7 +63,7 @@ namespace Rock.Blocks.WebFarm
     #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "d9510038-0547-45f3-9eca-c2ca85e64416" )]
-    public class WebFarmSettings : RockObsidianDetailBlockType
+    public class WebFarmSettings : RockDetailBlockType
     {
         #region Keys
 

@@ -33,7 +33,7 @@ namespace Rock.Blocks.WebFarm
     /// <summary>
     /// Displays the details of a particular web farm node.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Web Farm Node Detail" )]
     [Category( "WebFarm" )]
@@ -47,7 +47,7 @@ namespace Rock.Blocks.WebFarm
 
     [Rock.SystemGuid.EntityTypeGuid( "8471bf7f-6d0d-411b-899f-cd853f496bb9" )]
     [Rock.SystemGuid.BlockTypeGuid( "6bba1fc0-ac56-4e58-9e99-eb20da7aa415" )]
-    public class WebFarmNodeDetail : RockObsidianDetailBlockType
+    public class WebFarmNodeDetail : RockDetailBlockType
     {
         #region Keys
 

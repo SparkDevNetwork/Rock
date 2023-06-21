@@ -33,7 +33,7 @@ namespace Rock.Blocks.Crm
     /// <summary>
     /// Displays the details of a particular document type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Document Type Detail" )]
     [Category( "CRM" )]
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.EntityTypeGuid( "ee4f6524-c311-4f73-ba4f-18152148297e" )]
     [Rock.SystemGuid.BlockTypeGuid( "fd3eb724-1afa-4507-8850-c3aee170c83b" )]
-    public class DocumentTypeDetail : RockObsidianDetailBlockType
+    public class DocumentTypeDetail : RockDetailBlockType
     {
         #region Keys
 

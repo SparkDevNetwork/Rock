@@ -32,7 +32,7 @@ namespace Rock.Blocks.Reporting
     /// <summary>
     /// Displays the details of a particular merge template.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Merge Template Detail" )]
     [Category( "Reporting" )]
@@ -52,7 +52,7 @@ namespace Rock.Blocks.Reporting
 
     [Rock.SystemGuid.EntityTypeGuid( "3338d32f-20e0-4f6f-9abc-dd21558649c8" )]
     [Rock.SystemGuid.BlockTypeGuid( "b852db84-0cdf-4862-9ec7-cdbbbd5bb77a" )]
-    public class MergeTemplateDetail : RockObsidianDetailBlockType
+    public class MergeTemplateDetail : RockDetailBlockType
     {
         #region Keys
 

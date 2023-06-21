@@ -33,7 +33,7 @@ namespace Rock.Blocks.Prayer
     /// <summary>
     /// Displays the details of a particular prayer request.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Prayer Request Detail" )]
     [Category( "Prayer" )]
@@ -95,7 +95,7 @@ namespace Rock.Blocks.Prayer
 
     [Rock.SystemGuid.EntityTypeGuid( "d1e21128-c831-4535-b8df-0ec928dcbba4" )]
     [Rock.SystemGuid.BlockTypeGuid( "e120f06f-6db7-464a-a797-c3c90b92ef40" )]
-    public class PrayerRequestDetail : RockObsidianDetailBlockType
+    public class PrayerRequestDetail : RockDetailBlockType
     {
         #region Keys
 

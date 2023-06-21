@@ -33,7 +33,7 @@ namespace Rock.Blocks.Security
     /// <summary>
     /// Displays the details of a particular user login.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Forgot Username" )]
     [Category( "Security" )]

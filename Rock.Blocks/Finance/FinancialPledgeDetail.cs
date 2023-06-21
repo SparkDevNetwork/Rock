@@ -34,7 +34,7 @@ namespace Rock.Blocks.Finance
     /// <summary>
     /// Displays the details of a particular financial pledge.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Pledge Entry" )]
     [Category( "Finance" )]
@@ -143,7 +143,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.EntityTypeGuid( "fad28407-5128-4ddb-9c1c-a0c2233f3e73" )]
     [Rock.SystemGuid.BlockTypeGuid( "0455ecbd-d54d-4485-bf4d-f469048ae10f" )]
-    public class FinancialPledgeDetail : RockObsidianDetailBlockType
+    public class FinancialPledgeDetail : RockDetailBlockType
     {
         #region Keys
 

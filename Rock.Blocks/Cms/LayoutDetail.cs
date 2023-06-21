@@ -35,7 +35,7 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular layout.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Layout Detail" )]
     [Category( "CMS" )]
@@ -49,7 +49,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "b85c080a-f645-430a-b0d4-8eee689f4265" )]
     [Rock.SystemGuid.BlockTypeGuid( "64c3b64a-cdb3-4e5f-bc54-0e3d50aac564" )]
-    public class LayoutDetail : RockObsidianDetailBlockType
+    public class LayoutDetail : RockDetailBlockType
     {
         #region Keys
 

@@ -33,7 +33,7 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular note type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Note Type Detail" )]
     [Category( "Core" )]
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "a664c469-985c-4747-80cd-e07501d13f43" )]
     [Rock.SystemGuid.BlockTypeGuid( "9e901a5a-82c2-4788-9623-3720ffc4daec" )]
-    public class NoteTypeDetail : RockObsidianDetailBlockType
+    public class NoteTypeDetail : RockDetailBlockType
     {
         #region Keys
 

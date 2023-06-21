@@ -36,7 +36,7 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular service job.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Service Job Detail" )]
     [Category( "Core" )]
@@ -50,7 +50,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "b50b6b68-d327-4a73-b2a8-57ef9e151182" )]
     [Rock.SystemGuid.BlockTypeGuid( "762f09ea-0a11-4bc7-9a68-13f0e44217c1" )]
-    public class ServiceJobDetail : RockObsidianDetailBlockType
+    public class ServiceJobDetail : RockDetailBlockType
     {
         #region Keys
 

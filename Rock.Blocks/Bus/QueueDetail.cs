@@ -30,7 +30,7 @@ namespace Rock.Blocks.Bus
     /// <summary>
     /// Displays the details of a particular achievement type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Queue Detail" )]
     [Category( "Bus" )]
@@ -44,7 +44,7 @@ namespace Rock.Blocks.Bus
 
     [Rock.SystemGuid.EntityTypeGuid( "6c61ffc3-b37c-4d90-8b99-cc3c53150ee3" )]
     [Rock.SystemGuid.BlockTypeGuid( "db19d24e-b0c8-4686-8582-7b84dae33ee8" )]
-    public class QueueDetail : RockObsidianDetailBlockType
+    public class QueueDetail : RockDetailBlockType
     {
         #region Keys
 

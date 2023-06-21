@@ -217,7 +217,7 @@ namespace Rock.Blocks.Prayer
     /// <summary>
     /// Allows prayer requests to be added by visitors on the website.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     public class PrayerRequestEntry : RockBlockType
     {
         #region Categories

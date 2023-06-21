@@ -32,7 +32,7 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular asset storage provider.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
     ///
 
     [DisplayName( "Asset Storage Provider Detail" )]
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "d18e8437-9452-441a-be17-d03f793f6b47" )]
     [Rock.SystemGuid.BlockTypeGuid( "4b50e08a-a805-4213-a5af-bca570fcb528" )]
-    public class AssetStorageProviderDetail : RockObsidianDetailBlockType
+    public class AssetStorageProviderDetail : RockDetailBlockType
     {
         #region Keys
 
