@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -36,6 +37,7 @@ namespace Rock.Field.Types
     public abstract class EnumFieldType<T> : FieldType where T : struct
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
+        private const string ENUM_VALUES_PROPERTY_KEY = "enumValues";
 
         private Dictionary<int, string> _EnumValues { get; set; }
 
@@ -103,6 +105,25 @@ namespace Rock.Field.Types
         }
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationProperties = base.GetPublicEditConfigurationProperties( privateConfigurationValues );
+
+            // Get a list of all DefinedTypes that can be selected.
+            var enumValues = _EnumValues
+                .Select( t => new ListItemBag
+                {
+                    Value = t.Key.ToString(),
+                    Text = t.Value
+                } )
+                .ToList();
+
+            configurationProperties[ENUM_VALUES_PROPERTY_KEY] = enumValues.ToCamelCaseJson( false, true );
+
+            return configurationProperties;
+        }
 
         #endregion Configuration
 
