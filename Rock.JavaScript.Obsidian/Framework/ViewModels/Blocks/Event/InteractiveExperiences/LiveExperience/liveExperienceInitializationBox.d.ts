@@ -34,6 +34,9 @@ export type LiveExperienceInitializationBox = {
      */
     errorMessage?: string | null;
 
+    /** Gets or sets the content to display when the experience has ended. */
+    experienceEndedContent?: string | null;
+
     /** Gets or sets the experience token used to authenticate to the RealTime topic. */
     experienceToken?: string | null;
 

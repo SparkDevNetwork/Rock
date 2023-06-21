@@ -143,6 +143,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="RockLiquid\RockLiquidEngine.cs" />
     <Compile Include="DotLiquidLavaDataDictionaryProxy.cs" />
     <Compile Include="DotLiquidEngine.cs" />

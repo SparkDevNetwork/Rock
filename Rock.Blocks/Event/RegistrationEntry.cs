@@ -46,12 +46,13 @@ namespace Rock.Blocks.Event
     /// <summary>
     /// Registration Entry.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Registration Entry" )]
     [Category( "Obsidian > Event" )]
     [Description( "Block used to register for a registration instance." )]
     [IconCssClass( "fa fa-clipboard-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -130,7 +131,7 @@ namespace Rock.Blocks.Event
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
-    public class RegistrationEntry : RockObsidianBlockType
+    public class RegistrationEntry : RockBlockType
     {
         #region Keys
 
@@ -200,17 +201,18 @@ namespace Rock.Blocks.Event
         /// <param name="code">The code.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CheckDiscountCode( string code, int registrantCount )
+        public BlockActionResult CheckDiscountCode( string code, int registrantCount, Guid? registrationGuid )
         {
             using ( var rockContext = new RockContext() )
             {
                 var registrationInstanceId = GetRegistrationInstanceId( rockContext );
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
                 RegistrationTemplateDiscountWithUsage discount = null;
+                var registration = registrationGuid != null ? new RegistrationService( rockContext ).Get( registrationGuid.ToString() ) : null;
 
-                // If the code isn't provided then check for an auto apply discount.
-                if ( code.IsNullOrWhiteSpace() )
+                if ( code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
+                    // if no code is provided and there is no code already saved in the registration check for an auto apply discount, if there are none discount will be null which returns ActionNotFound
                     var registrationTemplateDiscountCodes = registrationTemplateDiscountService
                         .GetDiscountsForRegistrationInstance( registrationInstanceId )
                         .Where( d => d.AutoApplyDiscount )
@@ -231,9 +233,26 @@ namespace Rock.Blocks.Event
                         break;
                     }
                 }
-                else
+                else if ( code.IsNotNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
+                    // if code is provided and there is no code in saved in the registration check the provided code using GetDiscountByCodeIfValid( registrationInstanceId, code )
                     discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                }
+                else if ( code.IsNotNullOrWhiteSpace() && registration != null && registration.DiscountCode.IsNotNullOrWhiteSpace() && !string.Equals( code, registration.DiscountCode, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    // if code is provided and there is a code saved in the registration and they are different then check the provided code using GetDiscountByCodeIfValid( registrationInstanceId, code )
+                    discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
+                }
+                else if ( registration != null && registration.DiscountCode.IsNotNullOrWhiteSpace() )
+                {
+                    // At this point use the code saved in the registration if it exists without checking in case the code is no longer valid (e.g. expired)
+                    return ActionOk( new
+                    {
+                        DiscountCode = registration.DiscountCode,
+                        UsagesRemaining = (int?) null,
+                        DiscountAmount = registration.DiscountAmount,
+                        DiscountPercentage = registration.DiscountPercentage
+                    } );
                 }
 
                 if ( discount == null )
@@ -1223,7 +1242,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="forms">The forms.</param>
         /// <returns></returns>
-        private Dictionary<Guid, object> GetCurrentValueFieldValues( RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms )
+        private Dictionary<Guid, object> GetCurrentValueFieldValues( RegistrationContext registrationContext, RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms )
         {
             var fieldValues = new Dictionary<Guid, object>();
 
@@ -1232,6 +1251,9 @@ namespace Rock.Blocks.Event
                 return fieldValues;
             }
 
+            var familySelection = registrationContext?.RegistrationSettings.AreCurrentFamilyMembersShown ?? true;
+
+                    
             foreach ( var form in forms )
             {
                 var fields = form.Fields.Where( f =>
@@ -1241,7 +1263,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( f.ShowCurrentValue && f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName
                             || f.PersonFieldType == RegistrationPersonFieldType.LastName;
@@ -2030,7 +2052,7 @@ namespace Rock.Blocks.Event
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
-            registrant.Cost = isWaitlist ? 0 : context.RegistrationSettings.PerRegistrantCost;
+            registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
 
             // Check if discount applies
             var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
@@ -2383,13 +2405,14 @@ namespace Rock.Blocks.Event
                         FamilyGuid = gm.Group.Guid,
                         Person = gm.Person
                     } )
+                    .DistinctBy( gm => gm.Person.Guid )
                     .ToList()
                     .Select( gm => new RegistrationEntryBlockFamilyMemberViewModel
                     {
                         Guid = gm.Person.Guid,
                         FamilyGuid = gm.FamilyGuid,
                         FullName = gm.Person.FullName,
-                        FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, null, formModels )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels )
                     } )
                     .ToList() :
                     new List<RegistrationEntryBlockFamilyMemberViewModel>();
@@ -2620,7 +2643,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = currentPerson.Guid,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = GetCurrentValueFieldValues( rockContext, currentPerson, null, formModels )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels )
                     } );
                 }
                 else
@@ -2634,7 +2657,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = null,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( rockContext, currentPerson, null, formModels ) : new Dictionary<Guid, object>()
+                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels ) : new Dictionary<Guid, object>()
                     } );
                 }
             }
@@ -2645,6 +2668,11 @@ namespace Rock.Blocks.Event
             var allowRegistrationUpdates = !isExistingRegistration || allowExternalRegistrationUpdates;
             var startAtBeginning = !isExistingRegistration ||
                 ( allowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
+
+            // Adjust the spots remaining if this is an existing registration. Add to the Spots remaining the number of registrants that are not on the waitlist.
+            var adjustedSpotsRemaining = isExistingRegistration && session != null
+                ? context.SpotsRemaining + session.Registrants.Where( r => r.IsOnWaitList == false ).Count()
+                : context.SpotsRemaining;
 
             var viewModel = new RegistrationEntryBlockViewModel
             {
@@ -2671,7 +2699,7 @@ namespace Rock.Blocks.Event
                     Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, null ) ?? new object()
                 },
                 IsRedirectGateway = isRedirectGateway,
-                SpotsRemaining = context.SpotsRemaining,
+                SpotsRemaining = adjustedSpotsRemaining,
                 WaitListEnabled = context.RegistrationSettings.IsWaitListEnabled,
                 InstanceName = context.RegistrationSettings.Name,
                 PluralRegistrationTerm = pluralRegistrationTerm,
@@ -3433,7 +3461,7 @@ namespace Rock.Blocks.Event
                     FamilyGuid = person?.GetFamily( rockContext )?.Guid,
                     Guid = registrant.Guid,
                     PersonGuid = person?.Guid,
-                    FieldValues = GetCurrentValueFieldValues( rockContext, person, registrant, settings.Forms ),
+                    FieldValues = GetCurrentValueFieldValues( null, rockContext, person, registrant, settings.Forms ),
                     FeeItemQuantities = new Dictionary<Guid, int>(),
                     IsOnWaitList = registrant.OnWaitList,
                     Cost = registrant.Cost

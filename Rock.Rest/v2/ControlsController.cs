@@ -34,16 +34,16 @@ using Rock.Extension;
 using Rock.Field.Types;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
-using Rock.Utility;
 using Rock.Workflow;
 
 namespace Rock.Rest.v2
@@ -595,16 +595,10 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = new AssetStorageProviderService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( g => g.EntityTypeId.HasValue && g.IsActive )
-                    .OrderBy( g => g.Name )
-                    .Select( t => new ListItemBag
-                    {
-                        Value = t.Guid.ToString(),
-                        Text = t.Name
-                    } )
-                    .ToList();
+                var items = AssetStorageProviderCache.All()
+                    .Where( a => a.EntityTypeId.HasValue && a.IsActive )
+                    .OrderBy( a => a.Name )
+                    .ToListItemBagList();
 
                 return Ok( items );
             }
@@ -1617,7 +1611,7 @@ namespace Rock.Rest.v2
                 }
 
                 var taggedItemService = new TaggedItemService( rockContext );
-                var items = taggedItemService.Get( entityTypeId.Value, string.Empty, string.Empty, RockRequestContext.CurrentPerson?.Id, entityGuid.Value, options.CategoryGuid, false )
+                var items = taggedItemService.Get( entityTypeId.Value, options.EntityQualifierColumn, options.EntityQualifierValue, RockRequestContext.CurrentPerson?.Id, entityGuid.Value, options.CategoryGuid, options.ShowInactiveTags )
                     .Include( ti => ti.Tag.Category )
                     .Select( ti => ti.Tag )
                     .ToList()
@@ -1652,7 +1646,7 @@ namespace Rock.Rest.v2
                 }
 
                 var tagService = new TagService( rockContext );
-                var items = tagService.Get( entityTypeId.Value, string.Empty, string.Empty, RockRequestContext.CurrentPerson?.Id, options.CategoryGuid, false )
+                var items = tagService.Get( entityTypeId.Value, options.EntityQualifierColumn, options.EntityQualifierValue, RockRequestContext.CurrentPerson?.Id, options.CategoryGuid, options.ShowInactiveTags )
                     .Where( t => t.Name.StartsWith( options.Name )
                         && !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) )
                     .ToList()
@@ -1691,7 +1685,7 @@ namespace Rock.Rest.v2
                 }
 
                 var tagService = new TagService( rockContext );
-                var tag = tagService.Get( entityTypeId.Value, string.Empty, string.Empty, RockRequestContext.CurrentPerson?.Id, options.Name, options.CategoryGuid, true );
+                var tag = tagService.Get( entityTypeId.Value, options.EntityQualifierColumn, options.EntityQualifierValue, RockRequestContext.CurrentPerson?.Id, options.Name, options.CategoryGuid, true );
 
                 // If the personal tag already exists, use a 409 to indicate
                 // it already exists and return the existing tag.
@@ -1836,6 +1830,119 @@ namespace Rock.Rest.v2
                 }
 
                 return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Removes a tag from the given entity.
+        /// </summary>
+        /// <param name="options">The options that describe the tag and the entity to be untagged.</param>
+        /// <returns>A response code that indicates success or failure.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityTagListSaveTagValues" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "02886e54-6088-40ea-98be-9157ec2a3369" )]
+        public IHttpActionResult EntityTagListSaveTagValues( [FromBody] EntityTagListSaveTagValuesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                Person currentPerson = RockRequestContext.CurrentPerson;
+                int? currentPersonId = currentPerson.Id;
+                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
+                var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
+
+                if ( entityGuid != Guid.Empty && entityGuid != null )
+                {
+                    var tagService = new TagService( rockContext );
+                    var taggedItemService = new TaggedItemService( rockContext );
+                    var person = currentPersonId.HasValue ? new PersonService( rockContext ).Get( currentPersonId.Value ) : null;
+
+                    // Get the existing tagged items for this entity
+                    var existingTaggedItems = new List<TaggedItem>();
+                    foreach ( var taggedItem in taggedItemService.Get( entityTypeId ?? 0, options.EntityQualifierColumn, options.EntityQualifierValue, currentPersonId, entityGuid.Value, options.CategoryGuid, options.ShowInactiveTags ) )
+                    {
+                        if ( taggedItem.IsAuthorized( Authorization.VIEW, person ) )
+                        {
+                            existingTaggedItems.Add( taggedItem );
+                        }
+                    }
+
+                    // Get tag values after user edit
+                    var currentTags = new List<Tag>();
+                    foreach ( var tagBag in options.Tags )
+                    {
+                        var tagName = tagBag.Name;
+
+                        if ( tagName.IsNullOrWhiteSpace() )
+                        {
+                            continue;
+                        }
+
+                        // Only if this is a new tag, create it
+                        var tag = tagService.Get( entityTypeId ?? 0, options.EntityQualifierColumn, options.EntityQualifierValue, currentPersonId, tagName, options.CategoryGuid, options.ShowInactiveTags );
+
+                        if ( currentPerson.PrimaryAlias != null && tag == null )
+                        {
+                            var cat = CategoryCache.Get( options.CategoryGuid ?? Guid.Empty );
+                            var categoryId = cat != null ? cat.Id : ( int? ) null;
+
+                            tag = new Tag();
+                            tag.EntityTypeId = entityTypeId;
+                            tag.CategoryId = categoryId;
+                            tag.EntityTypeQualifierColumn = options.EntityQualifierColumn;
+                            tag.EntityTypeQualifierValue = options.EntityQualifierValue;
+                            tag.OwnerPersonAliasId = currentPerson.PrimaryAlias.Id;
+                            tag.Name = tagName;
+                            tagService.Add( tag );
+                        }
+
+                        if ( tag != null )
+                        {
+                            currentTags.Add( tag );
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+
+                    var currentNames = currentTags.Select( t => t.Name ).ToList();
+                    var existingNames = existingTaggedItems.Select( t => t.Tag.Name ).ToList();
+
+                    // Delete any tagged items that user removed
+                    foreach ( var taggedItem in existingTaggedItems )
+                    {
+                        if ( !currentNames.Contains( taggedItem.Tag.Name, StringComparer.OrdinalIgnoreCase ) && taggedItem.IsAuthorized( Rock.Security.Authorization.TAG, person ) )
+                        {
+                            existingNames.Remove( taggedItem.Tag.Name );
+                            taggedItemService.Delete( taggedItem );
+                        }
+                    }
+                    rockContext.SaveChanges();
+
+                    // Add any tagged items that user added
+                    foreach ( var tag in currentTags )
+                    {
+                        // If the tagged item was not already there, and (it's their personal tag OR they are authorized to use it) then add it.
+                        if ( !existingNames.Contains( tag.Name, StringComparer.OrdinalIgnoreCase ) &&
+                             (
+                                ( tag.OwnerPersonAliasId != null && tag.OwnerPersonAliasId == currentPerson.PrimaryAlias.Id ) ||
+                                tag.IsAuthorized( Rock.Security.Authorization.TAG, person )
+                             )
+                           )
+                        {
+                            var taggedItem = new TaggedItem();
+                            taggedItem.TagId = tag.Id;
+                            taggedItem.EntityTypeId = entityTypeId ?? 0;
+                            taggedItem.EntityGuid = entityGuid.Value;
+                            taggedItemService.Add( taggedItem );
+                        }
+                    }
+                    rockContext.SaveChanges();
+
+                    var currentTagBags = currentTags.Select( t => GetTagBagFromTag( t ) ).ToList();
+                    return Ok( currentTagBags );
+                }
+
+                return BadRequest( "Cannot get entity guid from given entity key and entity type GUID." );
             }
         }
 
@@ -2441,6 +2548,39 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group and Role Picker
+
+        /// <summary>
+        /// Gets the roles that can be displayed in the group and role picker for the specified group.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupAndRolePickerGetRoles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "285de6f4-0bf0-47e4-bda5-bcaa5a18b990" )]
+        public IHttpActionResult GroupAndRolePickerGetRoles( [FromBody] GroupAndRolePickerGetRolesOptionsBag options )
+        {
+            using( var rockContext = new RockContext() )
+            {
+                var groupRoles = new List<ListItemBag>();
+                if ( options.GroupTypeGuid != Guid.Empty )
+                {
+                    var groupTypeRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
+                    groupRoles = groupTypeRoleService.Queryable()
+                        .Where( r => r.GroupType.Guid == options.GroupTypeGuid )
+                        .OrderBy( r => r.Order )
+                        .ThenBy( r => r.Name )
+                        .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
+                        .ToList();
+                }
+
+                return Ok( groupRoles );
+            }
+        }
+
+        #endregion
+
         #region Group Member Picker
 
         /// <summary>
@@ -2887,6 +3027,36 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return groupRoles;
+        }
+
+        #endregion
+
+        #region Interaction Channel Interaction Component Picker
+
+        /// <summary>
+        /// Gets the interaction channel that the given interaction component is a part of.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> object that represents the interaction channel.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "InteractionChannelInteractionComponentPickerGetChannelFromComponent" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "ebef7cb7-f20d-40d9-9f70-1f30aff1cd8f" )]
+        public IHttpActionResult InteractionChannelInteractionComponentPickerGetChannelFromComponent( [FromBody] InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionComponentService = new InteractionComponentService( rockContext );
+                var component = interactionComponentService.Get(options.InteractionComponentGuid);
+
+                if (component == null)
+                {
+                    return NotFound();
+                }
+
+                var channel = component.InteractionChannel;
+
+                return Ok( new ListItemBag { Text = $"{channel.Name} ({ channel.ChannelTypeMediumValue.Value ?? string.Empty })", Value = channel.Guid.ToString() } );
+            }
         }
 
         #endregion
@@ -4512,6 +4682,55 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Registration Instance Picker
+
+        /// <summary>
+        /// Gets the instances that can be displayed in the registration instance picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the registration instances for the control.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RegistrationInstancePickerGetRegistrationInstances" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "26ecd3a7-9c55-4052-afc9-b59e84ab890b" )]
+        public IHttpActionResult RegistrationInstancePickerGetRegistrationInstances( [FromBody] RegistrationInstancePickerGetRegistrationInstancesOptionsBag options )
+        {
+            using (var rockContext = new RockContext())
+            {
+                var registrationInstanceService = new Rock.Model.RegistrationInstanceService( new RockContext() );
+                var registrationInstances = registrationInstanceService.Queryable()
+                    .Where( ri => ri.RegistrationTemplate.Guid == options.RegistrationTemplateGuid && ri.IsActive )
+                    .OrderBy( ri => ri.Name )
+                    .Select(ri => new ListItemBag { Text = ri.Name, Value = ri.Guid.ToString() } )
+                    .ToList();
+
+                return Ok( registrationInstances );
+            }
+        }
+
+        /// <summary>
+        /// Gets the registration template that the given instance uses.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> object that represents the registration template.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RegistrationInstancePickerGetRegistrationTemplateForInstance" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "acbccf4f-54d6-4c7c-8201-07fdefe87352" )]
+        public IHttpActionResult RegistrationInstancePickerGetRegistrationTemplateForInstance( [FromBody] RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstance = new Rock.Model.RegistrationInstanceService( rockContext ).Get( options.RegistrationInstanceGuid );
+                if (registrationInstance == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = registrationInstance.RegistrationTemplate.Name, Value = registrationInstance.RegistrationTemplate.Guid.ToString() } );
+            }
+        }
+
+        #endregion
+
         #region Registration Template Picker
 
         /// <summary>
@@ -5014,6 +5233,46 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Structured Content Editor
+
+        /// <summary>
+        /// Gets the structured content editor configuration.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>The structured content editor configuration.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "StructuredContentEditorGetConfiguration" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "71AD8E7A-3B38-4FC0-A4C7-95DB77F070F6" )]
+        public IHttpActionResult StructuredContentEditorGetConfiguration( [FromBody] StructuredContentEditorGetConfigurationOptionsBag options )
+        {
+            var structuredContentToolsConfiguration = string.Empty;
+            if ( options.StructuredContentToolsValueGuid.HasValue )
+            {
+                var structuredContentToolsValue = DefinedValueCache.Get( options.StructuredContentToolsValueGuid.Value );
+                if ( structuredContentToolsValue != null )
+                {
+                    structuredContentToolsConfiguration = structuredContentToolsValue.Description;
+                }
+            }
+
+            if ( structuredContentToolsConfiguration.IsNullOrWhiteSpace() )
+            {
+                var structuredContentToolsValue = DefinedValueCache.Get( SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_DEFAULT );
+                if ( structuredContentToolsValue != null )
+                {
+                    structuredContentToolsConfiguration = structuredContentToolsValue.Description;
+                }
+            }
+
+            return Ok( new StructuredContentEditorConfigurationBag
+            {
+                ToolsScript = structuredContentToolsConfiguration
+            } );
+        }
+
+        #endregion
+
         #region Workflow Action Type Picker
 
         /// <summary>
@@ -5099,6 +5358,65 @@ namespace Rock.Rest.v2
             }
 
             return categorizedActions;
+        }
+
+        #endregion
+
+        #region Workflow Picker
+
+        /// <summary>
+        /// Gets the workflows and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which workflows to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of workflows.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "WorkflowPickerGetWorkflows" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "93024bbe-4941-4f84-a5e7-754cf30c03d3" )]
+        public IHttpActionResult WorkflowPickerGetWorkflows( [FromBody] WorkflowPickerGetWorkflowsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( options.WorkflowTypeGuid == null )
+                {
+                    return NotFound();
+                }
+
+                    var workflowService = new Rock.Model.WorkflowService( rockContext );
+                    var workflows = workflowService.Queryable()
+                        .Where( w =>
+                            w.WorkflowType.Guid == options.WorkflowTypeGuid &&
+                            w.ActivatedDateTime.HasValue &&
+                            !w.CompletedDateTime.HasValue )
+                        .OrderBy( w => w.Name )
+                        .Select( w => new ListItemBag { Value = w.Guid.ToString(), Text = w.Name } )
+                        .ToList();
+
+                return Ok( workflows );
+            }
+        }
+
+        /// <summary>
+        /// Gets the workflow type that the given instance uses.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> object that represents the workflow type.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "WorkflowPickerGetWorkflowTypeForWorkflow" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "a41c755c-ffcb-459c-a67a-f0311158976a" )]
+        public IHttpActionResult WorkflowPickerGetWorkflowTypeForWorkflow( [FromBody] WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var workflow = new Rock.Model.WorkflowService( rockContext ).Get( options.WorkflowGuid );
+                if ( workflow == null )
+                {
+                    return NotFound();
+                }
+
+                return Ok( new ListItemBag { Text = workflow.WorkflowType.Name, Value = workflow.WorkflowType.Guid.ToString() } );
+            }
         }
 
         #endregion

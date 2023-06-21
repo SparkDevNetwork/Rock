@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.WebFarm
 {
@@ -38,6 +39,7 @@ namespace Rock.Blocks.WebFarm
     [Category( "WebFarm" )]
     [Description( "Displays the details of a particular web farm node." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -61,7 +63,7 @@ namespace Rock.Blocks.WebFarm
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -76,7 +78,7 @@ namespace Rock.Blocks.WebFarm
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<WebFarmNode>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<WebFarmNode>();
 
                 return box;
             }

@@ -70,7 +70,11 @@
     <Compile Include="Engagement\StreakDetail.cs" />
     <Compile Include="Prayer\PrayerRequestEntry.cs" />
     <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
+    <Compile Include="Example\ObsidianGalleryList.cs" />
     <Compile Include="Group\GroupAttendanceDetail.cs" />
+    <Compile Include="RockObsidianEntityListBlockType.cs" />
+    <Compile Include="RockObsidianListBlockType.cs" />
+    <Compile Include="Reporting\ServiceMetricsEntry.cs" />
     <Compile Include="Group\Scheduling\GroupScheduler.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Group\GroupRegistration.cs" />
@@ -120,7 +124,6 @@
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="ExtensionMethods\SettingsExtensions.cs" />
-    <Compile Include="IHasCustomActions.cs" />
     <Compile Include="Reporting\MergeTemplateDetail.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />

@@ -38,6 +38,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Forgot Username" )]
     [Category( "Security" )]
     [Description( "Allows a user to get their forgotten username information emailed to them." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -95,7 +96,7 @@ namespace Rock.Blocks.Security
 
     [Rock.SystemGuid.EntityTypeGuid( "5BBEE600-781E-4480-8144-36F8D01C7F09" )]
     [Rock.SystemGuid.BlockTypeGuid( "16CD7562-BE31-4823-9C4D-F365AB0AA5C4" )]
-    public class ForgotUserName : RockObsidianBlockType
+    public class ForgotUserName : RockBlockType
     {
         #region Keys
 
@@ -119,7 +120,7 @@ namespace Rock.Blocks.Security
         #region Properties
 
         /// <inheritdoc/>
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         private string ConfirmationPageUrl => this.GetLinkedPageUrl( AttributeKey.ConfirmationPage );
 

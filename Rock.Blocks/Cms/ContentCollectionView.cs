@@ -45,6 +45,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the search results of a particular content collection." )]
     [IconCssClass( "fa fa-book-open" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -176,7 +177,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "16C3A9D7-DD61-4971-8FE0-EEE09AEF703F" )]
     [Rock.SystemGuid.BlockTypeGuid( "CC387575-3530-4CD6-97E0-1F449DCA1869" )]
-    public class ContentCollectionView : RockObsidianBlockType, IHasCustomActions
+    public class ContentCollectionView : RockBlockType, IHasCustomActions
     {
         #region Keys
 

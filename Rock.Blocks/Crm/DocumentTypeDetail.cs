@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.DocumentTypeDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Crm
 {
@@ -38,6 +39,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays the details of a particular document type." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -61,7 +63,7 @@ namespace Rock.Blocks.Crm
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -76,7 +78,7 @@ namespace Rock.Blocks.Crm
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<DocumentType>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<DocumentType>();
 
                 return box;
             }

@@ -37,6 +37,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Merge Template Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular merge template." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -73,7 +74,7 @@ namespace Rock.Blocks.Reporting
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -87,7 +88,7 @@ namespace Rock.Blocks.Reporting
                 SetBoxInitialEntityState( box, rockContext );
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<MergeTemplate>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<MergeTemplate>();
                 return box;
             }
         }

@@ -37,6 +37,7 @@ namespace Rock.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Provides a simple way to debug RealTime events." )]
     [IconCssClass( "fa fa-bug" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Utility
     [Rock.SystemGuid.BlockTypeGuid( "e5fa4818-2e0c-4cc6-95f2-34dcc5b3d8c8" )]
     public class RealTimeDebugger : RockObsidianDetailBlockType
     {
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

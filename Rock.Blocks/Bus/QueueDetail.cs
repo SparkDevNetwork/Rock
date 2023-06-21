@@ -36,6 +36,7 @@ namespace Rock.Blocks.Bus
     [Category( "Bus" )]
     [Description( "Displays the details of a queue detail." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -59,7 +60,7 @@ namespace Rock.Blocks.Bus
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

@@ -566,6 +566,36 @@ namespace Rock.SystemGuid
         public const string MOBILE_SECURITY_ONBOARD_PERSON = "C9B7F36A-F70A-4ABF-9422-B18E579F927F";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderList"/>.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_LIST = "35B1CA9F-DCD9-453F-892E-33E0E09E7CB3";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderDashboard"/>.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_DASHBOARD = "AD29BE7E-00B2-4AE3-8DA4-756C348E7AFA";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderEdit"/>.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_EDIT = "A07DA3CE-4598-4177-AD47-B0D1EBFB1E7A";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Crm.PersonProfile"/>.
+        /// </summary>
+        public const string MOBILE_CRM_PERSON_PROFILE = "A1EEA3BD-7B40-47A9-82D4-7187290C917C";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.AttributeValues"/>.
+        /// </summary>
+        public const string MOBILE_CORE_ATTRIBUTE_VALUES = "6751AC1E-C467-4416-9F02-0B9A0D1FAC2D";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Crm.GroupMembers"/>.
+        /// </summary>
+        public const string MOBILE_CRM_GROUP_MEMBERS = "592242ED-7536-49EA-94DE-7B4EBA7E87A6";
+
+        /// <summary>
         /// The obsidian event registration entry
         /// </summary>
         public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "06AAC065-BF89-483D-B671-80F0F72779A6";

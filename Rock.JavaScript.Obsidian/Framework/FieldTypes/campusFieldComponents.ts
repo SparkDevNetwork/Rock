@@ -60,14 +60,22 @@ export const EditComponent = defineComponent({
 
         watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
+        const shouldHidePicker = computed((): boolean => {
+            return asBoolean(!props.configurationValues[ConfigurationValueKey.ForceVisible])
+            && options.value.length <= 1
+            && props.configurationValues[ConfigurationValueKey.FilterCampusTypes] == ""
+            && props.configurationValues[ConfigurationValueKey.FilterCampusStatus] == "";
+        });
+
         return {
             internalValue,
-            options
+            options,
+            shouldHidePicker
         };
     },
 
     template: `
-<DropDownList v-model="internalValue" :items="options" />
+<DropDownList v-if="!shouldHidePicker" v-model="internalValue" :items="options" />
 `
 });
 
@@ -220,7 +228,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

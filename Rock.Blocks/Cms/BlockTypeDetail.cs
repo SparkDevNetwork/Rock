@@ -24,6 +24,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.BlockTypeDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
 {
@@ -36,6 +37,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular block type." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -72,7 +74,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<BlockType>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<BlockType>();
 
                 return box;
             }

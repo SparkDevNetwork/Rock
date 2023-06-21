@@ -38,12 +38,13 @@ namespace Rock.Blocks.Workflow.FormBuilder
     /// <summary>
     /// Edits the details of a workflow Form Builder action.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Form Builder Detail" )]
     [Category( "WorkFlow > FormBuilder" )]
     [Description( "Edits the details of a workflow Form Builder action." )]
     [IconCssClass( "fa fa-hammer" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -63,7 +64,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_FORM_BUILDER_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "A61C5E3C-2267-4CF7-B305-D8AF0DB9660B")]
-    public class FormBuilderDetail : RockObsidianBlockType
+    public class FormBuilderDetail : RockBlockType
     {
         private static class PageParameterKey
         {

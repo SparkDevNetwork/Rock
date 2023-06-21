@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PersonalLinkSectionDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
 {
@@ -39,6 +40,7 @@ namespace Rock.Blocks.Cms
     [Category( "Cms" )]
     [Description( "Displays the details of a particular personal link section." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -86,7 +88,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<PersonalLinkSection>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<PersonalLinkSection>();
 
                 return box;
             }

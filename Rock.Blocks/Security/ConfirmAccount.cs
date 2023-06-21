@@ -36,6 +36,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Confirm Account" )]
     [Category( "Obsidian > Security" )]
     [Description( "Block for user to confirm a newly created login account, usually from an email that was sent to them." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -118,7 +119,7 @@ namespace Rock.Blocks.Security
 
     [Rock.SystemGuid.EntityTypeGuid( "49098480-A041-4404-964C-10EFF41B7DCA" )]
     [Rock.SystemGuid.BlockTypeGuid( "F9FD6BE8-8073-40E9-83D9-CA3F947D2E2A" )]
-    public class ConfirmAccount : RockObsidianBlockType
+    public class ConfirmAccount : RockBlockType
     {
         #region Keys
 
@@ -157,7 +158,7 @@ namespace Rock.Blocks.Security
         #region Properties
 
         /// <inheritdoc/>
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         private string ActionPageParameter => this.PageParameter( PageParameterKey.Action );
 

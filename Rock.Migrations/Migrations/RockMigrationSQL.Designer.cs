@@ -1385,15 +1385,15 @@ namespace Rock.Migrations.Migrations {
         /// <summary>
         ///   Looks up a localized string similar to UPDATE [AttributeValue] SET [Value]=N&apos;{
         ///    &quot;SeriesColors&quot;: [
-        ///      &quot;#3b82f6&quot;,
-        ///      &quot;#f97316&quot;,
-        ///      &quot;#ef4444&quot;,
-        ///      &quot;#06b6d4&quot;,
-        ///      &quot;#22c55e&quot;,
-        ///      &quot;#eab308&quot;,
-        ///      &quot;#8b5cf6&quot;,
-        ///      &quot;#EC4899&quot;,
-        ///      &quot;#737373&quot;
+        ///      &quot;#38BDF8&quot;,
+        ///      &quot;#A3E635&quot;,
+        ///      &quot;#34D399&quot;,
+        ///      &quot;#FB7185&quot;,
+        ///      &quot;#818CF8&quot;,
+        ///      &quot;#FB923C&quot;,
+        ///      &quot;#C084FC&quot;,
+        ///      &quot;#FBBF24&quot;,
+        ///      &quot;#A8A29E&quot;
         ///    ],
         ///    &quot;GoalSeriesColor&quot;: &quot;red&quot;,
         ///    &quot;Grid&quot;: {
@@ -1435,11 +1435,44 @@ namespace Rock.Migrations.Migrations {
         ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
         ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
         ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
-        ///    series. Let’s look at each opt [rest of string was truncated]&quot;;.
+        ///    series. Let’s look at eac [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202304042314453_Rollup_20230404_updatechartjs {
             get {
                 return ResourceManager.GetString("_202304042314453_Rollup_20230404_updatechartjs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE[dbo].[spCheckin_BadgeAttendance]
+        ///                  @PersonId int
+        ///                  , @RoleGuid uniqueidentifier = null
+        ///                  , @ReferenceDate datetime = null
+        ///                  , @MonthCount int = 24
+        ///				  , @ShowAsIndividual bit = 0
+        ///              AS
+        ///              BEGIN
+        ///                  DECLARE @cROLE_ADULT uniqueidentifier = &apos;2639F9A5-2AAE-4E48-A8C3-4FFE86681E42&apos;
+        ///              
+        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge {
+            get {
+                return ResourceManager.GetString("_202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation] = N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look at each o [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202306151802148_UpdateChartShortcode {
+            get {
+                return ResourceManager.GetString("_202306151802148_UpdateChartShortcode", resourceCulture);
             }
         }
     }

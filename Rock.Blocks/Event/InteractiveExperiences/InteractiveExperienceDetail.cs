@@ -43,6 +43,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays the details of a particular interactive experience." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -66,7 +67,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -81,7 +82,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<InteractiveExperience>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<InteractiveExperience>();
 
                 return box;
             }
@@ -223,6 +224,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     }
                     : null,
                 Description = entity.Description,
+                ExperienceEndedTemplate = settings.ExperienceEndedTemplate ?? string.Empty,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
                 NoActionHeaderImageBinaryFile = entity.NoActionHeaderImageBinaryFile.ToListItemBag(),
@@ -350,6 +352,9 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
+
+            box.IfValidProperty( nameof( box.Entity.ExperienceEndedTemplate ),
+                () => settings.ExperienceEndedTemplate = box.Entity.ExperienceEndedTemplate );
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );

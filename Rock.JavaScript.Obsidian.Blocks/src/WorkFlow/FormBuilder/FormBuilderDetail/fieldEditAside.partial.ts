@@ -20,7 +20,7 @@ import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import Modal from "@Obsidian/Controls/modal";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import RockForm from "@Obsidian/Controls/rockForm";
 import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
 import NumberBox from "@Obsidian/Controls/numberBox";

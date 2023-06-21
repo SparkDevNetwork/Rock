@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -109,7 +109,7 @@ namespace Rock.Reporting.DataTransform.Person
                     .Any( pgm =>
                         // person is adult
                         pgm.GroupRoleId == adultRoleId
-
+                        && a.IsArchived == false
                         && personQuery.Any( origPerson =>
                             // person is in the original personQuery 
                             origPerson.Id == pgm.PersonId

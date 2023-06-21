@@ -1100,9 +1100,18 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int BulkDelete<T>( IQueryable<T> queryable, int? batchSize = null ) where T : class
         {
+            /*
+                 5/25/2023 - NA
+
+                 We're changing the default batch size for deletes from 4000 to 1500 because
+                 once SQL Server has more 5000 row locks, it will escalate to a table lock.
+                 https://nathancooper.dev/articles/2020-04/lock-escalation
+
+                 Reason: To avoid table lock escalation.
+            */
             return queryable.Delete( d =>
             {
-                d.BatchSize = batchSize ?? 4000;
+                d.BatchSize = batchSize ?? 1500;
                 d.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
             } );
         }

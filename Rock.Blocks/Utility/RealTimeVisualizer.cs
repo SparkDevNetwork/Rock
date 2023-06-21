@@ -43,6 +43,7 @@ namespace Rock.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Displays RealTime events from Rock with custom formatting options." )]
     [IconCssClass( "fa fa-chart-bar" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -104,7 +105,7 @@ namespace Rock.Blocks.Utility
 
         #region Properties
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         /// <summary>
         /// Gets the lava template to use when displaying messages.

@@ -36,6 +36,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM > PhotoRequest" )]
     [Description( "Allows a person to opt-out of future photo requests." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -43,7 +44,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.EntityTypeGuid( "63f1d46a-eb78-4b0f-b398-099a83e058e8" )]
     [Rock.SystemGuid.BlockTypeGuid( "7e2dfb55-f1ab-4452-a5df-6ce65fbfddad" )]
-    public class PhotoOptOutDetail : RockObsidianBlockType
+    public class PhotoOptOutDetail : RockBlockType
     {
         #region Keys
 
@@ -54,7 +55,7 @@ namespace Rock.Blocks.Crm
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

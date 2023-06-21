@@ -6,7 +6,7 @@
         </div>
 
         <div class="answers">
-            <RadioButtonList v-model="answerText" :items="answerItems" disabled />
+            <RadioButtonList v-model="answerText" :items="answerItems" />
         </div>
 
         <NotificationBox v-if="errorMessage" alertType="warning">

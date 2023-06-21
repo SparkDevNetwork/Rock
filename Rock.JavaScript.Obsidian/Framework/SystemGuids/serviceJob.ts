@@ -77,6 +77,10 @@ export const ServiceJob = {
     DataMigrations151DuplicateMobileInteractionsCleanup: "D3D60B90-48D1-4718-905E-39638B44C665",
     /** The Job to run Post v16.0 Move Person Preferences. */
     DataMigrations160MovePersonPreferences: "C8591D15-9D37-49D3-8DF8-1DB72EE42D29",
+    /** The Job to run Post v16.0 Update InteractionSession InteractionChannelId. */
+    DataMigrations160UpdateInteractionSessionInteractionChannelId: "3BC5124D-0ED1-4D90-A9ED-D858FA4B5051",
+    /** The Job to run Post v16.0 Update InteractionSession SessionStartDateKey. */
+    DataMigrations160UpdateInteractionSessionSessionStartDateKey: "EBAD6B4D-D928-41FD-A0DD-445060810504",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */

@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import TextBox from "@Obsidian/Controls/textBox";

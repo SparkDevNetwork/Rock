@@ -41,6 +41,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular site." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -77,7 +78,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext, string.Empty );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<Site>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Site>();
 
                 return box;
             }

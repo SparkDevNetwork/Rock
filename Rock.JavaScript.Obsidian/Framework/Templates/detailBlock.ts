@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import Modal from "@Obsidian/Controls/modal";
 import { Guid } from "@Obsidian/Types";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
@@ -26,7 +26,7 @@ import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Cont
 import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingSetFollowingOptionsBag";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
 import BadgeList from "@Obsidian/Controls/badgeList";
-import EntityTagList from "@Obsidian/Controls/entityTagList";
+import EntityTagList from "@Obsidian/Controls/tagList.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockSuspense from "@Obsidian/Controls/rockSuspense";

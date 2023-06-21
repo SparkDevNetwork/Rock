@@ -85,12 +85,12 @@ import NumberBox from "@Obsidian/Controls/numberBox";
 import NumberRangeBox from "@Obsidian/Controls/numberRangeBox";
 import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
 import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox";
-import TimePicker from "@Obsidian/Controls/timePicker";
+import TimePicker from "@Obsidian/Controls/timePicker.obs";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import Rating from "@Obsidian/Controls/rating";
 import Fullscreen from "@Obsidian/Controls/fullscreen";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import FileUploader from "@Obsidian/Controls/fileUploader";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
@@ -106,7 +106,7 @@ import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
-import EntityTagList from "@Obsidian/Controls/entityTagList";
+import TagList from "@Obsidian/Controls/tagList.obs";
 import Following from "@Obsidian/Controls/following";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
 import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
@@ -119,6 +119,7 @@ import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterG
 import { AssessmentType } from "@Obsidian/SystemGuids/assessmentType";
 import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
 import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { SlidingDateRange, rangeTypeOptions } from "@Obsidian/Utility/slidingDateRange";
@@ -136,28 +137,31 @@ import ComponentPicker from "@Obsidian/Controls/componentPicker";
 import Modal from "@Obsidian/Controls/modal";
 import EventItemPicker from "@Obsidian/Controls/eventItemPicker";
 import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
-import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker";
+import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
 import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker";
 import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker";
 import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
 import GradePicker from "@Obsidian/Controls/gradePicker";
 import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
 import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
-import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
-import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
+import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
+import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
 import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
 import RemoteAuthsPicker from "@Obsidian/Controls/remoteAuthsPicker";
-import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker";
-import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
-import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
+import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
+import StepProgramStepTypePicker from "@Obsidian/Controls/stepProgramStepTypePicker.obs";
+import StepProgramStepStatusPicker from "@Obsidian/Controls/stepProgramStepStatusPicker.obs";
+import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker.obs";
+import StepTypePicker from "@Obsidian/Controls/stepTypePicker.obs";
 import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
-import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
+import BasicTimePicker from "@Obsidian/Controls/basicTimePicker.obs";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
 import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
+import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
 import InlineRangeSlider from "@Obsidian/Controls/inlineRangeSlider.obs";
 import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
@@ -212,7 +216,13 @@ import PopOver from "@Obsidian/Controls/popOver.obs";
 import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
 import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
+import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
+import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/interactionChannelInteractionComponentPicker.obs";
+import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
+import ValueList from "@Obsidian/Controls/valueList.obs";
 
 // #region Gallery Support
 
@@ -1684,12 +1694,14 @@ const timePickerGallery = defineComponent({
     name: "TimePickerGallery",
     components: {
         GalleryAndResult,
-        TimePicker
+        TimePicker,
+        CheckBox
     },
     setup() {
         return {
             value: ref({ hour: 14, minute: 15 }),
-            importCode: getControlImportPath("timePicker"),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("timePicker"),
             exampleCode: `<TimePicker label="Time" v-model="value" />`
         };
     },
@@ -1699,9 +1711,12 @@ const timePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <TimePicker label="Time" v-model="value" />
+    <TimePicker label="Time" v-model="value" :disabled="disabled" />
 
     <template #settings>
+        <div>
+            <CheckBox v-model="disabled" label="Disabled" />
+        </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
@@ -2222,7 +2237,7 @@ const panelGallery = defineComponent({
             simulateHelp: computed((): boolean => simulateValues.value.includes("helpContent")),
             isFullscreenPageOnly: ref(true),
             value: ref(true),
-            importCode: getControlImportPath("panel"),
+            importCode: getSfcControlImportPath("panel"),
             exampleCode: `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">
     <template #helpContent>Help Content</template>
     <template #drawer>Drawer Content</template>
@@ -3048,22 +3063,28 @@ const copyButtonGallery = defineComponent({
 });
 
 /** Demonstrates entity tag list */
-const entityTagListGallery = defineComponent({
-    name: "EntityTagListGallery",
+const tagListGallery = defineComponent({
+    name: "TagListGallery",
     components: {
         GalleryAndResult,
         CheckBox,
-        EntityTagList
+        RockButton,
+        TagList
     },
     setup() {
         const store = useStore();
 
         return {
+            control: ref(null),
             disabled: ref(false),
+            delaySave: ref(false),
+            showInactive: ref(false),
+            disallowNewTags: ref(false),
             entityTypeGuid: EntityType.Person,
             entityKey: store.state.currentPerson?.idKey ?? "",
-            importCode: getControlImportPath("entityTagList"),
-            exampleCode: `<EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
+            btnType: BtnType.Primary,
+            importCode: getSfcControlImportPath("tagList"),
+            exampleCode: `<TagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
         };
     },
     template: `
@@ -3071,10 +3092,67 @@ const entityTagListGallery = defineComponent({
     :value="value"
     :importCode="importCode"
     :exampleCode="exampleCode">
-    <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
+
+    <TagList
+        :entityTypeGuid="entityTypeGuid"
+        :entityKey="entityKey"
+        :disabled="disabled"
+        :showInactiveTags="showInactive"
+        :disallowNewTags="disallowNewTags"
+        :delaySave="delaySave"
+        ref="control" />
 
     <template #settings>
-        <CheckBox label="Disabled" v-model="disabled" />
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox label="Disabled" v-model="disabled" help="Makes it read-only. You can't add or remove tags if it's disabled." />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Delay Saving Value" v-model="delaySave" help="If checked, creating new tags, adding tags and removing tags is not saved to the server until the component's <code>saveTagValues</code> method is called." />
+                <RockButton v-if="delaySave" :btnType="btnType" type="button" @click="control.saveTagValues()"><i class="fa fa-save" /> Save Values</RockButton>
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Disallow New Tags" v-model="disallowNewTags" help="If checked, no new tags can be created, though you can still add existing tags" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Show Inactive Tags" v-model="showInactive" />
+            </div>
+        </div>
+        <p>
+            This control takes multiple props for filtering the tags to show and giving specifiers about what it tags. Below is a list of those props:
+        </p>
+        <table class="table" style="max-width:450px;">
+            <tr>
+                <th scope="col">Prop</th>
+                <th scope="col">Type</th>
+                <th scope="col" class="text-center">Required</th>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityTypeGuid</code></th>
+                <td>GUID String</td>
+                <td class="text-center"><i class="fa fa-check text-success"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityKey</code></th>
+                <td>String</td>
+                <td class="text-center"><i class="fa fa-check text-success"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>categoryGuid</code></th>
+                <td>GUID String</td>
+                <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityQualifierColumn</code></th>
+                <td>String</td>
+                <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityQualifierValue</code></th>
+                <td>String</td>
+                <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+            </tr>
+        </table>
     </template>
 </GalleryAndResult>`
 });
@@ -3668,7 +3746,7 @@ const workflowTypePickerGallery = defineComponent({
             includeInactiveItems: ref(false),
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("workflowTypePicker"),
+            importCode: getSfcControlImportPath("workflowTypePicker"),
             exampleCode: `<WorkflowTypePicker label="Data View" v-model="value" />`
         };
     },
@@ -4199,7 +4277,7 @@ const interactionChannelPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("interactionChannelPicker"),
+            importCode: getSfcControlImportPath("interactionChannelPicker"),
             exampleCode: `<InteractionChannelPicker label="Interaction Channel" v-model="value" />`
         };
     },
@@ -4263,7 +4341,7 @@ const interactionComponentPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("interactionComponentPicker"),
+            importCode: getSfcControlImportPath("interactionComponentPicker"),
             exampleCode: `<InteractionComponentPicker label="Interaction Component" v-model="value" :interactionChannelGuid="interactionChannelGuid" />`
         };
     },
@@ -4453,7 +4531,7 @@ const stepProgramPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("stepProgramPicker"),
+            importCode: getSfcControlImportPath("stepProgramPicker"),
             exampleCode: `<StepProgramPicker label="Step Program" v-model="value" />`
         };
     },
@@ -4494,6 +4572,108 @@ const stepProgramPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Step Program Step Type Picker */
+const stepProgramStepTypePickerGallery = defineComponent({
+    name: "StepProgramStepTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        StepProgramPicker,
+        StepProgramStepTypePicker,
+        CheckBox,
+    },
+    setup() {
+        return {
+            value: ref({}),
+            stepProgram: ref({}),
+            defaultProgramGuid: ref(""),
+            required: ref(false),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("stepProgramStepTypePicker"),
+            exampleCode: `<StepProgramStepTypePicker label="Step Program > Step Type" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{value,stepProgram}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+    <StepProgramStepTypePicker label="Step Program > Step Type"
+        v-model="value"
+        v-model:stepProgram="stepProgram"
+        :defaultStepProgramGuid="defaultProgramGuid?.value"
+        :rules="required ? 'required' : ''"
+        :disabled="disabled" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <StepProgramPicker label="Default Step Program" v-model="defaultProgramGuid" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Step Program Step Status Picker */
+const stepProgramStepStatusPickerGallery = defineComponent({
+    name: "StepProgramStepStatusPickerGallery",
+    components: {
+        GalleryAndResult,
+        StepProgramPicker,
+        StepProgramStepStatusPicker,
+        CheckBox,
+    },
+    setup() {
+        return {
+            value: ref({}),
+            stepProgram: ref({}),
+            defaultProgramGuid: ref(""),
+            required: ref(false),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("stepProgramStepStatusPicker"),
+            exampleCode: `<StepProgramStepStatusPicker label="Step Program > Step Status" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{value,stepProgram}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+    <StepProgramStepStatusPicker label="Step Program > Step Status"
+        v-model="value"
+        v-model:stepProgram="stepProgram"
+        :defaultStepProgramGuid="defaultProgramGuid?.value"
+        :rules="required ? 'required' : ''"
+        :disabled="disabled" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <StepProgramPicker label="Default Step Program" v-model="defaultProgramGuid" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates Step Status Picker */
 const stepStatusPickerGallery = defineComponent({
     name: "StepStatusPickerGallery",
@@ -4517,7 +4697,7 @@ const stepStatusPickerGallery = defineComponent({
             showBlankItem: ref(false),
             stepProgramGuid: ref(null),
             value: ref({}),
-            importCode: getControlImportPath("stepStatusPicker"),
+            importCode: getSfcControlImportPath("stepStatusPicker"),
             exampleCode: `<StepStatusPicker label="Step Status" v-model="value" />`
         };
     },
@@ -4585,7 +4765,7 @@ const stepTypePickerGallery = defineComponent({
             showBlankItem: ref(false),
             stepProgramGuid: ref(null),
             value: ref({}),
-            importCode: getControlImportPath("stepTypePicker"),
+            importCode: getSfcControlImportPath("stepTypePicker"),
             exampleCode: `<StepTypePicker label="Step Type" v-model="value" />`
         };
     },
@@ -4867,11 +5047,13 @@ const basicTimePickerGallery = defineComponent({
     name: "BasicTimePickerGallery",
     components: {
         GalleryAndResult,
-        BasicTimePicker
+        BasicTimePicker,
+        CheckBox
     },
     setup() {
         return {
             value: ref({}),
+            disabled: ref(false),
             importCode: getControlImportPath("basicTimePicker"),
             exampleCode: `<BasicTimePicker label="Time" v-model="value" />`
         };
@@ -4882,9 +5064,12 @@ const basicTimePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <BasicTimePicker label="Time" v-model="value" />
+    <BasicTimePicker label="Time" v-model="value" :disabled="disabled" />
 
     <template #settings>
+        <div>
+            <CheckBox v-model="disabled" label="Disabled" />
+        </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
@@ -5014,7 +5199,15 @@ const fieldTypeEditorGallery = defineComponent({
     },
     setup() {
         return {
-            value: ref({}),
+            value: ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
+                configurationValues: {
+                    truetext: "Yup",
+                    falsetext: "Nah",
+                    BooleanControlType: "2"
+                },
+                defaultValue: "True",
+                fieldTypeGuid: FieldType.Boolean
+            }),
             readOnly: ref(false),
             importCode: getControlImportPath("fieldTypeEditor"),
             exampleCode: `<FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />`
@@ -5136,6 +5329,7 @@ const keyValueListGallery = defineComponent({
             displayValueFirst,
             valueOptions,
             value: ref(null),
+            fullWidth: ref(false),
             keyPlaceholder: ref("Key"),
             valuePlaceholder: ref("Value"),
             importCode: getControlImportPath("keyValueList"),
@@ -5150,14 +5344,17 @@ const keyValueListGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" />
+    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" :fullWidth="fullWidth" />
 
     <template #settings>
         <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Limit Possible Values" v-model="limitValues" />
-            <CheckBox formGroupClasses="col-md-3" label="Show Value First" v-model="displayValueFirst" />
-            <TextBox formGroupClasses="col-md-3" label="Placeholder for Key Field" v-model="keyPlaceholder" />
-            <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePlaceholder" />
+            <CheckBox formGroupClasses="col-md-4" label="Limit Possible Values" v-model="limitValues" />
+            <CheckBox formGroupClasses="col-md-4" label="Show Value First" v-model="displayValueFirst" />
+            <CheckBox formGroupClasses="col-md-4" label="Full Width" v-model="fullWidth" />
+        </div>
+        <div class="row">
+            <TextBox formGroupClasses="col-md-4" label="Placeholder for Key Field" v-model="keyPlaceholder" />
+            <TextBox formGroupClasses="col-md-4" label="Placeholder for Value Field" v-model="valuePlaceholder" />
         </div>
     </template>
 </GalleryAndResult>`
@@ -7563,7 +7760,7 @@ const groupTypeGroupPickerGallery = defineComponent({
             required: ref(false),
             glabel: ref("Group"),
             importCode: getSfcControlImportPath("groupTypeGroupPicker"),
-            exampleCode: `<GroupTypeGroupPicker label="Group Type and TypeGroup" groupLabel="Group" v-model="value" v-model:groupType="groupType" />`
+            exampleCode: `<GroupTypeGroupPicker label="Group Type and Group" groupLabel="Group" v-model="value" v-model:groupType="groupType" />`
         };
     },
     template: `
@@ -7574,7 +7771,7 @@ const groupTypeGroupPickerGallery = defineComponent({
     hasMultipleValues
     enableReflection >
 
-    <GroupTypeGroupPicker label="Group Type and TypeGroup" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" :rules="required ? 'required' : ''" />
+    <GroupTypeGroupPicker label="Group Type and Group" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" :rules="required ? 'required' : ''" />
 
     <template #settings>
         <div class="row">
@@ -7583,6 +7780,61 @@ const groupTypeGroupPickerGallery = defineComponent({
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates group and role picker */
+const groupAndRolePickerGallery = defineComponent({
+    name: "GroupAndRolePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        GroupAndRolePicker,
+        TextBox,
+        RockButton,
+        RockForm
+    },
+    setup() {
+        return {
+            value: ref(null),
+            groupType: ref(null),
+            group: ref(null),
+            required: ref(false),
+            disabled: ref(false),
+            glabel: ref("Group"),
+            submit: ref(false),
+            importCode: getSfcControlImportPath("groupAndRolePicker"),
+            exampleCode: `<GroupAndRolePicker label="Group and Role" groupLabel="Group" v-model="value" v-model:groupType="groupType" v-model:group="group" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{groupType, group, value}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+<RockForm v-model:submit="submit">
+    <GroupAndRolePicker label="Group and Role" :groupLabel="glabel" v-model="value" v-model:groupType="groupType" v-model:group="group" :rules="required ? 'required' : ''" :disabled="disabled" />
+    <RockButton @click="submit = true">Submit</RockButton>
+</RockForm>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Group Label" v-model="glabel" help="The label for the 2nd dropdown. The main label is also customizable, but the group type and role labels are not." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
             </div>
         </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
@@ -7646,6 +7898,287 @@ const accountPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates structured content editor */
+const structuredContentEditorGallery = defineComponent({
+    name: "StructuredContentEditorGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DefinedValuePicker,
+        StructuredContentEditor
+    },
+    setup() {
+        const required = ref(false);
+        const toolsItemBag = ref<ListItemBag | undefined>({
+            value: DefinedValue.StructureContentEditorDefault
+        });
+        const toolsGuid = computed(() => toolsItemBag.value?.value);
+        const toolsTypeGuid = DefinedType.StructuredContentEditorTools;
+
+        return {
+            value: ref("{}"),
+            required,
+            importCode: getSfcControlImportPath("structuredContentEditor"),
+            exampleCode: computed(() => `<StructuredContentEditor v-model="value" label="StructuredContent Editor" :toolsGuid="${toolsGuid.value}" ${required.value ? 'rules="required" ' : ""}/>`),
+            toolsGuid,
+            toolsItemBag,
+            toolsTypeGuid
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <StructuredContentEditor
+        v-model="value"
+        label="Structured Content Editor"
+        :toolsGuid="toolsGuid"
+        :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <DefinedValuePicker v-model="toolsItemBag" :definedTypeGuid="toolsTypeGuid" label="Structured Content Editor Tools Value" lazyMode="eager" :multiple="false" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates registrationInstance picker */
+const registrationInstancePickerGallery = defineComponent({
+    name: "RegistrationInstancePickerGallery",
+    components: {
+        GalleryAndResult,
+        RegistrationInstancePicker,
+        RegistrationTemplatePicker,
+        CheckBox
+    },
+    setup() {
+        return {
+            registrationTemplateGuid: ref(null),
+            value: ref({
+                "value": "eefe4ad9-bfa9-405c-b732-ccb4d857ab73",
+                "text": "Joe's Test Registration",
+                "category": null
+            }),
+            required: ref(false),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("registrationInstancePicker"),
+            exampleCode: `<RegistrationInstancePicker label="Registration Instance" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <RegistrationInstancePicker
+        v-model="value"
+        label="Registration Instance"
+        :registrationTemplateGuid="registrationTemplateGuid?.value"
+        :disabled="disabled"
+        :rules="required ? 'required' : ''" />
+
+    <template #settings>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <RegistrationTemplatePicker label="Default Registration Template" v-model="registrationTemplateGuid" showBlankItem />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates interactionChannelInteractionComponent picker */
+const interactionChannelInteractionComponentPickerGallery = defineComponent({
+    name: "InteractionChannelInteractionComponentPickerGallery",
+    components: {
+        GalleryAndResult,
+        InteractionChannelInteractionComponentPicker,
+        InteractionChannelPicker,
+        DropDownList,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            interactionChannelGuid: ref(null),
+            value: ref({
+                "value": "1d6d3e3c-131c-4ed9-befe-b34f3c3da7d3",
+                "text": "Calendar",
+                "category": null
+            }),
+            importCode: getSfcControlImportPath("interactionChannelInteractionComponentPicker"),
+            exampleCode: `<InteractionChannelInteractionComponentPicker label="Interaction Channel > Interaction Component" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <InteractionChannelInteractionComponentPicker
+        v-model="value"
+        label="Interaction Channel > Interaction Component"
+        :defaultInteractionChannelGuid="interactionChannelGuid?.value" />
+
+    <template #settings>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <InteractionChannelPicker label="Default Interaction Channel" v-model="interactionChannelGuid" showBlankItem />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates Workflow Picker */
+const workflowPickerGallery = defineComponent({
+    name: "WorkflowPickerGallery",
+    components: {
+        GalleryAndResult,
+        WorkflowTypePicker,
+        WorkflowPicker,
+        CheckBox,
+    },
+    setup() {
+        return {
+            value: ref({
+                "value": "969b09e5-d830-46b7-86ab-2f0fbd12cf51",
+                "text": "New Request",
+                "category": null
+            }),
+            workflowType: ref({}),
+            workflowTypeGuid: ref(""),
+            required: ref(false),
+            disabled: ref(false),
+            importCode: getSfcControlImportPath("workflowPicker"),
+            exampleCode: `<WorkflowPicker label="Choose a Workflow" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <WorkflowPicker label="Choose a Workflow"
+        v-model="value"
+        :workflowTypeGuid="workflowTypeGuid?.value"
+        :rules="required ? 'required' : ''"
+        :disabled="disabled" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <WorkflowTypePicker label="Workflow Type" v-model="workflowTypeGuid" showBlankItem help="If this workflowTypeGuid prop is set, the Workflow Type selector will not be shown and the Workflows will be based on that type." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates value list component */
+const valueListGallery = defineComponent({
+    name: "ValueListGallery",
+    components: {
+        GalleryAndResult,
+        ValueList,
+        CheckBox,
+        TextBox
+    },
+    setup() {
+        const usePredefinedValues = ref(false);
+        const displayValueFirst = ref(false);
+        const options: ListItemBag[] = [
+            {
+                text: "Option 1",
+                value: "1"
+            },
+            {
+                text: "Option 2",
+                value: "2"
+            },
+            {
+                text: "Option 3",
+                value: "3"
+            },
+        ];
+
+        const customValues = computed(() => usePredefinedValues.value ? options : null);
+
+        return {
+            usePredefinedValues: usePredefinedValues,
+            displayValueFirst,
+            customValues,
+            fullWidth: ref(false),
+            useDefinedType: ref(false),
+            value: ref(null),
+            definedTypeGuid: DefinedType.PersonConnectionStatus,
+            valuePrompt: ref("Value"),
+            importCode: getSfcControlImportPath("valueList"),
+            exampleCode: `<ValueList label="List of Values" v-model="value" :customValues="customValues" :valuePrompt="valuePrompt" :definedTypeGuid="definedTypeGuid" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <ValueList label="List of Values" v-model="value" :customValues="customValues" :valuePrompt="valuePrompt" :fullWidth="fullWidth" :definedTypeGuid="useDefinedType ? definedTypeGuid : null" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-md-3" label="Use Predefined Values" v-model="usePredefinedValues" help="Enabling this will pass a pre-made <code>ListItemBag[]</code> of options to the ValueList component via the <code>customValues</code> prop." :disabled="useDefinedType" />
+            <CheckBox formGroupClasses="col-md-3" label="Use Defined Type" v-model="useDefinedType" help="Enabling this will pass the Connection Status Defined Type's GUID to the ValueList component via the <code>definedTypeGuid</code> prop." :disabled="usePredefinedValues" />
+            <CheckBox formGroupClasses="col-md-3" label="Full Width" v-model="fullWidth" />
+            <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePrompt" />
+        </div>
+        <p>
+            There are 2 different props that control what options users can choose/enter.
+            The <code>definedTypeGuid</code> prop takes a GUID string and will limit users to choosing values from a list of defined values of that type.
+            The <code>customValues</code> option allows you to pass a <code>ListItemBag</code> array in as a list of options that the user can choose from a dropdown.
+            If both of those props are specified, the <code>definedTypeGuid</code> prop will take precedence.
+            If neither option is used, a text box is shown, allowing users to manually type in any values.
+        </p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -7698,7 +8231,7 @@ const controlGalleryComponents: Record<string, Component> = [
     categoryPickerGallery,
     locationItemPickerGallery,
     copyButtonGallery,
-    entityTagListGallery,
+    tagListGallery,
     followingGallery,
     achievementTypePickerGallery,
     badgeComponentPickerGallery,
@@ -7723,6 +8256,8 @@ const controlGalleryComponents: Record<string, Component> = [
     lavaCommandPickerGallery,
     remoteAuthsPickerGallery,
     stepProgramPickerGallery,
+    stepProgramStepTypePickerGallery,
+    stepProgramStepStatusPickerGallery,
     stepStatusPickerGallery,
     stepTypePickerGallery,
     streakTypePickerGallery,
@@ -7786,7 +8321,13 @@ const controlGalleryComponents: Record<string, Component> = [
     rockLiteralGallery,
     registryEntryGallery,
     groupTypeGroupPickerGallery,
+    groupAndRolePickerGallery,
     accountPickerGallery,
+    structuredContentEditorGallery,
+    registrationInstancePickerGallery,
+    interactionChannelInteractionComponentPickerGallery,
+    workflowPickerGallery,
+    valueListGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -8091,12 +8632,9 @@ export default defineComponent({
     padding: 20px;
 }
 
-.galleryContent .rock-header {
-    margin: 0 -20px;
-}
-
-.galleryContent .rock-header .title {
-    margin-left: 20px;
+.galleryContent > .rock-header hr {
+    margin-left: -20px;
+    margin-right: -20px;
 }
 </v-style>
 <Panel type="block">

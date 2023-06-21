@@ -49,6 +49,9 @@ export type InteractionSessionBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets the interaction channel identifier. */
+    interactionChannelId?: number | null;
+
     /** Gets or sets the Interaction Count. */
     interactionCount?: number | null;
 

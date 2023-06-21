@@ -40,6 +40,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Engagement" )]
     [Description( "Displays the details of a particular streak type." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -109,7 +110,7 @@ namespace Rock.Blocks.Engagement
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -124,7 +125,7 @@ namespace Rock.Blocks.Engagement
 
                 box.NavigationUrls = GetBoxNavigationUrls( box.Entity.IdKey );
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<StreakType>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StreakType>();
 
                 return box;
             }

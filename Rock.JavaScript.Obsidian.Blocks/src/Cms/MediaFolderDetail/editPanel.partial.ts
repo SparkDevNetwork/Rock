@@ -22,7 +22,7 @@ import Switch from "@Obsidian/Controls/switch";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList";
 import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
-import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker";
+import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { MediaFolderBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderDetail/mediaFolderBag";
@@ -174,7 +174,7 @@ export default defineComponent({
                             :items="contentChannelOptions"
                             rules="required" />
                         <DropDownList v-model="contentChannelAttributeValue"
-                                      label="Media File Attribute"                                     
+                                      label="Media File Attribute"
                                       :items="contentChannelItemAttributes"
                                       rules="required" />
                     </div>

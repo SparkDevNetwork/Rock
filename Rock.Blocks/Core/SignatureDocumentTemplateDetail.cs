@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.SignatureDocumentTemplateDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
 {
@@ -39,6 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular signature document template." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -84,7 +86,7 @@ namespace Rock.Blocks.Core
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -99,7 +101,7 @@ namespace Rock.Blocks.Core
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<SignatureDocumentTemplate>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<SignatureDocumentTemplate>();
 
                 return box;
             }

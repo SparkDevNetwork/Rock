@@ -50,6 +50,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public int? InteractionChannelId { get; set; }
+
+        /// <summary />
         public int? InteractionCount { get; set; }
 
         /// <summary />
@@ -110,6 +113,7 @@ namespace Rock.Client
             this.DurationSeconds = source.DurationSeconds;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.InteractionChannelId = source.InteractionChannelId;
             this.InteractionCount = source.InteractionCount;
             this.InteractionMode = source.InteractionMode;
             this.InteractionSessionLocationId = source.InteractionSessionLocationId;

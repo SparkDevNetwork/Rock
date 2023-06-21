@@ -115,7 +115,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import EmailBox from "@Obsidian/Controls/emailBox";
-    import Panel from "@Obsidian/Controls/panel";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";

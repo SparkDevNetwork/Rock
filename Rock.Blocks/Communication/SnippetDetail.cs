@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Communication.SnippetDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication
 {
@@ -39,6 +40,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Displays the details of a particular snippet." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -74,7 +76,7 @@ namespace Rock.Blocks.Communication
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -89,7 +91,7 @@ namespace Rock.Blocks.Communication
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<Snippet>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Snippet>();
 
                 return box;
             }

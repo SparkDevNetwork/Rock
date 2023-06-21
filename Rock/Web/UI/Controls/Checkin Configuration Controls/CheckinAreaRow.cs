@@ -235,7 +235,7 @@ $('.checkin-area a.checkin-area-add-group').on('click', function (event) {
 
             _lblAreaRowName.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right checkin-item-actions rollover-item" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "ml-auto checkin-item-actions rollover-item" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _lbAddArea.RenderControl( writer );

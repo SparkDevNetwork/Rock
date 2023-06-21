@@ -22,9 +22,13 @@
 //
 
 import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
+import { AccountEntryRegisterResponseBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterResponseBox";
 
 /** A box that contains the required information to render an account entry block. */
 export type AccountEntryInitializationBox = {
+    /** Gets or sets the account entry step box. */
+    accountEntryRegisterStepBox?: AccountEntryRegisterResponseBox | null;
+
     /** Gets or sets a value indicating whether phone numbers shown. */
     arePhoneNumbersShown: boolean;
 

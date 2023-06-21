@@ -106,7 +106,7 @@ namespace Rock.Model
             // but at least one of these has a value, then we should lookup or create a session
             if ( browserSessionId.HasValue || ipAddress.IsNotNullOrWhiteSpace() || deviceTypeId.HasValue )
             {
-                var interactionSessionId = GetInteractionSessionId( browserSessionId ?? Guid.NewGuid(), ipAddress, deviceTypeId );
+                var interactionSessionId = GetInteractionSessionId( browserSessionId ?? Guid.NewGuid(), ipAddress, deviceTypeId, interaction.InteractionDateKey );
                 interaction.InteractionSessionId = interactionSessionId;
             }
 
@@ -322,8 +322,9 @@ namespace Rock.Model
         /// <param name="browserSessionId">The browser session identifier.</param>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="interactionDeviceTypeId">The interaction device type identifier.</param>
+        /// <param name="interactionDateKey">The interaction date key.</param>
         /// <returns></returns>
-        private int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId )
+        private int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId, int? interactionDateKey = null )
         {
             object deviceTypeId = DBNull.Value;
             if ( interactionDeviceTypeId != null )
@@ -332,6 +333,7 @@ namespace Rock.Model
             }
 
             var currentDateTime = RockDateTime.Now;
+            interactionDateKey = interactionDateKey ?? currentDateTime.ToString( "yyyyMMdd" ).AsInteger();
 
             // To make this more thread safe and to avoid overhead of an extra database call, etc, run a SQL block to Get/Create in one quick SQL round trip
             int interactionSessionId = this.Context.Database.SqlQuery<int>(
@@ -350,6 +352,7 @@ namespace Rock.Model
                             ,[Guid]
                             ,[CreatedDateTime]
                             ,[ModifiedDateTime]
+                            ,[SessionStartDateKey]
                             )
                         OUTPUT inserted.Id
                         VALUES (
@@ -358,6 +361,7 @@ namespace Rock.Model
                             ,@browserSessionId
                             ,@currentDateTime
                             ,@currentDateTime
+                            ,@sessionStartDateKey
                             )
                     END
                     ELSE
@@ -368,7 +372,8 @@ namespace Rock.Model
                 new SqlParameter( "@browserSessionId", browserSessionId ),
                 new SqlParameter( "@ipAddress", ipAddress.Truncate( 45 ) ),
                 new SqlParameter( "@interactionDeviceTypeId", deviceTypeId ),
-                new SqlParameter( "@currentDateTime", currentDateTime ) )
+                new SqlParameter( "@currentDateTime", currentDateTime ),
+                new SqlParameter( "@sessionStartDateKey", interactionDateKey ) )
                 .FirstOrDefault();
 
             return interactionSessionId;

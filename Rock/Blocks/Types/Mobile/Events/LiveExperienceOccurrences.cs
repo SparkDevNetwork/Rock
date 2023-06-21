@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -29,11 +30,12 @@ namespace Rock.Blocks.Types.Mobile.Events
     /// Displays a lava formatted list of experience occurrences that are
     /// currently happening.
     /// </summary>
-    /// <seealso cref="RockMobileBlockType" />
+    /// <seealso cref="RockBlockType" />
     [DisplayName( "Live Experience Occurrences" )]
     [Category( "Mobile > Events" )]
     [Description( "Displays a lava formatted list of experience occurrences that are currently happening." )]
     [IconCssClass( "fa fa-tv" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -81,7 +83,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [SystemGuid.EntityTypeGuid( "af20692a-9ae1-4faf-a506-d408b14652d1" )]
     [SystemGuid.BlockTypeGuid( "c45ba1c6-ce7f-4c37-82bf-a86d28bb28fe" )]
-    public class LiveExperienceOccurrences : RockMobileBlockType
+    public class LiveExperienceOccurrences : RockBlockType
     {
         #region Properties
 
@@ -97,17 +99,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version.
-        /// </summary>
-        /// <value>The required mobile application binary interface version.</value>
-        public override int RequiredMobileAbiVersion => 4;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>The class name of the mobile block to use during rendering on the device</value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Events.InteractiveExperienceOccurrences";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 4 );
 
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()

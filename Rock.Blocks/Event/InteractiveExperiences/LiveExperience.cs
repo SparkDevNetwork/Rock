@@ -41,6 +41,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays a live interactive experience" )]
     [IconCssClass( "fa fa-tv" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -55,7 +56,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
     [Rock.SystemGuid.EntityTypeGuid( "9a853836-5155-4ce5-817f-49bfcbe7502c" )]
     [Rock.SystemGuid.BlockTypeGuid( "ba26f4fc-f6db-462e-9697-bd6a0504a0a8" )]
-    public class LiveExperience : RockObsidianBlockType
+    public class LiveExperience : RockBlockType
     {
         #region Keys
 
@@ -80,7 +81,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         #endregion
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -141,6 +142,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     box.ExperienceToken = Encryption.EncryptString( experienceToken.ToJson() );
                     box.Style = experienceCache.GetExperienceStyleBag();
                     box.IsExperienceInactive = !occurrence.IsOccurrenceActive;
+                    box.ExperienceEndedContent = GetExperienceEndedContent( occurrence, experienceCache );
                 }
                 else
                 {
@@ -151,6 +153,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     box.ExperienceToken = token;
                     box.Style = experienceCache.GetExperienceStyleBag();
                     box.IsExperienceInactive = !occurrence.IsOccurrenceActive;
+                    box.ExperienceEndedContent = GetExperienceEndedContent( occurrence, experienceCache );
                 }
 
                 box.SecurityGrantToken = GetSecurityGrantToken();
@@ -207,6 +210,25 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             var seconds = GetAttributeValue( AttributeKey.KeepAliveInterval ).AsInteger();
 
             return Math.Max( 1, seconds );
+        }
+
+        /// <summary>
+        /// Gets the content to display when the experience has ended.
+        /// </summary>
+        /// <param name="occurrence">The occurrence that will be monitored.</param>
+        /// <param name="experience">The experience the occurrences belongs to.</param>
+        /// <returns>A string that contains the content to be displayed.</returns>
+        private string GetExperienceEndedContent( InteractiveExperienceOccurrence occurrence, InteractiveExperienceCache experience )
+        {
+            var mergeFields = RequestContext.GetCommonMergeFields();
+
+            mergeFields.AddOrReplace( "Occurrence", occurrence );
+            mergeFields.AddOrReplace( "Experience", experience );
+
+            return experience.ExperienceSettings
+                .ExperienceEndedTemplate
+                .ResolveMergeFields( mergeFields )
+                .Trim();
         }
 
         #endregion

@@ -146,6 +146,7 @@ namespace RockWeb.Blocks.Communication
                 Content = "telephone=no"
             };
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Communication/SmsConversations.css" );
             RockPage.AddMetaTag( this.Page, preventPhoneMetaTag );
 
             this.BlockUpdated += Block_BlockUpdated;
@@ -704,7 +705,7 @@ namespace RockWeb.Blocks.Communication
         protected void ppRecipient_SelectPerson( object sender, EventArgs e )
         {
             nbNoSms.Visible = false;
-            var senderClearButton = ( HtmlAnchor ) sender;
+            var senderClearButton = ( HtmlButton ) sender;
             if (senderClearButton != null && senderClearButton.ID == "btnSelectNone" )
             {
                 // The PersonPicker clear button was clicked so no need to check for SMS numbers

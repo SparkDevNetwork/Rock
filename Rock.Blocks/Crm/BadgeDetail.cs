@@ -39,6 +39,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays the details of a particular badge." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -62,7 +63,7 @@ namespace Rock.Blocks.Crm
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -77,7 +78,7 @@ namespace Rock.Blocks.Crm
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<Model.Badge>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Model.Badge>();
 
                 return box;
             }

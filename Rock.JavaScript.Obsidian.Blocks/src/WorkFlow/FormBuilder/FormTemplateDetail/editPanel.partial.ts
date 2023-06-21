@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import RockForm from "@Obsidian/Controls/rockForm";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
 import CheckBox from "@Obsidian/Controls/checkBox";

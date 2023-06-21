@@ -36,6 +36,7 @@ namespace Rock.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Allows interaction with the SMS Test transport." )]
     [IconCssClass( "fa fa-chat" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -45,7 +46,7 @@ namespace Rock.Blocks.Utility
     [Rock.SystemGuid.BlockTypeGuid( "2c2d6bc3-8257-4e23-8fe7-06e744d58ac0" )]
     public class SmsTestTransport : RockObsidianDetailBlockType
     {
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

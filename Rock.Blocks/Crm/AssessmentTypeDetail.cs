@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.AssessmentTypeDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Crm
 {
@@ -39,6 +40,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays the details of a particular assessment type." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -75,7 +77,7 @@ namespace Rock.Blocks.Crm
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<AssessmentType>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<AssessmentType>();
                 return box;
             }
         }

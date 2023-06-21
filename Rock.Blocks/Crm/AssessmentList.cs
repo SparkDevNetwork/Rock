@@ -38,6 +38,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays the details of a particular assessment." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -74,7 +75,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.EntityTypeGuid( "3509289a-2e12-443f-87bf-2179bc36fecd" )]
     [Rock.SystemGuid.BlockTypeGuid( "5ecca4fb-f8fb-49db-96b7-082bb4e4c170" )]
-    public class AssessmentList : RockObsidianBlockType
+    public class AssessmentList : RockBlockType
     {
         #region Keys
 
@@ -140,7 +141,7 @@ namespace Rock.Blocks.Crm
 
         #endregion Constants
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

@@ -123,6 +123,15 @@ var Rock;
             }
             initializePlayer(mediaElement, plyrOptions) {
                 this.player = new Plyr(mediaElement, plyrOptions);
+                if (this.isYouTubeEmbed(this.options.mediaUrl)) {
+                    let listenrsready = false;
+                    this.player.on("statechange", () => {
+                        if (!listenrsready) {
+                            listenrsready = true;
+                            this.player.listeners.media();
+                        }
+                    });
+                }
                 this.writeDebugMessage(`Setting media URL to ${this.options.mediaUrl}`);
                 let sourceInfo = {
                     type: this.options.type === "audio" ? "audio" : "video",

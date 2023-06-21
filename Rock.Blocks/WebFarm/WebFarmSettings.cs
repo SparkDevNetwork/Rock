@@ -42,6 +42,7 @@ namespace Rock.Blocks.WebFarm
     [Category( "WebFarm" )]
     [Description( "Displays the details of the Web Farm." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -84,7 +85,7 @@ namespace Rock.Blocks.WebFarm
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
         private DateTime ChartMaxDate { get => RockDateTime.Now; }
 
         private DateTime? _chartMinDate = null;

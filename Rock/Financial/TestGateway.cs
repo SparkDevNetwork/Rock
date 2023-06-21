@@ -854,7 +854,7 @@ namespace Rock.Financial
         {
             base.CreateChildControls();
 
-            var pnlRow1 = new Panel { CssClass = "row margin-t-md margin-b-lg" };
+            var pnlRow1 = new Panel { CssClass = "row form-row margin-t-md margin-b-lg" };
             this.Controls.Add( pnlRow1 );
 
             var pnlRow1Col1 = new Panel { CssClass = "col-md-6" };

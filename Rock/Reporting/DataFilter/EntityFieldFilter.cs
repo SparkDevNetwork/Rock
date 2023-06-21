@@ -67,7 +67,7 @@ namespace Rock.Reporting.DataFilter
 
             if ( !entityFieldPickerIsHidden )
             {
-                writer.AddAttribute( "class", "col-md-3" );
+                writer.AddAttribute( "class", "col-md-5 col-lg-4" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 ddlEntityField.AddCssClass( "entity-property-selection" );
                 ddlEntityField.RenderControl( writer );
@@ -79,7 +79,7 @@ namespace Rock.Reporting.DataFilter
                 ddlEntityField.RenderControl( writer );
             }
 
-            writer.AddAttribute( "class", entityFieldPickerIsHidden ? "col-md-12" : "col-md-9" );
+            writer.AddAttribute( "class", entityFieldPickerIsHidden ? "col-md-12" : "col-md-7 col-lg-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( entityFieldPickerIsHidden && ddlEntityField.SelectedItem != null )

@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.TagDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
 {
@@ -38,6 +39,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular tag." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -61,7 +63,7 @@ namespace Rock.Blocks.Core
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.vue";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.vue";
 
         #region Methods
 
@@ -76,7 +78,7 @@ namespace Rock.Blocks.Core
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<Tag>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Tag>();
 
                 return box;
             }

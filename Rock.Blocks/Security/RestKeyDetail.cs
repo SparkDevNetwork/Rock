@@ -27,7 +27,6 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Security.RestKeyDetail;
 using Rock.Web.Cache;
-using Rock.Web.UI.Adapters;
 
 namespace Rock.Blocks.Security
 {
@@ -40,6 +39,7 @@ namespace Rock.Blocks.Security
     [Category( "Security" )]
     [Description( "Displays the details of a particular user login." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -63,7 +63,7 @@ namespace Rock.Blocks.Security
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

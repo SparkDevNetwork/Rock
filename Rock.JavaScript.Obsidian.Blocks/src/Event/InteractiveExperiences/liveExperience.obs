@@ -2,9 +2,14 @@
 <template>
     <div class="styled-scroll">
         <div class="live-experience-body" :style="experienceStyles">
-            <NotificationBox v-if="isExperienceInactive" alertType="warning">
-                This experience has ended.
-            </NotificationBox>
+            <div v-if="isExperienceInactive">
+                <div v-if="config.experienceEndedContent" v-html="config.experienceEndedContent"></div>
+
+                <NotificationBox v-else alertType="warning">
+                    This experience has ended.
+                </NotificationBox>
+            </div>
+
             <div v-if="isWelcomeContentVisible" class="welcome">
                 <div class="welcome-header">
                     <img v-if="welcomeHeaderImageUrl" :src="welcomeHeaderImageUrl" class="header-image" />
@@ -12,6 +17,7 @@
                 </div>
                 <div class="welcome-message">{{ config.style?.welcome?.message }}</div>
             </div>
+
             <div v-if="isNoActionContentVisible" class="no-action">
                 <div class="no-action-header">
                     <img v-if="noActionHeaderImageUrl" :src="noActionHeaderImageUrl" class="header-image" />
@@ -19,6 +25,7 @@
                 </div>
                 <div class="no-action-message">{{ config.style?.noAction?.message }}</div>
             </div>
+
             <component v-if="activeActionComponent"
                        :is="activeActionComponent"
                        :eventId="eventId"
@@ -199,7 +206,7 @@ body {
             styles["--experience-action-primary-btn-bg"] = config.style.action.primaryButtonColor;
         }
         else {
-            styles["--experience-action-primary-btn-bg"] = "var(--brand-primary)";
+            styles["--experience-action-primary-btn-bg"] = "var(--color-primary)";
         }
 
         if (config.style?.action?.primaryButtonTextColor) {
@@ -213,7 +220,7 @@ body {
             styles["--experience-action-secondary-btn-bg"] = config.style.action.secondaryButtonColor;
         }
         else {
-            styles["--experience-action-secondary-btn-bg"] = "var(--brand-info)";
+            styles["--experience-action-secondary-btn-bg"] = "var(--color-info)";
         }
 
         if (config.style?.action?.secondaryButtonTextColor) {
@@ -262,13 +269,27 @@ body {
     async function onPingTimer(): Promise<void> {
         try {
             if (realTimeTopic.value && eventId.value) {
-                await realTimeTopic.value.server.pingExperience(eventId.value);
+                const response = await realTimeTopic.value.server.pingExperience(eventId.value);
+
+                // If the experience has ended, leave the experience, clear
+                // any actions and show the "ended" content.
+                if (!response.isActive) {
+                    await realTimeTopic.value.server.leaveExperience(eventId.value);
+
+                    onClearActions(eventId.value);
+
+                    eventId.value = null;
+                    isExperienceInactive.value = true;
+
+                    return;
+                }
             }
+
+            setTimeout(onPingTimer, config.keepAliveInterval * 1000);
         }
         catch (error) {
             console.error(error instanceof Error ? error.message : error);
-        }
-        finally {
+
             setTimeout(onPingTimer, config.keepAliveInterval * 1000);
         }
     }

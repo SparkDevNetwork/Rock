@@ -33,6 +33,7 @@ using Rock.Security;
 using Rock.ViewModels;
 using Rock.ViewModels.Entities;
 using Rock.Web.UI.Controls;
+using Rock.Attribute;
 
 namespace Rock.Web.Cache
 {
@@ -835,6 +836,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets an ordered list of attributes that match the <paramref name="entityQualifierColumn"/>
+        /// and <paramref name="entityQualifierValue"/> values for the <paramref name="entityTypeId"/>.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        [RockInternal( "1.16" )]
+        internal static List<AttributeCache> GetOrderedGridAttributes( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
+        {
+            return GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, false )
+                .Where( a => a.IsGridColumn )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ThenBy( a => a.Id )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the specified entity.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -936,6 +953,32 @@ namespace Rock.Web.Cache
             }
 
             return attributeIds.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Gets any non-empty EntityTypeQualifiedColumn values for the entity
+        /// specified by the generic type. If this entity type has no attributes
+        /// with qualified columns then an empty list will be returned.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity whose attributes will be inspected.</typeparam>
+        /// <returns>A list of distinct EntityTypeQualifiedColumn values for <typeparamref name="TEntity"/>.</returns>
+        public static List<string> GetAttributeQualifiedColumns<TEntity>()
+        {
+            var entityTypeId = EntityTypeCache.Get<TEntity>( false )?.Id;
+
+            if ( !entityTypeId.HasValue )
+            {
+                return new List<string>();
+            }
+
+            var attributes = GetByEntityType( entityTypeId );
+
+            var qualifiedColumns = attributes.Select( a => a.EntityTypeQualifierColumn )
+                .Distinct()
+                .Where( c => !c.IsNullOrWhiteSpace() )
+                .ToList();
+
+            return qualifiedColumns;
         }
 
         #endregion

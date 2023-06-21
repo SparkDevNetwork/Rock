@@ -31,7 +31,11 @@ export type GroupRequirementBag = {
     /** Gets or sets the "Applies To" Age Classification. */
     appliesToAgeClassification: number;
 
-    /** Gets or sets the "Applies To" Rock.Model.DataView identifier. */
+    /**
+     * Gets or sets the "Applies To" Rock.Model.DataView identifier.
+     * If this property is set, the requirement is only applied to those people who are included in the specified Data View.
+     * Group members that do not exist in this Data View will be assigned a status of "Not Applicable" for this requirement.
+     */
     appliesToDataViewId?: number | null;
 
     /** Gets or sets the attributes. */

@@ -41,6 +41,7 @@ namespace Rock.Field.Types
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
         private const string VALUES_PUBLIC_KEY = "values";
+        private const string ENTITY_TYPES = "entityTypes";
 
         #region Configuration
 
@@ -49,10 +50,21 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                publicConfigurationValues[ENTITY_TYPES] = new EntityTypeService( new RockContext() )
+                    .GetEntities()
+                    .OrderBy( e => e.FriendlyName )
+                    .ThenBy( e => e.Name )
+                    .ToList()
+                    .Select( e => e.ToListItemBag() )
+                    .ToCamelCaseJson( false, true );
+            }
+
             using ( var rockContext = new RockContext() )
             {
-                var entityTypeName = privateConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY );
-                if ( string.IsNullOrWhiteSpace( entityTypeName ) )
+                var entityTypeGuid = privateConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY );
+                if ( string.IsNullOrWhiteSpace( entityTypeGuid ) )
                 {
                     publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
                         .Queryable()
@@ -78,12 +90,11 @@ namespace Rock.Field.Types
                     string qualifierColumn = string.Empty;
                     string qualifierValue = string.Empty;
 
-                    if ( publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+                    if ( privateConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
                     {
-                        entityTypeName = publicConfigurationValues[ENTITY_TYPE_NAME_KEY];
-                        if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
+                        if ( !string.IsNullOrWhiteSpace( entityTypeGuid ) && entityTypeGuid != None.IdValue )
                         {
-                            var entityType = EntityTypeCache.Get( entityTypeName );
+                            var entityType = EntityTypeCache.Get( entityTypeGuid.AsGuid() );
                             if ( entityType != null )
                             {
                                 entityTypeId = entityType.Id;

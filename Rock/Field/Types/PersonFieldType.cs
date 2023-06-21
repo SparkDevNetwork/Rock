@@ -43,7 +43,7 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
-        private const string ENABLE_SELF_SELECTION_KEY = "enableSelfSelection";
+        private const string ENABLE_SELF_SELECTION_KEY = "EnableSelfSelection";
         private const string INCLUDE_BUSINESSES = "includeBusinesses";
 
         #endregion
@@ -342,13 +342,13 @@ namespace Rock.Field.Types
 
             if ( controls != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockCheckBox )
+                if ( controls.Count > 0 && controls[0] is RockCheckBox cbEnableSelfSelection )
                 {
-                    configurationValues[ENABLE_SELF_SELECTION_KEY].Value = ( (RockCheckBox) controls[0] ).Checked.ToString();
+                    configurationValues[ENABLE_SELF_SELECTION_KEY].Value = cbEnableSelfSelection.Checked.ToString();
                 }
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockCheckBox )
+                if ( controls.Count > 1 && controls[1] is RockCheckBox cbIncludeBusinesses )
                 {
-                    configurationValues[INCLUDE_BUSINESSES].Value = ( (RockCheckBox) controls[1] ).Checked.ToString();
+                    configurationValues[INCLUDE_BUSINESSES].Value = cbIncludeBusinesses.Checked.ToString();
                 }
             }
 
@@ -364,13 +364,13 @@ namespace Rock.Field.Types
         {
             if ( controls != null && configurationValues != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockCheckBox && configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
+                if ( controls.Count > 0 && controls[0] is RockCheckBox cbEnableSelfSelection && configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
                 {
-                    ( ( RockCheckBox ) controls[0] ).Checked = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
+                    cbEnableSelfSelection.Checked = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
                 }
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockCheckBox && configurationValues.ContainsKey( INCLUDE_BUSINESSES ) )
+                if ( controls.Count > 1 && controls[1] is RockCheckBox cbIncludeBusinesses && configurationValues.ContainsKey( INCLUDE_BUSINESSES ) )
                 {
-                    ( ( RockCheckBox ) controls[1] ).Checked = configurationValues[INCLUDE_BUSINESSES].Value.AsBoolean();
+                    cbIncludeBusinesses.Checked = configurationValues[INCLUDE_BUSINESSES].Value.AsBoolean();
                 }
             }
         }

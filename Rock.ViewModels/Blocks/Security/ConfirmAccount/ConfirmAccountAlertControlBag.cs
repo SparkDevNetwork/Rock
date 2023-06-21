@@ -25,9 +25,6 @@ namespace Rock.ViewModels.Blocks.Security.ConfirmAccount
         /// <summary>
         /// The type of the alert.
         /// </summary>
-        /// <remarks>
-        /// See <see cref="Rock.Enums.Blocks.Security.ConfirmAccount.ConfirmAccountAlertType"/> for values.
-        /// </remarks>
         public string Type { get; set; }
 
         /// <summary>

@@ -1,0 +1,1823 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-obsidian grid-bordered grid-striped grid-hover" :class="{ 'grid-sticky': isStickyHeader }">
+        <div class="grid-heading">
+            <FilterHeaderRow v-model:quickFilterValue="quickFilterValue"
+                             :grid="gridState"
+                             :gridActions="gridActions"
+                             :visibleColumnCount="visibleColumnCount" />
+
+            <ColumnHeaderRow :columns="visibleColumnDefinitions"
+                             v-model:columnFilters="columnFilterValues"
+                             v-model:columnSort="columnSortDirection"
+                             :grid="gridState" />
+        </div>
+
+
+        <div class="grid-body" v-if="loadingData">
+            <SkeletonRows :columns="visibleColumnDefinitions"
+                          :grid="gridState"
+                          :count="skeletonRowCount" />
+        </div>
+
+        <div class="grid-body" v-else-if="gridErrorMessage">
+            <NotificationBox alertType="warning">{{ gridErrorMessage }}</NotificationBox>
+        </div>
+
+        <div class="grid-body" v-else-if="dragOptions" v-dragSource="dragOptions" v-dragTarget="dragOptions">
+            <DataRows
+                      :columns="visibleColumnDefinitions"
+                      :rows="visibleRows"
+                      :grid="gridState"
+                      :tooltipField="tooltipField"
+                      :isSelectable="isSelectionEnabled"
+                      @click="onRowClick" />
+        </div>
+
+        <VirtualDataRows v-else
+                         :columns="visibleColumnDefinitions"
+                         :rows="visibleRows"
+                         :grid="gridState"
+                         :tooltipField="tooltipField"
+                         :isSelectable="isSelectionEnabled"
+                         @click="onRowClick" />
+
+        <div class="grid-footing">
+            <PagerRow v-model:pageSize="pageSize"
+                      v-model:currentPage="currentPage"
+                      :pageCount="pageCount"
+                      :pageSizes="pageSizes"
+                      :message="pagerMessage"
+                      :visibleColumnCount="visibleColumnCount" />
+        </div>
+    </div>
+</template>
+
+<style>
+.grid-obsidian {
+    --table-cell-padding-x: 16px;
+    --table-cell-padding-y: 16px;
+    color: var(--theme-darkest);
+    box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+}
+
+.grid-obsidian.grid-bordered {
+    border: 1px solid var(--theme-light);
+    border-radius: 4px;
+}
+
+.grid-heading {
+    background: var(--theme-white);
+    border-radius: 4px 4px 0 0;
+}
+
+.grid-obsidian.grid-sticky > .grid-heading {
+    position: sticky;
+    top: var(--sticky-element-offset);
+    z-index: 10;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading {
+    display: flex;
+    border-bottom: 1px solid var(--theme-light);
+    align-items: center;
+    font-size: 18px;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
+    flex-grow: 1;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1;
+    padding-left: 24px;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions {
+    background-color: initial;
+    text-align: initial;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action {
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    border-radius: 0;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add {
+    color: var(--color-info);
+    font-size: 115%;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add:hover {
+    color: var(--color-info);
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action:hover {
+    background-color: var(--theme-light);
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter {
+    display: flex;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.3s ease;
+    display: inline-flex;
+    align-items: stretch;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .grid-quick-filter-search {
+    width: 240px;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .btn-grid-action {
+    background-color: var(--theme-light);
+    color: var(--theme-medium);
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper {
+    width: 100%;
+    height: 100%;
+}
+
+.grid-quick-filter-search > .control-wrapper > div {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper .form-control {
+    height: 100%;
+    width: 100%;
+    border-radius: 0;
+}
+
+.grid-column-heading {
+    display: flex;
+    font-weight: 500;
+    border-bottom: 1px solid var(--theme-light);
+    color: var(--theme-dark);
+}
+
+.grid-column-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+    background-color: var(--theme-lightest);
+}
+
+.grid-column-header.sortable {
+    cursor: pointer;
+}
+
+.grid-column-header.sortable:hover {
+    background-color: var(--theme-light);
+}
+
+.grid-column-title {
+    flex: 1 1 auto;
+}
+
+.grid-sort-direction {
+    display: flex;
+    align-items: center;
+    transition: transform .11s cubic-bezier(.2, 0, .38, .9);
+    accent-color: var(--color-info);
+}
+
+.grid-sort-direction svg {
+    width: 14px;
+    height: 21px;
+}
+
+.grid-sort-direction.sort-desc {
+    /* transform flip */
+    transform: rotate(180deg);
+    /* transform orgin centerr */
+    transform-origin: center;
+}
+
+.grid-column-header.grid-select-field .checkbox label {
+    margin: 0;
+}
+
+.grid-column-header > .btn-grid-column-filter {
+    border: 0;
+    text-align: center;
+    background-color: transparent;
+    margin-left: 4px;
+    width: 26px;
+    height: 24px;
+    border-radius: 4px;
+    color: var(--theme-medium);
+    opacity: 0;
+    transition: opacity 250ms, color 250ms;
+    z-index: 10;
+}
+
+.grid-column-heading:hover .btn-grid-column-filter {
+    opacity: 0.5;
+}
+.grid-column-header > .btn-grid-column-filter:hover {
+    opacity: 1;
+    background-color: var(--theme-white);
+}
+
+.grid-column-header > .btn-grid-column-filter svg {
+    width: 14px;
+    height: 14px;
+}
+
+.grid-column-header > .btn-grid-column-filter.active {
+    opacity: 1;
+    color: var(--color-info);
+}
+
+.grid-column-header > .grid-filter-popup {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    margin-top: 6px;
+    min-width: 240px;
+    max-width: 320px;
+    max-height: 400px;
+    background-color: var(--theme-white);
+    border: 1px solid var(--theme-light);
+    border-radius: 0;
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+    font-weight: initial;
+    z-index: 10;
+    /* Temporary Fix Until JS */
+    bottom: 0;
+    transform: translateY(100%);
+}
+
+.grid-column-header > .grid-filter-popup > .grid-filter-popup-content {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.grid-column-header > .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
+    margin: 10px;
+    padding: 2px;
+    overflow-x: clip;
+}
+
+.grid-column-header > .grid-filter-popup > .actions {
+    display: flex;
+    border-top: 1px solid var(--theme-light);
+    background-color: #fcfcfc;
+    padding: 8px;
+    gap: 8px;
+}
+
+.grid-row {
+    display: flex;
+    background-color: #fff;
+    border-bottom: 1px solid var(--theme-light);
+    transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
+}
+
+.grid-row.grid-row-selectable {
+    cursor: pointer;
+}
+
+.grid-row.grid-row-even {
+    background-color: var(--theme-lightest);
+}
+
+.grid-row:hover {
+    background-color: #eef4fc;
+}
+
+.grid-cell {
+    display: flex;
+    align-items: flex-start;
+    padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+}
+
+.grid-select-field:first-child {
+    align-items: center;
+    padding-right: calc(var(--table-cell-padding-x) / 2);
+    flex: 0 0 calc(var(--table-cell-padding-x) + 20px) !important;
+}
+
+.grid-columncommand {
+    --table-cell-padding-y: 0;
+    align-items: center;
+    padding: 0;
+}
+
+.grid-columncommand .btn {
+    opacity: .4;
+}
+
+.grid-columncommand .btn:hover {
+    opacity: 1;
+}
+
+.grid-columnreorder {
+    align-items: center;
+}
+
+.grid-paging-footer {
+    display: flex;
+    padding: 8px var(--table-cell-padding-x);
+    color: var(--theme-darkest);
+    background-color: var(--theme-white);
+    align-items: center;
+    border-radius: 0 0 4px 4px;
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    font-size: 14px;
+    line-height: 16px;
+    gap: 8px;
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes .form-control {
+    flex: 0 0 80px;
+}
+
+.grid-page-size-picker .btn {
+    font-weight: 400;
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker {
+    display: inline-flex;
+    justify-content: center;
+    align-items: stretch;
+    line-height: 1;
+    color: var(--theme-darker);
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button {
+    display: inline-flex;
+    justify-content: center;
+    border: 1px solid var(--theme-light);
+    background-color: transparent;
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 16px;
+    min-width: 2.75em;
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button:hover {
+    background-color: var(--theme-lightest);
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button ~ button {
+    margin-left: -1px;
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .prev {
+    border-radius: 4px 0 0 4px;
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .next {
+    border-radius: 0 4px 4px 0;
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.disabled {
+    color: var(--theme-medium);
+    pointer-events: none;
+}
+
+.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.active {
+    background-color: var(--theme-light);
+}
+
+@media (max-width: 767px) {
+    .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
+        display: none;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SkeletonRows from "./skeletonRows.partial.obs";
+    import ColumnHeaderRow from "./columnHeaderRow.partial.obs";
+    import DataRows from "./dataRows.partial.obs";
+    import FilterHeaderRow from "./filterHeaderRow.partial.obs";
+    import PagerRow from "./pagerRow.partial.obs";
+    import VirtualDataRows from "./virtualDataRows.partial.obs";
+    import { computed, onUnmounted, PropType, ref, shallowRef, useSlots, watch } from "vue";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { getColumnDefinitions, getEntitySetBag, GridActionUrlKey, GridState } from "@Obsidian/Core/Controls/grid";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { ColumnSort, GridAction, ColumnDefinition, EntitySetOptions } from "@Obsidian/Types/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { GridCommunicationBag } from "@Obsidian/ViewModels/Core/Grid/gridCommunicationBag";
+    import { Guid } from "@Obsidian/Types";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { type Column, type Workbook, type Worksheet } from "@Obsidian/Libs/exceljs";
+    import { IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
+
+    /**
+     * The preference keys used by the grid.
+     */
+    const enum PreferenceKey {
+        /** The preference key that stores the column filter values. */
+        ColumnFilterValues = "column-filter-values",
+
+        /** The preference key that stores the current sort information. */
+        SortDirection = "sort-direction"
+    }
+
+    /*
+     * 8/17/2022 - DSH
+     *
+     * The grid uses a number of non-ref instances with calculations via function call.
+     * This is because the normal wrapped references that Vue uses dramatically slow
+     * down our filtering and sorting processes. For example, filtering over wrapped
+     * references of 100,000 rows takes around 600ms. The same 100,000 rows using an
+     * unwrapped raw array takes about 40ms.
+     */
+
+    // #region Component Properties
+
+    const props = defineProps({
+        /**
+         * The data to be displayed in the grid. This may either be an object
+         * that contains the grid data directly or a function that returns the
+         * grid data. The function may return a Promise which will be waited
+         * asynchronously until the data is ready.
+         */
+        data: {
+            type: Object as PropType<GridDataBag | Promise<GridDataBag>>
+        },
+
+        /**
+         * Contains the definition data about the grid. This contains information
+         * about the fields, action URLS and other features of the grid.
+         */
+        definition: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: false
+        },
+
+        /**
+         * Identifies the field that will be used to uniquely identify each
+         * row. This is not required but many advanced features of the grid
+         * require this to function.
+         */
+        keyField: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * Identifies the field that will contain the person key. If the grid
+         * does not represent Person records then leave this unset.
+         */
+        personKeyField: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * Specifies the fields to be used to identify communication recipients
+         * when using the communicate action. This will take precedence over
+         * the personKeyField if both are set.
+         */
+        communicationRecipientPersonKeyFields: {
+            type: Array as PropType<string[]>,
+            required: false
+        },
+
+        /**
+         * Identifies the key that will be used to provide the tooltip text
+         * for each row in the Grid. This property is not reactive.
+         */
+        tooltipField: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * Determines if the grid will monitor for changes in the data of
+         * existing rows, new rows and removed rows. Should not be used for
+         * grids with more than 10,000 rows. This property is not reactive.
+         */
+        liveUpdates: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        },
+
+        /** If enabled then the grid will have a sticky header. */
+        stickyHeader: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The term that identifies individual rows in the grid. This
+         * property is not reactive. If not specified it will default to "item".
+         * This value should be singular and not plural.
+         */
+        itemTerm: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * The unique identifier of the entity type that the rows represent.
+         */
+        entityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: false
+        },
+
+        /**
+         * The title to use when exporting the grid contents. This is used as
+         * the exported filename as well as some other information inside the
+         * export file. If not specified it will default to the itemTerm
+         * property.
+         */
+        exportTitle: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * If `true`, then any Person operations will instead be Business
+         * operations.
+         */
+        personAsBusiness: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * If `true`, then the merge template operation will operate as if
+         * the records are Person records. If they are not then it will not
+         * work correctly. This required that personKeyField also be set.
+         */
+        mergeTemplateAsPerson: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Determines if the bulk update action will be available. If not
+         * explicitly set then it will default to enabled if the personKeyField
+         * property has been set.
+         */
+        showBulkUpdate: {
+            type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        },
+
+        /**
+         * Determines if the merge person/business action will be available. If not
+         * explicitly set then it will default to enabled if the personKeyField
+         * property has been set.
+         */
+        showPersonMerge: {
+            type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        },
+
+        /**
+         * Determines if the launch workflow action will be available. If not
+         * explicitly set then it will default to enabled if the entityTypeGuid
+         * and keyField properties have been set.
+         */
+        showLaunchWorkflow: {
+            type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        },
+
+        /**
+         * Determines if the communicate action will be available. If not
+         * explicitly set then it will default to enabled if either the
+         * personKeyField or communicationRecipientPersonKeyFields properties
+         * have been set.
+         */
+        showCommunicate: {
+            type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        },
+
+        /**
+         * Determines if the merge template action will be available. If not
+         * explicitly set then it will default to being shown. In the future
+         * this default state might change.
+         */
+        showMergeTemplate: {
+            type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        },
+
+        /**
+         * Determines if the export action will be available. If not explicitly
+         * set then it will default to being shown. In the future this default
+         * state might change.
+         */
+        showExport: {
+            type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        },
+
+        /**
+         * Any fields that should be included when sending a communication. If
+         * a column name matches the field name then the formatted value of
+         * the column will be used. Otherwise the raw field value will be used.
+         */
+        communicationMergeFields: {
+            type: Array as PropType<string[]>,
+            required: false
+        },
+
+        /**
+         * The number of rows expected to fill the table. This does not
+         * need to be anywhere close to the real number. It is used to
+         * determine optimization settings and calculate how many skeleton
+         * rows to display while loading.
+         */
+        expectedRowCount: {
+            type: Number as PropType<number>,
+            required: false
+        },
+
+        /**
+         * Any custom actions that should be available for the individual to
+         * see in the list of actions.
+         */
+        customActions: {
+            type: Array as PropType<GridAction[]>,
+            required: false
+        },
+
+        /**
+         * The custom prefix to use when accessing person preferences related
+         * to the grid. This prefix is appended to the standard prefix used
+         * by the grid. This property is not reactive.
+         */
+        preferencePrefix: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * When `true`, all preferences will be disabled on the grid. Preferences
+         * will not be read nor will they be saved. This property is not reactive.
+         */
+        disablePreferences: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The function to call in response to the add button being clicked.
+         * Providing this function will automatically enable the add button.
+         */
+        onAddItem: {
+            type: Function as PropType<(() => void | Promise<void>)>,
+            required: false
+        },
+
+        /**
+         * The function to call in response to a row being clicked. This
+         * requires that an keyField be specified. Providing this function will
+         * automatically enable row selection.
+         */
+        onSelectItem: {
+            type: Function as PropType<((key: string) => void | Promise<void>)>,
+            required: false
+        }
+    });
+
+    // #endregion
+
+    const slots = useSlots();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const gridState = createGridState();
+
+    // #region Values
+
+    const currentPage = ref(1);
+    const pageSize = ref(50);
+    const pageSizes = [50, 500, 5000];
+    const quickFilterValue = ref("");
+    const loadingData = ref(false);
+    const gridErrorMessage = ref("");
+    const columnFilterValues = ref<Record<string, unknown | undefined>>({});
+    const columnSortDirection = ref<ColumnSort | undefined>();
+    const visibleRows = ref<Record<string, unknown>[]>([]);
+    const pageCount = ref(0);
+    const pagerMessage = ref("");
+    const visibleColumnDefinitions = shallowRef<ReadonlyArray<ColumnDefinition>>(gridState.visibleColumns);
+    const dragOptions = ref<IDragSourceOptions | undefined>();
+    const reorderColumn: ColumnDefinition | undefined = gridState.columns.find(c => c.name === "__reorder");
+    const isRowSelectionInProgress = ref(false);
+
+    const rootPreferences = usePersonPreferences().blockPreferences;
+    const gridPreferences = getPrefixedPreferences();
+    let preferencesAreDirty = false;
+    let preferencesAreSaving = false;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Contains the number of currently visible columns.
+     */
+    const visibleColumnCount = computed((): number => {
+        return visibleColumnDefinitions.value.length;
+    });
+
+    /**
+     * The number of skeleton rows to display while loading.
+     */
+    const skeletonRowCount = computed((): number => {
+        return Math.min(50, props.expectedRowCount ?? 50);
+    });
+
+    /**
+     * Contains `true` if the merge template action should be visible.
+     */
+    const isMergeTemplateVisible = computed((): boolean => {
+        if (!props.definition?.actionUrls?.[GridActionUrlKey.MergeTemplate]) {
+            return false;
+        }
+
+        return props.showMergeTemplate !== false;
+    });
+
+    /**
+     * Contains `true` if the export action should be visible.
+     */
+    const isExportVisible = computed((): boolean => {
+        return props.showExport !== false;
+    });
+
+    /**
+     * Contains `true` if the launch workflow action should be visible.
+     */
+    const isLaunchWorkflowVisible = computed((): boolean => {
+        if (!props.definition?.actionUrls?.[GridActionUrlKey.LaunchWorkflow]) {
+            return false;
+        }
+
+        // If they explicitly provided a true or a false value then use
+        // those values. Otherwise, determine it automatically.
+        if (props.showLaunchWorkflow === true || props.showLaunchWorkflow === false) {
+            return props.showLaunchWorkflow;
+        }
+        else if (props.definition?.enableLaunchWorkflow !== undefined) {
+            // Administrator has set it explicitly.
+            return props.definition.enableLaunchWorkflow;
+        }
+        else {
+            // Show if we have a keyField and we have an entityTypeGuid.
+            return !!props.keyField && !!props.entityTypeGuid;
+        }
+    });
+
+    /**
+     * Contains `true` if the bulk update action should be visible.
+     */
+    const isBulkUpdateVisible = computed((): boolean => {
+        if (!props.definition?.actionUrls?.[GridActionUrlKey.BulkUpdate]) {
+            return false;
+        }
+
+        // If they explicitly provided a true or a false value then use
+        // those values. Otherwise, determine it automatically.
+        if (props.showBulkUpdate === true || props.showBulkUpdate === false) {
+            return props.showBulkUpdate;
+        }
+        else {
+            // Show if we have a personKeyField and we have an entityTypeGuid.
+            return !!props.personKeyField && !!props.entityTypeGuid;
+        }
+    });
+
+    /**
+     * Contains `true` if the merge person action should be visible.
+     */
+    const isMergePersonVisible = computed((): boolean => {
+        if (!props.definition?.actionUrls?.[GridActionUrlKey.MergePerson]) {
+            return false;
+        }
+
+        if (props.personAsBusiness) {
+            return false;
+        }
+
+        // If they explicitly provided a true or a false value then use
+        // those values. Otherwise, determine it automatically.
+        if (props.showPersonMerge === true || props.showPersonMerge === false) {
+            return props.showPersonMerge;
+        }
+        else {
+            // Show if we have a personKeyField.
+            return !!props.personKeyField;
+        }
+    });
+
+    /**
+     * Contains `true` if the merge business action should be visible.
+     */
+    const isMergeBusinessVisible = computed((): boolean => {
+        if (!props.definition?.actionUrls?.[GridActionUrlKey.MergeBusiness]) {
+            return false;
+        }
+
+        if (!props.personAsBusiness) {
+            return false;
+        }
+
+        // If they explicitly provided a true or a false value then use
+        // those values. Otherwise, determine it automatically.
+        if (props.showPersonMerge === true || props.showPersonMerge === false) {
+            return props.showPersonMerge;
+        }
+        else {
+            // Show if we have a personKeyField.
+            return !!props.personKeyField;
+        }
+    });
+
+    /**
+     * Contains `true` if the communication action should be visible.
+     */
+    const isCommunicateVisible = computed((): boolean => {
+        if (!props.definition?.actionUrls?.[GridActionUrlKey.Communicate]) {
+            return false;
+        }
+
+        // If they explicitly provided a true or a false value then use
+        // those values. Otherwise, determine it automatically.
+        if (props.showCommunicate === true || props.showCommunicate === false) {
+            return props.showCommunicate;
+        }
+        else {
+            // Show if we have a personKeyField or if we have a set of
+            // communication recipient key fields.
+            return !!props.personKeyField || (props.communicationRecipientPersonKeyFields ?? []).length > 0;
+        }
+    });
+
+    /**
+     * Contains the array of grid actions that should currently be available
+     * for the individual to interact with.
+     */
+    const gridActions = computed((): GridAction[] => {
+        const actions: GridAction[] = [];
+
+        // Append the add item action.
+        if (props.onAddItem) {
+            actions.push({
+                buttonCssClass: "btn-add",
+                handler: props.onAddItem,
+                iconCssClass: "fa fa-plus-square",
+                isPrimary: true,
+                title: "Add item",
+                tooltip: "Add a new item."
+            });
+        }
+
+        // Append the action for Merge Records.
+        if (isMergeTemplateVisible.value) {
+            actions.push({
+                handler: onMergeTemplate,
+                iconCssClass: "fa fa-files-o",
+                title: "Merge Template",
+                tooltip: "Merge Records into Merge Template"
+            });
+        }
+
+        // Append the action for Export to Excel.
+        if (isExportVisible.value) {
+            actions.push({
+                handler: onExportToExcel,
+                iconCssClass: "fa fa-file-excel",
+                title: "Export to Excel",
+                tooltip: "Export to Excel"
+            });
+        }
+
+        // Append the action for Export to Excel.
+        if (isExportVisible.value) {
+            actions.push({
+                handler: onExportToCsv,
+                iconCssClass: "fa fa-file-csv",
+                title: "Export to CSV",
+                tooltip: "Export to CSV"
+            });
+        }
+
+        // Append the action for Launch Workflow.
+        if (isLaunchWorkflowVisible.value) {
+            actions.push({
+                handler: onLaunchWorkflow,
+                iconCssClass: "fa fa-cog",
+                title: "Launch Workflow",
+                tooltip: "Launch Workflow"
+            });
+        }
+
+        // Append the action for Bulk Update.
+        if (isBulkUpdateVisible.value) {
+            actions.push({
+                handler: onBulkUpdate,
+                iconCssClass: "fa fa-truck",
+                title: "Bulk Update",
+                tooltip: "Bulk Update"
+            });
+        }
+
+        // Append the action for Merge Person Records.
+        if (isMergePersonVisible.value) {
+            actions.push({
+                handler: onPersonMerge,
+                iconCssClass: "fa fa-users",
+                title: "Merge Person Records",
+                tooltip: "Merge Person Records"
+            });
+        }
+
+        // Append the action for Merge Business Records.
+        if (isMergeBusinessVisible.value) {
+            actions.push({
+                handler: onPersonMerge,
+                iconCssClass: "fa fa-sign-in-alt",
+                title: "Merge Business Records",
+                tooltip: "Merge Business Records"
+            });
+        }
+
+        // Append the action for Communicate.
+        if (isCommunicateVisible.value) {
+            actions.push({
+                handler: onCommunicate,
+                iconCssClass: "fa fa-comment",
+                title: "Communicate",
+                tooltip: "Communicate"
+            });
+        }
+
+        // Append the custom actions defined in the block settings.
+        if (props.definition?.customActions) {
+            for (const action of props.definition.customActions) {
+                if (!action.iconCssClass || !action.route) {
+                    continue;
+                }
+
+                actions.push({
+                    handler: () => onCustomRoute(action.route ?? ""),
+                    iconCssClass: action.iconCssClass,
+                    title: action.name || "Custom Action",
+                    tooltip: action.description ?? undefined
+                });
+            }
+        }
+
+        if (props.customActions && props.customActions.length > 0) {
+            actions.push(...props.customActions);
+        }
+
+        return actions;
+    });
+
+    /**
+     * Contains `true` if the sticky header should be enabled on this grid.
+     */
+    const isStickyHeader = computed((): boolean => {
+        return props.stickyHeader || props.definition?.enableStickyHeader === true;
+    });
+
+    /**
+     * Contains `true` if row selection is enabled on this grid.
+     */
+    const isSelectionEnabled = computed((): boolean => {
+        return !!props.onSelectItem;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Creates the object that will track the grid state and provide most of
+     * the features required by all the grid components.
+     */
+    function createGridState(): GridState {
+        const state = new GridState(
+            getColumnDefinitions(slots["default"]?.() ?? []),
+            props.definition,
+            props.liveUpdates ?? false,
+            props.itemTerm || "item",
+            props.entityTypeGuid);
+
+        state.setItemKey(props.keyField);
+
+        return state;
+    }
+
+    /**
+     * Updates the {@link visibleRows} value based on the current selections.
+     */
+    function updateVisibleRows(): void {
+        const startIndex = (currentPage.value - 1) * pageSize.value;
+
+        visibleRows.value = gridState.sortedRows.slice(startIndex, startIndex + pageSize.value);
+    }
+
+    /**
+     * Updates the {@link pageCount} value based on the current filters and
+     * selected page size.
+     */
+    function updatePageCount(): void {
+        pageCount.value = Math.ceil(gridState.filteredRows.length / pageSize.value);
+    }
+
+    /**
+     * Updates the message to be displayed in the pager footer. This describes
+     * the items and how many there are.
+     */
+    function updatePagerMessage(): void {
+        pagerMessage.value = `${asFormattedString(gridState.filteredRows.length)} ${pluralize(gridState.itemTerm, gridState.filteredRows.length)}`;
+    }
+
+    /**
+     * Set the width of all columns of the given worksheet,
+     * to fit the content of the cells.
+     */
+    function autoFitExportColumns(worksheet: Worksheet, rowData: Record<string, unknown>[]): void {
+        for (const column of worksheet.columns) {
+            if (!column.key) {
+                continue;
+            }
+
+            let maxLength: number = (column.header ?? "").length + 3;
+
+            for (const row of rowData) {
+                const value = row[column.key];
+
+                if (typeof value === "string") {
+                    maxLength = Math.max(maxLength, value.length + 1);
+                }
+                else if (typeof value === "boolean") {
+                    maxLength = Math.max(maxLength, 6);
+                }
+                else if (value instanceof Date) {
+                    maxLength = Math.max(maxLength, 11);
+                }
+                else {
+                    maxLength = Math.max(maxLength, String(value).length + 1);
+                }
+            }
+
+            column.width = Math.min(80, Math.max(4, maxLength));
+        }
+    }
+
+    /**
+     * Gets the workbook that will be used to export the data.
+     *
+     * @returns An object that contains the workbook as well as the raw row data.
+     */
+    async function getExportWorkbook(): Promise<{ workbook: Workbook, rowData: Record<string, unknown>[] }> {
+        // Find all columns that aren't special columns and include them in
+        // the additional merge fields.
+        const mergeColumns: Record<string, string> = {};
+        const dataColumns = gridState.columns
+            .filter(c => !c.name.startsWith("__") && !c.excludeFromExport);
+
+        for (const column of dataColumns) {
+            mergeColumns[column.name] = `${column.name[0].toUpperCase()}${column.name.substring(1)}`;
+        }
+
+        const options: EntitySetOptions = {
+            mergeColumns,
+            purpose: "export"
+        };
+
+        const entitySet = await getEntitySetBag(gridState, [], options);
+
+        const exceljs = await import("@Obsidian/Libs/exceljs");
+
+        const title = props.exportTitle || pluralize(gridState.itemTerm);
+        const workbook = new exceljs.Workbook();
+        workbook.created = new Date();
+        workbook.modified = new Date();
+        const worksheet = workbook.addWorksheet(title);
+
+        // Build the header row.
+        const columns: Column[] = [];
+        for (const key of Object.keys(mergeColumns)) {
+            const column = gridState.columns.find(c => c.name === key);
+
+            columns.push({
+                header: column?.title ?? key,
+                key: key
+            } as Column);
+        }
+
+        // Columns must be set all at once, you can't modify it in place.
+        worksheet.columns = columns;
+
+        // Build the data rows.
+        const rowData: Record<string, unknown>[] = [];
+        for (const item of (entitySet.items ?? [])) {
+            const row: Record<string, unknown> = {};
+
+            for (const key of Object.keys(mergeColumns)) {
+                let value = item.additionalMergeValues?.[mergeColumns[key]];
+
+                if (value instanceof RockDateTime) {
+                    // Excel is not timezone aware, so convert the date into
+                    // UTC format by stripping off the zone info.
+                    value = new Date(Date.UTC(value.year, value.month - 1, value.day, value.hour, value.minute, value.second));
+                }
+
+                row[key] = value;
+            }
+
+            rowData.push(row);
+        }
+        worksheet.addRows(rowData);
+
+        return {
+            workbook,
+            rowData
+        };
+    }
+
+    /**
+     * Triggers an automatic download of the workbook so it can be saved to
+     * the filesystem.
+     *
+     * @param workbook The workbook to be downloaded by the browser.
+     * @param title The title of the workbook, this is used as the base for the filename.
+     * @param format The format to use when downloading the workbook.
+     */
+    async function downloadWorkbook(workbook: Workbook, title: string, format: "csv" | "xlsx"): Promise<void> {
+        // Get the export data.
+        const buffer = format === "xlsx"
+            ? await workbook.xlsx.writeBuffer()
+            : await workbook.csv.writeBuffer();
+
+        // Create the URL that contains the file data.
+        const url = URL.createObjectURL(new Blob([buffer], {
+            type: "application/octet-stream"
+        }));
+
+        // Create a fake hyperlink to simulate an attempt to download a file.
+        const element = document.createElement("a");
+        element.innerText = "Download";
+        element.style.position = "absolute";
+        element.style.top = "-100px";
+        element.style.left = "0";
+        element.href = url;
+        element.download = `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`;
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    }
+
+    /**
+     * Begin loading the grid data.
+     */
+    async function updateGridData(): Promise<void> {
+        // Show an indicator that we are loading data from the server.
+        loadingData.value = true;
+
+        if (!props.data) {
+            gridState.setDataRows([]);
+        }
+        else if (isPromise(props.data)) {
+            try {
+                const data = await props.data;
+
+                gridState.setDataRows(data.rows ?? []);
+                gridErrorMessage.value = "";
+            }
+            catch (error) {
+                gridErrorMessage.value = error instanceof Error ? error.message : new String(error).toString();
+            }
+        }
+        else {
+            gridState.setDataRows(props.data.rows ?? []);
+            gridErrorMessage.value = "";
+        }
+
+        // If we don't have any error, then proceed with final setup of the
+        // data that was received.
+        if (!gridErrorMessage.value) {
+            setupManualOrdering();
+        }
+
+        loadingData.value = false;
+    }
+
+    /**
+     * Attempt to setup the manual re-ordering logic to support drag and drop
+     * of the rows.
+     */
+    function setupManualOrdering(): void {
+        // If we don't have a re-order column, then nothing to do.
+        if (!reorderColumn) {
+            dragOptions.value = undefined;
+            return;
+        }
+
+        // If we have a re-order column but no keyField then throw an error.
+        if (!props.keyField) {
+            throw new Error("Re-ordering rows requires each row has a unique key.");
+        }
+
+        // Create an observable value that cells can use to determine if a drop
+        // operation is in progress. This is used by them to prevent starting
+        // a new drag operation until the previous drop operation has completed.
+        const dropOperationInProgress = ref(false);
+        reorderColumn.data.dropOperationInProgress = dropOperationInProgress;
+
+        // Configure the drag and drop feature.
+        dragOptions.value = useDragReorder(visibleRows, async (item, beforeItem) => {
+            // The visibleRows object has already been updated. Allow the
+            // component using the grid a chance to move their own data around.
+            if (typeof reorderColumn.props.onOrderChanged !== "function") {
+                return true;
+            }
+
+            // We don't have type information, so cast it to what they are
+            // supposed to provide.
+            const fn = reorderColumn.props.onOrderChanged as (item: Record<string, unknown>, beforeItem: Record<string, unknown> | null) => void | Promise<void> | boolean | Promise<boolean>;
+
+            // Indicate to the cells that a drop operation is in progress.
+            dropOperationInProgress.value = true;
+
+            try {
+                let result = fn(item, beforeItem);
+
+                if (isPromise(result)) {
+                    result = await result;
+                }
+
+                // If they returned anything other than false then allow the
+                // drop operation complete successfully. This allows them to
+                // return void/nothing to mean success.
+                return result !== false;
+            }
+            finally {
+                // Indicate to cells that the drop operation has completed.
+                dropOperationInProgress.value = false;
+            }
+        });
+    }
+
+    /**
+     * Uses a block action to create a new communication for the recipients and
+     * then redirects the individual to the configured URL.
+     *
+     * @param communicationBag The communication bag that describes the communication to be created.
+     * @param url The URL to redirect to after the communication has been created.
+     */
+    async function createCommunicationAndRedirect(communicationBag: GridCommunicationBag, url: string): Promise<void> {
+        const args = {
+            communication: communicationBag
+        };
+
+        const result = await invokeBlockAction<Guid>("CreateGridCommunication", args);
+
+        if (!result.isSuccess || !result.data) {
+            return await alert(result.errorMessage || "Unable to create communication.");
+        }
+
+        const finalUrl = makeUrlRedirectSafe(url.replace("{CommunicationId}", `${result.data}`));
+
+        window.location.href = finalUrl;
+    }
+
+    /**
+     * Uses a block action to create a new entity set for the items in the
+     * grid and then redirects the individual to the configured URL.
+     *
+     * @param keyFields The key field(s) to use when getting the entity keys.
+     * @param url The URL to redirect the individual to after creating the entity set.
+     * @param options The options to be passed to {@link getEntitySetBag}.
+     */
+    async function createEntitySetAndRedirect(keyFields: string[], url: string, options: EntitySetOptions | undefined): Promise<void> {
+        // Get the entity set to be sent to the server.
+        const args = {
+            entitySet: await getEntitySetBag(gridState, keyFields, options)
+        };
+
+        const result = await invokeBlockAction<Guid>("CreateGridEntitySet", args);
+
+        if (!result.isSuccess || !result.data) {
+            return await alert(result.errorMessage || "Unable to create entity set.");
+        }
+
+        const finalUrl = makeUrlRedirectSafe(url.replace("{EntitySetId}", `${result.data}`));
+
+        window.location.href = finalUrl;
+    }
+
+    // #endregion
+
+    // #region Preference Functions
+
+    /**
+     * Gets the prefixed preference collection to use with the grid.
+     */
+    function getPrefixedPreferences(): IPersonPreferenceCollection {
+        const prefix = !props.preferencePrefix
+            ? "grid-"
+            : `grid-${props.preferencePrefix}-`;
+
+        return rootPreferences.withPrefix(prefix);
+    }
+
+    /**
+     * Sets the current filter value to match what is in the preferences.
+     */
+    function setFilterFromPreferences(): void {
+        const filterValues = gridPreferences.getValue(PreferenceKey.ColumnFilterValues);
+
+        if (filterValues) {
+            try {
+                const value = JSON.parse(filterValues);
+
+                if (typeof value === "object") {
+                    // Delete any filters for columns that don't exist anymore.
+                    const keys = Object.keys(value);
+
+                    for (const key of keys) {
+                        if (!gridState.columns.some(c => c.name === key)) {
+                            delete value[key];
+                        }
+                    }
+
+                    columnFilterValues.value = value;
+                }
+            }
+            catch {
+                // Intentionally ignored, just use default value.
+            }
+        }
+    }
+
+    /**
+     * Sets the current sort value to match what is in the preferences.
+     */
+    function setSortFromPreferences(): void {
+        const sortDirection = gridPreferences.getValue(PreferenceKey.SortDirection);
+
+        if (sortDirection) {
+            try {
+                const value = JSON.parse(sortDirection);
+
+                if (typeof value === "object") {
+                    columnSortDirection.value = value;
+                }
+            }
+            catch {
+                // Intentionally ignored, just use default value.
+            }
+        }
+    }
+
+    /**
+     * Saves the column filter values to the preference collection and triggers
+     * a request to save the preferences.
+     */
+    function saveFilterPreferences(): void {
+        if (props.disablePreferences) {
+            return;
+        }
+
+        const hasValues = Object.values(columnFilterValues.value).some(v => v !== undefined);
+
+        if (hasValues) {
+            gridPreferences.setValue(PreferenceKey.ColumnFilterValues, JSON.stringify(columnFilterValues.value));
+        }
+        else {
+            gridPreferences.setValue(PreferenceKey.ColumnFilterValues, "");
+        }
+
+        savePreferences();
+    }
+
+    /**
+     * Saves the sort value to the preference collection and triggers
+     * a request to save the preferences.
+     */
+    function saveSortPreferences(): void {
+        if (props.disablePreferences) {
+            return;
+        }
+
+        if (columnSortDirection.value) {
+            gridPreferences.setValue(PreferenceKey.SortDirection, JSON.stringify(columnSortDirection.value));
+        }
+        else {
+            gridPreferences.setValue(PreferenceKey.SortDirection, "");
+        }
+
+        savePreferences();
+    }
+
+    /**
+     * Saves the preferences. This handles logic to ensure that only a single
+     * attempt to save preferences is happening at one time.
+     */
+    async function savePreferences(): Promise<void> {
+        preferencesAreDirty = true;
+
+        if (preferencesAreSaving) {
+            return;
+        }
+
+        preferencesAreSaving = true;
+        preferencesAreDirty = false;
+
+        try {
+            await gridPreferences.save();
+        }
+        finally {
+            preferencesAreSaving = false;
+        }
+
+        if (preferencesAreDirty) {
+            window.setTimeout(() => savePreferences(), 0);
+        }
+    }
+
+    // #endregion
+
+    // #region Grid Action Event Handlers
+
+    /**
+     * Called when the bulk update grid action has been clicked.
+     */
+    async function onBulkUpdate(): Promise<void> {
+        const url = props.definition?.actionUrls?.[GridActionUrlKey.BulkUpdate];
+
+        if (!props.personKeyField || !url) {
+            return;
+        }
+
+        const options: EntitySetOptions = {
+            entityTypeGuid: EntityType.Person
+        };
+
+        await createEntitySetAndRedirect([props.personKeyField], url, options);
+    }
+
+    /**
+     * Called when either the merge person or merge business grid actions
+     * have been clicked.
+     */
+    async function onPersonMerge(): Promise<void> {
+        let url: string | undefined;
+
+        if (props.personAsBusiness) {
+            url = props.definition?.actionUrls?.[GridActionUrlKey.MergeBusiness];
+        }
+        else {
+            url = props.definition?.actionUrls?.[GridActionUrlKey.MergePerson];
+        }
+
+        if (!props.personKeyField || !url) {
+            return;
+        }
+
+        await createEntitySetAndRedirect([props.personKeyField], url, undefined);
+    }
+
+    /**
+     * Called when the merge template grid action has been clicked.
+     */
+    async function onMergeTemplate(): Promise<void> {
+        const url = props.definition?.actionUrls?.[GridActionUrlKey.MergeTemplate];
+
+        if (!props.keyField || !url) {
+            return;
+        }
+
+        if (props.mergeTemplateAsPerson && props.personKeyField) {
+            await createEntitySetAndRedirect([props.personKeyField], url, undefined);
+        }
+        else if (props.entityTypeGuid) {
+            await createEntitySetAndRedirect([props.keyField], url, undefined);
+        }
+        else {
+            // Find all columns that aren't special columns and include them in
+            // the additional merge fields.
+            const mergeColumns: Record<string, string> = {};
+            const dataColumns = gridState.columns
+                .filter(c => !c.name.startsWith("__"));
+
+            for (const column of dataColumns) {
+                mergeColumns[column.name] = `${column.name[0].toUpperCase()}${column.name.substring(1)}`;
+            }
+
+            const options: EntitySetOptions = {
+                mergeColumns
+            };
+
+            await createEntitySetAndRedirect([props.keyField], url, options);
+        }
+    }
+
+    /**
+     * Called when the export to excel grid action has been clicked.
+     */
+    async function onExportToExcel(): Promise<void> {
+        const { workbook, rowData } = await getExportWorkbook();
+        const worksheet = workbook.getWorksheet(1);
+        const title = props.exportTitle || pluralize(gridState.itemTerm);
+
+        // Freeze the header rows.
+        worksheet.views = [
+            {
+                state: "frozen",
+                ySplit: 3
+            }
+        ];
+
+        // Calculate rough column width.
+        autoFitExportColumns(worksheet, rowData);
+
+        // Configure the header content.
+        worksheet.insertRows(1, [{}, {}]);
+        worksheet.getCell(1, 1).value = title;
+        worksheet.getCell(2, 1).value = `Exported on ${RockDateTime.now().toASPString("G")}`;
+        worksheet.getCell(1, 1).font = {
+            size: 18
+        };
+
+        // Set the style of the header rows.
+        worksheet.getRows(1, 3)?.forEach(row => {
+            row.eachCell(cell => {
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: {
+                        argb: "ffdedede"
+                    }
+                };
+
+                cell.font = cell.font ?? {};
+                cell.font.bold = true;
+            });
+        });
+
+        worksheet.mergeCells(1, 1, 1, worksheet.columns.length);
+        worksheet.mergeCells(2, 1, 2, worksheet.columns.length);
+
+        // Setup the filter functionality.
+        worksheet.autoFilter = {
+            from: {
+                row: 3,
+                column: 1
+            },
+            to: {
+                row: rowData.length + 3,
+                column: worksheet.columns.length
+            }
+        };
+
+        await downloadWorkbook(workbook, title, "xlsx");
+    }
+
+    /**
+     * Called when the export to csv grid action has been clicked.
+     */
+    async function onExportToCsv(): Promise<void> {
+        const { workbook } = await getExportWorkbook();
+
+        const title = props.exportTitle || pluralize(gridState.itemTerm);
+
+        await downloadWorkbook(workbook, title, "csv");
+    }
+
+    /**
+     * Called when the launch workflow grid action has been clicked.
+     */
+    async function onLaunchWorkflow(): Promise<void> {
+        const url = props.definition?.actionUrls?.[GridActionUrlKey.LaunchWorkflow];
+
+        if (!props.keyField || !url) {
+            return;
+        }
+
+        await createEntitySetAndRedirect([props.keyField], url, undefined);
+    }
+
+    /**
+     * Called when the communication grid action has been clicked.
+     */
+    async function onCommunicate(): Promise<void> {
+        const url = props.definition?.actionUrls?.[GridActionUrlKey.Communicate];
+        let keyFields: string[] = [];
+
+        // Determine which key fields to use to find people.
+        if (props.communicationRecipientPersonKeyFields) {
+            keyFields = props.communicationRecipientPersonKeyFields;
+        }
+        else if (props.personKeyField) {
+            keyFields = [props.personKeyField];
+        }
+
+        // If we don't have any key fields or a URL then nothing to do.
+        if (keyFields.length === 0 || !url) {
+            return;
+        }
+
+        const options: EntitySetOptions = {
+            additionalMergeFieldsFactory: undefined,
+            purpose: "communication"
+        };
+
+        // TypeScript isn't happy if we set these above.
+        options.mergeColumns = {};
+        options.mergeFields = {};
+        const mergeFields: string[] = [];
+
+        // If they have specified which additional merge fields to be included
+        // in the communication, add those to the list of mergeFields.
+        if (props.communicationMergeFields) {
+            for (const mf of props.communicationMergeFields) {
+                const parts = mf.split("|")
+                    .map(f => f.replace(/\./g, "_"))
+                    .filter(f => f !== "");
+
+                // If we have a column that matches the name, put it in the
+                // mergeColumns. Otherwise put it in the mergeFields. This
+                // basically means, give us the formatted value or the raw value.
+                if (gridState.columns.some(c => c.name === parts[0])) {
+                    options.mergeColumns[parts[0]] = parts.length >= 2 ? parts[1] : parts[0];
+                }
+                else {
+                    options.mergeFields[parts[0]] = parts.length >= 2 ? parts[1] : parts[0];
+                }
+
+                mergeFields.push(parts.length >= 2 ? parts[1] : parts[0]);
+            }
+        }
+
+        // Get all the data from the grid.
+        const entitySet = await getEntitySetBag(gridState, keyFields, options);
+
+        const communicationBag: GridCommunicationBag = {
+            recipients: entitySet.items,
+            fromUrl: window.location.href
+        };
+
+        // Determine if we have anything that should show up in the
+        // "Additional Merge Fields" option of the lava field picker.
+        if (props.communicationRecipientPersonKeyFields) {
+            communicationBag.mergeFields = [`AdditionalMergeFields|${mergeFields.join("^")}`];
+        }
+        else {
+            communicationBag.mergeFields = mergeFields;
+        }
+
+        await createCommunicationAndRedirect(communicationBag, url);
+    }
+
+    /**
+     * Called when a custom grid action has been clicked.
+     */
+    async function onCustomRoute(url: string): Promise<void> {
+        if (!props.keyField || !url) {
+            return;
+        }
+
+        const options: EntitySetOptions = {
+            entityTypeGuid: props.entityTypeGuid
+        };
+
+        let fixedUrl: string;
+
+        if (url.includes("{0}")) {
+            fixedUrl = url.replace(/\{0\}/g, "{EntitySetId}");
+        }
+        else {
+            fixedUrl = url.includes("?")
+                ? `${url}&EntitySetId={EntitySetId}`
+                : `${url}?EntitySetId={EntitySetId}`;
+        }
+
+        await createEntitySetAndRedirect([props.keyField], fixedUrl, options);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the {@link gridState.sortedRows} value has changed. Update
+     * all the visible row information.
+     */
+    function onSortedRowsChanged(): void {
+        updateVisibleRows();
+        updatePageCount();
+        updatePagerMessage();
+    }
+
+    /**
+     * Called when a row has been clicked if selection is enabled.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    async function onRowClick(key: string): Promise<void> {
+        if (!props.onSelectItem || isRowSelectionInProgress.value) {
+            return;
+        }
+
+        // It's possible for row selection to be an async process. For example
+        // the block might need to call an API endpoint in order to determine
+        // what to do. In this case we need to make sure that only one select
+        // action is running at any given time.
+        isRowSelectionInProgress.value = true;
+
+        try {
+            const returnValue = props.onSelectItem(key);
+
+            if (isPromise(returnValue)) {
+                await returnValue;
+            }
+        }
+        finally {
+            isRowSelectionInProgress.value = false;
+        }
+    }
+
+    // #endregion
+
+    // Set initial filtering and sorting based on preferences. This needs to
+    // happen before we start watching for changes so we don't try to save
+    // preferences when we change the value.
+    if (!props.disablePreferences) {
+        setFilterFromPreferences();
+        setSortFromPreferences();
+    }
+
+    gridState.setFilters(quickFilterValue.value, columnFilterValues.value);
+    gridState.setSort(columnSortDirection.value);
+
+    watch(quickFilterValue, () => {
+        currentPage.value = 1;
+        gridState.setFilters(quickFilterValue.value, columnFilterValues.value);
+    });
+
+    watch(columnFilterValues, () => {
+        currentPage.value = 1;
+        gridState.setFilters(quickFilterValue.value, columnFilterValues.value);
+        saveFilterPreferences();
+    });
+
+    watch(columnSortDirection, () => {
+        gridState.setSort(columnSortDirection.value);
+        saveSortPreferences();
+    });
+
+    watch([currentPage, pageSize], () => {
+        updateVisibleRows();
+    });
+
+    watch(() => props.keyField, () => {
+        gridState.setItemKey(props.keyField);
+    });
+
+    gridState.on("sortedRowsChanged", onSortedRowsChanged);
+
+    onUnmounted(() => {
+        gridState.off("sortedRowsChanged", onSortedRowsChanged);
+        gridState.dispose();
+    });
+
+    updateGridData();
+</script>

@@ -87,6 +87,9 @@
     <Reference Include="dotless.Core, Version=1.5.2.0, Culture=neutral, PublicKeyToken=96b446c9e63eae34, processorArchitecture=MSIL">
       <HintPath>..\packages\dotless.1.5.2\lib\dotless.Core.dll</HintPath>
     </Reference>
+    <Reference Include="EF6.TagWith, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EF6.TagWith.1.2.1\lib\net45\EF6.TagWith.dll</HintPath>
+    </Reference>
     <Reference Include="Elasticsearch.Net, Version=7.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
       <HintPath>..\packages\Elasticsearch.Net.7.17.0\lib\net461\Elasticsearch.Net.dll</HintPath>
     </Reference>
@@ -537,6 +540,19 @@
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
+    <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsRequestMessage.cs" />
+    <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsRequest.cs" />
+    <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsResponse.cs" />
+    <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsResponseChoice.cs" />
+    <Compile Include="AI\Classes\TextCompletions\TextCompletionsRequest.cs" />
+    <Compile Include="AI\Classes\TextCompletions\TextCompletionsResponse.cs" />
+    <Compile Include="AI\Classes\TextCompletions\TextCompletionsResponseChoice.cs" />
+    <Compile Include="AI\Classes\Moderations\ModerationsRequest.cs" />
+    <Compile Include="AI\Classes\Moderations\ModerationsResponseCategories.cs" />
+    <Compile Include="AI\Classes\Moderations\ModerationsResponse.cs" />
+    <Compile Include="AI\Provider\AIProviderComponent.cs" />
+    <Compile Include="AI\Provider\AIProviderContainer.cs" />
+    <Compile Include="AI\Utilities\AIHelpers.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\AddressFieldAttribute.cs" />
@@ -547,6 +563,7 @@
     <Compile Include="Attribute\BenevolenceTypeFieldAttribute.cs" />
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
+    <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
     <Compile Include="Attribute\GroupMemberRequirementFieldAttribute.cs" />
     <Compile Include="Attribute\IconSvgAttribute.cs" />
     <Compile Include="Attribute\PublicAttributeHelper.cs" />
@@ -690,9 +707,15 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\BlockActionGridResponse.cs" />
+    <Compile Include="Blocks\CustomizedGridAttribute.cs" />
+    <Compile Include="Blocks\IHasCustomActions.cs" />
+    <Compile Include="Blocks\InitialBlockHeightAttribute.cs" />
     <Compile Include="Blocks\IRockObsidianBlockType.cs" />
     <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
+    <Compile Include="Blocks\RockMobileBlockTypeCustomSettingsProvider.cs" />
+    <Compile Include="Blocks\SupportedSiteTypesAttribute.cs" />
+    <Compile Include="Blocks\Types\Mobile\Core\AttributeValues.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\CommunicationEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\SmsConversation.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\SmsConversationList.cs" />
@@ -702,6 +725,8 @@
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionTypeList.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Search.cs" />
+    <Compile Include="Blocks\Types\Mobile\Crm\GroupMembers.cs" />
+    <Compile Include="Blocks\Types\Mobile\Crm\PersonProfile.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperienceOccurrences.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperience.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupSchedulePreference.cs" />
@@ -711,6 +736,9 @@
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleToolbox.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleUnavailability.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerCardView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Reminders\ReminderDashboard.cs" />
+    <Compile Include="Blocks\Types\Mobile\Reminders\ReminderEdit.cs" />
+    <Compile Include="Blocks\Types\Mobile\Reminders\ReminderList.cs" />
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
@@ -937,6 +965,9 @@
     <Compile Include="Jobs\PostV15DataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsSystemPhoneNumbers.cs" />
     <Compile Include="Jobs\PostV16DataMigrationsMovePersonPreferences.cs" />
+    <Compile Include="Jobs\PostV16UpdateInteractionAndInteractionSessionIndices.cs" />
+    <Compile Include="Jobs\PostV16UpdateInteractionSessionChannelId.cs" />
+    <Compile Include="Jobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV141AddMissingIndexes.cs" />
@@ -953,6 +984,7 @@
     <Compile Include="Model\CMS\BlockType\BlockType.WebForms.cs" />
     <Compile Include="Model\CMS\Page\Page.WebForms.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
+    <Compile Include="Lava\Shortcodes\AICompletionShortcode.cs" />
     <Compile Include="Lava\WebsiteLavaHost.cs" />
     <Compile Include="Logging\RockLoggerMemoryBuffer.cs" />
     <Compile Include="Model\CMS\ContentTopicDomain\ContentTopicDomain.cs" />
@@ -1001,6 +1033,7 @@
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.Logic.cs" />
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumberService.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
+    <Compile Include="Model\Core\AssetStorageProvider\AssetStorageProvider.Logic.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
@@ -1030,8 +1063,15 @@
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
+    <Compile Include="Model\Group\GroupSync\GroupSyncInfo.cs" />
+    <Compile Include="Model\Group\GroupSync\GroupSyncResult.cs" />
+    <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
+    <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
+    <Compile Include="Obsidian\UI\GridBuilder.cs" />
+    <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
+    <Compile Include="Obsidian\UI\GridHelper.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />
     <Compile Include="Net\IRequest.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
@@ -1063,6 +1103,7 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\179_MigrationRollupsForV15_2_0.cs" />
     <Compile Include="Plugin\HotFixes\175_MigrationRollupsForV15_1_0.cs" />
     <Compile Include="Plugin\HotFixes\174_AddIndicesForPerformanceImprovements.cs" />
     <Compile Include="Plugin\HotFixes\173_UpdateSignUpFinderBlockSetting.cs" />
@@ -1080,6 +1121,8 @@
     <Compile Include="Plugin\HotFixes\162_RemoveUnusedRoute.cs" />
     <Compile Include="Plugin\HotFixes\161_RemindersUpdates.cs" />
     <Compile Include="Plugin\HotFixes\160_SetupReminders.cs" />
+    <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
+    <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1601,6 +1644,7 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
     <Compile Include="Plugin\HotFixes\155_BackgroundCheckPersonEmailValidFix.cs" />
+    <Compile Include="Plugin\HotFixes\176_WindowsCheckinInstaller13_8.cs" />
     <Compile Include="Plugin\HotFixes\158_CorrectWorkfflowLogIsSecured.cs" />
     <Compile Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0.cs" />
     <Compile Include="Plugin\HotFixes\156_CorrectBlockCategories.cs" />
@@ -1971,6 +2015,7 @@
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
+    <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
@@ -4057,6 +4102,8 @@
     <Compile Include="Workflow\Action\Groups\AddNoteToGroupMember.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroupAttribute.cs" />
+    <Compile Include="Workflow\Action\Groups\AddSchedule.cs" />
+    <Compile Include="Workflow\Action\Groups\AddSignUpOpportunity.cs" />
     <Compile Include="Workflow\Action\Groups\GroupGetChildGroupForCampus.cs" />
     <Compile Include="Workflow\Action\Groups\GroupMemberRequirementMet.cs" />
     <Compile Include="Workflow\Action\Groups\PostAttendanceToGroup.cs" />
@@ -4276,6 +4323,7 @@
     </Content>
     <None Include="Resources\updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
+    <None Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">

@@ -39,12 +39,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// Displays a page to allow the user to view a list of members in a group.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Group Member List" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows the user to view a list of members in a group." )]
     [IconCssClass( "fa fa-users" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -145,7 +146,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_MEMBER_LIST_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "5A6D2ADB-03A7-4B55-8EAA-26A37116BFF1" )]
-    public class GroupMemberList : RockMobileBlockType
+    public class GroupMemberList : RockBlockType
     {
         #region Block Attributes
 
@@ -302,21 +303,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupMemberList";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -467,7 +455,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var range = filterBag.SelectedAttendance.Range;
                 var attendanceFilterType = filterBag.SelectedAttendance.FilterType;
 
-                members = FilterMembersByAttendanceOption( members, range, attendanceFilterType, rockContext );
+                members = FilterMembersByAttendanceOption( members, group.Id, range, attendanceFilterType, rockContext );
             }
 
             return members.ToList();
@@ -478,24 +466,25 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// See <see cref="AttendanceFilterOptionType" />.
         /// </summary>
         /// <param name="groupMembers">The group members.</param>
+        /// <param name="groupId"></param>
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="option">The option.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
-        private static IQueryable<GroupMember> FilterMembersByAttendanceOption( IQueryable<GroupMember> groupMembers, int amtOfWeeks, AttendanceFilterOptionType option, RockContext rockContext )
+        private static IQueryable<GroupMember> FilterMembersByAttendanceOption( IQueryable<GroupMember> groupMembers, int groupId, int amtOfWeeks, AttendanceFilterOptionType option, RockContext rockContext )
         {
             // Switch our selected attendance option from the shell.
             switch ( option )
             {
                 // If we want to retrieve group members where there is not an attendance for x number of weeks.
                 case AttendanceFilterOptionType.NoAttendance:
-                    return GroupMemberService.WhereMembersWithNoAttendanceForNumberOfWeeks( groupMembers, amtOfWeeks, rockContext );
+                    return GroupMemberService.WhereMembersWithNoAttendanceForNumberOfWeeks( groupMembers, groupId, amtOfWeeks, rockContext );
                 // If we want to retrieve group members who first attended within an x number of weeks.
                 case AttendanceFilterOptionType.FirstAttended:
-                    return GroupMemberService.WhereMembersWhoFirstAttendedWithinNumberOfWeeks( groupMembers, amtOfWeeks, rockContext );
+                    return GroupMemberService.WhereMembersWhoFirstAttendedWithinNumberOfWeeks( groupMembers, groupId, amtOfWeeks, rockContext );
                 // If we want to retrieve group members who attended within an x number of weeks.
                 case AttendanceFilterOptionType.Attended:
-                    return GroupMemberService.WhereMembersWhoAttendedWithinNumberOfWeeks( groupMembers, amtOfWeeks, rockContext );
+                    return GroupMemberService.WhereMembersWhoAttendedWithinNumberOfWeeks( groupMembers, groupId, amtOfWeeks, rockContext );
             }
 
             return groupMembers;
@@ -667,7 +656,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// for the GroupMemberList block.
         /// </summary>
         /// <seealso cref="Rock.Web.RockCustomSettingsProvider" />
-        [TargetType( typeof( GroupMemberList ) )]
+        [CustomSettingsBlockType( typeof( GroupMemberList ), SiteType.Mobile )]
         public class GroupMemberListCustomSettingsProvider : Rock.Web.RockCustomSettingsProvider
         {
             /// <summary>

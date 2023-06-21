@@ -28,6 +28,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.CMS.PageShortLinkDetail;
 using Rock.ViewModels.Blocks.Core.ServiceJobDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Core
@@ -41,6 +42,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular service job." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -64,7 +66,7 @@ namespace Rock.Blocks.Core
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -79,7 +81,7 @@ namespace Rock.Blocks.Core
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<ServiceJob>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<ServiceJob>();
 
                 return box;
             }

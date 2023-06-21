@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Model;
 using Rock.ViewModels.Event.InteractiveExperiences;
+using Rock.Web.Cache;
 
 namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
 {
@@ -41,7 +44,7 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
         Order = 0 )]
 
     [TextField( "Colors",
-        Description = "A list of colors to use when rendering the bars. The border will be this color exactly, the filled center of the bar will have the Fill Opacity applied first. If not specified a default color set will be used.",
+        Description = "A semicolon separated list of colors to use when rendering the bars. The border will be this color exactly, the filled center of the bar will have the Fill Opacity applied first. If not specified a default color set will be used.",
         IsRequired = false,
         Key = AttributeKey.Colors,
         Order = 1 )]
@@ -87,6 +90,20 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
             if ( action.Attributes == null )
             {
                 LoadAttributes( action );
+            }
+
+            // This is a bit of a hack, but don't currently have a better way
+            // to do this. The Bar Chart needs to pre-populate ansers with
+            // zeros and be in the correct order when using a Poll question.
+            // So sneek into the raw data to get the original question list
+            // if it is a Poll question.
+            if ( action.ActionEntityTypeId == EntityTypeCache.GetId<Poll>() )
+            {
+                var rawAnswers = GetAttributeValue( action, Poll.AttributeKey.Answers );
+                var values = rawAnswers?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+                values = values.Select( s => System.Net.WebUtility.UrlDecode( s ) ).ToArray();
+
+                bag.ConfigurationValues.Add( "answerOrder", values.ToJson() );
             }
 
             bag.ConfigurationValues.AddOrReplace( "orientation", GetAttributeValue( action, AttributeKey.Orientation ) );

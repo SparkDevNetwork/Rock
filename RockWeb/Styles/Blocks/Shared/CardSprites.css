@@ -1,0 +1,49 @@
+.card-logos li {
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+    overflow: hidden;
+    text-align: left;
+    text-indent: -999px;
+    background-image: url("/Assets/Images/sprite-cards.png");
+    background-repeat: no-repeat;
+}
+
+.card-mastercard {
+  background-position: -55px 0;
+}
+
+.card-amex {
+  background-position: -110px 0;
+}
+
+.card-discover {
+  background-position: -165px 0;
+}
+
+.card-diners {
+  background-position: -220px 0;
+}
+
+.card-jcb {
+  background-position: -660px 0;
+}
+
+.is-visa li,
+.is-mastercard li,
+.is-amex li,
+.is-discover li,
+.is-diners li,
+.is-jcb li,
+.is-nothing li {
+  opacity: .2;
+}
+
+.is-visa li.card-visa,
+.is-mastercard li.card-mastercard,
+.is-amex li.card-amex,
+.is-discover li.card-discover,
+.is-diners li.card-diners,
+.is-jcb li.card-jcb {
+  opacity: 1;
+}

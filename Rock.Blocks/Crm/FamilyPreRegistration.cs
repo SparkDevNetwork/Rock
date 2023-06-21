@@ -39,6 +39,7 @@ namespace Rock.Blocks.Crm
     [DisplayName( "Family Pre Registration" )]
     [Category( "CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -505,7 +506,7 @@ namespace Rock.Blocks.Crm
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "1D6794F5-876B-47B9-9C9B-5C2C2CC81074" )]
-    public partial class FamilyPreRegistration : RockObsidianBlockType
+    public partial class FamilyPreRegistration : RockBlockType
     {
         #region Attribute Keys, Categories and Values
 
@@ -716,7 +717,7 @@ namespace Rock.Blocks.Crm
 
         #endregion
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         public override object GetObsidianBlockInitialization()
         {

@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Examples
     {
         #region Fields
 
-        private const string DEFINED_TYPE_ROUTE = "/admintools/general/defined-type/";
+        private const string DEFINED_TYPE_ROUTE = "/admin/general/defined-types/";
 
         #endregion Fields
 
@@ -750,6 +750,11 @@ namespace RockWeb.Blocks.Examples
                 innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, match.Value, updatedValue );
                 match = match.NextMatch();
             }
+
+            innerXml = innerXml.Replace( "<para>", "<p>" ).Replace( "</para>", "</p>" );
+            innerXml = innerXml.Replace( "<c>", "<code>" ).Replace( "</c>", "</code>" );
+            innerXml = innerXml.Replace( "<example>", "<p>" ).Replace( "</example>", "</p>" );
+            innerXml = innerXml.Replace( "<code>", "<pre>" ).Replace( "</code>", "</pre>" );
             return innerXml;
         }
 

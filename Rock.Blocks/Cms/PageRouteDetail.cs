@@ -21,6 +21,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageRouteDetail;
+using Rock.Web.Cache;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,6 +40,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular page route." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -74,7 +77,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<PageRoute>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<PageRoute>();
 
                 return box;
             }

@@ -22,6 +22,7 @@ using Rock.Web.Cache;
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Tests.Shared;
+using System.Data.Entity;
 
 namespace Rock.Tests.Integration
 {
@@ -29,6 +30,11 @@ namespace Rock.Tests.Integration
     {
         public static class Core
         {
+            #region Attributes
+
+            /// <summary>
+            /// Arguments for the AddEntityAttribute action.
+            /// </summary>
             public class AddEntityAttributeArgs
             {
                 public string ForeignKey { get; set; }
@@ -124,6 +130,84 @@ namespace Rock.Tests.Integration
 
                 return attributes;
             }
+
+            #endregion
+
+            #region Cache
+
+            /// <summary>
+            /// Arguments for the AddCacheTag action.
+            /// </summary>
+            public class AddCacheTagArgs
+            {
+                public string ForeignKey { get; set; }
+
+                public Guid? Guid { get; set; }
+                public string Name { get; set; }
+
+                public string Description { get; set; }
+            }
+
+            /// <summary>
+            /// Add a defined Cache Tag.
+            /// </summary>
+            /// <param name="args"></param>
+            /// <param name="rockContext"></param>
+            /// <returns></returns>
+            public static Rock.Model.DefinedValue AddCacheTag( AddCacheTagArgs args, RockContext rockContext = null )
+            {
+                var newItems = AddCacheTags( new List<AddCacheTagArgs> { args }, rockContext );
+                return newItems.FirstOrDefault();
+            }
+
+            /// <summary>
+            /// Add defined Cache Tags.
+            /// Cache Tags are tracked using a Defined Type.
+            /// </summary>
+            /// <param name="args"></param>
+            /// <param name="rockContext"></param>
+            /// <returns></returns>
+            public static List<Rock.Model.DefinedValue> AddCacheTags( List<AddCacheTagArgs> args, RockContext rockContext = null )
+            {
+                rockContext = rockContext ?? new RockContext();
+
+                var cachedTagDefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ) ?? 0;
+
+                var definedValueService = new DefinedValueService( rockContext );
+                var valuesQuery = definedValueService.Queryable()
+                    .AsNoTracking()
+                    .Where( v => v.DefinedTypeId == cachedTagDefinedTypeId );
+
+                var newItems = new List<Rock.Model.DefinedValue>();
+
+                var order = 0;
+                if ( valuesQuery.Any() )
+                {
+                    order = valuesQuery.Max( v => v.Order ) + 1;
+                }
+
+                foreach ( var attributeArgs in args )
+                {
+                    var definedValue = new DefinedValue
+                    {
+                        DefinedTypeId = cachedTagDefinedTypeId,
+                        Value = attributeArgs.Name?.Trim().ToLower(),
+                        Description = attributeArgs.Description,
+                        Order = order
+                    };
+
+                    definedValueService.Add( definedValue );
+                    order++;
+
+                    newItems.Add( definedValue );
+                }
+
+                rockContext.SaveChanges();
+
+                return newItems;
+            }
+
+            #endregion
         }
     }
 }

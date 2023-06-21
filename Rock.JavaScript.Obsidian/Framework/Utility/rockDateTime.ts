@@ -306,7 +306,7 @@ export class RockDateTime {
      * The day of the year represented by this instance.
      */
     public get dayOfYear(): number {
-        return this.dateTime.year;
+        return this.dateTime.ordinal;
     }
 
     /**

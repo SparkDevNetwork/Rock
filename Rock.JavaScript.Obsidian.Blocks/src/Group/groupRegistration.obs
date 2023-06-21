@@ -34,7 +34,7 @@ import { GroupRegistrationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupReg
 import RockButton from "@Obsidian/Controls/rockButton";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
 const config = useConfigurationValues<GroupRegistrationBlockBox>();

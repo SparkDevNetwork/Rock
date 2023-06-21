@@ -106,8 +106,8 @@
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker";
-    import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
-    import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
+    import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
+    import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { StreakStructureType, StreakStructureTypeDescription } from "@Obsidian/Enums/Engagement/streakStructureType";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
@@ -199,7 +199,7 @@
     watch([attributeValues, ...propRefs], () => {
         // set the value of structure entity id to null if the structure type changes
         if(props.modelValue?.structureType?.toString() != structureType.value){
-            structureEntity.value = null;
+            structureEntity.value = {};
         }
 
         const newValue: StreakTypeBag = {

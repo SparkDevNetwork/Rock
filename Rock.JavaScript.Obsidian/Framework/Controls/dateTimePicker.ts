@@ -18,8 +18,8 @@ import { defineComponent, PropType } from "vue";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import RockFormField from "./rockFormField";
 import TextBox from "./textBox";
-import BasicTimePicker from "./basicTimePicker";
-import { TimePickerValue } from "./timePicker";
+import BasicTimePicker from "./basicTimePicker.obs";
+import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
 import { padLeft } from "@Obsidian/Utility/stringUtils";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
@@ -228,7 +228,7 @@ export default defineComponent({
     },
 
     template: `
-<RockFormField formGroupClasses="date-picker" #default="{uniqueId}" name="datepicker" v-model.lazy="internalDateValue">
+<RockFormField formGroupClasses="date-time-picker" #default="{uniqueId}" name="datepicker" v-model.lazy="internalDateValue">
     <div class="control-wrapper">
         <div class="form-control-group">
             <div class="form-row">
@@ -238,7 +238,7 @@ export default defineComponent({
                         <i class="fa fa-calendar"></i>
                     </span>
                 </div>
-                <BasicTimePicker v-model="internalTimeValue" :disabled="isDisabled" />
+                <BasicTimePicker v-model="internalTimeValue" :disabled="isDisabled" hideClear />
                 <div v-if="displayCurrentOption" class="input-group">
                     <div class="checkbox">
                         <label title="">

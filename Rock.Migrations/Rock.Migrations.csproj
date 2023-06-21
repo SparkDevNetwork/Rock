@@ -92,6 +92,50 @@
     <Compile Include="Migrations\202305042020411_CodeGenerated_20230504.designer.cs">
       <DependentUpon>202305042020411_CodeGenerated_20230504.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202305181748412_Rollup_20230518.cs" />
+    <Compile Include="Migrations\202305181748412_Rollup_20230518.designer.cs">
+      <DependentUpon>202305181748412_Rollup_20230518.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202305181819240_CodeGenerated_20230518.cs" />
+    <Compile Include="Migrations\202305181819240_CodeGenerated_20230518.designer.cs">
+      <DependentUpon>202305181819240_CodeGenerated_20230518.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202305222104554_WindowsCheckinInstaller13_8.cs" />
+    <Compile Include="Migrations\202305222104554_WindowsCheckinInstaller13_8.designer.cs">
+      <DependentUpon>202305222104554_WindowsCheckinInstaller13_8.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
+    <Compile Include="Migrations\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.designer.cs">
+      <DependentUpon>202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306011936445_Rollup_20230601.cs" />
+    <Compile Include="Migrations\202306011936445_Rollup_20230601.designer.cs">
+      <DependentUpon>202306011936445_Rollup_20230601.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306011959060_CodeGenerated_20230601.cs" />
+    <Compile Include="Migrations\202306011959060_CodeGenerated_20230601.designer.cs">
+      <DependentUpon>202306011959060_CodeGenerated_20230601.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306082032176_AiSetup.cs" />
+    <Compile Include="Migrations\202306082032176_AiSetup.designer.cs">
+      <DependentUpon>202306082032176_AiSetup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306121854027_NamePronunciationOverrideAddedToPerson.cs" />
+    <Compile Include="Migrations\202306121854027_NamePronunciationOverrideAddedToPerson.designer.cs">
+      <DependentUpon>202306121854027_NamePronunciationOverrideAddedToPerson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306131734421_UpdateInteractionSessionIndices.cs" />
+    <Compile Include="Migrations\202306131734421_UpdateInteractionSessionIndices.designer.cs">
+      <DependentUpon>202306131734421_UpdateInteractionSessionIndices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306151802148_Rollup_20230615.cs" />
+    <Compile Include="Migrations\202306151802148_Rollup_20230615.designer.cs">
+      <DependentUpon>202306151802148_Rollup_20230615.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306151844225_CodeGenerated_20230615.cs" />
+    <Compile Include="Migrations\202306151844225_CodeGenerated_20230615.designer.cs">
+      <DependentUpon>202306151844225_CodeGenerated_20230615.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1667,6 +1711,39 @@
     <EmbeddedResource Include="Migrations\202305042020411_CodeGenerated_20230504.resx">
       <DependentUpon>202305042020411_CodeGenerated_20230504.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305181748412_Rollup_20230518.resx">
+      <DependentUpon>202305181748412_Rollup_20230518.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305181819240_CodeGenerated_20230518.resx">
+      <DependentUpon>202305181819240_CodeGenerated_20230518.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305222104554_WindowsCheckinInstaller13_8.resx">
+      <DependentUpon>202305222104554_WindowsCheckinInstaller13_8.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.resx">
+      <DependentUpon>202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306011936445_Rollup_20230601.resx">
+      <DependentUpon>202306011936445_Rollup_20230601.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306011959060_CodeGenerated_20230601.resx">
+      <DependentUpon>202306011959060_CodeGenerated_20230601.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306082032176_AiSetup.resx">
+      <DependentUpon>202306082032176_AiSetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306121854027_NamePronunciationOverrideAddedToPerson.resx">
+      <DependentUpon>202306121854027_NamePronunciationOverrideAddedToPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306131734421_UpdateInteractionSessionIndices.resx">
+      <DependentUpon>202306131734421_UpdateInteractionSessionIndices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306151802148_Rollup_20230615.resx">
+      <DependentUpon>202306151802148_Rollup_20230615.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306151844225_CodeGenerated_20230615.resx">
+      <DependentUpon>202306151844225_CodeGenerated_20230615.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
     </EmbeddedResource>
@@ -2846,6 +2923,9 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Migrations\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
+    <None Include="Migrations\UpdateChartShortcode.sql" />
+    <None Include="Migrations\202306151802148_UpdateChartShortcode.sql" />
     <Content Include="Migrations\Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication.sql">
       <DependentUpon>202302092033593_Rollup_20230209.cs</DependentUpon>
     </Content>

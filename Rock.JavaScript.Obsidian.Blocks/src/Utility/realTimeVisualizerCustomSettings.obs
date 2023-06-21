@@ -6,8 +6,8 @@
            @save="onSave">
 
         <NotificationBox v-if="errorMessage"
-               v-text="errorMessage"
-               alertType="warning" />
+                         v-text="errorMessage"
+                         alertType="warning" />
 
         <LoadingIndicator v-else-if="isLoading" :delay="500" />
 

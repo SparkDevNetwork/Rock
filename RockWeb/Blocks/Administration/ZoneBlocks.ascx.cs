@@ -18,11 +18,13 @@ using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -125,7 +127,7 @@ namespace RockWeb.Blocks.Administration
                 gPageBlocks.GridReorder += gPageBlocks_GridReorder;
                 gPageBlocks.GridRebind += gPageBlocks_GridRebind;
 
-                LoadBlockTypes( !Page.IsPostBack );
+                LoadBlockTypes( !Page.IsPostBack, _Page.Layout.Site.SiteType );
 
                 string script = string.Format(
                     @"Sys.Application.add_load(function () {{
@@ -622,7 +624,9 @@ namespace RockWeb.Blocks.Administration
         /// <summary>
         /// Loads the block types.
         /// </summary>
-        private void LoadBlockTypes( bool registerBlockTypes )
+        /// <param name="registerBlockTypes">If <c>true</c> then a search for unregistered blocks will be performed.</param>
+        /// <param name="siteType">The type of site the to use when filtering supported block types.</param>
+        private void LoadBlockTypes( bool registerBlockTypes, SiteType siteType )
         {
             if ( registerBlockTypes )
             {
@@ -640,30 +644,47 @@ namespace RockWeb.Blocks.Administration
             }
 
             // Get a list of BlockTypes that does not include Mobile block types.
-            var allExceptMobileBlockTypes = BlockTypeCache.All();
-            foreach ( var cachedBlockType in BlockTypeCache.All().Where( b => string.IsNullOrEmpty( b.Path ) ) )
-            {
-                try
+            var webBlockTypes = BlockTypeCache.All()
+                .Where( bt =>
                 {
-                    var blockCompiledType = cachedBlockType.GetCompiledType();
+                    var type = bt.GetCompiledType();
 
-                    if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    if ( siteType == SiteType.Web )
                     {
-                        allExceptMobileBlockTypes.Remove( cachedBlockType );
-                    }
-                }
-                catch ( Exception )
-                {
-                    // Intentionally ignored
-                }
-            }
+                        if ( typeof( RockBlock ).IsAssignableFrom( type ) )
+                        {
+                            return true;
+                        }
 
-            var blockTypes = allExceptMobileBlockTypes.Select( b => new {
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
+
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockObsidianBlockType ).IsAssignableFrom( type );
+                    }
+                    else if ( siteType == SiteType.Mobile )
+                    {
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
+
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockMobileBlockType ).IsAssignableFrom( type );
+                    }
+
+                    return false;
+                } )
+                .ToList();
+
+            var blockTypes = webBlockTypes.Select( b => new {
                 b.Id,
                 b.Name,
                 b.Category,
                 b.Description,
-                IsObsidian = typeof( Rock.Blocks.IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() )
+                IsObsidian = typeof( IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() )
             } ).ToList();
 
             ddlBlockType.Items.Clear();

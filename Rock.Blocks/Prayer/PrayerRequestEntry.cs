@@ -33,6 +33,7 @@ namespace Rock.Blocks.Prayer
     [DisplayName( "Prayer Request Entry" )]
     [Category( "Prayer" )]
     [Description( "Allows prayer requests to be added via visitors on the website." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -217,7 +218,7 @@ namespace Rock.Blocks.Prayer
     /// Allows prayer requests to be added by visitors on the website.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
-    public class PrayerRequestEntry : RockObsidianBlockType
+    public class PrayerRequestEntry : RockBlockType
     {
         #region Categories
 
@@ -411,7 +412,7 @@ namespace Rock.Blocks.Prayer
         #region IRockObsidianBlockType Implementation
 
         /// <inheritdoc/>
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()

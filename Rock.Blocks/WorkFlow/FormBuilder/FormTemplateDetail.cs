@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,12 +34,13 @@ namespace Rock.Blocks.Workflow.FormBuilder
     /// <summary>
     /// Shows the details of a FormBuilder template.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Form Template Detail" )]
     [Category( "WorkFlow > FormBuilder" )]
     [Description( "Shows the details of a FormBuilder template." )]
     [IconCssClass( "fa fa-align-left" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -47,7 +48,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_FORM_TEMPLATE_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "A522F0A4-39D4-4047-A012-EF42F7D2759D")]
-    public class FormTemplateDetail : RockObsidianBlockType
+    public class FormTemplateDetail : RockBlockType
     {
         private static class PageParameterKey
         {

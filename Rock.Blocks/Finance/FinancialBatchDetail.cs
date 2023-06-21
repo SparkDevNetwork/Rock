@@ -39,6 +39,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of a particular financial batch." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -80,7 +81,7 @@ namespace Rock.Blocks.Finance
 
         #endregion
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -98,7 +99,7 @@ namespace Rock.Blocks.Finance
 
                 box.NavigationUrls = GetBoxNavigationUrls( id );
                 box.Options = GetBoxOptions( box.Entity, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<FinancialBatch>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<FinancialBatch>();
 
                 return box;
             }

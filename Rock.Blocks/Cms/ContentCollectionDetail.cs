@@ -47,6 +47,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular content collection." )]
     [IconCssClass( "fa fa-book-open" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -83,7 +84,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<ContentCollection>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<ContentCollection>();
 
                 return box;
             }

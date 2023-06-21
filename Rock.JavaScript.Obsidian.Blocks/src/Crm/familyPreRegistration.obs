@@ -443,7 +443,7 @@
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
     import ImageUploader from "@Obsidian/Controls/imageUploader";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Panel from "@Obsidian/Controls/panel";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";

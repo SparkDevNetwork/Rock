@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,12 +34,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
     /// <summary>
     /// Allows for filling out workflows from a mobile application.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Workflow Entry" )]
     [Category( "Mobile > Cms" )]
     [Description( "Allows for filling out workflows from a mobile application." )]
     [IconCssClass( "fa fa-gears" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -96,7 +97,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_WORKFLOW_ENTRY_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED")]
-    public class WorkflowEntry : RockMobileBlockType
+    public class WorkflowEntry : RockBlockType
     {
         #region Feature Keys
 
@@ -185,21 +186,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.WorkflowEntry";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

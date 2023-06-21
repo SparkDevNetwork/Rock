@@ -39,6 +39,7 @@ namespace Rock.Blocks.Groups
     [DisplayName( "Group Registration" )]
     [Category( "Group" )]
     [Description( "Allows a person to register for a group." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -188,7 +189,7 @@ namespace Rock.Blocks.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( "bbce9c47-b14d-4122-86a0-08441dee2759" )]
     [Rock.SystemGuid.BlockTypeGuid( "5e000376-ff90-4962-a053-ec1473da5c45" )]
-    public class GroupRegistration : RockObsidianBlockType
+    public class GroupRegistration : RockBlockType
     {
         #region Keys
 
@@ -226,7 +227,7 @@ namespace Rock.Blocks.Groups
 
         #endregion
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

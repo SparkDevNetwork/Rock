@@ -88,6 +88,8 @@ namespace RockWeb.Blocks.Mobile
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Shared/DragPallet.css", true );
+            RockPage.AddCSSLink( "~/Styles/Blocks/Mobile/Mobile.css", true );
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js" );
 
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Page ) ).Id;
@@ -439,6 +441,15 @@ namespace RockWeb.Blocks.Mobile
                         continue;
                     }
 
+                    // Descendants of RockBlockType must provide the SupportedSiteTypes attribute.
+                    if ( typeof( Rock.Blocks.RockBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    {
+                        if ( blockCompiledType.GetCustomAttribute<Rock.Blocks.SupportedSiteTypesAttribute>()?.SiteTypes.Contains( SiteType.Mobile ) != true )
+                        {
+                            continue;
+                        }
+                    }
+
                     var iconCssClassAttribute = ( IconCssClassAttribute ) blockCompiledType.GetCustomAttribute( typeof( IconCssClassAttribute ) );
 
                     var item = new ComponentItem
@@ -624,12 +635,22 @@ namespace RockWeb.Blocks.Mobile
                 {
                     var blockCompiledType = blockType.GetCompiledType();
 
-                    if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    if ( !typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
                     {
-                        if ( !categories.Contains( blockType.Category ) )
+                        continue;
+                    }
+
+                    if ( typeof( Rock.Blocks.RockBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    {
+                        if ( blockCompiledType.GetCustomAttribute<Rock.Blocks.SupportedSiteTypesAttribute>()?.SiteTypes.Contains( SiteType.Mobile ) != true )
                         {
-                            categories.Add( blockType.Category );
+                            continue;
                         }
+                    }
+
+                    if ( !categories.Contains( blockType.Category ) )
+                    {
+                        categories.Add( blockType.Category );
                     }
                 }
                 catch
@@ -720,7 +741,7 @@ namespace RockWeb.Blocks.Mobile
             tbName.Text = page.PageTitle;
             tbInternalName.Text = page.InternalName;
             tbDescription.Text = page.Description;
-           
+
             tbCssClass.Text = page.BodyCssClass;
             cbHideNavigationBar.Checked = additionalSettings.HideNavigationBar;
             cbShowFullScreen.Checked = additionalSettings.ShowFullScreen;
