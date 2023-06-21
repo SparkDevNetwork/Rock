@@ -39,6 +39,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
     [Category( "{{ Domain }}" )]
     [Description( "Displays the details of a particular {{ EntityName | SplitCase | Downcase }}." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
