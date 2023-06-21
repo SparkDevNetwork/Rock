@@ -88,7 +88,7 @@ namespace Rock.Blocks.Crm
                     entity = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
                 }
             }
-            catch ( Exception ex )
+            catch
             {
                 entityBag.ErrorMessage = "No, that's not right. Are you sure you copied that web address correctly?";
                 return entityBag;
@@ -120,7 +120,7 @@ namespace Rock.Blocks.Crm
                     rockContext.SaveChanges();
                     entityBag.IsOptOutSuccessful = true;
                 }
-                catch ( Exception ex )
+                catch
                 {
                     entityBag.ErrorMessage = "Something went wrong and we could not save your request. If it happens again please contact our office at the number below.";
                 }

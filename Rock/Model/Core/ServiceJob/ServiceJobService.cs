@@ -323,9 +323,13 @@ namespace Rock.Model
         /// <summary>
         /// Get the job types
         /// </summary>
-        public static List<ListItemBag> GetJobTypes()
+        internal static List<ListItemBag> GetJobTypes()
         {
-            var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
+#pragma warning disable CS0618 // Type or member is obsolete
+            var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values
+                .Union( Rock.Reflection.FindTypes( typeof( RockJob ) ).Values )
+                .Distinct();
+#pragma warning restore CS0618 // Type or member is obsolete
             var jobsList = jobs.ToList();
             foreach ( var job in jobs )
             {
@@ -333,7 +337,7 @@ namespace Rock.Model
                 {
                     ServiceJobService.UpdateAttributesIfNeeded( job );
                 }
-                catch ( Exception ex )
+                catch
                 {
                     jobsList.Remove( job );
                 }
