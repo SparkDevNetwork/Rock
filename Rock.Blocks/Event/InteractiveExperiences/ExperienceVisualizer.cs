@@ -36,7 +36,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Displays the visuals of an experience.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Experience Visualizer" )]
     [Category( "Event > Interactive Experiences" )]

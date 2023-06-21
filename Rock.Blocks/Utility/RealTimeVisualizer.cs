@@ -37,7 +37,7 @@ namespace Rock.Blocks.Utility
     /// <summary>
     /// Displays RealTime events from Rock with custom formatting options.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "RealTime Visualizer" )]
     [Category( "Utility" )]
@@ -87,7 +87,7 @@ namespace Rock.Blocks.Utility
 
     [Rock.SystemGuid.EntityTypeGuid( "77f4ea4a-ce87-4309-a7a0-2a1a75ab61cd" )]
     [Rock.SystemGuid.BlockTypeGuid( "ce185083-df13-48f9-8c97-83eda1ca65c2" )]
-    public class RealTimeVisualizer : RockObsidianDetailBlockType, IHasCustomActions
+    public class RealTimeVisualizer : RockDetailBlockType, IHasCustomActions
     {
         #region Keys
 

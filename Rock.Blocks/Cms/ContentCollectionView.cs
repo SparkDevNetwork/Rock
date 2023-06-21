@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the search results of a particular content collection.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Content Collection View" )]
     [Category( "CMS" )]

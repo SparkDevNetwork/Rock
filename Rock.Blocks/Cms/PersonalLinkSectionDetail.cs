@@ -34,7 +34,7 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular personal link section.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Personal Link Section Detail" )]
     [Category( "Cms" )]
@@ -54,7 +54,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "e76598f7-f686-41ee-848c-58e10758027f" )]
     [Rock.SystemGuid.BlockTypeGuid( "1abc8de5-a64d-4e69-875a-4407d9a7b425" )]
-    public class PersonalLinkSectionDetail : RockObsidianDetailBlockType
+    public class PersonalLinkSectionDetail : RockDetailBlockType
     {
         #region Keys
 

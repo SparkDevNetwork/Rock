@@ -33,7 +33,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Displays a list of interactive experience occurrences for the individual to pick from.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Experience Manager Occurrences" )]
     [Category( "Event > Interactive Experiences" )]

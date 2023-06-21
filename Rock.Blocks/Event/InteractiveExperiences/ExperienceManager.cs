@@ -40,7 +40,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Manages an active interactive experience.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Experience Manager" )]
     [Category( "Event > Interactive Experiences" )]

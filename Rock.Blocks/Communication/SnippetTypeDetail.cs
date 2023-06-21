@@ -34,7 +34,7 @@ namespace Rock.Blocks.Communication
     /// <summary>
     /// Displays the details of a particular snippet type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Snippet Type Detail" )]
     [Category( "Communication" )]
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "d3eead93-29e7-4bb3-9d16-f7e81b414d49" )]
     [Rock.SystemGuid.BlockTypeGuid( "96664080-04ef-4c88-bd16-4f002009da3c" )]
-    public class SnippetTypeDetail : RockObsidianDetailBlockType
+    public class SnippetTypeDetail : RockDetailBlockType
     {
         #region Keys
 

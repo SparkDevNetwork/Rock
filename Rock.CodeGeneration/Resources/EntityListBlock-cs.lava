@@ -48,7 +48,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
     [Rock.SystemGuid.EntityTypeGuid( "{{ '' | UniqueIdentifier }}" )]
     [Rock.SystemGuid.BlockTypeGuid( "{{ '' | UniqueIdentifier }}" )]
     [CustomizedGrid]
-    public class {{ EntityName }}List : RockObsidianEntityListBlockType<{{ EntityName }}>
+    public class {{ EntityName }}List : RockEntityListBlockType<{{ EntityName }}>
     {
         #region Keys
 

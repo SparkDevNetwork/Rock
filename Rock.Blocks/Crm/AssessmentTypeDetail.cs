@@ -34,8 +34,7 @@ namespace Rock.Blocks.Crm
     /// <summary>
     /// Displays the details of a particular assessment type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
-
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
     [DisplayName( "Assessment Type Detail" )]
     [Category( "CRM" )]
     [Description( "Displays the details of a particular assessment type." )]
@@ -48,7 +47,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.EntityTypeGuid( "83d4c6ca-a605-44d3-8bea-99b3e881baa0" )]
     [Rock.SystemGuid.BlockTypeGuid( "3b8b5ae5-4139-44a6-8eaa-99d48e51134e" )]
-    public class AssessmentTypeDetail : RockObsidianDetailBlockType
+    public class AssessmentTypeDetail : RockDetailBlockType
     {
         #region Keys
 
