@@ -223,6 +223,7 @@ import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstanceP
 import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/interactionChannelInteractionComponentPicker.obs";
 import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
 import ValueList from "@Obsidian/Controls/valueList.obs";
+import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
 
 // #region Gallery Support
 
@@ -8175,6 +8176,42 @@ const valueListGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates block template picker component */
+const blockTemplatePickerGallery = defineComponent({
+    name: "BlockTemplatePickerGallery",
+    components: {
+        GalleryAndResult,
+        BlockTemplatePicker,
+        DefinedValuePicker
+    },
+    setup() {
+        return {
+            value: ref(null),
+            templateKey: ref(null),
+            definedTypeGuid: DefinedType.TemplateBlock,
+            templateBlockGuid: ref(null),
+            importCode: getSfcControlImportPath("blockTemplatePicker"),
+            exampleCode: `<BlockTemplatePicker label="Select a Template" v-model="value" :templateBlockValueGuid="templateBlockValueGuid" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{value, templateKey}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+    <BlockTemplatePicker label="Select a Template" v-model="value" v-model:templateKey="templateKey" :templateBlockValueGuid="templateBlockGuid?.value" />
+
+    <template #settings>
+        <div class="row">
+            <DefinedValuePicker label="Template Block" formGroupClasses="col-md-4" v-model="templateBlockGuid" :definedTypeGuid="definedTypeGuid" showBlankItem />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -8324,6 +8361,7 @@ const controlGalleryComponents: Record<string, Component> = [
     interactionChannelInteractionComponentPickerGallery,
     workflowPickerGallery,
     valueListGallery,
+    blockTemplatePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

@@ -235,10 +235,12 @@
     <Compile Include="Rest\Controls\AccountPickerGetSearchedAccountsOptionsBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetParentGuidsOptionsBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetContentChannelItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTagListSaveTagValuesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesResultsBag.cs" />
     <Compile Include="Rest\Controls\GroupAndRolePickerGetRolesOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupsOptionsBag.cs" />
