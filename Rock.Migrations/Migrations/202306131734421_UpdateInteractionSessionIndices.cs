@@ -32,29 +32,6 @@ namespace Rock.Migrations
             AddColumn("dbo.InteractionSession", "InteractionChannelId", c => c.Int());
             AddForeignKey("dbo.InteractionSession", "InteractionChannelId", "dbo.InteractionChannel", "Id");
 
-            Sql( @"
-CREATE NONCLUSTERED INDEX [IX_InteractionChannelId_SessionStartDateKey] ON [InteractionSession]
-([InteractionChannelId], [SessionStartDateKey])
-INCLUDE ([DeviceTypeId], [DurationSeconds], [InteractionSessionLocationId], [InteractionCount])
-" );
-            
-            Sql( @"
-CREATE NONCLUSTERED INDEX [IX_SessionStartDateKey] ON [dbo].[InteractionSession]
-([SessionStartDateKey])
-INCLUDE ([DeviceTypeId], [DurationSeconds], [InteractionSessionLocationId], [InteractionCount], [InteractionChannelId])
-" );
-
-            Sql( @"
-CREATE NONCLUSTERED INDEX [IX_InteractionComponentId_InteractionDateKey]
-ON [dbo].[Interaction] ([InteractionComponentId],[InteractionDateKey])
-INCLUDE ([PersonAliasId], [InteractionSessionId], [InteractionTimeToServe], [EntityId], [InteractionSummary])
-" );
-
-            Sql( @"
-IF EXISTS (SELECT * FROM sys.indexes WHERE name='INDEX [IX_InteractionComponentId]' AND object_id = OBJECT_ID ('dbo.Interaction'))
-	DROP INDEX [IX_InteractionComponentId] ON [dbo].[Interaction]
-" );
-
             Sql( $@"
             IF NOT EXISTS (
                 SELECT 1
@@ -117,11 +94,6 @@ IF EXISTS (SELECT * FROM sys.indexes WHERE name='INDEX [IX_InteractionComponentI
         /// </summary>
         public override void Down()
         {
-            Sql( @"
-DROP INDEX [IX_SessionStartDateKey] ON [dbo].[InteractionSession]
-DROP INDEX [IX_InteractionComponentId_InteractionDateKey] ON [dbo].[Interaction]
-DROP INDEX [IX_InteractionChannelId_SessionStartDateKey] ON [dbo].[InteractionSession]
-" );
             DropForeignKey("dbo.InteractionSession", "InteractionChannelId", "dbo.InteractionChannel");
             DropColumn("dbo.InteractionSession", "InteractionChannelId");
         }
