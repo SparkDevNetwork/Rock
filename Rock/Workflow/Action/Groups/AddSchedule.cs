@@ -99,7 +99,7 @@ namespace Rock.Workflow.Action.Groups
 
     [WorkflowTextOrAttribute( "Weekly: Time of Day",
         "Attribute Value",
-        Description = "The time when creating a weekly schedule.",
+        Description = @"The time of day when creating a weekly schedule. If ""Weekly: Day of Week"" is supplied then ""Weekly: Time of Day"" is required.",
         Key = AttributeKey.WeeklyTimeOfDay,
         IsRequired = false,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TimeFieldType" },
@@ -149,13 +149,9 @@ namespace Rock.Workflow.Action.Groups
             var isPublic = GetAttributeValue( action, AttributeKey.IsPublic, true ).AsBoolean();
 
             // If "Weekly:" options are provided, ignore most other options.
-            TimeSpan? weeklyTimeOfDay = null;
-            if ( Enum.TryParse( GetAttributeValue( action, AttributeKey.WeeklyDayOfWeek, true ), out DayOfWeek weeklyDayOfWeek ) )
-            {
-                weeklyTimeOfDay = GetAttributeValue( action, AttributeKey.WeeklyTimeOfDay, true ).AsTimeSpan();
-            }
-
-            if ( weeklyTimeOfDay.HasValue )
+            var dayOfWeekWasParsed = Enum.TryParse( GetAttributeValue( action, AttributeKey.WeeklyDayOfWeek, true ), out DayOfWeek weeklyDayOfWeek );
+            var weeklyTimeOfDay = GetAttributeValue( action, AttributeKey.WeeklyTimeOfDay, true ).AsTimeSpan();
+            if ( dayOfWeekWasParsed && weeklyTimeOfDay.HasValue )
             {
                 SaveNewSchedule( new Schedule
                 {
@@ -165,6 +161,16 @@ namespace Rock.Workflow.Action.Groups
                 }, rockContext, action );
 
                 return true;
+            }
+            else if ( dayOfWeekWasParsed )
+            {
+                errorMessages.Add( @"""Weekly: Day of Week"" was parsed, but could not parse ""Weekly: Time of Day""." );
+                return false;
+            }
+            else if ( weeklyTimeOfDay.HasValue )
+            {
+                errorMessages.Add( @"""Weekly: Time of Day"" was parsed, but could not parse ""Weekly: Day of Week""." );
+                return false;
             }
 
             // Otherwise, this is an iCalendarContent schedule.
