@@ -91,7 +91,7 @@ namespace Rock.Workflow.Action.Groups
 
     [WorkflowTextOrAttribute( "Weekly: Day of Week",
         "Attribute Value",
-        Description = "The day of the week when creating a weekly schedule. 0 = Sunday, 6 = Saturday.",
+        Description = @"The day of the week when creating a weekly schedule. 0 = Sunday, 6 = Saturday. If ""Weekly: Time of Day"" is supplied then ""Weekly: Day of Week"" is required.",
         Key = AttributeKey.WeeklyDayOfWeek,
         IsRequired = false,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType", "Rock.Field.Types.DayOfWeekFieldType" },
@@ -149,9 +149,13 @@ namespace Rock.Workflow.Action.Groups
             var isPublic = GetAttributeValue( action, AttributeKey.IsPublic, true ).AsBoolean();
 
             // If "Weekly:" options are provided, ignore most other options.
-            var dayOfWeekWasParsed = Enum.TryParse( GetAttributeValue( action, AttributeKey.WeeklyDayOfWeek, true ), out DayOfWeek weeklyDayOfWeek );
+            var dayOfWeekString = GetAttributeValue( action, AttributeKey.WeeklyDayOfWeek, true );
+            var dayOfWeekInt = dayOfWeekString.AsIntegerOrNull() ?? -1;
+            var dayOfWeekIsValid = Enum.IsDefined( typeof( DayOfWeek ), dayOfWeekInt );
+            Enum.TryParse( dayOfWeekString, out DayOfWeek weeklyDayOfWeek );
+
             var weeklyTimeOfDay = GetAttributeValue( action, AttributeKey.WeeklyTimeOfDay, true ).AsTimeSpan();
-            if ( dayOfWeekWasParsed && weeklyTimeOfDay.HasValue )
+            if ( dayOfWeekIsValid && weeklyTimeOfDay.HasValue )
             {
                 SaveNewSchedule( new Schedule
                 {
@@ -162,7 +166,7 @@ namespace Rock.Workflow.Action.Groups
 
                 return true;
             }
-            else if ( dayOfWeekWasParsed )
+            else if ( dayOfWeekIsValid )
             {
                 errorMessages.Add( @"""Weekly: Day of Week"" was parsed, but could not parse ""Weekly: Time of Day""." );
                 return false;
@@ -182,7 +186,7 @@ namespace Rock.Workflow.Action.Groups
             var startDateTime = startDateTimeString.ResolveMergeFields( mergeFields ).AsDateTime();
             if ( !startDateTime.HasValue )
             {
-                errorMessages.Add( $"Could not parse the start date/time provided: {startDateTimeString}" );
+                errorMessages.Add( $@"Could not parse ""Start Date/Time"": {startDateTimeString}" );
                 return false;
             }
 
