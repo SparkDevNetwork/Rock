@@ -344,6 +344,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             // Get all the workflows that can be manually triggered by the person.
             var connectionWorkflows = GetConnectionOpportunityManualWorkflowTypes( request.ConnectionOpportunity, RequestContext.CurrentPerson )
+                .Where( w => w.ManualTriggerFilterConnectionStatusId == null || w.ManualTriggerFilterConnectionStatusId == request.ConnectionStatusId )
                 .Select( w => new WorkflowTypeItemViewModel
                 {
                     Guid = w.Guid,
@@ -1727,6 +1728,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionBadRequest( "Unable to find that connection activity type." );
                 }
 
+                if( !activity.ConnectorGuid.HasValue )
+                {
+                    return ActionBadRequest( "Invalid connector was specified." );
+
+                }
                 var connectorAliasId = personAliasService.GetPrimaryAliasId( activity.ConnectorGuid.Value );
 
                 if ( !connectorAliasId.HasValue )
