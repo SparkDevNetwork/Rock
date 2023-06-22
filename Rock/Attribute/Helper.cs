@@ -1088,7 +1088,7 @@ This can be due to multiple threads updating the same attribute at the same time
             var entityIdsTable = new DataTable();
             entityIdsTable.Columns.Add( "EntityTypeId", typeof( int ) );
             entityIdsTable.Columns.Add( "EntityId", typeof( int ) );
-            entityIdsTable.Columns.Add( "RealTypeId", typeof( int ) );
+            entityIdsTable.Columns.Add( "RealEntityId", typeof( int ) );
 
             for ( int i = 0; i < entityKeys.Count; i++ )
             {
