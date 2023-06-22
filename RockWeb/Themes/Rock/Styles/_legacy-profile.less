@@ -342,6 +342,25 @@
     margin: @spacing-sm-px 0;
     text-align: center;
 
+    .badge {
+      display: inline-block; // fixes issue in default browser on Android
+      padding: 3px 6px 0;
+      background-color: inherit;
+
+      &:empty {
+        display: none;
+      }
+
+      .tooltip-inner {
+        max-width: 300px;
+        padding: 12px;
+      }
+    }
+
+    .badge-grid {
+      margin: -5px 0;
+    }
+
     .badge-debug {
       position: absolute;
       right: 12px;
@@ -367,8 +386,62 @@
   }
 }
 
+// person profile
+.personprofile {
+  margin: -5px -15px 0;
 
-/* Small devices (tablets, 768px and up) */
+  @media (min-width: @screen-md-min) {
+    margin: -35px -35px 0;
+  }
+}
+
+.personprofilebar-bio,
+.personprofilebar-family {
+  small {
+    // lighten up small elements a bit
+    opacity: .7;
+  }
+}
+
+.personprofilebar-bio {
+  .name {
+    font-weight: 700;
+  }
+
+  .name .firstname {
+    font-size: .488em;
+    font-weight: @font-weight-light;
+  }
+
+  .previous-names {
+    font-weight: @font-weight-light;
+  }
+}
+
+.personprofilebar-bio,
+.personprofilebar-family {
+  small {
+    // lighten up small elements a bit
+    opacity: .7;
+  }
+}
+
+.personprofilebar-bio {
+  .name {
+    font-weight: 700;
+  }
+
+  .name .firstname {
+    font-size: .488em;
+    font-weight: @font-weight-light;
+  }
+
+  .previous-names {
+    font-weight: @font-weight-light;
+  }
+}
+
+
 @media (min-width: @screen-sm-min), print {
   // bio bar
   .personprofilebar-bio {
@@ -417,38 +490,5 @@
         text-align: right;
       }
     }
-  }
-}
-
-
-// person profile
-.personprofile {
-  margin: -5px -15px 0;
-
-  @media (min-width: @screen-md-min) {
-    margin: -35px -35px 0;
-  }
-}
-
-.personprofilebar-bio,
-.personprofilebar-family {
-  small {
-    // lighten up small elements a bit
-    opacity: .7;
-  }
-}
-
-.personprofilebar-bio {
-  .name {
-    font-weight: 700;
-  }
-
-  .name .firstname {
-    font-size: .488em;
-    font-weight: @font-weight-light;
-  }
-
-  .previous-names {
-    font-weight: @font-weight-light;
   }
 }
