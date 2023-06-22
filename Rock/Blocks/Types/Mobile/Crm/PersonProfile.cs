@@ -54,7 +54,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
         Order = 0 )]
 
     [CodeEditorField( "Header Template",
-        Description = "Lava template used to render the header above the reminder edit fields.",
+        Description = "Lava template used to render the header of the block.",
         IsRequired = false,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
         Key = AttributeKey.HeaderTemplate,
@@ -62,14 +62,14 @@ namespace Rock.Blocks.Types.Mobile.Crm
         Order = 1 )]
 
     [CodeEditorField( "Custom Actions Template",
-        Description = "Lava template used to render custom actions (such as navigation) below the action buttons.",
+        Description = "Lava template used to render custom actions (such as navigation) below the contact buttons.",
         IsRequired = false,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
         Key = AttributeKey.CustomActionsTemplate,
         Order = 2 )]
 
     [CodeEditorField( "Badge Bar Template",
-        Description = "Lava template used to render the header above the reminder edit fields.",
+        Description = "Lava template used to render custom XAML below the Custom Actions Template.",
         IsRequired = false,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
         Key = AttributeKey.BadgeBarTemplate,
