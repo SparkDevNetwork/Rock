@@ -14,14 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockFormField from "./rockFormField";
 import DropDownList from "./dropDownList";
 import RockLabel from "./rockLabel";
 import TextBox from "./textBox";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { rulesPropType } from "@Obsidian/Utility/validationRules";
+import { normalizeRules, rulesPropType } from "@Obsidian/Utility/validationRules";
+import { updateRefValue } from "@Obsidian/Utility/component";
 
 export type AddressControlValue = {
     street1?: string;
@@ -48,10 +49,11 @@ const stateOptions: ListItemBag[] = [
     "WA", "WV", "WI", "WY"]
     .map(o => ({ value: o, text: o }));
 
-export const AddressControlBase = defineComponent({
-    name: "AddressControlBase",
+export default defineComponent({
+    name: "AddressControl",
 
     components: {
+        RockFormField,
         TextBox,
         RockLabel,
         DropDownList
@@ -63,65 +65,121 @@ export const AddressControlBase = defineComponent({
             default: {}
         },
 
-        id: {
-            type: String as PropType<string>,
-            default: ""
-        },
         rules: rulesPropType
     },
 
-    setup(props) {
-        const uniqueId = props.id || `rock-addresscontrol-${newGuid()}`;
+    emits: {
+        "update:modelValue": (_v: AddressControlValue) => true
+    },
+
+    setup(props, { emit }) {
+        const internalValue = ref(props.modelValue);
+
+        watch(() => props.modelValue, () => {
+            updateRefValue(internalValue, props.modelValue);
+        }, { deep: true });
+
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value);
+        }, { deep: true });
+
+        // Custom address validation
+        const fieldRules = computed(() => {
+            const rules = normalizeRules(props.rules);
+
+            if (rules.includes("required")) {
+                const index = rules.indexOf("required");
+
+                rules[index] = (value: unknown) => {
+                    try {
+                        const val = JSON.parse(value as string) as AddressControlValue;
+                        if (!val || !val.street1 || !val.city || !val.postalCode) {
+                            return "is required";
+                        }
+
+                        if (!/^\d{5}(-\d{4})?$/.test(val.postalCode)) {
+                            return "needs a valid Zip code";
+                        }
+                    }
+                    catch (e) {
+                        return "is required";
+                    }
+
+                    return true;
+                };
+            }
+            else {
+                rules.push((value: unknown) => {
+                    try {
+                        const val = JSON.parse(value as string) as AddressControlValue;
+                        if (!val || !val.street1) {
+                            // can be empty
+                            return true;
+                        }
+
+                        if (!val.city || !val.postalCode) {
+                            // If we have a street value, we also need a city and zip
+                            const missing: string[] = [];
+                            if (!val.city) {
+                                missing.push("City");
+                            }
+                            if (!val.postalCode) {
+                                missing.push("Zip");
+                            }
+                            return "must include " + missing.join(", ");
+                        }
+
+                        if (!/^\d{5}(-\d{4})?$/.test(val.postalCode)) {
+                            return "needs a valid Zip code";
+                        }
+                    }
+                    catch (e) {
+                        return "must be filled out correctly.";
+                    }
+
+                    return true;
+                });
+            }
+
+            return rules;
+        });
+
+        // RockFormField doesn't watch for deep changes, so it doesn't notice when individual pieces
+        // change. This rememdies that by turning the value into a single string.
+        const fieldValue = computed(() => {
+            return JSON.stringify(internalValue.value);
+        });
 
         return {
-            uniqueId,
-            stateOptions
+            internalValue,
+            stateOptions,
+            fieldRules,
+            fieldValue
         };
     },
 
     template: `
-<div :id="uniqueId">
-    <div class="form-group">
-        <TextBox placeholder="Address Line 1" :rules="rules" v-model="modelValue.street1" validationTitle="Address Line 1" />
-    </div>
-    <div class="form-group">
-        <TextBox placeholder="Address Line 2" v-model="modelValue.street2" validationTitle="Address Line 2" />
-    </div>
-    <div class="form-row">
-        <div class="form-group col-sm-6">
-            <TextBox placeholder="City" :rules="rules" v-model="modelValue.city" validationTitle="City" />
-        </div>
-        <div class="form-group col-sm-3">
-            <DropDownList :showBlankItem="false" v-model="modelValue.state" :items="stateOptions" />
-        </div>
-        <div class="form-group col-sm-3">
-            <TextBox placeholder="Zip" :rules="rules" v-model="modelValue.postalCode" validationTitle="Zip" />
-        </div>
-    </div>
-</div>
-`
-});
-
-export default defineComponent({
-    name: "AddressControl",
-
-    components: {
-        RockFormField,
-        AddressControlBase
-    },
-
-    props: {
-        modelValue: {
-            type: Object as PropType<AddressControlValue>,
-            default: {}
-        },
-        rules: rulesPropType
-    },
-
-    template: `
-<RockFormField formGroupClasses="address-control" #default="{uniqueId, field}" name="addresscontrol" v-model.lazy="modelValue" :rules="rules" >
+<RockFormField formGroupClasses="address-control" name="addresscontrol" :modelValue="fieldValue" :rules="fieldRules" >
     <div class="control-wrapper">
-        <AddressControlBase v-model.lazy="modelValue" :rules="rules" v-bind="field" :disabled="disabled" />
+        <div>
+            <div class="form-group">
+                <TextBox placeholder="Address Line 1" v-model="internalValue.street1" validationTitle="Address Line 1" />
+            </div>
+            <div class="form-group">
+                <TextBox placeholder="Address Line 2" v-model="internalValue.street2" validationTitle="Address Line 2" />
+            </div>
+            <div class="form-row">
+                <div class="form-group col-sm-6">
+                    <TextBox placeholder="City" v-model="internalValue.city" validationTitle="City" />
+                </div>
+                <div class="form-group col-sm-3">
+                    <DropDownList :showBlankItem="false" v-model="internalValue.state" :items="stateOptions" validationTitle="State" />
+                </div>
+                <div class="form-group col-sm-3">
+                    <TextBox placeholder="Zip" v-model="internalValue.postalCode" validationTitle="Zip" />
+                </div>
+            </div>
+        </div>
     </div>
 </RockFormField>
 `
