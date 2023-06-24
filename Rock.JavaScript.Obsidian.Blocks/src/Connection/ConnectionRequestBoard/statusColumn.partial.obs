@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="board-column">
+        <div class="board-heading">
+            <div class="board-heading-details">
+                <span class="board-column-title">{{ connectionStatus?.Name }}</span>
+                <span class="board-count">{{ connectionRequests.length }}</span>
+            </div>
+            <div class="board-heading-pill" :style="boardHeadingPillStyle"></div>
+        </div>
+        <div class="board-cards">
+
+            <RequestCard v-for="connectionRequest in connectionRequests"
+                         :key="connectionRequest.Id"
+                         :connectionRequest="connectionRequest"
+                         :disabled="disabled"
+                         @select="$emit('selectConnectionRequest', connectionRequest.Id)" />
+
+            <div v-if="showSentry" class="board-card-base board-column-sentry small">
+                <p class="mb-2"><strong>More requests exist</strong></p>
+                <p>Please adjust sorting, use filters, or even use the grid mode to interact with them.</p>
+            </div>
+
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import RequestCard from "./requestCard.partial.obs";
+    import { IConnectionRequestViewModel, IConnectionStatusViewModel } from "./types.partial";
+
+    const props = defineProps({
+        connectionStatus: {
+            type: Object as PropType<IConnectionStatusViewModel>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "selectConnectionRequest", value: number): void
+    }>();
+
+    // #region Computed Values
+
+    const boardHeadingPillStyle = computed((): Record<string, string> => {
+        const style = {};
+
+        if (props.connectionStatus?.HighlightColor) {
+            style["background"] = props.connectionStatus.HighlightColor;
+        }
+
+        return style;
+    });
+
+    const connectionRequests = computed((): IConnectionRequestViewModel[] => {
+        return props.connectionStatus?.Requests ?? [];
+    });
+
+    const showSentry = computed((): boolean => {
+        return (props.connectionStatus?.RequestCount ?? 0) > connectionRequests.value.length;
+    });
+
+    // #endregion
+</script>

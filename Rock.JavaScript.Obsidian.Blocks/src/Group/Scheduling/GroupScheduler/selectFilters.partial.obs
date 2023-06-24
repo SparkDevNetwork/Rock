@@ -184,7 +184,7 @@
     }
 
     /**
-     * Gets the current filters according the the controls' selected values.
+     * Gets the current filters according to the controls' selected values.
      */
     function getCurrentFilters(): GroupSchedulerFiltersBag {
         var dateRange: SlidingDateRangeBag | null = selectedDateRange.value
@@ -212,7 +212,7 @@
     /**
      * Sets the internal values using the provided filters.
      *
-     * @param appliedFilters The filters value from which to set the internal values.
+     * @param filters The filters value from which to set the internal values.
      */
     function setCurrentFilters(filters: GroupSchedulerFiltersBag | null | undefined): void {
         selectedGroups.value = filters?.groups ?? [];

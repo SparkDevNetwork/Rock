@@ -179,6 +179,34 @@ namespace Rock.Blocks
             return listItemBags;
         }
 
+        /// <summary>
+        /// Converts the <typeparamref name="TEnum"/> <see cref="Enum"/> into a <see cref="ListItemBag"/> list.
+        /// </summary>
+        /// <typeparam name="TEnum">The <see cref="Enum"/> type to be converted.</typeparam>
+        /// <returns>A <see cref="ListItemBag"/> list of <typeparamref name="TEnum"/> representations, with each integer value mapped to <see cref="ListItemBag.Value"/> and its corresponding "safe" string mapped to <see cref="ListItemBag.Text"/>.</returns>
+        public static List<ListItemBag> GetListItemBagList<TEnum>( bool includeEmptyFirstItem = false ) where TEnum : Enum
+        {
+            var listItemBags = new List<ListItemBag>();
+
+            if ( includeEmptyFirstItem )
+            {
+                listItemBags.Add( new ListItemBag() );
+            }
+
+            foreach ( var value in Enum.GetValues( typeof( TEnum ) ) )
+            {
+                var enumValue = ( TEnum ) value;
+
+                listItemBags.Add( new ListItemBag
+                {
+                    Value = enumValue.ConvertToInt().ToString(),
+                    Text = enumValue.ConvertToStringSafe()
+                } );
+            }
+
+            return listItemBags;
+        }
+
         #endregion
 
         #region Convenience Converters: Entity-Specific Usages of Generic Converters

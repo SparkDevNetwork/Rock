@@ -1,0 +1,25 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    grid view.
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ConnectionRequestBoardGridDataBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardGridDataBag";
+
+    defineProps({
+        gridData: {
+            type: Object as PropType<ConnectionRequestBoardGridDataBag | null | undefined>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "selectConnectionRequest", value: number): void
+    }>();
+</script>

@@ -102,6 +102,7 @@
     <Compile Include="Controls\FieldSource.cs" />
     <Compile Include="Controls\AttributeFormat.cs" />
     <Compile Include="Controls\FieldFormat.cs" />
+    <Compile Include="Connection\ConnectionState.cs" />
     <Compile Include="Controls\DayOfWeek.cs" />
     <Compile Include="Communication\NotificationClassification.cs" />
     <Compile Include="Communication\SegmentCriteria.cs" />

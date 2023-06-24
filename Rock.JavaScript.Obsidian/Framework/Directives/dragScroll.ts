@@ -181,6 +181,19 @@ function shouldScroll(ev: MouseEvent): boolean {
  * drag-scrolling, for a more pleasant individual experience.
  */
 function setGrabbingStyles(): void {
+
+    /*
+        8/2/2023 - JPH
+
+        There appears to be a browser bug (in Chrome, at least) where the cursor doesn't actually
+        change until the mouse is moved. BUT good news: this only happens when dev tools are open.
+        If you come across this behavior and happen to have dev tools open, try closing them to
+        see if that resolves it before spending time chasing this issue.
+
+        Reason: mouse cursor change is delayed / only changes after mouse is moved, causing the
+        "grab" and "grabbing" styles to be backwards when using the drag scroll directive.
+    */
+
     hostElement.style.setProperty(styleProp.cursor, "grabbing");
     hostElement.style.setProperty(styleProp.userSelect, "none");
 
@@ -260,6 +273,19 @@ function getFirstScrollableAncestorY(el: HTMLElement | null): HTMLElement | null
  * on the host element.
  */
 function removeGrabbingStyles(): void {
+
+    /*
+        8/2/2023 - JPH
+
+        There appears to be a browser bug (in Chrome, at least) where the cursor doesn't actually
+        change until the mouse is moved. BUT good news: this only happens when dev tools are open.
+        If you come across this behavior and happen to have dev tools open, try closing them to
+        see if that resolves it before spending time chasing this issue.
+
+        Reason: mouse cursor change is delayed / only changes after mouse is moved, causing the
+        "grab" and "grabbing" styles to be backwards when using the drag scroll directive.
+    */
+
     hostElement.style.setProperty(styleProp.cursor, "grab");
     hostElement.style.removeProperty(styleProp.userSelect);
 

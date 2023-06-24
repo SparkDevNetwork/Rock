@@ -1,0 +1,180 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           modalWrapperClasses="connection-request-board"
+           title="Connection Request"
+           :isFooterHidden="true"
+           :clickBackdropToClose="true">
+
+        <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+            {{ blockActionErrorMessage }}
+        </NotificationBox>
+
+        <RequestView v-if="isViewMode" :selectedRequest="selectedRequest" />
+
+        <RequestAddEdit v-else :connectionRequest="connectionRequest"
+                        :options="requestOptions"
+                        :disabled="isSavingRequest"
+                        @save="onRequestAddEditSave"
+                        @cancel="onRequestAddEditCancel" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RequestAddEdit from "./requestAddEdit.partial.obs";
+    import RequestView from "./requestView.partial.obs";
+    import { RequestModalMode } from "./types.partial";
+    import Modal from "@Obsidian/Controls/modal";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ConnectionRequestBoardConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardConnectionRequestBag";
+    import { ConnectionRequestBoardRequestOptionsBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardRequestOptionsBag";
+    import { ConnectionRequestBoardSelectedRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardSelectedRequestBag";
+    import { ConnectionRequestBoardSelectRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardSelectRequestBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        connectionOpportunityId: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        },
+
+        connectionRequestId: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:connectionRequestId", value: number | null | undefined): void
+    }>();
+
+    // #region Values
+
+    const mode = ref(RequestModalMode.View);
+
+    const connectionRequestId = useVModelPassthrough(props, "connectionRequestId", emit);
+
+    const blockActionErrorMessage = ref("");
+
+    const isLoadingSelectedRequest = ref(false);
+    const selectedRequest = ref<ConnectionRequestBoardSelectedRequestBag | null | undefined>();
+
+    const isSavingRequest = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isViewMode = computed((): boolean => {
+        return mode.value === RequestModalMode.View;
+    });
+
+    const isNewConnectionRequest = computed((): boolean => {
+        return connectionRequestId.value === 0;
+    });
+
+    const isConnectionRequestIdDefined = computed((): boolean => {
+        return isNewConnectionRequest.value
+            || (!!connectionRequestId.value && connectionRequestId.value > 0);
+    });
+
+    const isVisible = computed<boolean>({
+        get() {
+            return isConnectionRequestIdDefined.value;
+        },
+        set(newValue: boolean) {
+            if (!newValue) {
+                connectionRequestId.value = null;
+            }
+        }
+    });
+
+    const connectionRequest = computed((): ConnectionRequestBoardConnectionRequestBag | null | undefined => {
+        return selectedRequest.value?.connectionRequest;
+    });
+
+    const requestOptions = computed((): ConnectionRequestBoardRequestOptionsBag | null | undefined => {
+        return selectedRequest.value?.requestOptions;
+    });
+
+    const isModalDisabled = computed((): boolean => {
+        return !props.connectionOpportunityId
+            || !isConnectionRequestIdDefined.value
+            || isLoadingSelectedRequest.value
+            || isSavingRequest.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the selected connection request and supporting information.
+     */
+    async function getSelectedConnectionRequest(): Promise<void> {
+        if (isModalDisabled.value) {
+            return;
+        }
+
+        isLoadingSelectedRequest.value = true;
+        blockActionErrorMessage.value = "";
+
+        const bag: ConnectionRequestBoardSelectRequestBag = {
+            connectionRequestId: connectionRequestId.value ?? 0,
+            connectionOpportunityId: props.connectionOpportunityId ?? 0
+        };
+
+        const result = await invokeBlockAction<ConnectionRequestBoardSelectedRequestBag>("GetConnectionRequest", { bag });
+        isLoadingSelectedRequest.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || `Unknown error while trying to ${isNewConnectionRequest.value ? "add" : "load"} connection request.`;
+            return;
+        }
+
+        selectedRequest.value = result.data;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `cancel` event of the Request Add Edit component.
+     */
+    function onRequestAddEditCancel(): void {
+        if (isNewConnectionRequest.value) {
+            isVisible.value = false;
+        }
+
+        mode.value = RequestModalMode.View;
+    }
+
+    /**
+     * Handles the `save` event of the Request Add Edit component.
+     *
+     * @param connectionRequest The connection request to save.
+     */
+    async function onRequestAddEditSave(connectionRequest: ConnectionRequestBoardConnectionRequestBag): Promise<void> {
+        console.log(JSON.stringify(connectionRequest));
+        // TODO (Jason): save the request.
+    }
+
+    // #endregion
+
+    watch(connectionRequestId, () => {
+        if (isConnectionRequestIdDefined.value) {
+            getSelectedConnectionRequest();
+
+            mode.value = isNewConnectionRequest.value
+                ? RequestModalMode.AddEdit
+                : RequestModalMode.View;
+        }
+    });
+</script>

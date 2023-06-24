@@ -1,0 +1,40 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="drag-scroll-zone-container">
+        <div v-drag-scroll.left="{ id: newGuid() }" class="board-view-panel-body overflow-scroll">
+            <div class="board-column-container">
+
+                <StatusColumn v-for="connectionStatus in connectionStatuses"
+                              :key="connectionStatus.Id"
+                              :connectionStatus="connectionStatus"
+                              :disabled="disabled"
+                              @selectConnectionRequest="$emit('selectConnectionRequest', $event)" />
+
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import StatusColumn from "./statusColumn.partial.obs";
+    import { IConnectionStatusViewModel } from "./types.partial";
+    import { DragScroll as vDragScroll } from "@Obsidian/Directives/dragScroll";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    defineProps({
+        connectionStatuses: {
+            type: Array as PropType<IConnectionStatusViewModel[]>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "selectConnectionRequest", value: number): void
+    }>();
+</script>

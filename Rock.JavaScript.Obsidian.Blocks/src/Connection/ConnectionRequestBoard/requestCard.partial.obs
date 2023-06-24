@@ -1,0 +1,184 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-no-drag-scroll :class="boardCardCssClass" @click="trySelectConnectionRequest($event)">
+        <div class="board-card-content">
+
+            <div ref="headerElement" class="board-card-header">
+                <span v-html="statusIconsHtml"></span>
+                <span v-if="connectionRequest.CampusHtml"
+                      v-html="connectionRequest.CampusHtml"
+                      class="campus-html-container"></span>
+            </div>
+
+            <div class="board-card-main">
+                <div class="flex-grow-1 mb-2">
+                    <div class="board-card-photo" :style="boardCardPhotoStyle" :title="`${connectionRequest?.PersonFullname} Profile Photo`"></div>
+                    <div v-if="connectionRequest?.PersonFullname" class="board-card-name">
+                        {{ connectionRequest?.PersonFullname }}
+                    </div>
+                    <div v-if="connectionRequest.RequestAttributes"
+                         v-html="connectionRequest.RequestAttributes"
+                         class="board-card-attributes">
+                    </div>
+                    <span v-if="connectionRequest.ConnectorPersonFullname" class="board-card-assigned">
+                        {{ connectionRequest.ConnectorPersonFullname }}
+                    </span>
+                </div>
+
+                <!-- This outer div is needed to properly-position the following drop-down menu. -->
+                <div>
+                    <div class="btn-group dropdown-right">
+                        <button type="button"
+                                class="btn btn-sm text-muted bg-white dropdown-toggle pr-0"
+                                data-toggle="dropdown"
+                                :disabled="disabled">
+                            <i class="fa fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a>View Details</a>
+                            </li>
+                            <li v-if="connectionRequest.CanConnect">
+                                <a>Connect</a>
+                            </li>
+                            <li v-if="isRequestSecurityEnabled">
+                                <a>Security</a>
+                            </li>
+                            <template v-if="connectionRequest.CanCurrentUserEdit">
+                                <li role="separator" class="divider"></li>
+                                <li>
+                                    <a class="dropdown-item-danger">Delete</a>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board-card-meta">
+                <span :title="metaTitle">
+                    <i class="fa fa-list"></i>
+                    {{ metaSummary }}
+                </span>
+                <span :title="connectionRequest?.DaysSinceOpeningLongText ?? undefined">
+                    <i class="fa fa-calendar"></i>
+                    {{ connectionRequest?.DaysSinceOpeningShortText }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, inject, PropType, ref, watch } from "vue";
+    import { NoDragScroll as vNoDragScroll } from "@Obsidian/Directives/dragScroll";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { IConnectionRequestViewModel, IsRequestSecurityEnabled } from "./types.partial";
+
+    const props = defineProps({
+        connectionRequest: {
+            type: Object as PropType<IConnectionRequestViewModel>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", value: number): void
+    }>();
+
+    // #region Values
+
+    const headerElement = ref<HTMLElement | null>(null);
+
+    const isRequestSecurityEnabled = inject(IsRequestSecurityEnabled, ref(false));
+
+    // #endregion
+
+    // #region Computed Values
+
+    const connectionRequestId = computed((): number | undefined => {
+        return props.connectionRequest?.Id;
+    });
+
+    const boardCardCssClass = computed((): string => {
+        return `board-card${props.disabled ? " disabled" : ""}`;
+    });
+
+    const statusIconsHtml = computed((): string => {
+        return props.connectionRequest?.StatusIconsHtml || "&nbsp;";
+    });
+
+    const boardCardPhotoStyle = computed((): Record<string, string> => {
+        const style = {};
+
+        if (props.connectionRequest?.PersonPhotoUrl) {
+            style["background-image"] = `url('${props.connectionRequest.PersonPhotoUrl}')`;
+        }
+
+        return style;
+    });
+
+    const metaTitle = computed((): string => {
+        return `${props.connectionRequest?.ActivityCountText} - ${props.connectionRequest?.DaysSinceLastActivityLongText}`;
+    });
+
+    const metaSummary = computed((): string => {
+        return `${props.connectionRequest?.ActivityCount} - ${props.connectionRequest?.DaysSinceLastActivityShortText}`;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Configures any dynamically-injected tooltips.
+     */
+    function configureTooltips(): void {
+        if (!headerElement.value) {
+            return;
+        }
+
+        headerElement.value
+            .querySelectorAll('span[data-toggle="tooltip"]')
+            .forEach((t: Element) => tooltip(t));
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Tries to emit the `select` event, if the target of the click doesn't represent
+     * the action dropdown menu.
+     *
+     * @param event The event representing the click that triggered this handler.
+     */
+    function trySelectConnectionRequest(event: MouseEvent): void {
+        if (props.disabled
+            || !connectionRequestId.value
+            || !(event.target instanceof Element)) {
+            return;
+        }
+
+        const dropDownElement = (event.target as Element)
+            ?.closest(".dropdown-toggle, .dropdown-menu");
+
+        // Only "select" this connection request if the action dropdown menu wasn't the
+        // target of this click event.
+        if (!dropDownElement) {
+            emit("select", connectionRequestId.value);
+        }
+    }
+
+    // #endregion
+
+    watch(headerElement, () => {
+        configureTooltips();
+    });
+</script>

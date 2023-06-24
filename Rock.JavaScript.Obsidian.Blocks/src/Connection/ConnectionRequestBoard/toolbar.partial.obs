@@ -1,0 +1,544 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="panel-collapsible">
+        <div class="panel-toolbar">
+
+            <!-- Opportunities -->
+            <div class="d-inline-block btn-group-mega">
+                <button type="button"
+                        class="btn btn-xs btn-tool dropdown-toggle"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        :disabled="isOpportunityButtonDisabled">
+                    <i class="fa fa-plug"></i>
+                    Opportunities
+                </button>
+                <ul class="dropdown-menu dropdown-menu-mega">
+
+                    <!-- Favorite Opportunities -->
+                    <template v-if="favoriteOpportunites.length">
+                        <li class="dropdown-header">
+                            <i class="far fa-star"></i>
+                            Favorites
+                        </li>
+                        <li>
+                            <a v-for="opportunity in favoriteOpportunites" :key="opportunity.id"
+                               href="#"
+                               @click.prevent="$emit('opportunityChanged', opportunity.id)">
+                                <i v-if="opportunity.iconCssClass" :class="opportunity.iconCssClass"></i>
+                                {{ opportunity.publicName }}
+                                <span class="pull-right text-muted small">
+                                    {{ opportunity.connectionTypeName }}
+                                </span>
+                            </a>
+                        </li>
+                    </template>
+
+                    <!-- All Opportunites, grouped by Connection Type -->
+                    <template v-if="connectionTypes?.length">
+                        <template v-for="connectionType in connectionTypes" :key="connectionType.id">
+                            <li class="dropdown-header">
+                                <i v-if="connectionType.iconCssClass" :class="connectionType.iconCssClass"></i>
+                                {{ connectionType.name }}
+                            </li>
+                            <li v-for="opportunity in connectionType.connectionOpportunities" :key="`${connectionType.id}-${opportunity.id}`">
+                                <a href="#" @click.prevent="$emit('opportunityChanged', opportunity.id)">
+                                    <i v-if="opportunity.iconCssClass" :class="opportunity.iconCssClass"></i>
+                                    {{ opportunity.publicName }}
+                                </a>
+                            </li>
+                        </template>
+                    </template>
+                    <li v-else class="disabled">
+                        <a @click.prevent="$emit('opportunityChanged', 0)">No Opportunities</a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="toolbar-group">
+
+                <!-- Sort -->
+                <div v-if="filterOptions?.sortProperties?.length" class="btn-group">
+                    <button type="button"
+                            class="btn btn-xs btn-tool dropdown-toggle"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            :disabled="disabled">
+                        <i class="fa fa-sort"></i>
+                        {{ sortText }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li v-for="sortProperty in filterOptions.sortProperties" :key="sortProperty.sortBy">
+                            <a href="#" @click.prevent="onSortChanged(sortProperty.sortBy)">
+                                {{ sortProperty.title }}
+                                &nbsp;
+                                <small v-if="sortProperty.subTitle" class="text-muted">
+                                    {{ sortProperty.subTitle }}
+                                </small>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Connectors -->
+                <div class="btn-group">
+                    <button type="button"
+                            class="btn btn-xs btn-tool dropdown-toggle"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            :disabled="disabled">
+                        <i class="fa fa-user"></i>
+                        {{ connectorText }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#" @click.prevent="onConnectorChanged(null)">All Connectors</a>
+                        </li>
+                        <li v-if="currentPersonAliasId > 0">
+                            <a href="#" @click.prevent="onConnectorChanged(currentPersonAliasId)">My Connections</a>
+                        </li>
+                        <template v-if="filterOptions?.connectors?.length">
+                            <li class="divider"></li>
+                            <li v-for="connector in filterOptions.connectors">
+                                <a href="#" @click.prevent="onConnectorChanged(toNumberOrNull(connector.value))">
+                                    {{ connector.text }}
+                                </a>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+
+                <!-- Campus -->
+                <div v-if="isCampusFilterVisible" class="btn-group">
+                    <button type="button"
+                            class="btn btn-xs btn-tool dropdown-toggle"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            :disabled="disabled">
+                        <i class="fa fa-building"></i>
+                        {{ campusText }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#" @click.prevent="onCampusChanged(null)">&nbsp;</a>
+                        </li>
+                        <li v-for="campus in filterOptions?.campuses ?? []">
+                            <a href="#" @click.prevent="onCampusChanged(toNumberOrNull(campus.value))">
+                                {{ campus.text }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Filters -->
+                <DropDownContent v-model="isFiltersOpen">
+
+                    <template #anchor>
+                        <button type="button"
+                                class="btn btn-xs btn-tool"
+                                :disabled="disabled">
+                            <i class="fa fa-filter"></i>
+                            {{ filtersText }}
+                        </button>
+                    </template>
+
+                    <div class="filters-container p-3">
+
+                        <SlidingDateRangePicker v-model="dateRange"
+                                                label="Last Activity Date Range"
+                                                previewLocation="Top" />
+
+                        <PersonPicker v-model="requester"
+                                      label="Requester" />
+
+                        <CheckBox v-model="pastDueOnly"
+                                  label="Only Past Due"
+                                  help="Only show future follow-up requests that are past due." />
+
+                        <CheckBoxList v-model="connectionStatuses"
+                                      label="Status"
+                                      :items="statusOptions"
+                                      :horizontal="true"
+                                      :repeatColumns="2" />
+
+                        <CheckBoxList v-model="connectionStates"
+                                      label="State"
+                                      :items="stateOptions"
+                                      :horizontal="true"
+                                      :repeatColumns="2" />
+
+                        <CheckBoxList v-model="connectionActivityTypes"
+                                      label="Last Activity"
+                                      :items="activityTypeOptions"
+                                      :horizontal="true"
+                                      :repeatColumns="2" />
+
+                        <RockButton :btnSize="BtnSize.ExtraSmall" @click="onClearFilters">
+                            Clear All
+                        </RockButton>
+
+                    </div>
+
+                </DropDownContent>
+
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { ConnectionRequestBoardConnectionOpportunityBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardConnectionOpportunityBag";
+    import { ConnectionRequestBoardConnectionTypeBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardConnectionTypeBag";
+    import { ConnectionRequestBoardFilterOptionsBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardFilterOptionsBag";
+    import { ConnectionRequestBoardFiltersBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardFiltersBag";
+    import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        connectionTypes: {
+            type: Array as PropType<ConnectionRequestBoardConnectionTypeBag[] | null | undefined>,
+            required: true
+        },
+
+        filterOptions: {
+            type: Object as PropType<ConnectionRequestBoardFilterOptionsBag | null | undefined>,
+            required: true
+        },
+
+        filters: {
+            type: Object as PropType<ConnectionRequestBoardFiltersBag | null | undefined>,
+            required: true
+        },
+
+        currentPersonAliasId: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isOpportunityButtonDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "opportunityChanged", opportunityId: number): void,
+        (e: "filtersChanged", currentFilters: ConnectionRequestBoardFiltersBag): void
+    }>();
+
+    const sortPropertyDefault = 8; // This is the default value of "Order".
+
+    // #region Values
+
+    const connectorPersonAliasId = ref<number | null | undefined>(props.filters?.connectorPersonAliasId);
+    const requester = ref<ListItemBag | undefined>(props.filters?.requester ?? undefined);
+    const requesterPersonAliasId = ref<number | null | undefined>(props.filters?.requesterPersonAliasId);
+    const campusId = ref<number | null | undefined>(props.filters?.campusId);
+    const dateRange = ref<SlidingDateRange | null>(getSlidingDateRange(props.filters?.dateRange));
+    const pastDueOnly = ref<boolean>(props.filters?.pastDueOnly ?? false);
+    const connectionStatuses = ref<string[]>(props.filters?.connectionStatuses ?? []);
+    const connectionStates = ref<string[]>(props.filters?.connectionStates ?? []);
+    const connectionActivityTypes = ref<string[]>(props.filters?.connectionActivityTypes ?? []);
+    const sortProperty = ref<number>(props.filters?.sortProperty ?? sortPropertyDefault);
+
+    const isFiltersOpen = ref(false);
+    const filtersJSONOnOpen = ref("");
+    const filtersText = ref(getFiltersText());
+
+    // #endregion
+
+    // #region Computed Values
+
+    const favoriteOpportunites = computed((): ConnectionRequestBoardConnectionOpportunityBag[] => {
+        const opportunities: ConnectionRequestBoardConnectionOpportunityBag[] = [];
+
+        (props.connectionTypes ?? []).forEach((connectionType: ConnectionRequestBoardConnectionTypeBag) => {
+            (connectionType.connectionOpportunities ?? [])
+                .filter((opportunity: ConnectionRequestBoardConnectionOpportunityBag) => opportunity.isFavorite)
+                .forEach((opportunity: ConnectionRequestBoardConnectionOpportunityBag) => opportunities.push(opportunity));
+        });
+
+        return opportunities;
+    });
+
+    const sortText = computed((): string => {
+        const sortPropertyTitle = props.filterOptions
+            ?.sortProperties
+            ?.find(s => s.sortBy === sortProperty.value)
+            ?.title;
+
+        return `Sort${sortPropertyTitle ? `: ${sortPropertyTitle}` : ""}`;
+    });
+
+    const connectorText = computed((): string => {
+        if (connectorPersonAliasId.value === props.currentPersonAliasId) {
+            return "My Connections";
+        }
+        else if (!connectorPersonAliasId.value) {
+            return "All Connectors";
+        }
+
+        const connectorName = props.filterOptions
+            ?.connectors
+            ?.find(c => toNumberOrNull(c.value) === connectorPersonAliasId.value)
+            ?.text;
+
+        return `Connector${connectorName ? `: ${connectorName}` : ""}`;
+    });
+
+    const isCampusFilterVisible = computed((): boolean => {
+        return (props.filterOptions?.campuses?.length ?? 0) > 1;
+    });
+
+    const campusText = computed((): string => {
+        if (!campusId.value) {
+            return "All Campuses";
+        }
+
+        const campusName = props.filterOptions
+            ?.campuses
+            ?.find(c => toNumberOrNull(c.value) === campusId.value)
+            ?.text;
+
+        return `Campus${campusName ? `: ${campusName}` : ""}`;
+    });
+
+    const statusOptions = computed((): ListItemBag[] => {
+        return props.filterOptions?.connectionStatuses ?? [];
+    });
+
+    const stateOptions = computed((): ListItemBag[] => {
+        return props.filterOptions?.connectionStates ?? [];
+    });
+
+    const activityTypeOptions = computed((): ListItemBag[] => {
+        return props.filterOptions?.connectionActivityTypes ?? [];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the sliding date range from the provided sliding date range bag.
+     *
+     * @param bag The date range bag from which to create a sliding date range.
+     */
+    function getSlidingDateRange(bag: SlidingDateRangeBag | null | undefined): SlidingDateRange | null {
+        return bag
+            ? bag as SlidingDateRange
+            : null;
+    }
+
+    /**
+     * Gets a friendly filters text based on the currently-applied filters.
+     */
+    function getFiltersText(): string {
+        const filtersApplied: string[] = [];
+
+        if (requester.value?.text) {
+            filtersApplied.push(requester.value.text);
+        }
+
+        if (props.filters?.minDate || props.filters?.maxDate) {
+            filtersApplied.push("Last Activity Date");
+        }
+
+        if (pastDueOnly.value) {
+            filtersApplied.push("Past Due");
+        }
+
+        connectionStatuses.value?.forEach((value: string) => {
+            const status = props.filterOptions
+                ?.connectionStatuses
+                ?.find(s => s.value === value);
+
+            if (status?.text) {
+                filtersApplied.push(status.text);
+            }
+        });
+
+        connectionStates.value?.forEach((value: string) => {
+            const state = props.filterOptions
+                ?.connectionStates
+                ?.find(s => s.value === value);
+
+            if (state?.text) {
+                filtersApplied.push(state.text);
+            }
+        });
+
+        connectionActivityTypes.value?.forEach((value: string) => {
+            const activityType = props.filterOptions
+                ?.connectionActivityTypes
+                ?.find(a => a.value === value);
+
+            if (activityType?.text) {
+                filtersApplied.push(activityType.text);
+            }
+        });
+
+        if (filtersApplied.length > 1) {
+            return `Filters Applied: ${filtersApplied.length}`;
+        }
+        else if (filtersApplied.length === 1) {
+            return `Filter: ${filtersApplied[0]}`;
+        }
+
+        return "Filter";
+    }
+
+    /**
+     * Gets the current filters according to the controls' selected values.
+     */
+    function getCurrentFilters(): ConnectionRequestBoardFiltersBag {
+        var selectedDateRange: SlidingDateRange | null = dateRange.value
+            ? dateRange.value as SlidingDateRange
+            : null;
+
+        return {
+            connectorPersonAliasId: connectorPersonAliasId.value,
+            requester: requester.value,
+            requesterPersonAliasId: requesterPersonAliasId.value,
+            campusId: campusId.value,
+            dateRange: selectedDateRange,
+            pastDueOnly: pastDueOnly.value,
+            connectionStatuses: connectionStatuses.value,
+            connectionStates: connectionStates.value,
+            connectionActivityTypes: connectionActivityTypes.value,
+            sortProperty: sortProperty.value
+        };
+    }
+
+    /**
+     * Gets the current filters as a JSON string.
+     */
+    function getCurrentFiltersJSON(): string {
+        return JSON.stringify(getCurrentFilters());
+    }
+
+    /**
+     * Sets the internal values using the provided filters.
+     *
+     * @param filters The filters value from which to set the internal values.
+     */
+    function setFilters(filters: ConnectionRequestBoardFiltersBag | null | undefined): void {
+        connectorPersonAliasId.value = filters?.connectorPersonAliasId;
+        requester.value = filters?.requester ?? undefined;
+        requesterPersonAliasId.value = filters?.requesterPersonAliasId;
+        campusId.value = filters?.campusId;
+        dateRange.value = getSlidingDateRange(filters?.dateRange);
+        pastDueOnly.value = filters?.pastDueOnly ?? false;
+        connectionStatuses.value = filters?.connectionStatuses ?? [];
+        connectionStates.value = filters?.connectionStates ?? [];
+        connectionActivityTypes.value = filters?.connectionActivityTypes ?? [];
+        sortProperty.value = filters?.sortProperty ?? sortPropertyDefault;
+
+        filtersText.value = getFiltersText();
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the selection of a sort property.
+     *
+     * @param newValue The identifier of the selected sort property.
+     */
+    function onSortChanged(newValue: number): void {
+        if (sortProperty.value === newValue) {
+            return;
+        }
+
+        sortProperty.value = newValue;
+        emit("filtersChanged", getCurrentFilters());
+    }
+
+    /**
+     * Handles the selection of a connector.
+     *
+     * @param newValue The identifier of the selected connector.
+     */
+    function onConnectorChanged(newValue?: number | null): void {
+        if (connectorPersonAliasId.value === newValue) {
+            return;
+        }
+
+        connectorPersonAliasId.value = newValue;
+        emit("filtersChanged", getCurrentFilters());
+    }
+
+    /**
+     * Handles the selection of a campus.
+     *
+     * @param newValue The identifier of the selected campus.
+     */
+    function onCampusChanged(newValue?: number | null): void {
+        if (campusId.value === newValue) {
+            return;
+        }
+
+        campusId.value = newValue;
+        emit("filtersChanged", getCurrentFilters());
+    }
+
+    /**
+     * Handles the `click` event of the "Filters" > "Clear All" button.
+     */
+    function onClearFilters(): void {
+        // Some filter values (commented out below) should be preserved,
+        // as they're outside of the "Filters" drop down content control.
+
+        // connectorPersonAliasId.value = undefined;
+        requester.value = undefined;
+        requesterPersonAliasId.value = undefined;
+        // campusId.value = undefined;
+        dateRange.value = null;
+        pastDueOnly.value = false;
+        connectionStatuses.value = [];
+        connectionStates.value = [];
+        connectionActivityTypes.value = [];
+        // sortProperty.value = sortPropertyDefault;
+    }
+
+    // #endregion
+
+    watch(() => props.filters, () => {
+        setFilters(props.filters);
+    });
+
+    watch(isFiltersOpen, () => {
+        if (isFiltersOpen.value) {
+            filtersJSONOnOpen.value = getCurrentFiltersJSON();
+        }
+        else {
+            if (getCurrentFiltersJSON() === filtersJSONOnOpen.value) {
+                // Filters didn't change; no need to reload.
+                return;
+            }
+
+            emit("filtersChanged", getCurrentFilters());
+        }
+    });
+</script>

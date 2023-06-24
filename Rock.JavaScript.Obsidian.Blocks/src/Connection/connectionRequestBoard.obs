@@ -1,0 +1,509 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockErrorMessage" :alertType="AlertType.Warning">
+        {{ blockErrorMessage }}
+    </NotificationBox>
+
+    <Panel v-if="!blockErrorMessage"
+           type="block"
+           :title="panelTitle"
+           :class="panelCssClass"
+           :hasFullscreen="true"
+           :headerSecondaryActions="secondaryActions">
+
+        <template #headerActions>
+            <span :class="headerActionCssClass">
+                <Following :entityTypeGuid="EntityType.ConnectionOpportunity"
+                           :entityKey="connectionOpportunityId?.toString()"
+                           :disabled="isBoardDisabled"
+                           @followedStateUpdated="onFollowedStateUpdated" />
+            </span>
+
+            <span title="Click to change display mode."
+                  :class="headerActionCssClass"
+                  @click="onViewModeChanged()">
+                <i :class="viewModeCssClass"></i>
+            </span>
+
+            <span title="Click to add a new connection request."
+                  :class="headerActionCssClass"
+                  @click="onSelectConnectionRequest(0)">
+                <i class="fa fa-plus-square"></i>
+            </span>
+        </template>
+
+        <template #preBody>
+            <Toolbar :connectionTypes="connectionTypes"
+                     :filterOptions="filterOptions"
+                     :filters="filters"
+                     :currentPersonAliasId="currentPersonAliasId"
+                     :disabled="isBoardDisabled"
+                     :isOpportunityButtonDisabled="isOpportunityButtonDisabled"
+                     @opportunityChanged="onOpportunityChanged"
+                     @filtersChanged="onFiltersChanged" />
+        </template>
+
+        <!-- Body -->
+        <div v-if="showPanelBodyAlert" class="panel-body-alert">
+
+            <NotificationBox v-if="!connectionOpportunity" :alertType="AlertType.Info">
+                Please select a connection opportunity.
+            </NotificationBox>
+
+            <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+                {{ blockActionErrorMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-if="loadConnectionStatusesWarningMessage" :alertType="AlertType.Warning">
+                {{ loadConnectionStatusesWarningMessage }}
+            </NotificationBox>
+
+        </div>
+
+        <CardView v-if="isCardViewMode"
+                  :connectionStatuses="connectionStatuses"
+                  :disabled="isBoardDisabled"
+                  @selectConnectionRequest="onSelectConnectionRequest" />
+
+        <GridView v-else
+                  :gridData="gridDataBag"
+                  :disabled="isBoardDisabled"
+                  @selectConnectionRequest="onSelectConnectionRequest" />
+
+        <RequestModal :connectionOpportunityId="connectionOpportunityId"
+                      v-model:connectionRequestId="connectionRequestId" />
+
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, provide, ref, watch } from "vue";
+    import CardView from "./ConnectionRequestBoard/cardView.partial.obs";
+    import GridView from "./ConnectionRequestBoard/gridView.partial.obs";
+    import RequestModal from "./ConnectionRequestBoard/requestModal.partial.obs";
+    import Toolbar from "./ConnectionRequestBoard/toolbar.partial.obs";
+    import {
+        IConnectionStatusViewModel,
+        IConnectionStatusViewModelsRequest,
+        IsRequestSecurityEnabled,
+        PageParameterKey
+    } from "./ConnectionRequestBoard/types.partial";
+    import Following from "@Obsidian/Controls/following";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import {
+        getSecurityGrant,
+        onConfigurationValuesChanged,
+        provideSecurityGrant,
+        useConfigurationValues,
+        useInvokeBlockAction,
+        useReloadBlock
+    } from "@Obsidian/Utility/block";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ConnectionRequestBoardApplyFiltersBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardApplyFiltersBag";
+    import { ConnectionRequestBoardApplyViewModeBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardApplyViewModeBag";
+    import { ConnectionRequestBoardConnectionOpportunityBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardConnectionOpportunityBag";
+    import { ConnectionRequestBoardConnectionTypeBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardConnectionTypeBag";
+    import { ConnectionRequestBoardFilterOptionsBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardFilterOptionsBag";
+    import { ConnectionRequestBoardFiltersBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardFiltersBag";
+    import { ConnectionRequestBoardGridDataBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardGridDataBag";
+    import { ConnectionRequestBoardInitializationBox } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardInitializationBox";
+    import { ConnectionRequestBoardSelectedOpportunityBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardSelectedOpportunityBag";
+
+    const config = useConfigurationValues<ConnectionRequestBoardInitializationBox>();
+    const http = useHttp();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const reloadBlock = useReloadBlock();
+
+    const defaultDelimiter = "|";
+
+    // #region Values
+
+    const connectionTypes = ref<ConnectionRequestBoardConnectionTypeBag[] | null | undefined>(config.connectionTypes);
+    const selectedOpportunity = ref<ConnectionRequestBoardSelectedOpportunityBag | null | undefined>(config.selectedOpportunity);
+    const connectionRequestId = ref<number | null | undefined>(config.selectedOpportunity?.connectionRequestId);
+    const filters = ref<ConnectionRequestBoardFiltersBag | null | undefined>(config.selectedOpportunity?.filters);
+    const isCardViewMode = ref(config.selectedOpportunity?.isCardViewMode ?? true);
+    const maxRequestsPerStatus = ref(config.maxCardsPerColumn);
+    const statusIconsTemplate = ref(config.statusIconsTemplate);
+    const currentPersonAliasId = ref(config.currentPersonAliasId);
+
+    const blockActionErrorMessage = ref("");
+    const isSelectingOpportunity = ref(false);
+    const isSavingViewMode = ref(false);
+    const isSavingFilters = ref(false);
+
+    const connectionStatuses = ref<IConnectionStatusViewModel[]>([]);
+    const isLoadingConnectionStatuses = ref(false);
+    const loadConnectionStatusesWarningMessage = ref("");
+
+    const gridDataBag = ref<ConnectionRequestBoardGridDataBag | null | undefined>();
+    const isLoadingGridBag = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const blockErrorMessage = computed((): string | undefined | null => {
+        return config.errorMessage;
+    });
+
+    const panelCssClass = computed((): string => {
+        let cssClass = "styled-scroll";
+
+        // if (isBoardView) {
+        cssClass = `${cssClass} connection-board-view`;
+        // }
+
+        return cssClass;
+    });
+
+    const secondaryActions = computed((): PanelAction[] => {
+        return [
+            {
+                title: "Campaign Requests",
+                iconCssClass: "fas fa-user-plus",
+                type: "default",
+                handler: () => alert("Campaign Requests selected."),
+                disabled: isBoardDisabled.value
+            }
+        ];
+    });
+
+    const connectionOpportunity = computed((): ConnectionRequestBoardConnectionOpportunityBag | null | undefined => {
+        return selectedOpportunity.value?.connectionOpportunity;
+    });
+
+    const connectionOpportunityId = computed((): number | null | undefined => {
+        return connectionOpportunity.value?.id;
+    });
+
+    const panelTitle = computed((): string => {
+        return connectionOpportunity.value?.publicName ?? "";
+    });
+
+    const headerActionCssClass = computed((): string => {
+        return `action${(isBoardDisabled.value ? " disabled" : " clickable")}`;
+    });
+
+    const viewModeCssClass = computed((): string => {
+        return isCardViewMode.value ? "fa fa-list" : "fa fa-th-large";
+    });
+
+    const filterOptions = computed((): ConnectionRequestBoardFilterOptionsBag | null | undefined => {
+        return selectedOpportunity.value?.filterOptions;
+    });
+
+    const campusId = computed((): number | null | undefined => {
+        return filters.value?.campusId;
+    });
+
+    const isRequestSecurityEnabled = computed((): boolean => {
+        return selectedOpportunity.value?.isRequestSecurityEnabled ?? false;
+    });
+
+    const showPanelBodyAlert = computed((): boolean => {
+        return !connectionOpportunity.value
+            || !!blockActionErrorMessage.value
+            || !!loadConnectionStatusesWarningMessage.value;
+    });
+
+    const isBoardDisabled = computed((): boolean => {
+        return !connectionOpportunity.value
+            || isSelectingOpportunity.value
+            || isSavingViewMode.value
+            || isSavingFilters.value
+            || isLoadingConnectionStatuses.value
+            || isLoadingGridBag.value;
+    });
+
+    const isOpportunityButtonDisabled = computed((): boolean => {
+        return isBoardDisabled.value && !!connectionOpportunity.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Updates the window query string to match the entity identifiers.
+     */
+    function updateUrl(): void {
+        const qs: string[][] = [];
+
+        if (connectionOpportunityId.value) {
+            qs.push([PageParameterKey.ConnectionOpportunityId, connectionOpportunityId.value.toString()]);
+        }
+
+        if (connectionRequestId.value) {
+            qs.push([PageParameterKey.ConnectionRequestId, connectionRequestId.value.toString()]);
+        }
+
+        if (campusId.value) {
+            qs.push([PageParameterKey.CampusId, campusId.value.toString()]);
+        }
+
+        // Add in any query string parameters not related to us.
+        for (const entry of new URLSearchParams(window.location.search).entries()) {
+            if (![
+                PageParameterKey.ConnectionOpportunityId,
+                PageParameterKey.ConnectionRequestId,
+                PageParameterKey.CampusId
+            ].some(key => key.toLowerCase() === entry[0].toLowerCase())) {
+                qs.push([entry[0], entry[1]]);
+            }
+        }
+
+        // Update the URL in the window.
+        if (qs.length) {
+            const queryString = qs.map(q => `${q[0]}=${q[1]}`).join("&");
+            window.history.replaceState(null, "", `${window.location.pathname}?${queryString}`);
+        }
+        else {
+            window.history.replaceState(null, "", window.location.pathname);
+        }
+    }
+
+    /**
+     * Gets the connection statuses and their respective connection requests for diplaying the board in card view mode.
+     */
+    async function getConnectionStatuses(): Promise<void> {
+        if (isBoardDisabled.value) {
+            return;
+        }
+
+        isLoadingConnectionStatuses.value = true;
+        loadConnectionStatusesWarningMessage.value = "";
+
+        const delimitedStatusIds = filters.value?.connectionStatuses?.length
+            ? filters.value.connectionStatuses.join(defaultDelimiter)
+            : null;
+
+        const delimitedConnectionStates = filters.value?.connectionStates?.length
+            ? filters.value.connectionStates.join(defaultDelimiter)
+            : null;
+
+        const delimitedLastActivityTypeIds = filters.value?.connectionActivityTypes?.length
+            ? filters.value.connectionActivityTypes.join(defaultDelimiter)
+            : null;
+
+        const params: Partial<IConnectionStatusViewModelsRequest> = {
+            campusId: filters.value?.campusId,
+            connectorPersonAliasId: filters.value?.connectorPersonAliasId,
+            requesterPersonAliasId: filters.value?.requesterPersonAliasId,
+            minDate: filters.value?.minDate,
+            maxDate: filters.value?.maxDate,
+            delimitedStatusIds,
+            delimitedConnectionStates,
+            delimitedLastActivityTypeIds,
+            statusIconsTemplate: statusIconsTemplate.value,
+            sortProperty: filters.value?.sortProperty,
+            maxRequestsPerStatus: isCardViewMode.value ? maxRequestsPerStatus.value : null,
+            pastDueOnly: filters.value?.pastDueOnly
+        };
+
+        const result = await http.get<IConnectionStatusViewModel[]>(`/api/ConnectionRequests/ConnectionBoardStatusViewModels/${connectionOpportunityId.value}`, params);
+        isLoadingConnectionStatuses.value = false;
+
+        if (!result.isSuccess) {
+            loadConnectionStatusesWarningMessage.value = result.errorMessage || "Unknown error while trying to load connection statuses and requests.";
+            return;
+        }
+
+        connectionStatuses.value = result.data ?? [];
+    }
+
+    /**
+     * Gets the grid data and definition for displaying the board in grid view mode.
+     *
+     * @param currentFilters Optional filters representing the latest, "current" selected filters.
+     */
+    async function getGridData(currentFilters?: ConnectionRequestBoardFiltersBag): Promise<void> {
+        if (isBoardDisabled.value) {
+            return;
+        }
+
+        isLoadingGridBag.value = true;
+        blockActionErrorMessage.value = "";
+
+        const bag: ConnectionRequestBoardApplyFiltersBag = {
+            connectionOpportunityId: connectionOpportunityId.value ?? 0,
+            filters: currentFilters ?? filters.value
+        };
+
+        const result = await invokeBlockAction<ConnectionRequestBoardGridDataBag>("GetGridData", { bag });
+        isLoadingGridBag.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to load grid data.";
+            return;
+        }
+
+        gridDataBag.value = result.data;
+        filters.value = result.data?.filters;
+    }
+
+    /**
+     * Gets the data needed for the selected view mode: card or grid.
+     */
+    async function getDataForSelectedViewMode(): Promise<void> {
+        if (isCardViewMode.value) {
+            if (gridDataBag.value) {
+                gridDataBag.value.data = null;
+            }
+
+            await getConnectionStatuses();
+        }
+        else {
+            connectionStatuses.value = [];
+            await getGridData();
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `opportunityChanged` event of the Toolbar component.
+     *
+     * @param connectionOpportunityId The identifier of the selected connection opportunity.
+     */
+    async function onOpportunityChanged(connectionOpportunityId: number): Promise<void> {
+        if (isBoardDisabled.value) {
+            return;
+        }
+
+        isSelectingOpportunity.value = true;
+        blockActionErrorMessage.value = "";
+
+        const result = await invokeBlockAction<ConnectionRequestBoardSelectedOpportunityBag>("SelectConnectionOpportunity", { connectionOpportunityId });
+        isSelectingOpportunity.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to select connection opportunity.";
+            return;
+        }
+
+        selectedOpportunity.value = result.data;
+        filters.value = result.data?.filters;
+        isCardViewMode.value = result.data?.isCardViewMode ?? true;
+
+        await getDataForSelectedViewMode();
+    }
+
+    /**
+     * Handles the `followedStatedUpdated` event of the Following component.
+     *
+     * @param _isFollowed Whether the entity is currently followed.
+     */
+    async function onFollowedStateUpdated(_isFollowed: boolean): Promise<void> {
+        // Get an updated list of connection types and opportunities to reflect the latest followed/unfollowed opportunity.
+        var result = await invokeBlockAction<ConnectionRequestBoardConnectionTypeBag[]>("GetConnectionTypes");
+        if (!result.isSuccess) {
+            return;
+        }
+
+        connectionTypes.value = result.data;
+    }
+
+    /**
+     * Handles the `click` event of the view mode toggle action.
+     */
+    async function onViewModeChanged(): Promise<void> {
+        if (isBoardDisabled.value) {
+            return;
+        }
+
+        isSavingViewMode.value = true;
+        blockActionErrorMessage.value = "";
+
+        const newValue = !isCardViewMode.value;
+        const bag: ConnectionRequestBoardApplyViewModeBag = {
+            connectionOpportunityId: connectionOpportunityId.value ?? 0,
+            isCardViewMode: newValue
+        };
+
+        const result = await invokeBlockAction("SaveViewMode", { bag });
+        isSavingViewMode.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to save board view mode.";
+            return;
+        }
+
+        isCardViewMode.value = newValue;
+
+        await getDataForSelectedViewMode();
+    }
+
+    /**
+     * Handles the `filtersChanged` event of the Toolbar component.
+     *
+     * @param currentFilters The current filters.
+     */
+    async function onFiltersChanged(currentFilters: ConnectionRequestBoardFiltersBag): Promise<void> {
+        if (isBoardDisabled.value) {
+            return;
+        }
+
+        blockActionErrorMessage.value = "";
+
+        if (isCardViewMode.value) {
+            isSavingFilters.value = true;
+
+            const bag: ConnectionRequestBoardApplyFiltersBag = {
+                connectionOpportunityId: connectionOpportunityId.value ?? 0,
+                filters: currentFilters
+            };
+
+            const result = await invokeBlockAction<ConnectionRequestBoardFiltersBag>("SaveFilters", { bag });
+            isSavingFilters.value = false;
+
+            if (!result.isSuccess) {
+                blockActionErrorMessage.value = result.errorMessage || "Unkown error while trying to save filters.";
+                return;
+            }
+
+            filters.value = result.data;
+
+            await getConnectionStatuses();
+        }
+        else {
+            await getGridData(currentFilters);
+        }
+    }
+
+    /**
+     * Handles the `selectConnectionRequest` event of the CardView and GridView components.
+     *
+     * @param requestId The identifier for the selected connection request.
+     */
+    function onSelectConnectionRequest(requestId: number): void {
+        // The connectionRequestId ref is bound to the RequestModal component, so simply setting
+        // the value will trigger the modal to open.
+        connectionRequestId.value = requestId;
+    }
+
+    // #endregion
+
+    provide(IsRequestSecurityEnabled, isRequestSecurityEnabled);
+    provideSecurityGrant(securityGrant);
+    onConfigurationValuesChanged(reloadBlock);
+
+    updateUrl();
+    getDataForSelectedViewMode();
+
+    watch([
+        connectionOpportunityId,
+        connectionRequestId,
+        campusId
+    ], () => {
+        updateUrl();
+    });
+</script>

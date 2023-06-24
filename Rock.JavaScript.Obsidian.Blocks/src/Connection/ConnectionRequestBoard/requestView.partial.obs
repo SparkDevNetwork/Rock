@@ -1,0 +1,16 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    Hello from requestView.partial!
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ConnectionRequestBoardSelectedRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardSelectedRequestBag";
+
+    defineProps({
+        selectedRequest: {
+            type: Object as PropType<ConnectionRequestBoardSelectedRequestBag | null | undefined>,
+            required: true
+        }
+    });
+</script>

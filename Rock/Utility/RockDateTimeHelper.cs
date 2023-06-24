@@ -356,6 +356,81 @@ WHERE SundayDate IS NULL
             return value;
         }
 
+        /// <summary>
+        /// Creates a <see cref="SlidingDateRangeBag"/> instance from delimited values in format SlidingDateRangeType|Number|TimeUnitType|StartDate|EndDate.
+        /// </summary>
+        /// <param name="value">The value string to be parsed.</param>
+        /// <returns>A <see cref="SlidingDateRangeBag"/> object that represents the delimited values or <see langword="null"/> if <paramref name="value"/> is <see langword="null"/> or invalid.</returns>
+        [RockInternal( "1.16.0" )]
+        public static SlidingDateRangeBag CreateSlidingDateRangeBagFromDelimitedValues( string value )
+        {
+            var splitValues = ( value ?? string.Empty ).Split( '|' );
+            if ( splitValues.Length != 5 )
+            {
+                return null;
+            }
+
+            var rangeType = splitValues[0].ConvertToEnum<Enums.Controls.SlidingDateRangeType>();
+
+            return new SlidingDateRangeBag
+            {
+                RangeType = rangeType,
+                TimeValue = rangeType == Enums.Controls.SlidingDateRangeType.Current ? 1 : splitValues[1].AsIntegerOrNull(),
+                TimeUnit = splitValues[2].ConvertToEnumOrNull<Enums.Controls.TimeUnitType>(),
+                LowerDate = splitValues[3].AsDateTime()?.ToRockDateTimeOffset(),
+                UpperDate = splitValues[4].AsDateTime()?.ToRockDateTimeOffset()
+            };
+        }
+
+        /// <summary>
+        /// Gets the sliding date range delimited values in format SlidingDateRangeType|Number|TimeUnitType|StartDate|EndDate from the provided
+        /// <see cref="SlidingDateRangeBag"/>, or an empty string if <paramref name="slidingDateRangeBag"/> is <see langword="null"/>.
+        /// </summary>
+        /// <param name="slidingDateRangeBag">The <see cref="SlidingDateRangeBag"/> to convert to delimited values.</param>
+        /// <returns>The delimited values or an empty string.</returns>
+        [RockInternal( "1.16.0" )]
+        public static string GetDelimitedValues( SlidingDateRangeBag slidingDateRangeBag )
+        {
+            if ( slidingDateRangeBag == null )
+            {
+                return string.Empty;
+            }
+
+            int? timeValue = (
+                Enums.Controls.SlidingDateRangeType.Last
+                | Enums.Controls.SlidingDateRangeType.Previous
+                | Enums.Controls.SlidingDateRangeType.Next
+                | Enums.Controls.SlidingDateRangeType.Upcoming
+            ).HasFlag( slidingDateRangeBag.RangeType )
+                ? slidingDateRangeBag.TimeValue
+                : null;
+
+            if ( slidingDateRangeBag.RangeType == Enums.Controls.SlidingDateRangeType.Current )
+            {
+                timeValue = 1;
+            }
+
+            Enums.Controls.TimeUnitType? timeUnitType = (
+                Enums.Controls.SlidingDateRangeType.Last
+                | Enums.Controls.SlidingDateRangeType.Previous
+                | Enums.Controls.SlidingDateRangeType.Next
+                | Enums.Controls.SlidingDateRangeType.Upcoming
+                | Enums.Controls.SlidingDateRangeType.Current
+            ).HasFlag( slidingDateRangeBag.RangeType )
+                ? slidingDateRangeBag.TimeUnit
+                : null;
+
+            string lowerDate = slidingDateRangeBag.RangeType == Enums.Controls.SlidingDateRangeType.DateRange
+                ? slidingDateRangeBag.LowerDate?.ToString( "o" )
+                : null;
+
+            string upperDate = slidingDateRangeBag.RangeType == Enums.Controls.SlidingDateRangeType.DateRange
+                ? slidingDateRangeBag.UpperDate?.ToString( "o" )
+                : null;
+
+            return $"{slidingDateRangeBag.RangeType}|{timeValue}|{timeUnitType}|{lowerDate}|{upperDate}";
+        }
+
         #region Time Zone Configuration
 
         /// <summary>

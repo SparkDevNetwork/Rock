@@ -274,6 +274,7 @@ namespace Rock.Model
                     requestViewModel.CanConnect = CanConnect( requestViewModel, connectionOpportunity, connectionType );
 
                     var connectionRequest = statusRequests.First( cr => cr.Id == requestViewModel.Id );
+                    connectionRequest.LoadAttributes( rockContext );
                     var attributeValues = connectionRequest.AttributeValues
                         .Where( a => IsAuthorizedToViewAndNotEmpty( a, currentPerson, connectionRequest ) )
                         .Select( a => $"<strong>{a.Value.AttributeName}:</strong> {connectionRequest.GetAttributeTextValue( a.Key )}" );

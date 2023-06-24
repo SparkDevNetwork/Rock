@@ -287,6 +287,7 @@
     <Compile Include="Engagement\StreakDetail.cs" />
     <Compile Include="Prayer\PrayerRequestEntry.cs" />
     <Compile Include="Cms\LibraryViewer.cs" />
+    <Compile Include="Connection\ConnectionRequestBoard.cs" />
     <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
     <Compile Include="Example\ObsidianGalleryList.cs" />
     <Compile Include="Group\GroupAttendanceDetail.cs" />

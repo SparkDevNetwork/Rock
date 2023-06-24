@@ -163,6 +163,9 @@
 
     // #region Functions
 
+    /**
+     * Gets the current resources for this occurrence.
+     */
     async function getCurrentResources(): Promise<void> {
         if (!attendanceOccurrenceId.value) {
             return;

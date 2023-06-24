@@ -33,6 +33,7 @@ using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
+using ConnectionState = Rock.Model.ConnectionState;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
 

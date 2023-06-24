@@ -1,0 +1,229 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="saveError" :alertType="AlertType.Warning">
+        {{ saveError }}
+    </NotificationBox>
+
+    <RockForm v-else
+              :disabled="disabled"
+              @submit="onSubmit">
+
+        <div class="row">
+
+            <div class="col-md-3">
+                <PersonPicker v-model="requester"
+                              :disabled="disabled"
+                              label="Requester"
+                              rules="required" />
+            </div>
+
+            <div class="col-md-3">
+                <DropDownList v-model="connectorPersonAliasId"
+                              :items="options?.connectors ?? []"
+                              :enhanceForLongLists="true"
+                              :disabled="disabled"
+                              label="Connector" />
+            </div>
+
+            <div class="col-md-4 col-md-offset-2">
+                <RadioButtonList v-model="connectionStateId"
+                                 :items="options?.connectionStates ?? []"
+                                 :disabled="disabled"
+                                 label="State" />
+                <DatePicker v-if="isFollowUpDateVisible"
+                            v-model="followUpDate"
+                            :disabled="disabled"
+                            label="Follow-up Date"
+                            rules="required" />
+            </div>
+
+        </div>
+
+        <NoteTextEditor v-model="comments"
+                        :disabled="disabled"
+                        class="form-group"
+                        label="Comments" />
+
+        <RadioButtonList v-model="connectionStatusId"
+                         :items="options?.connectionStatuses ?? []"
+                         :disabled="disabled"
+                         label="Status" />
+
+        <div class="row">
+
+            <div class="col-md-6">
+                <DropDownList v-model="placementGroupId"
+                              :items="options?.placementGroups ?? []"
+                              :enhanceForLongLists="true"
+                              :disabled="disabled || connectionRelatedControlsDisabled"
+                              label="Placement Group"
+                              @update:modelValue="onPlacementGroupChanged" />
+                <DropDownList v-if="placementGroupMemberRoles.length > 1"
+                              v-model="placementGroupMemberRoleId"
+                              :items="placementGroupMemberRoles"
+                              :disabled="disabled || connectionRelatedControlsDisabled"
+                              label="Group Member Role" />
+                <DropDownList v-if="placementGroupMemberStatuses.length > 1"
+                              v-model="placementGroupMemberStatusId"
+                              :items="placementGroupMemberStatuses"
+                              :disabled="disabled || connectionRelatedControlsDisabled"
+                              label="Group Member Status" />
+            </div>
+
+            <div class="col-md-6">
+                <CampusPicker v-model="campus"
+                              :showBlankItem="true"
+                              :disabled="disabled"
+                              label="Campus" />
+            </div>
+
+        </div>
+
+        <div class="actions text-right">
+            <RockButton type="submit"
+                        :btnType="BtnType.Primary"
+                        :disabled="disabled">Save</RockButton>
+            <RockButton btnType="link"
+                        @click="$emit('cancel')"
+                        :disabled="disabled">Cancel</RockButton>
+        </div>
+
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockForm from "@Obsidian/Controls/rockForm";
+    import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ConnectionRequestBoardConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardConnectionRequestBag";
+    import { ConnectionRequestBoardRequestOptionsBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestBoard/connectionRequestBoardRequestOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        connectionRequest: {
+            type: Object as PropType<ConnectionRequestBoardConnectionRequestBag | null | undefined>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ConnectionRequestBoardRequestOptionsBag | null | undefined>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        connectionRelatedControlsDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        saveError: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "save", value: ConnectionRequestBoardConnectionRequestBag): void,
+        (e: "cancel"): void
+    }>();
+
+    // #region Values
+
+    const requester = ref<ListItemBag | undefined>(props.connectionRequest?.requester ?? undefined);
+    const connectorPersonAliasId = ref<string>(props.connectionRequest?.connectorPersonAliasId?.toString() ?? "");
+    const connectionStateId = ref<string>(props.connectionRequest?.connectionStateId.toString() ?? "");
+    const connectionStatusId = ref<string>(props.connectionRequest?.connectionStatusId.toString() ?? "");
+    const placementGroupId = ref<string>(props.connectionRequest?.placementGroupId?.toString() ?? "");
+    const placementGroupMemberRoleId = ref<string>(props.connectionRequest?.placementGroupMemberRoleId?.toString() ?? "");
+    const placementGroupMemberStatusId = ref<string>(props.connectionRequest?.placementGroupMemberStatusId?.toString() ?? "");
+    const campus = ref<ListItemBag | undefined>(props.connectionRequest?.campus ?? undefined);
+    const comments = ref<string | undefined>(props.connectionRequest?.comments ?? "");
+    const followUpDate = ref<string | null>(props.connectionRequest?.followUpDate ?? null);
+    // TODO (Jason): add the attribute refs.
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isFollowUpDateVisible = computed((): boolean => {
+        return toNumberOrNull(connectionStateId.value) === ConnectionState.FutureFollowUp;
+    });
+
+    const placementGroupMemberRoles = computed((): ListItemBag[] => {
+        if (!placementGroupId.value || !props.options?.placementGroupMemberRoles?.length) {
+            return [];
+        }
+
+        return props.options?.placementGroupMemberRoles[placementGroupId.value.toString()] ?? [];
+    });
+
+    const placementGroupMemberStatuses = computed((): ListItemBag[] => {
+        if (!placementGroupId.value
+            || !placementGroupMemberRoleId.value
+            || !props.options?.placementGroupMemberStatuses?.length) {
+            return [];
+        }
+
+        const key = `${placementGroupId.value}|${placementGroupMemberRoleId.value}`;
+        return props.options?.placementGroupMemberStatuses[key] ?? [];
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `update:modelValue` event of the placement group DropdownList control.
+     */
+    function onPlacementGroupChanged(): void {
+        placementGroupMemberRoleId.value = placementGroupMemberRoles.value
+            .find((role: ListItemBag) => !!role?.value)
+            ?.value ?? "";
+
+        placementGroupMemberStatusId.value = placementGroupMemberStatuses.value
+            .find((status: ListItemBag) => !!status?.value)
+            ?.value ?? "";
+    }
+
+    /**
+     * Handles the `submit` event of the form.
+     */
+    function onSubmit(): void {
+        if (props.disabled) {
+            return;
+        }
+
+        const request: ConnectionRequestBoardConnectionRequestBag = {
+            id: props.connectionRequest?.id ?? 0,
+            requester: requester.value,
+            connectorPersonAliasId: toNumberOrNull(connectorPersonAliasId.value),
+            connectionStateId: toNumber(connectionStateId.value),
+            connectionStatusId: toNumber(connectionStatusId.value),
+            placementGroupId: toNumberOrNull(placementGroupId.value),
+            placementGroupMemberRoleId: toNumberOrNull(placementGroupMemberRoleId.value),
+            placementGroupMemberStatusId: toNumberOrNull(placementGroupMemberStatusId.value),
+            campus: campus.value,
+            comments: comments.value,
+            followUpDate: followUpDate.value
+        };
+
+        emit("save", request);
+    }
+
+    // #endregion
+</script>
