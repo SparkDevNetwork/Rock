@@ -75,7 +75,7 @@
                         </div>
                         <asp:LinkButton ID="lbEditNamePronunciation" runat="server" OnClick="lbEditNamePronunciation_Click"/>
                     </div>
-                    <div runat="server" class="d-flex flex-wrap justify-content-left align-items-center" style="margin-top:10px">
+                    <div runat="server" class="d-flex flex-wrap justify-content-left align-items-center">
                         <asp:Label ID="lPronunciationNote" runat="server" />
                     </div>
                 </div>

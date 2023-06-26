@@ -736,8 +736,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     {
                         // Set Values.
                         person.PronunciationNote = tbPronunciationNote.Value;
-                        lPronunciationNote.Text = tbPronunciationNote.Value;
+                        lPronunciationNote.Text = "<small>" + tbPronunciationNote.Value + "</small>";
                         lPronunciationNote.AddCssClass("text-muted");
+                        lPronunciationNote.AddCssClass( "ml-3" );
                         lbOpenNamePronunciationPanel.AddCssClass( "text-info" );
 
                         // Check if the note should be shown.
@@ -749,7 +750,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     // Update the play all button to remove any changes to the pronunciations.
                     aPlayAllNamePronunciations.Attributes["onclick"] = $"playAllSound('{firstNamePronunciationAudioUrl}', '{nickNamePronunciationAudioUrl}', '{lastNamePronunciationAudioUrl}');";
-                    if( firstNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() && nickNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() && lastNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() )
+                    if( firstNamePronunciationAudioUrl.IsNullOrWhiteSpace() && nickNamePronunciationAudioUrl.IsNullOrWhiteSpace() && lastNamePronunciationAudioUrl.IsNullOrWhiteSpace() )
                     {
                         aPlayAllNamePronunciations.Visible = false;
                     }
@@ -918,9 +919,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // The pronunciationNote label gets assigned the text in the notes column of the person table.
                 if ( Person.PronunciationNote.IsNotNullOrWhiteSpace() )
                 {
-                    lPronunciationNote.Text = Person.PronunciationNote;
+                    lPronunciationNote.Text = "<small>" + Person.PronunciationNote + "</small>";
+                    lPronunciationNote.AddCssClass( "ml-3" );
                     lPronunciationNote.AddCssClass( "text-muted" );
-                    lPronunciationNote.Style.Add( "font-size", "13px" );
                     tbPronunciationNote.Value = Person.PronunciationNote;
                     lbOpenNamePronunciationPanel.AddCssClass( "text-info" );
                     personHasPronunciationNote = true;
@@ -962,8 +963,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
 
                 // Create an API Client and request to call the requests for pronunciation.
-                var namePronunciationClient = new RestClient( "http://localhost:49999/api/pronunciations/person" );
-                //var namePronunciationClient = new RestClient( "https://www.rockrms.com/api/pronunciations/person" );
+var namePronunciationClient = new RestClient( "http://localhost:49999/api/pronunciations/person" );
+//var namePronunciationClient = new RestClient( "https://api.rockrms.com/api/pronunciations/person" );
                 var namePronunciationrequest = new RestRequest( Method.POST );
 
                 // Create list of pronunciations that will be passed as a Json Body.
@@ -998,10 +999,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     IndividualRequests = namePronunciationRequestList
                 } );
 
-                // Call the name Pronunciation API and get a response that contains array of Name Pronunciations.
-                var namePronunciatioinResponse = namePronunciationClient.Execute<List<NamePronunciationResponse>>( namePronunciationrequest );
+                // Call the name Pronunciation API and get a response that contains a list of Name Pronunciations.
+                var namePronunciationResponseList = namePronunciationClient.Execute<List<NamePronunciationResponse>>( namePronunciationrequest );
 
-                if ( namePronunciatioinResponse.StatusCode == System.Net.HttpStatusCode.OK )
+                if ( namePronunciationResponseList.StatusCode == System.Net.HttpStatusCode.OK )
                 {
                     // Create some variables.
                     bool personHasFirstNamePronunciation = false;
@@ -1009,7 +1010,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     bool personHasLastNamePronunciation = false;
 
                     // Loop through the response data.
-                    foreach ( NamePronunciationResponse namePronunciationResponse in namePronunciatioinResponse.Data )
+                    foreach ( NamePronunciationResponse namePronunciationResponse in namePronunciationResponseList.Data )
                     {
                         // Check if there is no prounciation.
                         if ( namePronunciationResponse.Pronunciation == null )
@@ -1022,10 +1023,19 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             && namePronunciationResponse.NameType == 0
                             && !personHasFirstNamePronunciationOverride )
                         {
-                        //    firstNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
-                            firstNamePronunciationAudioUrl = "https://rockrms.blob.core.windows.net/pronunciations/firstnames/" + Person.FirstName.ToLower() + ".mp3";
+                            firstNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
+//firstNamePronunciationAudioUrl = "https://rockrms.blob.core.windows.net/pronunciations/firstnames/" + Person.FirstName.ToLower() + ".mp3";
 
-                            spFirstNamePronunciation.Attributes["onclick"] = $"playSound('{firstNamePronunciationAudioUrl}')";
+                            // Check if there is audio to play.
+                            if ( firstNamePronunciationAudioUrl.IsNotNullOrWhiteSpace())
+                            {
+                                spFirstNamePronunciation.Attributes["onclick"] = $"playSound('{firstNamePronunciationAudioUrl}')";
+                            }
+                            else
+                            {
+                                spFirstNamePronunciation.AddCssClass( "text-muted" );
+                            }
+                            
                             spFirstNamePronunciation.InnerText = namePronunciationResponse.Pronunciation;
                             spFirstNamePronunciation.AddCssClass( "mr-3" );
                             personHasFirstNamePronunciation = true;
@@ -1037,10 +1047,19 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             && namePronunciationResponse.NameType == 0
                             && !personHasNickNamePronunciationOverride )
                         {
-                        //    nickNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
-                            nickNamePronunciationAudioUrl = "https://rockrms.blob.core.windows.net/pronunciations/firstnames/" + Person.NickName.ToLower() + ".mp3";
+                            nickNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
+//nickNamePronunciationAudioUrl = "https://rockrms.blob.core.windows.net/pronunciations/firstnames/" + Person.NickName.ToLower() + ".mp3";
 
-                            spNickNamePronunciation.Attributes["onclick"] = $"playSound('{nickNamePronunciationAudioUrl}')";
+                            // Check if there is audio to play.
+                            if ( nickNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() )
+                            {
+                                spNickNamePronunciation.Attributes["onclick"] = $"playSound('{nickNamePronunciationAudioUrl}')";
+                            }
+                            else
+                            {
+                                spNickNamePronunciation.AddCssClass( "text-muted" );
+                            }
+
                             spNickNamePronunciation.InnerText = namePronunciationResponse.Pronunciation;
                             spNickNamePronunciation.AddCssClass( "mr-3" );
                             personHasNickNamePronunciation = true;
@@ -1052,10 +1071,19 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             && namePronunciationResponse.NameType == ( NameType ) 1
                             && !personHasLastNamePronunciationOverride )
                         {
-                        //    lastNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
-                            lastNamePronunciationAudioUrl = "https://rockrms.blob.core.windows.net/pronunciations/lastnames/" + Person.LastName.ToLower() + ".mp3";
+                            lastNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
+//lastNamePronunciationAudioUrl = "https://rockrms.blob.core.windows.net/pronunciations/lastnames/" + Person.LastName.ToLower() + ".mp3";
 
-                            spLastNamePronunciation.Attributes["onclick"] = $"playSound('{lastNamePronunciationAudioUrl}')";
+                            // Check if there is audio to play.
+                            if ( lastNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() )
+                            {
+                                spLastNamePronunciation.Attributes["onclick"] = $"playSound('{lastNamePronunciationAudioUrl}')";
+                            }
+                            else
+                            {
+                                spLastNamePronunciation.AddCssClass( "text-muted" );
+                            }
+
                             spLastNamePronunciation.InnerText = namePronunciationResponse.Pronunciation;
                             personHasLastNamePronunciation = true;
                             tbLastName.Value = namePronunciationResponse.Pronunciation;
@@ -1065,11 +1093,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     bool thereIsOneNamePronunciation = false;
                     // Check if one of the names has a pronunciation.
                     if ( personHasFirstNamePronunciation || personHasNickNamePronunciation || personHasLastNamePronunciation)
-                    {
-                        aPlayAllNamePronunciations.InnerHtml = "<i class='fa fa-play-circle-o fa-lg' runat=\"server\"></i>";
-                        aPlayAllNamePronunciations.Attributes["onclick"] = $"playAllSound('{firstNamePronunciationAudioUrl}', '{nickNamePronunciationAudioUrl}', '{lastNamePronunciationAudioUrl}');";
-                        aPlayAllNamePronunciations.Visible = true;
+                    {   
                         thereIsOneNamePronunciation = true;
+
+                        //Check if there is at least one audio file to play.
+                        if ( firstNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() || nickNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() || lastNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() )
+                        {
+                            aPlayAllNamePronunciations.InnerHtml = "<i class='fa fa-play-circle-o fa-lg text-primary' runat=\"server\"></i>";
+                            aPlayAllNamePronunciations.Attributes["onclick"] = $"playAllSound('{firstNamePronunciationAudioUrl}', '{nickNamePronunciationAudioUrl}', '{lastNamePronunciationAudioUrl}');";
+                            aPlayAllNamePronunciations.Visible = true;
+                        }
                     }
 
                     // If there is an override then a name pronunciation exists.
@@ -1108,6 +1141,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     if ( !personHasFirstNamePronunciation && !personHasNickNamePronunciation && !personHasLastNamePronunciation
                         && !personHasFirstNamePronunciationOverride && !personHasNickNamePronunciationOverride && !personHasLastNamePronunciationOverride )
                     {
+                        aPlayAllNamePronunciations.AddCssClass( "text-muted" );
                         aPlayAllNamePronunciations.InnerText = "No system pronunciation exists.";
                         aPlayAllNamePronunciations.Visible = true;
                     }
@@ -1117,6 +1151,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     // Change the Modal controls for the name pronunciation override Modal.
                     formLink.HRef = "https://community.rockrms.com/namepronunciation?FirstName=" + Person.FirstName + "&NickName=" + Person.NickName + "&LastName=" + Person.LastName;
+                }
+
+                // If the response code did not go through hide the button audio.
+                if ( namePronunciationResponseList.StatusCode != System.Net.HttpStatusCode.OK )
+                {
+                    lbOpenNamePronunciationPanel.Visible = false;
                 }
             }
         }
