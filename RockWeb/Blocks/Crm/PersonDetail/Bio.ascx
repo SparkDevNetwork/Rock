@@ -22,14 +22,70 @@
                 <%-- Account Protection Level --%>
                 <asp:Literal ID="litAccountProtectionLevel" runat="server" />
                 <%-- Person Name --%>
-                <asp:Literal ID="lName" runat="server" />
+                <div class="d-flex flex-wrap">
+                    <asp:Literal ID="lName" runat="server" />
+                    <asp:LinkButton ID="lbOpenNamePronunciationPanel" CssClass="btn btn-sm text-primary" runat="server" OnClick="lbOpenNamePronunciationPanel_Click">
+                        <span class="fa-stack fa-md">
+                            <i class="fa fa-circle fa-stack-2x"></i>
+                            <i class="fa fa-volume-up fa-stack-1x fa-inverse"></i>
+                        </span>
+                    </asp:LinkButton>
+                </div>
+                <%-- Name Pronunciation Modal --%>
+                <ContentTemplate>
+                    <Rock:ModalDialog ID="dlgNamePronunciation" runat="server" Title="Pronunciation Override" OnSaveClick="dlgSavePronunciation_Click" ValidationGroup="PageAttributes" Visible="false">
+                        <Content>
+                            <div class="block-content">
+                                <span>You can override the pronunciation for this individual below. If you have any feedback regarding the system's pronunciation, please don't hesitate to </span>
+                                <a id="formLink" runat="server" href="https://community.rockrms.com">share it with us.</a>
+                            </div>
+                            <div class="margin-t-md">
+                                <label class="control-label" for="tbFirstName">First Name</label>
+                                <div class="control-wrapper">
+                                    <input id="tbFirstName" runat="server" type="text" value="" maxlength="200" class="form-control mb-3">
+                                    <span id="tbFirstName_rfv" class="validation-error help-inline" style="display:none"></span>
+                                </div>
+                                <label class="control-label" for="tbNickName">Nick Name</label>
+                                <div class="control-wrapper">
+                                    <input id="tbNickName" runat="server" name="tbNickName" type="text" value="" maxlength="200" class="form-control mb-3">
+                                    <span id="tbFNickName_rfv" class="validation-error help-inline" style="display:none"></span>
+                                </div>
+                                <label class="control-label" for="tbLastName">Last Name</label>
+                                <div class="control-wrapper">
+                                    <input id="tbLastName" runat="server" name="tbLastName" type="text" value="" maxlength="200" class="form-control mb-3">
+                                    <span id="tbLastName_rfv" class="validation-error help-inline" style="display:none"></span>
+                                </div>
+                                <label class="control-label" for="tbPronunciationNote">Pronunciation Notes</label>
+                                <div class="control-wrapper">
+                                    <textarea id="tbPronunciationNote" runat="server" name="tbPronunciationNote" type="text" value="" maxlength="1000" class="form-control"></textarea>
+                                    <span id="tbPronunciationNote_rfv" class="validation-error help-inline" style="display:none"></span>
+                                </div>
+                            </div>
+                        </Content>
+                    </Rock:ModalDialog>
+                </ContentTemplate>
+                <%-- Name Pronunciation Panel --%>
+                <div id="divNamePronunciationPanel" runat="server" CssClass="bg-light mt-2 p-2 rounded" style="margin-top:10px; background-color:#f8f9fa; padding:5px; border-radius:10px">
+                    <div runat="server"  style="display:flex; justify-content: space-between;">
+                        <a ID="aPlayAllNamePronunciations" runat="server" CssClass="text-primary"/>
+                        <div runat="server" class="d-flex flex-wrap justify-content-left align-items-left ml-2 mt-0" >
+                            <span ID="spFirstNamePronunciation" runat="server"></span>
+                            <span ID="spNickNamePronunciation" runat="server"></span>
+                            <span ID="spLastNamePronunciation" runat="server"></span>
+                        </div>
+                        <asp:LinkButton ID="lbEditNamePronunciation" runat="server" OnClick="lbEditNamePronunciation_Click"/>
+                    </div>
+                    <div runat="server" class="d-flex flex-wrap justify-content-left align-items-center" style="margin-top:10px">
+                        <asp:Label ID="lPronunciationNote" runat="server" />
+                    </div>
+                </div>
                 <%-- Badges --%>
-                <div class="d-flex flex-wrap justify-content-center align-items-center gap mt-3">
+                <div class="d-flex flex-wrap justify-content-left align-items-center gap mt-3">
                     <Rock:BadgeListControl ID="blStatus" runat="server" />
                     <asp:LinkButton ID="lbFollowing" runat="server" CssClass="btn btn-default btn-xs btn-follow" OnClick="lbFollowing_Click"></asp:LinkButton>
                 </div>
                 <%-- Buttons --%>
-                <div class="profile-actions">
+                <div class="profile-actions" style="justify-content:left; padding-right:10px; padding-left:10px">
                     <div id="divSmsButton" runat="server" class="action-container">
                         <asp:Literal ID="lSmsButton" runat="server" />
                     </div>
