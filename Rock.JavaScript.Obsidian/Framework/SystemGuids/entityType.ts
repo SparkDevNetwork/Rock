@@ -427,10 +427,16 @@ export const EntityType = {
     MobileContentChannelItemListBlockType: "6DBF59D6-EB40-43C8-8859-F38254EC3F6D",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.ContentChannelItemView */
     MobileContentChannelItemViewBlockType: "44A8B647-E0A7-42E7-9A75-276310F7E7BB",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.AttributeValues. */
+    MobileCoreAttributeValues: "6751AC1E-C467-4416-9F02-0B9A0D1FAC2D",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Notes */
     MobileCoreNotesBlockType: "2FED71D1-4A60-4EB5-B971-530B5D1FC041",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Search. */
     MobileCoreSearchBlockType: "F81015CD-EBA9-4358-B930-4F1AB29AF879",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.GroupMembers. */
+    MobileCrmGroupMembers: "592242ED-7536-49EA-94DE-7B4EBA7E87A6",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.PersonProfile. */
+    MobileCrmPersonProfile: "A1EEA3BD-7B40-47A9-82D4-7187290C917C",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventItemOccurrenceView */
     MobileEventsCalendareventitemoccurrenceviewBlockType: "04C43693-C524-4679-9F65-047F94A74CAB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList */

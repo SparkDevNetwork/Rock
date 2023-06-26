@@ -42,22 +42,6 @@ namespace Rock.ViewModels.Entities
         public int AccountProtectionProfile { get; set; }
 
         /// <summary>
-        /// Gets the Person's age.
-        /// </summary>
-        /// <value>
-        /// An System.Int32 representing the person's age. Returns null if the birthdate or birthyear is not available.
-        /// </value>
-        public int? Age { get; set; }
-
-        /// <summary>
-        /// Gets or sets the age bracket.
-        /// </summary>
-        /// <value>
-        /// The age range.
-        /// </value>
-        public int AgeBracket { get; set; }
-
-        /// <summary>
         /// Gets or sets the age classification of the Person.
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
