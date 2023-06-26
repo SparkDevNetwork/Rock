@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
 using System.Media;
 using System.Net;
@@ -30,6 +31,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Store;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -553,11 +555,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 if(Person != null )
                 {
                     // Find the current person in the database.
-                    var personService = new PersonService( rockContext );
-                    var person = personService.Queryable()
-                                        .FirstOrDefault( o => o.FirstName.Equals( Person.FirstName )
-                                            && o.NickName.Equals( Person.NickName )
-                                            && o.LastName.Equals( Person.LastName ) );
+                    var person = new PersonService( rockContext ).Get( Person.Id );
 
                     // If the name in the first name area is different than what is in the database, save the new data.
                     if (!(tbFirstName.Value.Equals(Person.FirstNamePronunciationOverride)) && tbFirstName.Value.IsNotNullOrWhiteSpace()
@@ -713,7 +711,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         }
 
                         // Find all family related to the current person.
-                        var groupMemberService = new GroupMemberService( new RockContext() );
+                        var groupMemberService = new GroupMemberService( rockContext );
                         List<GroupMember> groupMembers = groupMemberService.GetSortedGroupMemberListForPerson( this.Person.Id, 10, false ).ToList();
 
                         // Loop through family members and change all the last nams that are the same to the last name override.
@@ -721,11 +719,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         {
                             if ( groupMember.Person.LastName.Equals( Person.LastName ) )
                             {
-                                var familySharedLastName = personService.Queryable()
-                                .FirstOrDefault( o => o.FirstName.Equals( groupMember.Person.FirstName )
-                                    && o.NickName.Equals( groupMember.Person.NickName )
-                                    && o.LastName.Equals( groupMember.Person.LastName ) );
-                                familySharedLastName.LastNamePronunciationOverride = tbLastName.Value;
+                                groupMember.Person.LastNamePronunciationOverride = tbLastName.Value;
                             }
                         }
                         
@@ -964,9 +958,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     personHasNickName = false;
                 }
 
+
+//http://localhost:49999);
+//https://api.rockrms.com/ );
+                
                 // Create an API Client and request to call the requests for pronunciation.
-var namePronunciationClient = new RestClient( "http://localhost:49999/api/pronunciations/person" );
-//var namePronunciationClient = new RestClient( "https://api.rockrms.com/api/pronunciations/person" );
+                // For testing purposes change the RockApiUrl within the web.config file.
+                var baseUrl = ConfigurationManager.AppSettings["RockApiUrl"].EnsureTrailingForwardslash();
+                var namePronunciationClient = new RestClient(string.Format( "{0}api/pronunciations/person", baseUrl ));
                 var namePronunciationrequest = new RestRequest( Method.POST );
 
                 // Create list of pronunciations that will be passed as a Json Body.
@@ -1152,7 +1151,7 @@ var namePronunciationClient = new RestClient( "http://localhost:49999/api/pronun
                     lbEditNamePronunciation.Text = "<i class='fa fa-pencil fa-xs' runat='server'></i>";
 
                     // Change the Modal controls for the name pronunciation override Modal.
-                    formLink.HRef = "https://community.rockrms.com/namepronunciation?FirstName=" + Person.FirstName + "&NickName=" + Person.NickName + "&LastName=" + Person.LastName;
+                    formLink.HRef = "https://community.rockrms.com/namepronunciation?FirstName=" + Person.FirstName + "&NickName=" + Person.NickName + "&LastName=" + Person.LastName + "&OrganizationId=" + StoreService.GetOrganizationKey().AsGuid();
                 }
 
                 // If the response code did not go through hide the button audio.
