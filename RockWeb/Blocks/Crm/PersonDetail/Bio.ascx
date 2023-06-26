@@ -65,13 +65,13 @@
                     </Rock:ModalDialog>
                 </ContentTemplate>
                 <%-- Name Pronunciation Panel --%>
-                <div id="divNamePronunciationPanel" runat="server" CssClass="bg-light mt-2 p-2 rounded" style="margin-top:10px; background-color:#f8f9fa; padding:5px; border-radius:10px">
-                    <div runat="server"  style="display:flex; justify-content: space-between;">
+                <div id="divNamePronunciationPanel" runat="server" class="bg-default mt-1 p-1 rounded">
+                    <div runat="server" class="d-flex justify-content-between">
                         <a ID="aPlayAllNamePronunciations" runat="server" CssClass="text-primary"/>
-                        <div runat="server" class="d-flex flex-wrap justify-content-left align-items-left ml-2 mt-0" >
-                            <span ID="spFirstNamePronunciation" runat="server"></span>
-                            <span ID="spNickNamePronunciation" runat="server"></span>
-                            <span ID="spLastNamePronunciation" runat="server"></span>
+                        <div runat="server" class="d-flex flex-wrap justify-content-left align-items-left ml-2 mr-2 mt-0" >
+                            <span ID="spFirstNamePronunciation" runat="server" class="text-break"></span>
+                            <span ID="spNickNamePronunciation" runat="server" class="text-break"></span>
+                            <span ID="spLastNamePronunciation" runat="server" class="text-break"></span>
                         </div>
                         <asp:LinkButton ID="lbEditNamePronunciation" runat="server" OnClick="lbEditNamePronunciation_Click"/>
                     </div>

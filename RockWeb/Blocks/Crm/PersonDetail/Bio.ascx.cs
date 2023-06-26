@@ -739,6 +739,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         lPronunciationNote.Text = "<small>" + tbPronunciationNote.Value + "</small>";
                         lPronunciationNote.AddCssClass("text-muted");
                         lPronunciationNote.AddCssClass( "ml-3" );
+                        lPronunciationNote.AddCssClass( "mr-3" );
                         lbOpenNamePronunciationPanel.AddCssClass( "text-info" );
 
                         // Check if the note should be shown.
@@ -855,7 +856,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            lName.Text = $"<h1 style='text-align:left; padding-right:15px' class='person-name'>{nameText} <small class='person-first-name'>{firstName}</small></h1>{previousNameText}";
+            lName.Text = $"<h1 class='person-name text-left pr-2'>{nameText} <small class='person-first-name'>{firstName}</small></h1>{previousNameText}";
         }
 
         /// <summary>
@@ -921,6 +922,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     lPronunciationNote.Text = "<small>" + Person.PronunciationNote + "</small>";
                     lPronunciationNote.AddCssClass( "ml-3" );
+                    lPronunciationNote.AddCssClass( "mr-3" );
                     lPronunciationNote.AddCssClass( "text-muted" );
                     tbPronunciationNote.Value = Person.PronunciationNote;
                     lbOpenNamePronunciationPanel.AddCssClass( "text-info" );
