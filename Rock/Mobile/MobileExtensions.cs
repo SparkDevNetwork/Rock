@@ -118,6 +118,11 @@ namespace Rock.Mobile
             }
         }
 
+        /// <summary>
+        /// Converts to mobile.
+        /// </summary>
+        /// <param name="emailPreference">The email preference.</param>
+        /// <returns></returns>
         public static Rock.Common.Mobile.Enums.EmailPreference ToMobile( this Model.EmailPreference emailPreference )
         {
             switch ( emailPreference )

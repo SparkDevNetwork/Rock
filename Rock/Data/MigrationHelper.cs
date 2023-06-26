@@ -329,7 +329,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Updates the Entity block or creates it if it is not already present in the database.
-        /// This method serves as a syntactic sugar over the <see cref="UpdateMobileBlockType" /> which was origianlly used to add or updated the obsidian blocks.
+        /// This method serves as a syntactic sugar over the <see cref="MigrationHelper.UpdateMobileBlockType(string, string, string, string)" /> which was origianlly used to add or updated the obsidian blocks.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>

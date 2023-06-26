@@ -542,8 +542,9 @@ namespace Rock.Blocks.Types.Mobile.Crm
         /// <summary>
         /// Determines whether the current person is authorized to edit another person.
         /// </summary>
-        /// <param name="personToEdit">The person to edit.</param>
-        /// <returns><c>true</c> if is authorized to edit; otherwise, <c>false</c>.</returns>
+        /// <returns>
+        ///   <c>true</c> if is authorized to edit; otherwise, <c>false</c>.
+        /// </returns>
         private bool IsAuthorizedToEditPerson()
         {
             if ( RequestContext.CurrentPerson != null )
