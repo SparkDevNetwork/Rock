@@ -308,16 +308,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         navItem.Id ) );
             }
 
-            var loc = navItem as NavigationLocation;
 
             var lbl = e.Item.FindControl( "lblCurrentCount" ) as Label;
             if ( lbl != null )
             {
                 lbl.Text = navItem.CurrentCount.ToString( "N0" );
-                if ( loc != null && loc.SoftThreshold.HasValue )
+                if ( navItem != null && navItem.TotalSoftThreshold.HasValue )
                 {
-                    lbl.Text = string.Format( "{0:N0}/{1:N0}", navItem.CurrentCount, loc.SoftThreshold.Value );
-                    if ( loc.CurrentCount >= loc.SoftThreshold )
+                    lbl.Text = string.Format( "{0:N0} of {1:N0}", navItem.CurrentCount, navItem.TotalSoftThreshold.Value );
+                    if ( navItem.CurrentCount >= navItem.TotalSoftThreshold )
                     {
                         lbl.AddCssClass( "badge-danger" );
                     }
@@ -338,6 +337,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
             }
 
+            var loc = navItem as NavigationLocation;
             var tgl = e.Item.FindControl( "tglRoom" ) as Toggle;
             if ( tgl != null )
             {
@@ -701,9 +701,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     if ( childLocationIds.Any() || childGroupIds.Any() )
                     {
-                        var navGroup = new NavigationGroup( group, chartTimes );
+                        int? totalSoftThreshold = null;
+                        if ( group.GroupLocations.Where( a => childLocationIds.Contains( a.LocationId ) ).All( a => a.Location.SoftRoomThreshold.HasValue ) )
+                        {
+                            totalSoftThreshold = group.GroupLocations.Select( a => a.Location.SoftRoomThreshold ).Sum();
+                        }
+
+                        var navGroup = new NavigationGroup( group, chartTimes, totalSoftThreshold );
                         navGroup.ChildLocationIds = childLocationIds;
                         navGroup.ChildGroupIds = childGroupIds;
+                        
                         NavData.Groups.Add( navGroup );
 
                         /* 
@@ -717,6 +724,20 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                         NavData.GroupTypes.Where( t => t.Id == group.GroupTypeId ).ToList()
                                 .ForEach( t => t.ChildGroupIds.Add( group.Id ) );
+                    }
+                }
+
+                //refresh the group type count
+                foreach ( var groupTypeId in groupTypeIds )
+                {
+                    var navGroupType = NavData.GroupTypes.FirstOrDefault( g => g.Id == groupTypeId );
+                    var childGroupIds = GetChildGroupIdDescendants( navGroupType );
+
+                    var groupTypeGroups = NavData.Groups.Where( a => childGroupIds.Contains( a.Id ) );
+                    var isSoftThresholdValid = groupTypeGroups.All( a => a.TotalSoftThreshold.HasValue );
+                    if ( isSoftThresholdValid )
+                    {
+                        navGroupType.TotalSoftThreshold = groupTypeGroups.Sum( a => a.TotalSoftThreshold );
                     }
                 }
 
@@ -761,6 +782,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     return null;
                 }
+
 
                 // Get the locations
                 var locationIds = NavData.Groups.SelectMany( g => g.ChildLocationIds ).Distinct().ToList();
@@ -1095,7 +1117,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     if ( parentLocation != null )
                     {
-                        parentLocation.ChildLocationIds.Add( navLocation.Id );
+                        parentLocation.AddChildLocation( navLocation );
                     }
                 }
 
@@ -1172,6 +1194,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     AddLocationCount( time, navLocation.ParentId.Value, personIds, current );
                 }
             }
+        }
+
+        private List<int> GetChildGroupIdDescendants( NavigationGroupType navGroupType )
+        {
+            var childGroupIds = navGroupType.ChildGroupIds;
+            if ( navGroupType != null )
+            {
+                foreach ( var childGroupTypeId in navGroupType.ChildGroupTypeIds )
+                {
+                    var childGroupType = NavData.GroupTypes.FirstOrDefault( g => g.Id == childGroupTypeId );
+                    var groupIds = GetChildGroupIdDescendants( childGroupType );
+                    childGroupIds.AddRange( groupIds );
+                }
+            }
+
+            return childGroupIds;
         }
 
         #endregion
@@ -1516,6 +1554,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             public int Order { get; set; }
 
+            public int? TotalSoftThreshold { get; internal set; }
+
             public List<int> CurrentPersonIds { get; set; }
 
             public int CurrentCount
@@ -1567,13 +1607,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             public bool IsActive { get; set; }
 
-            public int? SoftThreshold { get; set; }
-
-            public int? FirmThreshold { get; set; }
-
             public List<int> ChildLocationIds { get; set; }
 
             public bool HasGroups { get; set; }
+
+            public int? SoftThreshold { get; set; }
+
+            public int? FirmThreshold { get; set; }
 
             public NavigationLocation( Location location, List<DateTime> chartTimes )
             {
@@ -1585,9 +1625,19 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 IsActive = location.IsActive;
                 SoftThreshold = location.SoftRoomThreshold;
                 FirmThreshold = location.FirmRoomThreshold;
+                TotalSoftThreshold = location.SoftRoomThreshold;
                 ChildLocationIds = new List<int>();
                 PresentPeople = new List<int>();
                 CheckedInPeople = new List<int>();
+            }
+
+            public void AddChildLocation( NavigationLocation location )
+            {
+                ChildLocationIds.Add( location.Id );
+                if ( TotalSoftThreshold.HasValue && location.SoftThreshold.HasValue )
+                {
+                    TotalSoftThreshold += location.SoftThreshold;
+                }
             }
         }
 
@@ -1638,7 +1688,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             public List<int> ChildGroupIds { get; set; }
 
-            public NavigationGroup( Group group, List<DateTime> chartTimes )
+            public NavigationGroup( Group group, List<DateTime> chartTimes, int? totalSoftThreshold )
             {
                 Id = group.Id;
                 Name = group.Name;
@@ -1651,6 +1701,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 ChildGroupIds = new List<int>();
                 PresentPeople = new List<int>();
                 CheckedInPeople = new List<int>();
+                TotalSoftThreshold = totalSoftThreshold;
             }
         }
 
