@@ -42,7 +42,7 @@
         "Date": "{{ unformattedDateString }}"
     }{% unless forloop.last %},{% endunless %}{% endfor %}
 ]{% endcapture %}
-{% assign dates = dates | FromJSON | Sort:'Date' %}
+{% assign dates = dates | FromJSON | OrderBy:'Date' %}
 
 {% sql return:'adultAttendanceValues' timeout:'180' %}
     SELECT
