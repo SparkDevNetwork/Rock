@@ -2,19 +2,15 @@
 {%- capture permalink -%}
     {%- assign cciid = cciid | AsInteger -%}
     {%- sql -%}
-        SELECT pcc.Id
+        SELECT pcc.[Id]
         FROM Attribute a
-        JOIN AttributeValue av
-        ON a.Id = av.AttributeId
-        JOIN ContentChannel cc
-        ON av.EntityId = cc.Id
-        JOIN ContentChannelItem cci
-        ON cci.ContentChannelId = cc.Id
-        JOIN ContentChannel pcc
-        ON av.Value = convert(nvarchar(50), pcc.Guid)
+        JOIN AttributeValue av ON a.[Id] = av.[AttributeId]
+        JOIN ContentChannel cc ON av.[EntityId] = cc.[Id]
+        JOIN ContentChannelItem cci ON cci.[ContentChannelId] = cc.[Id]
+        JOIN ContentChannel pcc ON av.[Value] = convert(nvarchar(50), pcc.[Guid])
         WHERE a.[Key] = 'PrimaryParentChannel'
-        AND a.EntityTypeId = 209
-        AND cci.Id = {{ cciid }}
+        AND a.[EntityTypeId] = 209
+        AND cci.[Id] = {{ cciid }}
     {%- endsql -%}
     {%- assign pccid = results | First | Property:'Id' -%}
     {%- if pccid and pccid != empty -%}
