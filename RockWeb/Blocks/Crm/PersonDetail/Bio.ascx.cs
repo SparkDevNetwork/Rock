@@ -549,15 +549,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgSavePronunciation_Click(object sender, EventArgs e)
-        {
-            using (var rockContext = new RockContext() )
+        { 
+            if(Person != null )
             {
-                if(Person != null )
+                using ( var rockContext = new RockContext() )
                 {
                     // Find the current person in the database.
                     var person = new PersonService( rockContext ).Get( Person.Id );
 
-                    // If the name in the first name area is different than what is in the database, save the new data.
+                    // If the name in the first name textbox is different than the name override, save the new text box data.
                     if (!(tbFirstName.Value.Equals(Person.FirstNamePronunciationOverride)) && tbFirstName.Value.IsNotNullOrWhiteSpace()
                         && !( tbFirstName.Value.Equals( spFirstNamePronunciation.InnerText ) ) )
                     {
@@ -609,7 +609,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         }
                     }
 
-                    // If the name in the nick name area is different than what is in the database, save the new data.
+                    // If the name in the nick name textbox is different than what is in the database, save the new data.
                     if ( !( tbNickName.Value.Equals( Person.NickNamePronunciationOverride ) ) && tbNickName.Value.IsNotNullOrWhiteSpace()
                         && !(tbNickName.Value.Equals( spNickNamePronunciation.InnerText ) ) )
                     {
@@ -714,7 +714,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         var groupMemberService = new GroupMemberService( rockContext );
                         List<GroupMember> groupMembers = groupMemberService.GetSortedGroupMemberListForPerson( this.Person.Id, 10, false ).ToList();
 
-                        // Loop through family members and change all the last nams that are the same to the last name override.
+                        // Loop through family members and change all the last names that are the same as the current person lastname to the last name override.
                         foreach ( var groupMember in groupMembers )
                         {
                             if ( groupMember.Person.LastName.Equals( Person.LastName ) )
@@ -749,11 +749,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     {
                         aPlayAllNamePronunciations.Visible = false;
                     }
-                }
 
-                // Save changes and hide the modal.
-                rockContext.SaveChanges();
-                dlgNamePronunciation.Hide();
+                    // Save context changes and hide the modal.
+                    rockContext.SaveChanges();
+                    dlgNamePronunciation.Hide();
+                }
             }
         }
 
@@ -862,18 +862,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         public static bool personHasPronunciationNote;
         private void CheckForNamePronunciationOverride()
         {
-            // Initialize static variables for Name Pronunciation Feature.
-            divNamePronunciationPanel.Visible = false;
-            dlgNamePronunciation.Hide();
-            aPlayAllNamePronunciations.Visible = false;
-            lPronunciationNote.Visible = false;
-            firstTimePostingNamePronunciations = true;
-            personHasFirstNamePronunciationOverride = false;
-            personHasNickNamePronunciationOverride = false;
-            personHasLastNamePronunciationOverride = false;
-
             if ( Person != null )
             {
+                // Initialize static variables for Name Pronunciation Feature.
+                divNamePronunciationPanel.Visible = false;
+                dlgNamePronunciation.Hide();
+                aPlayAllNamePronunciations.Visible = false;
+                lPronunciationNote.Visible = false;
+                firstTimePostingNamePronunciations = true;
+                personHasFirstNamePronunciationOverride = false;
+                personHasNickNamePronunciationOverride = false;
+                personHasLastNamePronunciationOverride = false;
+
                 // Set the default values of the name pronunciation modal as the name of the current person.
                 tbFirstName.Value = Person.FirstName;
                 tbNickName.Value = Person.NickName;
@@ -963,7 +963,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 //https://api.rockrms.com/ );
                 
                 // Create an API Client and request to call the requests for pronunciation.
-                // For testing purposes change the RockApiUrl within the web.config file.
+                // For testing purposes change the RockApiUrl within the web.config file. Permission from Nick recieved.
                 var baseUrl = ConfigurationManager.AppSettings["RockApiUrl"].EnsureTrailingForwardslash();
                 var namePronunciationClient = new RestClient(string.Format( "{0}api/pronunciations/person", baseUrl ));
                 var namePronunciationrequest = new RestRequest( Method.POST );
@@ -1025,7 +1025,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             && !personHasFirstNamePronunciationOverride )
                         {
                             firstNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
-//firstNamePronunciationAudioUrl = "https://rockrms.blob.core.windows.net/pronunciations/firstnames/" + Person.FirstName.ToLower() + ".mp3";
 
                             // Check if there is audio to play.
                             if ( firstNamePronunciationAudioUrl.IsNotNullOrWhiteSpace())
@@ -1049,7 +1048,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             && !personHasNickNamePronunciationOverride )
                         {
                             nickNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
-//nickNamePronunciationAudioUrl = "https://rockrms.blob.core.windows.net/pronunciations/firstnames/" + Person.NickName.ToLower() + ".mp3";
 
                             // Check if there is audio to play.
                             if ( nickNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() )
@@ -1073,7 +1071,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             && !personHasLastNamePronunciationOverride )
                         {
                             lastNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
-//lastNamePronunciationAudioUrl = "https://rockrms.blob.core.windows.net/pronunciations/lastnames/" + Person.LastName.ToLower() + ".mp3";
 
                             // Check if there is audio to play.
                             if ( lastNamePronunciationAudioUrl.IsNotNullOrWhiteSpace() )
@@ -1154,7 +1151,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     formLink.HRef = "https://community.rockrms.com/namepronunciation?FirstName=" + Person.FirstName + "&NickName=" + Person.NickName + "&LastName=" + Person.LastName + "&OrganizationId=" + StoreService.GetOrganizationKey().AsGuid();
                 }
 
-                // If the response code did not go through hide the button audio.
+                // If the response code did not go through hide the pronunciation button.
                 if ( namePronunciationResponseList.StatusCode != System.Net.HttpStatusCode.OK )
                 {
                     lbOpenNamePronunciationPanel.Visible = false;
