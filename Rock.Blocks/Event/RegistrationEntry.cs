@@ -1779,6 +1779,12 @@ namespace Rock.Blocks.Event
                 {
                     switch ( field.PersonFieldType )
                     {
+                        case RegistrationPersonFieldType.Email:
+                            string email = fieldValue.ToString().Trim();
+                            History.EvaluateChange( personChanges, "Email", person.Email, email );
+                            person.Email = email;
+                            break;
+
                         case RegistrationPersonFieldType.Campus:
                             var campusGuid = fieldValue.ToString().AsGuidOrNull();
                             updateExistingCampus = campusGuid.HasValue;

@@ -3075,6 +3075,12 @@ namespace RockWeb.Blocks.Event
                         {
                             switch ( field.PersonFieldType )
                             {
+                                case RegistrationPersonFieldType.Email:
+                                    email = fieldValue.ToString().Trim();
+                                    History.EvaluateChange( personChanges, "Email", person.Email, email );
+                                    person.Email = email;
+                                    break;
+
                                 case RegistrationPersonFieldType.Campus:
                                     campusId = fieldValue.ToString().AsIntegerOrNull();
                                     updateExistingCampus = campusId != null;
