@@ -1606,19 +1606,59 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
 
             function playAllSound(firstNameUrl, nickNameUrl, lastNameUrl) {
-	            var sleepTime = 0;
-	            if(firstNameUrl !== """"){
-                    setTimeout( () => playSound(firstNameUrl), sleepTime );
-                    sleepTime += 1200;
+                var hasFirstName = false;
+                var hasNickName = false;
+                var hasLastName = false;
+              
+                if(firstNameUrl !== """"){
+                    hasFirstName = true;
                 }
+
                 if(nickNameUrl !== """"){
-                    setTimeout( () => playSound(nickNameUrl), sleepTime);
-                    sleepTime += 1200;
-	            }
+                    hasNickName = true;
+                }
+
                 if(lastNameUrl !== """"){
-                    setTimeout( () => playSound(lastNameUrl), sleepTime);
-                    sleepTime += 1200;
-	            }
+                    hasLastName = true;
+                }
+               
+                if(hasFirstName){
+                    var a = new Audio(firstNameUrl);
+                    a.addEventListener('ended', function(){
+                        if ( hasNickName ){
+                            a = new Audio( nickNameUrl );
+                            a.addEventListener( 'ended', function(){
+                                if ( hasLastName ){
+                                    a = new Audio( lastNameUrl );
+                                    a.play();
+                                }
+                            });
+                            a.play();
+                        } else {
+                            if ( hasLastName ) {
+                                a = new Audio( lastNameUrl );
+                                a.play();
+                            }
+                        }
+                    });
+                    a.play();
+                } else {
+                    if(hasNickName){
+                        a = new Audio( nickNameUrl);
+                        a.addEventListener('ended', function(){
+                            if ( hasLastName ) {
+                                a = new Audio( lastNameUrl );
+                                a.play();
+                            }
+                        });
+                        a.play();
+                    } else {
+                        if ( hasLastName ) {
+                            a = new Audio( lastNameUrl );
+                            a.play();
+                        }
+                    }
+                }
             }
             ";
 
