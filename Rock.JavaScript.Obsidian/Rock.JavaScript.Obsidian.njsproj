@@ -184,6 +184,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\LavaShortcodeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\" />
@@ -697,6 +698,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\searchQueryBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\searchResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\searchResultSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LavaShortcodeDetail\lavaShortcodeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LavaShortcodeDetail\lavaShortcodeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\layoutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\layoutDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\mediaAccountBag.d.ts" />

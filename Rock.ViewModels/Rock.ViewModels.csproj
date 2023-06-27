@@ -51,6 +51,8 @@
     <Compile Include="Blocks\Core\FollowingEventTypeDetail\FollowingEventTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
+    <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeBag.cs" />
+    <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeBag.cs" />
