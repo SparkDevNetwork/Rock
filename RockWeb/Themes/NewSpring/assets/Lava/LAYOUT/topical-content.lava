@@ -32,9 +32,12 @@
                 	    {% assign type = item.ChannelName | Split:' - ' | Index:1 | Singularize %}
                 	    {% assign title = item.Title | Replace:"'","’" %}
                         {% assign titlesize = "h4" %}
-                        {% if type == 'News' %}
-                            {% capture subtitle %}{[ formatDate date:'{{ item.PublishDateTime }}' ]}{% endcapture %}
-                        {% endif %}
+                        {% capture subtitle %}
+                            {% if type == "News" %}
+                                {[ formatDate date:'{{ item.PublishDateTime }}' ]}
+                            {% endif %}
+                        {% endcapture %}
+
                 	    {% assign imageurl = item.ImageLandscape %}
             			{% assign summary = item.Summary %}
                 	    {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:140,'...' }}{% else %}{{ item.Content | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:140,'...' }}{% endif %}</p>{% endcapture %}
