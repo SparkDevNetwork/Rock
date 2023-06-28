@@ -113,8 +113,7 @@
     <div class="row flush-sides">
         {% for item in members %}<div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 push-bottom">
 
-            {% capture personId %}{{ item }}{% endcapture %}
-            {% assign person = personId | PersonById %}
+            {% assign person = item | Property:'Key' | PersonById %}
 
             {[ user imageurl:'{{ person | Attribute:"StaffImage","Url" }}' title:'{{ person.NickName }}<br>{{ person.LastName }}' subtitle:'{{ person | Attribute:'StaffTitle' }}' linkurl:'https://newspring.cc/workflows/712?StaffMember={{ person | Property:'PrimaryAlias' | Property:'Guid' }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
 
