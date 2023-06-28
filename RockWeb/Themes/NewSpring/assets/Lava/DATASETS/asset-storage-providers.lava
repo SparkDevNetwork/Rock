@@ -1,0 +1,11 @@
+{% sql %}
+    SELECT *
+    FROM [AssetStorageProvider] asp
+    LEFT JOIN [AttributeValue] av ON av.[EntityId] = asp.[Id] AND av.[AttributeId] = 91196
+{% endsql %}
+[
+{% for result in results %}{
+    "Id": {{ result.Id }},
+    "CloudfrontUrl": {{ result.Value | Default:'' | ToJSON }}
+}{% if forloop.last != true %},{% endif %}{% endfor %}
+]
