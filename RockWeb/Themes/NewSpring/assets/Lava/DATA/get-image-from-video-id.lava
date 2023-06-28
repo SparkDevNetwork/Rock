@@ -2,7 +2,7 @@
 
 {%- sql -%}
     SELECT TOP 1 ThumbnailUrl 'ImageUrl'
-    FROM [_com_minecartstudio_WistiaIntegration_WistiaMedia]
+    FROM [_tech_triumph_WistiaIntegration_WistiaMedia]
     WHERE WistiaHashedId = '{{ id }}'
 {%- endsql -%}
 
