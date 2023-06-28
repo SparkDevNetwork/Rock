@@ -16,7 +16,10 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.Fluid;
+using Rock.Lava.RockLiquid;
 using Rock.Model;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
 {
@@ -74,5 +77,37 @@ namespace Rock.Tests.UnitTests.Lava
             };
             TestHelper.AssertTemplateOutput( expectedOutput, template, parameters );
         }
+
+        /// <summary>
+        /// Attempting to render a Lava template containing a syntax error renders a valid error message.
+        /// </summary>
+        [TestMethod]
+        public void Render_TemplateParsingError_RendersUserFriendlyErrorMessage()
+        {
+            var template = @"{% assignnnnn test = 'sd' %}";
+
+            // Fluid Engine
+            var expectedOutputFluid = @"
+Lava Error: Unknown tag 'assignnnnn' at (1:14)
+";
+
+            var fluidEngine = TestHelper.GetEngineInstance( typeof( FluidEngine ) );
+
+            var result = fluidEngine.RenderTemplate( template );
+            Assert.IsTrue( result.HasErrors );
+            Assert.That.AreEqualIgnoreWhitespace( expectedOutputFluid, result.Text );
+
+            // DotLiquid Engine
+            var expectedOutputRockLiquid = @"
+Lava Error: Unknown tag 'assignnnnn'
+";
+
+            var rockLiquidEngine = TestHelper.GetEngineInstance( typeof( RockLiquidEngine ) );
+
+            var result2 = rockLiquidEngine.RenderTemplate( template );
+            Assert.IsTrue( result2.HasErrors );
+            Assert.That.AreEqualIgnoreWhitespace( expectedOutputRockLiquid, result2.Text );
+        }
+
     }
 }

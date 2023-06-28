@@ -840,10 +840,12 @@ namespace Rock.Tests.Integration.Core.Lava
                     expectedOutput = Regex.Replace( expectedOutput, @"\s*", string.Empty );
                 }
 
-                var matchRegex = options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.RegEx
-                    || ( options.Wildcards != null && options.Wildcards.Any() );
-
-                if ( matchRegex )
+                if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.RegEx )
+                {
+                    var regex = new Regex( expectedOutput );
+                    StringAssert.Matches( outputString, regex );
+                }
+                else if ( options.Wildcards != null && options.Wildcards.Any() )
                 {
                     // Replace wildcards with a non-Regex symbol.
                     foreach ( var wildcard in options.Wildcards )
@@ -851,19 +853,15 @@ namespace Rock.Tests.Integration.Core.Lava
                         expectedOutput = expectedOutput.Replace( wildcard, "<<<wildCard>>>" );
                     }
 
+                    // Escape all other Regex-significant character sequences.
                     expectedOutput = Regex.Escape( expectedOutput );
 
                     // Require a match of 1 or more characters for a wildcard.
                     expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.+)" );
-
-                    if ( options.OutputMatchType != LavaTestOutputMatchTypeSpecifier.RegEx )
-                    {
-                        // If the inputTemplate is not specified as a RegEx, add anchors for the start and end of the template.
-                        expectedOutput = "^" + expectedOutput + "$";
-                    }
+                    // Add anchors for the start and end of the template.
+                    expectedOutput = "^" + expectedOutput + "$";
 
                     var regex = new Regex( expectedOutput );
-
                     StringAssert.Matches( outputString, regex );
                 }
                 else

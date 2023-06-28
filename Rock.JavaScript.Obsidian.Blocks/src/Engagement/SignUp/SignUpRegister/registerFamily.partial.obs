@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="!registrar" alertType="warning">
+    <NotificationBox v-if="!registrar" :alertType="AlertType.Warning">
         {{ unableToRegisterMsgPrefix }}.
     </NotificationBox>
 
@@ -76,12 +76,13 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import ListUnmetRequirements from "./listUnmetRequirements.partial.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList";
     import EmailBox from "@Obsidian/Controls/emailBox";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

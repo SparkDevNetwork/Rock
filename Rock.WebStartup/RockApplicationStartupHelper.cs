@@ -986,6 +986,8 @@ namespace Rock.WebStartup
         private static void InitializeLavaSafeTypes( ILavaEngine engine )
         {
             engine.RegisterSafeType( typeof( Common.Mobile.DeviceData ) );
+            engine.RegisterSafeType( typeof( Utility.RockColor ) );
+            engine.RegisterSafeType( typeof( Utilities.ColorPair ) );
         }
 
         /// <summary>

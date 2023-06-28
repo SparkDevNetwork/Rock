@@ -954,7 +954,7 @@ btnCopyToClipboard.ClientID );
             NotificationBoxType filterNotificationBoxType = NotificationBoxType.Warning;
             if ( pickedGroupCount == 0 )
             {
-                filterMessage = "Please select as least one group";
+                filterMessage = "Please select at least one group";
                 filterNotificationBoxType = NotificationBoxType.Info;
             }
             else if ( !scheduleIds.Any() )
@@ -983,7 +983,7 @@ btnCopyToClipboard.ClientID );
             }
             else if ( !selectedLocationIds.Any() )
             {
-                filterMessage = "Please select as least one location";
+                filterMessage = "Please select at least one location";
                 filterNotificationBoxType = NotificationBoxType.Info;
             }
             else

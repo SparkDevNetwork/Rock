@@ -367,6 +367,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 { "PhotoId", "Person.PhotoId" }
             };
 
+            string publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" ).RemoveTrailingForwardslash();
+
             //
             // Add a custom field for the PhotoUrl since it needs to be custom formatted.
             //
@@ -374,7 +376,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 Key = "PhotoUrl",
                 FieldFormat = FieldFormat.String,
-                Value = "{{ 'Global' | Attribute:'PublicApplicationRoot' | Append:item.Person.PhotoUrl }}"
+                Value = $@"{{{{ '{publicApplicationRoot}' | Append:item.Person.PhotoUrl }}}}"
             } );
 
             return MobileHelper.CreateItemLavaTemplate( properties, fields );
@@ -465,7 +467,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var range = filterBag.SelectedAttendance.Range;
                 var attendanceFilterType = filterBag.SelectedAttendance.FilterType;
 
-                members = FilterMembersByAttendanceOption( members, range, attendanceFilterType, rockContext );
+                members = FilterMembersByAttendanceOption( members, group.Id, range, attendanceFilterType, rockContext );
             }
 
             return members.ToList();
@@ -476,24 +478,25 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// See <see cref="AttendanceFilterOptionType" />.
         /// </summary>
         /// <param name="groupMembers">The group members.</param>
+        /// <param name="groupId"></param>
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="option">The option.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
-        private static IQueryable<GroupMember> FilterMembersByAttendanceOption( IQueryable<GroupMember> groupMembers, int amtOfWeeks, AttendanceFilterOptionType option, RockContext rockContext )
+        private static IQueryable<GroupMember> FilterMembersByAttendanceOption( IQueryable<GroupMember> groupMembers, int groupId, int amtOfWeeks, AttendanceFilterOptionType option, RockContext rockContext )
         {
             // Switch our selected attendance option from the shell.
             switch ( option )
             {
                 // If we want to retrieve group members where there is not an attendance for x number of weeks.
                 case AttendanceFilterOptionType.NoAttendance:
-                    return GroupMemberService.WhereMembersWithNoAttendanceForNumberOfWeeks( groupMembers, amtOfWeeks, rockContext );
+                    return GroupMemberService.WhereMembersWithNoAttendanceForNumberOfWeeks( groupMembers, groupId, amtOfWeeks, rockContext );
                 // If we want to retrieve group members who first attended within an x number of weeks.
                 case AttendanceFilterOptionType.FirstAttended:
-                    return GroupMemberService.WhereMembersWhoFirstAttendedWithinNumberOfWeeks( groupMembers, amtOfWeeks, rockContext );
+                    return GroupMemberService.WhereMembersWhoFirstAttendedWithinNumberOfWeeks( groupMembers, groupId, amtOfWeeks, rockContext );
                 // If we want to retrieve group members who attended within an x number of weeks.
                 case AttendanceFilterOptionType.Attended:
-                    return GroupMemberService.WhereMembersWhoAttendedWithinNumberOfWeeks( groupMembers, amtOfWeeks, rockContext );
+                    return GroupMemberService.WhereMembersWhoAttendedWithinNumberOfWeeks( groupMembers, groupId, amtOfWeeks, rockContext );
             }
 
             return groupMembers;

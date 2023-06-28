@@ -572,7 +572,7 @@ namespace Rock.Blocks.Group
 
                 var attendanceBag = GetAttendanceBag( new AttendanceBagDto
                 {
-                    DidAttend = attendanceInfo.DidAttend ?? false,
+                    DidAttend = attendanceInfo.DidAttend,
                     GroupMember = groupMemberDto?.GroupMember,
                     GroupRoleName = groupMemberDto?.GroupRoleName,
                     Person = attendanceInfo.Person,
@@ -676,11 +676,6 @@ namespace Rock.Blocks.Group
 
                 var outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectList, mergeFields );
 
-                // Set the name of the output doc.
-                outputBinaryFileDoc = new BinaryFileService( rockContext ).Get( outputBinaryFileDoc.Id );
-                outputBinaryFileDoc.FileName = occurrenceData.Group.Name + " Attendance Roster" + Path.GetExtension( outputBinaryFileDoc.FileName ?? string.Empty ) ?? ".docx";
-                rockContext.SaveChanges();
-
                 if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
                 {
                     if ( mergeTemplateType.Exceptions.Count == 1 )
@@ -718,11 +713,17 @@ namespace Rock.Blocks.Group
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), searchParameterOverrides: s =>
                 {
-                    s.AttendanceOccurrenceGuid = bag.AttendanceOccurrenceGuid;
+                    s.AttendanceOccurrenceGuid = bag.AttendanceOccurrenceGuid.IsEmpty() ? null : ( Guid? )bag.AttendanceOccurrenceGuid;
                 } );
                 var occurrenceData = clientService.GetOccurrenceData( searchParameters, withTracking: true );
 
                 GroupMember groupMember = null;
+
+                if ( occurrenceData.AttendanceOccurrence?.DidNotOccur == true )
+                {
+                    // This should not be able to happen as the Add Attendee/Group Member control should be hidden when DidNotOccur == true.
+                    return ActionBadRequest( "Unable to add person when the meeting did not occur." );
+                }
 
                 if ( string.Equals( this.AddPersonAs, "Group Member", StringComparison.OrdinalIgnoreCase ) )
                 {
@@ -986,22 +987,33 @@ namespace Rock.Blocks.Group
                 else
                 {
                     var campusId = occurrenceData.Campus?.Id;
+                    var existingAttendances = occurrenceData.AttendanceOccurrence.Attendees.ToList();
 
+                    // Add or update attendances with DidAttend = false.
                     foreach ( var attendee in GetAttendanceBags( rockContext, occurrenceData ) )
                     {
-                        var attendance = CreateAttendanceInstance(
-                            attendee.PersonAliasId,
-                            campusId,
-                            occurrenceData.AttendanceOccurrence.Schedule != null && occurrenceData.AttendanceOccurrence.Schedule.HasSchedule() ? occurrenceData.AttendanceOccurrence.OccurrenceDate.Date.Add( occurrenceData.AttendanceOccurrence.Schedule.StartTimeOfDay ) : occurrenceData.AttendanceOccurrence.OccurrenceDate,
-                            false );
+                        var existingAttendance = existingAttendances.FirstOrDefault( a => a.PersonAliasId == attendee.PersonAliasId );
 
-                        if ( !attendance.IsValid )
+                        if ( existingAttendance != null )
                         {
-                            occurrenceData.ErrorMessage = attendance.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                            return ActionBadRequest( occurrenceData.ErrorMessage );
+                            existingAttendance.DidAttend = false;
                         }
+                        else
+                        {
+                            var attendance = CreateAttendanceInstance(
+                                attendee.PersonAliasId,
+                                campusId,
+                                occurrenceData.AttendanceOccurrence.Schedule != null && occurrenceData.AttendanceOccurrence.Schedule.HasSchedule() ? occurrenceData.AttendanceOccurrence.OccurrenceDate.Date.Add( occurrenceData.AttendanceOccurrence.Schedule.StartTimeOfDay ) : occurrenceData.AttendanceOccurrence.OccurrenceDate,
+                                false );
 
-                        occurrenceData.AttendanceOccurrence.Attendees.Add( attendance );
+                            if ( !attendance.IsValid )
+                            {
+                                occurrenceData.ErrorMessage = attendance.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                                return ActionBadRequest( occurrenceData.ErrorMessage );
+                            }
+
+                            occurrenceData.AttendanceOccurrence.Attendees.Add( attendance );
+                        }
                     }
                 }
 
@@ -1731,18 +1743,17 @@ namespace Rock.Blocks.Group
             var groupRoleQuery = new GroupTypeRoleService( rockContext ).Queryable().AsNoTracking();
             var primaryAliasQuery = new PersonAliasService( rockContext ).GetPrimaryAliasQuery();
 
-            // Get the query for people who attended.
-            IQueryable<AttendanceBagDto> attendedPeopleQuery = null;
+            // Get the query for people who did or didn't attend this occurrence.
+            IQueryable<AttendanceBagDto> existingPeopleQuery = null;
             if ( occurrenceData.AttendanceOccurrence.Id > 0 )
             {
                 // These may or may not be group members.
-                attendedPeopleQuery = new AttendanceService( rockContext )
+                existingPeopleQuery = new AttendanceService( rockContext )
                     .Queryable()
                     .AsNoTracking()
                     .Where( a =>
                         a.OccurrenceId == occurrenceData.AttendanceOccurrence.Id
                         && a.DidAttend.HasValue
-                        && a.DidAttend.Value
                         && a.PersonAliasId.HasValue )
                     .Select( a => new
                     {
@@ -1751,7 +1762,7 @@ namespace Rock.Blocks.Group
                     } )
                     .Select( a => new AttendanceBagDto
                     {
-                        DidAttend = true,
+                        DidAttend = a.Attendance.DidAttend,
                         GroupMember = a.GroupMember,
                         GroupRoleName = a.GroupMember != null && a.GroupMember.GroupRole != null ? a.GroupMember.GroupRole.Name : null,
                         Person = a.Attendance.PersonAlias.Person,
@@ -1760,14 +1771,14 @@ namespace Rock.Blocks.Group
                     } );
             }
 
-            // Get the people who did not attend from a Person EntitySet (if specified) or from the unattended group members.
-            IQueryable<AttendanceBagDto> unattendedPeopleQuery = null;
+            // Get the new people, who can be included in the occurrence but weren't, from a Person EntitySet (if specified) or from the DidAttend=null group members.
+            IQueryable<AttendanceBagDto> newPeopleQuery = null;
             var entitySetId = this.EntitySetIdPageParameter;
             if ( entitySetId.HasValue )
             {
                 // These may or may not be group members.
                 var entitySetService = new EntitySetService( rockContext );
-                unattendedPeopleQuery = entitySetService
+                newPeopleQuery = entitySetService
                     .GetEntityQuery<Person>( entitySetId.Value )
                     .AsNoTracking()
                     .Select( p => new
@@ -1777,7 +1788,7 @@ namespace Rock.Blocks.Group
                     } )
                     .Select( p => new AttendanceBagDto
                     {
-                        DidAttend = false,
+                        DidAttend = null,
                         GroupMember = p.GroupMember,
                         GroupRoleName = p.GroupMember != null && p.GroupMember.GroupRole != null ? p.GroupMember.GroupRole.Name : null,
                         Person = p.Person,
@@ -1787,10 +1798,10 @@ namespace Rock.Blocks.Group
             }
             else
             {
-                unattendedPeopleQuery = groupMembersQuery
+                newPeopleQuery = groupMembersQuery
                     .Select( m => new AttendanceBagDto
                     {
-                        DidAttend = false,
+                        DidAttend = null,
                         GroupMember = m,
                         GroupRoleName = m.GroupRole != null ? m.GroupRole.Name : null,
                         Person = m.Person,
@@ -1801,26 +1812,26 @@ namespace Rock.Blocks.Group
 
             var lavaItemTemplate = this.ListItemDetailsTemplate;
 
-            // Union the attended and unattended people and project the results to a roster attendance bag.
+            // Union the new/existing people and project the results to attendance bags.
             
-            if (attendedPeopleQuery == null && unattendedPeopleQuery == null )
+            if (existingPeopleQuery == null && newPeopleQuery == null )
             {
                 return new List<GroupAttendanceDetailAttendanceBag>();
             }
 
             IQueryable<AttendanceBagDto> query;
-            if ( attendedPeopleQuery == null )
+            if ( existingPeopleQuery == null )
             {
-                query = unattendedPeopleQuery;
+                query = newPeopleQuery;
             }
-            else if ( unattendedPeopleQuery == null )
+            else if ( newPeopleQuery == null )
             {
-                query = attendedPeopleQuery;
+                query = existingPeopleQuery;
             }
             else
             {
-                var distinctUnattendedPeople = unattendedPeopleQuery.Where( u => !attendedPeopleQuery.Any( a => a.PersonAliasId == u.PersonAliasId ) );
-                query = attendedPeopleQuery.Union( distinctUnattendedPeople );
+                var distinctNewPeople = newPeopleQuery.Where( u => !existingPeopleQuery.Any( a => a.PersonAliasId == u.PersonAliasId ) );
+                query = existingPeopleQuery.Union( distinctNewPeople );
             }
 
             return query.ToList()
@@ -1893,7 +1904,7 @@ namespace Rock.Blocks.Group
         /// </summary>
         private class AttendanceBagDto
         {
-            internal bool DidAttend { get; set; }
+            internal bool? DidAttend { get; set; }
 
             internal Person Person { get; set; }
 
@@ -2261,7 +2272,7 @@ namespace Rock.Blocks.Group
                                 attendee.PersonAliasId,
                                 campusId.Value,
                                 startDateTime,
-                                attendee.DidAttend );
+                                attendee.DidAttend ?? false );
 
                             // Check that the attendance record is valid
                             if ( !attendance.IsValid )
@@ -2272,10 +2283,10 @@ namespace Rock.Blocks.Group
 
                             occurrenceData.AttendanceOccurrence.Attendees.Add( attendance );
                         }
-                        else
+                        else if ( attendee.DidAttend.HasValue )
                         {
                             // Otherwise, only record that they attended -- don't change their attendance startDateTime.
-                            attendance.DidAttend = attendee.DidAttend;
+                            attendance.DidAttend = attendee.DidAttend.Value;
                         }
                     }
                 }

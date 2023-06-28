@@ -1,0 +1,114 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="shouldShow" :class="cssClass">
+
+        <div v-if="hasBlackoutConflict" class="resource-notes-section">
+            Cannot be scheduled due to a blackout.
+        </div>
+
+        <div v-if="hasGroupRequirementsConflict" class="resource-notes-section">
+            Does not meet the requirements for this group.
+        </div>
+
+        <div v-if="schedulingConflictList.length" class="resource-notes-section text-danger">
+            <div class="resource-notes-header">Conflicts</div>
+            <div v-for="conflict in schedulingConflictList" :key="`conflict-${conflict.ScheduleId}-${conflict.LocationId}`" class="resource-schedule-conflict">
+                {{ conflict.ScheduleName }}
+                <template v-if="conflict.LocationName">
+                    - {{ conflict.LocationName }}
+                </template>
+            </div>
+        </div>
+
+        <div v-if="preferenceList.length" class="resource-notes-section">
+            <div class="resource-notes-header">Preference</div>
+            <div v-for="preference in preferenceList" :key="`preference-${preference.ScheduleId}-${preference.LocationId}`" class="resource-preference">
+                {{ preference.ScheduleName }}
+                <template v-if="preference.LocationName">
+                    - {{ preference.LocationName }}
+                </template>
+            </div>
+        </div>
+
+        <div v-if="scheduledList.length" class="resource-notes-section">
+            <div class="resource-notes-header">Assignments</div>
+            <div v-for="scheduled in scheduledList" :key="`scheduled-${scheduled.ScheduleId}-${scheduled.LocationId}`" class="resource-scheduled">
+                {{ scheduled.ScheduleName }}
+                <template v-if="scheduled.LocationName">
+                    - {{ scheduled.LocationName }}
+                </template>
+            </div>
+        </div>
+
+        <div v-if="hasNote" class="resource-notes-section">
+            {{ resource.Note }}
+        </div>
+
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ISchedulerResource, ISchedulerResourceAssignment } from "./types.partial";
+
+    const props = defineProps({
+        resource: {
+            type: Object as PropType<ISchedulerResource>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const cssClass = computed((): string => {
+        return `resource-notes${(props.disabled ? " resource-disabled" : "")}`;
+    });
+
+    const preferenceList = computed((): ISchedulerResourceAssignment[] => {
+        return props.resource
+            ?.ResourcePreferenceList
+            ?.filter((a: ISchedulerResourceAssignment) => a.ScheduleName) ?? [];
+    });
+
+    const scheduledList = computed((): ISchedulerResourceAssignment[] => {
+        return props.resource
+            ?.ResourceScheduledList
+            ?.filter((a: ISchedulerResourceAssignment) => a.ScheduleName) ?? [];
+    });
+
+    const hasBlackoutConflict = computed((): boolean => {
+        return props.resource?.HasBlackoutConflict;
+    });
+
+    const hasGroupRequirementsConflict = computed((): boolean => {
+        return props.resource?.HasGroupRequirementsConflict;
+    });
+
+    const schedulingConflictList = computed((): ISchedulerResourceAssignment[] => {
+        return props.resource
+            ?.SchedulingConflicts
+            ?.filter((a: ISchedulerResourceAssignment) => a.ScheduleName) ?? [];
+    });
+
+    const hasNote = computed((): boolean => {
+        return !!props.resource?.Note;
+    });
+
+    const shouldShow = computed((): boolean => {
+        return !!(
+            preferenceList.value?.length
+            || scheduledList.value?.length
+            || hasBlackoutConflict.value
+            || hasGroupRequirementsConflict.value
+            || schedulingConflictList.value?.length
+            || hasNote
+        );
+    });
+
+    // #endregion
+</script>

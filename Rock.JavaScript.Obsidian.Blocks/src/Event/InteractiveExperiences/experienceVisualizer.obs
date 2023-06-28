@@ -24,6 +24,8 @@
     color: var(--experience-visualizer-color);
     background-color: var(--experience-visualizer-bg, inherit);
     background-image: var(--experience-visualizer-bg-image, initial);
+    background-size: cover;
+    background-position: center;
 }
 
 .experience-visualizer-body .experience-visualizer {
@@ -166,10 +168,10 @@
         }
 
         if (style?.visualizer?.primaryColor) {
-            styles["--experience-visualizer-primary-bg"] = style.visualizer.primaryColor;
+            styles["--experience-visualizer-primary-color"] = style.visualizer.primaryColor;
         }
         else {
-            styles["--experience-visualizer-primary-bg"] = "var(--brand-primary)";
+            styles["--experience-visualizer-primary-color"] = "var(--brand-primary)";
         }
 
         if (style?.visualizer?.secondaryColor) {
@@ -325,6 +327,7 @@
         }
 
         experienceStyles.value = getExperienceStyles(occurrence.style);
+        setupCustomStyles(occurrence.style);
         occurrenceEndDateTime = RockDateTime.parseISO(occurrence.occurrenceEndDateTime ?? "");
 
         if (occurrence.experienceToken) {

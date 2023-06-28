@@ -312,35 +312,36 @@ namespace Rock.Lava.RockLiquid.Blocks
                                 }
                                 else
                                 {
-                                    // sorting on an attribute
+                                    // Sort by Attribute.
+                                    // Get all of the Attributes for this EntityType that have a matching Key and apply the same sort for each of them.
+                                    // This situation may occur, for example, where the target entity is a DefinedValue and the same Attribute Key exists for multiple Defined Types.
+                                    var attributeIdListForAttributeKey = AttributeCache.GetByEntityType( entityTypeCache.Id )
+                                                                .Where( a => a != null && a.Key == propertyName )
+                                                                .Select( a => a.Id )
+                                                                .ToList();
 
-                                    // get attribute id
-                                    int? attributeId = null;
-                                    foreach ( var attribute in AttributeCache.GetByEntityType( entityTypeCache.Id ) )
-                                    {
-                                        if ( attribute.Key == propertyName )
-                                        {
-                                            attributeId = attribute.Id;
-                                            break;
-                                        }
-                                    }
-
-                                    if ( attributeId.HasValue )
+                                    if ( attributeIdListForAttributeKey.Any() )
                                     {
                                         // get AttributeValue queryable and parameter
-                                        if ( dbContext is RockContext )
+                                        var rockContext = dbContext as RockContext;
+                                        if ( rockContext == null )
                                         {
-                                            var attributeValues = new AttributeValueService( dbContext as RockContext ).Queryable();
-                                            ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
-                                            MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
-                                            var attributeExpression = Attribute.Helper.GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, attributeId.Value );
-
-                                            LambdaExpression sortSelector = Expression.Lambda( attributeExpression, paramExpression );
-                                            queryResultExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { queryResult.ElementType, sortSelector.ReturnType }, queryResultExpression, sortSelector );
+                                            throw new Exception( $"The database context for type {entityTypeCache.FriendlyName} does not support RockContext attribute value queries." );
                                         }
-                                        else
+
+                                        var attributeValues = new AttributeValueService( rockContext ).Queryable();
+                                        foreach ( var attributeId in attributeIdListForAttributeKey )
                                         {
-                                            throw new Exception( string.Format( "The database context for type {0} does not support RockContext attribute value queries.", entityTypeCache.FriendlyName ) );
+                                            methodName = ( direction == SortDirection.Descending ) ? orderByMethod + "Descending" : orderByMethod;
+
+                                            var attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
+                                            var idExpression = Expression.Property( paramExpression, "Id" );
+                                            var attributeExpression = Attribute.Helper.GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, attributeId );
+
+                                            var sortSelector = Expression.Lambda( attributeExpression, paramExpression );
+                                            queryResultExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { queryResult.ElementType, sortSelector.ReturnType }, queryResultExpression, sortSelector );
+
+                                            orderByMethod = "ThenBy";
                                         }
                                     }
                                 }

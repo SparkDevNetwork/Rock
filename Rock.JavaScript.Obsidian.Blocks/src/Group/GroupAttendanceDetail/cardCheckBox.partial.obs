@@ -66,7 +66,7 @@
 
     const props = defineProps({
         modelValue: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean as PropType<boolean | undefined | null>,
             required: true
         },
 

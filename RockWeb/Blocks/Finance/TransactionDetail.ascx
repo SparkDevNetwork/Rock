@@ -240,12 +240,8 @@
                 // delete/archive prompt
                 $('.btn-transaction-save').on('click', function (e) {
                     var isZeroTransaction = $('.is-zero-transaction').val();
-
-                    if (isZeroTransaction !== 'True') {
-                        return true;
-                    }
-
                     var isSingleAccountAmountMinusFeeCoverageAmountVisible = $('#<%= tbSingleAccountAmountMinusFeeCoverageAmount.ClientID %>').is(":visible");
+
                     if (isSingleAccountAmountMinusFeeCoverageAmountVisible) {
                         if ($('#<%= tbSingleAccountAmountMinusFeeCoverageAmount.ClientID %>').val() > 0) {
                             var isSingleAccountFeeCoverageAmountVisible = $('#<%= tbSingleAccountFeeCoverageAmount.ClientID %>').is(":visible");
@@ -253,6 +249,8 @@
                                 return true;
                             }
                         }
+                    } else if (isZeroTransaction !== 'True') {
+                        return true;
                     }
 
                     e.preventDefault();

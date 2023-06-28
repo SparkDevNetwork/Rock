@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -96,7 +96,7 @@ namespace Rock.Reporting.DataTransform.Person
 
             var headOfHouseholdQry = new GroupService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( gm => gm.GroupTypeId == familyGroupType.Id && gm.Members.Any( m => idQuery.Contains( m.PersonId ) ) )
-                    .SelectMany( f => f.Members.Where( a => !a.Person.IsDeceased ) )
+                    .SelectMany( f => f.Members.Where( a => !a.Person.IsDeceased && a.IsArchived == false ) )
                     .GroupBy( m =>
                         m.GroupId,
                         ( key, g ) => g

@@ -85,9 +85,9 @@
 
     function getColors(): Rgba[] {
         let barColors = (props.renderConfiguration.configurationValues?.colors ?? "")
-        .split(",")
-        .map(c => c.trim())
-        .filter(c => c !== "");
+            .split(";")
+            .map(c => c.trim())
+            .filter(c => c !== "");
 
         if (barColors.length === 0) {
             barColors = ["#709ac7", "#80bb7c", "#f26863", "#80afcb", "#e48480", "#c48cb2", "#ea872e", "#f4cf68", "#968e8b", "#489b98", "#b18772", "#d67493"];
@@ -380,7 +380,7 @@
 
                 chart.data.labels.splice(insertIndex, 0, response.text);
                 chart.data.datasets[0].data.splice(insertIndex, 0, response.count);
-                (chart.data.datasets[0].backgroundColor as string[]).splice(insertIndex, 0, toCssRgba(color, 0.5));
+                (chart.data.datasets[0].backgroundColor as string[]).splice(insertIndex, 0, toCssRgba(color, fillOpacity.value));
                 (chart.data.datasets[0].borderColor as string[]).splice(insertIndex, 0, toCssRgba(color));
             }
         }

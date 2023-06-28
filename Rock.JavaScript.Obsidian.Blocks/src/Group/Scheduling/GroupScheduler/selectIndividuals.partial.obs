@@ -1,0 +1,629 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Select Individuals"
+           saveText="Assign"
+           :subtitle="occurrenceTitle"
+           :saveButtonDisabled="saveButtonDisabled"
+           @save="onSave">
+
+        <NotificationBox v-if="loadResourceSettingsErrorMessage" :alertType="AlertType.Warning">
+            {{ loadResourceSettingsErrorMessage }}
+        </NotificationBox>
+
+        <template v-else>
+
+            <div class="d-md-flex justify-content-md-between">
+
+                <div>
+                    <template v-if="primarySourceTypeItems.length > 1">
+                        <!-- Desktop -->
+                        <div class="d-none d-md-block form-group">
+                            <ButtonGroup v-model="selectedPrimarySourceType"
+                                            :items="primarySourceTypeItems"
+                                            :disabled="isBusy"
+                                            @update:modelValue="onSettingsSelectionChanged" />
+                        </div>
+
+                        <!-- Mobile -->
+                        <div class="d-md-none form-group">
+                            <DropDownList v-model="selectedPrimarySourceType"
+                                            :items="primarySourceTypeItems"
+                                            :showBlankItem="false"
+                                            :disabled="isBusy"
+                                            @update:modelValue="onSettingsSelectionChanged" />
+                        </div>
+                    </template>
+
+                    <div v-if="selectedSourceTypeIsAlternateGroup" class="form-group">
+                        <GroupPicker v-model="selectedAlternateGroup"
+                                        :disabled="isBusy"
+                                        @update:modelValue="onSettingsSelectionChanged" />
+                    </div>
+
+                    <div v-if="selectedSourceTypeIsDataView" class="form-group">
+                        <DataViewPicker
+                                        v-model="selectedDataView"
+                                        :entityTypeGuid="EntityType.Person"
+                                        :disabled="isBusy"
+                                        @update:modelValue="onSettingsSelectionChanged" />
+                    </div>
+
+                    <h4 v-if="groupName">{{ groupName }}</h4>
+
+                    <template v-if="selectedSourceTypeIsGroup">
+                        <!-- Desktop -->
+                        <div class="d-none d-md-block form-group">
+                            <ButtonGroup v-model="selectedSecondarySourceType"
+                                            :items="secondarySourceTypeItems"
+                                            :btnSize="BtnSize.ExtraSmall"
+                                            :disabled="isBusy"
+                                            @update:modelValue="onSettingsSelectionChanged" />
+                        </div>
+
+                        <!-- Mobile -->
+                        <div class="d-md-none form-group">
+                            <DropDownList v-model="selectedSecondarySourceType"
+                                            :items="secondarySourceTypeItems"
+                                            :showBlankItem="false"
+                                            :disabled="isBusy"
+                                            @update:modelValue="onSettingsSelectionChanged" />
+                        </div>
+                    </template>
+                </div>
+
+                <div v-if="remainingResourceSpots" class="form-group">
+                    <span :class="remainingResourceSpots.cssClass">
+                        {{ remainingResourceSpots.label }}
+                    </span>
+                </div>
+
+            </div>
+
+            <Loading :isLoading="isBusy">
+                <NotificationBox v-if="unsuccessfulAssignmentPersonIds.length" :alertType="AlertType.Warning">
+                    <template v-if="!unsuccessfulAssignmentMessages.length">
+                        Some assignments were unsuccessful.
+                    </template>
+                    <template v-else-if="unsuccessfulAssignmentMessages.length === 1">
+                        {{ unsuccessfulAssignmentMessages[0] }}
+                    </template>
+                    <ul v-else>
+                        <li v-for="(message, index) in unsuccessfulAssignmentMessages" :key="index">
+                            {{ message }}
+                        </li>
+                    </ul>
+                </NotificationBox>
+
+                <NotificationBox v-if="loadResourcesErrorMessage" :alertType="AlertType.Warning">
+                    {{ loadResourcesErrorMessage }}
+                </NotificationBox>
+
+                <NotificationBox v-else-if="loadResourcesInfoMessage" :alertType="AlertType.Info">
+                    {{ loadResourcesInfoMessage }}
+                </NotificationBox>
+
+                <AvailableResources v-else v-model="selectedPersonIds"
+                                    :resources="availableResources"
+                                    :disabled="isBusy" />
+            </Loading>
+
+        </template>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, inject, nextTick, PropType, ref, watch } from "vue";
+    import AvailableResources from "./availableResources.partial.obs";
+    import { IRemainingResourceSpots, ISchedulerResource, ISchedulerResourceParameters, OccurrenceDateTitle } from "./types.partial";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import GroupPicker from "@Obsidian/Controls/groupPicker";
+    import Loading from "@Obsidian/Controls/loading";
+    import Modal from "@Obsidian/Controls/modal";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { ResourceListSourceType, ResourceListSourceTypeDescription } from "@Obsidian/Enums/Blocks/Group/Scheduling/resourceListSourceType";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { HttpUrlParams } from "@Obsidian/Types/Utility/http";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { GroupSchedulerApplyResourceSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerApplyResourceSettingsBag";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+    import { GroupSchedulerResourceSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerResourceSettingsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
+    const baseApiUrl = "/api/Attendances";
+
+    const props = defineProps({
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        occurrence: {
+            type: Object as PropType<GroupSchedulerOccurrenceBag>,
+            required: true
+        },
+
+        spotsFilledCount: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible"): void,
+        (e: "partialAssignmentSuccess"): void
+    }>();
+
+    const primarySourceTypeGroupValue = "group";
+
+    const primarySourceTypes = [
+        // "Group" will be added as the first item (see below).
+        ResourceListSourceType.AlternateGroup,
+        ResourceListSourceType.ParentGroup,
+        ResourceListSourceType.DataView
+    ];
+
+    const secondarySourceTypes = [
+        ResourceListSourceType.GroupMembers,
+        ResourceListSourceType.GroupMatchingPreference,
+        ResourceListSourceType.GroupMatchingAssignment
+    ];
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    const occurrenceDateTitle = inject(OccurrenceDateTitle, ref(""));
+
+    const isLoadingResourceSettings = ref(false);
+    const loadResourceSettingsErrorMessage = ref("");
+
+    const isLoadingResources = ref(false);
+    const loadResourcesInfoMessage = ref("");
+    const loadResourcesErrorMessage = ref("");
+
+    const isAssigningResources = ref(false);
+    const unsuccessfulAssignmentPersonIds = ref<number[]>([]);
+    const unsuccessfulAssignmentMessages = ref<string[]>([]);
+
+    const resourceSettings = ref<GroupSchedulerResourceSettingsBag | null>(null);
+
+    const selectedPrimarySourceType = ref("");
+    const selectedSecondarySourceType = ref("");
+    const selectedAlternateGroup = ref<ListItemBag | null>(null);
+    const selectedDataView = ref<ListItemBag | null>(null);
+
+    const availableResources = ref<ISchedulerResource[]>([]);
+    const selectedPersonIds = ref<number[]>([]);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const occurrenceTitle = computed((): string => {
+        const o = props.occurrence;
+        const titleParts: string[] = [];
+
+        if (o?.groupName) {
+            titleParts.push(o.groupName);
+        }
+
+        if (o?.locationName) {
+            titleParts.push(o.locationName);
+        }
+
+        if (o?.scheduleName) {
+            titleParts.push(o.scheduleName);
+        }
+
+        const friendlyOccurrenceDate = occurrenceDateTitle.value
+            ? ` (${occurrenceDateTitle.value})`
+            : "";
+
+        return titleParts.length
+            ? `${titleParts.join(" - ")}${friendlyOccurrenceDate}`
+            : "";
+    });
+
+    const enabledSourceTypes = computed((): ResourceListSourceType[] => {
+        return resourceSettings.value?.enabledResourceListSourceTypes ?? [];
+    });
+
+    const secondarySourceTypeItems = computed((): { text: string, value: string }[] => {
+        return enabledSourceTypes.value
+            .filter((value: ResourceListSourceType) =>
+                secondarySourceTypes.some((secondary: ResourceListSourceType) => value === secondary)
+            )
+            .map((value: ResourceListSourceType) => ({
+                text: ResourceListSourceTypeDescription[value],
+                value: value.toString()
+            }));
+    });
+
+    const primarySourceTypeItems = computed((): { text: string, value: string }[] => {
+        const items = enabledSourceTypes.value
+            .filter((value: ResourceListSourceType) =>
+                primarySourceTypes.some((primary: ResourceListSourceType) => value === primary)
+            )
+            .map((value: ResourceListSourceType) => ({
+                text: ResourceListSourceTypeDescription[value],
+                value: value.toString()
+            }));
+
+        if (secondarySourceTypeItems.value.length) {
+            items.unshift({
+                text: "Group",
+                value: primarySourceTypeGroupValue
+            });
+        }
+
+        return items;
+    });
+
+    const selectedSourceType = computed((): ResourceListSourceType | undefined => {
+        if (!selectedPrimarySourceType.value) {
+            return;
+        }
+
+        if (selectedPrimarySourceType.value === primarySourceTypeGroupValue) {
+            return toNumber(selectedSecondarySourceType.value) as ResourceListSourceType;
+        }
+
+        return toNumber(selectedPrimarySourceType.value) as ResourceListSourceType;
+    });
+
+    const selectedSourceTypeIsGroup = computed((): boolean => {
+        return selectedPrimarySourceType.value === primarySourceTypeGroupValue;
+    });
+
+    const selectedSourceTypeIsAlternateGroup = computed((): boolean => {
+        return selectedSourceType.value === ResourceListSourceType.AlternateGroup;
+    });
+
+    const selectedSourceTypeIsParentGroup = computed((): boolean => {
+        return selectedSourceType.value === ResourceListSourceType.ParentGroup;
+    });
+
+    const selectedSourceTypeIsDataView = computed((): boolean => {
+        return selectedSourceType.value === ResourceListSourceType.DataView;
+    });
+
+    const groupName = computed((): string | null | undefined => {
+        if (selectedSourceTypeIsGroup.value) {
+            return props.occurrence?.groupName;
+        }
+        else if (selectedSourceTypeIsParentGroup.value) {
+            return props.occurrence?.parentGroupName;
+        }
+    });
+
+    const remainingResourceSpots = computed((): IRemainingResourceSpots | undefined => {
+        let label: string | undefined;
+        let state: "info" | "warning" | undefined;
+
+        const min = props.occurrence?.minimumCapacity ?? 0;
+        const desired = props.occurrence?.desiredCapacity ?? 0;
+        const max = props.occurrence?.maximumCapacity ?? 0;
+        const filled = props.spotsFilledCount + selectedPersonIds.value?.length ?? 0;
+
+        if (min > 0 && filled < min) {
+            label = `Required for Minimum Capacity: ${min - filled}`;
+            state = "warning";
+        }
+        else if (desired > 0 && filled < desired) {
+            label = `Required for Desired Capacity: ${desired - filled}`;
+            state = "info";
+        }
+        else if (max > 0) {
+            label = `Available for Max Capacity: ${filled > max ? 0 : max - filled}`;
+            state = "warning";
+        }
+
+        if (label && state) {
+            return {
+                label,
+                cssClass: `label label-${state} align-self-md-start`
+            };
+        }
+    });
+
+    const groupId = computed((): number => {
+        return props.occurrence?.groupId ?? 0;
+    });
+
+    const parentGroupId = computed((): number | null | undefined => {
+        return props.occurrence?.parentGroupId;
+    });
+
+    const locationIds = computed((): number[] => {
+        return props.occurrence
+            ? [props.occurrence.locationId]
+            : [];
+    });
+
+    const scheduleIds = computed((): number[] => {
+        return props.occurrence
+            ? [props.occurrence.scheduleId]
+            : [];
+    });
+
+    const sundayDate = computed((): string => {
+        return props.occurrence?.sundayDate ?? "";
+    });
+
+    const groupMemberFilterType = computed((): number => {
+        return resourceSettings.value?.resourceGroupMemberFilterType ?? 1;
+    });
+
+    const isBusy = computed((): boolean => {
+        return isLoadingResourceSettings.value || isLoadingResources.value || isAssigningResources.value;
+    });
+
+    const saveButtonDisabled = computed((): boolean => {
+        return isBusy.value
+            || selectedSourceType.value === undefined
+            || !selectedPersonIds.value?.length;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the resource settings for this group scheduler occurrence.
+     */
+    async function getResourceSettings(): Promise<void> {
+        if (isLoadingResourceSettings.value) {
+            return;
+        }
+
+        isLoadingResourceSettings.value = true;
+        loadResourceSettingsErrorMessage.value = "";
+
+        const result = await invokeBlockAction<GroupSchedulerResourceSettingsBag>("GetResourceSettings", { groupId: groupId.value });
+        if (!result.isSuccess) {
+            isLoadingResourceSettings.value = false;
+            loadResourceSettingsErrorMessage.value = result.errorMessage || "Unknown error while trying to load settings.";
+            return;
+        }
+
+        resourceSettings.value = result.data;
+
+        nextTick(() => {
+            isLoadingResourceSettings.value = false;
+        });
+    }
+
+    /**
+     * Updates settings-related values based on the currently-applied resource settings.
+     */
+    function updateSettingsValues(): void {
+        // TODO (JPH): Uncomment the following once person preferences are implemented.
+        // const sourceType = resourceSettings.value?.resourceListSourceType;
+        // // A "falsy" check won't work here, as sourceType might be 0.
+        // if (sourceType !== undefined) {
+        //     if (secondarySourceTypes.some((secondary: ResourceListSourceType) => secondary === sourceType)) {
+        //         selectedPrimarySourceType.value = primarySourceTypeGroupValue;
+        //         selectedSecondarySourceType.value = sourceType.toString();
+        //     }
+        //     else {
+        //         selectedPrimarySourceType.value = sourceType.toString();
+        //     }
+        // }
+
+        // selectedAlternateGroup.value = resourceSettings.value?.resourceAlternateGroup ?? null;
+        // selectedDataView.value = resourceSettings.value?.resourceDataView ?? null;
+
+        // getResources();
+
+        // TODO (JPH): Remove the following once person preferences are implemented.
+        if (primarySourceTypeItems.value.length === 1 && primarySourceTypeItems.value[0].value === primarySourceTypeGroupValue) {
+            selectedPrimarySourceType.value = primarySourceTypeGroupValue;
+        }
+
+        nextTick(() => {
+            // TODO (JPH): Remove `nextTick` wrapper (but leave the following line) once person preferences are implemented.
+            getResources();
+        });
+    }
+
+    /**
+     * Gets the resources for this group scheduler occurrence, based on the currently-applied resource settings.
+     */
+    async function getResources(): Promise<void> {
+        if (isLoadingResources.value) {
+            return;
+        }
+
+        const sourceType = selectedSourceType.value;
+        if (sourceType === undefined) {
+            return;
+        }
+
+        const parameters: Partial<ISchedulerResourceParameters> = {
+            AttendanceOccurrenceGroupId: groupId.value,
+            AttendanceOccurrenceScheduleIds: scheduleIds.value,
+            AttendanceOccurrenceLocationIds: locationIds.value,
+            AttendanceOccurrenceSundayDate: sundayDate.value,
+            GroupMemberFilterType: groupMemberFilterType.value,
+            ResourceListSourceType: selectedSourceType.value
+        };
+
+        if (selectedSourceTypeIsGroup.value) {
+            parameters.ResourceGroupId = groupId.value;
+        }
+        else if (selectedSourceTypeIsAlternateGroup.value) {
+            if (!selectedAlternateGroup.value) {
+                availableResources.value = [];
+                loadResourcesInfoMessage.value = "Select an alternate group to continue.";
+                return;
+            }
+
+            parameters.ResourceGroupGuid = selectedAlternateGroup.value.value;
+        }
+        else if (selectedSourceTypeIsParentGroup.value) {
+            if (!parentGroupId.value) {
+                availableResources.value = [];
+                loadResourcesErrorMessage.value = "No parent group available.";
+                return;
+            }
+
+            parameters.ResourceGroupId = parentGroupId.value;
+        }
+        else if (selectedSourceTypeIsDataView.value) {
+            if (!selectedDataView.value) {
+                availableResources.value = [];
+                loadResourcesInfoMessage.value = "Select a data view to continue.";
+                return;
+            }
+
+            parameters.ResourceDataViewGuid = selectedDataView.value.value;
+        }
+
+        isLoadingResources.value = true;
+        loadResourcesErrorMessage.value = "";
+
+        const result = await http.post<ISchedulerResource[]>(`${baseApiUrl}/GetSchedulerResources`, null, parameters);
+        isLoadingResources.value = false;
+
+        if (!result.isSuccess) {
+            loadResourcesErrorMessage.value = result.errorMessage ?? "Unknown error while trying to load available individuals.";
+            return;
+        }
+
+        availableResources.value = result.data ?? [];
+
+        loadResourcesInfoMessage.value = availableResources.value.length
+            ? ""
+            : "No individuals available for selection.";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles resource settings selection changes.
+     */
+    async function onSettingsSelectionChanged(): Promise<void> {
+        if (isLoadingResourceSettings.value || selectedSourceType.value === undefined) {
+            return;
+        }
+
+        isLoadingResourceSettings.value = true;
+        loadResourceSettingsErrorMessage.value = "";
+
+        const bag: GroupSchedulerApplyResourceSettingsBag = {
+            groupId: groupId.value,
+            resourceListSourceType: selectedSourceType.value,
+            resourceAlternateGroupGuid: selectedAlternateGroup.value?.value,
+            resourceDataViewGuid: selectedDataView.value?.value
+        };
+
+        const result = await invokeBlockAction<GroupSchedulerResourceSettingsBag>("ApplyResourceSettings", { bag });
+        if (!result.isSuccess) {
+            isLoadingResourceSettings.value = false;
+            loadResourceSettingsErrorMessage.value = result.errorMessage || "Unknown error while trying to apply settings.";
+            return;
+        }
+
+        resourceSettings.value = result.data;
+
+        nextTick(() => {
+            isLoadingResourceSettings.value = false;
+        });
+    }
+
+    /**
+     * Handles the `save` event of the select individuals modal.
+     */
+    async function onSave(): Promise<void> {
+        if (isAssigningResources.value || !selectedPersonIds.value?.length) {
+            return;
+        }
+
+        isAssigningResources.value = true;
+        unsuccessfulAssignmentPersonIds.value = [];
+        unsuccessfulAssignmentMessages.value = [];
+
+        const attendanceOccurrenceId = props.occurrence?.attendanceOccurrenceId ?? 0;
+        let resourcesWereAssigned = false;
+
+        await Promise.all(selectedPersonIds.value.map(async (personId: number) => {
+            const params: HttpUrlParams = {
+                personId,
+                attendanceOccurrenceId
+            };
+
+            // Use this logic instead of what's below if we decide we no longer want to allow conflicts.
+            // let result = await http.get(`${baseApiUrl}/CanSchedulePerson`, params);
+            // if (!result.isSuccess) {
+            //     unsuccessfulAssignmentPersonIds.value.push(personId);
+            //     if (result.errorMessage) {
+            //         unsuccessfulAssignmentMessages.value.push(result.errorMessage);
+            //     }
+            // }
+            // else {
+            //     result = await http.doApiCall("PUT", `${baseApiUrl}/ScheduledPersonAddPending`, params);
+            //     if (!result.isSuccess) {
+            //         unsuccessfulAssignmentPersonIds.value.push(personId);
+            //     }
+            //     else {
+            //         resourcesWereAssigned = true;
+            //     }
+            // }
+
+            const result = await http.doApiCall("PUT", `${baseApiUrl}/ScheduledPersonAddPending`, params);
+            if (!result.isSuccess) {
+                unsuccessfulAssignmentPersonIds.value.push(personId);
+            }
+            else {
+                resourcesWereAssigned = true;
+            }
+        }));
+
+        if (unsuccessfulAssignmentPersonIds.value.length) {
+            isAssigningResources.value = false;
+            selectedPersonIds.value = [...unsuccessfulAssignmentPersonIds.value];
+            getResources();
+
+            if (resourcesWereAssigned) {
+                emit("partialAssignmentSuccess");
+            }
+        }
+        else {
+            isVisible.value = false;
+        }
+    }
+
+    // #endregion
+
+    watch(isVisible, () => {
+        if (isVisible.value) {
+            getResourceSettings();
+        }
+        else {
+            isLoadingResourceSettings.value = false;
+            isLoadingResources.value = false;
+            isAssigningResources.value = false;
+            availableResources.value = [];
+            selectedPersonIds.value = [];
+            unsuccessfulAssignmentPersonIds.value = [];
+            unsuccessfulAssignmentMessages.value = [];
+        }
+    });
+
+    watch(resourceSettings, () => {
+        updateSettingsValues();
+    });
+</script>

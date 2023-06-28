@@ -32,16 +32,8 @@
                     const widgetId = turnstile.render(`#${options.id}`, {
                         sitekey: options.key,
                         callback: function onloadTurnstileCallback(token) {
-
-                            let retryCount = 3;
-                            const hfToken = document.querySelector('.js-captchaToken');
-                            // The callback is sometimes triggered before the element is loaded on the page, hence the retry after a second to try and give it time to load.
-                            if (!hfToken) {
-                                if (retryCount > 0) {
-                                    retryCount--;
-                                    setTimeout(() => onloadTurnstileCallback(token), 1000);
-                                }
-                            } else {
+                            $(document).ready(function () {
+                                const hfToken = document.querySelector('.js-captcha-token');
                                 hfToken.value = token;
                                 // Hide control after captcha is solved and we get the token so it is not re-rendered for every post back.
                                 // Give it a 1 sec delay so success message is displayed to the user.
@@ -51,7 +43,11 @@
                                         captcha.style.display = 'none';
                                     }, 1000);
                                 }
-                            }
+
+                                if (token && options.postbackScript) {
+                                    window.location = "javascript:" + options.postbackScript;
+                                }
+                            });
                         },
                     });
                 }

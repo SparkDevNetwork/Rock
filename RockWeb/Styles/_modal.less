@@ -39,7 +39,6 @@ body.rock-modal {
     .clearfix();
 
     h3 {
-      float: left;
       margin-right: 12px;
     }
 
@@ -63,6 +62,12 @@ body.rock-modal {
       display: block;
       margin-top: @modal-header-small-top-offset;
       color: darken(@modal-header-text-color, 10%);
+    }
+
+    @media screen and (min-width: @screen-sm-min) {
+      h3 {
+        float: left;
+      }
     }
   }
 

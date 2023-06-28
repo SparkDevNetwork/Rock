@@ -13,7 +13,7 @@
                             v-model="characters[index]"
                             autocomplete="one-time-code"
                             :autofocus="index === 0"
-                            :class="`form-control flex-grow-1 flex-sm-grow-0 flex-shrink-1 ${index > 0 ? 'ml-1' : ''} h3`"
+                            :class="`form-control flex-grow-1 flex-sm-grow-0 flex-shrink-1 ${index > 0 ? 'ml-1' : ''}`"
                             :disabled="disabled"
                             :id="`${uniqueId}-${index}`"
                             :key="index"

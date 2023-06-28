@@ -40,9 +40,11 @@ using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
+using Rock.Enums.Core;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utilities;
 using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -6324,6 +6326,53 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Creates a color pair from a single color with logic for light and dark modes.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="colorScheme"></param>
+        /// <returns></returns>
+        public static ColorPair CalculateColorPair( string input, string colorScheme = "" )
+        {
+            var color = new RockColor( input );
+
+            var colorSchemeValue = ColorScheme.Light;
+
+            if ( colorScheme.ToLower() == "dark" )
+            {
+                colorSchemeValue = ColorScheme.Dark;
+            }
+
+            // If a color scheme was not provided check the request object to use the clients preference
+            if ( colorScheme.IsNotNullOrWhiteSpace() && HttpContext.Current.Request.Headers["Sec-CH-Prefers-Color-Scheme"] != null && HttpContext.Current.Request.Headers["Sec-CH-Prefers-Color-Scheme"] == "dark")
+            {
+                colorSchemeValue = ColorScheme.Dark;
+            }
+
+            return RockColor.CalculateColorPair( color, colorSchemeValue );
+        }
+
+        /// <summary>
+        /// Creates a recipe color from the provided color.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="recipe"></param>
+        /// <returns></returns>
+        public static string CalculateRecipeColor( string input, string recipe )
+        {
+            var color = new RockColor( input );
+
+            ColorRecipe recipeColor;
+
+            if ( Enum.TryParse( recipe, true, out recipeColor ) )
+            {
+                return RockColor.CalculateColorRecipe( color, recipeColor ).Hex;
+            }
+
+            // There was an invalid recipe passed in so return the original color.
+            return input;
+        }
+
+        /// <summary>
         /// Darkens the color by the provided percentage amount.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -6561,6 +6610,16 @@ namespace Rock.Lava
             return Convert.ToInt32( color.Luminosity * 100 );
         }
 
+        /// <summary>
+        /// Returns a RockColor object from the input string.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static RockColor AsColor( string input )
+        {
+            return new RockColor( input );
+        }
+
         /// <summary>Calculates the contrast ratio.</summary>
         /// <param name="inputColor1">The input color1.</param>
         /// <param name="inputColor2">The input color2.</param>
@@ -6576,14 +6635,6 @@ namespace Rock.Lava
             var color2 = new RockColor( inputColor2 );
 
             return RockColor.CalculateContrastRatio( color1, color2 );
-        }
-
-        /// <summary>Ases the color.</summary>
-        /// <param name="input">The input.</param>
-        /// <returns>RockColor.</returns>
-        public static RockColor AsColor( string input )
-        {
-            return new RockColor( input );
         }
 
         #endregion Color Filters

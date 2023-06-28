@@ -105,19 +105,22 @@ namespace Rock.Update.Services
         /// <returns></returns>
         public RockReleaseProgram GetRockReleaseProgram()
         {
-            var releaseProgram = RockReleaseProgram.Production;
+            var updateUrl = GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" ).ToLower();
 
-            var updateUrl = GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" );
             if ( updateUrl.Contains( RockReleaseProgram.Alpha.ToString().ToLower() ) )
             {
-                releaseProgram = RockReleaseProgram.Alpha;
+                return RockReleaseProgram.Alpha;
             }
             else if ( updateUrl.Contains( RockReleaseProgram.Beta.ToString().ToLower() ) )
             {
-                releaseProgram = RockReleaseProgram.Beta;
+                return RockReleaseProgram.Beta;
+            }
+            else if ( updateUrl.Contains( RockReleaseProgram.Test.ToString().ToLower() ) )
+            {
+                return RockReleaseProgram.Test;
             }
 
-            return releaseProgram;
+            return RockReleaseProgram.Production;;
         }
     }
 }

@@ -45,7 +45,7 @@ export default defineComponent({
         }
     },
 
-    emits: [ "update:modelValue" ],
+    emits: ["update:modelValue"],
 
     setup(props, { emit }) {
         const internalHour: Ref<number | null> = ref(null);
@@ -74,7 +74,7 @@ export default defineComponent({
             const values = /(\d+)(?::(\d+))?/.exec(internalValue.value);
             const value: BasicTimePickerValue = {};
 
-            if(values !== null) {
+            if (values !== null) {
                 value.hour = toNumber(values[1]) + (internalMeridiem.value === "PM" ? 12 : 0);
                 value.minute = values.length > 2 ? toNumber(values[2]) : 0;
 
@@ -88,7 +88,7 @@ export default defineComponent({
         function maybeUpdateValue(): void {
             const values = /(\d+):(\d+)/.exec(internalValue.value);
 
-            if(values !== null) {
+            if (values !== null) {
                 updateValue();
             }
         }
@@ -102,7 +102,7 @@ export default defineComponent({
 
         watch(() => props.modelValue, (): void => {
             ///^(\d{1,2})(?:\:(\d{2})(?: ?([aApP])[mM]?)?)?$/
-            if (props.modelValue.hour) {
+            if (props.modelValue.hour != null) {
                 if (props.modelValue.hour > 12) {
                     internalHour.value = props.modelValue.hour - 12;
                 }

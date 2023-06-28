@@ -4,7 +4,7 @@
     <RockButton
         v-if="isCredentialLoginSupported && !loginMethodWrapper.isCredential"
         :btnType="BtnType.Default"
-        class="w-100"
+        class="btn-block"
         :disabled="disabled"
         type="button"
         @click="onSignInWithAccountClicked()">Sign in with Account</RockButton>
@@ -12,7 +12,7 @@
     <RockButton
         v-else-if="isPasswordlessLoginSupported && !loginMethodWrapper.isPasswordless"
         :btnType="BtnType.Default"
-        class="w-100"
+        class="btn-block"
         :disabled="disabled"
         type="button"
         @click="onSignInWithEmailOrPhoneClicked()">Sign in with Email or Phone</RockButton>

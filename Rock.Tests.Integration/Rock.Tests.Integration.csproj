@@ -202,6 +202,7 @@
     <Compile Include="Modules\Engagement\Interactions\TestDataHelper.Interactions.cs" />
     <Compile Include="Modules\Reporting\DataFilter\DataViewTests.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
+    <Compile Include="TestData\Core\TestDataHelper.Core.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
     <Compile Include="TestData\Crm\HistoryDataFactory.cs" />
     <Compile Include="TestData\Engagement\PrayerFeatureDataHelper.cs" />
@@ -300,6 +301,7 @@
     <Compile Include="Modules\Core\Model\StepTests.cs" />
     <Compile Include="Modules\Core\Lava\LegacyLavaUpdaterTest.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
+    <Compile Include="TestFramework\TestExtensionMethods.cs" />
     <Compile Include="ThirdPartyIntegrations\NcoaApi\TrueNcoaApiTests.cs" />
     <Compile Include="Modules\Core\Rock.Logging\RockLogConfigurationTest.cs" />
     <Compile Include="Modules\Core\Rock.Logging\RockLoggerTests.cs" />

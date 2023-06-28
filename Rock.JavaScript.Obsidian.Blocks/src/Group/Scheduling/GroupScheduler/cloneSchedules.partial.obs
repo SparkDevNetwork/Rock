@@ -1,0 +1,210 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Clone Schedules"
+           saveText="Clone"
+           :saveButtonDisabled="isCloningDisabled"
+           @save="onSave">
+
+        <NotificationBox :alertType="AlertType.Info">
+            Configure the settings below to clone schedules for a different week.
+        </NotificationBox>
+
+        <NotificationBox v-if="loadCloneSettingsErrorMessage" :alertType="AlertType.Warning">
+            {{ loadCloneSettingsErrorMessage }}
+        </NotificationBox>
+
+        <div v-else class="row">
+
+            <div class="col-md-6">
+                <h3>Source Settings</h3>
+
+                <DropDownList v-model="selectedSourceDate"
+                              label="Source Week Of"
+                              rules="required"
+                              :items="availableSourceDates"
+                              :loading="isBusy" />
+
+                <DropDownList v-model="selectedGroups"
+                              label="Groups"
+                              :items="availableGroups"
+                              :multiple="true"
+                              :loading="isBusy" />
+
+                <DropDownList v-model="selectedLocations"
+                              label="Locations"
+                              :items="availableLocations"
+                              :multiple="true"
+                              :loading="isBusy" />
+
+                <DropDownList v-model="selectedSchedules"
+                              label="Schedules"
+                              :items="availableSchedules"
+                              :multiple="true"
+                              :loading="isBusy" />
+
+            </div>
+
+            <div class="col-md-6">
+                <h3>Destination Settings</h3>
+
+                <DropDownList v-model="selectedDestinationDate"
+                              label="Destination Week Of"
+                              rules="required"
+                              :items="availableDestinationDates"
+                              :loading="isBusy" />
+
+            </div>
+
+        </div>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import Modal from "@Obsidian/Controls/modal";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { GroupSchedulerCloneSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSettingsBag";
+    import { GroupSchedulerFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerFiltersBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        filters: {
+            type: Object as PropType<GroupSchedulerFiltersBag | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible"): void,
+        (e: "cloneSchedules", cloneSettings: GroupSchedulerCloneSettingsBag): void
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    const isLoadingCloneSettings = ref(false);
+    const loadCloneSettingsErrorMessage = ref("");
+
+    const cloneSettings = ref<GroupSchedulerCloneSettingsBag | null>(null);
+
+    const selectedSourceDate = ref<string>("");
+    const selectedDestinationDate = ref<string>("");
+    const selectedGroups = ref<string[]>([]);
+    const selectedLocations = ref<string[]>([]);
+    const selectedSchedules = ref<string[]>([]);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isBusy = computed((): boolean => {
+        return isLoadingCloneSettings.value;
+    });
+
+    const isCloningDisabled = computed((): boolean => {
+        return isBusy.value
+            || !cloneSettings.value
+            || !!loadCloneSettingsErrorMessage.value;
+    });
+
+    const availableSourceDates = computed((): ListItemBag[] => {
+        return cloneSettings.value?.availableSourceDates ?? [];
+    });
+
+    const availableDestinationDates = computed((): ListItemBag[] => {
+        return cloneSettings.value?.availableDestinationDates ?? [];
+    });
+
+    const availableGroups = computed((): ListItemBag[] => {
+        return cloneSettings.value?.availableGroups ?? [];
+    });
+
+    const availableLocations = computed((): ListItemBag[] => {
+        return cloneSettings.value?.availableLocations ?? [];
+    });
+
+    const availableSchedules = computed((): ListItemBag[] => {
+        return cloneSettings.value?.availableSchedules ?? [];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the clone settings.
+     */
+    async function getCloneSettings(): Promise<void> {
+        if (isLoadingCloneSettings.value) {
+            return;
+        }
+
+        isLoadingCloneSettings.value = true;
+        loadCloneSettingsErrorMessage.value = "";
+
+        const result = await invokeBlockAction<GroupSchedulerCloneSettingsBag>("GetCloneSettings", { bag: props.filters });
+        isLoadingCloneSettings.value = false;
+
+        if (!result.isSuccess) {
+            loadCloneSettingsErrorMessage.value = result.errorMessage || "Unknown error while trying to load clone settings.";
+            return;
+        }
+
+        cloneSettings.value = result.data;
+
+        // TODO (JPH): Uncomment the following once person preferences are implemented.
+        // selectedSourceDate.value = cloneSettings.value?.selectedSourceDate ?? "";
+        // selectedDestinationDate.value = cloneSettings.value?.selectedDestinationDate ?? "";
+        // selectedGroups.value = cloneSettings.value?.selectedGroups ?? [];
+        // selectedLocations.value = cloneSettings.value?.selectedLocations ?? [];
+        // selectedSchedules.value = cloneSettings.value?.selectedSchedules ?? [];
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `save` event of the clone schedules modal.
+     */
+    function onSave(): void {
+        emit("cloneSchedules", {
+            availableSourceDates: availableSourceDates.value,
+            selectedSourceDate: selectedSourceDate.value,
+            availableDestinationDates: availableDestinationDates.value,
+            selectedDestinationDate: selectedDestinationDate.value,
+            availableGroups: availableGroups.value,
+            selectedGroups: selectedGroups.value,
+            availableLocations: availableLocations.value,
+            selectedLocations: selectedLocations.value,
+            availableSchedules: availableSchedules.value,
+            selectedSchedules: selectedSchedules.value
+        });
+        isVisible.value = false;
+    }
+
+    // #endregion
+
+    watch(isVisible, () => {
+        if (isVisible.value) {
+            getCloneSettings();
+        }
+        else {
+            isLoadingCloneSettings.value = false;
+        }
+    });
+</script>
