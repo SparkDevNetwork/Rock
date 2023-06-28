@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using CSScriptLibrary;
 using Microsoft.Web.XmlTransform;
 
 using Rock;
@@ -123,6 +124,8 @@ namespace RockWeb.Blocks.Administration
             BindLoginCookieTimeout();
 
             BindExperimentalSettings();
+
+            BindObservabilitySettings();
 
             BindSystemDiagnosticsSettings();
 
@@ -253,6 +256,25 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Binds the controls for the Observability settings
+        /// </summary>
+        private void BindObservabilitySettings()
+        {
+            ddlEndpointProtocol.BindToEnum<OpenTelemetry.Exporter.OtlpExportProtocol>();
+            ddlEndpointProtocol.SelectedValue = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL );
+
+            cbEnableObservaility.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
+
+            urlObservabilityEndpoint.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT );
+
+            kvlEndpointHeaders.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS );
+
+            vlTargetedQueries.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES );
+
+            tbServiceName.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SERVICE_NAME );
+        }
 
         /// <summary>
         /// Bind thee general configuration
@@ -502,6 +524,34 @@ namespace RockWeb.Blocks.Administration
             nbSecurityGrantTokenDurationSaveMessage.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnObservabilitySave control
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnObservabilitySave_Click( object sender, EventArgs e )
+        {
+            if ( cbEnableObservaility.Checked &&  urlObservabilityEndpoint.Text.IsNullOrWhiteSpace() )
+            {
+                nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Warning;
+                nbObservabilityMessages.Text = "To enable observability, please provide a valid service endpoint. (e.g. https://otlp.nr-data.net:4317)";
+                return;
+            }
+
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENABLED, cbEnableObservaility.Checked.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL, ddlEndpointProtocol.SelectedValue );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS, kvlEndpointHeaders.Value );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT, urlObservabilityEndpoint.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES, vlTargetedQueries.Value );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_SERVICE_NAME, tbServiceName.Text );
+
+            nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Success;
+            nbObservabilityMessages.Title = string.Empty;
+            nbObservabilityMessages.Text = "Settings saved successfully.";
+        }
+
         #endregion
+
+
     }
 }
