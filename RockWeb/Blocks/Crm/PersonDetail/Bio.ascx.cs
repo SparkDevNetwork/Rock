@@ -387,7 +387,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
             else
             {
-                // Persist the state of the Name Pronunciation Panel Div
+                // Persist the state of the Name Pronunciation Panel Div.
                 divNamePronunciationPanel.Attributes["style"] = hfNamePronunciationVisible.Value.Equals( "true" ) ? "display:block" : "display:none";
             }
         }
