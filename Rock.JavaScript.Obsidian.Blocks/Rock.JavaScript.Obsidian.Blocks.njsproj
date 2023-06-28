@@ -72,6 +72,9 @@
     <Content Include="src\Engagement\streakTypeDetail.obs" />
     <Content Include="src\Engagement\StreakTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StreakTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Finance\businessDetail.obs" />
+    <Content Include="src\Finance\BusinessDetail\editPanel.partial.obs" />
+    <Content Include="src\Finance\BusinessDetail\viewPanel.partial.obs" />
     <Content Include="src\Finance\financialBatchDetail.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\editPanel.partial.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\viewPanel.partial.vue" />
@@ -228,6 +231,7 @@
     <Folder Include="src\Bus\" />
     <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
+    <Folder Include="src\Finance\BusinessDetail\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Prayer\" />
     <Folder Include="src\Prayer\PrayerRequestDetail\" />
@@ -363,6 +367,7 @@
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Prayer\PrayerRequestDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchDetail\types.partial.ts" />

@@ -197,11 +197,6 @@
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        // set the value of structure entity id to null if the structure type changes
-        if(props.modelValue?.structureType?.toString() != structureType.value){
-            structureEntity.value = {};
-        }
-
         const newValue: StreakTypeBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -214,7 +209,7 @@
             firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
             occurrenceFrequency: toNumber(occurrenceFrequency.value),
             structureType: toNumber(structureType.value),
-            structureEntity: structureEntity.value,
+            structureEntity: props.modelValue?.structureType?.toString() == structureType.value ? structureEntity.value: {},
             includeChildAccounts: includeChildAccounts.value
         };
 

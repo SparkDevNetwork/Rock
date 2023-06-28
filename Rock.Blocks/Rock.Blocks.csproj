@@ -62,6 +62,7 @@
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
+    <Compile Include="Finance\BusinessDetail.cs" />
     <Compile Include="Engagement\StreakTypeDetail.cs" />
     <Compile Include="Prayer\PrayerRequestDetail.cs" />
     <Compile Include="Core\FollowingEventTypeDetail.cs" />

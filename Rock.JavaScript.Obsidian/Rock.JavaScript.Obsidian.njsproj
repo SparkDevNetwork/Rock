@@ -234,6 +234,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\" />
@@ -795,6 +796,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceVisualizerTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\liveExperienceOccurrencesInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\liveExperienceInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\businessDetailBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\businessDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\searchKeyBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchAccountTotalsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchCurrencyTotalsBag.d.ts" />
