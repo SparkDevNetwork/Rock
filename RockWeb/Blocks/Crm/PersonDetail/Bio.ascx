@@ -24,16 +24,16 @@
                 <%-- Person Name --%>
                 <div class="d-flex flex-wrap">
                     <asp:Literal ID="lName" runat="server" />
-                    <%-- <button ID="bNamePronunciationButton" CssClass="btn btn-sm text-primary" runat="server" onclick="$('.js-namePronunciationPanel').slideToggle()">Testing</button> --%>
-                    <asp:LinkButton ID="lbOpenNamePronunciationPanel" CssClass="btn btn-sm text-primary" runat="server" OnClick="lbOpenNamePronunciationPanel_Click">
-                        <span class="fa-stack fa-md">
+                    <a href="#!" class="btn btn-sm" onclick="$('.js-namePronunciationPanel').slideToggle()">
+                        <span ID="spNamePronunciationIcon" runat="server" class="fa-stack fa-md text-primary">
                             <i class="fa fa-circle fa-stack-2x"></i>
                             <i class="fa fa-volume-up fa-stack-1x fa-inverse"></i>
                         </span>
-                    </asp:LinkButton>
+                    </a>
                 </div>
                 <%-- Name Pronunciation Panel --%>
-                <div id="divNamePronunciationPanel" runat="server" class="bg-default mt-1 p-1 rounded js-namePronunciationPanel">
+                <asp:HiddenField ID="hfNamePronunciationVisible" runat="server"/>
+                <div id="divNamePronunciationPanel" runat="server" class="bg-default mt-1 p-1 rounded js-namePronunciationPanel" style="display:none">
                     <div runat="server" class="d-flex justify-content-between">
                         <a ID="aPlayAllNamePronunciations" runat="server" CssClass="text-primary"/>
                         <div runat="server" class="d-flex flex-wrap justify-content-left align-items-left ml-2 mr-2 mt-0" >
