@@ -250,9 +250,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         private bool personHasFirstNamePronunciationOverride;
         private bool personHasNickNamePronunciationOverride;
         private bool personHasLastNamePronunciationOverride;
-        private string firstNamePronunciationAudioUrl = string.Empty;
-        private string nickNamePronunciationAudioUrl = string.Empty;
-        private string lastNamePronunciationAudioUrl = string.Empty;
+        public static string firstNamePronunciationAudioUrl = string.Empty;
+        public static string nickNamePronunciationAudioUrl = string.Empty;
+        public static string lastNamePronunciationAudioUrl = string.Empty;
 
         #endregion Fields
 
