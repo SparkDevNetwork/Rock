@@ -10,7 +10,7 @@
         JOIN ContentChannel pcc ON av.[Value] = convert(nvarchar(50), pcc.[Guid])
         WHERE a.[Key] = 'PrimaryParentChannel'
         AND a.[EntityTypeId] = 209
-        AND cci.[Id] = {{ cciid }}
+        AND cci.[Id] = {{ cciid | ToJSON }}
     {%- endsql -%}
     {%- assign pccid = results | First | Property:'Id' -%}
     {%- if pccid and pccid != empty -%}
@@ -31,7 +31,7 @@
             JOIN ContentChannelItemSlug pccis
             ON pccis.ContentChannelItemId = pcci.Id
             WHERE cci.Id = {{ cciid }}
-            AND pcci.ContentChannelId = {{ pccid }}
+            AND pcci.ContentChannelId = {{ pccid | ToJSON }}
         {%- endsql -%}
         {%- for result in results -%}
             {%- if urlprefix and urlprefix != empty -%}
@@ -51,7 +51,7 @@
             ON cci.ContentChannelId = cc.Id
             JOIN ContentChannelItemSlug ccis
             ON cci.Id = ccis.ContentChannelItemId
-            WHERE cci.Id = {{ cciid }}
+            WHERE cci.Id = {{ cciid | ToJSON }}
         {%- endsql -%}
         {%- for result in results -%}
             {%- if urlprefix and urlprefix != empty -%}
