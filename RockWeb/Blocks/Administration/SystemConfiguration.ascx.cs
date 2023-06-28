@@ -29,6 +29,7 @@ using Microsoft.Web.XmlTransform;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Observability;
 using Rock.SystemKey;
 using Rock.Web.UI.Controls;
 
@@ -548,6 +549,9 @@ namespace RockWeb.Blocks.Administration
             nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Success;
             nbObservabilityMessages.Title = string.Empty;
             nbObservabilityMessages.Text = "Settings saved successfully.";
+
+            // Update the provider
+            ObservabilityHelper.ConfigureTraceProvider();
         }
 
         #endregion
