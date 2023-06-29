@@ -41,12 +41,13 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular content collection.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Content Collection Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular content collection." )]
     [IconCssClass( "fa fa-book-open" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -54,7 +55,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "5C8A2E36-6CCC-42C7-8AAF-1C0B4A42B48B" )]
     [Rock.SystemGuid.BlockTypeGuid( "D840AE7E-7226-4D84-AFA9-3F2C84947BDD" )]
-    public class ContentCollectionDetail : RockObsidianDetailBlockType
+    public class ContentCollectionDetail : RockDetailBlockType
     {
         #region Keys
 
@@ -83,7 +84,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<ContentCollection>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<ContentCollection>();
 
                 return box;
             }

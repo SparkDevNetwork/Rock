@@ -18,6 +18,7 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
+import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
@@ -30,18 +31,45 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./urlLinkFieldComponents")).EditComponent;
 });
 
+// The configuration component can be quite large, so load it only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./urlLinkFieldComponents")).ConfigurationComponent;
+});
 /**
  * The field type handler for the Email field.
  */
 export class UrlLinkFieldType extends FieldTypeBase {
     public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationValueKey.ShouldAlwaysShowCondensed]);
         const textValue = this.getTextValue(value, configurationValues);
 
-        return textValue ? `<a href="${textValue}">${textValue}</a>` : "";
+        let htmlValue = "";
+        if (textValue) {
+            if (!shouldAlwaysShowCondensed) {
+                htmlValue = `<a href="${textValue}">${textValue}</a>`;
+            } else {
+                htmlValue = textValue;
+            }
+        }
+
+        return htmlValue;
+    }
+
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
+        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationValueKey.ShouldAlwaysShowCondensed]);
+        if (shouldAlwaysShowCondensed) {
+            return `<a href="${value}">${value}</a>`;
+        }
+
+        return value;
     }
 
     public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 
     public override getSupportedComparisonTypes(): ComparisonType {

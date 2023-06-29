@@ -25,14 +25,39 @@ using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
 {
-
-
     [TestClass]
     public class CollectionFilterTests : LavaUnitTestBase
     {
         List<string> _TestNameList = new List<string>() { "Ted", "Alisha", "Cynthia", "Brian" };
         List<string> _TestOrderedList = new List<string>() { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
         List<string> _TestDuplicateStringList = new List<string>() { "Item 1", "Item 2 (duplicate)", "Item 2 (duplicate)", "Item 2 (duplicate)", "Item 3" };
+
+        [TestMethod]
+        public void Compact_ForArrayWithNullValues_RemovesNullValues()
+        {
+            var names = new List<string>() { null, "Alisha", "Brian", null, "Cynthia" };
+            var mergeValues = new LavaDataDictionary { { "TestList", names } };
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
+                "Alisha,Brian,Cynthia",
+                "{{ TestList | Compact | Join:',' }}", mergeValues );
+        }
+
+        [TestMethod]
+        public void Concat_WithMultipleArrayInput_ProducesSingleArray()
+        {
+            var template = @"
+{% assign fruits = 'apples, oranges, peaches' | Split: ', ' %}
+{% assign vegetables = 'carrots, turnips, potatoes' | Split: ', ' %}
+{% assign everything = fruits | Concat: vegetables %}
+{% for item in everything %}
+{{ item }},
+{% endfor %}
+";
+            var expectedOutput = @"apples, oranges, peaches, carrots, turnips, potatoes,";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
 
         #region Filter Tests: Distinct
 
@@ -489,7 +514,6 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
                 "Cynthia,Ted,alisha,brian",
                 "{{ TestList | Sort | Join:',' }}", mergeValues );
-
         }
 
         /// <summary>

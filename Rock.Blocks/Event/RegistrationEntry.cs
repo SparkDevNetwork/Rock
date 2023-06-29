@@ -46,12 +46,13 @@ namespace Rock.Blocks.Event
     /// <summary>
     /// Registration Entry.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Registration Entry" )]
     [Category( "Obsidian > Event" )]
     [Description( "Block used to register for a registration instance." )]
     [IconCssClass( "fa fa-clipboard-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -130,7 +131,7 @@ namespace Rock.Blocks.Event
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
-    public class RegistrationEntry : RockObsidianBlockType
+    public class RegistrationEntry : RockBlockType
     {
         #region Keys
 

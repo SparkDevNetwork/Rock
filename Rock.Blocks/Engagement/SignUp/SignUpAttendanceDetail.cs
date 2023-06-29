@@ -33,12 +33,13 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <summary>
     /// Lists the group members for a specific sign-up group/project occurrence date time and allows selecting if they attended or not.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Sign-Up Attendance Detail" )]
     [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Lists the group members for a specific sign-up group/project occurrence date time and allows selecting if they attended or not." )]
     [IconCssClass( "fa fa-clipboard-check" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -55,7 +56,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [Rock.SystemGuid.EntityTypeGuid( "747587A0-87E9-437D-A4ED-75431CED55B3" )]
     [Rock.SystemGuid.BlockTypeGuid( "96D160D9-5668-46EF-9941-702BD3A577DB" )]
-    public class SignUpAttendanceDetail : RockObsidianBlockType
+    public class SignUpAttendanceDetail : RockBlockType
     {
         #region Keys & Constants
 
@@ -98,7 +99,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
         #region Properties
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #endregion
 

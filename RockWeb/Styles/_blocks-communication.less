@@ -40,75 +40,6 @@ iframe.email-body {
   border: 1px solid @panel-border;
 }
 
-// 2. Communication Entry
-// -------------------------
-#emaileditor,
-.panel-fill-body {
-  height: ~"calc(100vh - var(--email-editor-offset, 360px))";
-  min-height: 300px;
-  margin: -@panel-body-padding -@panel-body-padding 0 -@panel-body-padding;
-}
-
-.panel-actions-bordered {
-  padding: @panel-body-padding @panel-body-padding 0;
-  margin: @panel-body-padding -@panel-body-padding 0;
-  border-top: 1px solid @panel-border;
-}
-
-#emaileditor-properties {
-  width: 40%;
-  padding: ~"calc(var(--gutter-x) * 0.5)";
-  background-color: @panel-heading-bg;
-
-  .actions {
-    margin-right: ~"calc(var(--gutter-x) * -0.5)";
-    margin-left:  ~"calc(var(--gutter-x) * -0.5)";
-  }
-}
-
-
-#section-email {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 60%;
-}
-
-#email-editor {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 60%;
-  height: 100%;
-  border-top: 1px solid @panel-border;
-}
-
-#emaileditor-designer {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 60%;
-  border-right: 1px solid @panel-border;
-}
-
-.emaileditor-iframe {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.emaileditor-propertypanels .propertypanel-title {
-  margin-top: 0;
-  font-weight: @font-weight-semibold;
-}
-
 // 3. Communication Wizard
 // -------------------------
 
@@ -120,13 +51,10 @@ iframe.email-body {
   margin-bottom: 24px;
   overflow: hidden;
   color: @text-color;
-  border: 1px solid @panel-border;
+  border: 1px solid var(--panel-border);
   outline-offset: -1px;
 
-  &:focus {
-    color: @text-color;
-  }
-
+  &:focus,
   &:hover {
     color: @text-color;
     outline: 2px solid @alert-info-border;
@@ -135,299 +63,28 @@ iframe.email-body {
   label {
     font-size: 16px;
   }
-}
 
-.template-selected {
-  outline: 2px solid @alert-info-text;
-
-  &:hover {
+  &.template-selected {
     outline: 2px solid @alert-info-text;
-  }
 
-  &::before {
-    position: absolute;
-    top: -4px;
-    left: 8px;
-    z-index: 1;
-    font-family: @fa-font-face;
-    font-size: 36px;
-    font-weight: @fa-theme-weight;
-    color: @alert-info-text;
-    content: @fa-var-check-circle;
+    &:hover {
+      outline: 2px solid @alert-info-text;
+    }
+
+    &::before {
+      position: absolute;
+      top: -4px;
+      left: 8px;
+      z-index: 1;
+      font-family: @fa-font-face;
+      font-size: 36px;
+      font-weight: @fa-theme-weight;
+      color: @alert-info-text;
+      content: @fa-var-check-circle;
+    }
   }
 }
 
 .step-title {
   margin-top: 0;
-}
-
-// 4. Communication Analytics
-// -------------------------
-
-.label-clicked {
-  background-color: #60bd68;
-}
-
-.label-opened {
-  background-color: #5da5da;
-}
-
-.label-unopened {
-  background-color: #ffb70f;
-}
-
-// 5. SMS Conversations
-// -------------------------
-
-
-.sms-action-components {
-  background: @panel-heading-bg;
-}
-
-.components-list {
-  margin: 6px;
-
-  > li ol {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .component {
-    display: block;
-    float: left;
-    width: 45%;
-    padding: 12px 0 4px;
-    margin: 6px 2.5%;
-    font-size: 12px;
-    color: @text-color;
-    text-align: center;
-    cursor: -webkit-grab;
-    cursor: -moz-grab;
-    cursor: grab;
-    zoom: 1;
-    background-color: @white;
-    border: 1px solid transparent;
-    border-radius: 2px;
-    box-shadow: 0 2px 2px rgba(0,0,0,.05);
-
-    > i {
-      display: block;
-      width: 30px;
-      height: 30px;
-      margin: 0 auto 6px;
-      font-size: 28px;
-      color: @text-muted;
-      text-align: center;
-    }
-
-    span {
-      display: flex;
-      flex-direction: column;
-      align-content: center;
-      justify-content: center;
-      height: 26px;
-      overflow: hidden;
-      line-height: 1.1;
-      text-overflow: ellipsis;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-
-    &:hover {
-      border: 1px solid @brand-primary;
-      box-shadow: 0 0 0 1px @brand-primary inset;
-    }
-  }
-}
-
-.mobile-pages-container {
-  .component {
-    display: none;
-  }
-
-  .component.gu-transit {
-    display: block;
-    padding: @panel-heading-padding;
-    margin-bottom: @line-height-computed;
-    background-color: @panel-heading-bg; // Replace with @panel-widget-heading-bg
-    border: 1px solid @panel-heading-border; // Replace with @panel-widget-heading-border
-  }
-}
-
-.mobile-block-types {
-  .form-control {
-    border-color: transparent;
-    border-radius: 0;
-  }
-}
-
-.sms-actions-container {
-  padding: 20px 50px !important;
-  counter-reset: section;
-
-  .component {
-    display: none;
-  }
-
-  .component.gu-transit {
-    display: block;
-  }
-}
-
-.sms-action {
-  position: relative;
-  max-width: 500px;
-  padding: 20px 16px;
-  margin: 0 auto 20px;
-  font-size: 21px;
-  cursor: pointer;
-  background-color: rgba(255, 255, 255, .9);
-  border-radius: 2px;
-  box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
-
-  @connector-size: 28px;
-  @connector-offset: 0;
-
-  &::after {
-    position: absolute;
-    top: 20px;
-    left: -(@connector-size + @connector-offset + 12px);
-    display: block;
-    width: @connector-size;
-    height: @connector-size;
-    font-size: 14px;
-    color: #fff;
-    text-align: center;
-    content: counter(section);
-    counter-increment: section;                 /* Increment the value of section counter by 1 */
-    background-color: @btn-action-bg;
-    border: 2px solid #fff;
-    border-radius: 50%;
-  }
-
-  &::before {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -(@connector-size + @connector-offset);
-    width: 2px;
-    height: ~"calc(100% + 20px)";
-    margin-left: 1px;
-    content: "";
-    background: #dddbda;
-  }
-
-  &.inactive {
-    color: fade(@text-color, 50%);
-    background-color: rgba(255, 255, 255, .5);
-
-    &::after {
-      display: none;
-    }
-  }
-
-  &:first-child::before {
-    top: 20px;
-  }
-
-  &:last-child::before {
-    height: ~"calc(100% - 28px)";
-  }
-
-  &.editing {
-    box-shadow: 0 0 0 4px @brand-primary;
-  }
-
-  .reorder {
-    cursor: move;
-    cursor: -webkit-grab;
-    cursor: grab;
-  }
-
-  > .fa {
-    width: 30px;
-    padding-right: 2px;
-    color: @text-muted;
-    text-align: center;
-  }
-}
-
-.panel-palette {
-  margin: 0;
-  border: 0;
-  border-left: 1px solid @panel-border;
-  border-radius: 0;
-
-  .panel-heading {
-    font-weight: 500;
-    text-align: center;
-    background: @panel-heading-bg;
-    border-bottom: 3px solid @brand-primary;
-    border-radius: 0;
-  }
-}
-
-.sms-pipeline-detail {
-  .sms-heading {
-    max-width: 500px;
-    padding: 20px 16px;
-    margin: 0 auto 20px;
-    font-size: 21px;
-    text-align: center;
-    cursor: pointer;
-    background-color: @panel-heading-bg;
-    border-radius: 2px;
-    box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
-  }
-
-  .drag-container {
-    height: 100%;
-  }
-
-  .drag-container-empty::after {
-    display: block;
-    max-width: 500px;
-    height: 200px;
-    padding: 80px 0;
-    margin: 0 auto 20px;
-    font-size: 20px;
-    text-align: center;
-    content: "Drag and Drop Here";
-    border: 3px dashed rgba(0,0,0,.2);
-  }
-
-  h4 {
-    padding: 12px @panel-body-padding;
-    margin: 1px -@panel-body-padding 16px;
-    font-size: 18px;
-    font-weight: 500;
-    background: @panel-heading-bg;
-    border-top: 1px solid @panel-border;
-  }
-
-  .component.gu-transit {
-    max-width: 500px;
-    padding: 20px 0;
-    margin: 0 auto 20px;
-    font-size: 20px;
-    text-align: center;
-    list-style: none;
-    border: 3px solid fade(#000, 20%);
-  }
-}
-
-.component.gu-mirror,
-.sms-action.gu-mirror {
-  list-style: none;
-  cursor: -moz-grabbing !important;
-  cursor: -webkit-grabbing !important;
-  cursor: grabbing !important;
-
-  &::before,
-  &::after {
-    display: none;
-  }
 }

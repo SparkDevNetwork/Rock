@@ -909,13 +909,15 @@ namespace Rock.Model
     /// </summary>
     public sealed class GetLocationArgs
     {
+        /// PA: Changed all the setters from to public so that they may be accessed by the plugins.
+
         /// <summary>
         /// The group (usually a Family) that should be searched first. This is NOT a search constraint.
         /// </summary>
         /// <value>
         /// The group.
         /// </value>
-        public Group Group { get; internal set; }
+        public Group Group { get; set; }
 
         /// <summary>
         /// Use a <see cref="VerificationComponent.Verify(Location, out string)"> Verification Service</see> to verify and standardize the address.
@@ -924,7 +926,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if [verify location]; otherwise, <c>false</c>.
         /// </value>
-        public bool VerifyLocation { get; internal set; } = true;
+        public bool VerifyLocation { get; set; } = true;
 
         /// <summary>
         /// Create a new location if a matching location record cannot be found
@@ -933,7 +935,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if [create new location]; otherwise, <c>false</c>.
         /// </value>
-        public bool CreateNewLocation { get; internal set; } = true;
+        public bool CreateNewLocation { get; set; } = true;
 
         /// <summary>
         /// Validate the required address fields have a value.
@@ -942,6 +944,6 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if [validate location]; otherwise, <c>false</c>.
         /// </value>
-        public bool ValidateLocation { get; internal set; } = true;
+        public bool ValidateLocation { get; set; } = true;
     }
 }

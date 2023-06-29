@@ -527,7 +527,7 @@
                     return {
                         text: item.text,
                         value: item.value,
-                        category: item.category?.replace(/\^/gi, "<i class=\"fa fa-chevron-right pl-1 pr-1\" aria-hidden=\"true\"></i>")
+                        category: item.category?.replace(/\^/gi, "<i class=\"fa fa-chevron-right px-1\" aria-hidden=\"true\"></i>")
                     };
                 });
             }
@@ -591,7 +591,7 @@
                     return {
                         text: item.text,
                         value: item.value,
-                        category: item.category?.replace(/\^/gi, "<i class=\"fa fa-chevron-right pl-1 pr-1\" aria-hidden=\"true\"></i>")
+                        category: item.category?.replace(/\^/gi, "<i class=\"fa fa-chevron-right px-1\" aria-hidden=\"true\"></i>")
                     };
                 });
             }

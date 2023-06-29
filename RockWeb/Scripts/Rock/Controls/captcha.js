@@ -24,6 +24,33 @@
                     const apiSource = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback";
                     $('head').prepend("<script src='" + apiSource + "' async defer></script>");
                 }
+
+                // Partial postbacks cause the update panel to reload, and in the instance where the widget has already been rendered,
+                // the turnstile api will not re-render the widget, since the render logic is only triggered on page load.
+                // so if the turnstile code has already been injected, then use it to manually re-render the widget.
+                if (typeof (turnstile) !== 'undefined') {
+                    const widgetId = turnstile.render(`#${options.id}`, {
+                        sitekey: options.key,
+                        callback: function onloadTurnstileCallback(token) {
+                            $(document).ready(function () {
+                                const hfToken = document.querySelector('.js-captcha-token');
+                                hfToken.value = token;
+                                // Hide control after captcha is solved and we get the token so it is not re-rendered for every post back.
+                                // Give it a 1 sec delay so success message is displayed to the user.
+                                const captcha = document.querySelector('.js-captcha');
+                                if (captcha && token) {
+                                    setTimeout(() => {
+                                        captcha.style.display = 'none';
+                                    }, 1000);
+                                }
+
+                                if (token && options.postbackScript) {
+                                    window.location = "javascript:" + options.postbackScript;
+                                }
+                            });
+                        },
+                    });
+                }
             },
             onloadInitialize: function () {
                 // Perform final initialization on all captchas.

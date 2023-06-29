@@ -35,12 +35,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// Displays custom XAML content on the page.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Group Member Edit" )]
     [Category( "Mobile > Groups" )]
     [Description( "Edits a member of a group." )]
     [IconCssClass( "fa fa-user-cog" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -116,7 +117,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_MEMBER_EDIT_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "514B533A-8970-4628-A4C8-35388CD869BC")]
-    public class GroupMemberEdit : RockMobileBlockType
+    public class GroupMemberEdit : RockBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the GroupMemberEdit block.
@@ -252,21 +253,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupMemberEdit";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

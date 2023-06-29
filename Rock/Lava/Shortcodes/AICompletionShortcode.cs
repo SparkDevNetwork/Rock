@@ -37,7 +37,7 @@ namespace Rock.Lava.Shortcodes
     /// Lava shortcode for displaying scripture links
     /// </summary>
     [LavaShortcodeMetadata(
-        Name = "AI Completion",
+        Name = "AI Completion (Experimental)",
         TagName = "aicompletion",
         Description = "Processes a completion using a AI provider. The APIs that are called by this shortcode can be slow. It's recommended that they not be used on public facing websites. They're better used in back-end or batch processes.",
         Documentation = DocumentationMetadata,

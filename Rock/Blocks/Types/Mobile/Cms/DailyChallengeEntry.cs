@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,12 +30,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
     /// <summary>
     /// Displays a set of challenges for the individual to complete today.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Daily Challenge Entry" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays a set of challenges for the individual to complete today." )]
     [IconCssClass( "fa fa-tasks" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -71,7 +72,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CMS_DAILY_CHALLENGE_ENTRY )]
     [Rock.SystemGuid.BlockTypeGuid( "B702FF5B-2488-42C7-AAE8-2DD99E82326D")]
-    public class DailyChallengeEntry : RockMobileBlockType
+    public class DailyChallengeEntry : RockBlockType
     {
         #region Block Attributes
 
@@ -137,21 +138,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 2;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Cms.DailyChallengeEntry";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 2 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

@@ -328,13 +328,29 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Updates the type of the mobile block.
+        /// Updates the Entity block or creates it if it is not already present in the database.
+        /// This method serves as a syntactic sugar over the <see cref="MigrationHelper.UpdateMobileBlockType(string, string, string, string)" /> which was origianlly used to add or updated the obsidian blocks.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="entityName">Name of the entity.</param>
         /// <param name="category">The category.</param>
         /// <param name="guid">The unique identifier.</param>
+        public void AddOrUpdateEntityBlockType( string name, string description, string entityName, string category, string guid )
+        {
+            UpdateMobileBlockType( name, description, entityName, category, guid );
+        }
+
+        /// <summary>
+        /// Updates the Entity block or creates it if it is not already present in the database.
+        /// This method was first written for the mobile blocks and later repurposed for Obsidian.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="entityName">Name of the entity.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="guid">The unique identifier.</param>
+        // DO NOT RENAME: This method is being used by older migrations and so the name of the function should not be changed.
         public void UpdateMobileBlockType( string name, string description, string entityName, string category, string guid )
         {
             Migration.Sql( $@"

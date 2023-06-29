@@ -79,6 +79,14 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerSchedulesBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerSendNowResponseBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUpdatePreferenceBag.cs" />
+    <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryMetricCategoryBag.cs" />
+    <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryGetMetricsResponseBag.cs" />
+    <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryGetMetricsRequestBag.cs" />
+    <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryGetServiceTimesRequestBag.cs" />
+    <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryGetWeekendDatesRequestBag.cs" />
+    <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryInitializationBox.cs" />
+    <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryMetricItemBag.cs" />
+    <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryAccountInfoBag.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryCompletedStepBag.cs" />
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryConfirmationSentStepBag.cs" />
@@ -227,10 +235,12 @@
     <Compile Include="Rest\Controls\AccountPickerGetSearchedAccountsOptionsBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetParentGuidsOptionsBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetContentChannelItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTagListSaveTagValuesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesResultsBag.cs" />
     <Compile Include="Rest\Controls\GroupAndRolePickerGetRolesOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupTypeGroupPickerGetGroupsOptionsBag.cs" />

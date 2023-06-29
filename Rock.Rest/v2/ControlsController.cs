@@ -853,6 +853,51 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Block Template Picker
+
+        /// <summary>
+        /// Gets the templates that can be displayed in the block template picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="BlockTemplatePickerGetBlockTemplatesResultsBag"/> objects that represent the binary file types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BlockTemplatePickerGetBlockTemplates" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "f52a9356-9f05-42f4-a568-a2fc4baef2de" )]
+        public IHttpActionResult BlockTemplatePickerGetBlockTemplates( [FromBody] BlockTemplatePickerGetBlockTemplatesOptionsBag options )
+        {
+            if (!options.TemplateBlockValueGuid.HasValue )
+            {
+                return BadRequest("Provide a Template Block Guid");
+            }
+
+            var items = new List<BlockTemplatePickerGetBlockTemplatesResultsBag>();
+            var blockTemplateDefinedValue = DefinedValueCache.Get( options.TemplateBlockValueGuid.Value );
+
+            if ( blockTemplateDefinedValue != null )
+            {
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.TEMPLATE );
+                definedType.DefinedValues.LoadAttributes();
+
+                foreach ( var item in definedType.DefinedValues )
+                {
+                    if ( item.GetAttributeValue( "TemplateBlock" ).AsGuid() == blockTemplateDefinedValue.Guid )
+                    {
+
+                        var imageUrl = string.Format( "~/GetImage.ashx?guid={0}", item.GetAttributeValue( "Icon" ).AsGuid() );
+
+                        items.Add( new BlockTemplatePickerGetBlockTemplatesResultsBag { Guid = item.Guid, Name = item.Value, IconUrl = RockRequestContext.ResolveRockUrl( imageUrl ), Template = item.Description } );
+                    }
+                }
+
+                return Ok(items);
+            }
+
+            return BadRequest("Provided GUID does not match a Template Block");
+        }
+
+        #endregion
+
         #region Campus Picker
 
         /// <summary>
