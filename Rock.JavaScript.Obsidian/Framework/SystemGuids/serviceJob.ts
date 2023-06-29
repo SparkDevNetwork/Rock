@@ -77,6 +77,10 @@ export const ServiceJob = {
     DataMigrations151DuplicateMobileInteractionsCleanup: "D3D60B90-48D1-4718-905E-39638B44C665",
     /** The Job to run Post v16.0 Move Person Preferences. */
     DataMigrations160MovePersonPreferences: "C8591D15-9D37-49D3-8DF8-1DB72EE42D29",
+    /** The Job to run v16.0 - Add New Indices To Interaction and InteractionSession. */
+    DataMigrations160PopulateInteractionSessionData: "4C734B0E-8024-4600-99F9-B6CFEE9F8250",
+    /** The Job to run v16.0 - Add New Indices To Interaction and InteractionSession. */
+    DataMigrations160UpdateInteractionSessionAndInteractionIndices: "30A8FE3D-8C2B-413E-9B94-F4B9212904B1",
     /** The Job to run Post v16.0 Update InteractionSession InteractionChannelId. */
     DataMigrations160UpdateInteractionSessionInteractionChannelId: "3BC5124D-0ED1-4D90-A9ED-D858FA4B5051",
     /** The Job to run Post v16.0 Update InteractionSession SessionStartDateKey. */
