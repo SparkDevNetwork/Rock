@@ -556,7 +556,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         spFirstNamePronunciation.InnerText = tbFirstName.Value;
                         spFirstNamePronunciation.Attributes["onclick"] = "";
                         spFirstNamePronunciation.AddCssClass( "text-muted" );
-                        spFirstNamePronunciation.AddCssClass( "mr-3" );
                         spNamePronunciationIcon.AddCssClass( "text-info" );
                         firstNamePronunciationAudioUrl = "";
                         personHasFirstNamePronunciationOverride = true;
@@ -573,7 +572,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         {
                             spNickNamePronunciation.InnerText = Person.NickNamePronunciationOverride.IsNotNullOrWhiteSpace() ? Person.NickNamePronunciationOverride : Person.NickName;
                             spNickNamePronunciation.AddCssClass( "text-muted" );
-                            spNickNamePronunciation.AddCssClass( "mr-3" );
                         }
 
                         // Check if the last name does not already have pronunciation data. Add some data for the last name if no data exists.
@@ -581,7 +579,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         {
                             spLastNamePronunciation.InnerText = Person.LastNamePronunciationOverride.IsNotNullOrWhiteSpace() ? Person.LastNamePronunciationOverride : Person.LastName;
                             spLastNamePronunciation.AddCssClass( "text-muted" );
-                            spLastNamePronunciation.AddCssClass( "mr-3" );
                         }
                     }
 
@@ -610,7 +607,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         {
                             spFirstNamePronunciation.InnerText = Person.FirstNamePronunciationOverride.IsNotNullOrWhiteSpace() ? Person.FirstNamePronunciationOverride : Person.FirstName;
                             spFirstNamePronunciation.AddCssClass( "text-muted" );
-                            spFirstNamePronunciation.AddCssClass( "mr-3" );
                         }
 
                         // Check if the last name does not already have pronunciation data. Add some data for the last name if no data exists.
@@ -618,7 +614,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         {
                             spLastNamePronunciation.InnerText = Person.LastNamePronunciationOverride.IsNotNullOrWhiteSpace() ? Person.LastNamePronunciationOverride : Person.LastName;
                             spLastNamePronunciation.AddCssClass( "text-muted" );
-                            spLastNamePronunciation.AddCssClass( "mr-3" );
                         }
                     }
 
@@ -647,7 +642,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         {
                             spFirstNamePronunciation.InnerText = Person.FirstNamePronunciationOverride.IsNotNullOrWhiteSpace() ? Person.FirstNamePronunciationOverride : Person.FirstName;
                             spFirstNamePronunciation.AddCssClass( "text-muted" );
-                            spFirstNamePronunciation.AddCssClass( "mr-3" );
                         }
 
                         // Check if the nick name does not already have pronunciation data. Add some data for the Nick name if no data exists.
@@ -655,7 +649,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         {
                             spNickNamePronunciation.InnerText = Person.NickNamePronunciationOverride.IsNotNullOrWhiteSpace() ? Person.NickNamePronunciationOverride : Person.NickName;
                             spNickNamePronunciation.AddCssClass( "text-muted" );
-                            spNickNamePronunciation.AddCssClass( "mr-3" );
                         }
 
                         // Find all family related to the current person.
@@ -679,8 +672,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         person.PronunciationNote = tbPronunciationNote.Value;
                         lPronunciationNote.Text = "<small>" + tbPronunciationNote.Value + "</small>";
                         lPronunciationNote.AddCssClass( "text-muted" );
-                        lPronunciationNote.AddCssClass( "ml-3" );
-                        lPronunciationNote.AddCssClass( "mr-3" );
                         spNamePronunciationIcon.AddCssClass( "text-info" );
 
                         // Check if the note should be shown.
@@ -826,7 +817,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     spFirstNamePronunciation.InnerText = Person.FirstNamePronunciationOverride;
                     spFirstNamePronunciation.AddCssClass( "text-muted" );
-                    spFirstNamePronunciation.AddCssClass( "mr-3" );
                     tbFirstName.Value = Person.FirstNamePronunciationOverride;
                     spNamePronunciationIcon.AddCssClass( "text-info" );
                     personHasFirstNamePronunciationOverride = true;
@@ -837,7 +827,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     spNickNamePronunciation.InnerText = Person.NickNamePronunciationOverride;
                     spNickNamePronunciation.AddCssClass( "text-muted" );
-                    spNickNamePronunciation.AddCssClass( "mr-3" );
                     tbNickName.Value = Person.NickNamePronunciationOverride;
                     spNamePronunciationIcon.AddCssClass( "text-info" );
                     personHasNickNamePronunciationOverride = true;
@@ -857,8 +846,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 if ( Person.PronunciationNote.IsNotNullOrWhiteSpace() )
                 {
                     lPronunciationNote.Text = "<small>" + Person.PronunciationNote + "</small>";
-                    lPronunciationNote.AddCssClass( "ml-3" );
-                    lPronunciationNote.AddCssClass( "mr-3" );
                     lPronunciationNote.AddCssClass( "text-muted" );
                     tbPronunciationNote.Value = Person.PronunciationNote;
                     spNamePronunciationIcon.AddCssClass( "text-info" );
@@ -973,7 +960,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             }
                             
                             spFirstNamePronunciation.InnerText = namePronunciationResponse.Pronunciation;
-                            spFirstNamePronunciation.AddCssClass( "mr-3" );
                             personHasFirstNamePronunciation = true;
                             tbFirstName.Value = namePronunciationResponse.Pronunciation;
                         }
@@ -996,7 +982,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             }
 
                             spNickNamePronunciation.InnerText = namePronunciationResponse.Pronunciation;
-                            spNickNamePronunciation.AddCssClass( "mr-3" );
                             personHasNickNamePronunciation = true;
                             tbNickName.Value = namePronunciationResponse.Pronunciation;
                         }
@@ -1049,7 +1034,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     if ( thereIsOneNamePronunciation && !personHasFirstNamePronunciation && !personHasFirstNamePronunciationOverride )
                     {
                         spFirstNamePronunciation.InnerText = Person.FirstName;
-                        spFirstNamePronunciation.AddCssClass( "mr-3" );
                         spFirstNamePronunciation.AddCssClass( "text-muted" );
                         tbFirstName.Value = Person.FirstName;
                     }
@@ -1058,7 +1042,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     if ( thereIsOneNamePronunciation && !personHasNickNamePronunciation && !personHasNickNamePronunciationOverride )
                     {
                         spNickNamePronunciation.InnerText = Person.NickName;
-                        spNickNamePronunciation.AddCssClass( "mr-3" );
                         spNickNamePronunciation.AddCssClass( "text-muted" );
                         tbNickName.Value = Person.NickName;
                     }
