@@ -140,6 +140,14 @@
     <Compile Include="Migrations\202306261626455_UpdateContentChannelItemSlugLength.designer.cs">
       <DependentUpon>202306261626455_UpdateContentChannelItemSlugLength.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202306291812377_Rollup_20230629.cs" />
+    <Compile Include="Migrations\202306291812377_Rollup_20230629.designer.cs">
+      <DependentUpon>202306291812377_Rollup_20230629.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306291842040_CodeGenerated_20230629.cs" />
+    <Compile Include="Migrations\202306291842040_CodeGenerated_20230629.designer.cs">
+      <DependentUpon>202306291842040_CodeGenerated_20230629.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1750,6 +1758,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202306261626455_UpdateContentChannelItemSlugLength.resx">
       <DependentUpon>202306261626455_UpdateContentChannelItemSlugLength.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306291812377_Rollup_20230629.resx">
+      <DependentUpon>202306291812377_Rollup_20230629.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306291842040_CodeGenerated_20230629.resx">
+      <DependentUpon>202306291842040_CodeGenerated_20230629.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
