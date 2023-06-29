@@ -467,13 +467,31 @@ namespace Rock.WebStartup
             // double check if there are migrations to run
             if ( pendingMigrations.Any() )
             {
-                var lastMigration = pendingMigrations.Last();
-
                 // create a logger, and enable the migration output to go to a file
                 var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = true, LogWarning = false };
-
                 var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
+                RockInstanceDatabaseConfiguration databaseConfig = RockInstanceConfig.Database;
+                migrationLogger.LogSystemInfo( "Rock Version", $"{VersionInfo.VersionInfo.GetRockProductVersionFullName()} ({VersionInfo.VersionInfo.GetRockProductVersionNumber()})" );
+                if ( databaseConfig.Version.IsNullOrWhiteSpace() )
+                {
+                    /*
+                     SK - 06/29/2023
+                     If we are not able to retrive database version, we assume we are running migration on fresh database.
+                     SetConnectionString is used on purpose in order to set _versionInfoRetrieved = false, so that Platform And Version Info can be retrived after the database is created.
+                    */
+                    var firstMigration = pendingMigrations.First();
+                    var connString = databaseConfig.ConnectionString;
+                    migratorLoggingDecorator.Update( firstMigration );
+                    databaseConfig.SetConnectionString( connString );
+                    databaseConfig = RockInstanceConfig.Database;
+                }
 
+                if ( databaseConfig.Version.IsNotNullOrWhiteSpace() )
+                {
+                    LogMigrationSystemInfo( migrationLogger, databaseConfig );
+                }
+
+                var lastMigration = pendingMigrations.Last();
                 // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
                 migratorLoggingDecorator.Update( lastMigration );
                 migrationLogger.LogCompletedMigration();
@@ -481,6 +499,24 @@ namespace Rock.WebStartup
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Logs all the system related info to Migration Log
+        /// </summary>
+        private static void LogMigrationSystemInfo( Migrations.RockMigrationsLogger migrationLogger, RockInstanceDatabaseConfiguration databaseConfig )
+        {
+            migrationLogger.LogSystemInfo( "Database Version", databaseConfig.Version );
+            migrationLogger.LogSystemInfo( "Database Compatibility Version", databaseConfig.VersionFriendlyName );
+            if ( databaseConfig.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql )
+            {
+                migrationLogger.LogSystemInfo( "Azure Service Tier Objective", databaseConfig.ServiceObjective );
+            }
+
+            migrationLogger.LogSystemInfo( "Allow Snapshot Isolation", databaseConfig.SnapshotIsolationAllowed.ToYesNo() );
+            migrationLogger.LogSystemInfo( "Is Read Committed Snapshot On", databaseConfig.ReadCommittedSnapshotEnabled.ToYesNo() );
+            migrationLogger.LogSystemInfo( "Processor Count", Environment.ProcessorCount.ToStringSafe() );
+            migrationLogger.LogSystemInfo( "Working Memory", Environment.WorkingSet.FormatAsMemorySize() ); // 1024*1024*1024
         }
 
         /// <summary>
