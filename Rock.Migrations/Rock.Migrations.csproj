@@ -148,6 +148,10 @@
     <Compile Include="Migrations\202306291842040_CodeGenerated_20230629.designer.cs">
       <DependentUpon>202306291842040_CodeGenerated_20230629.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.cs" />
+    <Compile Include="Migrations\202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.designer.cs">
+      <DependentUpon>202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1764,6 +1768,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202306291842040_CodeGenerated_20230629.resx">
       <DependentUpon>202306291842040_CodeGenerated_20230629.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.resx">
+      <DependentUpon>202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>

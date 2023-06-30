@@ -969,6 +969,7 @@
     <Compile Include="Jobs\PostV16UpdateInteractionAndInteractionSessionIndices.cs" />
     <Compile Include="Jobs\PostV16UpdateInteractionSessionChannelId.cs" />
     <Compile Include="Jobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
+	<Compile Include="Jobs\PostV16UpdatePersonPrimaryAliasId.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV141AddMissingIndexes.cs" />

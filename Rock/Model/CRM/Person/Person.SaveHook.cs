@@ -365,6 +365,13 @@ namespace Rock.Model
                     PersonService.UpdateGivingId( this.Entity.Id, RockContext );
                 }
 
+                // If the person was just added then the _primaryAliasId will be null ergo the value will be null
+                // in the database so update.
+                if ( !this.Entity._primaryAliasId.HasValue )
+                {
+                    PersonService.UpdatePrimaryAlias( this.Entity.Id, this.Entity.PrimaryAliasId.Value, RockContext );
+                }
+
                 // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
                 PersonService.UpdatePersonAgeClassification( this.Entity.Id, RockContext );
                 PersonService.UpdatePrimaryFamily( this.Entity.Id, RockContext );

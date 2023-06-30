@@ -596,6 +596,7 @@ namespace Rock.Jobs
             }
 
             resultCount += AddMissingAlternateIds();
+            resultCount += AddMissingPrimaryAliasIds();
 
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
@@ -774,6 +775,39 @@ namespace Rock.Jobs
             }
 
             return loginCount;
+        }
+
+        /// <summary>
+        /// Adds the missing primary alias ids; limited to 300 records as done when adding missing PersonAliases,
+        /// reason behind this is odds are if the PersonAlias creation was skipped for a record for some reason then
+        /// those same records will have a missing PrimaryAliasId so essentially we are updating the PrimaryAliasId
+        /// column for the Person records whose Aliases were recently added.
+        /// </summary>
+        private int AddMissingPrimaryAliasIds()
+        {
+            int resultCount = 0;
+
+            using ( var personRockContext = CreateRockContext() )
+            {
+                var personService = new PersonService( personRockContext );
+                var personSearchOptions = PersonService.PersonQueryOptions.AllRecords();
+                personSearchOptions.IncludeAnonymousVisitor = false;
+
+                var people = personService.Queryable( personSearchOptions )
+                    .Include( p => p.Aliases )
+                    .Where( p => p.PrimaryAliasId == null )
+                    .Take( 300 );
+
+                foreach ( var person in people )
+                {
+                    person.PrimaryAliasId = person.PrimaryAlias?.Id;
+                    resultCount++;
+                }
+
+                personRockContext.SaveChanges();
+            }
+
+            return resultCount;
         }
 
         /// <summary>
