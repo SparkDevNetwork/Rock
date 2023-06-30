@@ -352,6 +352,7 @@
 
     async function getServiceMetrics(): Promise<void> {
         try {
+            isSavedMessage.value = null;
             isGettingServiceMetrics.value = true;
             errorMessage.value = "";
 
