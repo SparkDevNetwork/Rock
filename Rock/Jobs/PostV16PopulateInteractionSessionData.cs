@@ -54,15 +54,14 @@ namespace Rock.Jobs
 
             jobMigration.Sql( $@"
 DECLARE @batchId INT
+DECLARE @lastBatchId INT
 DECLARE @batchSize INT
-DECLARE @results INT
 
-SET @results = 1
 SET @batchSize = 5000
 SET @batchId = 0
+SET @lastBatchId = (SELECT MAX([Id]) FROM [InteractionSession])
 
--- when 0 rows returned, exit the loop
-WHILE (@results > 0)
+WHILE (@batchId <= @lastBatchId)
 	BEGIN
         UPDATE [IS] SET
         	[DurationSeconds] = [IQ].[DurationInSeconds]
@@ -82,8 +81,6 @@ WHILE (@results > 0)
         WHERE ([IS].[Id] > @batchId AND [IS].Id <= @batchId + @batchSize)
         AND [IS].[DurationLastCalculatedDateTime] IS NULL 
 
-		SET @results = @@ROWCOUNT
-	
 		-- next batch
 		SET @batchId = @batchId + @batchSize
 	END
