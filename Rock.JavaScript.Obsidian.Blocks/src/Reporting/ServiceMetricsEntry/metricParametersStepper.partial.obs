@@ -22,7 +22,7 @@
     enum StepType {
         Begin = "Begin",
         Location = "Location",
-        WeekOf = "Week Of",
+        WeekOf = "Week of",
         ServiceTime = "Service Time",
         End = "End",
     }
