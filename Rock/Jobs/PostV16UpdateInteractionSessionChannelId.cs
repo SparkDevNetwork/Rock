@@ -47,33 +47,30 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
 
-            jobMigration.Sql(@"
+            jobMigration.Sql( @"
 DECLARE @batchId INT
+DECLARE @lastBatchId INT
 DECLARE @batchSize INT
-DECLARE @results INT
 
-SET @results = 1
 SET @batchSize = 5000
 SET @batchId = 0
+SET @lastBatchId = (SELECT MAX([Id]) FROM [InteractionSession])
 
--- when 0 rows returned, exit the loop
-WHILE (@results > 0)
+WHILE (@batchId <= @lastBatchId)
 	BEGIN
 		UPDATE [IS]
 		SET InteractionChannelId = (SELECT TOP 1 IC.InteractionChannelId
                                     FROM InteractionComponent IC
                                     JOIN Interaction I ON IC.Id = I.InteractionComponentId
                                     WHERE I.InteractionSessionId = [IS].Id
-                                    ORDER BY I.InteractionComponentId ASC)
+                                    ORDER BY I.Id ASC)
 		FROM [InteractionSession] AS [IS]
         WHERE ([IS].[Id] > @batchId AND [IS].Id <= @batchId + @batchSize)
 
-		SET @results = @@ROWCOUNT
-	
 		-- next batch
 		SET @batchId = @batchId + @batchSize
 	END
-");
+" );
 
             DeleteJob();
         }
