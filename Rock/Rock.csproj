@@ -836,6 +836,7 @@
     <Compile Include="Cms\StructuredContent\StructuredContentBlockRenderer.cs" />
     <Compile Include="CheckIn\CheckinResult.cs" />
     <Compile Include="CheckIn\PersonAchievementType.cs" />
+    <Compile Include="Communication\CommunicationServicesHost.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\DailyChallengeEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupRegistration.cs" />
