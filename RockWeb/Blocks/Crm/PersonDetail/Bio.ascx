@@ -53,7 +53,7 @@
                     <asp:LinkButton ID="lbFollowing" runat="server" CssClass="btn btn-default btn-xs btn-follow" OnClick="lbFollowing_Click"></asp:LinkButton>
                 </div>
                 <%-- Buttons --%>
-                <div class="profile-actions" style="justify-content:left; padding-right:10px; padding-left:10px">
+                <div class="profile-actions">
                     <div id="divSmsButton" runat="server" class="action-container">
                         <asp:Literal ID="lSmsButton" runat="server" />
                     </div>
@@ -130,7 +130,7 @@
         <Rock:ModalDialog ID="dlgNamePronunciation" runat="server" Title="Pronunciation Override" OnSaveClick="dlgSavePronunciation_Click" ValidationGroup="PageAttributes" Visible="false">
             <Content>
                 <div class="block-content">
-                    <span>You can override the pronunciation for this individual below. If you have any feedback regarding the system's pronunciation, please don't hesitate to </span>
+                    <span id="formText" runat="server">You can override the pronunciation for this individual below. If you have any feedback regarding the system's pronunciation, please don't hesitate to </span>
                     <a id="formLink" runat="server" href="https://community.rockrms.com">share it with us.</a>
                 </div>
                 <div class="margin-t-md">

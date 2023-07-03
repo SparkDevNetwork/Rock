@@ -870,9 +870,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 var personHasFirstName = Person.FirstName == null ? false : true;
                 var personHasNickName = Person.NickName == null ? false : true;
                 var personHasLastName = Person.LastName == null ? false : true;
+                var firstNameEqualsNickName = false;
 
-//http://localhost:49999);
-//https://api.rockrms.com/ );
+                // Check if the first name of the person equals the nick name.
+                if ( Person.FirstName.Equals( Person.NickName )
+                    && !personHasFirstNamePronunciationOverride
+                    && !personHasNickNamePronunciationOverride)
+                {
+                    firstNameEqualsNickName = true;
+                }
+
+//http://localhost:49999
+//https://api.rockrms.com/
                 // Create an API Client and request to call the requests for pronunciation.
                 // For testing purposes change the RockApiUrl within the web.config file. Permission from Nick recieved.
                 var baseUrl = ConfigurationManager.AppSettings["RockApiUrl"].EnsureTrailingForwardslash();
@@ -892,7 +901,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     namePronunciationRequestList.Add( tempNamePronunciation );
                 }
 
-                if ( personHasNickName && !personHasNickNamePronunciationOverride )
+                if ( personHasNickName && !personHasNickNamePronunciationOverride && !firstNameEqualsNickName)
                 {
                     NamePronunciationRequest tempNamePronunciation = new NamePronunciationRequest
                     {
@@ -926,6 +935,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // Call the name Pronunciation API and get a response that contains a list of Name Pronunciations.
                 var namePronunciationResponseList = namePronunciationClient.Execute<List<NamePronunciationResponse>>( namePronunciationrequest );
 
+                // If the response code did not go through hide the pronunciation button and early out.
+                if ( namePronunciationResponseList.StatusCode != System.Net.HttpStatusCode.OK )
+                {
+                    spNamePronunciationIcon.Visible = false;
+                    return;
+                }
+
+                // Build the pronunciation Div with all the pronunciation data.
                 if ( namePronunciationResponseList.StatusCode == System.Net.HttpStatusCode.OK )
                 {
                     // Create some variables.
@@ -967,7 +984,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         // Check if the returned object contains the nick name and if so then assign a link to the link button.
                         if ( namePronunciationResponse.Name.Equals( Person.NickName )
                             && namePronunciationResponse.NameType == 0
-                            && !personHasNickNamePronunciationOverride )
+                            && !personHasNickNamePronunciationOverride
+                            && !firstNameEqualsNickName)
                         {
                             nickNamePronunciationAudioUrl = namePronunciationResponse.AudioUrl;
 
@@ -1039,7 +1057,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
 
                     // Check if Person.NickName needs to be shown instead of pronunciation data.
-                    if ( thereIsOneNamePronunciation && !personHasNickNamePronunciation && !personHasNickNamePronunciationOverride )
+                    if ( thereIsOneNamePronunciation && !personHasNickNamePronunciation && !personHasNickNamePronunciationOverride && !firstNameEqualsNickName )
                     {
                         spNickNamePronunciation.InnerText = Person.NickName;
                         spNickNamePronunciation.AddCssClass( "text-muted" );
@@ -1067,15 +1085,19 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     // Add the pencil button.
                     lbEditNamePronunciation.Text = "<i class='fa fa-pencil fa-xs' runat='server'></i>";
 
+                    // Check if the rock instance id is registered.
+                    if ( StoreService.GetOrganizationKey().AsGuid() == new Guid("00000000-0000-0000-0000-000000000000") )
+                    {
+                        formLink.HRef = null;
+                        formLink.InnerText = "";
+                        formText.InnerText = "You can override the pronunciation for this individual below. Please register your rock instance before providing feedback on the name pronunciation.";
+                        return;
+                    }
+
                     // Change the Modal controls for the name pronunciation override Modal.
                     formLink.HRef = "https://community.rockrms.com/namepronunciation?FirstName=" + Person.FirstName + "&NickName=" + Person.NickName + "&LastName=" + Person.LastName + "&OrganizationId=" + StoreService.GetOrganizationKey().AsGuid();
                 }
 
-                // If the response code did not go through hide the pronunciation button.
-                if ( namePronunciationResponseList.StatusCode != System.Net.HttpStatusCode.OK )
-                {
-                    spNamePronunciationIcon.Visible = false;
-                }
             }
         }
 
