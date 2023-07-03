@@ -69,6 +69,12 @@ export default defineComponent({
             type: Boolean as PropType<boolean>,
             default: true
         },
+
+        /**
+         * The total number of columns in this container.
+         *
+         * An attribute will be added in each column.
+         */
         numberOfColumns: {
             type: Number as PropType<number>,
             default: 1
@@ -76,6 +82,18 @@ export default defineComponent({
         entityTypeName: {
             type: String as PropType<string>,
             default: ""
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The breakpoint to use for each column.
+         */
+        columnBreakpoint: {
+            type: String as PropType<"xs" | "sm" | "md" | "lg">,
+            default: "md"
         }
     },
 
@@ -165,7 +183,7 @@ export default defineComponent({
                 numColumns = 12;
             }
 
-            return `col-md-${12 / numColumns}`;
+            return `col-${props.columnBreakpoint}-${12 / numColumns}`;
         });
 
         const onUpdateValue = (key: string, value: string): void => {
