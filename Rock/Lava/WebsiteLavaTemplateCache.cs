@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using Rock.Web.Cache;
 
 namespace Rock.Lava
@@ -31,5 +33,27 @@ namespace Rock.Lava
         public ILavaTemplate Template { get; set; }
 
         #endregion
+
+        /// <summary>
+        /// Gets an item from cache, and if not found, executes the itemFactory to create item and add to cache.
+        /// The CACHE_CONTROL_COOKIE will be inspected to see if cached value should be ignored.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="itemFactory">The item factory.</param>
+        /// <param name="keyFactory">The key factory to create a list of keys for the type. This will only be used if a list does not already exist.</param>
+        /// <returns></returns>
+        internal protected static new WebsiteLavaTemplateCache GetOrAddExisting( string key, Func<WebsiteLavaTemplateCache> itemFactory, Func<List<string>> keyFactory = null )
+        {
+            if ( System.Web.HttpContext.Current != null )
+            {
+                var isCachedEnabled = System.Web.HttpContext.Current.Request.Cookies.Get( RockCache.CACHE_CONTROL_COOKIE );
+                if ( isCachedEnabled != null && !isCachedEnabled.Value.AsBoolean() )
+                {
+                    return null;
+                }
+            }
+
+            return ItemCache<WebsiteLavaTemplateCache>.GetOrAddExisting( key, itemFactory, keyFactory );
+        }
     }
 }
