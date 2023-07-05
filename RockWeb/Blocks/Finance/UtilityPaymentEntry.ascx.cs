@@ -731,12 +731,6 @@ mission. We are so grateful for your commitment.</p>
 
         #region Properties
 
-        protected int CaptchaFailCount
-        {
-            get { return ViewState[ViewStateKey.CaptchaFailCount] as int? ?? 0; }
-            set { ViewState[ViewStateKey.CaptchaFailCount] = value; }
-        }
-
         /// <summary>
         /// Gets or sets the group location identifier.
         /// </summary>
@@ -911,15 +905,10 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            CaptchaFailCount++;
-
-            if ( CaptchaFailCount > 2 )
-            {
-                nbPaymentTokenError.Visible= true;
-                nbPaymentTokenError.Text = "Failed to verify.";
-                cpCaptcha.Visible = false;
-                btnHostedPaymentInfoNext.Visible = false;
-            }
+            nbPaymentTokenError.Visible= true;
+            nbPaymentTokenError.Text = "Failed to verify.";
+            cpCaptcha.Visible = false;
+            btnHostedPaymentInfoNext.Visible = false;
         }
 
         private void InitializeFinancialGatewayControls()
