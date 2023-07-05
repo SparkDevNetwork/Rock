@@ -702,6 +702,7 @@ mission. We are so grateful for your commitment.</p>
             public const string HostPaymentInfoSubmitScript = "HostPaymentInfoSubmitScript";
             public const string AvailableAccountsJSON = "AvailableAccountsJSON";
             public const string SelectedAccountsJSON = "SelectedAccountsJSON";
+            public const string CaptchaFailCount = "CaptchaFailCount";
         }
 
         #endregion Block Keys
@@ -724,9 +725,17 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private FinancialScheduledTransaction _scheduledTransactionToBeTransferred = null;
 
+        
+
         #endregion
 
         #region Properties
+
+        protected int CaptchaFailCount
+        {
+            get { return ViewState[ViewStateKey.CaptchaFailCount] as int? ?? 0; }
+            set { ViewState[ViewStateKey.CaptchaFailCount] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the group location identifier.
@@ -899,31 +908,47 @@ mission. We are so grateful for your commitment.</p>
                 _hostedPaymentInfoControl.Visible = true;
                 hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 cpCaptcha.Visible = false;
+                return;
+            }
 
+            CaptchaFailCount++;
+
+            if ( CaptchaFailCount > 2 )
+            {
+                nbPaymentTokenError.Visible= true;
+                nbPaymentTokenError.Text = "Failed to verify.";
+                cpCaptcha.Visible = false;
+                btnHostedPaymentInfoNext.Visible = false;
             }
         }
 
         private void InitializeFinancialGatewayControls()
         {
-            bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
-            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
-            if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
+            if ( this.FinancialGatewayComponent == null || this.FinancialGateway == null )
             {
-                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
-                _hostedPaymentInfoControl.Visible = false;
-                phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
+                return;
+            }
 
-                nbPaymentTokenError.Text = "Loading Payment Gateway";
-                nbPaymentTokenError.Visible = true;
+            var hostedPaymentInfoControlOptions = new HostedPaymentInfoControlOptions
+            {
+                EnableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean(),
+                EnableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean()
+            };
 
-                if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable )
-                {
-                    hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
-                    _hostedPaymentInfoControl.Visible = true;
+            _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", hostedPaymentInfoControlOptions );
+            _hostedPaymentInfoControl.Visible = false;
+            phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
 
-                    nbPaymentTokenError.Visible= false;
-                    nbPaymentTokenError.Text = string.Empty;
-                }
+            nbPaymentTokenError.Text = "Loading Payment Gateway";
+            nbPaymentTokenError.Visible = true;
+
+            if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable )
+            {
+                hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+                _hostedPaymentInfoControl.Visible = true;
+
+                nbPaymentTokenError.Visible= false;
+                nbPaymentTokenError.Text = string.Empty;
             }
 
             if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
