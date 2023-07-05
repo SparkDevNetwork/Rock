@@ -1,0 +1,42 @@
+[
+    {% group where:'GroupTypeId == 155' iterator:'groups' securityenabled:'false' %}
+        {% for parentGroup in groups %}{
+            {% assign members = parentGroup.Members | OrderBy:'GroupRole.Name,LastName' %}
+            "Id": {{ parentGroup.Id | ToJSON }},
+            "IsPublic": {{ parentGroup.IsPublic | ToJSON }},
+            "ParentGroupId": {{ parentGroup.ParentGroupId | ToJSON }},
+            "Name": {{ parentGroup.Name | ToJSON }},
+            "ChildGroups": [
+                {% group where:'ParentGroupId == {{ parentGroup.Id }}' iterator:'childGroups' securityenabled:'false' %}
+                    {% for group in childGroups %}{
+                        "Id": {{ group.Id | ToJSON }},
+                        "IsPublic": {{ group.IsPublic | ToJSON }},
+                        "ParentGroupId": {{ group.ParentGroupId | ToJSON }},
+                        "Name": {{ group.Name | ToJSON }}
+                    }{% unless forloop.last %},{% endunless %}{% endfor %}
+                {% endgroup %}
+            ],
+            "Members": [
+                {% assign members = members | OrderBy:'Role,LastName,NickName' %}
+                {% for member in members %}{
+                    {% assign person = member.PersonId | PersonById %}
+                    "Id": {{ member.Id | ToJSON }},
+                    "PersonId": {{ member.PersonId | ToJSON }},
+                    "LastName": {{ person.LastName | ToJSON }},
+                    "NickName": {{ person.NickName | ToJSON }},
+                    "Role": {{ member.GroupRole.Name | ToJSON }},
+                    "Email": {{ person | Attribute:'StaffEmail' | ToJSON }},
+                    "Title": {{ person | Attribute:'StaffTitle' | ToJSON }},
+                    "Campus": {{ person | Attribute:'StaffCampus' | ToJSON }},
+                    "HireDate": {{ person | Attribute:'StaffHireDate' | ToJSON }},
+                    "EndDate": {{ person | Attribute:'StaffEndDate' | ToJSON }},
+                    "SupervisorId": {{ person | Attribute:'StaffSupervisor','Id' | ToJSON }},
+                    "BackgroundCheckDate": {{ person | Attribute:'BackgroundCheckDate' | ToJSON }},
+                    "HasCreditCard": {{ person | Attribute:'HasCreditCard' | ToJSON }},
+                    "HasConfidentialityAgreement": {{ person | Attribute:'ConfidentialityAgreement' | ToJSON }},
+                    "ShowOnWebsite": "{% if member.GroupRole.Name != 'Campus Pastor' and member.GroupRole.Name != 'Director' and member.GroupRole.Name != 'Staff' %}No{% else %}{{ member | Attribute:'ShowOnWebsite' }}{% endif %}"
+                }{% unless forloop.last %},{% endunless %}{% endfor %}
+            ]
+        }{% unless forloop.last %},{% endunless %}{% endfor %}
+    {% endgroup %}
+    ]

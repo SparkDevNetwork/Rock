@@ -6,11 +6,19 @@
     </div>
 </div>
 
-{% assign personAliasId = CurrentPerson.PrimaryAliasId -%}
-{% if personAliasId == null -%}{% assign personAliasId = 0 -%}{% endif -%}
-{% if contentchannelitemid == null || contentchannelitemid == '' -%}{% assign contentchannelitemid = 0 -%}{% endif -%}
-{% if entitytypeid == null || entitytypeid == ' -%}{% assign entitytypeid = 0 -%}{% endif -%}
-{% if entityid == null || entityid == ' -%}{% assign entityid = 0 -%}{% endif -%}
+{% assign personAliasId = CurrentPerson.PrimaryAliasId %}
+{% if personAliasId == null %}
+    {% assign personAliasId = 0 %}
+{% endif %}
+{% if contentchannelitemid == null or contentchannelitemid == '' %}
+    {% assign contentchannelitemid = 0 %}
+{% endif %}
+{% if entitytypeid == null or entitytypeid == '' %}
+    {% assign entitytypeid = 0 %}
+{% endif %}
+{% if entityid == null or entityid == '' %}
+    {% assign entityid = 0 %}
+{% endif %}
 
 {% assign currenthost = 'Global' | Page:'Url' | Url:'Host' %}
 {% if currenthost != 'newspring.cc' and currenthost != 'newspringnetwork.com' and currenthost != 'rock.newspring.cc' %}

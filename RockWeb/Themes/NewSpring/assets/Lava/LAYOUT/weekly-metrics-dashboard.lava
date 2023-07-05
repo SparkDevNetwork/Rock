@@ -11,29 +11,38 @@
 {% assign currentUrl = 'Global' | Page:'Url' | Split:'?' | First %}
 {% assign currentCampus = 'Global' | PageParameter:'campus' | Replace:'-',' ' | Capitalize %}
 
+{% assign now = 'Now' %}
+
+/- I think this is always overwritten by the dotw process so it's not doing anything...?
 {% assign staticDate = 'Global' | PageParameter:'date' %}
-{% assign now = 'Now' | Date:'yyyy-MM-dd' | AsDateTime %}
 
 {% if staticDate and staticDate != '' %}
   {% assign now = staticDate | AsDateTime %}
 {% endif %}
+-/
 
 {% assign dotw = now | Date:'dddd' %}
 
+//- SundayDate is storing as a string so we need to do that later (after all DateAdd operations)
 {% if dotw == 'Sunday' %}
-  {% assign now = now | SundayDate  %}
+  {% assign now = 'Now' %}
 {% else %}
-  {% assign now = now | SundayDate | DateAdd:-7 %}
+  {% assign now = 'Now' | DateAdd:-7,'d' %}
 {% endif %}
 
 <!-- GET DATA -->
 {% capture dates %}[
     {% for i in (0..11) %}{
         {% assign dateAddCount = -7 | Times:i %}
-        "Date": "{{ now | DateAdd:dateAddCount | Date:'yyyy-MM-dd' | AsString }}"
+//- We cannot currently | Date:'' format a SundayDate string, so split on the slashes and reformat ourselves.
+        {% assign formattedDateArray = now | DateAdd:dateAddCount | SundayDate | Split:'/' %}
+        {% assign dateMonth = formattedDateArray[0] | Format:'00' %}
+        {% assign dateDay = formattedDateArray[1] | Format:'00' %}
+        {% assign unformattedDateString = formattedDateArray[2] | Append:'-' | Append:dateMonth | Append:'-' | Append:dateDay %}
+        "Date": "{{ unformattedDateString }}"
     }{% unless forloop.last %},{% endunless %}{% endfor %}
 ]{% endcapture %}
-{% assign dates = dates | FromJSON | Sort:'Date' %}
+{% assign dates = dates | FromJSON | OrderBy:'Date' %}
 
 {% sql return:'adultAttendanceValues' timeout:'180' %}
     SELECT
@@ -46,9 +55,9 @@
     ON mvp.MetricValueId = mv.Id
     JOIN MetricValuePartition mvp2
     ON mvp2.MetricValueId = mv.Id
-    WHERE mv.MetricId = 2235
-    AND mvp.MetricPartitionId = 1524
-    AND mvp2.MetricPartitionId = 1525
+    WHERE mv.MetricId = 4125
+    AND mvp.MetricPartitionId = 3636
+    AND mvp2.MetricPartitionId = 3637
     AND DATEPART(DW, mv.MetricValueDateTime) = 1 -- limit results to sundays
     ORDER BY CONVERT(varchar, mv.MetricValueDateTime, 23) DESC
 {% endsql %}
@@ -58,7 +67,7 @@
     DECLARE @KidSpringIds table (Id int);
     DECLARE @VolunteerIds table (Id int);
 
-    SET @Now = CONVERT(DATETIME, '{{ now | Date:'yyyy-MM-dd' }}', 102);
+    SET @Now = CONVERT(DATETIME, '{{ now | SundayDate | Date:'yyyy-MM-dd' }}', 102);
     INSERT @KidSpringIds(Id) values(81),(85),(87),(90);
     INSERT @VolunteerIds(Id) values(75),(76),(97),(102),(113),(134),(139),(143);
 
@@ -100,7 +109,7 @@
     AND ao.ScheduleId IS NOT NULL
     AND ao.OccurrenceDate > DATEADD(WEEK, -12, @Now)
     AND ao.OccurrenceDate <= @Now
-    AND ao.ScheduleId IN (5330,12,13) -- limit results to 9:15 & 11:15
+    AND ao.ScheduleId IN (12,13) -- limit results to 9:15 & 11:15
     ORDER BY CONVERT(varchar, ao.OccurrenceDate, 23) DESC, g.CampusId ASC, ao.ScheduleId ASC
 {% endsql %}
 
@@ -144,16 +153,6 @@
     "Date": "{{ date.Date }}",
     "Schedules": [
         {
-            "Id": "5330",
-            "Campuses": [
-            {% for campus in campuses %}{
-                "Name": {{ campus.Name | ToJSON }},
-                "AdultAttendance": {{ adultAttendanceValues | Where:'Date',date.Date | Where:'ScheduleId',5330 | Where:'CampusId',campus.Id | First | Property:'AdultAttendance' | AsInteger | ToJSON }},
-                "VolunteerAttendance": {{ values | Where:'Date',date.Date | Where:'ScheduleId',5330 | Where:'CampusId',campus.Id | First | Property:'VolunteerAttendance' | ToJSON }},
-                "KidSpringAttendance": {{ values | Where:'Date',date.Date | Where:'ScheduleId',5330 | Where:'CampusId',campus.Id | First | Property:'KidSpringAttendance' | ToJSON }}
-            }{% unless forloop.last %},{% endunless %}{% endfor %}
-            ]
-        },{
             "Id": "12",
             "Campuses": [
             {% for campus in campuses %}{
@@ -179,28 +178,24 @@
 {%- endcapture -%}
 
 {% assign valuesObject = valuesString | FromJSON %}
-{% assign currentWeekString = now | Date:'yyyy-MM-dd' | AsString %}
-{% assign previousWeekString = now | DateAdd:-7 | Date:'yyyy-MM-dd' | AsString %}
 
-{% assign currentWeek0800 = valuesObject | Where:'Date',currentWeekString | First | Property:'Schedules' | Where:'Id','5330' | First | Property:'Campuses' %}
+//- We cannot currently | Date:'' format a SundayDate string, so split on the slashes and reformat ourselves.
+
+{% assign currentWeekArray = now | SundayDate | Split:'/' %}
+{% assign currentWeekDay = currentWeekArray[1] | Format:'00' %}
+{% assign currentWeekMonth = currentWeekArray[0] | Format:'00' %}
+{% assign currentWeekString = currentWeekArray[2] | Append:'-' | Append:currentWeekMonth | Append:'-' | Append:currentWeekDay %}
+
+{% assign previousWeekArray = now | DateAdd:-7 | SundayDate | Split:'/' %}
+{% assign previousWeekDay = previousWeekArray[1] | Format:'00' %}
+{% assign previousWeekMonth = previousWeekArray[0] | Format:'00' %}
+{% assign previousWeekString = previousWeekArray[2] | Append:'-' | Append:previousWeekMonth | Append:'-' | Append:previousWeekDay %}
+
 {% assign currentWeek0915 = valuesObject | Where:'Date',currentWeekString | First | Property:'Schedules' | Where:'Id','12' | First | Property:'Campuses' %}
 {% assign currentWeek1115 = valuesObject | Where:'Date',currentWeekString | First | Property:'Schedules' | Where:'Id','13' | First | Property:'Campuses' %}
 
-{% assign previousWeek0800 = valuesObject | Where:'Date',previousWeekString | First | Property:'Schedules' | Where:'Id','5330' | First | Property:'Campuses' %}
 {% assign previousWeek0915 = valuesObject | Where:'Date',previousWeekString | First | Property:'Schedules' | Where:'Id','12' | First | Property:'Campuses' %}
 {% assign previousWeek1115 = valuesObject | Where:'Date',previousWeekString | First | Property:'Schedules' | Where:'Id','13' | First | Property:'Campuses' %}
-
-<!-- Set Current Week 800 Values -->
-{% assign current800Adults = 0 %}
-{% assign current800Kids = 0 %}
-{% assign current800Vols = 0 %}
-{% for campus in currentWeek0800 %}
-    {% if currentCampus == empty or currentCampus != empty and currentCampus == campus.Name %}
-        {% assign current800Adults = current800Adults | Plus:campus.AdultAttendance %}
-        {% assign current800Kids = current800Kids | Plus:campus.KidSpringAttendance %}
-        {% assign current800Vols = current800Vols | Plus:campus.VolunteerAttendance %}
-    {% endif %}
-{% endfor %}
 
 <!-- Set Current Week 915 Values -->
 {% assign current915Adults = 0 %}
@@ -223,18 +218,6 @@
         {% assign current1115Adults = current1115Adults | Plus:campus.AdultAttendance %}
         {% assign current1115Kids = current1115Kids | Plus:campus.KidSpringAttendance %}
         {% assign current1115Vols = current1115Vols | Plus:campus.VolunteerAttendance %}
-    {% endif %}
-{% endfor %}
-
-<!-- Set Previous Week 800 Values -->
-{% assign previous800Adults = 0 %}
-{% assign previous800Kids = 0 %}
-{% assign previous800Vols = 0 %}
-{% for campus in previousWeek0800 %}
-    {% if currentCampus == empty or currentCampus != empty and currentCampus == campus.Name %}
-        {% assign previous800Adults = previous800Adults | Plus:campus.AdultAttendance %}
-        {% assign previous800Kids = previous800Kids | Plus:campus.KidSpringAttendance %}
-        {% assign previous800Vols = previous800Vols | Plus:campus.VolunteerAttendance %}
     {% endif %}
 {% endfor %}
 
@@ -263,80 +246,63 @@
 {% endfor %}
 
 <!-- Set Total Attendance Values -->
-{% assign current800Total = current800Adults | Plus:current800Kids %}
-{% assign previous800Total = previous800Adults | Plus:previous800Kids %}
-
 {% assign current915Total = current915Adults | Plus:current915Kids %}
 {% assign previous915Total = previous915Adults | Plus:previous915Kids %}
 
 {% assign current1115Total = current1115Adults | Plus:current1115Kids %}
 {% assign previous1115Total = previous1115Adults | Plus:previous1115Kids %}
 
-{% assign currentTotalKids = current800Kids | Plus:current915Kids | Plus:current1115Kids %}
-{% assign currentTotalAdults = current800Adults | Plus:current915Adults | Plus:current1115Adults %}
+{% assign currentTotalKids = current915Kids | Plus:current1115Kids %}
+{% assign currentTotalAdults = current915Adults | Plus:current1115Adults %}
 
-{% assign previousTotalKids = previous800Kids | Plus:previous915Kids | Plus:previous1115Kids %}
-{% assign previousTotalAdults = previous800Adults | Plus:previous915Adults | Plus:previous1115Adults %}
-{% assign previousTotalVols = previous800Vols | Plus:previous915Vols | Plus:previous1115Vols %}
-{% assign previousTotal = previous800Total | Plus:previous915Total | Plus:previous1115Total %}
+{% assign previousTotalKids = previous915Kids | Plus:previous1115Kids %}
+{% assign previousTotalAdults = previous915Adults | Plus:previous1115Adults %}
+{% assign previousTotalVols = previous915Vols | Plus:previous1115Vols %}
+{% assign previousTotal = previous915Total | Plus:previous1115Total %}
+
+{% assign dailyTotal = current915Total | Plus:current1115Total %}
+{% assign dailyTotalChange = TotalChange915 | Plus:TotalChange1115 %}
 
 <!-- Set Change Values -->
-{% assign 800AdultsChange = current800Adults | Minus:previous800Adults %}
-{% assign 800VolsChange = current800Vols | Minus:previous800Vols %}
-{% assign 800TotalChange = current800Total | Minus:previous800Total %}
+{% assign AdultsChange915 = current915Adults | Minus:previous915Adults %}
+{% assign VolsChange915 = current915Vols | Minus:previous915Vols %}
+{% assign TotalChange915 = current915Total | Minus:previous915Total %}
 
-{% assign 915AdultsChange = current915Adults | Minus:previous915Adults %}
-{% assign 915VolsChange = current915Vols | Minus:previous915Vols %}
-{% assign 915TotalChange = current915Total | Minus:previous915Total %}
-
-{% assign 1115AdultsChange = current1115Adults | Minus:previous1115Adults %}
-{% assign 1115VolsChange = current1115Vols | Minus:previous1115Vols %}
-{% assign 1115TotalChange = current1115Total | Minus:previous1115Total %}
+{% assign AdultsChange1115 = current1115Adults | Minus:previous1115Adults %}
+{% assign VolsChange1115 = current1115Vols | Minus:previous1115Vols %}
+{% assign TotalChange1115 = current1115Total | Minus:previous1115Total %}
 
 <!-- Set KidSpring Percentage Values -->
-{% if current800Adults > 0 %}
-    {% assign 800KidsPercentage = current800Kids | DividedBy:current800Adults,4 | Times:100 | Format:'###.##' %}
-{% endif %}
 {% if current915Adults > 0 %}
-    {% assign 915KidsPercentage = current915Kids | DividedBy:current915Adults,4 | Times:100 | Format:'###.##' %}
+    {% assign kidsPercentage915 = current915Kids | DividedBy:current915Total,4 | Times:100 | Format:'###.##' %}
 {% endif %}
 {% if current1115Adults > 0 %}
-    {% assign 1115KidsPercentage = current1115Kids | DividedBy:current1115Adults,4 | Times:100 | Format:'###.##' %}
+    {% assign kidsPercentage1115 = current1115Kids | DividedBy:current1115Total,4 | Times:100 | Format:'###.##' %}
 {% endif %}
 
 {% assign dailyKidsPercentage =  %}
 
 <!-- LAYOUT -->
-<div class="push-bottom"><span class="h1 stronger">{{ now | Date:'MMMM d, yyyy' }} - {% if currentCampus and currentCampus != empty %}{{ currentCampus }}{% else %}All Campuses{% endif %}</span><span class="pull-right">{{ campusPicker }}</span></div>
+<div class="push-bottom"><span class="h1 stronger">{{ now | SundayDate | Date:'MMMM d, yyyy' }} - {% if currentCampus and currentCampus != empty %}{{ currentCampus }}{% else %}All Campuses{% endif %}</span><span class="pull-right">{{ campusPicker }}</span></div>
 
 <div class="row">
     <div class="col-md-3 col-sm-6 col-xs-12">
         {[ rockCard title:'Total Attendance' iconclass:'' ]}
 
-            {% if currentCampus == 'Eastlan' or currentCampus == empty %}
-                <div class="metric">
-                    <h6 class="push-quarter-bottom">8:00 Gathering</h6>
-                    <h1>{{ current800Total | Format:'###,###,###' | WithFallback:'', '0' }}
-                    <span class="badge {% if 800TotalChange < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous800Total | Format:'###,###,###' }}">{% if 800TotalChange > 0 %}+{% endif %}{{ 800TotalChange | Format:'###,###,###' }}</span></h1>
-                </div>
-            {% endif %}
-
             <div class="metric">
                 <h6 class="push-quarter-bottom">9:15 Gathering</h6>
                 <h1>{{ current915Total | Format:'###,###,###' | WithFallback:'', '0' }}
-                <span class="badge {% if 915TotalChange < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous915Total | Format:'###,###,###' }}">{% if 915TotalChange > 0 %}+{% endif %}{{ 915TotalChange | Format:'###,###,###' }}</span></h1>
+                <span class="badge {% if TotalChange915 < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous915Total | Format:'###,###,###' }}">{% if TotalChange915 > 0 %}+{% endif %}{{ TotalChange915 | Format:'###,###,###' }}</span></h1>
             </div>
 
             <div class="metric">
                 <h6 class="push-quarter-bottom">11:15 Gathering</h6>
                 <h1>{{ current1115Total | Format:'###,###,###' | WithFallback:'', '0' }}
-                <span class="badge {% if 1115TotalChange < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous1115Total | Format:'###,###,###' }}">{% if 1115TotalChange > 0 %}+{% endif %}{{ 1115TotalChange | Format:'###,###,###' }}</span></h1>
+                <span class="badge {% if TotalChange1115 < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous1115Total | Format:'###,###,###' }}">{% if TotalChange1115 > 0 %}+{% endif %}{{ TotalChange1115 | Format:'###,###,###' }}</span></h1>
             </div>
 
             <hr>
 
-            {% assign dailyTotal = current800Total | Plus:current915Total | Plus:current1115Total %}
-            {% assign dailyTotalChange = 800TotalChange | Plus:915TotalChange | Plus:1115TotalChange %}
             <div class="metric">
                 <h6 class="push-quarter-bottom">Daily Total</h6>
                 <h1>{{ dailyTotal | Format:'###,###,###' | WithFallback:'', '0' }}
@@ -347,29 +313,21 @@
     </div><div class="col-md-3 col-sm-6 col-xs-12">
         {[ rockCard title:'Adult Attendance' iconclass:'' ]}
 
-            {% if currentCampus == 'Eastlan' or currentCampus == empty %}
-                <div class="metric">
-                    <h6 class="push-quarter-bottom">8:00 Gathering</h6>
-                    <h1>{{ current800Adults | Format:'###,###,###' | WithFallback:'', '0' }}
-                    <span class="badge {% if 800AdultsChange < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous800Adults | Format:'###,###,###' }}">{% if 800AdultsChange > 0 %}+{% endif %}{{ 800AdultsChange | Format:'###,###,###' }}</span></h1>
-                </div>
-            {% endif %}
-
             <div class="metric">
                 <h6 class="push-quarter-bottom">9:15 Gathering</h6>
                 <h1>{{ current915Adults | Format:'###,###,###' | WithFallback:'', '0' }}
-                <span class="badge {% if 915AdultsChange < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous915Adults | Format:'###,###,###' }}">{% if 915AdultsChange > 0 %}+{% endif %}{{ 915AdultsChange | Format:'###,###,###' }}</span></h1>
+                <span class="badge {% if AdultsChange915 < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous915Adults | Format:'###,###,###' }}">{% if AdultsChange915 > 0 %}+{% endif %}{{ AdultsChange915 | Format:'###,###,###' }}</span></h1>
             </div>
             <div class="metric">
                 <h6 class="push-quarter-bottom">11:15 Gathering</h6>
                 <h1>{{ current1115Adults | Format:'###,###,###' | WithFallback:'', '0' }}
-                <span class="badge {% if 1115AdultsChange < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous1115Adults | Format:'###,###,###' }}">{% if 1115AdultsChange > 0 %}+{% endif %}{{ 1115AdultsChange | Format:'###,###,###' }}</span></h1>
+                <span class="badge {% if AdultsChange1115 < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous1115Adults | Format:'###,###,###' }}">{% if AdultsChange1115 > 0 %}+{% endif %}{{ AdultsChange1115 | Format:'###,###,###' }}</span></h1>
             </div>
 
             <hr>
 
-            {% assign dailyTotalAdults = current800Adults | Plus:current915Adults | Plus:current1115Adults %}
-            {% assign dailyTotalChangeAdults = 800AdultsChange | Plus:915AdultsChange | Plus:1115AdultsChange %}
+            {% assign dailyTotalAdults = current915Adults | Plus:current1115Adults %}
+            {% assign dailyTotalChangeAdults = AdultsChange915 | Plus:AdultsChange1115 %}
             <div class="metric">
                 <h6 class="push-quarter-bottom">Daily Total</h6>
                 <h1>{{ dailyTotalAdults | Format:'###,###,###' | WithFallback:'', '0' }}
@@ -380,22 +338,11 @@
     </div><div class="col-md-3 col-sm-6 col-xs-12">
         {[ rockCard title:'KidSpring Attendance' iconclass:'' ]}
 
-            {% if currentCampus == 'Eastlan' or currentCampus == empty %}
-                <div class="metric">
-                    <h6 class="push-quarter-bottom">8:00 Gathering</h6>
-                    <h1>{{ current800Kids | Format:'###,###,###' | WithFallback:'', '0' }}
-                    {% if 800KidsPercentage %}
-                        <span class="badge">{{ 800KidsPercentage }}%</span>
-                    {% endif %}
-                    </h1>
-                </div>
-            {% endif %}
-
             <div class="metric">
                 <h6 class="push-quarter-bottom">9:15 Gathering</h6>
                 <h1>{{ current915Kids | Format:'###,###,###' | WithFallback:'', '0' }}
-                {% if 915KidsPercentage %}
-                    <span class="badge">{{ 915KidsPercentage }}%</span>
+                {% if kidsPercentage915 %}
+                    <span class="badge">{{ kidsPercentage915 }}%</span>
                 {% endif %}
                 </h1>
             </div>
@@ -403,17 +350,17 @@
             <div class="metric">
                 <h6 class="push-quarter-bottom">11:15 Gathering</h6>
                 <h1>{{ current1115Kids | Format:'###,###,###' | WithFallback:'', '0' }}
-                {% if 1115KidsPercentage %}
-                    <span class="badge">{{ 1115KidsPercentage }}%</span>
+                {% if kidsPercentage1115 %}
+                    <span class="badge">{{ kidsPercentage1115 }}%</span>
                 {% endif %}
                 </h1>
             </div>
 
             <hr>
 
-            {% assign dailyTotalKids = current800Kids | Plus:current915Kids | Plus:current1115Kids %}
-            {% assign dailyTotalAdults = current800Adults | Plus:current915Adults | Plus:current1115Adults %}
-            {% assign dailyTotalChangeKids = dailyTotalKids | DividedBy:dailyTotalAdults,4 | Times:100 | Format:'###.##' %}
+            {% assign dailyTotalKids = current915Kids | Plus:current1115Kids %}
+            {% assign dailyTotalAdults = current915Adults | Plus:current1115Adults %}
+            {% assign dailyTotalChangeKids = dailyTotalKids | DividedBy:dailyTotal,4 | Times:100 | Format:'###.##' %}
             <div class="metric">
                 <h6 class="push-quarter-bottom">Daily Total</h6>
                 <h1>{{ dailyTotalKids | Format:'###,###,###' | WithFallback:'', '0' }}
@@ -426,30 +373,22 @@
     </div><div class="col-md-3 col-sm-6 col-xs-12">
         {[ rockCard title:'Volunteer Attendance' iconclass:'' ]}
 
-            {% if currentCampus == 'Eastlan' or currentCampus == empty %}
-                <div class="metric">
-                    <h6 class="push-quarter-bottom">8:00 Gathering</h6>
-                    <h1>{{ current800Vols | Format:'###,###,###' | WithFallback:'', '0' }}
-                    <span class="badge {% if 800VolsChange < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous800Vols | Format:'###,###,###' }}">{% if 800VolsChange > 0 %}+{% endif %}{{ 800VolsChange | Format:'###,###,###' }}</span></h1>
-                </div>
-            {% endif %}
-
             <div class="metric">
                 <h6 class="push-quarter-bottom">9:15 Gathering</h6>
                 <h1>{{ current915Vols | Format:'###,###,###' | WithFallback:'', '0' }}
-                <span class="badge {% if 915VolsChange < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous915Vols | Format:'###,###,###' }}">{% if 915VolsChange > 0 %}+{% endif %}{{ 915VolsChange | Format:'###,###,###' }}</span></h1>
+                <span class="badge {% if VolsChange915 < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous915Vols | Format:'###,###,###' }}">{% if VolsChange915 > 0 %}+{% endif %}{{ VolsChange915 | Format:'###,###,###' }}</span></h1>
             </div>
 
             <div class="metric">
                 <h6 class="push-quarter-bottom">11:15 Gathering</h6>
                 <h1>{{ current1115Vols | Format:'###,###,###' | WithFallback:'', '0' }}
-                <span class="badge {% if 1115VolsChange < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous1115Vols | Format:'###,###,###' }}">{% if 1115VolsChange > 0 %}+{% endif %}{{ 1115VolsChange | Format:'###,###,###' }}</span></h1>
+                <span class="badge {% if VolsChange1115 < 0 %}bg-danger{% else %}bg-success{% endif %}" title="{{ previousWeekString | Date:'MMM d, yyyy' }} - {{ previous1115Vols | Format:'###,###,###' }}">{% if VolsChange1115 > 0 %}+{% endif %}{{ VolsChange1115 | Format:'###,###,###' }}</span></h1>
             </div>
 
             <hr>
 
-            {% assign dailyTotalVols = current800Vols | Plus:current915Vols | Plus:current1115Vols %}
-            {% assign dailyTotalChangeVols = 800VolsChange | Plus:915VolsChange | Plus:1115VolsChange %}
+            {% assign dailyTotalVols = current915Vols | Plus:current1115Vols %}
+            {% assign dailyTotalChangeVols = VolsChange915 | Plus:VolsChange1115 %}
             <div class="metric">
                 <h6 class="push-quarter-bottom">Daily Total</h6>
                 <h1>{{ dailyTotalVols | Format:'###,###,###' | WithFallback:'', '0' }}
@@ -520,91 +459,64 @@ var myChart = new Chart(ctx, {
         labels: [
             {% for date in dates %}'{{ date.Date | Date:"MMM d, yyyy" }}'{% unless forloop.last %},{% endunless %}{% endfor %}
         ],
-        datasets: [{% if currentCampus == 'Eastlan' or currentCampus == empty %}{
-            label: '8:00 Gathering',
-            lineTension: .4,
-            borderWidth: 3,
-            fill: false,
-            data: [
-            {% for date in valuesObject reversed -%}
-                {%- assign totalAttendance = 0 -%}
-                {%- assign schedule = date.Schedules | Where:'Id','5330' | First -%}
-                {%- for campus in schedule.Campuses -%}
-                    {%- if currentCampus == empty or currentCampus != empty and currentCampus == campus.Name -%}
-                        {%- assign totalAttendance = totalAttendance | Plus:campus.AdultAttendance | Plus:campus.KidSpringAttendance -%}
-                    {%- endif -%}
-                {%- endfor -%}
-                {{ totalAttendance }}{% unless forloop.last %},{% endunless %}
-            {%- endfor %}
-            ],
-            borderColor: [
-                '#c64f55'
-            ],
-            pointHitRadius: 3,
-            pointRadius: 7,
-            pointHoverRadius: 12,
-            pointBorderWidth: 4,
-            pointHoverBorderWidth: 4,
-            pointBackgroundColor: '#c64f55',
-            pointBorderColor: '#fff',
-            pointHoverBorderColor: '#fff'
-        },{% endif %}{
-            label: '9:15 Gathering',
-            lineTension: .4,
-            borderWidth: 3,
-            fill: false,
-            data: [
-            {% for date in valuesObject reversed -%}
-                {%- assign totalAttendance = 0 -%}
-                {%- assign schedule = date.Schedules | Where:'Id','12' | First -%}
-                {%- for campus in schedule.Campuses -%}
-                    {%- if currentCampus == empty or currentCampus != empty and currentCampus == campus.Name -%}
-                        {%- assign totalAttendance = totalAttendance | Plus:campus.AdultAttendance | Plus:campus.KidSpringAttendance -%}
-                    {%- endif -%}
-                {%- endfor -%}
-                {{ totalAttendance }}{% unless forloop.last %},{% endunless %}
-            {%- endfor %}
-            ],
-            borderColor: [
-                '#79BE34'
-            ],
-            pointHitRadius: 3,
-            pointRadius: 7,
-            pointHoverRadius: 12,
-            pointBorderWidth: 4,
-            pointHoverBorderWidth: 4,
-            pointBackgroundColor: '#79BE34',
-            pointBorderColor: '#fff',
-            pointHoverBorderColor: '#fff'
-        },{
-            label: '11:15 Gathering',
-            lineTension: .4,
-            borderWidth: 3,
-            fill: false,
-            data: [
-            {% for date in valuesObject reversed -%}
-                {%- assign totalAttendance = 0 -%}
-                {%- assign schedule = date.Schedules | Where:'Id','13' | First -%}
-                {%- for campus in schedule.Campuses -%}
-                    {%- if currentCampus == empty or currentCampus != empty and currentCampus == campus.Name -%}
-                        {%- assign totalAttendance = totalAttendance | Plus:campus.AdultAttendance | Plus:campus.KidSpringAttendance -%}
-                    {%- endif -%}
-                {%- endfor -%}
-                {{ totalAttendance }}{% unless forloop.last %},{% endunless %}
-            {%- endfor %}
-            ],
-            borderColor: [
-                '#009ce3'
-            ],
-            pointHitRadius: 3,
-            pointRadius: 7,
-            pointHoverRadius: 12,
-            pointBorderWidth: 4,
-            pointHoverBorderWidth: 4,
-            pointBackgroundColor: '#009ce3',
-            pointBorderColor: '#fff',
-            pointHoverBorderColor: '#fff'
-        }]
+        datasets: [{
+                label: '9:15 Gathering',
+                lineTension: .4,
+                borderWidth: 3,
+                fill: false,
+                data: [
+                {% for date in valuesObject reversed -%}
+                    {%- assign totalAttendance = 0 -%}
+                    {%- assign schedule = date.Schedules | Where:'Id','12' | First -%}
+                    {%- for campus in schedule.Campuses -%}
+                        {%- if currentCampus == empty or currentCampus != empty and currentCampus == campus.Name -%}
+                            {%- assign totalAttendance = totalAttendance | Plus:campus.AdultAttendance | Plus:campus.KidSpringAttendance -%}
+                        {%- endif -%}
+                    {%- endfor -%}
+                    {{ totalAttendance }}{% unless forloop.last %},{% endunless %}
+                {%- endfor %}
+                ],
+                borderColor: [
+                    '#79BE34'
+                ],
+                pointHitRadius: 3,
+                pointRadius: 7,
+                pointHoverRadius: 12,
+                pointBorderWidth: 4,
+                pointHoverBorderWidth: 4,
+                pointBackgroundColor: '#79BE34',
+                pointBorderColor: '#fff',
+                pointHoverBorderColor: '#fff'
+            },{
+                label: '11:15 Gathering',
+                lineTension: .4,
+                borderWidth: 3,
+                fill: false,
+                data: [
+                {% for date in valuesObject reversed -%}
+                    {%- assign totalAttendance = 0 -%}
+                    {%- assign schedule = date.Schedules | Where:'Id','13' | First -%}
+                    {%- for campus in schedule.Campuses -%}
+                        {%- if currentCampus == empty or currentCampus != empty and currentCampus == campus.Name -%}
+                            {%- assign totalAttendance = totalAttendance | Plus:campus.AdultAttendance | Plus:campus.KidSpringAttendance -%}
+                        {%- endif -%}
+                    {%- endfor -%}
+                    {{ totalAttendance }}{% unless forloop.last %},{% endunless %}
+                {%- endfor %}
+                ],
+                borderColor: [
+                    '#009ce3'
+                ],
+                pointHitRadius: 3,
+                pointRadius: 7,
+                pointHoverRadius: 12,
+                pointBorderWidth: 4,
+                pointHoverBorderWidth: 4,
+                pointBackgroundColor: '#009ce3',
+                pointBorderColor: '#fff',
+                pointHoverBorderColor: '#fff'
+            }
+        ]
     },
     options: {
         layout: {
