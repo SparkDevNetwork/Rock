@@ -877,7 +877,7 @@ mission. We are so grateful for your commitment.</p>
 
             RegisterScript();
 
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
             cpCaptcha.Visible = !disableCaptchaSupport;
             cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
 
@@ -893,8 +893,13 @@ mission. We are so grateful for your commitment.</p>
         {
             if ( e.IsValid )
             {
+                nbPaymentTokenError.Visible= false;
+                nbPaymentTokenError.Text = string.Empty;
+
+                _hostedPaymentInfoControl.Visible = true;
                 hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 cpCaptcha.Visible = false;
+
             }
         }
 
@@ -905,11 +910,19 @@ mission. We are so grateful for your commitment.</p>
             if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
             {
                 _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
+                _hostedPaymentInfoControl.Visible = false;
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
 
-                if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean()  || !cpCaptcha.IsAvailable)
+                nbPaymentTokenError.Text = "Loading Payment Gateway";
+                nbPaymentTokenError.Visible = true;
+
+                if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable )
                 {
                     hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+                    _hostedPaymentInfoControl.Visible = true;
+
+                    nbPaymentTokenError.Visible= false;
+                    nbPaymentTokenError.Text = string.Empty;
                 }
             }
 
