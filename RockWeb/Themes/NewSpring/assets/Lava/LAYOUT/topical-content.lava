@@ -1,0 +1,84 @@
+{% assign siteName = 'Global' | Page:'SiteName' %}
+{% assign slug = 'Global' | PageParameter:'Tag' %}
+{% assign pageNumber = 'Global' | PageParameter:'Page' %}
+{% assign tag = 'tags' | PersistedDataset | Where:'Slug', slug | First %}
+
+{{ tag.Name | Append:' | Topics | ' | Append:siteName | SetPageTitle:'BrowserTitle' }}
+{{ tag.Name | SetPageTitle:'PageTitle' }}
+
+{% comment %}
+    FEATURED CONTENT SWIPER
+{% endcomment %}
+
+{% capture featuredItemsString %}[
+{% for item in tag.FeaturedItems %}
+    {% assign taggedItem = item.Dataset | PersistedDataset | Where:'Id', item.Id | First %}
+    {% if taggedItem and taggedItem != empty %}{{ taggedItem | ToJSON }}{% unless forloop.last %},{% endunless %}{% endif %}
+{% endfor %}
+]{% endcapture %}
+{% assign FeaturedItems = featuredItemsString | FromJSON %}
+
+{% if pageNumber == empty %}
+    {% assign rowsCount = FeaturedItems | Size %}
+    {% if rowsCount > 0 %}
+        {[ section title:'Featured Content' fullwidth:'true' backgroundcolor:'#1c1c1c' ]}
+            {[ swiper id:'' title:'Featured Content' subtitle:'' ]}
+                {% for item in FeaturedItems %}
+                    [[ item data:'' ]]
+                        {% assign dataset = item.Dataset %}
+                        {% assign id = item.Id %}
+                        {% assign cciid = item.Id %}
+                	    {% assign guid = item.Guid %}
+                	    {% assign type = item.ChannelName | Split:' - ' | Index:1 | Singularize %}
+                	    {% assign title = item.Title | Replace:"'","’" %}
+                        {% assign titlesize = "h4" %}
+                        {% capture subtitle %}
+                            {% if type == "News" %}
+                                {[ formatDate date:'{{ item.PublishDateTime }}' ]}
+                            {% endif %}
+                        {% endcapture %}
+
+                	    {% assign imageurl = item.ImageLandscape %}
+            			{% assign summary = item.Summary %}
+                	    {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:140,'...' }}{% else %}{{ item.Content | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:140,'...' }}{% endif %}</p>{% endcapture %}
+                	    {% assign linkurl = item.Permalink %}
+                	    {% capture linktext %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endcapture %}
+
+                        {% assign parentChannelId = item.ParentChannelId | AsInteger %}
+                        {% assign parent = item.Parents | Where:'ChannelId', parentChannelId | First %}
+                        {% if parent and parent != empty %}
+                            {% assign parentItem = parent.Dataset | PersistedDataset | Where:'Id', parent.Id | First %}
+                        {% endif %}
+
+                	    {% if parentItem and parentItem != empty %}
+                    	   {% assign collectiontext = parentItem.Title %}
+                    	   {% assign collectionurl = parentItem.Permalink %}
+                    	   {% assign imageurl = parentItem.ImageLandscape %}
+                    	{% else %}
+                    	    {% assign collectiontext = '' %}
+                    	    {% assign collectionurl = '' %}
+                	    {% endif %}
+
+                        {[ card guid:'{{ guid }}' dataset:'{{ dataset }}' cciid:'{{ cciid }}' id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+                    [[ enditem ]]
+                {% endfor %}
+            {[ endswiper ]}
+        {[ endsection ]}
+    {% endif %}
+{% endif %}
+
+
+
+{% comment %}
+    CARD LIST
+{% endcomment %}
+
+{% capture itemsString %}[
+{% for item in tag.TaggedItems %}
+    {% assign taggedItem = item.Dataset | PersistedDataset | Where:'Id', item.Id | First %}
+    {% if taggedItem and taggedItem != empty %}{{ taggedItem | ToJSON }}{% unless forloop.last %},{% endunless %}{% endif %}
+{% endfor %}
+]{% endcapture %}
+{% assign Items = itemsString | FromJSON %}
+
+{[ cardList itemcount:'{{ Items | Size }}' pagesize:'12' ]}

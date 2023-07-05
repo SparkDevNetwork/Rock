@@ -6,7 +6,8 @@
 {% assign campusId = campusEntity.Id | AsInteger %}
 {% assign fallbackImage = 'Global' | Attribute:'EventsImageSquare','Url' %}
 {% assign Items = 'events' | PersistedDataset | OrderBy:'StartDateTime' %}
-{% assign featuredItems = '' %}
+{% capture featuredItems %}[]{% endcapture %}
+{% assign featuredItems = featuredItems | FromJSON %}
 
 //- Filter events by campus
 {% for item in Items %}
