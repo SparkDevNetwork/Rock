@@ -18,8 +18,9 @@
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.SystemKey;
 using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
 using static Rock.Jobs.PopulateInteractionSessionData;
 
 namespace Rock.Jobs
@@ -36,11 +37,19 @@ namespace Rock.Jobs
     Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
     IsRequired = false,
     DefaultIntegerValue = 14400 )]
-    public class PostV16PopulateInteractionSessionData : RockJob
+
+    [IntegerField(
+    "Start At Id",
+    Key = AttributeKey.StartAtId,
+    Description = "The Id of the record to start or resume the execution of the job.",
+    IsRequired = false,
+    DefaultIntegerValue = 0 )]
+    public class PostV16PopulateInteractionSessionData : PostUpdateJobs.PostUpdateJob
     {
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
+            public const string StartAtId = "StartAtId";
         }
 
         /// <inheritdoc />
@@ -49,21 +58,16 @@ namespace Rock.Jobs
             // get the configured timeout, or default to 240 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
+            var lastId = new InteractionSessionService( new RockContext() )
+                .Queryable()
+                .AsNoTracking()
+                .Select( i => i.Id )
+                .Max();
+
             var jobSettings = new PopulateInteractionSessionDataJobSettings();
             var lastSuccessfulJobRunDateTime = jobSettings.LastSuccessfulJobRunDateTime ?? RockDateTime.Now;
 
-            jobMigration.Sql( $@"
-DECLARE @batchId INT
-DECLARE @lastBatchId INT
-DECLARE @batchSize INT
-
-SET @batchSize = 5000
-SET @batchId = 0
-SET @lastBatchId = (SELECT MAX([Id]) FROM [InteractionSession])
-
-WHILE (@batchId <= @lastBatchId)
-	BEGIN
-        UPDATE [IS] SET
+            string sqlFormat = $@"UPDATE [IS] SET
         	[DurationSeconds] = [IQ].[DurationInSeconds]
         	, [InteractionCount] = [IQ].[InteractionCount]
         	, [DurationLastCalculatedDateTime] = DATEADD(DAY, -1, GETDATE())
@@ -78,13 +82,10 @@ WHILE (@batchId <= @lastBatchId)
             AND CAST([InteractionDateTime] AS DATE) < CAST('{lastSuccessfulJobRunDateTime}' AS DATE)
         	GROUP BY [InteractionSessionId]
         ) AS [IQ] ON [IQ].[InteractionSessionId] = [IS].[Id]
-        WHERE ([IS].[Id] > @batchId AND [IS].Id <= @batchId + @batchSize)
-        AND [IS].[DurationLastCalculatedDateTime] IS NULL 
+        WHERE ([IS].[Id] > @StartId AND [IS].Id <= @StartId + @BatchSize)
+        AND [IS].[DurationLastCalculatedDateTime] IS NULL";
+            BulkUpdateRecords( sqlFormat, AttributeKey.StartAtId, lastId );
 
-		-- next batch
-		SET @batchId = @batchId + @batchSize
-	END
-" );
             DeleteJob();
         }
 

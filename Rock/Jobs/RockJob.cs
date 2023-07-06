@@ -60,7 +60,7 @@ namespace Rock.Jobs
         /// Gets the service job.
         /// </summary>
         /// <value>The service job.</value>
-        private Rock.Model.ServiceJob ServiceJob { get; set; }
+        protected Rock.Model.ServiceJob ServiceJob { get; set; }
 
         /// <summary>
         /// Gets the scheduler.
