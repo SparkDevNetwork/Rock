@@ -293,18 +293,20 @@ const attributeValuesContainerGallery = defineComponent({
                 key: "text",
                 name: "Text Attribute",
                 order: 2,
-                configurationValues: {}
+                configurationValues: {},
+                preHtml: "<div class='bg-primary p-3'>"
             },
             color: {
                 attributeGuid: newGuid(),
                 categories: [categories[0], categories[2]],
                 description: "Favorite color? Or just a good one?",
                 fieldTypeGuid: FieldType.Color,
-                isRequired: false,
+                isRequired: true,
                 key: "color",
                 name: "Random Color",
                 order: 4,
-                configurationValues: {}
+                configurationValues: {},
+                postHtml: "</div>"
             },
             bool: {
                 attributeGuid: newGuid(),
@@ -326,7 +328,8 @@ const attributeValuesContainerGallery = defineComponent({
                 key: "textAgain",
                 name: "Some Text",
                 order: 5,
-                configurationValues: {}
+                configurationValues: {},
+                preHtml: "<h5>PRE HTML!</h5>"
             },
             single: {
                 attributeGuid: newGuid(),
