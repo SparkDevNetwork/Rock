@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -30,8 +29,6 @@ using Rock.Field;
 using Rock.Model;
 using Rock.Lava;
 using Rock.Security;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
@@ -577,19 +574,6 @@ namespace Rock.Web.Cache
             }
 
             CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
-        }
-
-        /// <summary>
-        /// Converts to viewmodel.
-        /// </summary>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public AttributeBag ToViewModel( Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new AttributeCacheViewModelHelper();
-            var viewModel = helper.CreateViewModel( this, currentPerson, loadAttributes );
-            return viewModel;
         }
 
         /// <summary>
@@ -1162,78 +1146,5 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [show pre post HTML]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowPrePostHtml { get; set; }
-    }
-
-    /// <summary>
-    /// AttributeValueCache View Model Helper
-    /// </summary>
-    public partial class AttributeCacheViewModelHelper : ViewModelHelper<AttributeCache, AttributeBag>
-    {
-        /// <summary>
-        /// Converts to viewmodel.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override AttributeBag CreateViewModel( AttributeCache model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new AttributeBag
-            {
-                IdKey = model.Id != 0 ? Utility.IdHasher.Instance.GetHash( model.Id ) : string.Empty,
-                AbbreviatedName = model.AbbreviatedName,
-                AllowSearch = model.AllowSearch,
-                ConfigurationValues = model.ConfigurationValues,
-                DefaultValue = model.DefaultValue,
-                Description = model.Description,
-                EnableHistory = model.EnableHistory,
-                EntityTypeId = model.EntityTypeId,
-                EntityTypeQualifierColumn = model.EntityTypeQualifierColumn,
-                EntityTypeQualifierValue = model.EntityTypeQualifierValue,
-                FieldTypeId = model.FieldTypeId,
-                IconCssClass = model.IconCssClass,
-                AttributeColor = model.AttributeColor,
-                IsActive = model.IsActive,
-                IsAnalytic = model.IsAnalytic,
-                IsAnalyticHistory = model.IsAnalyticHistory,
-                IsGridColumn = model.IsGridColumn,
-                IsIndexEnabled = model.IsIndexEnabled,
-                IsMultiValue = model.IsMultiValue,
-                IsPublic = model.IsPublic,
-                IsRequired = model.IsRequired,
-                IsSystem = model.IsSystem,
-                Key = model.Key,
-                Name = model.Name,
-                Order = model.Order,
-                PostHtml = model.PostHtml,
-                PreHtml = model.PreHtml,
-                ShowOnBulk = model.ShowOnBulk
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
-        /// <summary>
-        /// Applies the additional properties and security to view model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="viewModel">The view model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeCache model, AttributeBag viewModel, Person currentPerson = null, bool loadAttributes = true )
-        {
-            viewModel.FieldTypeGuid = FieldTypeCache.Get( model.FieldTypeId ).Guid;
-            viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToList();
-            viewModel.QualifierValues = model.QualifierValues.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.Value );
-        }
     }
 }

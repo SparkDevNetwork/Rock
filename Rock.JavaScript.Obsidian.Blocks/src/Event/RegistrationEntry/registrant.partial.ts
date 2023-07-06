@@ -32,7 +32,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import FeeField from "./feeField.partial";
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
@@ -150,7 +150,7 @@ export default defineComponent({
                     slotName: f.guid
                 }));
         },
-        currentPerson(): PersonBag | null {
+        currentPerson(): CurrentPersonBag | null {
             return store.state.currentPerson;
         },
         pluralFeeTerm(): string {
@@ -183,11 +183,11 @@ export default defineComponent({
             }
 
             // Add the current person (registrant) if not already added
-            if (this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[this.currentPerson.primaryFamilyGuid]) {
-                usedFamilyGuids[this.currentPerson.primaryFamilyGuid] = true;
+            if (this.viewModel.currentPersonFamilyGuid && this.currentPerson?.fullName && !usedFamilyGuids[this.viewModel.currentPersonFamilyGuid]) {
+                usedFamilyGuids[this.viewModel.currentPersonFamilyGuid] = true;
                 options.push({
                     text: this.currentPerson.fullName,
-                    value: this.currentPerson.primaryFamilyGuid
+                    value: this.viewModel.currentPersonFamilyGuid
                 });
             }
 

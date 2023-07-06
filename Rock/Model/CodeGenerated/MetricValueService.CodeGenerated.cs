@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -60,48 +56,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// MetricValue View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( MetricValue ) )]
-    public partial class MetricValueViewModelHelper : ViewModelHelper<MetricValue, MetricValueBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override MetricValueBag CreateViewModel( MetricValue model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new MetricValueBag
-            {
-                IdKey = model.IdKey,
-                MetricId = model.MetricId,
-                MetricValueDateTime = model.MetricValueDateTime,
-                MetricValueType = ( int ) model.MetricValueType,
-                Note = model.Note,
-                XValue = model.XValue,
-                YValue = model.YValue,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -175,20 +129,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static MetricValueBag ToViewModel( this MetricValue model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new MetricValueViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

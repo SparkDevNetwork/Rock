@@ -969,7 +969,7 @@
     <Compile Include="Jobs\PostV16UpdateInteractionAndInteractionSessionIndices.cs" />
     <Compile Include="Jobs\PostV16UpdateInteractionSessionChannelId.cs" />
     <Compile Include="Jobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
-	<Compile Include="Jobs\PostV16UpdatePersonPrimaryAliasId.cs" />
+    <Compile Include="Jobs\PostV16UpdatePersonPrimaryAliasId.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV141AddMissingIndexes.cs" />
@@ -1322,10 +1322,8 @@
     <Compile Include="Model\Core\AttributeValueHistorical\AttributeValueHistorical.Logic.cs" />
     <Compile Include="Model\Core\AttributeValue\AttributeValue.Logic.cs" />
     <Compile Include="Model\Core\AttributeValue\AttributeValue.SaveHook.cs" />
-    <Compile Include="Model\Core\AttributeValue\AttributeValueViewModelHelper.cs" />
     <Compile Include="Model\Core\Attribute\Attribute.Logic.cs" />
     <Compile Include="Model\Core\Attribute\Attribute.SaveHook.cs" />
-    <Compile Include="Model\Core\Attribute\AttributeViewModelHelper.cs" />
     <Compile Include="Model\Core\Auth\Auth.SaveHook.cs" />
     <Compile Include="Model\Core\BinaryFileType\BinaryFileType.Logic.cs" />
     <Compile Include="Model\Core\BinaryFile\BinaryFile.Logic.cs" />
@@ -1412,7 +1410,6 @@
     <Compile Include="Model\CRM\Person\Person.WebForms.cs" />
     <Compile Include="Model\CRM\Person\PersonExtensionMethods.cs" />
     <Compile Include="Model\CRM\Person\PersonService.cs" />
-    <Compile Include="Model\CRM\Person\PersonViewModelHelper.cs" />
     <Compile Include="Model\CRM\PhoneNumber\PhoneNumber.Logic.cs" />
     <Compile Include="Model\CRM\PhoneNumber\PhoneNumber.SaveHook.cs" />
     <Compile Include="Model\CRM\PhoneNumber\PhoneNumberService.cs" />
@@ -2008,10 +2005,7 @@
     <Compile Include="Utility\TaskActivityProgress.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
-    <Compile Include="ViewModels\DefaultViewModelHelperAttribute.cs" />
-    <Compile Include="ViewModels\IViewModelHelper.cs" />
     <Compile Include="Utility\CodeGenExcludeAttribute.cs" />
-    <Compile Include="ViewModels\ViewModelHelper.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />

@@ -42,6 +42,7 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.Utility.Settings;
 using Rock.ViewModels;
+using Rock.ViewModels.Crm;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -1366,7 +1367,15 @@ Rock.settings.initialize({{
 
                             if ( CurrentPerson != null && CurrentPerson.Guid != new Guid( SystemGuid.Person.GIVER_ANONYMOUS ) )
                             {
-                                currentPersonJson = CurrentPerson.ToViewModel( CurrentPerson ).ToCamelCaseJson( false, false );
+                                currentPersonJson = new CurrentPersonBag
+                                {
+                                    IdKey = CurrentPerson.IdKey,
+                                    FirstName = CurrentPerson.FirstName,
+                                    NickName = CurrentPerson.NickName,
+                                    LastName = CurrentPerson.LastName,
+                                    FullName = CurrentPerson.FullName,
+                                    Email = CurrentPerson.Email
+                                }.ToCamelCaseJson( false, false );
                             }
                             else if ( CurrentPerson != null )
                             {
@@ -1383,7 +1392,6 @@ Obsidian.onReady(() => {{
             pageParameters: {PageParameters().ToJson()},
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {(isAnonymousVisitor ? "true" : "false")},
-            contextEntities: {GetContextViewModels().ToCamelCaseJson( false, false )},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
         }});
     }});
@@ -2782,29 +2790,6 @@ $.ajax({
         public string GetLoginUrlWithReturnUrl()
         {
             return Site.GetLoginUrlWithReturnUrl();
-        }
-
-        /// <summary>
-        /// Gets the context view models.
-        /// </summary>
-        /// <returns></returns>
-        internal Dictionary<string, IViewModel> GetContextViewModels()
-        {
-            var contextEntities = GetContextEntities();
-            var viewModels = new Dictionary<string, IViewModel>();
-
-            foreach ( var kvp in contextEntities )
-            {
-                var entity = kvp.Value;
-                var viewModel = ViewModelHelper.GetDefaultViewModel( entity, CurrentPerson, false );
-
-                if ( viewModel != null )
-                {
-                    viewModels[kvp.Key] = viewModel;
-                }
-            }
-
-            return viewModels;
         }
 
         /// <summary>
