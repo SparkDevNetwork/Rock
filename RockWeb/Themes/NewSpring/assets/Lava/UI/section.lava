@@ -32,11 +32,15 @@
         <div class="bring-forward">
     {% endif %}
 
-    {% if title and title != empty %}
-        <div class="text-center">
-            <h2 class="{{ titlesize }}">{{ title }}</h2>
-        </div>
-    {% endif %}
+    <div class="text-center">
+        {% if title and title != empty %}
+            <h2 class="{{ titlesize }} {% if subtitle and subtitle != empty %}push-half-bottom{% endif %}">{{ title }}</h2>
+        {% endif %}
+
+        {% if subtitle and subtitle != empty %}
+            <p class="lead italic text-primary">{{ subtitle }}</p>
+        {% endif %}
+    </div>
 
     {{ blockContent }}
 
