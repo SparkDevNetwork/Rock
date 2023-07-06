@@ -906,7 +906,7 @@ mission. We are so grateful for your commitment.</p>
             }
 
             nbPaymentTokenError.Visible= true;
-            nbPaymentTokenError.Text = "Failed to verify.";
+            nbPaymentTokenError.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
             cpCaptcha.Visible = false;
             btnHostedPaymentInfoNext.Visible = false;
         }
@@ -928,7 +928,7 @@ mission. We are so grateful for your commitment.</p>
             _hostedPaymentInfoControl.Visible = false;
             phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
 
-            nbPaymentTokenError.Text = "Loading Payment Gateway";
+            nbPaymentTokenError.Text = "Loading...";
             nbPaymentTokenError.Visible = true;
 
             if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable )
