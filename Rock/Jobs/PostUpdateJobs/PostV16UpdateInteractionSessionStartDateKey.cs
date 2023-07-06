@@ -18,6 +18,9 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+using System.Linq.Dynamic.Core;
 
 namespace Rock.Jobs
 {
@@ -33,11 +36,19 @@ namespace Rock.Jobs
     Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
     IsRequired = false,
     DefaultIntegerValue = 14400 )]
-    public class PostV16UpdateInteractionSessionStartDateKey : RockJob
+
+    [IntegerField(
+    "Start At Id",
+    Key = AttributeKey.StartAtId,
+    Description = "The Id of the record to start or resume the execution of the job.",
+    IsRequired = false,
+    DefaultIntegerValue = 0 )]
+    public class PostV16UpdateInteractionSessionStartDateKey : PostUpdateJobs.PostUpdateJob
     {
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
+            public const string StartAtId = "StartAtId";
         }
 
         /// <inheritdoc />
@@ -46,27 +57,17 @@ namespace Rock.Jobs
             // get the configured timeout, or default to 240 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
+            var lastId = new InteractionSessionService( new RockContext() )
+                .Queryable()
+                .AsNoTracking()
+                .Select( i => i.Id )
+                .Max();
 
-            jobMigration.Sql( @"
-DECLARE @batchId INT
-DECLARE @lastBatchId INT
-DECLARE @batchSize INT
-
-SET @batchSize = 5000
-SET @batchId = 0
-SET @lastBatchId = (SELECT MAX([Id]) FROM [InteractionSession])
-
-WHILE (@batchId <= @lastBatchId)
-	BEGIN
-		UPDATE [IS]
+            string sqlFormat = @"UPDATE [IS]
 	    SET [SessionStartDateKey] = (SELECT MIN([InteractionDateKey]) FROM [Interaction] WHERE [InteractionSessionId] = [IS].[Id])
         FROM [InteractionSession] AS [IS]
-        WHERE ([IS].[Id] > @batchId AND [IS].Id <= @batchId + @batchSize)
-
-		-- next batch
-		SET @batchId = @batchId + @batchSize
-	END
-" );
+        WHERE ([IS].[Id] > @StartId AND [IS].Id <= @StartId + @BatchSize)";
+            BulkUpdateRecords( sqlFormat, AttributeKey.StartAtId, lastId );
 
             DeleteJob();
         }
