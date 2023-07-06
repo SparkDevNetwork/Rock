@@ -1,19 +1,16 @@
 {%- assign id = uniqueid -%}
-
-{% assign optionsRaw = options | StripNewlines | ToJSON | Replace:'\t','' | Remove:'"' %}
-{% assign optionParts = optionsRaw | Split:',' %}
+{% assign optionParts = options | Split:',' %}
 
 <p>
     <div class="select-wrapper">
         <select data-dynamic-select="{{ id }}" data-dynamic-select-url="{{ linkurl }}">
-        
+
             <option>{{ defaultoptiontext }}</option>
-            
+
             {% for option in optionParts %}
-            
-                {% assign optionValueLabel = option | Split:'^' %}
-                <option value="{{ optionValueLabel[0] | Trim }}">{{ optionValueLabel[1] }}</option>
-                
+                {% assign optionValue = option | Split:'^' | First | Trim %}
+                {% assign optionLabel = option | Split:'^' | Last | Trim %}
+                <option value="{{ optionValue }}">{{ optionLabel }}</option>
             {% endfor %}
         </select>
     </div>
@@ -29,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function(){
     var selectUID = dynamicSelectElement.dataset.dynamicSelect;
     var selectLinkUrl = dynamicSelectElement.dataset.dynamicSelectUrl;
     var submitElement = document.querySelector('[data-dynamic-link="'+selectUID+'"]');
-        
+
         // On change of dynamic select, update the href of corresponding dynamic link
         dynamicSelectElement.addEventListener('change', (event) => {
 
@@ -41,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function(){
             // Get value of option and populate href of corresponding dynamic link
             var selectedValue = dynamicSelectElement.options[dynamicSelectElement.selectedIndex].value;
             submitElement.href = selectLinkUrl + selectedValue;
-            
+
             // If no value, add the disabled class back to the corresponding dynamic link
             if(selectedValue == '') {
                 submitElement.href='';

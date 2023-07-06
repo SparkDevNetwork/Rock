@@ -1,21 +1,36 @@
 {% sql %}
-DECLARE @HireDateAttributeId as datetime = 99708
-DECLARE @GroupId as int = 3
+    DECLARE @HireDateAttributeId as datetime = 99708
+    DECLARE @GroupId as int = 3
 
-SELECT av.ValueAsDateTime, p.Id
-FROM AttributeValue av
-JOIN Person p
-ON av.EntityId = p.Id
-WHERE av.AttributeId = @HireDateAttributeId AND
-    DATEADD(YEAR, (YEAR( GETDATE() )-YEAR( av.ValueAsDateTime )), av.ValueAsDateTime)
-    BETWEEN DATEADD(DAY,  -1 , GETDATE()) AND DATEADD(DAY,  6  ,GETDATE() ) AND
-    p.Id IN(SELECT[PersonId] FROM[GroupMember] gm INNER JOIN[Group] g ON g.[Id] = gm.[GroupId] WHERE gm.[GroupId] = @GroupId AND gm.[GroupMemberStatus] = 1 AND gm.[IsArchived] != 1) AND YEAR(av.ValueAsDateTime) != YEAR(GETDATE())
+    SELECT
+        av.[ValueAsDateTime]
+        , p.[Id]
+        , p.[NickName]
+        , p.[LastName]
+    FROM AttributeValue av
+    JOIN Person p
+    ON av.EntityId = p.Id
+    WHERE av.AttributeId = @HireDateAttributeId AND
+        DATEADD(YEAR, (YEAR( GETDATE() )-YEAR( av.ValueAsDateTime )), av.ValueAsDateTime)
+        BETWEEN DATEADD(DAY,  -1 , GETDATE()) AND DATEADD(DAY, 6 ,GETDATE() ) AND
+        p.Id IN(
+            SELECT[PersonId]
+            FROM[GroupMember] gm
+            INNER JOIN[Group] g
+            ON g.[Id] = gm.[GroupId]
+            INNER JOIN[GroupTypeRole] gtr
+            ON gtr.[Id] = gm.[GroupRoleId]
+            WHERE gm.[GroupId] = @GroupId AND gm.[GroupMemberStatus] = 1 AND gm.[IsArchived] != 1 AND gtr.[Id] != 431) AND YEAR(av.ValueAsDateTime) != YEAR(GETDATE())
 
-ORDER BY DATEADD(YEAR, (YEAR( GETDATE() )-YEAR( av.ValueAsDateTime )), av.ValueAsDateTime) ASC
-{% endsql %}
-[
-    {% for result in results %}{
-        "Id": {{ result.Id }},
-        "ValueAsDateTime": {{ result.ValueAsDateTime | ToJSON }}
-    }{%- unless forloop.last -%},{%- endunless -%}{% endfor %}
-]
+    ORDER BY DATEADD(YEAR, (YEAR( GETDATE() )-YEAR( av.ValueAsDateTime )), av.ValueAsDateTime) ASC
+    {% endsql %}
+    [
+        {% for result in results %}{
+            "Id": {{ result.Id }},
+            "NickName": {{ result.NickName | ToJSON }},
+            "LastName": {{ result.LastName | ToJSON }},
+            "ValueAsDateTime": {{ result.ValueAsDateTime | ToJSON }},
+            "Month": {{ result.ValueAsDateTime | Date:'M' | AsInteger }},
+            "Day": {{ result.ValueAsDateTime | Date:'d' | AsInteger }}
+        }{%- unless forloop.last -%},{%- endunless -%}{% endfor %}
+    ]

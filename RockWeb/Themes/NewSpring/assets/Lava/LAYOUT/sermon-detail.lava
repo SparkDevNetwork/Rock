@@ -57,8 +57,6 @@
     {{ browserTitle | SetPageTitle:'BrowserTitle' }}
     {{ channelName | Singularize | SetPageTitle:'PageTitle' }}
 
-
-
     {% if backgroundColor and backgroundColor != empty %}
     <style>
         .brand-bg {
@@ -66,6 +64,7 @@
         }
     </style>
     {% endif %}
+
     <section class="shell hard push-top xs-push-half-top">
         <div class="row">
             <div class="col-md-4 col-sm-12 col-xs-12">
@@ -87,10 +86,10 @@
                         </div>
                     </div>
                 {% endcapture %}
-                {% assign video = Item.Video %}
+                {% assign video = null %}
                 {% assign trimcopy = 'Yes' %}
 
-            {[ card id:'{{ id }}' dataset:'{{ dataset }}' cciid:'{{ cciid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+                {[ card id:'{{ id }}' dataset:'{{ dataset }}' cciid:'{{ cciid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
 
                 {% assign itemToken = 'cci' | Append:Item.ChannelId | Append:Item.Id %}
                 {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
