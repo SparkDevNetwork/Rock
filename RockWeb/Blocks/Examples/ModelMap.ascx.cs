@@ -446,9 +446,22 @@ namespace RockWeb.Blocks.Examples
                         pageReference.QueryString["EntityType"] = entityType.Guid.ToString();
 
                         lClassName.Text = mClass.Name;
+                        var tableName = type.FullName.Replace( "Rock.Model.", "" );
+                        if ( !tableName.Equals( lClassName.Text ) )
+                        {
+                            lActualTableName.Text = "<small>" + tableName + "</small>";
+                        }
                         hlAnchor.NavigateUrl = pageReference.BuildUrl();
                         lClassDescription.Text = mClass.Comment != null ? mClass.Comment.Summary : string.Empty;
                         lClassExample.Text = ExampleNode( mClass );
+                        if ( divClass.HasCssClass( "mb-4" ) )
+                        {
+                            divClass.RemoveCssClass( "mb-4" );
+                        }
+                        if ( lClassDescription.Text.IsNotNullOrWhiteSpace() || lClassExample.Text.IsNotNullOrWhiteSpace())
+                        {
+                            divClass.AddCssClass( "mb-4" );
+                        }
                         lClasses.Text = ClassNode( mClass );
 
                         pnlClassDetail.Visible = true;
