@@ -67,11 +67,14 @@
                             <Rock:UrlLinkBox ID="urlObservabilityEndpoint" runat="server" Label="Endpoint" ValidationGroup="Observability" Help="The URL for sending observability telemetry to." CausesValidation="true" />
                             <Rock:KeyValueList ID="kvlEndpointHeaders" runat="server" Label="Endpoint Headers" ValidationGroup="Observability" Help="List of HTTP headers to be added to the HTTP calls when sending telemetry." />
                             <Rock:ButtonDropDownList ID="ddlEndpointProtocol" runat="server" Label="Endpoint Protocol" ValidationGroup="Observability" Help="The protocol to use to encode the telemetry data when sending it to the endpoint." />
-                            <Rock:RockTextBox ID="tbServiceName" runat="server" Label="Service Name" Help="The name to provide to the telemetry service. Typically, this should be something like 'Rock RMS'." />
                         </div>
                         <div class="col-md-6">
                             <Rock:ValueList ID="vlTargetedQueries" runat="server" Label="Targeted Queries" ValidationGroup="Observability" Help="List of query hashes that will report more in depth metrics for." />
                         </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        The service name used by the observability framework is defined in the web.config.
                     </div>
 
                     <div class="actions">
@@ -117,6 +120,8 @@
                                 <Rock:RockTextBox ID="rtbAzureSignalRAccessKey" runat="server" Label="Azure SignalR AccessKey" ValidationGroup="UISettings" Help="The Azure SignalR access key."></Rock:RockTextBox>
                             </div>
                         </div>
+
+                        <Rock:RockTextBox ID="tbObservabilityServiceName" runat="server" Label="Observability Service Name" />
                     </fieldset>
                     <div class="actions">
                         <Rock:BootstrapButton ID="btnSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSaveConfig_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="WebConfigSetting"></Rock:BootstrapButton>

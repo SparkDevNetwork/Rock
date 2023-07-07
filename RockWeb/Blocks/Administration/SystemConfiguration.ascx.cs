@@ -31,6 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Observability;
 using Rock.SystemKey;
+using Rock.Web.Cache.NonEntities;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -193,6 +194,7 @@ namespace RockWeb.Blocks.Administration
             rockWebConfig.AppSettings.Settings["RunJobsInIISContext"].Value = cbRunJobsInIISContext.Checked.ToString();
             rockWebConfig.AppSettings.Settings["AzureSignalREndpoint"].Value = rtbAzureSignalREndpoint.Text;
             rockWebConfig.AppSettings.Settings["AzureSignalRAccessKey"].Value = rtbAzureSignalRAccessKey.Text;
+            rockWebConfig.AppSettings.Settings["ObservabilityServiceName"].Value = tbObservabilityServiceName.Text;
 
             var section = ( System.Web.Configuration.SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
             section.HttpRuntime.MaxRequestLength = int.Parse( numbMaxSize.Text ) * 1024;
@@ -273,8 +275,6 @@ namespace RockWeb.Blocks.Administration
             kvlEndpointHeaders.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS );
 
             vlTargetedQueries.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES );
-
-            tbServiceName.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SERVICE_NAME );
         }
 
         /// <summary>
@@ -316,6 +316,7 @@ namespace RockWeb.Blocks.Administration
             }
             rtbAzureSignalREndpoint.Text = ConfigurationManager.AppSettings["AzureSignalREndpoint"];
             rtbAzureSignalRAccessKey.Text = ConfigurationManager.AppSettings["AzureSignalRAccessKey"];
+            tbObservabilityServiceName.Text = ConfigurationManager.AppSettings["ObservabilityServiceName"];
         }
 
         /// <summary>
@@ -544,11 +545,13 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS, kvlEndpointHeaders.Value );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT, urlObservabilityEndpoint.Text );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES, vlTargetedQueries.Value );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_SERVICE_NAME, tbServiceName.Text );
 
             nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Success;
             nbObservabilityMessages.Title = string.Empty;
             nbObservabilityMessages.Text = "Settings saved successfully.";
+
+            // Clear the targeted query hash cache
+            DbCommandObservabilityCache.ClearTargetedQueryHashes();
 
             // Update the provider
             ObservabilityHelper.ConfigureTraceProvider();

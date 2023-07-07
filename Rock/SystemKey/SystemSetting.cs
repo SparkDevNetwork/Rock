@@ -332,10 +332,5 @@ namespace Rock.SystemKey
         /// The protocol to use for sending telemetry for observability.
         /// </summary>
         public const string OBSERVABILITY_TARGETED_QUERIES = "core_ObservabilityTargetedQueries";
-
-        /// <summary>
-        /// The protocol to use for sending telemetry for observability.
-        /// </summary>
-        public const string OBSERVABILITY_SERVICE_NAME = "core_ObservabilityServiceName";
     }
 }
