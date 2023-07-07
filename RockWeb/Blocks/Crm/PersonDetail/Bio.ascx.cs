@@ -798,6 +798,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             if ( Person != null )
             {
+                // Check if the current rock instance is registered.
+                if ( StoreService.GetOrganizationKey().AsGuid() == new Guid( "00000000-0000-0000-0000-000000000000" ) )
+                {
+                    spNamePronunciation.Visible = false;
+                    return;
+                }
+
                 // Initialize static variables for Name Pronunciation Feature.
                 dlgNamePronunciation.Hide();
                 aPlayAllNamePronunciations.Visible = false;
@@ -861,6 +868,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             if ( Person != null )
             {
+                // Check if the current rock instance is registered.
+                if ( StoreService.GetOrganizationKey().AsGuid() == new Guid( "00000000-0000-0000-0000-000000000000" ) )
+                {
+                    spNamePronunciation.Visible = false;
+                    return;
+                }
+
                 // Reset audio url.
                 firstNamePronunciationAudioUrl = "";
                 nickNamePronunciationAudioUrl = "";
@@ -880,8 +894,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     firstNameEqualsNickName = true;
                 }
 
-//http://localhost:49999
-//https://api.rockrms.com/
                 // Create an API Client and request to call the requests for pronunciation.
                 // For testing purposes change the RockApiUrl within the web.config file. Permission from Nick recieved.
                 var baseUrl = ConfigurationManager.AppSettings["RockApiUrl"].EnsureTrailingForwardslash();
@@ -923,7 +935,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     namePronunciationRequestList.Add( tempNamePronunciation );
                 }
 
-                var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
+                //var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
+                var rockInstanceId = StoreService.GetOrganizationKey();
 
                 //add the body of the HTML POST request
                 namePronunciationrequest.AddJsonBody( new
@@ -938,7 +951,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // If the response code did not go through hide the pronunciation button and early out.
                 if ( namePronunciationResponseList.StatusCode != System.Net.HttpStatusCode.OK )
                 {
-                    spNamePronunciationIcon.Visible = false;
+                    spNamePronunciation.Visible = false;
                     return;
                 }
 

@@ -24,12 +24,14 @@
                 <%-- Person Name --%>
                 <div class="d-flex flex-wrap">
                     <asp:Literal ID="lName" runat="server" />
-                    <a href="#!" class="btn btn-sm" onclick="$('.js-namePronunciationPanel').slideToggle()">
-                        <span ID="spNamePronunciationIcon" runat="server" class="fa-stack fa-md text-primary">
-                            <i class="fa fa-circle fa-stack-2x"></i>
-                            <i class="fa fa-volume-up fa-stack-1x fa-inverse"></i>
-                        </span>
-                    </a>
+                    <span id="spNamePronunciation" runat="server">
+                        <a href="#!" class="btn btn-sm" onclick="$('.js-namePronunciationPanel').slideToggle()">
+                            <span ID="spNamePronunciationIcon" runat="server" class="fa-stack fa-md text-primary">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-volume-up fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </span>
                 </div>
                 <%-- Name Pronunciation Panel --%>
                 <asp:HiddenField ID="hfNamePronunciationVisible" runat="server"/>
