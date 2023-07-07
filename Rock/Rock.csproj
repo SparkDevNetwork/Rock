@@ -2074,6 +2074,7 @@
     <Compile Include="Logging\RockLoggerSerilog.cs" />
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
+    <Compile Include="Web\Cache\NonEntities\DbCommandObservabilityCache.cs" />
     <Compile Include="Web\Cache\NonEntities\DeepLinkCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityTypeAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersonOrVisitorCache.cs" />
@@ -2081,7 +2082,9 @@
     <Compile Include="Web\Cache\NonEntities\RateLimiterCache.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
+    <Compile Include="Web\HttpModules\Observability.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
+    <Compile Include="Web\RockControlAdapter.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartJsChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\Flot\BarChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\Flot\LineChart.cs" />

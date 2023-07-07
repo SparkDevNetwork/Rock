@@ -20,6 +20,9 @@ using OpenTelemetry.Trace;
 using Rock.SystemKey;
 using System;
 using Rock.Field.Types;
+using System.Configuration;
+using System.Diagnostics;
+using Rock.Bus;
 
 namespace Rock.Observability
 {
@@ -34,6 +37,16 @@ namespace Rock.Observability
         {
             _curretTracerProvider = null;
         }
+
+        #region Properties
+        /// <summary>
+        /// Returns the service name defined in the web.config.
+        /// </summary>
+        public static string ServiceName
+        {
+            get => ConfigurationManager.AppSettings["ObservabilityServiceName"].Trim();
+        }
+        #endregion
 
         /// <summary>
         /// Configures the observability TraceProvider and passes back a reference to it.
@@ -52,6 +65,7 @@ namespace Rock.Observability
             var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
             var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace("^", "=").Replace("|", ",");
             var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+            var serviceName = ObservabilityHelper.ServiceName;
 
             if ( observabilityEnabled && endpointUri != null )
             {
@@ -60,16 +74,16 @@ namespace Rock.Observability
                     .AddOtlpExporter( o =>
                     {
                         o.Endpoint = endpointUri;
-                        o.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+                        o.Protocol = endpointProtocol;
                         o.Headers = endpointHeaders;
                     } )
 
                // Other configuration, like adding an exporter and setting resources
-               .AddSource( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SERVICE_NAME ) )      // Be sure to update this in RockActivitySource.cs also!!!    
+               .AddSource( serviceName )  // Be sure to update this in RockActivitySource.cs also!!!    
 
                .SetResourceBuilder(
                    ResourceBuilder.CreateDefault()
-                       .AddService( serviceName: Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SERVICE_NAME ), serviceVersion: "1.0.0" ) )
+                       .AddService( serviceName: serviceName, serviceVersion: "1.0.0" ) )
                .Build();
 
                 // If there was already a trace provider running call the ActivitySource refresh to ensure it knows to update it's service name
@@ -80,6 +94,33 @@ namespace Rock.Observability
             }
 
             return _curretTracerProvider;
+        }
+
+        /// <summary>
+        /// Helper method to create a new observability activity that has a common set of attributes applied to it.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="kind"></param>
+        public static void StartActivity( string name, ActivityKind kind = ActivityKind.Internal )
+        {
+            RockActivitySource.ActivitySource.StartActivity( name, kind );
+
+            var nodeName = RockMessageBus.NodeName.ToLower();
+            var machineName = Environment.MachineName.ToLower();
+
+            // Add on default attributes
+            Activity.Current?.AddTag( "rock-node", nodeName );
+
+            if (nodeName != machineName )
+            {
+                Activity.Current?.AddTag( "service.instance.id", $"{machineName} ({nodeName})" );
+            }
+            else
+            {
+                Activity.Current?.AddTag( "service.instance.id", machineName );
+            }
+            
+            Activity.Current?.AddTag( "service.version", VersionInfo.VersionInfo.GetRockProductVersionFullName() );
         }
     }
 }

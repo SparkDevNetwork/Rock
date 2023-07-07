@@ -16,6 +16,7 @@
 //
 
 using System.Diagnostics;
+using Mono.CSharp;
 using Rock.SystemKey;
 
 namespace Rock.Observability
@@ -48,8 +49,7 @@ namespace Rock.Observability
         /// </summary>
         static RockActivitySource()
         {
-            // The values on the start must match those in the start-up
-            _activitySource = new ActivitySource( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SERVICE_NAME ), _sourceVersion );
+            RefreshActivitySource();
         }
 
         /// <summary>
@@ -57,7 +57,22 @@ namespace Rock.Observability
         /// </summary>
         public static void RefreshActivitySource()
         {
-            _activitySource = new ActivitySource( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SERVICE_NAME ), _sourceVersion );
+            /*
+                7/7/2023 JME
+                The activity source name defined here must match the source name on the trace provider.
+                Sdk.CreateTracerProviderBuilder().AddSource( [SameStringHere] )
+
+                For now we are also setting the trace provider's resource service to the same value. This is
+                not required, but it seems like there's not reason not to.
+                Sdk.CreateTracerProviderBuilder().SetResourceBuilder(
+                   ResourceBuilder.CreateDefault()
+                       .AddService( serviceName: [SameStringHere], serviceVersion: "1.0.0" ) )
+            */
+
+            // The values on the start must match those in the start-up
+            var activityName = ObservabilityHelper.ServiceName;
+
+            _activitySource = new ActivitySource( activityName, _sourceVersion );
         }
     }
 }
