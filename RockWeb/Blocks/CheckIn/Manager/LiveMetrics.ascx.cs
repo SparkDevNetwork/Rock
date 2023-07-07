@@ -1583,6 +1583,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             public int Order { get; set; }
 
+            /// <summary>
+            /// Gets the total soft threshold adding all the locations associated.
+            /// Total soft threshold is total capacity considering location that may be associated with multiple groups.
+            /// </summary>
+            /// <value>
+            /// The total soft threshold.
+            /// </value>
             public int? TotalSoftThreshold { get; internal set; }
 
             public List<int> CurrentPersonIds { get; set; }
