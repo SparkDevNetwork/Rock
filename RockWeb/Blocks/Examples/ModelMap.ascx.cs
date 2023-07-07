@@ -446,10 +446,11 @@ namespace RockWeb.Blocks.Examples
                         pageReference.QueryString["EntityType"] = entityType.Guid.ToString();
 
                         lClassName.Text = mClass.Name;
+                        lActualTableName.Text = "";
                         var tableName = type.FullName.Replace( "Rock.Model.", "" );
                         if ( !tableName.Equals( lClassName.Text ) )
                         {
-                            lActualTableName.Text = "<small>" + tableName + "</small>";
+                            lActualTableName.Text = "<small>[" + tableName + "]</small>";
                         }
                         hlAnchor.NavigateUrl = pageReference.BuildUrl();
                         lClassDescription.Text = mClass.Comment != null ? mClass.Comment.Summary : string.Empty;
