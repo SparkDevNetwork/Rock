@@ -35,8 +35,8 @@ namespace Rock.Jobs.PostUpdateJobs
         /// <param name="attributeKey">The Attribute Key of the attribute to store the id from which the job needs to start or resume the execution.</param>
         /// <param name="lastId">The id of the record upto which the job needs to be executed. It is generally the id of the last record in the table.</param>
         /// <param name="defaultStartingId">The id after which the job needs to start the execution. By default it is set to 0</param>
-        /// <param name="batchSize">The size of the batch on which the SQL query needs to execute in a single run. It is defaulted to 5000</param>
-        internal void BulkUpdateRecords( string sql, string attributeKey, int lastId, int defaultStartingId = 0, int batchSize = 5000 )
+        /// <param name="batchSize">The size of the batch on which the SQL query needs to execute in a single run. It is defaulted to 4999</param>
+        internal void BulkUpdateRecords( string sql, string attributeKey, int lastId, int defaultStartingId = 0, int batchSize = 4999 )
         {
             int startingId = Math.Max( GetAttributeValue( attributeKey ).ToIntSafe(), defaultStartingId );
 
