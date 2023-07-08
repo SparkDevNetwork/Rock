@@ -53,11 +53,6 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         public Guid? CampusSchedulesAttributeGuid { get; set; }
 
         /// <summary>
-        /// The number of columns used to display the form.
-        /// </summary>
-        public int Columns { get; set; }
-
-        /// <summary>
         /// The campus unique identifier.
         /// </summary>
         public Guid? CampusGuid { get; set; }
@@ -111,6 +106,11 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         /// Gets or sets the address.
         /// </summary>
         public AddressControlBag Address { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display SMS opt in.
+        /// </summary>
+        public FamilyPreRegistrationSmsOptInFieldBag DisplaySmsOptIn { get; set; }
 
         /// <summary>
         /// Gets or sets the campus field.

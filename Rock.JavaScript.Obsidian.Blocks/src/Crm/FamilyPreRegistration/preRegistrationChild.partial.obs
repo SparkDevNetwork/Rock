@@ -15,7 +15,7 @@
     </h4>
 
     <div class="row">
-        <div :class="getColumnClass(6)">
+        <div class="col-sm-6">
             <DropDownList
                 v-model="child.familyRoleGuid"
                 :disabled="disabled"
@@ -24,11 +24,11 @@
                 rules="required"
                 :showBlankItem="false" />
         </div>
-        <div :class="getColumnClass(6)"></div><!-- filler/blocker column -->
+        <div class="col-sm-6"></div><!-- filler/blocker column -->
     </div>
 
     <div class="row clearfix">
-        <div :class="getColumnClass(3)">
+        <div class="col-sm-6">
             <StaticFormControl
                 v-if="child.isFirstNameReadOnly"
                 label="First Name"
@@ -40,7 +40,7 @@
                 rules="required" />
         </div>
 
-        <div :class="getColumnClass(3)">
+        <div class="col-sm-6">
             <StaticFormControl
                 v-if="child.isLastNameReadOnly"
                 label="Last Name"
@@ -51,8 +51,9 @@
                 label="Last Name"
                 rules="required" />
         </div>
-
-        <div v-if="config.childGenderField?.isShown" :class="getColumnClass(3)">
+    </div>
+    <div class="row clearfix">
+        <div v-if="config.childGenderField?.isShown" class="col-sm-6">
             <GenderDropDownList
                 v-model="child.genderStringValue"
                 :disabled="disabled"
@@ -60,7 +61,7 @@
                 :rules="config.childGenderField.isRequired ? 'required' : ''" />
         </div>
 
-        <div v-if="config.childSuffixField?.isShown" :class="getColumnClass(3)">
+        <div v-if="config.childSuffixField?.isShown" class="col-sm-6">
             <DefinedValuePicker
                 v-model="child.suffixListItemBag"
                 :definedTypeGuid="DefinedType.PersonSuffix"
@@ -69,8 +70,9 @@
                 lazyMode="lazy"
                 :showBlankItem="true" />
         </div>
-
-        <div v-if="config.childBirthDateField?.isShown" :class="getColumnClass(6)">
+    </div>
+    <div class="row clearfix">
+        <div v-if="config.childBirthDateField?.isShown" class="col-sm-6">
             <BirthdayPicker
                 v-model="child.birthDate"
                 :disabled="disabled"
@@ -78,7 +80,7 @@
                 :rules="config.childBirthDateField.isRequired ? 'required' : ''" />
         </div>
 
-        <div v-if="config.childGradeField?.isShown" :class="getColumnClass(3)">
+        <div v-if="config.childGradeField?.isShown" class="col-sm-6">
             <GradePicker
                 v-model="child.gradeListItemBag"
                 :disabled="disabled"
@@ -88,8 +90,9 @@
                 :rules="config.childGradeField.isRequired ? 'required' : ''"
                 :showBlankItem="true" />
         </div>
-
-        <div v-if="config.childMobilePhoneField?.isShown" :class="getColumnClass(3)">
+    </div>
+    <div class="row clearfix">
+        <div v-if="config.childMobilePhoneField?.isShown" class="col-sm-6">
             <PhoneNumberBox
                 v-model="child.mobilePhone"
                 v-model:countryCode="child.mobilePhoneCountryCode"
@@ -97,8 +100,16 @@
                 label="Mobile Phone"
                 :rules="config.childMobilePhoneField.isRequired ? 'required' : ''" />
         </div>
-
-        <div v-if="config.childEmailField?.isShown" :class="getColumnClass(6)">
+        <div v-if="config.displaySmsOptIn?.isShowChildren" class="col-sm-6">
+            <CheckBox
+                v-model="child.isMessagingEnabled"
+                label=""
+                :disabled="disabled"
+                :text="config.displaySmsOptIn?.smsOptInDisplayText ?? ''"/>
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div v-if="config.childEmailField?.isShown" class="col-sm-6">
             <EmailBox
                 v-model="child.email"
                 :disabled="disabled"
@@ -106,7 +117,7 @@
                 :rules="config.childEmailField.isRequired ? 'required' : ''" />
         </div>
 
-        <div v-if="config.childCommunicationPreferenceField?.isShown" :class="getColumnClass(6)">
+        <div v-if="config.childCommunicationPreferenceField?.isShown" class="col-sm-6">
             <RadioButtonList
                 v-model="child.communicationPreferenceStringValue"
                 :disabled="disabled"
@@ -118,8 +129,9 @@
                 label="Communication Preference"
                 :rules="config.childCommunicationPreferenceField.isRequired ? 'required' : ''" />
         </div>
-
-        <div v-if="config.childRaceField?.isShown" :class="getColumnClass(3)">
+    </div>
+    <div class="row clearfix">
+        <div v-if="config.childRaceField?.isShown" class="col-sm-6">
             <RacePicker
                 v-model="child.raceListItemBag"
                 :disabled="disabled"
@@ -127,7 +139,7 @@
                 :showBlankItem="true" />
         </div>
 
-        <div v-if="config.childEthnicityField?.isShown" :class="getColumnClass(3)">
+        <div v-if="config.childEthnicityField?.isShown" class="col-sm-6">
             <EthnicityPicker
                 v-model="child.ethnicityListItemBag"
                 :disabled="disabled"
@@ -136,14 +148,14 @@
         </div>
     </div>
     <div v-if="config.childProfilePhotoField?.isShown" class="row">
-        <div :class="getColumnClass(6)">
+        <div class="col-sm-6">
             <ImageUploader
                 v-model="child.profileImageListItemBag"
                 :disabled="disabled"
                 label="Profile Photo"
                 :rules="config.childProfilePhotoField.isRequired ? 'required' : ''" />
         </div>
-        <div :class="getColumnClass(6)"></div><!-- filler/blocker column -->
+        <div class="col-sm-6"></div><!-- filler/blocker column -->
     </div>
 
     <div class="row">
@@ -154,7 +166,7 @@
             columnBreakpoint="sm"
             :displayWithinExistingRow="true"
             isEditMode
-            :numberOfColumns="config.columns"
+            :numberOfColumns="2"
             :showCategoryLabel="true" />
     </div>
 </template>
@@ -171,6 +183,7 @@
     import { createPersonViewModel, getNumberAsOrdinalString, useGetBootstrapColumnClass } from "./utils.partial";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+    import CheckBox from "@Obsidian/Controls/checkBox";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import EmailBox from "@Obsidian/Controls/emailBox";
@@ -190,7 +203,7 @@
     import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
-    const getColumnClass = useGetBootstrapColumnClass(config.columns);
+    const getColumnClass = useGetBootstrapColumnClass(2);
 
     const props = defineProps({
         childNumber: {
