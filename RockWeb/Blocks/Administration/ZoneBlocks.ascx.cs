@@ -643,43 +643,47 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            // Get a list of BlockTypes that does not include Mobile block types.
-            var webBlockTypes = BlockTypeCache.All()
-                .Where( bt =>
-                {
-                    var type = bt.GetCompiledType();
-
-                    if ( siteType == SiteType.Web )
+            // Get a list of BlockTypes to be displayed
+            var blockTypesToDisplay = BlockTypeCache.All().ToList();
+            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment == false )
+            {
+                blockTypesToDisplay = blockTypesToDisplay
+                    .Where( bt =>
                     {
-                        if ( typeof( RockBlock ).IsAssignableFrom( type ) )
+                        var type = bt.GetCompiledType();
+
+                        if ( siteType == SiteType.Web )
                         {
-                            return true;
+                            if ( typeof( RockBlock ).IsAssignableFrom( type ) )
+                            {
+                                return true;
+                            }
+
+                            if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                            {
+                                return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                            }
+
+                            // Failsafe for any blocks that implement this directly.
+                            return typeof( IRockObsidianBlockType ).IsAssignableFrom( type );
+                        }
+                        else if ( siteType == SiteType.Mobile )
+                        {
+                            if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                            {
+                                return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                            }
+
+                            // Failsafe for any blocks that implement this directly.
+                            return typeof( IRockMobileBlockType ).IsAssignableFrom( type );
                         }
 
-                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
-                        {
-                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
-                        }
+                        return false;
+                    } )
+                    .ToList();
+            }
 
-                        // Failsafe for any blocks that implement this directly.
-                        return typeof( IRockObsidianBlockType ).IsAssignableFrom( type );
-                    }
-                    else if ( siteType == SiteType.Mobile )
-                    {
-                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
-                        {
-                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
-                        }
-
-                        // Failsafe for any blocks that implement this directly.
-                        return typeof( IRockMobileBlockType ).IsAssignableFrom( type );
-                    }
-
-                    return false;
-                } )
-                .ToList();
-
-            var blockTypes = webBlockTypes.Select( b => new {
+            var blockTypes = blockTypesToDisplay.Select( b => new {
                 b.Id,
                 b.Name,
                 b.Category,
