@@ -58,7 +58,13 @@ namespace Rock.Client
         public List<int> ResourceAdditionalPersonIds { get; set; }
 
         /// <summary />
+        public Guid? ResourceDataViewGuid { get; set; }
+
+        /// <summary />
         public int? ResourceDataViewId { get; set; }
+
+        /// <summary />
+        public Guid? ResourceGroupGuid { get; set; }
 
         /// <summary />
         public int? ResourceGroupId { get; set; }
@@ -82,7 +88,9 @@ namespace Rock.Client
             this.GroupMemberFilterType = source.GroupMemberFilterType;
             this.LimitToPersonId = source.LimitToPersonId;
             this.ResourceAdditionalPersonIds = source.ResourceAdditionalPersonIds;
+            this.ResourceDataViewGuid = source.ResourceDataViewGuid;
             this.ResourceDataViewId = source.ResourceDataViewId;
+            this.ResourceGroupGuid = source.ResourceGroupGuid;
             this.ResourceGroupId = source.ResourceGroupId;
             this.ResourceListSourceType = source.ResourceListSourceType;
 

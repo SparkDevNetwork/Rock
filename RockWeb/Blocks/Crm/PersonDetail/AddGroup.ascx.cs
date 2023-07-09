@@ -1391,7 +1391,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( person.Id > 0 )
             {
                 string personUrl = ResolveRockUrl( string.Format( "~/person/{0}", person.Id ) );
-                personName = string.Format( "<a href='{0}' target='_blank'>{1}</a>", personUrl, person.FullName );
+                personName = string.Format( "<a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a>", personUrl, person.FullName );
             }
 
             personInfoHtml.Append( "<div class='row margin-b-lg'>" );

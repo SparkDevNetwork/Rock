@@ -186,6 +186,11 @@ namespace Rock.Lava
 
                 OnRender( context, result );
             }
+            catch ( Exception ex )
+            {
+                // Throw a user-friendly error message that is suitable for rendering to output.
+                throw new Exception( $"(Block: {this.InternalElementName}) {ex.Message}", ex );
+            }
             finally
             {
                 _baseRenderer = null;

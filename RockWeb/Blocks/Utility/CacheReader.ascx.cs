@@ -142,11 +142,12 @@ namespace RockWeb.Blocks.Utility
             var totalCacheSize = 0;
 
             // Determine the size of the object cache
-            var objectCacheKeys = RockCache.ObjectCacheKeyReferences;
+            var objectCacheKeys = RockCache.ObjectConcurrentCacheKeyReferences;
 
             var objectCacheSize = 0;
-            foreach( var objectCacheKey in objectCacheKeys )
+            foreach( var objectCacheKeyItem in objectCacheKeys )
             {
+                var objectCacheKey = objectCacheKeyItem.Value;
                 var cacheItem = RockCache.Get( objectCacheKey.Key, objectCacheKey.Region );
                 if ( cacheItem != null )
                 {
@@ -160,12 +161,14 @@ namespace RockWeb.Blocks.Utility
             lOutput.Text = string.Format( "Object Cache: {0:n0} KB", objectCacheSize / 1024 );
 
             // Determine the size of the string cache
-            var stringCacheKeys = RockCache.StringCacheKeyReferences;
+            var stringCacheKeys = RockCache.StringConcurrentCacheKeyReferences;
 
             var stringCacheSize = 0;
 
-            foreach ( var stringCacheKey in stringCacheKeys )
+            foreach ( var stringCacheKeyItem in stringCacheKeys )
             {
+                var stringCacheKey = stringCacheKeyItem.Value;
+
                 // Cache tags are in an empty region. Calls without a region throw an exception
                 if ( stringCacheKey.Region.IsNotNullOrWhiteSpace() )
                 {

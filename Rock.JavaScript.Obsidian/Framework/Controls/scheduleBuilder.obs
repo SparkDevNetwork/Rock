@@ -33,14 +33,14 @@
                 <div class="form-control-group">
                     <NumberBox v-model="durationInHours"
                                inputGroupClasses="input-width-md">
-                        <template #append>
+                        <template #inputGroupAppend>
                             <span class="input-group-addon">hrs</span>
                         </template>
                     </NumberBox>
 
                     <NumberBox v-model="durationInMinutes"
                                inputGroupClasses="input-width-md">
-                        <template #append>
+                        <template #inputGroupAppend>
                             <span class="input-group-addon">mins</span>
                         </template>
                     </NumberBox>
@@ -106,7 +106,7 @@
                         </label>
                         <NumberBox v-model="recurringDailyDays"
                                    inputGroupClasses="input-width-md">
-                            <template #append>
+                            <template #inputGroupAppend>
                                 <span class="input-group-addon">days</span>
                             </template>
                         </NumberBox>
@@ -133,7 +133,7 @@
                         <span>Every&ThinSpace;</span>
                         <NumberBox v-model="recurringWeeklyWeeks"
                                    inputGroupClasses="input-width-md">
-                            <template #append>
+                            <template #inputGroupAppend>
                                 <span class="input-group-addon">week(s)</span>
                             </template>
                         </NumberBox>
@@ -222,7 +222,7 @@
 
                             <NumberBox v-model="recurringContinueUntilCount"
                                        inputGroupClasses="input-width-lg">
-                                <template #append>
+                                <template #inputGroupAppend>
                                     <span class="input-group-addon">occurrences</span>
                                 </template>
                             </NumberBox>

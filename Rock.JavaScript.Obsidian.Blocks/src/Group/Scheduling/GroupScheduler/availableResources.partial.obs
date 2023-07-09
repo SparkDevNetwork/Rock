@@ -1,0 +1,77 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-model="selectedResources"
+                   formGroupClasses="check-box-list"
+                   name="check-box-list">
+        <div class="control-wrapper">
+            <div class="controls rockcheckboxlist rockcheckboxlist-vertical input-group">
+                <div v-for="resource in resources" :key="resource.PersonId" class="checkbox resource">
+                    <label :for="resource.PersonId.toString()">
+                        <input
+                               type="checkbox"
+                               v-model="selectedResources"
+                               :id="resource.PersonId.toString()"
+                               :name="resource.PersonId.toString()"
+                               :value="resource.PersonId"
+                               :disabled="disabled || getIsDisabled(resource)" />
+                        <span class="label-text resource-name">
+                            {{ resource.PersonName }}
+                            <span v-if="resource.GroupRole?.Name" class="small text-muted">
+                                {{ resource.GroupRole.Name }}
+                            </span>
+                        </span>
+                    </label>
+                    <ResourceNotes :resource="resource" :disabled="getIsDisabled(resource)" />
+                </div>
+            </div>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ResourceNotes from "./resourceNotes.partial.obs";
+    import { ISchedulerResource } from "./types.partial";
+    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<number[]>,
+            required: true
+        },
+
+        resources: {
+            type: Array as PropType<ISchedulerResource[]>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue"): void
+    }>();
+
+    // #region Values
+
+    const selectedResources = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets whether this resource should be disabled for scheduling.
+     *
+     * @param resource The resource to check.
+     */
+    function getIsDisabled(resource: ISchedulerResource): boolean {
+        return resource.HasBlackoutConflict || resource.HasGroupRequirementsConflict;
+    }
+
+    // #endregion
+</script>

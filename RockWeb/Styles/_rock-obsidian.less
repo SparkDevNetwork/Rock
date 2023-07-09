@@ -56,6 +56,15 @@
           border-radius: 4px;
         }
       }
+
+      // Hide the action buttons on small screens
+      @media screen and (max-width: @screen-sm-max) {
+        .panel-action-zoom,
+        .panel-action-zoom-control,
+        .panel-action-fullscreen {
+          display: none;
+        }
+      }
     }
   }
 

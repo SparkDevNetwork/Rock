@@ -46,6 +46,28 @@ namespace Rock.Tests.Integration.Core.Lava
         }
 
         [TestMethod]
+        public void SqlBlock_WithInvalidSql_RendersErrorMessage()
+        {
+            var input = @"
+{% sql %}
+    SELECT   [Unknown]
+    FROM     [Person] 
+{% endsql %}
+";
+
+            var expectedOutput = "Lava Error:(.*)Invalid column name 'Unknown'.";
+
+            var options = new LavaTestRenderOptions
+            {
+                EnabledCommands = "Sql",
+                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput,
+                OutputMatchType = LavaTestOutputMatchTypeSpecifier.RegEx
+            };
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+
+        }
+
+        [TestMethod]
         public void SqlBlock_PersonWhereLastNameIsDecker_ReturnsDeckers()
         {
             var input = @"
@@ -138,6 +160,29 @@ Main Campus;Stepping Stone;
 ";
 
             var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        [TestMethod]
+        public void SqlBlock_WithCommandType_ExecutesCorrectly()
+        {
+            var input = @"
+{% sql statement:'command' %}
+    DELETE FROM [Person]
+    WHERE 1 != 1
+{% endsql %}
+{{ results }} records were selected.";
+
+            var expectedOutput = @"
+0 records were selected.
+";
+            var options = new LavaTestRenderOptions
+            {
+                EnabledCommands = "sql",
+                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput
+
+            };
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }

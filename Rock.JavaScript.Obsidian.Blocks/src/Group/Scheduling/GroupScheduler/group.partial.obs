@@ -1,0 +1,64 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="card card-sched js-schedule-group">
+        <div class="card-body">
+            <span class="d-block font-weight-bold text-sm">
+                {{ title }}
+            </span>
+
+            <NotificationBox v-if="!anyLocations" :alertType="AlertType.Info">
+                No locations available.
+            </NotificationBox>
+
+            <Occurrence v-for="occurrence in occurrences" :key="occurrence.locationId"
+                        :occurrence="occurrence"
+                        :disabled="disabled"
+                        @resourceListUpdated="$emit('resourceListUpdated', $event)"
+                        @preferenceUpdated="$emit('preferenceUpdated', $event)"></Occurrence>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Occurrence from "./occurrence.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+
+    const props = defineProps({
+        occurrences: {
+            type: Array as PropType<GroupSchedulerOccurrenceBag[]>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "resourceListUpdated", attendanceOccurrenceId: number): void,
+        (e: "preferenceUpdated", personId: number): void
+    }>();
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        // It's assumed that all occurrences provided will belong to the same group;
+        // just grab the first groupName, since they should all be the same.
+        let groupName: string | null | undefined;
+        if (props.occurrences?.length) {
+            groupName = props.occurrences[0].groupName;
+        }
+
+        return groupName || "Group";
+    });
+
+    const anyLocations = computed((): boolean => {
+        return !!Object.keys(props.occurrences?.length);
+    });
+
+    // #endregion
+</script>

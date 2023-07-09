@@ -177,22 +177,29 @@ namespace Rock.Web.Cache
         {
             base.SetFromEntity( entity );
 
-            var blockType = entity as BinaryFileType;
-            if ( blockType == null )
+            var binaryFileType = entity as BinaryFileType;
+            if ( binaryFileType == null )
             {
                 return;
             }
 
-            IsSystem = blockType.IsSystem;
-            CacheControlHeader = blockType.CacheControlHeader;
-            Name = blockType.Name;
-            Description = blockType.Description;
-            CacheControlHeaderSettings = blockType.CacheControlHeaderSettings;
-            CacheToServerFileSystem = blockType.CacheToServerFileSystem;
-            Guid = blockType.Guid;
-            IconCssClass = blockType.IconCssClass;
-            Id = blockType.Id;
-            StorageEntityTypeId = blockType.StorageEntityTypeId;
+            this.IsSystem = binaryFileType.IsSystem;
+            this.Name = binaryFileType.Name;
+            this.Description = binaryFileType.Description;
+            this.IconCssClass = binaryFileType.IconCssClass;
+            this.StorageEntityTypeId = binaryFileType.StorageEntityTypeId;
+            this.CacheToServerFileSystem = binaryFileType.CacheToServerFileSystem;
+            this.RequiresViewSecurity = binaryFileType.RequiresViewSecurity;
+            this.MaxWidth = binaryFileType.MaxWidth;
+            this.MaxHeight = binaryFileType.MaxHeight;
+            this.PreferredFormat = binaryFileType.PreferredFormat;
+            this.PreferredResolution = binaryFileType.PreferredResolution;
+            this.PreferredColorDepth = binaryFileType.PreferredColorDepth;
+            this.PreferredRequired = binaryFileType.PreferredRequired;
+            this.CacheControlHeaderSettings = binaryFileType.CacheControlHeaderSettings;
+            this.CacheControlHeader = binaryFileType.CacheControlHeader;
+            this.Guid = binaryFileType.Guid;
+            this.Id = binaryFileType.Id;
         }
 
         /// <summary>

@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -26,6 +28,7 @@ namespace Rock.Model
         /// <summary>
         /// Display this page in navigation controls when allowed by security
         /// </summary>
+        [Description("When Allowed")]
         WhenAllowed = 0,
 
         /// <summary>

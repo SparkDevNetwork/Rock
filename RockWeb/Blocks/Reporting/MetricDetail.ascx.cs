@@ -1391,7 +1391,7 @@ The Lava can include Lava merge fields:";
                 foreach ( var datapoint in datapointsByMetricTypeValue )
                 {
                     var name = $"{metric.YAxisLabel ?? "value"}";
-                    var borderColor = chartStyle.SeriesColors[0];
+                    var borderColor = chartStyle.SeriesColors?[0] ?? null;
 
                     if ( datapoint.Key == MetricValueType.Goal )
                     {
@@ -1409,6 +1409,7 @@ The Lava can include Lava merge fields:";
                             .Cast<IChartJsTimeSeriesDataPoint>()
                             .ToList()
                     };
+
                     factory.Datasets.Add( dataset );
                 }
 
@@ -1427,7 +1428,7 @@ The Lava can include Lava merge fields:";
                     foreach ( var datapoint in datapointsByMetricTypeValue )
                     {
                         var name = $"{metric.YAxisLabel ?? "value"}";
-                        var fillColor = chartStyle.SeriesColors[0];
+                        var fillColor = chartStyle.SeriesColors?[0] ?? null;
 
                         if ( datapoint.Key == MetricValueType.Goal )
                         {
@@ -1445,6 +1446,7 @@ The Lava can include Lava merge fields:";
                                 .Cast<IChartJsTimeSeriesDataPoint>()
                                 .ToList()
                         };
+
                         factory.Datasets.Add( dataset );
                     }
                 }

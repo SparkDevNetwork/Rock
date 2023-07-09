@@ -187,7 +187,7 @@ namespace RockWeb
                 sb.Append( "<br/><br/>" );
                 foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ) )
                 {
-                    sb.AppendFormat( "<a target='_blank' href='{0}'>{1}</a><br/>", binaryFile.Url, binaryFile.FileName );
+                    sb.AppendFormat( "<a target='_blank' rel='noopener noreferrer' href='{0}'>{1}</a><br/>", binaryFile.Url, binaryFile.FileName );
                 }
             }
 

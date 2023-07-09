@@ -264,7 +264,7 @@ namespace Rock.Chart
                 List<IChartJsTimeSeriesDataPoint> dataPoints;
                 if ( isChartJsDataPoint )
                 {
-                    dataPoints = chartDataItems.Cast<IChartJsTimeSeriesDataPoint>().ToList();
+                    dataPoints = series.Cast<IChartJsTimeSeriesDataPoint>().ToList();
                 }
                 else
                 {

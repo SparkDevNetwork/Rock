@@ -40,6 +40,8 @@ namespace Rock.Logging
         private readonly IRockLogger _rockLogger;
         private readonly JsonSerializer _jsonSerializer;
 
+        private int _malformedLogEventCount = 0;
+
         /// <summary>
         /// Gets the record count.
         /// </summary>
@@ -86,6 +88,7 @@ namespace Rock.Logging
 
         private List<RockLogEvent> GetRockLogEventsFromLogLines( int startIndex, int count, string[] logs )
         {
+            _malformedLogEventCount = 0;
             var results = new List<RockLogEvent>();
             var reversedStartIndex = ( logs.Length - 1 ) - startIndex;
             var reversedEndIndex = reversedStartIndex - count;
@@ -173,6 +176,8 @@ namespace Rock.Logging
                 return 0;
             }
 
+            lines -= _malformedLogEventCount;
+
             if ( lines >= int.MaxValue )
             {
                 return int.MaxValue;
@@ -226,6 +231,7 @@ namespace Rock.Logging
                 // In rare instances it is possible that the event didn't get completely flushed to the log
                 // and when that happens it won't be able to be correctly parsed so we need to handle that gracefully.
                 ExceptionLogService.LogException( ex );
+                _malformedLogEventCount++;
                 return null;
             }
         }

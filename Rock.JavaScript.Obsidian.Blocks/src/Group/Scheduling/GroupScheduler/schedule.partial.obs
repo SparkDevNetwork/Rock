@@ -1,0 +1,143 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="schedule-column js-schedule-column">
+        <div class="schedule-header">
+            <span v-if="showPrevNextButtons" class="page prev clickable" @click="$emit('goPrevious')">
+                <i class="fa fa-chevron-left"></i>
+            </span>
+            <span class="text-center text-sm-left">
+                {{ title }}
+            </span>
+            <span v-if="showPrevNextButtons" class="page next clickable" @click="$emit('goNext')">
+                <i class="fa fa-chevron-right"></i>
+            </span>
+        </div>
+
+        <NotificationBox v-if="!anyGroups" :alertType="AlertType.Info">
+            No groups available.
+        </NotificationBox>
+
+        <Group v-for="occurrences in sortedOccurrencesByGroup" :key="getGroupIdKey(occurrences)"
+               :occurrences="occurrences"
+               :disabled="disabled"
+               @resourceListUpdated="onResourceListUpdated"
+               @preferenceUpdated="$emit('preferenceUpdated', $event)"></Group>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, provide, ref } from "vue";
+    import Group from "./group.partial.obs";
+    import { ReloadScheduleOccurrences } from "./types.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+
+    const props = defineProps({
+        occurrences: {
+            type: Array as PropType<GroupSchedulerOccurrenceBag[]>,
+            required: true
+        },
+
+        showPrevNextButtons: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "goPrevious"): void,
+        (e: "goNext"): void,
+        (e: "preferenceUpdated", personId: number): void
+    }>();
+
+    // #region Values
+
+    const reloadScheduleOccurrences = ref<number | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        // It's assumed that all occurrences provided will belong to the same schedule;
+        // just grab the first scheduleName, since they should all be the same.
+        let scheduleName: string | null | undefined;
+        if (props.occurrences?.length) {
+            scheduleName = props.occurrences[0].scheduleName;
+        }
+
+        return scheduleName || "Schedule";
+    });
+
+    const sortedOccurrencesByGroup = computed((): (GroupSchedulerOccurrenceBag[])[] => {
+        if (!props.occurrences?.length) {
+            return [];
+        }
+
+        // We're assuming the server has performed the sort and returned the occcurrences to us in the expected display order.
+        // A Map object is needed to maintain sort order.
+        const groupedOccurrences = new Map<number, GroupSchedulerOccurrenceBag[]>();
+        props.occurrences
+            .filter((o: GroupSchedulerOccurrenceBag) => o.groupId)
+            .forEach((o: GroupSchedulerOccurrenceBag) => {
+                const groupId = o.groupId || 0;
+                let groupOccurrences = groupedOccurrences.get(groupId);
+
+                if (!groupOccurrences) {
+                    groupOccurrences = [];
+                    groupedOccurrences.set(groupId, groupOccurrences);
+                }
+
+                groupOccurrences.push(o);
+            });
+
+        const sortedGroupOccurrences: (GroupSchedulerOccurrenceBag[])[] = [];
+        groupedOccurrences.forEach((occurrences) => sortedGroupOccurrences.push(occurrences));
+
+        return sortedGroupOccurrences;
+    });
+
+    const anyGroups = computed((): boolean => {
+        return !!sortedOccurrencesByGroup.value.length;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the group ID "key" from the first occurrence in the collection.
+     *
+     * @param occurrences The occurrences for a given group.
+     */
+    function getGroupIdKey(occurrences: GroupSchedulerOccurrenceBag[]): number {
+        return occurrences?.[0]?.groupId ?? 0;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `resourceListUpdated` event of the group component.
+     *
+     * @param triggeredByAttendanceOccurrenceId The ID of the attendance occurrence that triggered the event.
+     */
+    function onResourceListUpdated(triggeredByAttendanceOccurrenceId: number): void {
+        reloadScheduleOccurrences.value = triggeredByAttendanceOccurrenceId;
+
+        nextTick(() => {
+            reloadScheduleOccurrences.value = null;
+        });
+    }
+
+    // #endregion
+
+    provide(ReloadScheduleOccurrences, reloadScheduleOccurrences);
+</script>

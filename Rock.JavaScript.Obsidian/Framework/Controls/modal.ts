@@ -54,6 +54,11 @@ export default defineComponent({
         saveText: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        saveButtonDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -315,7 +320,7 @@ export default defineComponent({
 
                     <div class="modal-footer">
                         <RockButton @click="onClose" btnType="link">{{ cancelText }}</RockButton>
-                        <RockButton v-if="saveText" type="submit" btnType="primary">{{ saveText }}</RockButton>
+                        <RockButton v-if="saveText" type="submit" btnType="primary" :disabled="saveButtonDisabled">{{ saveText }}</RockButton>
                         <slot name="customButtons" />
                     </div>
                 </RockForm>

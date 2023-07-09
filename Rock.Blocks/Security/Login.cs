@@ -381,7 +381,7 @@ namespace Rock.Blocks.Security
 
         #region Constants
 
-        private const string LockedOutCaptionDefaultValue = "{%- assign phone = Global' | Attribute:'OrganizationPhone' | Trim -%} Sorry, your account has been locked. Please {% if phone != '' %}contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email{% else %}email us at{% endif %} <a href='mailto:{{ 'Global' | Attribute:'OrganizationEmail' }}'>{{ 'Global' | Attribute:'OrganizationEmail' }}</a> for help. Thank you.";
+        private const string LockedOutCaptionDefaultValue = "{%- assign phone = 'Global' | Attribute:'OrganizationPhone' | Trim -%} Sorry, your account has been locked. Please {% if phone != '' %}contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email{% else %}email us at{% endif %} <a href='mailto:{{ 'Global' | Attribute:'OrganizationEmail' }}'>{{ 'Global' | Attribute:'OrganizationEmail' }}</a> for help. Thank you.";
 
         /// <summary>
         /// The time limit that a passwordless login code is valid in minutes.
@@ -738,7 +738,8 @@ namespace Rock.Blocks.Security
         /// <returns>The current page URL.</returns>
         private string GetCurrentPageUrl()
         {
-            return $"{this.RequestContext.RootUrlPath}page/{PageCache.Id}";
+            var rootUrl = this.RequestContext.RootUrlPath?.TrimEnd( '/' );
+            return $"{rootUrl}/page/{PageCache.Id}";
         }
 
         /// <summary>

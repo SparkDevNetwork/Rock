@@ -329,7 +329,7 @@
                                         <Rock:RockBoundField DataField="Name" />
                                         <Rock:RockBoundField DataField="Description" />
                                         <Rock:RockTemplateField>
-                                            <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
+                                            <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank' rel='noopener noreferrer'><%# Eval("GroupType") %></a>)</ItemTemplate>
                                         </Rock:RockTemplateField>
                                     </Columns>
                                 </Rock:Grid>
@@ -360,7 +360,7 @@
                                         <Rock:RockBoundField DataField="Name" />
                                         <Rock:RockBoundField DataField="Description" />
                                         <Rock:RockTemplateField>
-                                            <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
+                                            <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank' rel='noopener noreferrer'><%# Eval("GroupType") %></a>)</ItemTemplate>
                                         </Rock:RockTemplateField>
                                     </Columns>
                                 </Rock:Grid>
@@ -391,7 +391,7 @@
                                         <Rock:RockBoundField DataField="Name" />
                                         <Rock:RockBoundField DataField="Description" />
                                         <Rock:RockTemplateField>
-                                            <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
+                                            <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank' rel='noopener noreferrer'><%# Eval("GroupType") %></a>)</ItemTemplate>
                                         </Rock:RockTemplateField>
                                     </Columns>
                                 </Rock:Grid>

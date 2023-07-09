@@ -198,6 +198,20 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "1",
         Order = 17 )]
 
+    [GroupTypesField(
+        "Include Group Types",
+        Key = AttributeKey.IncludeGroupTypes,
+        Description = "The group types to display in the list. If none are selected, all group types will be included.",
+        IsRequired = false,
+        Order = 18 )]
+
+    [GroupTypesField(
+        "Exclude Group Types",
+        Key = AttributeKey.ExcludeGroupTypes,
+        Description = "The group types to exclude from the list (only valid if including all groups).",
+        IsRequired = false,
+        Order = 19 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "18A6DCE3-376C-4A62-B1DD-5E5177C11595" )]
@@ -227,6 +241,8 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string SignupforAdditionalTimesHeader = "SignupforAdditionalTimesHeader";
             public const string RequireLocationForAdditionalSignups = "RequireLocationForAdditionalSignups";
             public const string ScheduleListFormat = "ScheduleListFormat";
+            public const string IncludeGroupTypes = "IncludeGroupTypes";
+            public const string ExcludeGroupTypes = "ExcludeGroupTypes";
         }
 
         /// <summary>
@@ -1369,7 +1385,7 @@ $('#{0}').tooltip();
                 var groupService = new GroupService( rockContext );
                 var overrideHideFromToolbox = GetAttributeValue( AttributeKey.OverrideHideFromToolbox ).AsBoolean();
                 // get groups that the selected person is an active member of and have SchedulingEnabled and have at least one location with a schedule
-                var groups = groupService
+                var qry = groupService
                     .Queryable()
                     .AsNoTracking()
                     .Where( x => x.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active )
@@ -1377,10 +1393,21 @@ $('#{0}').tooltip();
                         && x.GroupType.IsSchedulingEnabled == true
                         && x.DisableScheduling == false
                         && ( overrideHideFromToolbox || x.DisableScheduleToolboxAccess == false )
-                        && x.GroupLocations.Any( gl => gl.Schedules.Any() ) )
-                    .OrderBy( x => new { x.Order, x.Name } )
-                    .AsNoTracking()
-                    .ToList();
+                        && x.GroupLocations.Any( gl => gl.Schedules.Any() ) );
+
+                List<Guid> includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                List<Guid> excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+
+                if ( includeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => includeGroupTypeGuids.Contains( t.GroupType.Guid ) );
+                }
+                else if ( excludeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.GroupType.Guid ) );
+                }
+
+                var groups = qry.OrderBy( x => new { x.Order, x.Name } ).AsNoTracking().ToList();
 
                 rptGroupPreferences.DataSource = groups;
                 rptGroupPreferences.DataBind();
@@ -1919,6 +1946,18 @@ $('#{0}').tooltip();
                     && ( overrideHideFromToolbox || a.Group.DisableScheduleToolboxAccess == false )
                     && a.Group.Members.Any( m => m.PersonId == selectedSignupPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
+                List<Guid> includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                List<Guid> excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+
+                if ( includeGroupTypeGuids.Count > 0 )
+                {
+                    personGroupLocationQry = personGroupLocationQry.Where( t => includeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
+                }
+                else if ( excludeGroupTypeGuids.Count > 0 )
+                {
+                    personGroupLocationQry = personGroupLocationQry.Where( t => !excludeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
+                }
+
                 var personGroupLocationList = personGroupLocationQry.ToList();
                 var groupsThatHaveSchedulingRequirements = personGroupLocationQry.Where( a => a.Group.SchedulingMustMeetRequirements ).Select( a => a.Group ).Distinct().ToList();
                 var personDoesntMeetSchedulingRequirementGroupIds = new HashSet<int>();
@@ -2059,16 +2098,29 @@ $('#{0}').tooltip();
             {
                 var overrideHideFromToolbox = GetAttributeValue( AttributeKey.OverrideHideFromToolbox ).AsBoolean();
                 var groupMemberService = new GroupMemberService( rockContext );
-                var groups = groupMemberService
+
+                var qry = groupMemberService
                     .Queryable()
                     .AsNoTracking()
                     .Where( g => g.Group.IsActive == true
                         && g.PersonId == this.SelectedPersonId
                         && g.Group.GroupType.IsSchedulingEnabled == true
                         && g.Group.DisableScheduling == false
-                        && ( overrideHideFromToolbox || g.Group.DisableScheduleToolboxAccess == false ) )
-                    .Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } )
-                    .ToList();
+                        && ( overrideHideFromToolbox || g.Group.DisableScheduleToolboxAccess == false ) );
+
+                List<Guid> includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+                List<Guid> excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+
+                if ( includeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => includeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
+                }
+                else if ( excludeGroupTypeGuids.Count > 0 )
+                {
+                    qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
+                }
+
+                var groups = qry.Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } ).ToList();
 
                 groups.Insert( 0, new { Value = ( int? ) null, Text = ALL_GROUPS_STRING } );
 

@@ -22,18 +22,23 @@ namespace Rock.Update.Models
     public enum RockReleaseProgram
     {
         /// <summary>
-        /// The alpha
+        /// Check for Rock updates for Alpha testers
         /// </summary>
         Alpha = 1,
 
         /// <summary>
-        /// The beta
+        /// Check for Rock updates for Beta testers
         /// </summary>
         Beta = 2,
 
         /// <summary>
-        /// The production
+        /// Check for Rock updates released to Production
         /// </summary>
-        Production = 3
+        Production = 3,
+
+        /// <summary>
+        /// Check for Rock updates that are in pre-release test
+        /// </summary>
+        Test = 4
     }
 }

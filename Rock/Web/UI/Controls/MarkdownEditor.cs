@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             base.RenderControl( writer );
-            writer.Write( "<small class='pull-right text-muted' style='margin-top:-20px'><strong>**bold**</strong> &nbsp;<em>*italics*</em> &nbsp;>quote &nbsp;[link text](link address) &nbsp;<a href='http://commonmark.org/help/' class='btn btn-xs text-muted' target='_blank'>more</a></small>" );
+            writer.Write( "<small class='pull-right text-muted' style='margin-top:-20px'><strong>**bold**</strong> &nbsp;<em>*italics*</em> &nbsp;>quote &nbsp;[link text](link address) &nbsp;<a href='http://commonmark.org/help/' class='btn btn-xs text-muted' target='_blank' rel='noopener noreferrer'>more</a></small>" );
         }
     }
 }

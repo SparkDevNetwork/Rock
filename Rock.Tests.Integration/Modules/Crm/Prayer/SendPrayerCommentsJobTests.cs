@@ -108,7 +108,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
             job.SendNotifications();
 
             // Verify that the error message is as expected.
-            var message = job.Log.GetLastMessage( SendPrayerComments.TaskLog.TaskLogMessage.MessageTypeSpecifier.Error );
+            var message = job.MainLog.GetLastMessage( SendPrayerComments.TaskLog.TaskLogMessage.MessageTypeSpecifier.Error );
 
             Assert.IsNotNull( message, "Expected error not found." );
         }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using Rock.Attribute;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Content;
 using Rock.Common.Mobile.Enums;
+using Rock.Mobile;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Cms
@@ -304,7 +305,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <returns>The XAML content.</returns>
         protected virtual string GetContent()
         {
-            string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var deviceData = RequestContext.GetHeader( "X-Rock-DeviceData" ).FirstOrDefault().FromJsonOrNull<DeviceData>() ?? new DeviceData();
             var additionalSettings = GetAdditionalSettings();
             var title = Title;
@@ -345,7 +345,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 <AbsoluteLayout HorizontalOptions=""Fill""
                 StyleClass=""hero""
                 HeightRequest=""{height}"">
-    <Rock:Image Source=""{applicationRoot}/GetImage.ashx?Guid={imageGuid}&amp;height={imageHeight}""
+    <Rock:Image Source=""{MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Guid={imageGuid}&amp;height={imageHeight}" )}""
                 StyleClass=""hero-image""
                 Aspect=""AspectFill""
                 AbsoluteLayout.LayoutBounds=""0,0,1,1""

@@ -41,7 +41,7 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
         Order = 0 )]
 
     [TextField( "Colors",
-        Description = "A list of colors to use when rendering the bars. The border will be this color exactly, the filled center of the bar will have the Fill Opacity applied first. If not specified a default color set will be used.",
+        Description = "A semicolon separated list of colors to use when rendering the bars. The border will be this color exactly, the filled center of the bar will have the Fill Opacity applied first. If not specified a default color set will be used.",
         IsRequired = false,
         Key = AttributeKey.Colors,
         Order = 1 )]

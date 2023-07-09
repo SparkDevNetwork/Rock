@@ -2,7 +2,9 @@
 <template>
     <Modal v-model="isModalOpen" title="Sign-Up Finder Settings" :saveText="saveButtonText" @save="onSave">
 
-        <NotificationBox v-if="errorMessage" alertType="warning" />
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
 
         <LoadingIndicator v-else-if="isLoading" :delay="500" />
 
@@ -201,7 +203,6 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList";
@@ -211,10 +212,12 @@
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
     import Modal from "@Obsidian/Controls/modal";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import PanelWidget from "@Obsidian/Controls/panelWidget";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import TextBox from "@Obsidian/Controls/textBox";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";

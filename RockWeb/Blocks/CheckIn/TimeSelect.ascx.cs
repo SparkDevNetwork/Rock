@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.CheckIn
                             if ( !schedules.Any() )
                             {
                                 CheckInPerson person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).SelectMany( f => f.People.Where( p => p.Selected ) ).FirstOrDefault();
-                                string msg = $"<p>{string.Format( GetAttributeValue( AttributeKey.NoCheckinOptionsMessage ), person.Person.FullName )}</p>" ;
+                                string msg = $"<p>{string.Format( GetAttributeValue( AttributeKey.NoCheckinOptionsMessage ), person?.Person?.FullName != null ? person.Person.FullName : "they" )}</p>";
                                 ProcessSelection( maWarning, () => schedules.Count > 0, msg, true );
                             }
 

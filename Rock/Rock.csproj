@@ -719,6 +719,9 @@
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleToolbox.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleUnavailability.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerCardView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Reminders\ReminderDashboard.cs" />
+    <Compile Include="Blocks\Types\Mobile\Reminders\ReminderEdit.cs" />
+    <Compile Include="Blocks\Types\Mobile\Reminders\ReminderList.cs" />
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
@@ -940,6 +943,7 @@
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
+    <Compile Include="Jobs\PostV151DataMigrationsDuplicateMobileInteractionsCleanup.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsMobileRestUserGroup.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsSystemPhoneNumbers.cs" />
@@ -1059,8 +1063,12 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\175_MigrationRollupsForV15_1_0.cs" />
     <Compile Include="Plugin\HotFixes\174_AddIndicesForPerformanceImprovements.cs" />
     <Compile Include="Plugin\HotFixes\173_UpdateSignUpFinderBlockSetting.cs" />
+    <Compile Include="Plugin\HotFixes\172_MobileDuplicateInteractionCleanupJob.cs" />
+    <Compile Include="Plugin\HotFixes\171_UpdateColorsInTBD.cs" />
+    <Compile Include="Plugin\HotFixes\170_UpdateInsightsMetricsToExcludeAnonymousVisitor .cs" />
     <Compile Include="Plugin\HotFixes\169_UpdateFutureWeeksAttributeForGroupSchedulingToolboxV2.cs" />
     <Compile Include="Plugin\HotFixes\168_MigrationRollupsForV14_2_1.cs" />
     <Compile Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid.cs" />
@@ -1072,6 +1080,8 @@
     <Compile Include="Plugin\HotFixes\162_RemoveUnusedRoute.cs" />
     <Compile Include="Plugin\HotFixes\161_RemindersUpdates.cs" />
     <Compile Include="Plugin\HotFixes\160_SetupReminders.cs" />
+    <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
+    <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1593,6 +1603,7 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
     <Compile Include="Plugin\HotFixes\155_BackgroundCheckPersonEmailValidFix.cs" />
+    <Compile Include="Plugin\HotFixes\176_WindowsCheckinInstaller13_8.cs" />
     <Compile Include="Plugin\HotFixes\158_CorrectWorkfflowLogIsSecured.cs" />
     <Compile Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0.cs" />
     <Compile Include="Plugin\HotFixes\156_CorrectBlockCategories.cs" />
@@ -1697,6 +1708,7 @@
     <Compile Include="Transactions\SendAchievementCompletedRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendAttendanceOccurrenceRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendAttendanceRealTimeNotificationsTransaction.cs" />
+    <Compile Include="Transactions\UpdateDataViewStatisticsTransaction.cs" />
     <Compile Include="Transactions\UpdateNotificationMessageBadgeCountTransaction.cs" />
     <Compile Include="Tv\Classes\AppleTvApplicationSettings.cs" />
     <Compile Include="Tv\Classes\ApplicationSettings.cs" />
@@ -4263,6 +4275,7 @@
     </Content>
     <None Include="Resources\updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
+    <None Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">

@@ -1967,7 +1967,7 @@ namespace RockWeb.Blocks.Communication
                     sb.Append( "<div class='row'><div class='col-md-12'><ul>" );
                     foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ).ToList() )
                     {
-                        sb.AppendFormat( "<li><a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
+                        sb.AppendFormat( "<li><a target='_blank' rel='noopener noreferrer' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
                             System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Id, binaryFile.FileName );
                     }
                     sb.Append( "</ul></div></div>" );
