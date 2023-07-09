@@ -70,7 +70,7 @@ namespace Rock.Field.Types
                     if ( string.IsNullOrWhiteSpace( template ) )
                     {
                         // If an output template is not specified, use a default.
-                        template = "<a href='{{value}}' target='_blank'>{{ value | Url:'segments' | Last }}</a>";
+                        template = "<a href='{{value}}' target='_blank' rel='noopener noreferrer'>{{ value | Url:'segments' | Last }}</a>";
                     }
                     if ( privateConfigurationValues.ContainsKey( ICONCSSCLASS_KEY ) )
                     {

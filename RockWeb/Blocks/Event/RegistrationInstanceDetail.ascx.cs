@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -408,6 +409,14 @@ namespace RockWeb.Blocks.Event
             {
                 // Clone the Registration Instance without the old Id.
                 var newRegistrationInstance = registrationInstance.CloneWithoutIdentity();
+
+                // delete account from registration if account is inactive
+                if( !registrationInstance.Account.IsActive )
+                {
+                    newRegistrationInstance.Account = null;
+                    newRegistrationInstance.AccountId = 0;
+                }
+
                 hfRegistrationInstanceId.Value = newRegistrationInstance.Id.ToString();
                 hfRegistrationTemplateId.Value = newRegistrationInstance.RegistrationTemplateId.ToString();
                 newRegistrationInstance.Name = registrationInstance.Name + " - Copy";
@@ -481,8 +490,8 @@ namespace RockWeb.Blocks.Event
                     Guid? accountGuid = GetAttributeValue( AttributeKey.DefaultAccount ).AsGuidOrNull();
                     if ( accountGuid.HasValue )
                     {
-                        var account = new FinancialAccountService( rockContext ).Get( accountGuid.Value );
-                        registrationInstance.AccountId = account != null ? account.Id : 0;
+                        var account = FinancialAccountCache.Get( accountGuid.Value );
+                        registrationInstance.AccountId = account != null && account.IsActive ? account.Id : 0;
                     }
 
                     // Do not allow copying an empty Registration Instance.

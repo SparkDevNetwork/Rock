@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock;
+using Rock.Constants;
+using Rock.Data;
+using Rock.Model;
+using Rock.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+using Rock.Web.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,24 +31,15 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Constants;
-using Rock.Data;
-using Rock.Model;
-using Rock.Utility;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Web.Utilities;
-
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
     ///     A DataFilter that selects people associated with locations matching the filter.
     /// </summary>
     [Description( "Filter people by their family address." )]
-    [Export( typeof(DataFilterComponent) )]
+    [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Location Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "02920962-40D0-4394-B625-C894AFF67103")]
+    [Rock.SystemGuid.EntityTypeGuid( "02920962-40D0-4394-B625-C894AFF67103" )]
     public class LocationFilter : DataFilterComponent
     {
         #region Settings
@@ -78,7 +77,7 @@ namespace Rock.Reporting.DataFilter.Person
                 get
                 {
                     // at least one item should be set for this to be valid (otherwise it's just data view bloat).
-                    return LocationTypeGuid.HasValue || ! string.IsNullOrWhiteSpace( Street1 ) || !string.IsNullOrWhiteSpace( City )
+                    return LocationTypeGuid.HasValue || !string.IsNullOrWhiteSpace( Street1 ) || !string.IsNullOrWhiteSpace( City )
                         || !string.IsNullOrWhiteSpace( State ) || !string.IsNullOrWhiteSpace( PostalCode ) || !string.IsNullOrWhiteSpace( Country );
                 }
             }
@@ -258,9 +257,9 @@ function() {
                 string postalCode = string.IsNullOrWhiteSpace( settings.PostalCode ) ? null : settings.PostalCode;
 
                 string countryName = GlobalAttributesCache.Get().GetValue( "SupportInternationalAddresses" ).AsBoolean() &&
-                    ! string.IsNullOrWhiteSpace( settings.Country ) ? settings.Country : null;
+                    !string.IsNullOrWhiteSpace( settings.Country ) ? settings.Country : null;
 
-                if ( settings.LocationTypeGuid.HasValue)
+                if ( settings.LocationTypeGuid.HasValue )
                 {
                     locationTypeName = DefinedValueCache.Get( settings.LocationTypeGuid.Value, context ).Value;
                 }
@@ -297,7 +296,7 @@ function() {
 
             var familyLocations = GroupTypeCache.GetFamilyGroupType().LocationTypeValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
 
-            foreach (var value in familyLocations)
+            foreach ( var value in familyLocations )
             {
                 ddlLocationType.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
@@ -370,7 +369,7 @@ function() {
             acAddress.City = settings.City;
             acAddress.State = settings.State;
             acAddress.PostalCode = settings.PostalCode;
-            acAddress.Country = settings.Country;            
+            acAddress.Country = settings.Country;
         }
 
         /// <summary>
@@ -428,14 +427,14 @@ function() {
                 .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId && locationQuery.Any( l => l.Id == gl.LocationId ) );
 
             // If a Location Type is specified, apply the filter condition.
-            if (settings.LocationTypeGuid.HasValue)
+            if ( settings.LocationTypeGuid.HasValue )
             {
                 int groupLocationTypeId = DefinedValueCache.Get( settings.LocationTypeGuid.Value ).Id;
                 groupLocationsQuery = groupLocationsQuery.Where( x => x.GroupLocationTypeValue.Id == groupLocationTypeId );
             }
 
             // Get all of the Group Members of the qualifying Families.
-            var groupMemberServiceQry = new GroupMemberService( context ).Queryable()
+            var groupMemberServiceQry = new GroupMemberService( context ).Queryable( true )
                 .Where( gm => groupLocationsQuery.Any( gl => gl.GroupId == gm.GroupId ) );
 
             // Get all of the People corresponding to the qualifying Group Members.

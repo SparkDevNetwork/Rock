@@ -254,6 +254,13 @@ namespace RockWeb.Blocks.Finance
         DefaultBooleanValue = false,
         Order = 26 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Key = AttributeKey.DisableCaptchaSupport,
+        DefaultBooleanValue = false,
+        Order = 29 )]
+
     #endregion Default Category
 
     #region Email Templates
@@ -545,6 +552,7 @@ namespace RockWeb.Blocks.Finance
             public const string EnableAnonymousGiving = "EnableAnonymousGiving";
             public const string AdditionalAccounts = "AdditionalAccounts";
             public const string EnableAccountHierarchy = "EnableAccountHierarchy";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
 
             // Email Templates Category
             public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
@@ -839,25 +847,6 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
-        /// <summary>
-        /// Gets or sets the host payment information submit JavaScript.
-        /// </summary>
-        /// <value>
-        /// The host payment information submit script.
-        /// </value>
-        protected string HostPaymentInfoSubmitScript
-        {
-            get
-            {
-                return ViewState[ViewStateKey.HostPaymentInfoSubmitScript] as string;
-            }
-
-            set
-            {
-                ViewState[ViewStateKey.HostPaymentInfoSubmitScript] = value;
-            }
-        }
-
         #endregion Fields
 
         #region Base Control Methods
@@ -888,7 +877,25 @@ mission. We are so grateful for your commitment.</p>
 
             RegisterScript();
 
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            cpCaptcha.Visible = !disableCaptchaSupport;
+            cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
+
             InitializeFinancialGatewayControls();
+        }
+
+        /// <summary>
+        /// Handles the TokenReceived event of the CpCaptcha control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
+        private void CpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
+        {
+            if ( e.IsValid )
+            {
+                hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+                cpCaptcha.Visible = false;
+            }
         }
 
         private void InitializeFinancialGatewayControls()
@@ -899,7 +906,11 @@ mission. We are so grateful for your commitment.</p>
             {
                 _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
-                this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+
+                if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean()  || !cpCaptcha.IsAvailable)
+                {
+                    hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+                }
             }
 
             if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
@@ -1087,6 +1098,7 @@ mission. We are so grateful for your commitment.</p>
             caapPromptForAccountAmounts.UseAccountCampusMappingLogic = this.GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic ).AsBooleanOrNull() ?? false;
             caapPromptForAccountAmounts.AskForCampusIfKnown = this.GetAttributeValue( AttributeKey.AskForCampusIfKnown ).AsBoolean();
             caapPromptForAccountAmounts.IncludeInactiveCampuses = this.GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
+            caapPromptForAccountAmounts.OrderBySelectableAccountsIndex = true;
             var includedCampusStatusIds = this.GetAttributeValues( AttributeKey.IncludedCampusStatuses )
                 .ToList()
                 .AsGuidList()
@@ -1628,18 +1640,6 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void HandlePaymentInfoNextButton()
         {
-            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
-            {
-                /* 03/22/2021 MDP
-
-                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                */
-
-                ShowMessage( NotificationBoxType.Validation, "Validation", "Invalid Form Value" );
-                return;
-            }
-
             if ( ValidatePaymentInfo( out string errorMessage ) )
             {
                 SetConfirmationText();

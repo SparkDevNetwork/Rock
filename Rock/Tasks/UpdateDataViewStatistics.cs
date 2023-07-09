@@ -24,6 +24,8 @@ namespace Rock.Tasks
     /// <summary>
     /// Task to update statistics when a <see cref="DataView"/> is run.
     /// </summary>
+    [Obsolete( "Use UpdateDataViewStatisticsTransaction Transaction instead." )]
+    [RockObsolete( "1.15" )]
     public sealed class UpdateDataViewStatistics : BusStartedTask<UpdateDataViewStatistics.Message>
     {
         /// <summary>

@@ -513,7 +513,7 @@ namespace Rock.Lava
         {
             ILavaTemplate template;
             LavaRenderParameters activeParameters;
-            
+
             // Copy the render parameters so they can be altered without affecting the input object.
             if ( parameters == null )
             {
@@ -530,20 +530,27 @@ namespace Rock.Lava
 
             try
             {
+                LavaParseResult parseResult = null;
                 if ( _cacheService != null )
                 {
-                    template = _cacheService.GetOrAddTemplate( this, inputTemplate, activeParameters.CacheKey );
+                    var result = _cacheService.AddOrGetTemplate( this, inputTemplate, activeParameters.CacheKey );
+                    template = result.Template;
+
+                    if ( result.ParseError != null )
+                    {
+                        // If the template could not be parsed, it should be added to the cache as an error template.
+                        // Subsequent requests for the same template should render the compiled error message rather than throw an exception.
+                        throw result.ParseError;
+                    }
                 }
                 else
                 {
                     template = null;
                 }
 
-                bool isParsed = ( template != null );
-
-                if ( !isParsed )
+                if ( template == null )
                 {
-                    var parseResult = ParseTemplate( inputTemplate );
+                    parseResult = ParseTemplate( inputTemplate );
 
                     if ( parseResult.HasErrors )
                     {
@@ -562,7 +569,7 @@ namespace Rock.Lava
             }
             catch ( Exception ex )
             {
-                var lre = GetLavaRenderException( ex, inputTemplate );
+                var lre = GetLavaExceptionForRenderError( ex, inputTemplate );
 
                 string message;
 
@@ -651,7 +658,7 @@ namespace Rock.Lava
 
                 if ( result.Error != null )
                 {
-                    result.Error = GetLavaRenderException( result.Error, template?.GetDescription() );
+                    result.Error = GetLavaExceptionForRenderError( result.Error, template?.GetDescription() );
                 }
             }
             catch ( LavaInterruptException )
@@ -671,7 +678,7 @@ namespace Rock.Lava
 
                 result = new LavaRenderResult();
 
-                var lre = GetLavaRenderException( ex, template?.GetDescription() );
+                var lre = GetLavaExceptionForRenderError( ex, template?.GetDescription() );
 
                 string message;
 
@@ -906,19 +913,14 @@ namespace Rock.Lava
                 // an error message as being suitable for display in the render output.
                 var outputEx = ex;
 
-                while ( outputEx is LavaException
-                        && outputEx.InnerException != null )
+                // Get an error message that is suitable for rendering to final output.
+                if ( outputEx is LavaException le )
                 {
-                    outputEx = outputEx.InnerException;
-                }
-
-                if ( outputEx == null )
-                {
-                    message = $"Lava Error: { ex.Message }\n[Engine: { this.EngineName }]";
+                    message = le.GetUserMessage();
                 }
                 else
                 {
-                    message = outputEx.Message;
+                    message = $"Lava Error: { ex.Message }";
                 }
             }
             else if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.Ignore )
@@ -934,21 +936,47 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Returns a top-level Lava Exception that can be identified and processed by a caller of the Lava library.
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
         private LavaException GetLavaException( Exception ex )
         {
+            if ( ex == null )
+            {
+                return new LavaException( "Lava Processing Error: Undefined exception." );
+            }
+
+            if ( ex.GetType() == typeof( LavaException ) )
+            {
+                // If this is a LavaException, return it unchanged.
+                return (LavaException) ex;
+            }
+
+            // Return a top-level summary message.
             if ( ex is LavaException le )
             {
-                return le;
+                // If the exception is derived from LavaException, return the user message.
+                return new LavaException( le.GetUserMessage(), ex );
             }
-            else
-            {
-                return new LavaException( "A Lava Processing Error occurred. Check the inner exception for details.", ex );
-            }
+
+            return new LavaException( $"Lava Processing Error: { ex.Message }", ex );
         }
 
-        private LavaRenderException GetLavaRenderException( Exception ex, string templateText = "{compiled}" )
+        private LavaException GetLavaExceptionForRenderError( Exception ex, string templateText = "{compiled}" )
         {
-            return ex as LavaRenderException ?? new LavaRenderException( this.EngineName, templateText, ex );
+            if ( ex is LavaRenderException lre )
+            {
+                return lre;
+            }
+            // If this is a parse exception, there is no need to include a subsequent render exception.
+            if ( ex is LavaParseException lpe )
+            {
+                return lpe;
+            }
+
+            return new LavaRenderException( this.EngineName, templateText, ex );
         }
 
         /// <summary>

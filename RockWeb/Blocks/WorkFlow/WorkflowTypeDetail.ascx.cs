@@ -1457,7 +1457,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( workflowType.ProcessingIntervalSeconds.HasValue )
             {
                 int mins = workflowType.ProcessingIntervalSeconds.Value / 60;
-                tbProcessingInterval.Text = mins.ToString( "N0" );
+                tbProcessingInterval.Text = mins.ToString();
             }
             else
             {

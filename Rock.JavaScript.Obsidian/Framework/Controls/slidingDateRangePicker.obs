@@ -152,6 +152,10 @@
     };
 
     watch(rangeType, () => {
+        if (["0", "1", "4", "8", "16"].includes(rangeType.value)) {
+            timeUnit.value = (toNumberOrNull(timeUnit.value) as TimeUnit ?? 0).toString();
+        }
+
         if (["0", "4", "8", "16"].includes(rangeType.value) && internalValue.value) {
             timeValue.value = toNumberOrNull(timeValue.value)?.toString() ?? "1";
         }

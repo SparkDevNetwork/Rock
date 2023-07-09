@@ -541,7 +541,7 @@ namespace RockWeb.Blocks.Utility
             <a title='Delete' class='btn btn-xs btn-square btn-danger js-delete-file action'>
                 <i class='fa fa-times'></i>
             </a>
-            <a href='{3}' target='_blank' title='Download' class='btn btn-xs btn-square btn-default js-download-file action'>
+            <a href='{3}' target='_blank' rel='noopener noreferrer' title='Download' class='btn btn-xs btn-square btn-default js-download-file action'>
                 <i class='fa fa-download'></i>
             </a>
             {4}

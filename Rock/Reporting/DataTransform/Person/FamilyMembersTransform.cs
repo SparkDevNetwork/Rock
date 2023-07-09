@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -94,7 +94,7 @@ namespace Rock.Reporting.DataTransform.Person
             int childRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
 
             var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
-                .Where( p => p.Members.Where( a => a.GroupRoleId == adultRoleId || a.GroupRoleId == childRoleId )
+                .Where( p => p.Members.Where( a => (a.GroupRoleId == adultRoleId || a.GroupRoleId == childRoleId) && a.IsArchived == false )
                     .Any( a => a.Group.Members
                     .Any( c => (c.GroupRoleId == childRoleId || c.GroupRoleId == adultRoleId ) && idQuery.Contains( c.PersonId ) ) ) );
 

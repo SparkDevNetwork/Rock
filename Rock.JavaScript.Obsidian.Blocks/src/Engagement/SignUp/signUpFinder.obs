@@ -1,10 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockErrorMessage" alertType="warning">
+    <NotificationBox v-if="blockErrorMessage" :alertType="AlertType.Warning">
         {{ blockErrorMessage }}
     </NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="warning">
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
         {{ errorMessage }}
     </NotificationBox>
 
@@ -77,17 +77,18 @@
     import { computed, nextTick, ref } from "vue";
     import SignUpFilter from "./SignUpFinder/signUpFilter.partial.obs";
     import { SignUpFilterType } from "./SignUpFinder/signUpFilterType.partial";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
     import { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
     import InputGroupDropDown from "@Obsidian/Controls/inputGroupDropDown.obs";
     import Loading from "@Obsidian/Controls/loading";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import RockForm from "@Obsidian/Controls/rockForm";
     import TextBox from "@Obsidian/Controls/textBox";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";

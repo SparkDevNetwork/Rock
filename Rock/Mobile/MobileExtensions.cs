@@ -71,6 +71,26 @@ namespace Rock.Mobile
             }
         }
 
+        /// <summary>
+        /// Converts a <see cref="Rock.Model.DisplayInNavWhen"/> to a mobile <see cref="Rock.Common.Mobile.Enums.DisplayInNavWhen"/>.
+        /// </summary>
+        /// <param name="displayInNavWhen">The display in nav when.</param>
+        /// <returns>DisplayInNavWhen.</returns>
+        public static DisplayInNavWhen ToMobile( this Rock.Model.DisplayInNavWhen displayInNavWhen )
+        {
+            switch( displayInNavWhen )
+            {
+                case Model.DisplayInNavWhen.Always:
+                    return DisplayInNavWhen.Always;
+                case Model.DisplayInNavWhen.Never:
+                    return DisplayInNavWhen.Never;
+                case Model.DisplayInNavWhen.WhenAllowed:
+                    return DisplayInNavWhen.WhenAllowed;
+                default:
+                    return DisplayInNavWhen.Never;
+            }
+        }
+
         #endregion
     }
 

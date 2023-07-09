@@ -37,6 +37,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         /// <summary>
         /// Gets or sets a value indicating whether the Person attended.
         /// </summary>
-        public bool DidAttend { get; set; }
+        public bool? DidAttend { get; set; }
     }
 }

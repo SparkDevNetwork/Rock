@@ -109,15 +109,17 @@ namespace Rock.Model
                                     var entityType = EntityTypeCache.Get( userLogin.EntityTypeId ?? 0 );
                                     var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
 
+                                    // Get the current person to correctly ascribe the deletion / modification.
+                                    var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
                                     if ( !isUserNameSensitive )
                                     {
                                         HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "User Login" ).SetOldValue( userLogin.UserName );
-                                        HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, Entity.UserName, typeof( UserLogin ), Entity.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                                        HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, Entity.UserName, typeof( UserLogin ), Entity.Id, true, currentPersonAliasId, null );
                                     }
                                     else
                                     {
                                         HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Authentication Provider" ).SetOldValue( entityType?.FriendlyName ).SetCaption( "User Account" );
-                                        HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, entityType?.FriendlyName, typeof( UserLogin ), Entity.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                                        HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, entityType?.FriendlyName, typeof( UserLogin ), Entity.Id, true, currentPersonAliasId, null );
                                     }
                                 }
                                 catch ( Exception ex )

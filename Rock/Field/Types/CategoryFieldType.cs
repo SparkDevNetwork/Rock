@@ -228,7 +228,7 @@ namespace Rock.Field.Types
             configurationValues.Add( QUALIFIER_COLUMN_KEY, new ConfigurationValue( "Qualifier Column", "Entity column qualifier", "" ) );
             configurationValues.Add( QUALIFIER_VALUE_KEY, new ConfigurationValue( "Qualifier Value", "Entity column value", "" ) );
 
-            if ( controls != null && controls.Count == 3 )
+            if ( controls != null && controls.Count >= 3 )
             {
                 if ( controls[0] != null && controls[0] is DropDownList )
                     configurationValues[ENTITY_TYPE_NAME_KEY].Value = ( ( DropDownList ) controls[0] ).SelectedValue;
@@ -250,7 +250,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 3 && configurationValues != null )
+            if ( controls != null && controls.Count >= 3 && configurationValues != null )
             {
                 if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
                     ( ( DropDownList ) controls[0] ).SelectedValue = configurationValues[ENTITY_TYPE_NAME_KEY].Value;

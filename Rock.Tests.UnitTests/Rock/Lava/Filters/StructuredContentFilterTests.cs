@@ -16,9 +16,8 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
-using Rock.Tests.UnitTests.Lava;
 
-namespace Rock.Tests.UnitTests.Rock.Lava.Filters
+namespace Rock.Tests.UnitTests.Lava
 {
     [TestClass]
     public class StructuredContentFilterTests : LavaUnitTestBase

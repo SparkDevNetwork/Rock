@@ -308,6 +308,7 @@
     <TypeScriptCompile Include="Framework\Controls\switch.ts" />
     <TypeScriptCompile Include="Framework\Controls\treeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
+    <TypeScriptCompile Include="Framework\Directives\dragScroll.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Engagement\SignUp\registerMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailDateSelectionMode.ts" />
@@ -354,6 +355,8 @@
     <TypeScriptCompile Include="Framework\Enums\Core\cameraBarcodeConfiguration.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\changeType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\colorDepth.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\colorRecipe.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\colorScheme.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\followingSuggestedStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\format.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\jobNotificationStatus.ts" />
@@ -982,6 +985,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceStyleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\experienceVisualizerStyleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\joinExperienceResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\pingExperienceResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Event\InteractiveExperiences\visualizerRenderConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Finance\savedFinancialAccountListItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\index.d.ts" />

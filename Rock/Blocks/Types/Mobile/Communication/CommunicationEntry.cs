@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Communication.CommunicationEntry;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
@@ -298,7 +299,6 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     return ActionBadRequest();
                 }
 
-                var publicUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
                 var personService = new PersonService( rockContext ).Queryable();
 
                 // Load the actual "recipients".
@@ -335,7 +335,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     Email = a.Email,
                     PersonGuid = a.PersonGuid,
                     EntitySetItemGuid = a.EntitySetItemGuid,
-                    PhotoUrl = a.PhotoId != null ? $"{publicUrl}GetImage.ashx?Id={a.PhotoId}&maxwidth=256&maxheight=256" : string.Empty,
+                    PhotoUrl = a.PhotoId != null ? MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Id={a.PhotoId}&maxwidth=256&maxheight=256" ) : string.Empty,
                     SmsNumber = a.PhoneNumbers.GetFirstSmsNumber(),
                 } ).ToList();
 

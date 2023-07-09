@@ -257,6 +257,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var pnlCreditCardInfo = e.Item.FindControl( "pnlScheduledTransactionCreditCardInfo" ) as Panel;
             var lOtherCurrencyTypeInfo = e.Item.FindControl( "lScheduledTransactionOtherCurrencyTypeInfo" ) as Literal;
 
+            string currencyType = financialPaymentDetail?.CurrencyTypeValue.Value;
             string creditCardType = null;
             string accountNumberMasked = financialPaymentDetail?.AccountNumberMasked;
             if ( financialPaymentDetail?.CreditCardTypeValueId != null )
@@ -265,6 +266,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             var currencyTypeIdCreditCard = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+            var currencyTypeIdApplePay = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_APPLE_PAY.AsGuid() );
+            var currencyTypeIdAndroidPay = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ANDROID_PAY.AsGuid() );
 
             if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdCreditCard )
             {
@@ -273,11 +276,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 lScheduledTransactionCardTypeLast4.Text = FormatAccountTypeWithLast4( creditCardType, accountNumberMasked );
                 lScheduledTransactionExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
             }
+            else if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdApplePay
+                        || financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdAndroidPay )
+            {
+                // If the currency type is Apple Pay or Android Pay, use the currency type value.
+                pnlCreditCardInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Visible = false;
+                lScheduledTransactionCardTypeLast4.Text = FormatAccountTypeWithLast4( currencyType, accountNumberMasked );
+                lScheduledTransactionExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
+            }
             else
             {
                 pnlCreditCardInfo.Visible = false;
                 lOtherCurrencyTypeInfo.Visible = true;
-                lOtherCurrencyTypeInfo.Text = financialPaymentDetail?.CurrencyTypeValue?.Value;
+                lOtherCurrencyTypeInfo.Text = currencyType;
             }
 
             if ( financialPaymentDetail?.FinancialPersonSavedAccount != null )

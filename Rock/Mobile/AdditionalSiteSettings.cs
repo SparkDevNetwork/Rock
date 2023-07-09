@@ -363,5 +363,17 @@ namespace Rock.Mobile
         /// </summary>
         /// <value><c>true</c> if this application site will compress update packages, <c>false</c>.</value>
         public bool IsPackageCompressionEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the auth0 domain.
+        /// </summary>
+        /// <value>The auth0 domain.</value>
+        public string Auth0Domain { get; set; }
+
+        /// <summary>
+        /// Gets or sets the auth0 client identifier.
+        /// </summary>
+        /// <value>The auth0 client identifier.</value>
+        public string Auth0ClientId { get; set; }
     }
 }

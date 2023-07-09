@@ -20,7 +20,7 @@ namespace Rock.Plugin.HotFixes
     /// Plug-in migration
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 169, "1.14.3" )]
+    [MigrationNumber( 169, "1.14.1" )]
     public class UpdateFutureWeeksAttributeForGroupSchedulingToolboxV2 : Migration
     {
         private const string _169_UpdateFutureWeeksAttributeForGroupSchedulingToolboxV2 = @"

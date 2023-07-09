@@ -16,8 +16,8 @@
                              v-text="configError" />
         </template>
 
-        <div :class="isMobileForced ? 'row' : 'row d-sm-flex'">
-            <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible" :class="isMobileForced ? '' : 'col-sm-5'">
+        <div :class="isMobileForced ? 'mobile-layout' : 'row d-sm-flex'">
+            <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible" :class="isMobileForced ? 'login-methods' : 'login-methods col-12 col-xs-12 col-sm'">
                 <ExternalLogin
                                v-if="isAnyExternalAuthProviderVisible"
                                :modelValue="config.externalAuthProviderButtons || []"
@@ -36,16 +36,16 @@
 
             <Divider
                      v-if="areSecondaryAndPrimaryAuthVisible"
-                     :class="isMobileForced ? 'd-flex' : 'd-flex d-sm-none col-sm-1'"
+                     :class="isMobileForced ? '' : 'd-flex d-sm-none col-xs-12 col-sm-1'"
                      content="or" />
 
             <Divider
                      v-if="!isMobileForced && areSecondaryAndPrimaryAuthVisible"
-                     class="d-none d-sm-flex col-sm-1"
+                     class="d-none d-sm-flex col-sm flex-grow-0"
                      content="or"
                      :isVertical="true" />
 
-            <div :class="isMobileForced ? '' : areSecondaryAndPrimaryAuthVisible ? 'col-sm-6' : 'col-sm-12'">
+            <div :class="isMobileForced ? 'login-entry' : areSecondaryAndPrimaryAuthVisible ? 'login-entry col-12 col-xs-12 col-sm' : 'login-entry col-sm-12'">
                 <CredentialLogin
                                  v-if="config.isInternalDatabaseLoginSupported && loginMethodWrapper.isCredential"
                                  :config="config"
@@ -71,7 +71,7 @@
             </div>
         </div>
 
-        <div v-if="config.contentText" class="mt-3 row col-sm-12" v-html="config.contentText"></div>
+        <div v-if="config.contentText" class="mt-3" v-html="config.contentText"></div>
     </div>
 </template>
 

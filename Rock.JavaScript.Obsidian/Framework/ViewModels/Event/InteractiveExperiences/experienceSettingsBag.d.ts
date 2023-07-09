@@ -36,4 +36,7 @@ export type ExperienceSettingsBag = {
      * campus could be determined.
      */
     defaultCampusId?: number | null;
+
+    /** The lava template to use when the experience has ended. */
+    experienceEndedTemplate?: string | null;
 };

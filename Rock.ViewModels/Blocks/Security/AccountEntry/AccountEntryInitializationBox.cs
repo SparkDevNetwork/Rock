@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using Rock.Enums.Blocks.Security.AccountEntry;
 
 namespace Rock.ViewModels.Blocks.Security.AccountEntry
 {
@@ -23,6 +24,11 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
     /// </summary>
     public class AccountEntryInitializationBox
     {
+        /// <summary>
+        /// The account entry step.
+        /// </summary>
+        public AccountEntryStep? Step { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether phone numbers shown.
         /// </summary>

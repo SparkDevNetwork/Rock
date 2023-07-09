@@ -47,7 +47,7 @@ namespace Rock.Model
 
             var currentValue = feeValues?.FirstOrDefault()?.Quantity ?? 0;
 
-            if ( fee.IsRequired && usageCountRemaining > 0 )
+            if ( fee.IsRequired && ( !usageCountRemaining.HasValue || usageCountRemaining > 0 ) )
             {
                 cb.Checked = true;
                 cb.Enabled = false;

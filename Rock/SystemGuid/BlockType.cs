@@ -344,6 +344,21 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MOBILE_PRAYER_PRAYER_CARD_VIEW = "CA75C558-9345-47E7-99AF-D8191D31D00D";
 
+        /// <summary>
+        /// The mobile Reminders &gt; <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderList">Reminder List</see> block type.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_LIST = "E3FD3E7B-BF9D-4008-B71D-DF857DC20D7B";
+
+        /// <summary>
+        /// The mobile Reminders &gt; <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderList">Reminder Dashboard</see> block type.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_DASHBOARD = "223F5122-C93A-44CD-BFB7-AF990A2B6B65";
+
+        /// <summary>
+        /// The mobile Reminders &gt; <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderList">Reminder Edit</see> block type.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_EDIT = "BA26C29E-660C-470D-9FEA-5830DB15E935";
+
         #endregion
 
         #region Obsidian Block Types

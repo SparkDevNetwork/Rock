@@ -282,7 +282,7 @@
                         <asp:Repeater ID="rptViewBenevolenceDocuments" runat="server">
                             <ItemTemplate>
                                 <div class="col-md-2">
-                                    <asp:HyperLink ID="lnkViewUploadedFile" runat="server" Target="_blank" CssClass="btn-link"></asp:HyperLink>
+                                    <asp:HyperLink ID="lnkViewUploadedFile" runat="server" Target="_blank" rel="noopener noreferrer" CssClass="btn-link"></asp:HyperLink>
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>

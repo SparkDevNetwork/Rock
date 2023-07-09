@@ -16,7 +16,6 @@
 //
 using System;
 using System.Linq;
-using System.Text;
 using Quartz;
 
 using DotLiquid;
@@ -24,6 +23,7 @@ using DotLiquid;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -65,10 +65,10 @@ namespace Rock.Jobs
         /// <seealso cref="M:Quartz.IJobListener.JobExecutionVetoed(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
         public void JobToBeExecuted( IJobExecutionContext context )
         {
-            StringBuilder message = new StringBuilder();
-
             // get job type id
             int jobId = context.JobDetail.Description.AsInteger();
+
+            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job is about to be executed.", jobId, context.JobDetail?.Key );
 
             // load job
             var rockContext = new RockContext();
@@ -98,7 +98,7 @@ namespace Rock.Jobs
         /// <seealso cref="M:Quartz.IJobListener.JobToBeExecuted(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
         public void JobExecutionVetoed( IJobExecutionContext context )
         {
-            return;
+            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was vetoed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
         }
 
         /// <summary>
@@ -148,6 +148,7 @@ namespace Rock.Jobs
             if ( job == null )
             {
                 // if job was deleted or wasn't found, just exit
+                RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was not found.", jobId, context.JobDetail?.Key );
                 return;
             }
 
@@ -177,6 +178,8 @@ namespace Rock.Jobs
                 {
                     sendMessage = true;
                 }
+
+                RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was executed.", jobId, context.JobDetail?.Key );
             }
             else
             {
@@ -215,6 +218,7 @@ namespace Rock.Jobs
                     sendMessage = true;
                 }
 
+                RockLogger.Log.Debug( RockLogDomains.Jobs, exceptionToLog, "Job ID: {jobId}, Job Key: {jobKey}, Job was executed with an exception.", jobId, context.JobDetail?.Key );
             }
 
             rockContext.SaveChanges();

@@ -82,27 +82,40 @@ namespace Rock.Tests.Integration.Core.Lava
             _cachedTemplates.TryRemove( key, out _ );
         }
 
-        ILavaTemplate ILavaTemplateCacheService.GetOrAddTemplate( ILavaEngine engine, string templateContent, string cacheKey )
+        AddOrGetTemplateResult ILavaTemplateCacheService.AddOrGetTemplate( ILavaEngine engine, string templateContent, string cacheKey )
         {
+            AddOrGetTemplateResult result;
+
             if ( cacheKey == null )
             {
                 cacheKey = GetTemplateKey( templateContent );
             }
+
             if ( _cachedTemplates.ContainsKey( cacheKey ) )
             {
                 Interlocked.Increment( ref _cacheHits );
 
-                return _cachedTemplates[cacheKey];
+                result = new AddOrGetTemplateResult( _cachedTemplates[cacheKey], null );
+            }
+            else
+            {
+                Interlocked.Increment( ref _cacheMisses );
+
+                var template = engine.ParseTemplate( templateContent ).Template;
+
+                // If this operation fails, ignore it.
+                // The template has been added by another thread.
+                _cachedTemplates.TryAdd( cacheKey, template );
+
+                result = new AddOrGetTemplateResult( template, null );
             }
 
-            Interlocked.Increment( ref _cacheMisses );
+            return result;
+        }
 
-            var template = engine.ParseTemplate( templateContent ).Template;
-
-            // If this operation fails, ignore it.
-            // The template has been added by another thread.
-            _cachedTemplates.TryAdd( cacheKey, template );
-            return template;
+        ILavaTemplate ILavaTemplateCacheService.GetOrAddTemplate( ILavaEngine engine, string templateContent, string cacheKey )
+        {
+            throw new NotImplementedException( "Obsolete." );
         }
 
         public void RemoveKey( string key )

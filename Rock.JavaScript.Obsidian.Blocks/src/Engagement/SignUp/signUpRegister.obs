@@ -8,7 +8,7 @@
         {{ errorMessage }}
     </NotificationBox>
 
-    <NotificationBox v-if="showRegistrationSuccess" :alertType="AlertType.Success">
+    <NotificationBox v-if="registeredRegistrantNames?.length || unregisteredRegistrantNames?.length" :alertType="AlertType.Success">
         <div v-if="registeredRegistrantNames?.length">
             <p>Successfully registered individual(s):</p>
             <ul>
@@ -79,8 +79,8 @@
     import RegisterAnonymous from "./SignUpRegister/registerAnonymous.partial.obs";
     import RegisterFamily from "./SignUpRegister/registerFamily.partial.obs";
     import RegisterGroup from "./SignUpRegister/registerGroup.partial.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Loading from "@Obsidian/Controls/loading";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
     import { RegisterMode } from "@Obsidian/Enums/Blocks/Engagement/SignUp/registerMode";

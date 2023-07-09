@@ -317,17 +317,16 @@ Schedule Active = {{isScheduleActive}}
             {
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
-                var error = result.Error;
-
-                // Verify that the result is the expected parse error.
-                if ( !( result.Error is LavaParseException ) )
+                // Verify that the result emits the expected parse error.
+                var error = result.Error?.InnerException;
+                if ( !(error is LavaParseException ) )
                 {
                     throw new Exception( "Parse exception expected but not encountered." );
                 }
 
                 if ( engine.GetType() == typeof( FluidEngine ) )
                 {
-                    Assert.That.IsTrue( result.Error.Message.Contains( "Unknown shortcode 'testshortcode1'" ), "Unexpected Lava error message." );
+                    Assert.That.IsTrue( error.Message.Contains( "Unknown shortcode 'testshortcode1'" ), "Unexpected Lava error message." );
                 }
             } );
 
@@ -351,10 +350,9 @@ Schedule Active = {{isScheduleActive}}
             {
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
-                var error = result.Error;
-
-                // Verify that the result is the expected parse error.
-                if ( !( result.Error is LavaParseException ) )
+                // Verify that the result emits the expected parse error.
+                var error = result.Error?.InnerException;
+                if ( !( error is LavaParseException ) )
                 {
                     throw new Exception( "Parse exception expected but not encountered." );
                 }
@@ -362,7 +360,7 @@ Schedule Active = {{isScheduleActive}}
                 // In Fluid, parse error should correctly identify the invalid shortcode.
                 if ( engine.GetType() == typeof( FluidEngine ) )
                 {
-                    if ( !result.Error.Message.Contains( "Unknown shortcode 'invalidshortcode'" ) )
+                    if ( !error.Message.Contains( "Unknown shortcode 'invalidshortcode'" ) )
                     {
                         throw result.Error;
                     }

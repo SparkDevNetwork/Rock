@@ -74,7 +74,8 @@
                     </div>
 
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbDisplayInNavigation" runat="server" Label="Display In Navigation" ValidationGroup="EditPage" />
+                        <Rock:DataDropDownList ID="ddlMenuDisplayWhen" runat="server" Label="Display In Navigation When" SourceTypeName="Rock.Model.Page, Rock" PropertyName="DisplayInNavWhen"
+                            Help="When should a page display in navigation (Flyout menu, Tab bar)? 'Always' will display no matter what, 'When Allowed' will display only when the current individual has access to view the page and 'Never' will always hide page in navigation." />
                     </div>
                 </div>
 

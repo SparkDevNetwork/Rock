@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -86,6 +86,21 @@ namespace Rock.Model
         public virtual Schedule Schedule { get; set; }
 
         #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> containing the GroupMemberScheduleTemplate's Name that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> containing the GroupMemberScheduleTemplate's Name that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion Public Methods
     }
 
     #region Entity Configuration

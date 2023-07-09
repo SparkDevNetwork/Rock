@@ -1,14 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockErrorMessage" alertType="warning">
+    <NotificationBox v-if="blockErrorMessage" :alertType="AlertType.Warning">
         {{ blockErrorMessage }}
     </NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="warning">
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
         {{ errorMessage }}
     </NotificationBox>
 
-    <NotificationBox v-if="successMessage" alertType="success">
+    <NotificationBox v-if="successMessage" :alertType="AlertType.Success">
         {{ successMessage }}
     </NotificationBox>
 
@@ -26,10 +26,11 @@
 
 <script setup lang="ts">
     import { computed, onMounted, ref } from "vue";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckboxList from "@Obsidian/Controls/checkBoxList";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -40,6 +41,7 @@
 
     const config = useConfigurationValues<SignUpAttendanceDetailInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
 
     // #region Values
 
@@ -115,7 +117,7 @@
 
     // #endregion
 
-    onConfigurationValuesChanged(useReloadBlock());
+    onConfigurationValuesChanged(reloadBlock);
 
     if (config.attendees?.length) {
         config.attendees

@@ -219,7 +219,7 @@
                                         <Rock:ReorderField />
                                         <Rock:RockBoundField DataField="InternalName" SortExpression="Name" HeaderText="Name" />
                                         <Rock:RockBoundField DataField="LayoutName" SortExpression="LayoutName" HeaderText="Layout" />
-                                        <Rock:BoolField DataField="DisplayInNav" SortExpression="DisplayInNav" HeaderText="Display In Nav" />
+                                        <Rock:RockBoundField DataField="DisplayInNavWhen" SortExpression="DisplayInNav" HeaderText="Display In Nav" />
                                         <Rock:DeleteField OnClick="gPages_DeleteClick" />
                                     </Columns>
                                 </Rock:Grid>
@@ -347,6 +347,16 @@
 
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbCompressUpdatePackages" runat="server" Label="Compress Update Packages" Help="Compresses update packages to reduce their size by up to 95%. Not supported with mobile shell v1." />
+                            </div>
+                        </div>
+
+                         <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbAuth0ClientId" runat="server" Label="Auth0 Client ID" Help="Set this to reflect the value in your configured Auth0 application to add support for Auth0 based login in your mobile application." />
+                            </div>
+
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbAuth0ClientDomain" runat="server" Label="Auth0 Domain" Help="Set this to reflect the value in your configured Auth0 application to add support for Auth0 based login in your mobile application." />
                             </div>
                         </div>
                     </Rock:PanelWidget>

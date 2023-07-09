@@ -23,7 +23,7 @@
                     <dl class="group-hover">
                         <dt><Rock:PersonLink runat="server"
                                 PersonId='<%# Eval("PersonId") %>'
-                                PersonName='<%# Eval("Person.FullName") %>' /></dt>
+                                PersonName='<%# Eval("Person.FullName") %>' /> <span class="text-danger"><asp:Literal ID="lDeceased" runat="server" /></span></dt>
                         <dd class="group-hover-item group-hover-hide"><%# ShowRole ? Eval("GroupRole.Name") : "" %></dd>
                         <div class="group-hover-item group-hover-show group-hover-0-show">
                                 <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" Text="Edit Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
