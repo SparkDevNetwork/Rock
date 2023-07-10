@@ -447,11 +447,21 @@ namespace RockWeb.Blocks.Examples
 
                         lClassName.Text = mClass.Name;
                         lActualTableName.Text = "";
-                        var tableName = type.FullName.Replace( "Rock.Model.", "" );
-                        if ( !tableName.Equals( lClassName.Text ) )
+
+                        // Check if there is a TableAttribute.
+                        if ( System.Attribute.IsDefined( type, typeof( TableAttribute ) ) )
                         {
-                            lActualTableName.Text = "<small>[" + tableName + "]</small>";
+                            // Get the custom attribute.
+                            TableAttribute attribute = ( TableAttribute ) System.Attribute.GetCustomAttribute( type, typeof( TableAttribute ) );
+                            string tableName = attribute.Name;
+
+                            // Check if the table name is different than the class name.
+                            if ( !tableName.Equals( lClassName.Text ) )
+                            {
+                                lActualTableName.Text = "<small>[" + tableName + "]</small>";
+                            }
                         }
+
                         hlAnchor.NavigateUrl = pageReference.BuildUrl();
                         lClassDescription.Text = mClass.Comment != null ? mClass.Comment.Summary : string.Empty;
                         lClassExample.Text = ExampleNode( mClass );
