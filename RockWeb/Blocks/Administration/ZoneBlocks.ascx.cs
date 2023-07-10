@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Administration
                 liSite.RemoveCssClass( "active" );
                 divSite.RemoveCssClass( "active" );
             }
-            else if( hfOption.Value == "Layout" )
+            else if ( hfOption.Value == "Layout" )
             {
                 liPage.RemoveCssClass( "active" );
                 divPage.RemoveCssClass( "active" );
@@ -644,46 +644,48 @@ namespace RockWeb.Blocks.Administration
             }
 
             // Get a list of BlockTypes to be displayed
-            var blockTypesToDisplay = BlockTypeCache.All().ToList();
-            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment == false )
-            {
-                blockTypesToDisplay = blockTypesToDisplay
-                    .Where( bt =>
+            var blockTypesToDisplay = BlockTypeCache.All()
+                .Where( bt =>
+                {
+                    var type = bt.GetCompiledType();
+
+                    if ( siteType == SiteType.Web )
                     {
-                        var type = bt.GetCompiledType();
-
-                        if ( siteType == SiteType.Web )
+                        if ( typeof( RockBlock ).IsAssignableFrom( type ) )
                         {
-                            if ( typeof( RockBlock ).IsAssignableFrom( type ) )
-                            {
-                                return true;
-                            }
-
-                            if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
-                            {
-                                return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
-                            }
-
-                            // Failsafe for any blocks that implement this directly.
-                            return typeof( IRockObsidianBlockType ).IsAssignableFrom( type );
-                        }
-                        else if ( siteType == SiteType.Mobile )
-                        {
-                            if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
-                            {
-                                return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
-                            }
-
-                            // Failsafe for any blocks that implement this directly.
-                            return typeof( IRockMobileBlockType ).IsAssignableFrom( type );
+                            return true;
                         }
 
-                        return false;
-                    } )
-                    .ToList();
-            }
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            // if no site type is specified, then it likely is an obsidian block which is yet to be released.
+                            // So show it only if it is the develop environment.
+                            if ( type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Any() ?? true )
+                            {
+                                return System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
+                            }
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
 
-            var blockTypes = blockTypesToDisplay.Select( b => new {
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockObsidianBlockType ).IsAssignableFrom( type );
+                    }
+                    else if ( siteType == SiteType.Mobile )
+                    {
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
+
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockMobileBlockType ).IsAssignableFrom( type );
+                    }
+                    return false;
+                } )
+                .ToList();
+
+            var blockTypes = blockTypesToDisplay.Select( b => new
+            {
                 b.Id,
                 b.Name,
                 b.Category,
