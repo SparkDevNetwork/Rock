@@ -80,4 +80,9 @@ export type DataViewPickerGetDataViewsOptionsBag = {
      * authorization checks.
      */
     securityGrantToken?: string | null;
+
+    /**
+     * Gets if the dataView Picker should show only persisted data views
+     */
+    displayPersistedOnly: boolean;
 };

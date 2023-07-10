@@ -3398,8 +3398,9 @@ const dataViewPickerGallery = defineComponent({
             entityTypeGuid: ref(null),
             multiple: ref(false),
             value: ref(null),
+            displayPersistedOnly: ref(false),
             importCode: getControlImportPath("dataViewPicker"),
-            exampleCode: `<DataViewPicker label="Data View" v-model="value" />`
+            exampleCode: `<DataViewPicker label="Data View" v-model="value" :displayOnlyPersisted="true"/>`
         };
     },
     template: `
@@ -3411,6 +3412,7 @@ const dataViewPickerGallery = defineComponent({
     <DataViewPicker label="Data Views"
         v-model="value"
         :multiple="multiple"
+        :displayPersistedOnly="displayPersistedOnly"
         :showBlankItem="showBlankItem"
         :entityTypeGuid="entityTypeGuid?.value" />
     <template #settings>
@@ -3420,6 +3422,9 @@ const dataViewPickerGallery = defineComponent({
             </div>
             <div class="col-md-4">
                 <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Display Only Persisted" v-model="displayPersistedOnly" />
             </div>
         </div>
     </template>
