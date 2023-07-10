@@ -78,6 +78,12 @@ namespace RockWeb.Blocks.Groups
         Category = "Add Group",
         Order = 17,
         Key = AttributeKey.RootGroup )]
+    [BooleanField(
+        "Hide Inactive/Archived Groups",
+        Key = AttributeKey.HideInactiveOrArchivedGroupsOrMembers,
+        Description = "If enabled, inactive (or archived) groups or group members will not be shown.",
+        DefaultBooleanValue = false,
+        Order = 18 )]
     [ContextAware]
     [Rock.SystemGuid.BlockTypeGuid( "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A" )]
     public partial class GroupList : RockBlock, ICustomGridColumns
@@ -119,6 +125,7 @@ namespace RockWeb.Blocks.Groups
             public const string GroupPickerType = "GroupPickerType";
             public const string RootGroup = "RootGroup";
             public const string LimittoSecurityRoleGroups = "LimittoSecurityRoleGroups";
+            public const string HideInactiveOrArchivedGroupsOrMembers = "HideInactiveOrArchivedGroupsOrMembers";
         }
 
         #endregion
@@ -777,6 +784,12 @@ namespace RockWeb.Blocks.Groups
 
             var qryGroups = groupService.Queryable()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
+
+            bool hideInactiveOrArchivedGroupsOrMembers = GetAttributeValue( AttributeKey.HideInactiveOrArchivedGroupsOrMembers ).AsBoolean();
+            if ( hideInactiveOrArchivedGroupsOrMembers )
+            {
+                qryGroups = qryGroups.Where( a => a.IsActive && !a.IsArchived );
+            }
 
             var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
             if ( rootGroupGuid.HasValue )
