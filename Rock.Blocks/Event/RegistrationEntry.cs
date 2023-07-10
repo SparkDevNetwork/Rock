@@ -3649,7 +3649,7 @@ namespace Rock.Blocks.Event
             if ( isNewRegistration )
             {
                 // Send notice of a new registration
-                new ProcesSendRegistrationNotification.Message
+                new ProcessSendRegistrationNotification.Message
                 {
                     RegistrationId = registration.Id
                 }.Send();

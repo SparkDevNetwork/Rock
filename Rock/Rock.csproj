@@ -1725,6 +1725,7 @@
     <Compile Include="Tasks\ProcessSendDigitalSignatureRequest.cs" />
     <Compile Include="Tasks\ProcessSendPaymentReceiptEmails.cs" />
     <Compile Include="Tasks\ProcessSendRegistrationConfirmation.cs" />
+    <Compile Include="Tasks\ProcessSendRegistrationNotification.cs" />
     <Compile Include="Tasks\ProcessSendSignUpRegistrationConfirmation.cs" />
     <Compile Include="Tasks\ProcessStreakTypeExclusionChange.cs" />
     <Compile Include="Tasks\ProcessWorkflowTrigger.cs" />
