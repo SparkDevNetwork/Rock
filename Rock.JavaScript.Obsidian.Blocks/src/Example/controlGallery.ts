@@ -226,6 +226,7 @@ import ValueList from "@Obsidian/Controls/valueList.obs";
 import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
 import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.obs";
 import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
+import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
 
 // #region Gallery Support
 
@@ -8069,6 +8070,7 @@ const controlGalleryComponents: Record<string, Component> = [
     blockTemplatePickerGallery,
     DropDownMenuGallery,
     DropDownContentGallery,
+    ButtonDropDownListGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
