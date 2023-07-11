@@ -660,7 +660,7 @@ namespace RockWeb.Blocks.Administration
                         {
                             // if no site type is specified, then it likely is an obsidian block which is yet to be released.
                             // So show it only if it is the develop environment.
-                            if ( type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Any() ?? true )
+                            if ( type.GetCustomAttribute<SupportedSiteTypesAttribute>() == null )
                             {
                                 return System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
                             }
