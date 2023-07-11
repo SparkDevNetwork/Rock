@@ -448,6 +448,7 @@ namespace RockWeb.Blocks.Examples
                         lClassName.Text = mClass.Name;
                         hlAnchor.NavigateUrl = pageReference.BuildUrl();
                         lClassDescription.Text = mClass.Comment != null ? mClass.Comment.Summary : string.Empty;
+                        lClassExample.Text = ExampleNode( mClass );
                         lClasses.Text = ClassNode( mClass );
 
                         pnlClassDetail.Visible = true;
@@ -556,6 +557,27 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Examples the node.
+        /// </summary>
+        /// <param name="mClass">The m class.</param>
+        /// <returns></returns>
+        private string ExampleNode(MClass mClass)
+        {
+            if (!string.IsNullOrWhiteSpace(mClass.Comment.Example))
+            {
+                return $@"
+<h4>Example</h4>
+<div class=""well"">
+    {mClass.Comment.Example}
+</div>";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Reads the XML comments from the Rock assembly XML file.
         /// </summary>
         /// <param name="rockDll">The rock DLL.</param>
@@ -624,6 +646,7 @@ namespace RockWeb.Blocks.Examples
                     xmlComment.Value = name.Element( "value" ).ValueSafe();
                     xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
                     xmlComment.Returns = name.Element( "returns" ).ValueSafe();
+                    xmlComment.Example = name.Element( "example" ).ValueSafe();
                 }
             }
             catch
@@ -920,6 +943,8 @@ namespace RockWeb.Blocks.Examples
         public string[] Params { get; set; }
 
         public string Returns { get; set; }
+
+        public string Example { get; set; }
     }
 
     #endregion

@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,68 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// NcoaHistory View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( NcoaHistory ) )]
-    public partial class NcoaHistoryViewModelHelper : ViewModelHelper<NcoaHistory, NcoaHistoryBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override NcoaHistoryBag CreateViewModel( NcoaHistory model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new NcoaHistoryBag
-            {
-                IdKey = model.IdKey,
-                AddressInvalidReason = ( int ) model.AddressInvalidReason,
-                AddressStatus = ( int ) model.AddressStatus,
-                FamilyId = model.FamilyId,
-                LocationId = model.LocationId,
-                MatchFlag = ( int ) model.MatchFlag,
-                MoveDate = model.MoveDate,
-                MoveDistance = model.MoveDistance,
-                MoveType = ( int ) model.MoveType,
-                NcoaNote = model.NcoaNote,
-                NcoaRunDateTime = model.NcoaRunDateTime,
-                NcoaType = ( int ) model.NcoaType,
-                OriginalCity = model.OriginalCity,
-                OriginalPostalCode = model.OriginalPostalCode,
-                OriginalState = model.OriginalState,
-                OriginalStreet1 = model.OriginalStreet1,
-                OriginalStreet2 = model.OriginalStreet2,
-                PersonAliasId = model.PersonAliasId,
-                Processed = ( int ) model.Processed,
-                UpdatedAddressType = ( int ) model.UpdatedAddressType,
-                UpdatedBarcode = model.UpdatedBarcode,
-                UpdatedCity = model.UpdatedCity,
-                UpdatedCountry = model.UpdatedCountry,
-                UpdatedPostalCode = model.UpdatedPostalCode,
-                UpdatedState = model.UpdatedState,
-                UpdatedStreet1 = model.UpdatedStreet1,
-                UpdatedStreet2 = model.UpdatedStreet2,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -213,20 +147,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static NcoaHistoryBag ToViewModel( this NcoaHistory model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new NcoaHistoryViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

@@ -186,6 +186,19 @@ const galleryComponents: Record<string, Component> = {
         ] as ListItemBag[])
     }),
 
+    CategoryGallery: getFieldTypeGalleryComponent("Category", "", FieldTypeGuids.Category, {
+        qualifierColumn: "GroupId",
+        qualifierValue: "5",
+        entityTypeName: JSON.stringify({ value: "9bbfda11-0d22-40d5-902f-60adfbc88987", text: "Group" })
+    }),
+
+    CategoriesGallery: getFieldTypeGalleryComponent("Categories", "", FieldTypeGuids.Categories, {
+        qualifierColumn: "GroupId",
+        qualifierValue: "5",
+        entityTypeName: JSON.stringify({ value: "9bbfda11-0d22-40d5-902f-60adfbc88987", text: "Group" })
+    }),
+
+
     ColorGallery: getFieldTypeGalleryComponent("Color", "#ee7725", FieldTypeGuids.Color, {
         selectiontype: "Color Picker"
     }),

@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,65 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// FinancialTransactionAlertType View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( FinancialTransactionAlertType ) )]
-    public partial class FinancialTransactionAlertTypeViewModelHelper : ViewModelHelper<FinancialTransactionAlertType, FinancialTransactionAlertTypeBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override FinancialTransactionAlertTypeBag CreateViewModel( FinancialTransactionAlertType model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new FinancialTransactionAlertTypeBag
-            {
-                IdKey = model.IdKey,
-                AccountParticipantSystemCommunicationId = model.AccountParticipantSystemCommunicationId,
-                AlertSummaryNotificationGroupId = model.AlertSummaryNotificationGroupId,
-                AlertType = ( int ) model.AlertType,
-                AmountSensitivityScale = model.AmountSensitivityScale,
-                CampusId = model.CampusId,
-                ConnectionOpportunityId = model.ConnectionOpportunityId,
-                ContinueIfMatched = model.ContinueIfMatched,
-                DataViewId = model.DataViewId,
-                FinancialAccountId = model.FinancialAccountId,
-                FrequencySensitivityScale = model.FrequencySensitivityScale,
-                IncludeChildFinancialAccounts = model.IncludeChildFinancialAccounts,
-                MaximumDaysSinceLastGift = model.MaximumDaysSinceLastGift,
-                MaximumGiftAmount = model.MaximumGiftAmount,
-                MaximumMedianGiftAmount = model.MaximumMedianGiftAmount,
-                MinimumGiftAmount = model.MinimumGiftAmount,
-                MinimumMedianGiftAmount = model.MinimumMedianGiftAmount,
-                Name = model.Name,
-                Order = model.Order,
-                RepeatPreventionDuration = model.RepeatPreventionDuration,
-                RunDays = ( int? ) model.RunDays,
-                SendBusEvent = model.SendBusEvent,
-                SystemCommunicationId = model.SystemCommunicationId,
-                WorkflowTypeId = model.WorkflowTypeId,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -207,20 +144,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static FinancialTransactionAlertTypeBag ToViewModel( this FinancialTransactionAlertType model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new FinancialTransactionAlertTypeViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

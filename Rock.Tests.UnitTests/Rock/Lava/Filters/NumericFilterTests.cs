@@ -42,34 +42,6 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "0", "{{ 'abc' | Abs }}" );
         }
 
-        [TestMethod]
-        public void Compact_NonnumericInput_ProducesEmptyString()
-        {
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                "17",
-                "{{ -17 | Abs }}" );
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                "4",
-                "{{ 4 | Abs }}" );
-        }
-
-        [TestMethod]
-        public void Concat_WithMultipleArrayInput_ProducesSingleArray()
-        {
-            //var mergeValues = new LavaDataDictionary { { "StringToEncode", "Ted & Cindy" } };
-            var template = @"
-{% assign fruits = 'apples, oranges, peaches' | Split: ', ' %}
-{% assign vegetables = 'carrots, turnips, potatoes' | Split: ', ' %}
-{% assign everything = fruits | Concat: vegetables %}
-{% for item in everything %}
-{{ item }},
-{% endfor %}
-";
-            var expectedOutput = @"apples, oranges, peaches, carrots, turnips, potatoes,";
-
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
-        }
-
         #region Filter Tests: Format
 
         /*

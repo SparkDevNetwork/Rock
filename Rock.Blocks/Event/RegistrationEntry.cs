@@ -2711,6 +2711,7 @@ namespace Rock.Blocks.Event
                 Session = session,
                 IsUnauthorized = isUnauthorized,
                 SuccessViewModel = successViewModel,
+                CurrentPersonFamilyGuid = RequestContext.CurrentPerson?.PrimaryFamily?.Guid,
                 TimeoutMinutes = timeoutMinutes,
                 AllowRegistrationUpdates = allowRegistrationUpdates,
                 IsExistingRegistration = isExistingRegistration,

@@ -38,6 +38,9 @@ registerFieldType(FieldTypeGuids.Campus, new CampusFieldType());
 import { CampusesFieldType } from "./campusesField.partial";
 registerFieldType(FieldTypeGuids.Campuses, new CampusesFieldType());
 
+import { CategoriesFieldType } from "./categoriesField.partial";
+registerFieldType(FieldTypeGuids.Categories, new CategoriesFieldType());
+
 import { CategoryFieldType } from "./categoryField.partial";
 registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 

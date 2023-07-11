@@ -446,7 +446,7 @@ namespace RockWeb.Blocks.Tv
             }
             else
             {
-                var stream = typeof( Rock.Blocks.RockObsidianBlockType ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
+                var stream = typeof( Rock.Blocks.RockBlockType ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
                 
                 if ( stream != null )
                 {

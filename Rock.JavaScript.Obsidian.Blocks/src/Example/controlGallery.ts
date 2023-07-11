@@ -46,11 +46,11 @@
  * - timeIntervalPicker
  */
 
-import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
-import * as ObjectUtils from "@Obsidian/Utility/objectUtils";
+import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
+import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath } from "./ControlGallery/utils.partial";
+import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -224,6 +224,8 @@ import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/int
 import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
 import ValueList from "@Obsidian/Controls/valueList.obs";
 import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
+import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.obs";
+import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
 
 // #region Gallery Support
 
@@ -241,313 +243,6 @@ const displayStyleItems: ListItemBag[] = [
         text: "Condensed"
     }
 ];
-
-/**
- * Takes a gallery component's name and converts it to a name that is useful for the header and
- * sidebar by adding spaces and stripping out the "Gallery" suffix
- *
- * @param name Name of the control
- * @returns A string of code that can be used to import the given control file
- */
-function convertComponentName(name: string | undefined | null): string {
-    if (!name) {
-        return "Unknown Component";
-    }
-
-    return name.replace(/[A-Z]/g, " $&").replace(/Gallery$/, "").trim();
-}
-
-/**
- * Takes an element name and a collection of attribute keys and values and
- * constructs the example code. This can be used inside a computed call to
- * have the example code dynamically match the selected settings.
- *
- * @param elementName The name of the element to use in the example code.
- * @param attributes The attribute names and values to append to the element name.
- *
- * @returns A string of valid HTML content for how to use the component.
- */
-function buildExampleCode(elementName: string, attributes: Record<string, Ref<unknown> | unknown>): string {
-    const attrs: string[] = [];
-
-    for (const attr in attributes) {
-        let value = attributes[attr];
-        console.log("attributes", attr, value);
-
-        if (isRef(value)) {
-            value = value.value;
-        }
-
-        if (typeof value === "string") {
-            attrs.push(`${attr}="${value}"`);
-        }
-        else if (typeof value === "number") {
-            attrs.push(`:${attr}="${value}"`);
-        }
-        else if (typeof value === "boolean") {
-            attrs.push(`:${attr}="${value ? "true" : "false"}"`);
-        }
-        else if (value === undefined || value === null) {
-            /* Do nothing */
-        }
-    }
-
-    console.log(attrs);
-
-    return `<${elementName} ${attrs.join(" ")} />`;
-}
-
-/**
- * A wrapper component that describes the template used for each of the controls
- * within this control gallery
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const GalleryAndResult = defineComponent({
-    name: "GalleryAndResult",
-    inheritAttrs: false,
-    components: {
-        Switch,
-        SectionHeader,
-        TransitionVerticalCollapse,
-        CopyButton
-    },
-    props: {
-        // The value passed into/controlled by the component, if any
-        value: {
-            required: false
-        },
-        // If true, the provided value is a map of multiple values
-        hasMultipleValues: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        // Show another copy of the component so you can see that the value is reflected across them
-        enableReflection: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        // Code snippet showing how to import the component
-        importCode: {
-            type: String as PropType<string>
-        },
-        // Code snippet of the component being used
-        exampleCode: {
-            type: String as PropType<string>
-        },
-        // Describe what this component is/does
-        description: {
-            type: String as PropType<string>,
-            default: ""
-        },
-        /** Display the value raw and unformatted inside the PRE element. */
-        displayAsRaw: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        }
-    },
-
-    setup(props) {
-        // Calculate a header based on the name of the component, adding spaces and stripping out the "Gallery" suffix
-        const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);
-
-        const formattedValue = computed(() => {
-            if (props.displayAsRaw) {
-                return props.value;
-            }
-            else if (!props.hasMultipleValues) {
-                return JSON.stringify(props.value, null, 4);
-            }
-            else {
-                // Convert each property's value to a JSON string.
-                return ObjectUtils.fromEntries(
-                    Object.entries(props.value as Record<string, unknown>).map(([key, val]) => {
-                        return [
-                            key,
-                            JSON.stringify(val, null, 4)
-                        ];
-                    })
-                );
-            }
-        });
-
-        const styledImportCode = computed((): string | undefined => {
-            if (!props.importCode) {
-                return undefined;
-            }
-
-            return HighlightJs.highlight(props.importCode, {
-                language: "typescript"
-            })?.value;
-        });
-
-        const styledExampleCode = computed((): string | undefined => {
-            if (!props.exampleCode) {
-                return undefined;
-            }
-
-            return HighlightJs.highlight(props.exampleCode, {
-                language: "html"
-            })?.value;
-        });
-
-        const showReflection = ref(false);
-
-        return {
-            componentName,
-            formattedValue,
-            showReflection,
-            styledExampleCode,
-            styledImportCode,
-        };
-    },
-
-    template: `
-<v-style>
-.galleryContent-mainRow > div.well {
-    overflow-x: auto;
-}
-
-.galleryContent-reflectionToggle {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.galleryContent-valueBox {
-    max-height: 300px;
-    overflow: auto;
-}
-
-.galleryContent-codeSampleWrapper {
-    position: relative;
-}
-
-.galleryContent-codeSample {
-    padding-right: 3rem;
-    overflow-x: auto;
-}
-
-.galleryContent-codeCopyButton {
-    position: absolute;
-    top: 1.4rem;
-    transform: translateY(-50%);
-    right: .5rem;
-    z-index: 1;
-}
-
-.galleryContent-codeCopyButton::before {
-    content: "";
-    position: absolute;
-    top: -0.3rem;
-    right: -0.5rem;
-    bottom: -0.3rem;
-    left: -0.5rem;
-    background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
-    z-index: -1;
-}
-</v-style>
-
-<SectionHeader :title="componentName" :description="description" />
-<div class="galleryContent-mainRow mb-5 row">
-    <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-sm-6'">
-        <h4 class="mt-0">Test Control</h4>
-        <slot name="default" />
-
-        <div v-if="enableReflection" class="mt-3">
-            <div class="mb-3 galleryContent-reflectionToggle">
-                <Switch v-model="showReflection" text="Show Reflection" />
-            </div>
-            <TransitionVerticalCollapse>
-                <div v-if="showReflection">
-                    <h4 class="mt-0">Control Reflection</h4>
-                    <slot name="default" />
-                </div>
-            </TransitionVerticalCollapse>
-        </div>
-    </div>
-    <div v-if="value !== void 0" class="col-sm-6">
-        <div class="well">
-            <h4>Current Value<template v-if="hasMultipleValues">s</template></h4>
-            <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
-                <h5><code>{{ key }}</code></h5>
-                <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
-            </template>
-            <pre v-else class="m-0 p-0 border-0 galleryContent-valueBox">{{ formattedValue }}</pre>
-        </div>
-    </div>
-</div>
-<div v-if="$slots.settings" class="mb-5">
-    <h4 class="mt-0">Settings</h4>
-    <slot name="settings" />
-</div>
-<div v-if="importCode || exampleCode || $slots.usage" class="mb-5">
-    <h4 class="mt-0 mb-3">Usage Notes</h4>
-    <slot name="usage">
-        <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
-        <slot name="importNotes" />
-        <div v-if="importCode" class="galleryContent-codeSampleWrapper">
-            <pre class="galleryContent-codeSample"><code v-html="styledImportCode"></code></pre>
-            <CopyButton :value="importCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
-        </div>
-        <h5 v-if="exampleCode" class="mt-3 mb-2">Template Syntax</h5>
-        <slot name="syntaxNotes" />
-        <div v-if="exampleCode" class="galleryContent-codeSampleWrapper">
-            <pre class="galleryContent-codeSample"><code v-html="styledExampleCode"></code></pre>
-            <CopyButton :value="exampleCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
-        </div>
-    </slot>
-</div>
-
-<div v-if="$slots.header">
-    <p class="text-semibold font-italic">The <code>header</code> slot is no longer supported.</p>
-</div>
-
-<div v-if="$attrs.splitWidth !== void 0">
-    <p class="text-semibold font-italic">The <code>splitWidth</code> prop is no longer supported.</p>
-</div>
-
-<div v-if="$slots.gallery">
-    <p class="text-semibold font-italic">The <code>gallery</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
-    <slot name="gallery" />
-</div>
-<div v-if="$slots.result">
-    <p class="text-semibold font-italic">The <code>result</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
-    <slot name="result" />
-</div>
-`
-});
-
-/**
- * Generate a string of an import statement that imports the control will the given file name.
- * The control's name will be based off the filename
- *
- * @param fileName Name of the control's file
- * @returns A string of code that can be used to import the given control file
- */
-export function getControlImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}";`;
-}
-
-/**
- * Generate a string of an import statement that imports the SFC control will the given file name.
- * The control's name will be based off the filename
- *
- * @param fileName Name of the control's file
- * @returns A string of code that can be used to import the given control file
- */
-export function getSfcControlImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}.obs";`;
-}
-
-/**
- * Generate a string of an import statement that imports the template will the given file name.
- * The template's name will be based off the filename
- *
- * @param fileName Name of the control's file
- * @returns A string of code that can be used to import the given control file
- */
-export function getTemplateImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Templates/${fileName}";`;
-}
 
 // #endregion
 
@@ -598,18 +293,20 @@ const attributeValuesContainerGallery = defineComponent({
                 key: "text",
                 name: "Text Attribute",
                 order: 2,
-                configurationValues: {}
+                configurationValues: {},
+                preHtml: "<div class='bg-primary p-3'>"
             },
             color: {
                 attributeGuid: newGuid(),
                 categories: [categories[0], categories[2]],
                 description: "Favorite color? Or just a good one?",
                 fieldTypeGuid: FieldType.Color,
-                isRequired: false,
+                isRequired: true,
                 key: "color",
                 name: "Random Color",
                 order: 4,
-                configurationValues: {}
+                configurationValues: {},
+                postHtml: "</div>"
             },
             bool: {
                 attributeGuid: newGuid(),
@@ -631,7 +328,8 @@ const attributeValuesContainerGallery = defineComponent({
                 key: "textAgain",
                 name: "Some Text",
                 order: 5,
-                configurationValues: {}
+                configurationValues: {},
+                preHtml: "<h5>PRE HTML!</h5>"
             },
             single: {
                 attributeGuid: newGuid(),
@@ -8362,6 +8060,8 @@ const controlGalleryComponents: Record<string, Component> = [
     workflowPickerGallery,
     valueListGallery,
     blockTemplatePickerGallery,
+    DropDownMenuGallery,
+    DropDownContentGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

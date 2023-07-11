@@ -174,6 +174,16 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_160_UPDATE_INTERACTION_SESSION_AND_INTERACTION_INDICES = "30A8FE3D-8C2B-413E-9B94-F4B9212904B1";
 
         /// <summary>
+        /// The Job to run v16.0 - Add New Indices To Interaction and InteractionSession.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_POPULATE_INTERACTION_SESSION_DATA = "4C734B0E-8024-4600-99F9-B6CFEE9F8250";
+
+        /// <summary>
+        /// The Job to run Post v16.0 Update Person PrimaryPersonAliasId.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_ID = "BC7564DC-594F-4B50-8988-1594849515F1";
+
+        /// <summary>
         /// The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields.
         /// </summary>
         public const string DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12";
