@@ -156,6 +156,10 @@
     <Compile Include="Migrations\202307111932377_ObservabilitySetup.designer.cs">
       <DependentUpon>202307111932377_ObservabilitySetup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202307112114079_Rollup_20230711.cs" />
+    <Compile Include="Migrations\202307112114079_Rollup_20230711.designer.cs">
+      <DependentUpon>202307112114079_Rollup_20230711.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1778,6 +1782,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202307111932377_ObservabilitySetup.resx">
       <DependentUpon>202307111932377_ObservabilitySetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202307112114079_Rollup_20230711.resx">
+      <DependentUpon>202307112114079_Rollup_20230711.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>

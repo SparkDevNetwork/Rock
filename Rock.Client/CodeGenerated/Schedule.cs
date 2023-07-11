@@ -159,9 +159,6 @@ namespace Rock.Client
         /// <summary />
         public Category Category { get; set; }
 
-        /// <summary />
-        public string FriendlyScheduleText { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
