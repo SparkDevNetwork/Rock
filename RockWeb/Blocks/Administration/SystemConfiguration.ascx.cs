@@ -245,6 +245,8 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SITE_KEY, rtbCaptchaSiteKey.Text );
             Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SECRET_KEY, rtbCaptchaSecretKey.Text );
 
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL, rtbSmsOptInMessage.Text );
+
             nbUiSettings.NotificationBoxType = NotificationBoxType.Success;
             nbUiSettings.Title = string.Empty;
             nbUiSettings.Text = "Settings saved successfully.";
@@ -451,6 +453,8 @@ namespace RockWeb.Blocks.Administration
 
             rtbCaptchaSiteKey.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SITE_KEY );
             rtbCaptchaSecretKey.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SECRET_KEY );
+
+            rtbSmsOptInMessage.Text = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
         }
 
         #endregion
