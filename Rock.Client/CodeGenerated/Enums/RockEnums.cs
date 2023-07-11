@@ -1206,6 +1206,20 @@ namespace Rock.Client.Enums.Communication
 
 }
 
+namespace Rock.Client.Enums.Blocks.Crm.FamilyPreRegistration
+{
+    /// <summary>
+    /// </summary>
+    public enum CommunicationPreference
+    {
+        None = 0x0,
+        Email = 0x1,
+        SMS = 0x2,
+        PushNotification = 0x3,
+    }
+
+}
+
 namespace Rock.Client.Enums.Cms
 {
     /// <summary>
