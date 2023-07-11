@@ -105,6 +105,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Updates the last status message.
+        /// NOTE: This method has a read and a write database operation and also writes to the Rock Logger with DEBUG level logging.
         /// </summary>
         /// <param name="statusMessage">The status message.</param>
         public void UpdateLastStatusMessage( string statusMessage )
