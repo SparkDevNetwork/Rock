@@ -339,7 +339,9 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             using ( var rockContext = new RockContext() )
             {
-                var member = new GroupMemberService( rockContext )
+                var groupMemberService = new GroupMemberService( rockContext );
+
+                var member = groupMemberService
                     .Queryable()
                     .Include( m => m.Group.GroupType )
                     .FirstOrDefault( m => m.Guid == groupMemberGuid );
@@ -379,6 +381,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 // Get all the roles that can be set for this member.
                 var roles = GroupTypeCache.Get( member.Group.GroupTypeId )
                     .Roles
+                    // We want to filter out the roles that the Person already has a record for (besides the original).
+                    .Where( r => !PersonHasGroupMemberRole( member.PersonId, member.GroupId, r.Id ) || r.Id == member.GroupRoleId )
                     .OrderBy( r => r.Order )
                     .Select( r => new ListItemViewModel
                     {
@@ -418,7 +422,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     RoleGuid = member.GroupRole.Guid,
                     MemberStatus = member.GroupMemberStatus,
                     Note = member.Note,
-                    CommunicationPreference = member.CommunicationPreference
+                    CommunicationPreference = member.CommunicationPreference,
+                    HasMultipleRoles = groupMemberService.GetByGroupIdAndPersonId( member.GroupId, member.PersonId ).Count() > 1
                 } );
             }
         }
@@ -434,7 +439,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             using ( var rockContext = new RockContext() )
             {
-                var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );
+                var groupMemberService = new GroupMemberService( rockContext );
+                var member = groupMemberService.Get( groupMemberGuid );
 
                 if ( member == null || ( !member.Group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !member.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson ) ) )
                 {
@@ -444,13 +450,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 member.LoadAttributes( rockContext );
 
                 // Verify and save the member role.
-                if ( AllowRoleChange )
+                if ( AllowRoleChange && groupMemberData.RoleGuid.HasValue )
                 {
-                    if ( !groupMemberData.RoleGuid.HasValue)
-                    {
-                        return ActionBadRequest( "Invalid data." );
-                    }
-
                     var groupRole = GroupTypeCache.Get( member.Group.GroupTypeId )
                         .Roles
                         .FirstOrDefault( r => r.Guid == groupMemberData.RoleGuid.Value );
@@ -466,7 +467,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 // Verify and save the communication preference.
                 if( AllowCommunicationPreferenceChange )
                 {
-                    member.CommunicationPreference = groupMemberData.CommunicationPreference;
+                    foreach( var groupMemberOccurrence in groupMemberService.GetByGroupIdAndPersonId( member.GroupId, member.PersonId ) )
+                    {
+                        groupMemberOccurrence.CommunicationPreference = groupMemberData.CommunicationPreference;
+                    }
                 }
 
                 // Verify and save the member status.
@@ -659,6 +663,22 @@ namespace Rock.Blocks.Types.Mobile.Groups
         }
 
         /// <summary>
+        /// Whether or not the person provided has a record with the specified row.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId"></param>
+        /// <param name="groupTypeRoleId">The group type role identifier.</param>
+        /// <returns><c>true</c> if the person has a member occurrence with that role, <c>false</c> otherwise.</returns>
+        private bool PersonHasGroupMemberRole( int personId, int groupId, int groupTypeRoleId )
+        {
+            using( var rockContext = new RockContext() )
+            {
+                var groupMemberRecords = new GroupMemberService( rockContext ).GetByGroupIdAndPersonId( groupId, personId );
+                return groupMemberRecords.Any( gm => gm.GroupRoleId == groupTypeRoleId );
+            }
+        }
+
+        /// <summary>
         /// Builds the common fields.
         /// </summary>
         /// <param name="member">The group.</param>
@@ -672,12 +692,16 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             if ( AllowRoleChange )
             {
-                var items = GroupTypeCache.Get( member.Group.GroupTypeId )
-                    .Roles
-                    .Select( a => new KeyValuePair<string, string>( a.Id.ToString(), a.Name ) );
+                var roles = GroupTypeCache.Get( member.Group.GroupTypeId ).Roles
+                    .Where( r => PersonHasGroupMemberRole( member.PersonId, member.GroupId, member.GroupRoleId ) );
 
-                sb.AppendLine( MobileHelper.GetSingleFieldXaml( MobileHelper.GetDropDownFieldXaml( "role", "Role", member.GroupRoleId.ToString(), true, items ) ) );
-                parameters.Add( "role", "SelectedValue" );
+                if( roles.Any() )
+                {
+                    var items = roles.Select( a => new KeyValuePair<string, string>( a.Id.ToString(), a.Name ) );
+                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( MobileHelper.GetDropDownFieldXaml( "role", "Role", member.GroupRoleId.ToString(), true, items ) ) );
+                    parameters.Add( "role", "SelectedValue" );
+                }
+
             }
             else
             {
@@ -892,6 +916,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// </summary>
             /// <value>The communication preference.</value>
             public CommunicationType CommunicationPreference { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance has multiple roles.
+            /// </summary>
+            /// <value><c>true</c> if this instance has multiple roles; otherwise, <c>false</c>.</value>
+            public bool HasMultipleRoles { get; set; }
         }
 
         /// <summary>
