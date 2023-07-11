@@ -506,7 +506,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.BlockTypeGuid( "1D6794F5-876B-47B9-9C9B-5C2C2CC81074" )]
     [Rock.SystemGuid.EntityTypeGuid( "C03CE9ED-8572-4BE5-AB2A-FF7498494905")]
-    public partial class FamilyPreRegistration : RockObsidianBlockType
+    public partial class FamilyPreRegistration : RockBlockType
     {
         #region Attribute Keys, Categories and Values
 
@@ -712,7 +712,7 @@ namespace Rock.Blocks.Crm
 
         #endregion
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         public override object GetObsidianBlockInitialization()
         {
@@ -1969,7 +1969,6 @@ namespace Rock.Blocks.Crm
                             Street1 = location?.Street1,
                             Street2 = location?.Street2,
                         };
-                        location.ToViewModel( currentPerson );
                     }
                 }
             }
