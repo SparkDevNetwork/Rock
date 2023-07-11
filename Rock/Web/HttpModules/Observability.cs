@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Web;
-
+using Microsoft.Ajax.Utilities;
 using Rock.Attribute;
 using Rock.Bus;
 using Rock.Observability;
@@ -84,14 +84,31 @@ namespace Rock.Web.HttpModules
                 context.Request.Browser.Adapters.Add( typeof( RockBlock ).FullName, typeof( RockControlAdapter ).FullName );
             }
 
-            // Create activity
-            ObservabilityHelper.StartActivity( $"WEB: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-
-            // Change prefix to API if request is for an api endpoint
-            if ( Activity.Current != null && context.Request.Url.PathAndQuery.StartsWith( "/api" ) )
+            // Create activity with the correct prefix
+            if ( context.Request.FilePath.EndsWith( ".ashx" ) )
             {
-                Activity.Current.DisplayName = $"API: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}";
-                Activity.Current.AddTag( "rock-otel-type", "rock-api" );
+                ObservabilityHelper.StartActivity( $"HANDLER: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                Activity.Current?.AddTag( "rock-otel-type", "rock-handler" );
+            }
+            else if ( context.Request.Headers["X-Rock-Mobile-Api-Key"] != null )
+            {
+                ObservabilityHelper.StartActivity( $"Mobile: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                Activity.Current?.AddTag( "rock-otel-type", "rock-mobile" );
+            }
+            else if ( context.Request.Url.PathAndQuery.StartsWith( "/api/v2/tv" ) )
+            {
+                ObservabilityHelper.StartActivity( $"TV: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                Activity.Current?.AddTag( "rock-otel-type", "rock-tv" );
+            }
+            else if( context.Request.Url.PathAndQuery.StartsWith( "/api" ) )
+            {
+                ObservabilityHelper.StartActivity( $"API: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                Activity.Current?.AddTag( "rock-otel-type", "rock-api" );
+            }
+            else
+            {
+                ObservabilityHelper.StartActivity( $"WEB: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                Activity.Current?.AddTag( "rock-otel-type", "rock-web" );
             }
 
             // Set Attributes
@@ -103,9 +120,6 @@ namespace Rock.Web.HttpModules
             Activity.Current?.AddTag( "client.address", Rock.Utility.WebRequestHelper.GetXForwardedForIpAddress( context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"] )
                                                             ?? context.Request.ServerVariables["REMOTE_ADDR"]
                                                             ?? string.Empty );
-
-            //client.address
-            //url.path 	/search
         }
 
         /// <summary>

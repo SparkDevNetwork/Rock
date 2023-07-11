@@ -734,23 +734,34 @@ namespace Rock.Web.UI
         protected override void OnInit( EventArgs e )
         {
             // Add configuration specific to Rock Page to the observability activity
-            if ( Activity.Current != null && PageReference.Parameters.Count > 0 )
+            if (Activity.Current != null)
             {
                 Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {PageReference.Route}";
-            }
 
-            // Highlight if it's a postback
-            if ( this.IsPostBack )
-            {
-                Activity.Current.DisplayName = Activity.Current.DisplayName + " [Postback]";
-            }
+                // If the route has parameters show the route slug, otherwise use the request path
+                if ( PageReference.Parameters.Count > 0 )
+                {
+                    Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {PageReference.Route}";
+                }
+                else
+                {
+                    Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {Context.Request.Path}";
+                }
 
-            Activity.Current?.AddTag( "rock-otel-type", "rock-page" );
-            Activity.Current?.AddTag( "rock.current-person", this.CurrentPerson?.FullName );
-            Activity.Current?.AddTag( "rock.current-user", this.CurrentUser?.UserName );
-            Activity.Current?.AddTag( "rock.current-visitor", this.CurrentVisitor?.AliasPersonGuid );
-            Activity.Current?.AddTag( "rock.page-id", this.PageId );
-            Activity.Current?.AddTag( "rock.page-ispostback", this.IsPostBack );
+                // Highlight postbacks
+                if ( this.IsPostBack )
+                {
+                    Activity.Current.DisplayName = Activity.Current.DisplayName + " [Postback]";
+                }
+
+                // Add attributes
+                Activity.Current.AddTag( "rock-otel-type", "rock-page" );
+                Activity.Current.AddTag( "rock.current-person", this.CurrentPerson?.FullName );
+                Activity.Current.AddTag( "rock.current-user", this.CurrentUser?.UserName );
+                Activity.Current.AddTag( "rock.current-visitor", this.CurrentVisitor?.AliasPersonGuid );
+                Activity.Current.AddTag( "rock.page-id", this.PageId );
+                Activity.Current.AddTag( "rock.page-ispostback", this.IsPostBack );
+            }
 
             var stopwatchInitEvents = Stopwatch.StartNew();
 
