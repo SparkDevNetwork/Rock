@@ -74,7 +74,9 @@
     <Compile Include="Provider\OpenAIProvider.cs" />
     <Compile Include="Utilities\OpenAIUtilities.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>

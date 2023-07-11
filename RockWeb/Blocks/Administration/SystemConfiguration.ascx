@@ -57,6 +57,31 @@
                     </div>
                 </Rock:PanelWidget>
 
+                <Rock:PanelWidget ID="pwObservability" runat="server" Title="Observability" Expanded="false">
+
+                    <Rock:NotificationBox ID="nbObservabilityMessages" runat="server" />
+                    <asp:ValidationSummary ID="valObservabilityValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Observability" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbEnableObservaility" runat="server" Label="Enable Observability" ValidationGroup="Observability" Help="Enables the observability feature set." />
+                            <Rock:UrlLinkBox ID="urlObservabilityEndpoint" runat="server" Label="Endpoint" ValidationGroup="Observability" Help="The URL for sending observability telemetry to." CausesValidation="true" />
+                            <Rock:KeyValueList ID="kvlEndpointHeaders" runat="server" Label="Endpoint Headers" ValidationGroup="Observability" Help="List of HTTP headers to be added to the HTTP calls when sending telemetry." />
+                            <Rock:ButtonDropDownList ID="ddlEndpointProtocol" runat="server" Label="Endpoint Protocol" ValidationGroup="Observability" Help="The protocol to use to encode the telemetry data when sending it to the endpoint." />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:ValueList ID="vlTargetedQueries" runat="server" Label="Targeted Queries" ValidationGroup="Observability" Help="List of query hashes that will report more in depth metrics for." />
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        The service name used by the observability framework is defined in the web.config.
+                    </div>
+
+                    <div class="actions">
+                        <Rock:BootstrapButton ID="btnObservavilitySave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnObservabilitySave_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="Observability" />
+                    </div>
+                </Rock:PanelWidget>
+
                 <Rock:PanelWidget ID="pwExperimentalSettings" runat="server" Title="Experimental Settings" TitleIconCssClass="fa fa-flask" Expanded="false">
                     <Rock:DayOfWeekPicker ID="dowpStartingDayOfWeek" runat="server" Label="Starting Day of Week" DefaultDayOfWeek="Monday" Help="Set this to change how Rock calculates 'Sunday Date'. This setting is retro-active to any data that is stored with SundayDate." />
                     <Rock:NotificationBox ID="nbStartDayOfWeekSaveMessage" runat="server" NotificationBoxType="Warning" Text="This is an experimental setting. Changing this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'." />
@@ -95,6 +120,8 @@
                                 <Rock:RockTextBox ID="rtbAzureSignalRAccessKey" runat="server" Label="Azure SignalR AccessKey" ValidationGroup="UISettings" Help="The Azure SignalR access key."></Rock:RockTextBox>
                             </div>
                         </div>
+
+                        <Rock:RockTextBox ID="tbObservabilityServiceName" runat="server" Label="Observability Service Name" />
                     </fieldset>
                     <div class="actions">
                         <Rock:BootstrapButton ID="btnSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSaveConfig_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="WebConfigSetting"></Rock:BootstrapButton>

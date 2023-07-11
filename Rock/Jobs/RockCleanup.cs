@@ -32,6 +32,7 @@ using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -178,18 +179,18 @@ namespace Rock.Jobs
             batchAmount = GetAttributeValue( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
             commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
             lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
-            /* IMPORTANT!! MDP 2020-05-05
+            /* 
+                IMPORTANT!! MDP 2020-05-05
 
-            1 ) Whenever you do a new RockContext() in RockCleanup make sure to set the CommandTimeout, like this:
+                1) Whenever you do a new RockContext() in RockCleanup make sure to set the CommandTimeout, like this:
 
-                var rockContext = new RockContext();
-                rockContext.Database.CommandTimeout = commandTimeout;
+                    var rockContext = new RockContext();
+                    rockContext.Database.CommandTimeout = commandTimeout;
 
-            2) The cleanupTitle parameter on RunCleanupTask should short. The should be short enough so that the summary of all job tasks
-               only shows a one line summary of each task (doesn't wrap)
+                2) The cleanupTitle parameter on RunCleanupTask should short. The should be short enough so that the summary of all job tasks
+                   only shows a one line summary of each task (doesn't wrap)
 
-            3) The cleanupTitle parameter should be in {noun} format (look below for examples)
-
+                3) The cleanupTitle parameter should be in {noun} format (look below for examples)
             */
 
             RunCleanupTask( "exception log", () => this.CleanupExceptionLog() );
@@ -433,6 +434,9 @@ namespace Rock.Jobs
         /// <param name="cleanupMethod">The cleanup method.</param>
         private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod )
         {
+            // Start observability task
+            ObservabilityHelper.StartActivity( $"Task: {cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}" );
+
             var stopwatch = new Stopwatch();
             try
             {
@@ -459,6 +463,9 @@ namespace Rock.Jobs
                     Exception = new RockCleanupException( cleanupTitle, ex )
                 } );
             }
+
+            // Stop observability task
+            Activity.Current?.Dispose();
         }
 
         /// <summary>
