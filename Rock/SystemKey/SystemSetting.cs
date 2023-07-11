@@ -332,5 +332,10 @@ namespace Rock.SystemKey
         /// The protocol to use for sending telemetry for observability.
         /// </summary>
         public const string OBSERVABILITY_TARGETED_QUERIES = "core_ObservabilityTargetedQueries";
+
+        /// <summary>
+        /// The label text for the SMS Opt-In checkbox
+        /// </summary>
+        public const string SMS_OPT_IN_MESSAGE_LABEL = "core_SmsOptInMessageLabel";
     }
 }
