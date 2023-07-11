@@ -49,8 +49,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #region Block Attributes
 
-    [LinkedPage( "Group Member Detail Page",
-        Description = "The page that will display the group member details when selecting a member.",
+    [LinkedPage( "Detail Page",
+        Description = "The page that will display when a particular member/person in the list is pressed.",
         IsRequired = false,
         Key = AttributeKeys.GroupMemberDetailPage,
         Order = 0 )]
@@ -62,13 +62,20 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKeys.TitleTemplate,
         Order = 1 )]
 
+    [BooleanField( "Group By Person",
+        Description = "If enabled, the merge field object provided will change to be 'People'. This an object containing a list of the individual people for each member occurrence, and a comma-delimited string list of every role the Person has.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Key = AttributeKeys.GroupByPerson,
+        Order = 2 )]
+
     [BlockTemplateField( "Template",
         Description = "The template to use when rendering the content.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST,
         IsRequired = true,
         DefaultValue = "674CF1E3-561C-430D-B4A8-39957AC1BCF1",
         Key = AttributeKeys.Template,
-        Order = 2 )]
+        Order = 3 )]
 
     [TextField( "Additional Fields",
         Description = "",
@@ -76,7 +83,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultValue = "",
         Category = "CustomSetting",
         Key = AttributeKeys.AdditionalFields,
-        Order = 3 )]
+        Order = 4 )]
 
     [BooleanField( "Show Include Inactive Members Filter",
         Description = "If enabled then the 'Include Inactive' filter option will be shown.",
@@ -84,7 +91,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKeys.ShowInactiveMembersFilter,
         Category = "filter",
         DefaultBooleanValue = false,
-        Order = 4 )]
+        Order = 5 )]
 
     [BooleanField( "Show Group Role Type Filter",
         Description = "If enabled then the 'Group Type Role' filter option will be shown.",
@@ -92,7 +99,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKeys.ShowGroupRoleTypeFilter,
         Category = "filter",
         DefaultBooleanValue = false,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField( "Show Group Role Filter",
         Description = "If enabled then the 'Group Role' filter option will be shown.",
@@ -100,7 +107,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = true,
         Category = "filter",
         Key = AttributeKeys.ShowGroupRoleFilter,
-        Order = 6 )]
+        Order = 7 )]
 
     [BooleanField( "Show Gender Filter",
         Description = "If enabled then the 'Gender' filter option will be shown.",
@@ -108,7 +115,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = false,
         Category = "filter",
         Key = AttributeKeys.ShowGenderFilter,
-        Order = 7 )]
+        Order = 8 )]
 
     [BooleanField( "Show Child Groups Filter",
         Description = "If enabled then the 'Child Groups' filter option will be shown.",
@@ -116,7 +123,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = false,
         Category = "filter",
         Key = AttributeKeys.ShowChildGroupsFilter,
-        Order = 8 )]
+        Order = 9 )]
 
     [BooleanField( "Show Attendance Filter",
         Description = "If enabled then the 'Attendance' filter option will be shown.",
@@ -124,7 +131,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = false,
         Key = AttributeKeys.ShowAttendanceFilter,
         Category = "filter",
-        Order = 9 )]
+        Order = 10 )]
 
     [IntegerField( "Attendance Filter Short Week Range",
         Description = "Displays a filter option that gives a variety of different options for attendance based on x number of weeks.",
@@ -132,7 +139,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultIntegerValue = 3,
         Key = AttributeKeys.AttendanceFilterShortWeekRange,
         Category = "filter",
-        Order = 10 )]
+        Order = 11 )]
 
     [IntegerField( "Attendance Filter Long Week Range",
         Description = "Displays a filter option that gives a variety of different options for attendance based on x number of weeks.",
@@ -140,7 +147,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultIntegerValue = 12,
         Key = AttributeKeys.AttendanceFilterLongWeekRange,
         Category = "filter",
-        Order = 11 )]
+        Order = 12 )]
 
     #endregion
 
@@ -214,6 +221,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// The attendance filter long period filter key.
             /// </summary>
             public const string AttendanceFilterLongWeekRange = "AttendanceFilterLongWeekRange";
+
+            /// <summary>
+            /// The group by person attribute key.
+            /// </summary>
+            public const string GroupByPerson = "GroupByPerson";
         }
 
         /// <summary>
@@ -288,6 +300,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </value>
         protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
+        /// <summary>
+        /// Gets a value indicating whether [group by person].
+        /// </summary>
+        /// <value><c>true</c> if [group by person]; otherwise, <c>false</c>.</value>
+        protected bool GroupByPerson => GetAttributeValue( AttributeKeys.GroupByPerson ).AsBooleanOrNull() ?? false;
+
         #endregion
 
         /// <summary>
@@ -326,6 +344,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 ShowChildGroupFilter = ShowChildGroupFilter,
                 AttendanceFilterLongWeekRange = AttendanceFilterLongWeekRange,
                 AttendanceFilterShortWeekRange = AttendanceFilterShortWeekRange,
+                GroupByPerson = GroupByPerson
             };
         }
 
@@ -341,19 +360,39 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             var fields = GetAttributeValue( AttributeKeys.AdditionalFields ).FromJsonOrNull<List<FieldSetting>>() ?? new List<FieldSetting>();
 
-            var properties = new Dictionary<string, string>
+            Dictionary<string, string> properties;
+
+            if ( GroupByPerson )
             {
-                { "Id", "Id" },
-                { "Guid", "Guid" },
-                { "PersonId", "PersonId" },
-                { "PersonGuid", "Person.Guid" },
-                { "FullName", "Person.FullName" },
-                { "FirstName", "Person.FirstName" },
-                { "NickName", "Person.NickName" },
-                { "LastName", "Person.LastName" },
-                { "GroupRole", "GroupRole.Name" },
-                { "PhotoId", "Person.PhotoId" }
-            };
+                properties = new Dictionary<string, string>
+                {
+                    { "Id", "Person.Id" },
+                    { "Guid", "Person.Guid" },
+                    { "FullName", "Person.FullName" },
+                    { "FirstName", "Person.FirstName" },
+                    { "NickName", "Person.NickName" },
+                    { "LastName", "Person.LastName" },
+                    { "Roles", "Roles" },
+                    { "PhotoId", "Person.PhotoId" }
+                };
+            }
+            else
+            {
+                properties = new Dictionary<string, string>
+                {
+                    { "Id", "Id" },
+                    { "Guid", "Guid" },
+                    { "PersonId", "PersonId" },
+                    { "PersonGuid", "Person.Guid" },
+                    { "FullName", "Person.FullName" },
+                    { "FirstName", "Person.FirstName" },
+                    { "NickName", "Person.NickName" },
+                    { "LastName", "Person.LastName" },
+                    { "GroupRole", "GroupRole.Name" },
+                    { "PhotoId", "Person.PhotoId" }
+                };
+            }
+
 
             string publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" ).RemoveTrailingForwardslash();
 
@@ -387,7 +426,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 .Queryable()
                 .Where( gm => gm.Group.Guid == group.Guid );
 
-            if( !filterBag.IncludeInactive )
+            if ( !filterBag.IncludeInactive )
             {
                 members = members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active );
             }
@@ -539,7 +578,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 {
                     groupMembers = FilterGroupMembers( group, filterBag, rockContext );
 
-                    if( filterBag.IncludeInactive )
+                    if ( filterBag.IncludeInactive )
                     {
                         totalGroupMemberCount = new GroupMemberService( rockContext )
                         .Queryable()
@@ -553,13 +592,27 @@ namespace Rock.Blocks.Types.Mobile.Groups
                         .Where( gm => gm.Group.Guid == groupGuid && gm.GroupMemberStatus == GroupMemberStatus.Active )
                         .Count();
                     }
-                    
                 }
 
                 var lavaTemplate = CreateLavaTemplate();
-
                 var mergeFields = RequestContext.GetCommonMergeFields();
-                mergeFields.Add( "Items", groupMembers );
+
+                if ( GroupByPerson )
+                {
+                    var groupedByPersonMembers = groupMembers.Select( gm => new
+                    {
+                        Person = gm.Person,
+                        Roles = new GroupMemberService( rockContext ).GetByGroupIdAndPersonId( gm.GroupId, gm.PersonId ).Select( member => member.GroupRole.Name ).ToList().AsDelimited( ", " )
+                    } ).Distinct();
+
+                    totalGroupMemberCount = groupedByPersonMembers.Count();
+                    mergeFields.Add( "Items", groupedByPersonMembers );
+                }
+                else
+                {
+                    mergeFields.Add( "Items", groupMembers );
+                }
+
                 mergeFields.Add( "Group", group );
 
                 var title = TitleTemplate.ResolveMergeFields( mergeFields );
