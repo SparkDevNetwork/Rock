@@ -1212,6 +1212,11 @@ icon {
     font-size: large;
 }
 
+.toggle-button .append-text {
+    color: ?color-primary;
+    font-size: small;
+}
+
 .toggle-button .icon {
     margin: 3 0 0 0;
     color: ?color-primary;
@@ -1223,6 +1228,10 @@ icon {
 }
 
 .toggle-button.checked .title {
+    color: white;
+}
+
+.toggle-button.checked .append-text {
     color: white;
 }
 

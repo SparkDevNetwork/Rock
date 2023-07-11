@@ -676,7 +676,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 // Get the groups
                 var groupTypeIds = NavData.GroupTypes.Select( t => t.Id ).ToList();
 
-                var groups = new GroupService( rockContext )
+                var groupService = new GroupService( rockContext );
+                var groups = groupService
                     .Queryable( "GroupLocations" ).AsNoTracking()
                     .Where( g =>
                         groupTypeIds.Contains( g.GroupTypeId ) &&
@@ -700,29 +701,50 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     if ( childLocationIds.Any() || childGroupIds.Any() )
                     {
-                        int? totalSoftThreshold = null;
-                        if ( group.GroupLocations.Where( a => childLocationIds.Contains( a.LocationId ) ).All( a => a.Location.SoftRoomThreshold.HasValue ) )
+                        var childGroups = groupService.GetAllDescendentGroups( group.Id, false );
+                        var allDescendentchildLocations = group.GroupLocations.Where( a => childLocationIds.Contains( a.LocationId ) ).ToList();
+                        var childGroupChildLocations = childGroups.SelectMany( a => a.GroupLocations ).Where( l => validLocationids.Contains( l.LocationId ) ).ToList();
+                        if ( childGroupChildLocations != null && childGroupChildLocations.Any() )
                         {
-                            totalSoftThreshold = group.GroupLocations.Select( a => a.Location.SoftRoomThreshold ).Sum();
+                            allDescendentchildLocations.AddRange( childGroupChildLocations );
+                        }
+
+                        int? totalSoftThreshold = null;
+                        var locations = allDescendentchildLocations.Select( a => a.Location ).Distinct();
+                        if ( locations.All( a => a.SoftRoomThreshold.HasValue ) )
+                        {
+                            
+                            totalSoftThreshold = locations.Select( a => a.SoftRoomThreshold ).Sum();
                         }
 
                         var navGroup = new NavigationGroup( group, chartTimes, totalSoftThreshold );
                         navGroup.ChildLocationIds = childLocationIds;
                         navGroup.ChildGroupIds = childGroupIds;
-                        
+                        if ( totalSoftThreshold.HasValue )
+                        {
+                            /*
+                                SK - 07/02/2023
+                                We need to keep track of Threshold values on per location basis.
+                                It will be used in calculation of Total Threshold values for Areas that  has multiple group with same location associated with multiple group.
+                            */
+                            navGroup.LocationTotalThresholdKeyValues = locations.ToDictionary( l => l.Id, t => t.SoftRoomThreshold.Value );
+                        }
+
                         NavData.Groups.Add( navGroup );
 
-                        /* 
-                            2/5/2021 MDP 
 
-                            This used to only add the group to the GroupTypes.ChildGroups if it didn't have
-                            a parent group, or the parent group was one of the groups we are displaying.
-                            However, this was preventing groups from being added if they were organized (using GroupViewer)
-                            under some non-checkin group. I couldn't figure out why that restriction was in place.
-                         */
+                        /*
+                                SK - 07/02/2023
+                                Reverted back changes made via https://github.com/SparkDevNetwork/Rock/commit/a5bda143b0ba02f0897c2245513bbc23a638f156
+                                - Fixed issue in Live Metrics where a 'no valid groups or locations' message would show if a Group had a non-checkin parent group.
 
-                        NavData.GroupTypes.Where( t => t.Id == group.GroupTypeId ).ToList()
+                                IF the other situation occurs again, we will have more details about where/why/how to handle it next.
+                        */
+                        if ( !group.ParentGroupId.HasValue || groupIds.Contains( group.ParentGroupId.Value ) )
+                        {
+                            NavData.GroupTypes.Where( t => t.Id == group.GroupTypeId ).ToList()
                                 .ForEach( t => t.ChildGroupIds.Add( group.Id ) );
+                        }
                     }
                 }
 
@@ -736,7 +758,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     var isSoftThresholdValid = groupTypeGroups.All( a => a.TotalSoftThreshold.HasValue );
                     if ( isSoftThresholdValid )
                     {
-                        navGroupType.TotalSoftThreshold = groupTypeGroups.Sum( a => a.TotalSoftThreshold );
+                        /*
+                            SK - 07/02/2023
+                            Area may have different groups with common locations.
+                            In order to get the TotalSoftThreshold for group types, we are getting the distinct locations and sum the total Soft Threshold
+                            to  get the actual result.
+                        */
+                        var distinctLocationTotalThresholds = groupTypeGroups.SelectMany( a => a.LocationTotalThresholdKeyValues ).Distinct();
+                        navGroupType.TotalSoftThreshold = distinctLocationTotalThresholds.Sum(a=>a.Value);
                     }
                 }
 
@@ -1197,7 +1226,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private List<int> GetChildGroupIdDescendants( NavigationGroupType navGroupType )
         {
-            var childGroupIds = navGroupType.ChildGroupIds;
+            var childGroupIds = navGroupType.ChildGroupIds.ToList();
             if ( navGroupType != null )
             {
                 foreach ( var childGroupTypeId in navGroupType.ChildGroupTypeIds )
@@ -1274,7 +1303,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             .Distinct()
                             .ToList();
                         NavData.Groups
-                            .Where( g => groupIds.Contains( g.Id ) )
+                            .Where( g => groupIds.Contains( g.Id ) && g.ParentId == null )
                             .ToList()
                             .ForEach( g => navItems.Add( g ) );
 
@@ -1551,6 +1580,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             public int Order { get; set; }
 
+            /// <summary>
+            /// Gets the total soft threshold adding all the locations associated.
+            /// Total soft threshold is total capacity considering location that may be associated with multiple groups.
+            /// </summary>
+            /// <value>
+            /// The total soft threshold.
+            /// </value>
             public int? TotalSoftThreshold { get; internal set; }
 
             public List<int> CurrentPersonIds { get; set; }
@@ -1685,13 +1721,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             public List<int> ChildGroupIds { get; set; }
 
+            public Dictionary<int,int> LocationTotalThresholdKeyValues { get; set; }
+
             public NavigationGroup( Group group, List<DateTime> chartTimes, int? totalSoftThreshold )
             {
                 Id = group.Id;
                 Name = group.Name;
                 Order = group.Order;
+                ParentId = group.ParentGroupId;
                 CurrentPersonIds = new List<int>();
                 RecentPersonIds = new Dictionary<DateTime, List<int>>();
+                LocationTotalThresholdKeyValues = new Dictionary<int, int>();
                 chartTimes.ForEach( t => RecentPersonIds.Add( t, new List<int>() ) );
                 GroupTypeId = group.GroupTypeId;
                 ChildLocationIds = new List<int>();
