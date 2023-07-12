@@ -92,7 +92,7 @@ namespace Rock.Web.HttpModules
             }
             else if ( context.Request.Headers["X-Rock-Mobile-Api-Key"] != null )
             {
-                ObservabilityHelper.StartActivity( $"Mobile: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                ObservabilityHelper.StartActivity( $"MOBILE: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
                 Activity.Current?.AddTag( "rock-otel-type", "rock-mobile" );
             }
             else if ( context.Request.Url.PathAndQuery.StartsWith( "/api/v2/tv" ) )

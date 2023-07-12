@@ -101,7 +101,7 @@ namespace Rock.Observability
         /// </summary>
         /// <param name="name"></param>
         /// <param name="kind"></param>
-        public static void StartActivity( string name, ActivityKind kind = ActivityKind.Internal )
+        public static Activity StartActivity( string name, ActivityKind kind = ActivityKind.Internal )
         {
             RockActivitySource.ActivitySource.StartActivity( name, kind );
 
@@ -121,6 +121,8 @@ namespace Rock.Observability
             }
             
             Activity.Current?.AddTag( "service.version", VersionInfo.VersionInfo.GetRockProductVersionFullName() );
+
+            return Activity.Current;
         }
     }
 }
