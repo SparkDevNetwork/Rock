@@ -44,7 +44,7 @@ namespace Rock.Observability
         /// </summary>
         public static string ServiceName
         {
-            get => ConfigurationManager.AppSettings["ObservabilityServiceName"].Trim();
+            get => ConfigurationManager.AppSettings["ObservabilityServiceName"]?.Trim() ?? string.Empty;
         }
         #endregion
 
