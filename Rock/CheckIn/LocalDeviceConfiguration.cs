@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using Rock.Security;
 using Rock.Web.UI;
 
@@ -203,6 +204,17 @@ namespace Rock.CheckIn
             }
 
             var decryptedValue = Encryption.DecryptString( localDeviceConfigCookie );
+
+            /*
+                7/11/2023 JME
+                Some proxies like Weglot will URL encode the cookie value when they proxy the request to add the cookie. This breaks
+                the format of the encrypted string that contains the check-in configuration. If the decrypted  value is blank we'll
+                try decoding it then decrypting it.
+            */
+            if ( decryptedValue.IsNullOrWhiteSpace() )
+            {
+                decryptedValue = Encryption.DecryptString( HttpUtility.UrlDecode( localDeviceConfigCookie ) );
+            }
 
             return decryptedValue.FromJsonOrNull<LocalDeviceConfiguration>();
         }
