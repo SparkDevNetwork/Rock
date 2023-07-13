@@ -676,6 +676,17 @@ namespace Rock.Model
         [DataMember]
         public string PronunciationNote { get; set; }
 
+
+        /**
+            6/29/2023 - KA
+
+            The PrimaryAliasId is not configured as a foreign key with a navigation property to the PersonAlias
+            table because Person.Id is already referenced as a foreign key on PersonAlias. Introducing a foreign
+            key here back to that table makes delete operations tricky because either one must be deleted first
+            before the other can be deleted and at the same time neither can be deleted because it is referenced
+            by the other table.
+        */
+
         /// <summary>
         /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
         /// </summary>
@@ -685,15 +696,6 @@ namespace Rock.Model
         [DataMember]
         public int? PrimaryAliasId
         {
-            /**
-              * 6/29/2023 - KA
-              *
-              * The PrimaryAliasId is not configured as a foreign key with a navigation property to the PersonAlias
-              * table because Person.Id is already referenced as a foreign key on PersonAlias. Introducing a foreign
-              * key here back to that table makes delete operations tricky because either one must be deleted first
-              * before the other can be deleted and at the same time neither can be deleted because it is referenced
-              * by the other table.
-            */
             get => _primaryAliasId ?? PrimaryAlias?.Id;
             set => _primaryAliasId = value;
         }

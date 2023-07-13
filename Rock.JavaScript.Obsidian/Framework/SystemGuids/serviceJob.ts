@@ -89,6 +89,8 @@ export const ServiceJob = {
     DataMigrations160UpdateInteractionSessionSessionStartDateKey: "EBAD6B4D-D928-41FD-A0DD-445060810504",
     /** The Job to run Post v16.0 Update Person PrimaryPersonAliasId. */
     DataMigrations160UpdatePersonPrimaryPersonAliasId: "BC7564DC-594F-4B50-8988-1594849515F1",
+    /** The Job to run Post v16.0 Data Migrations to update the newly persisted WorkflowId column on Workflow entity with their correct values. */
+    DataMigrations160UpdateWorkflowidColumns: "2222F9D2-4771-4B21-A630-E696DB0C329A",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */

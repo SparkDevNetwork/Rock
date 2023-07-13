@@ -78,7 +78,7 @@ namespace Rock.ClientService.Core.Category
         /// for filtering and determine how much data to load.
         /// </summary>
         /// <param name="options">The options that describe the request.</param>
-        /// <param name="filter">A Function to filter out Categories</param>
+        /// <param name="filterMethod">A Function to filter out Categories</param>
         /// <returns>A list of view models that describe the tree of categories and items.</returns>
         public List<TreeItemBag> GetCategorizedTreeItems<T>( CategoryItemTreeOptions options = null, Func<T, bool> filterMethod = null ) where T : ICategorized
         {
@@ -254,7 +254,8 @@ namespace Rock.ClientService.Core.Category
         /// </summary>
         /// <param name="options">The options that describe the current operation.</param>
         /// <param name="cachedEntityType">The cached entity type object that describes the items.</param>
-        /// <param name="itemsQry">The items qry.</param>
+        /// <param name="itemsQry">The items query.</param>
+        /// <param name="filterMethod">A Function to filter out Categories</param>
         /// <returns>A list of child items that should be included in the results.</returns>
         private List<TreeItemBag> GetChildrenItems<T>( CategoryItemTreeOptions options, EntityTypeCache cachedEntityType, IQueryable<ICategorized> itemsQry, Func<T, bool> filterMethod = null ) where T : ICategorized
         {
@@ -318,6 +319,7 @@ namespace Rock.ClientService.Core.Category
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="cachedEntityType">The cached entity type of the items.</param>
         /// <param name="options">The options that describe the current operation.</param>
+        /// <param name="filterMethod">A Function to filter out Categories</param>
         /// <returns></returns>
         private TreeItemBag GetAllDescendants<T>( TreeItemBag categoryItem, Person currentPerson, CategoryService categoryService, IService serviceInstance, EntityTypeCache cachedEntityType, CategoryItemTreeOptions options, Func<T, bool> filterMethod = null ) where T : ICategorized
         {
