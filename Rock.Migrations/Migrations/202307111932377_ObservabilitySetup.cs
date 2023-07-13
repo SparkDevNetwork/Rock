@@ -41,7 +41,7 @@ namespace Rock.Migrations
                       INSERT INTO [AttributeValue]
                       ([AttributeId], [EntityId], [Value], [IsSystem], [Guid])
                       VALUES
-                      (@AttributeId, 0, 'True', 0, 'D429BE88-AA62-29A9-4927-36F2525B5B90')" );
+                      (@AttributeId, 0, 'True', 0, '00BDF1A9-5B6E-4E91-8A56-5B3C005F8C26')" );
         }
         
         /// <summary>
