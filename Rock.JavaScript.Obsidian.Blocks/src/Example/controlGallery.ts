@@ -174,7 +174,8 @@ import PanelWidget from "@Obsidian/Controls/panelWidget";
 import ProgressBar from "@Obsidian/Controls/progressBar";
 import RockLabel from "@Obsidian/Controls/rockLabel";
 import RockValidation from "@Obsidian/Controls/rockValidation";
-import TabbedContent from "@Obsidian/Controls/tabbedContent";
+import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import PagePicker from "@Obsidian/Controls/pagePicker.obs";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
@@ -5402,6 +5403,45 @@ const rangeSliderGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates tabbed bar */
+const tabbedBarGallery = defineComponent({
+    name: "TabbedBarGallery",
+    components: {
+        GalleryAndResult,
+        TabbedBar,
+        DropDownList
+    },
+    setup() {
+        return {
+            list: ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians"],
+            type: ref("tabs"),
+            typeItems: [{value: "tabs", text: "Tabs"}, {value: "pills", text: "Pills" }],
+            importCode: getSfcControlImportPath("tabbedBar"),
+            exampleCode: `<TabbedBar :tabs="arrayOfItems">
+    <template #default="{item}">
+        {{ item }}
+    </template>
+</TabbedBar`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <TabbedBar :tabs="list" :type="type">
+    </TabbedBar>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Type" v-model="type" :items="typeItems" :showBlankItem="false" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates tabbed content */
 const tabbedContentGallery = defineComponent({
     name: "TabbedContentGallery",
@@ -5414,8 +5454,8 @@ const tabbedContentGallery = defineComponent({
     setup() {
         return {
             list: ["Matthew", "Mark", "Luke", "John"],
-            importCode: getControlImportPath("tabbedContent"),
-            exampleCode: `<TabbedContent :tabList="arrayOfItems">
+            importCode: getSfcControlImportPath("tabbedContent"),
+            exampleCode: `<TabbedContent :tabs="arrayOfItems">
     <template #tab="{item}">
         {{ item }}
     </template>
@@ -5431,7 +5471,7 @@ const tabbedContentGallery = defineComponent({
     :exampleCode="exampleCode" >
 
 
-    <TabbedContent :tabList="list">
+    <TabbedContent :tabs="list">
         <template #tab="{item}">
             {{ item }}
         </template>
@@ -8018,6 +8058,7 @@ const controlGalleryComponents: Record<string, Component> = [
     rockLabelGallery,
     rockValidationGallery,
     rangeSliderGallery,
+    tabbedBarGallery,
     tabbedContentGallery,
     transitionVerticalCollapseGallery,
     valueDetailListGallery,

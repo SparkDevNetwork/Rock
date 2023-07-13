@@ -19,7 +19,7 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 import RockSuspense from "./rockSuspense";
 import LoadingIndicator from "./loadingIndicator";
 import { List } from "@Obsidian/Utility/linq";
-import TabbedContent from "./tabbedContent";
+import TabbedContent from "./tabbedContent.obs";
 import RockField from "./rockField";
 import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicAttributeCategoryBag";
 import { emptyGuid } from "@Obsidian/Utility/guid";
@@ -173,6 +173,10 @@ export default defineComponent({
             return `${props.entityTypeName} Attributes`;
         });
 
+        const attributeCategoryNames = computed((): string[] => {
+            return attributeCategories.value.map(a => a.name ?? "");
+        });
+
         const columnClass = computed(() => {
             let numColumns = props.numberOfColumns;
 
@@ -192,6 +196,12 @@ export default defineComponent({
 
             return `col-${props.columnBreakpoint}-${12 / numColumns}`;
         });
+
+        function getCategoryAttributes(categoryName: string): PublicAttributeBag[] {
+            return attributeCategories.value
+                .find(c => c.name === categoryName)
+                ?.attributes ?? [];
+        }
 
         const onUpdateValue = (key: string, value: string): void => {
             values.value[key] = value;
@@ -234,8 +244,10 @@ export default defineComponent({
             validAttributes,
             values,
             attributeCategories,
+            attributeCategoryNames,
             actuallyDisplayAsTabs,
             defaultCategoryHeading,
+            getCategoryAttributes,
             columnClass,
             prePostHtmlItems,
         };
@@ -255,12 +267,9 @@ export default defineComponent({
             />
         </div>
 
-        <TabbedContent v-else-if="actuallyDisplayAsTabs" :tabList="attributeCategories">
-            <template #tab="{item}">
-                {{ item.name }}
-            </template>
+        <TabbedContent v-else-if="actuallyDisplayAsTabs" :tabs="attributeCategoryNames">
             <template #tabpane="{item}">
-                <div v-for="a in item.attributes" :key="a.attributeGuid">
+                <div v-for="a in getCategoryAttributes(item)" :key="a.attributeGuid">
                     <RockField
                         :isEditMode="isEditMode"
                         :attribute="a"

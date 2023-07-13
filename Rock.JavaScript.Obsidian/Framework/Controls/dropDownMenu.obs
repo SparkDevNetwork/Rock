@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div ref="dropdownElement" class="dropdown" :class="additionalDropDownClasses">
         <button class="btn btn-link btn-overflow" type="button" @click.prevent="onDropDownClick">
