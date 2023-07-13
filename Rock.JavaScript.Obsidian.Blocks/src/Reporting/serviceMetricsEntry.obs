@@ -32,7 +32,7 @@
                         <DropDownList v-model="weekendDateOrEmptyString"
                                       :disabled="isLoadingWeekendDates"
                                       :items="weekendDates"
-                                      label="Week Of"
+                                      label="Week of"
                                       @update:modelValue="onWeekendDateUpdated" />
                         <div v-if="areNoServiceTimesLoaded" class="btn">No Services Available</div>
                         <DropDownList v-else
@@ -352,6 +352,7 @@
 
     async function getServiceMetrics(): Promise<void> {
         try {
+            isSavedMessage.value = null;
             isGettingServiceMetrics.value = true;
             errorMessage.value = "";
 

@@ -499,7 +499,7 @@ namespace Rock.Mobile
                         BlockTypeGuid = mobileBlockTypeGuid ?? Guid.Empty,
 #pragma warning disable CS0618 // Type or member is obsolete
                         RequiredAbiVersion = mobileBlockEntity.RequiredMobileAbiVersion,
-                        BlockType = mobileBlockEntity.MobileBlockType,
+                        BlockType = mobileBlockTypeClass,
 #pragma warning restore CS0618 // Type or member is obsolete
                         ConfigurationValues = mobileBlockEntity.GetBlockInitialization( Blocks.RockClientType.Mobile ),
                         Order = block.Order,

@@ -2585,7 +2585,7 @@ namespace RockWeb.Blocks.Event
                 if ( isNewRegistration )
                 {
                     // Send notice of a new registration
-                    var notificationMsg = new ProcesSendRegistrationNotification.Message();
+                    var notificationMsg = new ProcessSendRegistrationNotification.Message();
                     notificationMsg.RegistrationId = registration.Id;
                     notificationMsg.AppRoot = appRoot;
                     notificationMsg.ThemeRoot = themeRoot;

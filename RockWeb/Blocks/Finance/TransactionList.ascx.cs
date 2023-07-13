@@ -1979,8 +1979,9 @@ namespace RockWeb.Blocks.Finance
             if ( showImages )
             {
                 _imageBinaryFileIdLookupByTransactionId = new FinancialTransactionImageService( rockContext ).Queryable().Where( a => qry.Any( q => q.Id == a.TransactionId ) )
-                    .Select( a => new { a.TransactionId, a.BinaryFileId } ).GroupBy( a => a.TransactionId ).ToList()
-                    .ToDictionary( k => k.Key, v => v.Select( x => x.BinaryFileId ).ToList() );
+                    .Select( a => new { a.TransactionId, a.BinaryFileId, a.Order } )
+                    .GroupBy( a => a.TransactionId )
+                    .ToDictionary( k => k.Key, v => v.OrderBy( x => x.Order ).Select( x => x.BinaryFileId ).ToList() );
             }
             else
             {

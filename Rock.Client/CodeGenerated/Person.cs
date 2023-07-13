@@ -153,6 +153,9 @@ namespace Rock.Client
         public int? PreferredLanguageValueId { get; set; }
 
         /// <summary />
+        public int? PrimaryAliasId { get; set; }
+
+        /// <summary />
         public int? PrimaryCampusId { get; set; }
 
         /// <summary />
@@ -277,6 +280,7 @@ namespace Rock.Client
             this.NickNamePronunciationOverride = source.NickNamePronunciationOverride;
             this.PhotoId = source.PhotoId;
             this.PreferredLanguageValueId = source.PreferredLanguageValueId;
+            this.PrimaryAliasId = source.PrimaryAliasId;
             this.PrimaryCampusId = source.PrimaryCampusId;
             this.PrimaryFamilyId = source.PrimaryFamilyId;
             this.PronunciationNote = source.PronunciationNote;
@@ -345,11 +349,6 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue PreferredLanguageValue { get; set; }
-
-        /// <summary>
-        /// The Primary PersonAliasId of the Person
-        /// </summary>
-        public int? PrimaryAliasId { get; set; }
 
         /// <summary />
         public DefinedValue RaceValue { get; set; }

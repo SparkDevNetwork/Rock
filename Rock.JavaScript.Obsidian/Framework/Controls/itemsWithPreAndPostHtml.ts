@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
+// import { defineComponent, PropType } from "vue";
 
 export type ItemWithPreAndPostHtml = {
     slotName: string;
@@ -22,45 +22,84 @@ export type ItemWithPreAndPostHtml = {
     postHtml: string;
 };
 
+import { defineComponent, h, PropType, Slots, VNode } from "vue";
+
 export default defineComponent({
-    name: "ItemsWithPreAndPostHtml",
     props: {
-        items: {
-            type: Array as PropType<ItemWithPreAndPostHtml[]>,
-            required: true
-        }
+        items: { type: Array as PropType<ItemWithPreAndPostHtml[]>, default: [] }
     },
-    methods: {
-        onDismiss: function () {
-            this.$emit("dismiss");
+    setup: (props, { slots }) => {
+        let renderCt: HTMLDivElement;
+
+        // Convert a Node's children into VNodes
+        function childrenToVNodes(node: Node, slots: Slots): Array<ReturnType<typeof domToVNodes>> {
+            return Array.from(node.childNodes).map(node => domToVNodes(node, slots));
         }
-    },
-    computed: {
-        augmentedItems(): Record<string, string>[] {
-            return this.items.map(i => ({
-                ...i,
-                innerSlotName: `inner-${i.slotName}`
-            } as Record<string, string>));
-        },
-        innerTemplate(): string {
-            if (!this.items.length) {
-                return "<slot />";
+
+        // Convert a Node into VNode
+        function domToVNodes(domNode: Node, slots: Slots): VNode | string | Array<VNode | string | VNode[]> {
+            const attributes = {};
+            let children: ReturnType<typeof childrenToVNodes>;
+            let text: string;
+            let el: Element;
+            let textNode: Text;
+
+            switch (domNode.nodeType) {
+                case 1:
+                    // Element: convert to VNode
+                    el = domNode as Element;
+                    for (const { name, value } of el.attributes) {
+                        // Use ^ to force them to be used as attributes
+                        attributes[`^${name}`] = value;
+                    }
+
+                    children = childrenToVNodes(el, slots);
+
+                    return h(el.tagName.toLowerCase(), attributes, children);
+                case 3:
+                    // Text: convert to string, and/or replace the placeholder text with slot content
+                    textNode = domNode as Text;
+                    text = textNode.data;
+
+                    // Find placeholders
+                    if (/%%%:::[a-zA-Z0-9-_]+:::%%%/.test(text)) {
+                        // Split other text out away from placeholders
+                        const parts = text.split("%%%");
+
+                        // Find the pieces that are placeholders and convert them to slot content or return other text
+                        return parts.map(txt => {
+                            if (/:::[a-zA-Z0-9-_]+:::/.test(txt)) {
+                                const matches = txt.match(/[a-zA-Z0-9-_]+/);
+                                if (matches && matches.length > 0) {
+                                    const [slotName] = matches;
+                                    return slots[slotName]?.() ?? slotName;
+                                }
+                                return txt;
+                            }
+
+                            return txt;
+                        });
+                    }
+
+                    return textNode.data;
             }
 
-            const templateParts = this.items.map(i => `${i.preHtml}<slot name="inner-${i.slotName}" />${i.postHtml}`);
-            return templateParts.join("");
-        },
-        innerComponent(): Record<string, unknown> {
-            return {
-                name: "InnerItemsWithPreAndPostHtml",
-                template: this.innerTemplate
-            };
+            return "";
         }
-    },
-    template: `
-<component :is="innerComponent">
-    <template v-for="item in augmentedItems" :key="item.slotName" v-slot:[item.innerSlotName]>
-        <slot :name="item.slotName" />
-    </template>
-</component>`
+
+        // Render Function
+        return () => {
+            const html = props.items.map(({ slotName, preHtml, postHtml }) => {
+                return `${preHtml}%%%:::${slotName}:::%%%${postHtml}`;
+            }).join("");
+
+            if (!renderCt) {
+                renderCt = document.createElement("div");
+            }
+
+            renderCt.innerHTML = html;
+
+            return childrenToVNodes(renderCt, slots);
+        };
+    }
 });

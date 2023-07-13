@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -82,54 +78,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// SystemPhoneNumber View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( SystemPhoneNumber ) )]
-    public partial class SystemPhoneNumberViewModelHelper : ViewModelHelper<SystemPhoneNumber, SystemPhoneNumberBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override SystemPhoneNumberBag CreateViewModel( SystemPhoneNumber model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new SystemPhoneNumberBag
-            {
-                IdKey = model.IdKey,
-                AssignedToPersonAliasId = model.AssignedToPersonAliasId,
-                Description = model.Description,
-                IsActive = model.IsActive,
-                IsSmsEnabled = model.IsSmsEnabled,
-                IsSmsForwardingEnabled = model.IsSmsForwardingEnabled,
-                MobileApplicationSiteId = model.MobileApplicationSiteId,
-                Name = model.Name,
-                Number = model.Number,
-                Order = model.Order,
-                ProviderIdentifier = model.ProviderIdentifier,
-                SmsNotificationGroupId = model.SmsNotificationGroupId,
-                SmsReceivedWorkflowTypeId = model.SmsReceivedWorkflowTypeId,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -209,20 +157,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static SystemPhoneNumberBag ToViewModel( this SystemPhoneNumber model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new SystemPhoneNumberViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

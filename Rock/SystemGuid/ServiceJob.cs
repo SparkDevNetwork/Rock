@@ -154,6 +154,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_150_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS = "EA00D1D4-709A-4102-863D-08471AA2C345";
 
         /// <summary>
+        /// The Job to run Post v15.2 to replace web forms blocks with Obsidian blocks.
+        /// </summary>
+        public const string DATA_MIGRATIONS_152_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS = "4232194C-90AE-4B44-93E7-1E5DE984A9E1";
+
+        /// <summary>
         /// The Job to run Post v16.0 Move Person Preferences.
         /// </summary>
         public const string DATA_MIGRATIONS_160_MOVE_PERSON_PREFERENCES = "C8591D15-9D37-49D3-8DF8-1DB72EE42D29";
@@ -179,9 +184,19 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_160_POPULATE_INTERACTION_SESSION_DATA = "4C734B0E-8024-4600-99F9-B6CFEE9F8250";
 
         /// <summary>
+        /// The Job to run Post v16.0 Update Person PrimaryPersonAliasId.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_ID = "BC7564DC-594F-4B50-8988-1594849515F1";
+
+        /// <summary>
         /// The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields.
         /// </summary>
         public const string DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12";
+
+        /// <summary>
+        /// The Job to run Post v16.0 Data Migrations to update the newly persisted WorkflowId column on Workflow entity with their correct values.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_UPDATE_WORKFLOWID_COLUMNS = "2222F9D2-4771-4B21-A630-E696DB0C329A";
 
         /// <summary>
         /// The Job to get NCOA

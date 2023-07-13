@@ -25,6 +25,9 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Bus;
+using Rock.Observability;
+using System.Diagnostics;
 
 namespace Rock.Jobs
 {
@@ -109,6 +112,13 @@ namespace Rock.Jobs
 #pragma warning disable CS0612 // Type or member is obsolete
             context.JobDetail.JobDataMap.LoadFromJobAttributeValues( job );
 #pragma warning restore CS0612 // Type or member is obsolete
+
+            // Add job observability
+            ObservabilityHelper.StartActivity( $"JOB: {job.Class.Replace( "Rock.Jobs.", "" )} - {job.Name}" );
+            Activity.Current?.AddTag( "rock-otel-type", "rock-job" );
+            Activity.Current?.AddTag( "rock-job-id", job.Id );
+            Activity.Current?.AddTag( "rock-job-type", job.Class.Replace( "Rock.Jobs.", "" ) );
+            Activity.Current?.AddTag( "rock-job-description", job.Description );
         }
 
         /// <summary>
@@ -141,6 +151,12 @@ namespace Rock.Jobs
 #pragma warning restore CS0612 // Type or member is obsolete
 
             var rockJobInstance = context.JobInstance as RockJob;
+
+            // Complete the observability
+            Activity.Current?.AddTag( "rock-job-duration", context.JobRunTime.TotalSeconds );
+            Activity.Current?.AddTag( "rock-job-message", rockJobInstance.Result ?? context.Result as string );
+            Activity.Current?.AddTag( "rock-job-result", jobException == null ? "Success" : "Failed" );
+            Activity.Current?.Dispose();
 
             // load job
             var rockContext = new RockContext();

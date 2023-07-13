@@ -126,6 +126,9 @@ namespace Rock.Blocks.Core
             public const string HideColumnsOnGrid = "HideColumnsOnGrid";
         }
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
+
         #region Methods
 
         /// <inheritdoc/>

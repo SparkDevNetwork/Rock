@@ -30,6 +30,7 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class DataViewsPicker : RockListBox
     {
+        #region Properties
         /// <summary>
         /// Gets or sets the data view entity type identifier.
         /// </summary>
@@ -54,6 +55,28 @@ namespace Rock.Web.UI.Controls
         /// The data view entity type identifier
         /// </summary>
         private int? _entityTypeId;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display persisted only].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display pesisted only]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayPersistedOnly
+        {
+            get
+            {
+                return ViewState["DisplayPersistedOnly"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["DisplayPersistedOnly"] = value;
+                LoadListBoxItems();
+            }
+        }
+
+        #endregion Properties
 
         /// <summary>
         /// Loads the list box items.
@@ -84,6 +107,7 @@ namespace Rock.Web.UI.Controls
                     .Include( "EntityType" )
                     .Include( "Category" )
                     .Include( "DataViewFilter" )
+                    .Where( d => DisplayPersistedOnly == false || (d.PersistedScheduleIntervalMinutes.HasValue || d.PersistedScheduleId.HasValue) ) // if display persisted only is set to true, fetch only persisted data views
                     .AsNoTracking() )
                 {
                     if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson )

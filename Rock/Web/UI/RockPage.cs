@@ -42,6 +42,7 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.Utility.Settings;
 using Rock.ViewModels;
+using Rock.ViewModels.Crm;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -733,6 +734,36 @@ namespace Rock.Web.UI
         /// <param name="e"></param>
         protected override void OnInit( EventArgs e )
         {
+            // Add configuration specific to Rock Page to the observability activity
+            if (Activity.Current != null)
+            {
+                Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {PageReference.Route}";
+
+                // If the route has parameters show the route slug, otherwise use the request path
+                if ( PageReference.Parameters.Count > 0 )
+                {
+                    Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {PageReference.Route}";
+                }
+                else
+                {
+                    Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {Context.Request.Path}";
+                }
+
+                // Highlight postbacks
+                if ( this.IsPostBack )
+                {
+                    Activity.Current.DisplayName = Activity.Current.DisplayName + " [Postback]";
+                }
+
+                // Add attributes
+                Activity.Current.AddTag( "rock-otel-type", "rock-page" );
+                Activity.Current.AddTag( "rock.current-person", this.CurrentPerson?.FullName );
+                Activity.Current.AddTag( "rock.current-user", this.CurrentUser?.UserName );
+                Activity.Current.AddTag( "rock.current-visitor", this.CurrentVisitor?.AliasPersonGuid );
+                Activity.Current.AddTag( "rock.page-id", this.PageId );
+                Activity.Current.AddTag( "rock.page-ispostback", this.IsPostBack );
+            }
+
             var stopwatchInitEvents = Stopwatch.StartNew();
 
             RequestContext = new RockRequestContext( Request );
@@ -1366,7 +1397,15 @@ Rock.settings.initialize({{
 
                             if ( CurrentPerson != null && CurrentPerson.Guid != new Guid( SystemGuid.Person.GIVER_ANONYMOUS ) )
                             {
-                                currentPersonJson = CurrentPerson.ToViewModel( CurrentPerson ).ToCamelCaseJson( false, false );
+                                currentPersonJson = new CurrentPersonBag
+                                {
+                                    IdKey = CurrentPerson.IdKey,
+                                    FirstName = CurrentPerson.FirstName,
+                                    NickName = CurrentPerson.NickName,
+                                    LastName = CurrentPerson.LastName,
+                                    FullName = CurrentPerson.FullName,
+                                    Email = CurrentPerson.Email
+                                }.ToCamelCaseJson( false, false );
                             }
                             else if ( CurrentPerson != null )
                             {
@@ -1383,7 +1422,6 @@ Obsidian.onReady(() => {{
             pageParameters: {PageParameters().ToJson()},
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {(isAnonymousVisitor ? "true" : "false")},
-            contextEntities: {GetContextViewModels().ToCamelCaseJson( false, false )},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
         }});
     }});
@@ -2782,29 +2820,6 @@ $.ajax({
         public string GetLoginUrlWithReturnUrl()
         {
             return Site.GetLoginUrlWithReturnUrl();
-        }
-
-        /// <summary>
-        /// Gets the context view models.
-        /// </summary>
-        /// <returns></returns>
-        internal Dictionary<string, IViewModel> GetContextViewModels()
-        {
-            var contextEntities = GetContextEntities();
-            var viewModels = new Dictionary<string, IViewModel>();
-
-            foreach ( var kvp in contextEntities )
-            {
-                var entity = kvp.Value;
-                var viewModel = ViewModelHelper.GetDefaultViewModel( entity, CurrentPerson, false );
-
-                if ( viewModel != null )
-                {
-                    viewModels[kvp.Key] = viewModel;
-                }
-            }
-
-            return viewModels;
         }
 
         /// <summary>

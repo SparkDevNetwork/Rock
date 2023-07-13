@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -408,49 +404,6 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// DefinedValue View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( DefinedValue ) )]
-    public partial class DefinedValueViewModelHelper : ViewModelHelper<DefinedValue, DefinedValueBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override DefinedValueBag CreateViewModel( DefinedValue model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new DefinedValueBag
-            {
-                IdKey = model.IdKey,
-                CategoryId = model.CategoryId,
-                DefinedTypeId = model.DefinedTypeId,
-                Description = model.Description,
-                IsActive = model.IsActive,
-                IsSystem = model.IsSystem,
-                Order = model.Order,
-                Value = model.Value,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
-
-    /// <summary>
     /// Generated Extension Methods
     /// </summary>
     public static partial class DefinedValueExtensionMethods
@@ -523,20 +476,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static DefinedValueBag ToViewModel( this DefinedValue model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new DefinedValueViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

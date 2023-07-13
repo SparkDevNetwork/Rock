@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent } from "vue";
+import { PropType, computed, defineComponent } from "vue";
 import { normalizeRules, rulesPropType } from "@Obsidian/ValidationRules";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import DropDownList from "./dropDownList";

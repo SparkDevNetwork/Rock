@@ -3677,6 +3677,7 @@ function onTaskCompleted( resultData )
                 }
 
                 var recipientPersonsLookup = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
+                    .ToList()
                     .Select( a => new
                     {
                         PersonId = a.Id,

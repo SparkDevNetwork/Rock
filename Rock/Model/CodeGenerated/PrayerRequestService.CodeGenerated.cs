@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,63 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// PrayerRequest View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( PrayerRequest ) )]
-    public partial class PrayerRequestViewModelHelper : ViewModelHelper<PrayerRequest, PrayerRequestBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override PrayerRequestBag CreateViewModel( PrayerRequest model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new PrayerRequestBag
-            {
-                IdKey = model.IdKey,
-                AllowComments = model.AllowComments,
-                Answer = model.Answer,
-                ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,
-                ApprovedOnDateTime = model.ApprovedOnDateTime,
-                CampusId = model.CampusId,
-                CategoryId = model.CategoryId,
-                Email = model.Email,
-                EnteredDateTime = model.EnteredDateTime,
-                ExpirationDate = model.ExpirationDate,
-                FirstName = model.FirstName,
-                FlagCount = model.FlagCount,
-                GroupId = model.GroupId,
-                IsActive = model.IsActive,
-                IsApproved = model.IsApproved,
-                IsPublic = model.IsPublic,
-                IsUrgent = model.IsUrgent,
-                LanguageValueId = model.LanguageValueId,
-                LastName = model.LastName,
-                PrayerCount = model.PrayerCount,
-                RequestedByPersonAliasId = model.RequestedByPersonAliasId,
-                Text = model.Text,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -203,20 +142,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static PrayerRequestBag ToViewModel( this PrayerRequest model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new PrayerRequestViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

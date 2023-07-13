@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Cms
             {
                 d.Name,
                 d.Id,
-                Size = d.ResultData.Length / 1024,
+                Size = d.ResultData != null ? d.ResultData.Length / 1024 : 0,
                 d.AccessKey,
                 d.TimeToBuildMS,
                 d.LastRefreshDateTime,
