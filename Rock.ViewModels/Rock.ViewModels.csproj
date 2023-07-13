@@ -53,6 +53,8 @@
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeBag.cs" />
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Tv\AppleTvAppDetail\AppleTvAppBag.cs" />
+    <Compile Include="Blocks\Tv\AppleTvAppDetail\AppleTvAppDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationFieldBag.cs" />
