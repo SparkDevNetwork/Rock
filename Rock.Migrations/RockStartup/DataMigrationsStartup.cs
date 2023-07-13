@@ -70,6 +70,7 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_INTERACTION_SESSION_AND_INTERACTION_INDICES.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_160_POPULATE_INTERACTION_SESSION_DATA.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_ID.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_WORKFLOWID_COLUMNS.AsGuid(),
         };
 
 

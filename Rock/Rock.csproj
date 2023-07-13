@@ -1005,6 +1005,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionAndInteractionSessionIndices.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionChannelId.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdatePersonPrimaryAliasId.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateWorkflowIds.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV141AddMissingIndexes.cs" />
@@ -1780,6 +1781,7 @@
     <Compile Include="Tasks\UpdatePersonAliasLastVisitDateTime.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="Tasks\UpdateWorkflowIds.cs" />
     <Compile Include="Transactions\AggregateAsyncTransaction.cs" />
     <Compile Include="Transactions\AggregateTransaction.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />

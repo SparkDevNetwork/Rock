@@ -194,6 +194,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12";
 
         /// <summary>
+        /// The Job to run Post v16.0 Data Migrations to update the newly persisted WorkflowId column on Workflow entity with their correct values.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_UPDATE_WORKFLOWID_COLUMNS = "2222F9D2-4771-4B21-A630-E696DB0C329A";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
