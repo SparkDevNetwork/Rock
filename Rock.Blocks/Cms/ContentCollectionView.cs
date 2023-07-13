@@ -233,6 +233,9 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
+
         #region Methods
 
         /// <inheritdoc/>
@@ -1080,7 +1083,7 @@ namespace Rock.Blocks.Cms
                 {
                     IconCssClass = "fa fa-edit",
                     Tooltip = "Settings",
-                    ComponentFileUrl = "/Obsidian/Blocks/CMS/contentCollectionViewCustomSettings"
+                    ComponentFileUrl = "/Obsidian/Blocks/CMS/contentCollectionViewCustomSettings.obs"
                 } );
             }
 
