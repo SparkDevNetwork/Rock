@@ -1,7 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <SearchFilter :isEnabled="isEnabled"
+                  :isInconsistent="isInconsistent"
                   :title="title"
+                  :subtitle="subtitle"
                   :description="description"
                   :values="values"
                   @edit="onEdit" />
@@ -11,19 +13,21 @@
     import { computed, PropType } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
-    import { CustomFieldFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/customFieldFilterBag";
+    import { AttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/attributeFilterBag";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import SearchFilter from "./searchFilter.partial.obs";
 
     const props = defineProps({
-        /** The custom field filter to be displayed. */
+        /** The attribute filter to be displayed. */
         modelValue: {
-            type: Object as PropType<CustomFieldFilterBag>,
+            type: Object as PropType<AttributeFilterBag>,
             required: true
         }
     });
 
     const emit = defineEmits<{
-        (e: "edit", value: CustomFieldFilterBag): void
+        (e: "edit", value: AttributeFilterBag): void;
     }>();
 
     // #region Computed Values
@@ -32,8 +36,16 @@
         return props.modelValue.isEnabled;
     });
 
+    const isInconsistent = computed((): boolean => {
+        return props.modelValue.isInconsistent;
+    });
+
     const title = computed((): string => {
-        return props.modelValue.title ?? "";
+        return props.modelValue.attributeName ?? "";
+    });
+
+    const subtitle = computed((): string => {
+        return `(${props.modelValue.fieldTypeName})`;
     });
 
     const description = computed((): string => {
@@ -48,15 +60,22 @@
             }
         ];
 
-        values.push({
-            text: "Filter Control",
-            value: props.modelValue.filterControl === ContentCollectionFilterControl.Dropdown ? "Dropdown" : "Pills"
-        });
+        // Special handling for booleans. They only have a filter control
+        // and its value is always Boolean.
+        if (areEqual(props.modelValue.fieldTypeGuid, FieldType.Boolean)) {
+            values.push({ text: "Filter Control", value: "Boolean" });
+        }
+        else {
+            values.push({
+                text: "Filter Control",
+                value: props.modelValue.filterControl === ContentCollectionFilterControl.Dropdown ? "Dropdown" : "Pills"
+            });
 
-        values.push({
-            text: "Filter Mode",
-            value: props.modelValue.isMultipleSelection ? "Multi-Select" : "Single-Select"
-        });
+            values.push({
+                text: "Filter Mode",
+                value: props.modelValue.isMultipleSelection ? "Multi-Select" : "Single-Select"
+            });
+        }
 
         return values;
     });
