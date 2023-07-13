@@ -164,6 +164,14 @@
     <Compile Include="Migrations\202307121922371_PersistWorkflowIdColumn.designer.cs">
       <DependentUpon>202307121922371_PersistWorkflowIdColumn.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202307131737155_Rollup_20230713.cs" />
+    <Compile Include="Migrations\202307131737155_Rollup_20230713.designer.cs">
+      <DependentUpon>202307131737155_Rollup_20230713.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202307131911270_CodeGenerated_20230713.cs" />
+    <Compile Include="Migrations\202307131911270_CodeGenerated_20230713.designer.cs">
+      <DependentUpon>202307131911270_CodeGenerated_20230713.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1792,6 +1800,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202307121922371_PersistWorkflowIdColumn.resx">
       <DependentUpon>202307121922371_PersistWorkflowIdColumn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202307131737155_Rollup_20230713.resx">
+      <DependentUpon>202307131737155_Rollup_20230713.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202307131911270_CodeGenerated_20230713.resx">
+      <DependentUpon>202307131911270_CodeGenerated_20230713.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
