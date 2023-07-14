@@ -34,6 +34,30 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Gets the nth occurrence of a string within a string. Pass 0 for the first occurrence, 1 for the second.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="value"></param>
+        /// <param name="nth"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static int IndexOfNth( this string str, string value, int nth = 0, StringComparison comparisonType = StringComparison.OrdinalIgnoreCase )
+        {
+            if ( nth < 0 )
+                throw new ArgumentException( "Can not find a negative index of substring in string. Must start with 0" );
+
+            int offset = str.IndexOf( value, comparisonType );
+            for ( int i = 0; i < nth; i++ )
+            {
+                if ( offset == -1 )
+                    return -1;
+                offset = str.IndexOf( value, offset + 1, comparisonType );
+            }
+
+            return offset;
+        }
+
+        /// <summary>
         /// Converts string to MD5 hash
         /// </summary>
         /// <param name="str">The string.</param>

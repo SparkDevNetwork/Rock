@@ -22,20 +22,15 @@
 //
 
 export type StreakDetailOptionsBag = {
-    /**
-     * Gets current streak text to be displayed.
-     */
-    currentStreak?: string | null ;
+    /** The HTML of the Streak Chart that needs to be displayed on the frontend */
+    chartHTML?: string | null;
 
-    /**
-     * Gets longest streak text to be displayed.
-     */
-    longestStreak?: string | null ;
+    /** The current streak details text that needs to be displayed on the frontend */
+    currentStreak?: string | null;
 
-    /**
-     * Gets HTML of the Streak Chart to be displayed
-     */
-    chartHTML?: string | null ;
+    /** The longest streak details text that needs to be displayed on the frontend */
+    longestStreak?: string | null;
 
-    personHTML?: string | null ;
+    /** The person HTML to be displayed on the front end  */
+    personHTML?: string | null;
 };

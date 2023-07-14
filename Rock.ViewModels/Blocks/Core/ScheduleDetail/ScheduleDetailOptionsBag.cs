@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using Rock.ViewModels.Entities;
 
 namespace Rock.ViewModels.Blocks.Core.ScheduleDetail
 {
@@ -25,7 +24,7 @@ namespace Rock.ViewModels.Blocks.Core.ScheduleDetail
     {
         public DateTimeOffset? NextOccurrence { get; set; }
 
-        public List<ScheduleCategoryExclusionBag> Exclusions { get; set; }
+        public List<ScheduleExclusionBag> Exclusions { get; set; }
 
         public bool HasScheduleWarning { get; set; }
 

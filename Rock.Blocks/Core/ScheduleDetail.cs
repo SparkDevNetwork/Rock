@@ -125,7 +125,12 @@ namespace Rock.Blocks.Core
                             e.StartDate < nextYear )
                         .OrderBy( e => e.StartDate )
                         .ToList()
-                        .Select( e => e.ToViewModel() )
+                        .Select( e => new ScheduleExclusionBag
+                        {
+                            Title = e.Title,
+                            StartDate = e.StartDate.ToRockDateTimeOffset(),
+                            EndDate = e.EndDate.ToRockDateTimeOffset()
+                        } )
                         .ToList();
             }
             return options;

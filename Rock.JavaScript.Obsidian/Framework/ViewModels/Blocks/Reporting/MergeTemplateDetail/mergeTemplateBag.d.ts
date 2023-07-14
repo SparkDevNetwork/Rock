@@ -26,11 +26,23 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type MergeTemplateBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the category. */
     category?: ListItemBag | null;
 
     /** Gets or sets the description. */
     description?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets the merge template ownership. */
+    mergeTemplateOwnership: MergeTemplateOwnership;
 
     /** Gets or sets the type of the merge template type entity. */
     mergeTemplateTypeEntityType?: ListItemBag | null;
@@ -43,16 +55,4 @@ export type MergeTemplateBag = {
 
     /** Gets or sets the template binary file. */
     templateBinaryFile?: ListItemBag | null;
-
-    /** Gets or sets the merge template ownership. */
-    mergeTemplateOwnership: MergeTemplateOwnership;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

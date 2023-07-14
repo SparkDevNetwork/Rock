@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using RockWeb;
+using Rock.Communication;
 
 /// <summary>
 /// This the Twilio Webwook that updates the communication recipient record to indicate the message status, and runs any Workflow configured with the SMS Phone Number that the message was from.
@@ -77,9 +78,17 @@ class TwilioResponseAsync : TwilioDefaultResponseAsync
     /// <returns></returns>
     public override Twilio.TwiML.Message ProcessMessage( HttpRequest request, string toPhone, string fromPhone, string body )
     {
-        var errorMessage = string.Empty;
+        string errorMessage;
 
-        new Rock.Communication.Medium.Sms().ProcessResponse( toPhone, fromPhone, body, out errorMessage );
+        var medium = CommunicationServicesHost.GetCommunicationMediumSms();
+        if ( medium != null )
+        {
+            medium.ProcessResponse( toPhone, fromPhone, body, out errorMessage );
+        }
+        else
+        {
+            errorMessage = "SMS Medium not available.";
+        }
 
         if ( errorMessage.IsNullOrWhiteSpace() )
         {

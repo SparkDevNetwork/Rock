@@ -16,17 +16,15 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
-import { IEntity } from "@Obsidian/ViewModels/entity";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 
 export type PageConfig = {
     executionStartTime: number;
     pageId: number;
     pageGuid: Guid;
     pageParameters: Record<string, unknown>;
-    currentPerson: PersonBag | null;
+    currentPerson: CurrentPersonBag | null;
     isAnonymousVisitor: boolean;
-    contextEntities: Record<string, IEntity>;
     loginUrlWithReturnUrl: string;
 };
 

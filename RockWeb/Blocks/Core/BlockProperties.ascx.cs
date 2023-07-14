@@ -602,6 +602,14 @@ namespace RockWeb.Blocks.Core
 
             CustomSettingsProviders = new Dictionary<RockCustomSettingsProvider, Control>();
 
+            // Site really shouldn't ever be null, but just in case we somehow
+            // get here if the block configuration is bad, bail out with an
+            // empty set of custom setting providers.
+            if ( site == null )
+            {
+                return;
+            }
+
             var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType(), site.SiteType ).Reverse();
             foreach ( var provider in providers )
             {

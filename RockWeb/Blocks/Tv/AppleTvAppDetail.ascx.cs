@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Tv
 
         #endregion Attribute Keys
 
-        #region PageParameterKeys
+        #region Page Parameter Keys
 
         private static class PageParameterKey
         {
@@ -223,6 +223,8 @@ namespace RockWeb.Blocks.Tv
             interactionChannelForSite.Name = site.Name;
             interactionChannelForSite.RetentionDuration = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
             interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.Page>().Id;
+
+            site.EnablePageViewGeoTracking = cbEnablePageViewGeoTracking.Checked;
 
             rockContext.SaveChanges();
 
@@ -405,6 +407,7 @@ namespace RockWeb.Blocks.Tv
                 tbDescription.Text = site.Description;
 
                 cbIsActive.Checked = site.IsActive;
+                cbEnablePageViewGeoTracking.Checked = site.EnablePageViewGeoTracking;
 
                 var additionalSettings = JsonConvert.DeserializeObject<AppleTvApplicationSettings>( site.AdditionalSettings );
 
@@ -446,7 +449,7 @@ namespace RockWeb.Blocks.Tv
             }
             else
             {
-                var stream = typeof( Rock.Blocks.RockObsidianBlockType ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
+                var stream = typeof( Rock.Blocks.RockBlockType ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
                 
                 if ( stream != null )
                 {
@@ -459,7 +462,6 @@ namespace RockWeb.Blocks.Tv
         }
 
         #endregion
-
 
         #region Private Methods
         /// <summary>

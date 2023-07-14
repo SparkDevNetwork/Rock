@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,54 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// BackgroundCheck View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( BackgroundCheck ) )]
-    public partial class BackgroundCheckViewModelHelper : ViewModelHelper<BackgroundCheck, BackgroundCheckBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override BackgroundCheckBag CreateViewModel( BackgroundCheck model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new BackgroundCheckBag
-            {
-                IdKey = model.IdKey,
-                PackageName = model.PackageName,
-                PersonAliasId = model.PersonAliasId,
-                ProcessorEntityTypeId = model.ProcessorEntityTypeId,
-                RecordFound = model.RecordFound,
-                RequestDate = model.RequestDate,
-                RequestId = model.RequestId,
-                ResponseData = model.ResponseData,
-                ResponseDate = model.ResponseDate,
-                ResponseDocumentId = model.ResponseDocumentId,
-                ResponseId = model.ResponseId,
-                Status = model.Status,
-                WorkflowId = model.WorkflowId,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -185,20 +133,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static BackgroundCheckBag ToViewModel( this BackgroundCheck model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new BackgroundCheckViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

@@ -30,6 +30,12 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     public sealed class RegistrationEntryBlockViewModel : IViewModel
     {
         /// <summary>
+        /// Gets or sets the current person family unique identifier.
+        /// </summary>
+        /// <value>The current person family unique identifier.</value>
+        public Guid? CurrentPersonFamilyGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [allow registration updates].
         /// </summary>
         /// <value>

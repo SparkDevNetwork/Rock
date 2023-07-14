@@ -41,7 +41,7 @@ export type FinancialBatchBag = {
     batchEndDateTime?: string | null;
 
     /**
-     * Gets or sets the start posting date and time range of FinancialTransactions that are included in this batch.
+     * Gets or sets the start posting date and time range of FinancialTransactions that are included in this batch.  
      * Transactions that post on or after this date and time and before the Rock.Model.FinancialBatch.BatchEndDateTime can be included in this batch.
      */
     batchStartDateTime?: string | null;
@@ -60,8 +60,21 @@ export type FinancialBatchBag = {
     /** Gets or sets the control item count. */
     controlItemCount?: number | null;
 
+    /**
+     * The Batch ID
+     * Motive: Although the IdKey is passed to the user, there is no way to get the id from it in the frontend
+     * Id is required to be displayed in the frontend and so is included.
+     */
+    id: number;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
+
+    /** Gets or sets the value of the flag which shows if the batch is automated or not. */
+    isAutomated: boolean;
+
+    /** The flag which is set to true if the user is forbidden from reopening the batch */
+    isReopenDisabled: boolean;
 
     /** Gets or sets the name of the batch. */
     name?: string | null;
@@ -71,10 +84,4 @@ export type FinancialBatchBag = {
 
     /** Gets or sets the status of the batch. */
     status: number;
-
-    /** gets the flag which is set to true if the batch is automated */
-    isAutomated: boolean;
-
-    /** passing id as there is no way to compute it from the idKey in the front end */
-    id: number;
 };

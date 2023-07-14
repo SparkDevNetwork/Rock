@@ -26,16 +26,16 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
         /// <summary>
         /// Streak Occurrence Frequency list
         /// </summary>
-        public ListItemBag[] StreakOccurrenceFrequencies;
+        public List<ListItemBag> StreakOccurrenceFrequencies { get; set; }
 
         /// <summary>
         /// List of Represents of the attendance association of a StreakType.
         /// </summary>
-        public ListItemBag[] StreakStructureTypes;
+        public List<ListItemBag> StreakStructureTypes { get; set; }
 
         /// <summary>
         /// The List of guids of the group type for check in config linked type
         /// </summary>
-        public List<Guid> AttendanceCheckInConfigGroupTypesGuids;
+        public List<Guid> AttendanceCheckInConfigGroupTypesGuids { get; set; }
     }
 }

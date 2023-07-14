@@ -40,6 +40,12 @@ export type NoteTypeBag = {
      */
     approvalUrlTemplate?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets a value indicating whether [automatic watch authors]. */
     autoWatchAuthors: boolean;
 
@@ -61,6 +67,9 @@ export type NoteTypeBag = {
     /** Gets or sets the name of an icon CSS class.  */
     iconCssClass?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating that this NoteType is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
@@ -78,13 +87,4 @@ export type NoteTypeBag = {
 
     /** Gets or sets a value indicating whether the type is user selectable. */
     userSelectable: boolean;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -474,6 +474,7 @@ namespace Rock.WebStartup
 
                 var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
 
+                LogMigrationSystemInfo( migrationLogger );
                 // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
                 migratorLoggingDecorator.Update( lastMigration );
                 migrationLogger.LogCompletedMigration();
@@ -481,6 +482,36 @@ namespace Rock.WebStartup
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Logs all the system related info to Migration Log
+        /// </summary>
+        private static void LogMigrationSystemInfo( Migrations.RockMigrationsLogger migrationLogger )
+        {
+            try
+            {
+                RockInstanceDatabaseConfiguration databaseConfig = RockInstanceConfig.Database;
+                migrationLogger.LogSystemInfo( "Rock Version", $"{VersionInfo.VersionInfo.GetRockProductVersionFullName()} ({VersionInfo.VersionInfo.GetRockProductVersionNumber()})" );
+                if ( databaseConfig.Version.IsNotNullOrWhiteSpace() )
+                {
+                    migrationLogger.LogSystemInfo( "Database Version", databaseConfig.Version );
+                    migrationLogger.LogSystemInfo( "Database Compatibility Version", databaseConfig.VersionFriendlyName );
+                    if ( databaseConfig.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql )
+                    {
+                        migrationLogger.LogSystemInfo( "Azure Service Tier Objective", databaseConfig.ServiceObjective );
+                    }
+
+                    migrationLogger.LogSystemInfo( "Allow Snapshot Isolation", databaseConfig.SnapshotIsolationAllowed.ToYesNo() );
+                    migrationLogger.LogSystemInfo( "Is Read Committed Snapshot On", databaseConfig.ReadCommittedSnapshotEnabled.ToYesNo() );
+                    migrationLogger.LogSystemInfo( "Processor Count", Environment.ProcessorCount.ToStringSafe() );
+                    migrationLogger.LogSystemInfo( "Working Memory", Environment.WorkingSet.FormatAsMemorySize() ); // 1024*1024*1024
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
         }
 
         /// <summary>

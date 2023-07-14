@@ -67,6 +67,9 @@ export type FamilyPreRegistrationPersonBag = {
     /** Gets or sets a value indicating whether this instance is last name read only. */
     isLastNameReadOnly: boolean;
 
+    /** Gets or sets a value to set PhoneNumber.IsMessagingEnabled for the specified mobie number */
+    isMessagingEnabled: boolean;
+
     /** Gets or sets the last name. */
     lastName?: string | null;
 

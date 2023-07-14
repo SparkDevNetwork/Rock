@@ -37,9 +37,8 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Crm
 {
     [DisplayName( "Family Pre Registration" )]
-    [Category( "CRM" )]
+    [Category( "Obsidian > CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -188,21 +187,21 @@ namespace Rock.Blocks.Crm
         IsRequired = false,
         Order = 16 )]
 
-    [CustomDropdownListField(
-        "Number of Columns",
-        Key = AttributeKey.Columns,
-        Description = "How many columns should be used to display the form.",
-        ListSource = ListSource.COLUMNS,
-        IsRequired = false,
-        DefaultValue = "4",
-        Order = 17 )]
-
     [TextField(
         "Planned Visit Information Panel Title",
         Key = AttributeKey.PlannedVisitInformationPanelTitle,
         Description = "The title for the Planned Visit Information panel",
         DefaultValue = "Visit Information",
         IsRequired = false,
+        Order = 17 )]
+
+    [CustomDropdownListField(
+        "Show SMS Opt-in",
+        Key = AttributeKey.DisplaySmsOptIn,
+        Description = "If 'Mobile Phone' is not set to 'Hide' then this option will show the SMS Opt-In option for the selection.",
+        ListSource = ListSource.DISPLAY_SMS_OPT_IN,
+        IsRequired = true,
+        DefaultValue = "Hide",
         Order = 18 )]
 
     #region Adult Category
@@ -506,6 +505,7 @@ namespace Rock.Blocks.Crm
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "1D6794F5-876B-47B9-9C9B-5C2C2CC81074" )]
+    [Rock.SystemGuid.EntityTypeGuid( "C03CE9ED-8572-4BE5-AB2A-FF7498494905")]
     public partial class FamilyPreRegistration : RockBlockType
     {
         #region Attribute Keys, Categories and Values
@@ -529,8 +529,8 @@ namespace Rock.Blocks.Crm
             public const string ChildWorkflow = "ChildWorkflow";
             public const string RedirectURL = "RedirectURL";
             public const string RequireCampus = "RequireCampus";
-            public const string Columns = "Columns";
-
+            public const string DisplaySmsOptIn = "DisplaySmsOptIn";
+            
             public const string AdultSuffix = "AdultSuffix";
             public const string AdultGender = "AdultGender";
             public const string AdultBirthdate = "AdultBirthdate";
@@ -583,7 +583,7 @@ namespace Rock.Blocks.Crm
 
         private static class ListSource
         {
-            public const string COLUMNS = "2,4";
+            public const string DISPLAY_SMS_OPT_IN = "Hide,First Adult,All Adults,Adults and Children";
             public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
             public const string HIDE_SHOW_REQUIRED = "Hide,Show,Required";
             public const string HIDE_OPTIONAL = "Hide,Optional";
@@ -658,11 +658,6 @@ namespace Rock.Blocks.Crm
         /// Gets the child attribute category guids.
         /// </summary>
         private List<Guid> ChildAttributeCategoryGuids => this.GetAttributeValues( AttributeKey.ChildAttributeCategories ).AsGuidList();
-
-        /// <summary>
-        /// Gets the columns.
-        /// </summary>
-        private int Columns => this.GetAttributeValue( AttributeKey.Columns ).AsInteger();
 
         /// <summary>
         /// Gets the "Create Account" description.
@@ -929,11 +924,11 @@ namespace Rock.Blocks.Crm
                 var adults = new List<Person>();
                 if ( bag.Adult1 != null )
                 {
-                    SaveAdult( ref primaryFamily, rockContext, adults, bag.Adult1 );
+                    SaveAdult( ref primaryFamily, rockContext, adults, bag.Adult1, true );
                 }
                 if ( bag.Adult2 != null )
                 {
-                    SaveAdult( ref primaryFamily, rockContext, adults, bag.Adult2 );
+                    SaveAdult( ref primaryFamily, rockContext, adults, bag.Adult2, false );
                 }
 
                 var isNewFamily = false;
@@ -1215,7 +1210,20 @@ namespace Rock.Blocks.Crm
                     // Save the mobile phone number but do not allow deletes.
                     if ( showChildMobilePhone && child.MobilePhone.IsNotNullOrWhiteSpace() )
                     {
-                        var isSmsNumber = person.CommunicationPreference == CommunicationType.SMS;
+                        var isSmsNumber = false;
+                        var displaySmsOptInSetting = GetSmsOptInFieldBag();
+
+                        if ( displaySmsOptInSetting.IsHidden && isChildCommunicationPreferenceShown )
+                        {
+                            // If the SMS Opt-In is not shown then use the communication preference to indicate if SMS should be enabled for the phone number.
+                            // Since person.CommunicationPreference has already been updated use that instead of the child bag and doing the cast again.
+                            isSmsNumber = person.CommunicationPreference == CommunicationType.SMS;
+                        }
+                        else if ( displaySmsOptInSetting.IsShowChildren )
+                        {
+                            isSmsNumber = child.IsMessagingEnabled;
+                        }
+
                         SavePhoneNumber( rockContext, person.Id, child.MobilePhoneCountryCode, child.MobilePhone, isSmsNumber );
                     }
 
@@ -1871,13 +1879,13 @@ namespace Rock.Blocks.Crm
                 CampusSchedulesAttributeGuid = this.CampusSchedulesAttributeGuid,
                 CampusStatusesFilter = this.CampusStatusesFilter,
                 CampusTypesFilter = this.CampusTypesFilter,
-                Columns = this.Columns,
                 CreateAccountDescription = this.CreateAccountDescription,
                 CreateAccountTitle = this.CreateAccountTitle,
                 VisitInfoTitle = this.GetAttributeValue( AttributeKey.PlannedVisitInformationPanelTitle ),
                 CampusField = GetFieldBag( this.IsCampusOptional, this.IsCampusHidden ),
                 VisitDateField = GetVisitDateFieldBag( out var errorMessage ),
                 ErrorMessage = errorMessage,
+                DisplaySmsOptIn = GetSmsOptInFieldBag(),
                 AdultMobilePhoneField = GetFieldBag( AttributeKey.AdultMobilePhone ),
                 AdultProfilePhotoField = GetFieldBag( AttributeKey.AdultProfilePhoto ),
                 CreateAccountField = GetFieldBag( AttributeKey.FirstAdultCreateAccount ),
@@ -1961,7 +1969,6 @@ namespace Rock.Blocks.Crm
                             Street1 = location?.Street1,
                             Street2 = location?.Street2,
                         };
-                        location.ToViewModel( currentPerson );
                     }
                 }
             }
@@ -2277,6 +2284,77 @@ namespace Rock.Blocks.Crm
         }
 
         /// <summary>
+        /// Get the display settings for the SMS Opt-In checkbox, will show it as hidden if the mobile number is hidden.
+        /// </summary>
+        private FamilyPreRegistrationSmsOptInFieldBag GetSmsOptInFieldBag()
+        {
+            // Don't display the SMS Opt-In if the phone number is set to "Hide"
+            var displayMobilePhone = this.GetAttributeValue( AttributeKey.AdultMobilePhone );
+            if ( string.Equals( displayMobilePhone, "Hide", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return new FamilyPreRegistrationSmsOptInFieldBag
+                {
+                    IsHidden = true,
+                    IsShowFirstAdult = false,
+                    IsShowAllAdults = false,
+                    IsShowChildren = false
+                };
+            }
+
+            var displaySmsAttributeValue = this.GetAttributeValue( AttributeKey.DisplaySmsOptIn );
+            var smsOptInDisplayText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+
+            //Options for displaying the SMS Opt-In checkbox: Hide,First Adult,All Adults,Adults and Children
+            switch ( displaySmsAttributeValue )
+            {
+                case "Hide":
+                return new FamilyPreRegistrationSmsOptInFieldBag
+                {
+                    IsHidden = true,
+                    IsShowFirstAdult = false,
+                    IsShowAllAdults = false,
+                    IsShowChildren = false
+                };
+                case "First Adult":
+                return new FamilyPreRegistrationSmsOptInFieldBag
+                {
+                    SmsOptInDisplayText = smsOptInDisplayText,
+                    IsHidden = false,
+                    IsShowFirstAdult = true,
+                    IsShowAllAdults = false,
+                    IsShowChildren = false
+                };
+                case "All Adults":
+                return new FamilyPreRegistrationSmsOptInFieldBag
+                {
+                    SmsOptInDisplayText = smsOptInDisplayText,
+                    IsHidden = false,
+                    IsShowFirstAdult = true,
+                    IsShowAllAdults = true,
+                    IsShowChildren = false
+                };
+                case "Adults and Children":
+                return new FamilyPreRegistrationSmsOptInFieldBag
+                {
+                    SmsOptInDisplayText = smsOptInDisplayText,
+                    IsHidden = false,
+                    IsShowFirstAdult = true,
+                    IsShowAllAdults = true,
+                    IsShowChildren = true
+                };
+                default:
+                return new FamilyPreRegistrationSmsOptInFieldBag
+                {
+                    SmsOptInDisplayText = smsOptInDisplayText,
+                    IsHidden = true,
+                    IsShowFirstAdult = false,
+                    IsShowAllAdults = false,
+                    IsShowChildren = false
+                };
+            }
+        }
+
+        /// <summary>
         /// Gets the isOptional and isHidden field properties associated with a given attribute.
         /// </summary>
         /// <param name="attributeValue">The attribute key.</param>
@@ -2398,6 +2476,7 @@ namespace Rock.Blocks.Crm
             {
                 bag.MobilePhone = mobilePhone.Number;
                 bag.MobilePhoneCountryCode = mobilePhone.CountryCode;
+                bag.IsMessagingEnabled = mobilePhone.IsMessagingEnabled;
             }
 
             return bag;
@@ -2500,7 +2579,7 @@ namespace Rock.Blocks.Crm
         /// <param name="rockContext">The rock context.</param>
         /// <param name="adults">The saved adults.</param>
         /// <param name="bag">The adult request bag.</param>
-        private void SaveAdult( ref Rock.Model.Group primaryFamily, RockContext rockContext, List<Person> adults, FamilyPreRegistrationPersonBag bag )
+        private void SaveAdult( ref Rock.Model.Group primaryFamily, RockContext rockContext, List<Person> adults, FamilyPreRegistrationPersonBag bag, bool isFirstAdult )
         {
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             var personService = new PersonService( rockContext );
@@ -2635,7 +2714,21 @@ namespace Rock.Blocks.Crm
             // Save the mobile phone number.
             if ( GetFieldBag( AttributeKey.AdultMobilePhone ).IsShown )
             {
-                var isSmsNumber = adult.CommunicationPreference == CommunicationType.SMS;
+                var isSmsNumber = false;
+                var displaySmsOptInSetting = GetSmsOptInFieldBag();
+                var showCommunicationPreference = !GetFieldBag( AttributeKey.AdultDisplayCommunicationPreference ).IsHidden;
+
+                if ( displaySmsOptInSetting.IsHidden && showCommunicationPreference )
+                {
+                    // If the SMS Opt-In is not shown then use the communication preference to indicate if SMS should be enabled for the phone number.
+                    isSmsNumber = adult.CommunicationPreference == CommunicationType.SMS;
+                }
+                else if ( isFirstAdult || displaySmsOptInSetting.IsShowAllAdults )
+                {
+                    // If the control is not hidden and this the first adult or the sms display is set to show for all adulsts then use use it to set the SMS number
+                    isSmsNumber = bag.IsMessagingEnabled;
+                }
+
                 SavePhoneNumber( rockContext, adult.Id, bag.MobilePhoneCountryCode, bag.MobilePhone, isSmsNumber );
             }
 

@@ -25,6 +25,7 @@ import { Guid } from "@Obsidian/Types";
 import { FamilyPreRegistrationDateAndTimeFieldBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationDateAndTimeFieldBag";
 import { FamilyPreRegistrationFieldBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationFieldBag";
 import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
+import { FamilyPreRegistrationSmsOptInFieldBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationSmsOptInFieldBag";
 import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -127,9 +128,6 @@ export type FamilyPreRegistrationInitializationBox = {
     /** Gets or sets the child suffix field. */
     childSuffixField?: FamilyPreRegistrationFieldBag | null;
 
-    /** The number of columns used to display the form. */
-    columns: number;
-
     /** Gets or sets the create account description. */
     createAccountDescription?: string | null;
 
@@ -138,6 +136,9 @@ export type FamilyPreRegistrationInitializationBox = {
 
     /** Gets or sets the create account title. */
     createAccountTitle?: string | null;
+
+    /** Gets or sets the display SMS opt in. */
+    displaySmsOptIn?: FamilyPreRegistrationSmsOptInFieldBag | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that

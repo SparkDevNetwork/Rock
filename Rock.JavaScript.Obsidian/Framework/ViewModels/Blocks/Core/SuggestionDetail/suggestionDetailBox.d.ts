@@ -48,4 +48,7 @@ export type SuggestionDetailBox = {
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
+
+    /** Gets or sets the valid properties. */
+    validProperties?: string[] | null;
 };

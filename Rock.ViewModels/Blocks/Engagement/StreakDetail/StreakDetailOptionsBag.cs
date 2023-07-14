@@ -37,6 +37,6 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakDetail
         /// <summary>
         /// The person HTML to be displayed on the front end 
         /// </summary>
-        public string personHTML;
+        public string personHTML { get; set; }
     }
 }

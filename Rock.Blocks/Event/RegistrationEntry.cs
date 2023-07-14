@@ -2711,6 +2711,7 @@ namespace Rock.Blocks.Event
                 Session = session,
                 IsUnauthorized = isUnauthorized,
                 SuccessViewModel = successViewModel,
+                CurrentPersonFamilyGuid = RequestContext.CurrentPerson?.PrimaryFamily?.Guid,
                 TimeoutMinutes = timeoutMinutes,
                 AllowRegistrationUpdates = allowRegistrationUpdates,
                 IsExistingRegistration = isExistingRegistration,
@@ -3648,7 +3649,7 @@ namespace Rock.Blocks.Event
             if ( isNewRegistration )
             {
                 // Send notice of a new registration
-                new ProcesSendRegistrationNotification.Message
+                new ProcessSendRegistrationNotification.Message
                 {
                     RegistrationId = registration.Id
                 }.Send();

@@ -25,6 +25,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type DocumentTypeBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the Rock.Model.BinaryFileType of the document type. */
     binaryFileType?: ListItemBag | null;
 
@@ -49,6 +55,9 @@ export type DocumentTypeBag = {
     /** Gets or sets the CSS class that is used for a vector/CSS icon. */
     iconCssClass?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the IsImage flag for the Rock.Model.DocumentType. */
     isImage: boolean;
 
@@ -63,13 +72,4 @@ export type DocumentTypeBag = {
 
     /** Gets or sets a value indicating whether the type is user selectable. */
     userSelectable: boolean;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

@@ -99,32 +99,6 @@
 @badge-icon-height: 45px;
 @badge-count-width: 18px;
 
-.personprofilebar-badge {
-  padding-top: 0;
-  padding-bottom: 0;
-  font-size: 0; // Fixes Inconsistent Spacing
-  color: @persondetails-badge-color;
-  background-color: @persondetails-badge-bg;
-  border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
-
-  .rockbadge-container {
-    margin: @spacing-sm-px 0;
-    text-align: center;
-
-    .badge-debug {
-      position: absolute;
-      right: 12px;
-      z-index: 9999;
-      width: 900px;
-      text-align: left;
-    }
-
-    .rockbadge-grid {
-      margin: -5px 0;
-    }
-  }
-}
-
 .rockbadge-grid {
   flex-direction: column;
   font-size: 0;
@@ -729,61 +703,6 @@ span.field-value {
   background: @modal-backdrop-bg;
 }
 
-
-// 10. Responsive Overrides
-// -------------------------
-
-/* Small devices (tablets, 768px and up) */
-@media (min-width: @screen-sm-min), print {
-  // bio bar
-  .personprofilebar-bio {
-    padding: @spacing-md-px;
-
-    .name {
-      text-align: left;
-
-      .full-name,
-      .previous-names {
-        display: inline;
-      }
-    }
-
-    .labels {
-      text-align: right;
-    }
-
-    .photo {
-      margin: 0;
-    }
-
-    .demographics {
-      text-align: left;
-    }
-
-    .personcontact {
-      padding-bottom: 0;
-      text-align: left;
-    }
-
-    .social-icons {
-      text-align: left;
-
-      .icon {
-        float: left;
-      }
-    }
-  }
-
-  .personprofilebar-badge {
-    .rockbadge-container {
-      text-align: left;
-
-      &:last-child {
-        text-align: right;
-      }
-    }
-  }
-}
 
 // 12. Person Page Views
 // -------------------------

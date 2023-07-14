@@ -21,10 +21,15 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type LayoutBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the user defined description of the Layout. */
     description?: string | null;
 
@@ -34,27 +39,15 @@ export type LayoutBag = {
      */
     fileName?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if this Layout was created by and is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
-
-    /** Gets or sets the layout mobile phone. */
-    layoutMobilePhone?: string | null;
-
-    /** Gets or sets the layout mobile tablet. */
-    layoutMobileTablet?: string | null;
 
     /** Gets or sets the logical name of the Layout. */
     name?: string | null;
 
-    /** Gets or sets the Rock.Model.Site that this Layout Block is associated with. */
-    site?: ListItemBag | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the Id of the Rock.Model.Site that this Layout Block is associated with. */
+    siteId: number;
 };

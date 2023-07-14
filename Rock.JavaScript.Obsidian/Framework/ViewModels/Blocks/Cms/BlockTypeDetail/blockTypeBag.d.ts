@@ -25,6 +25,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type BlockTypeBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the category of the BlockType.  Blocks will be grouped by category when displayed to user */
     category?: string | null;
 
@@ -34,27 +40,21 @@ export type BlockTypeBag = {
     /** Gets or sets the type of the entity. */
     entityType?: ListItemBag | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets a flag indicating if this Block exists. */
+    isBlockExists: boolean;
+
     /** Gets or sets a flag indicating if this BlockType was created by and is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
     /** Gets or sets the name of the BlockType. */
     name?: string | null;
 
-    /** Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType. */
-    path?: string | null;
-
-    /** Gets or sets a flag indicating if this Block exists. */
-    isBlockExists: boolean;
-
     /** Gets or sets the name of the fully qualified page referencing Block Type. */
     pages?: string[] | null;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType. */
+    path?: string | null;
 };

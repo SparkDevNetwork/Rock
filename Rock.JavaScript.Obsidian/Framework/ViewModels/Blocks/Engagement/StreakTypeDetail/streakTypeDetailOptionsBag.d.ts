@@ -22,7 +22,15 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type StreakTypeDetailOptionsBag = {
+    /** The List of guids of the group type for check in config linked type */
     attendanceCheckInConfigGroupTypesGuids?: Guid[] | null;
+
+    /** Streak Occurrence Frequency list */
+    streakOccurrenceFrequencies?: ListItemBag[] | null;
+
+    /** List of Represents of the attendance association of a StreakType. */
+    streakStructureTypes?: ListItemBag[] | null;
 };

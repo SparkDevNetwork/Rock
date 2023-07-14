@@ -20,6 +20,9 @@ using System.Net;
 using System.Web;
 
 using Rock.Model;
+using Rock.Utility.Settings;
+using Rock.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Utility
 {
@@ -254,6 +257,123 @@ namespace Rock.Utility
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the specified cookie. If the cookie is not found in the Request then it checks the Response, otherwise it will return null.
+        /// </summary>
+        /// <param name="context">The Http Context.</param>
+        /// <param name="name">The cookie name.</param>
+        /// <returns></returns>
+        public static HttpCookie GetCookieFromContext( HttpContext context, string name )
+        {
+            // When retrieving a cookie, first make sure the name exists in the Cookies.AllKeys collection.
+            // If it doesn't, attempting to retrieve the cookie will cause it to be automatically created.
+            if ( context == null )
+            {
+                return null;
+            }
+
+            var request = context.Request;
+            if ( request != null && request.Cookies.AllKeys.Contains( name ) )
+            {
+                return request.Cookies[name];
+            }
+
+            var response = context.Response;
+            if ( response != null && response.Cookies.AllKeys.Contains( name ) )
+            {
+                return response.Cookies[name];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Creates/Overwrites the specified cookie using the global default for the SameSite setting.
+        /// </summary>
+        /// <param name="context">The Http Context.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="expirationDate">The expiration date.</param>
+        public static void AddOrUpdateCookie( HttpContext context, string name, string value, DateTime? expirationDate )
+        {
+            var cookie = new HttpCookie( name )
+            {
+                Expires = expirationDate ?? RockInstanceConfig.SystemDateTime.AddYears( 1 ),
+                Value = value
+            };
+
+            AddOrUpdateCookie( context, cookie );
+        }
+
+        /// <summary>
+        /// Creates/Overwrites the specified cookie using the global default for the SameSite setting.
+        /// This method creates a new cookie using a deep clone of the provided cookie to ensure a cookie written to the response
+        /// does not contain properties that are not compatible with .Net 4.5.2 (e.g. SameSite).
+        /// Removes the cookie from the Request and Response using the cookie name, then adds the cloned clean cookie to the Response.
+        /// </summary>
+        /// <param name="context">The Http Context.</param>
+        /// <param name="cookie">The cookie.</param>
+        public static void AddOrUpdateCookie( HttpContext context, HttpCookie cookie )
+        {
+            if ( context == null )
+            {
+                return;
+            }
+
+            var request = context.Request;
+            var response = context.Response;
+            if ( request == null || response == null )
+            {
+                return;
+            }
+
+            // If the samesite setting is not in the Path then add it
+            if ( cookie.Path.IsNullOrWhiteSpace() || !cookie.Path.Contains( "SameSite" ) )
+            {
+                var sameSiteCookieSetting = GlobalAttributesCache.Get()
+                    .GetValue( "core_SameSiteCookieSetting" )
+                    .ConvertToEnumOrNull<Rock.Security.Authorization.SameSiteCookieSetting>() ?? Rock.Security.Authorization.SameSiteCookieSetting.Lax;
+
+                // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
+                // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
+                var secureSetting = request.IsSecureConnection || request.UrlProxySafe().Scheme == "https" ? ";Secure" : string.Empty;
+
+                // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
+                string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";
+
+                cookie.Path += sameSiteCookieValue;
+            }
+
+            // Clone the cookie to prevent the SameSite property from making an appearence in our response.
+            var responseCookie = new HttpCookie( cookie.Name )
+            {
+                Domain = cookie.Domain,
+                Expires = cookie.Expires,
+                HttpOnly = cookie.HttpOnly,
+                Path = cookie.Path,
+                Secure = cookie.Secure,
+                Value = cookie.Value
+            };
+
+            request.Cookies.Remove( responseCookie.Name );
+            response.Cookies.Remove( responseCookie.Name );
+            response.Cookies.Add( responseCookie );
+        }
+
+        /// <summary>
+        /// Gets the future date and time at which a persisted browser cookie should expire in accordance with the Rock application settings.
+        /// </summary>
+        /// <returns></returns>
+        public static DateTime GetPersistedCookieExpirationDateTime()
+        {
+            var currentUTCDateTime = RockDateTime.Now.ToUniversalTime();
+
+            var persistedCookieExpirationDays = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? 365;
+            var persistedCookieExpiration = currentUTCDateTime.AddDays( persistedCookieExpirationDays );
+
+            return persistedCookieExpiration;
         }
     }
 }

@@ -144,9 +144,9 @@ namespace Rock.Blocks.Engagement
             var options = new StreakTypeDetailOptionsBag
             {
                 StreakOccurrenceFrequencies = typeof( StreakOccurrenceFrequency )
-                    .ToListItemBag(),
+                    .ToEnumListItemBag(),
                 StreakStructureTypes = typeof( StreakStructureType )
-                    .ToListItemBag(),
+                    .ToEnumListItemBag(),
                 AttendanceCheckInConfigGroupTypesGuids = GroupTypeCache.All()
                     .Where( gt => gt.GroupTypePurposeValueId == checkInPurposeId )
                     .OrderBy( gt => gt.Name )

@@ -22,17 +22,11 @@
 //
 
 export type QueueBag = {
-    /** Gets the name. Each instance of Rock shares this name for this queue. */
-    name?: string | null;
-
-    /** Gets or sets the time to live in seconds. */
-    timeToLiveSeconds?: number | null;
-
     /**
-     * Gets the messages consumed last minute.
+     * Gets the messages consumed last day.
      * Specific to one Rock instance.
      */
-    messagesConsumedLastMinute?: number | null;
+    messagesConsumedLastDay?: number | null;
 
     /**
      * Gets the messages consumed last hour.
@@ -41,8 +35,14 @@ export type QueueBag = {
     messagesConsumedLastHour?: number | null;
 
     /**
-     * Gets the messages consumed last day.
+     * Gets the messages consumed last minute.
      * Specific to one Rock instance.
      */
-    messagesConsumedLastDay?: number | null;
+    messagesConsumedLastMinute?: number | null;
+
+    /** Gets the name. Each instance of Rock shares this name for this queue. */
+    name?: string | null;
+
+    /** Gets or sets the time to live in seconds. */
+    timeToLiveSeconds?: number | null;
 };

@@ -36,6 +36,12 @@ export type SiteBag = {
     /** Gets or sets a value indicating whether [allow indexing]. */
     allowIndexing: boolean;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the change password page. */
     changePasswordPage?: ListItemBag | null;
 
@@ -93,6 +99,9 @@ export type SiteBag = {
     /** Gets or sets the Google analytics code. */
     googleAnalyticsCode?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the index starting location. */
     indexStartingLocation?: string | null;
 
@@ -135,27 +144,18 @@ export type SiteBag = {
     /** Gets or sets the registration Rock.Model.PageRoute page route for this site. If this value is null, the RegistrationPage will be used */
     registrationPageRoute?: ListItemBag | null;
 
-    /** Gets or sets the number of days to keep page views logged. */
-    retentionDuration?: number | null;
-
     /** Gets or sets a value indicating whether [requires encryption]. */
     requiresEncryption: boolean;
 
-    /** Gets or sets the site logo binary file. */
-    siteLogoBinaryFile?: ListItemBag | null;
+    /** Gets or sets the number of days to keep page views logged. */
+    retentionDuration?: number | null;
 
     /** Gets or sets the site domains. */
     siteDomains?: string | null;
 
+    /** Gets or sets the site logo binary file. */
+    siteLogoBinaryFile?: ListItemBag | null;
+
     /** Gets or sets the name of the Theme that is used on the Site. */
     theme?: string | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

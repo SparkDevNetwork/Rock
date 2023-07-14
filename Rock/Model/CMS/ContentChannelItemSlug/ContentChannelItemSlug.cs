@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,7 +50,7 @@ namespace Rock.Model
         /// <value>
         /// The slug.
         /// </value>
-        [MaxLength( 75 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string Slug { get; set; }
 

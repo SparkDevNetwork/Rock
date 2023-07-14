@@ -25,17 +25,23 @@ import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeD
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type WebFarmSettingsBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the web farm key. */
-    webFarmKey?: string | null;
+    /** Gets or sets a value indicating whether this instance is in memory transport. */
+    isInMemoryTransport: boolean;
 
     /** Gets or sets the lower polling limit. */
     lowerPollingLimit: number;
-
-    /** Gets or sets the upper polling limit. */
-    upperPollingLimit: number;
 
     /** Gets or sets the maximum polling wait seconds. */
     maxPollingWaitSeconds: number;
@@ -46,15 +52,9 @@ export type WebFarmSettingsBag = {
     /** Gets or sets the nodes. */
     nodes?: WebFarmNodeBag[] | null;
 
-    /** Gets or sets a value indicating whether this instance is in memory transport. */
-    isInMemoryTransport: boolean;
+    /** Gets or sets the upper polling limit. */
+    upperPollingLimit: number;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the web farm key. */
+    webFarmKey?: string | null;
 };

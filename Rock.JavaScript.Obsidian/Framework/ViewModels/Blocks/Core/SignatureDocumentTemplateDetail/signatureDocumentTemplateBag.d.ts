@@ -25,6 +25,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type SignatureDocumentTemplateBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the type of the Rock.Model.BinaryFile. */
     binaryFileType?: ListItemBag | null;
 
@@ -36,6 +42,9 @@ export type SignatureDocumentTemplateBag = {
 
     /** The term used to simply describe the document (wavier, release form, etc.). */
     documentTerm?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
@@ -52,18 +61,9 @@ export type SignatureDocumentTemplateBag = {
     /** Gets or sets the provider template key. */
     providerTemplateKey?: string | null;
 
-    /** Gets or sets the type of the signature. */
-    signatureType?: string | null;
-
     /** Gets or sets the signature input types. */
     signatureInputTypes?: ListItemBag[] | null;
 
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the type of the signature. */
+    signatureType?: string | null;
 };

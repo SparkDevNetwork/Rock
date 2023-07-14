@@ -25,6 +25,15 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type PageRouteBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** If true then the route will be accessible from all sites regardless if EnableExclusiveRoutes is set on the site */
     isGlobal: boolean;
 
@@ -41,15 +50,6 @@ export type PageRouteBag = {
      */
     route?: string | null;
 
-    /** Gets or sets the site of this page. */
+    /** Gets or sets the site. */
     site?: string | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

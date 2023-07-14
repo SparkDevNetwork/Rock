@@ -23,9 +23,9 @@
 
 /** Identifies a WebFarm metric item. */
 export type WebFarmMetricBag = {
-    /** Gets or sets the metric value date time. */
-    metricValueDateTime?: string | null;
-
     /** Gets or sets the metric value. */
     metricValue: number;
+
+    /** Gets or sets the metric value date time. */
+    metricValueDateTime?: string | null;
 };

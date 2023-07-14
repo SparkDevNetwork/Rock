@@ -60,7 +60,7 @@ namespace Rock.Jobs
         /// Gets the service job.
         /// </summary>
         /// <value>The service job.</value>
-        private Rock.Model.ServiceJob ServiceJob { get; set; }
+        protected Rock.Model.ServiceJob ServiceJob { get; set; }
 
         /// <summary>
         /// Gets the scheduler.
@@ -105,6 +105,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Updates the last status message.
+        /// NOTE: This method has a read and a write database operation and also writes to the Rock Logger with DEBUG level logging.
         /// </summary>
         /// <param name="statusMessage">The status message.</param>
         public void UpdateLastStatusMessage( string statusMessage )

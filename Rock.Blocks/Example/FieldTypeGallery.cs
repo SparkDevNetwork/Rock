@@ -37,6 +37,7 @@ namespace Rock.Blocks.Example
     [Rock.SystemGuid.BlockTypeGuid( "50B7B326-8212-44E6-8CF6-515B1FF75A19")]
     public class FieldTypeGallery : RockBlockType
     {
-
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
     }
 }

@@ -91,7 +91,7 @@ namespace Rock.Workflow.Action.Groups
 
     [WorkflowTextOrAttribute( "Weekly: Day of Week",
         "Attribute Value",
-        Description = "The day of the week when creating a weekly schedule. 0 = Sunday, 6 = Saturday.",
+        Description = @"The day of the week when creating a weekly schedule. 0 = Sunday, 6 = Saturday. If ""Weekly: Time of Day"" is supplied then ""Weekly: Day of Week"" is required.",
         Key = AttributeKey.WeeklyDayOfWeek,
         IsRequired = false,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType", "Rock.Field.Types.DayOfWeekFieldType" },
@@ -99,7 +99,7 @@ namespace Rock.Workflow.Action.Groups
 
     [WorkflowTextOrAttribute( "Weekly: Time of Day",
         "Attribute Value",
-        Description = "The time when creating a weekly schedule.",
+        Description = @"The time of day when creating a weekly schedule. If ""Weekly: Day of Week"" is supplied then ""Weekly: Time of Day"" is required.",
         Key = AttributeKey.WeeklyTimeOfDay,
         IsRequired = false,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TimeFieldType" },
@@ -149,13 +149,13 @@ namespace Rock.Workflow.Action.Groups
             var isPublic = GetAttributeValue( action, AttributeKey.IsPublic, true ).AsBoolean();
 
             // If "Weekly:" options are provided, ignore most other options.
-            TimeSpan? weeklyTimeOfDay = null;
-            if ( Enum.TryParse( GetAttributeValue( action, AttributeKey.WeeklyDayOfWeek, true ), out DayOfWeek weeklyDayOfWeek ) )
-            {
-                weeklyTimeOfDay = GetAttributeValue( action, AttributeKey.WeeklyTimeOfDay, true ).AsTimeSpan();
-            }
+            var dayOfWeekString = GetAttributeValue( action, AttributeKey.WeeklyDayOfWeek, true );
+            var dayOfWeekInt = dayOfWeekString.AsIntegerOrNull() ?? -1;
+            var dayOfWeekIsValid = Enum.IsDefined( typeof( DayOfWeek ), dayOfWeekInt );
+            Enum.TryParse( dayOfWeekString, out DayOfWeek weeklyDayOfWeek );
 
-            if ( weeklyTimeOfDay.HasValue )
+            var weeklyTimeOfDay = GetAttributeValue( action, AttributeKey.WeeklyTimeOfDay, true ).AsTimeSpan();
+            if ( dayOfWeekIsValid && weeklyTimeOfDay.HasValue )
             {
                 SaveNewSchedule( new Schedule
                 {
@@ -165,6 +165,16 @@ namespace Rock.Workflow.Action.Groups
                 }, rockContext, action );
 
                 return true;
+            }
+            else if ( dayOfWeekIsValid )
+            {
+                errorMessages.Add( @"""Weekly: Day of Week"" was parsed, but could not parse ""Weekly: Time of Day""." );
+                return false;
+            }
+            else if ( weeklyTimeOfDay.HasValue )
+            {
+                errorMessages.Add( @"""Weekly: Time of Day"" was parsed, but could not parse ""Weekly: Day of Week""." );
+                return false;
             }
 
             // Otherwise, this is an iCalendarContent schedule.
@@ -176,7 +186,7 @@ namespace Rock.Workflow.Action.Groups
             var startDateTime = startDateTimeString.ResolveMergeFields( mergeFields ).AsDateTime();
             if ( !startDateTime.HasValue )
             {
-                errorMessages.Add( $"Could not parse the start date/time provided: {startDateTimeString}" );
+                errorMessages.Add( $@"Could not parse ""Start Date/Time"": {startDateTimeString}" );
                 return false;
             }
 

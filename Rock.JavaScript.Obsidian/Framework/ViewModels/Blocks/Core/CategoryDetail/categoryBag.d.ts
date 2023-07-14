@@ -26,6 +26,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type CategoryBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the description. */
     description?: string | null;
 
@@ -44,6 +50,9 @@ export type CategoryBag = {
     /** Gets or sets the name of the icon CSS class. This property is only used for CSS based icons. */
     iconCssClass?: string | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets a flag indicating if this Category is part of the Rock core system/framework. */
     isSystem: boolean;
 
@@ -55,13 +64,4 @@ export type CategoryBag = {
 
     /** Gets or sets the root category. */
     rootCategoryGuid?: Guid | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

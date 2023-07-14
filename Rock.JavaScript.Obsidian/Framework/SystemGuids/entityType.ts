@@ -153,7 +153,7 @@ export const EntityType = {
     CommunicationMediumEmail: "5A653EBE-6803-44B4-85D2-FB7B8146D55D",
     /** The guid for the push notification communication medium */
     CommunicationMediumPushNotification: "3638C6DF-4FF3-4A52-B4B8-AFB754991597",
-    /** The guid for the email communication medium */
+    /** The guid for the SMS communication medium */
     CommunicationMediumSms: "4BC02764-512A-4A10-ACDE-586F71D8A8BD",
     /** The EntityType Guid for Rock.Model.CommunicationRecipient  */
     CommunicationRecipient: "3EC89B90-6692-451E-A48F-0D2ADEBA05BC",
@@ -343,6 +343,8 @@ export const EntityType = {
     HtmlContent: "FB30EC4C-7DCC-41A4-94AB-E728A8CE537B",
     /** The HTTP module component */
     HttpModuleComponent: "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
+    /** The EntityType Guid for Rock.Web.HttpModules.Observability  */
+    HttpModuleObservability: "FE7A8295-9383-4FD8-9FB2-FF77A8042462",
     /** The EntityType Guid for Rock.Model.IdentityVerification  */
     IdentityVerification: "C76071B0-0C2F-4A3F-88BF-08B2E006C614",
     /** The EntityType Guid for Rock.Model.IdentityVerificationCode  */

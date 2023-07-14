@@ -49,7 +49,7 @@
     import { FinancialBatchBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchBag";
     import { FinancialBatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchDetailOptionsBag";
 
-    const BATCH_STATUS_CLOSED = 2;
+    const batchStatusClosed = 2;
     const config = useConfigurationValues<DetailBlockBox<FinancialBatchBag, FinancialBatchDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
@@ -141,12 +141,17 @@
     });
 
     const isEditable = computed((): boolean => {
-        const isReopenDisabled = financialBatchViewBag.value?.status == BATCH_STATUS_CLOSED && !config.options?.isReopenAuthorized;
+        const isReopenDisabled = financialBatchViewBag.value?.status == batchStatusClosed && !config.options?.isReopenAuthorized;
         return config.isEditable === true && !(isReopenDisabled);
     });
 
     const options = computed((): FinancialBatchDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {
+            isReopenAuthorized: false,
+            isStatusChangeDisabled: true,
+            transactionAmount: 0,
+            transactionItemCount: 0
+        };
     });
 
     const footerActions = computed((): PanelAction[] => {

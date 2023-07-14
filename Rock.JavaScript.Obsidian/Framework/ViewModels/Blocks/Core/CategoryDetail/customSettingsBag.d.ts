@@ -29,12 +29,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * Category Detail block.
  */
 export type CustomSettingsBag = {
-    /** Gets or sets the root category. */
-    rootCategory?: ListItemBag | null;
-
-    /** Gets or sets the exclude categories. */
-    excludeCategories?: ListItemBag[] | null;
-
     /** Gets or sets the entity type identifier. */
     entityTypeGuid?: Guid | null;
 
@@ -43,4 +37,10 @@ export type CustomSettingsBag = {
 
     /** Gets or sets the entity type qualifier value. */
     entityTypeQualifierValue?: string | null;
+
+    /** Gets or sets the exclude categories. */
+    excludeCategories?: ListItemBag[] | null;
+
+    /** Gets or sets the root category. */
+    rootCategory?: ListItemBag | null;
 };

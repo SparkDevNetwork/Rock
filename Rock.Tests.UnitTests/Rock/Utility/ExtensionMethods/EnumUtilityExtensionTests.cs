@@ -30,9 +30,9 @@ namespace Rock.Tests.UnitTests.Rock.Utility.ExtensionMethods
                 new ListItemBag { Text = "Test Element Two", Value = "1" }
             };
 
-            ListItemBag[] actualListItemBag = typeof( TestEnum ).ToListItemBag();
+            var actualListItemBag = typeof( TestEnum ).ToEnumListItemBag();
 
-            Assert.AreEqual( expectedListItemBagList.Length, actualListItemBag.Length);
+            Assert.AreEqual( expectedListItemBagList.Length, actualListItemBag.Count);
             Assert.AreEqual( expectedListItemBagList[0].Text, actualListItemBag[0].Text );
             Assert.AreEqual( expectedListItemBagList[1].Text, actualListItemBag[1].Text );
             Assert.AreEqual( expectedListItemBagList[0].Value, actualListItemBag[0].Value );
@@ -47,9 +47,9 @@ namespace Rock.Tests.UnitTests.Rock.Utility.ExtensionMethods
                 new ListItemBag { Text = "Test Element Two Description", Value = "1" }
             };
 
-            ListItemBag[] actualListItemBag = typeof( TestEnumWithDescription ).ToListItemBag();
+            var actualListItemBag = typeof( TestEnumWithDescription ).ToEnumListItemBag();
 
-            Assert.AreEqual( expectedListItemBagList.Length, actualListItemBag.Length);
+            Assert.AreEqual( expectedListItemBagList.Length, actualListItemBag.Count);
             Assert.AreEqual( expectedListItemBagList[0].Text, actualListItemBag[0].Text );
             Assert.AreEqual( expectedListItemBagList[1].Text, actualListItemBag[1].Text );
             Assert.AreEqual( expectedListItemBagList[0].Value, actualListItemBag[0].Value );

@@ -34,6 +34,7 @@ using System.Text;
 using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Web;
+using Rock.Blocks;
 
 /// <summary>
 ///
@@ -688,6 +689,7 @@ namespace RockWeb.Blocks.Cms
         protected void btnAddBlock_Click( object sender, EventArgs e )
         {
             tbNewBlockName.Text = string.Empty;
+            var siteType = PageCache.Get( hfPageId.Value.AsInteger() ).Layout.Site.SiteType;
 
             // Load the block types
             using ( var rockContext = new RockContext() )
@@ -701,33 +703,26 @@ namespace RockWeb.Blocks.Cms
                     // ignore
                 }
 
-                // Get a list of BlockTypes that does not include Mobile block types.
-                List<BlockTypeCache> allExceptMobileBlockTypes = new List<BlockTypeCache>();
-                foreach( var cachedBlockType in BlockTypeCache.All() )
-                {
-                    try
-                    {
-                        var blockCompiledType = cachedBlockType.GetCompiledType();
-
-                        if ( !typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
-                        {
-                            allExceptMobileBlockTypes.Add( cachedBlockType );
-                        }
-                    }
-                    catch ( Exception )
-                    {
-                        // Intentionally ignored
-                    }
-                }
-
-                var blockTypes = allExceptMobileBlockTypes.Select( b => new { b.Id, b.Name, b.Category, b.Description } ).ToList();
+                var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType )
+                    .Select( b => new { b.Id, b.Name, b.Category, b.Description,
+                        IsObsidian = typeof( IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() ) } )
+                    .ToList();
 
                 ddlBlockType.Items.Clear();
 
                 // Add the categorized block types
                 foreach ( var blockType in blockTypes.Where( b => b.Category != string.Empty ).OrderBy( b => b.Category ).ThenBy( b => b.Name ) )
                 {
-                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                    var blockTypeName = blockType.Name;
+
+                    // Append the "party popper" emoji to the block type name if it
+                    // is an Obsidian block type so we can differentiate during rollout.
+                    if ( blockType.IsObsidian )
+                    {
+                        blockTypeName += " \U0001f389";
+                    }
+
+                    var li = new ListItem( blockTypeName, blockType.Id.ToString() );
                     li.Attributes.Add( "optiongroup", blockType.Category );
                     li.Attributes.Add( "title", blockType.Description );
                     ddlBlockType.Items.Add( li );

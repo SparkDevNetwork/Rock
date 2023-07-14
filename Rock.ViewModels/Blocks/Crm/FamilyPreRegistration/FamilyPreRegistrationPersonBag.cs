@@ -70,6 +70,11 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         public string MobilePhone { get; set; }
 
         /// <summary>
+        /// Gets or sets a value to set PhoneNumber.IsMessagingEnabled for the specified mobie number
+        /// </summary>
+        public bool IsMessagingEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets the mobile phone country code.
         /// </summary>
         public string MobilePhoneCountryCode { get; set; }

@@ -58,14 +58,35 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Prevent Overcapacity Registrations", "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.", true, "", 12 )]
     [BooleanField( "Require Email", "Should email be required for registration?", true, key: REQUIRE_EMAIL_KEY )]
     [BooleanField( "Require Mobile Phone", "Should mobile phone numbers be required (when visible) for registration?  NOTE: Certain fields such as phone numbers and address are not shown when the block is configured for 'Simple' mode.", false, key: REQUIRE_MOBILE_KEY )]
+    [CustomDropdownListField(
+        "Show SMS Opt-in",
+        Key = AttributeKey.DisplaySmsOptIn,
+        Description = "If 'Mobile Phone' is not set to 'Hide' then this option will show the SMS Opt-In option for the selection.",
+        ListSource = ListSource.DISPLAY_SMS_OPT_IN,
+        IsRequired = true,
+        DefaultValue = "All Adults" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "9D0EF3AC-D0F7-4FA7-9C64-E7B0855648C7" )]
     public partial class GroupRegistration : RockBlock
     {
-        #region Fields
+        #region Keys
+        private class AttributeKey
+        {
+            public const string DisplaySmsOptIn = "DisplaySmsOptIn";
+        }
+
+        private static class ListSource
+        {
+            public const string DISPLAY_SMS_OPT_IN = "Hide,First Adult,All Adults";
+        }
+
         private const string REQUIRE_EMAIL_KEY = "IsRequireEmail";
         private const string REQUIRE_MOBILE_KEY = "IsRequiredMobile";
 
+        #endregion Keys
+
+        #region Fields
+        
         RockContext _rockContext = null;
         string _mode = "Simple";
         Group _group = null;
@@ -434,6 +455,12 @@ namespace RockWeb.Blocks.Groups
                 pnCell.Label = phoneLabel;
                 pnSpouseCell.Label = "Spouse " + phoneLabel;
 
+                var showSmsCheckbox = GetAttributeValue( AttributeKey.DisplaySmsOptIn );
+                var smsCheckboxText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+                smsCheckboxText = smsCheckboxText.IsNullOrWhiteSpace() ? "Enable SMS" : smsCheckboxText;
+                cbSms.Text = smsCheckboxText;
+                cbSpouseSms.Text = smsCheckboxText;
+
                 if ( CurrentPersonId.HasValue && _autoFill )
                 {
                     var personService = new PersonService( _rockContext );
@@ -447,6 +474,8 @@ namespace RockWeb.Blocks.Groups
 
                     if ( !IsSimple )
                     {
+                        
+
                         Guid homePhoneType = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid();
                         var homePhone = person.PhoneNumbers
                             .FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( homePhoneType ) );
@@ -461,7 +490,12 @@ namespace RockWeb.Blocks.Groups
                         if ( cellPhone != null )
                         {
                             pnCell.Text = cellPhone.Number;
-                            cbSms.Checked = cellPhone.IsMessagingEnabled;
+                            cbSms.Visible = false;
+                            if ( showSmsCheckbox != "Hide" )
+                            {
+                                cbSms.Visible = true;
+                                cbSms.Checked = cellPhone.IsMessagingEnabled;
+                            }
                         }
 
                         var homeAddress = person.GetHomeLocation();
@@ -484,7 +518,12 @@ namespace RockWeb.Blocks.Groups
                                 if ( spouseCellPhone != null )
                                 {
                                     pnSpouseCell.Text = spouseCellPhone.Number;
-                                    cbSpouseSms.Checked = spouseCellPhone.IsMessagingEnabled;
+                                    cbSpouseSms.Visible = false;
+                                    if ( showSmsCheckbox == "All Adults" )
+                                    {
+                                        cbSpouseSms.Visible = true;
+                                        cbSpouseSms.Checked = spouseCellPhone.IsMessagingEnabled;
+                                    }
                                 }
                             }
                         }
@@ -765,13 +804,19 @@ namespace RockWeb.Blocks.Groups
                     {
                         person.PhoneNumbers.Add( phoneNumber );
                     }
-                    if ( cbSms != null && cbSms.Checked )
+
+                    if ( cbSms != null && cbSms.Visible && cbSms.Checked )
                     {
-                        phoneNumber.IsMessagingEnabled = true;
-                        person.PhoneNumbers
-                            .Where( n => n.NumberTypeValueId != phoneType.Id )
-                            .ToList()
-                            .ForEach( n => n.IsMessagingEnabled = false );
+                        phoneNumber.IsMessagingEnabled = cbSms.Checked;
+
+                        if ( cbSms.Checked )
+                        {
+                            // We are only allowing one SMS number at this point
+                            person.PhoneNumbers
+                                .Where( n => n.NumberTypeValueId != phoneType.Id )
+                                .ToList()
+                                .ForEach( n => n.IsMessagingEnabled = false );
+                        }
                     }
                 }
             }

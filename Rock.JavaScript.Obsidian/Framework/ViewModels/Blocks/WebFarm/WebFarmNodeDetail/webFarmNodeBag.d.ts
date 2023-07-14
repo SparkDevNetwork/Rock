@@ -25,8 +25,20 @@ import { WebFarmMetricBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNod
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type WebFarmNodeBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the current leadership polling interval seconds. */
     currentLeadershipPollingIntervalSeconds: number;
+
+    /** Gets or sets the human readable last seen. */
+    humanReadableLastSeen?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
@@ -43,21 +55,9 @@ export type WebFarmNodeBag = {
     /** Gets or sets the last seen date time. */
     lastSeenDateTime?: string | null;
 
-    /** Gets or sets the human readable last seen. */
-    humanReadableLastSeen?: string | null;
-
     /** Gets or sets a Node Name. */
     nodeName?: string | null;
 
     /** Gets or sets the web farm node metrics. */
     webFarmNodeMetrics?: WebFarmMetricBag[] | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

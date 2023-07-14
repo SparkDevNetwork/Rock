@@ -66,7 +66,7 @@ namespace Rock
         /// </summary>
         /// <param name="enumType">The type of the enum to be converted to ListItemBag</param>
         /// <returns>An array of ListItemBag</returns>
-        public static ListItemBag[] ToListItemBag( this Type enumType )
+        internal static List<ListItemBag> ToEnumListItemBag( this Type enumType )
         {
             var listItemBag = new List<ListItemBag>();
             foreach ( Enum enumValue in Enum.GetValues(enumType))
@@ -76,7 +76,7 @@ namespace Rock
                 listItemBag.Add( new ListItemBag { Text = text, Value = value } );
             }
 
-            return listItemBag.ToArray();
+            return listItemBag.ToList();
         }
     }
 }

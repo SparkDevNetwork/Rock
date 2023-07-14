@@ -21,9 +21,11 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
 export type SiteDetailOptionsBag = {
-    themes: string[] | null;
     siteAttributes?: PublicEditableAttributeBag[] | null;
+
+    themes?: ListItemBag[] | null;
 };

@@ -712,12 +712,15 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            int toPersonAliasId = ppRecipient.PersonAliasId.Value;
-            var personAliasService = new PersonAliasService( new RockContext() );
-            var toPerson = personAliasService.GetPerson( toPersonAliasId );
-            if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled ).Any() )
+            if ( ppRecipient.PersonAliasId.HasValue )
             {
-                nbNoSms.Visible = true;
+                int toPersonAliasId = ppRecipient.PersonAliasId.Value;
+                var personAliasService = new PersonAliasService( new RockContext() );
+                var toPerson = personAliasService.GetPerson( toPersonAliasId );
+                if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled ).Any() )
+                {
+                    nbNoSms.Visible = true;
+                }
             }
         }
 

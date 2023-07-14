@@ -43,6 +43,7 @@ export function convertPersonToPersonRequest(person: FamilyPreRegistrationPerson
         lastName: person?.lastName || defaults.lastName,
         mobilePhone: person?.mobilePhone || defaults.mobilePhone,
         mobilePhoneCountryCode: person?.mobilePhoneCountryCode || defaults.mobilePhoneCountryCode,
+        isMessagingEnabled: person?.isMessagingEnabled || defaults.isMessagingEnabled,
     };
 }
 
@@ -74,7 +75,8 @@ export function createPersonRequest(): PersonRequestBag {
         isLastNameReadOnly: false,
         lastName: "",
         mobilePhone: "",
-        mobilePhoneCountryCode: ""
+        mobilePhoneCountryCode: "",
+        isMessagingEnabled: false
     };
 }
 
@@ -133,7 +135,8 @@ export function createChildRequest(): ChildRequestBag {
         isLastNameReadOnly: false,
         lastName: "",
         mobilePhone: "",
-        mobilePhoneCountryCode: ""
+        mobilePhoneCountryCode: "",
+        isMessagingEnabled: false
     };
 }
 

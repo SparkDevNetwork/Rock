@@ -119,7 +119,7 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_MEDIUM_PUSH_NOTIFICATION = "3638C6DF-4FF3-4A52-B4B8-AFB754991597";
 
         /// <summary>
-        /// The guid for the email communication medium
+        /// The guid for the SMS communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
 
@@ -1839,5 +1839,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.NotificationMessageType"/> 
         /// </summary>
         public const string NOTIFICATION_MESSAGE_TYPE = "36FB1038-8836-429F-BAD4-04D32892D6D0";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.Observability"/> 
+        /// </summary>
+        public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
     }
 }

@@ -26,8 +26,33 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type LocationBag = {
+    /** Gets or sets the address fields. */
+    addressFields?: AddressControlBag | null;
+
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets threshold that will prevent checkin (no option to override) */
     firmRoomThreshold?: number | null;
+
+    /** Gets or sets the formatted HTML address. */
+    formattedHtmlAddress?: string | null;
+
+    geoFence_WellKnownText?: string | null;
+
+    /** Gets or sets the GeoFence image HTML. */
+    geoFenceImageHtml?: string | null;
+
+    geoPoint_WellKnownText?: string | null;
+
+    /** Gets or sets the GeoPoint image HTML. */
+    geoPointImageHtml?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the image identifier. */
     imageId?: number | null;
@@ -55,29 +80,4 @@ export type LocationBag = {
 
     /** Gets or sets a threshold that will prevent checkin unless a manager overrides */
     softRoomThreshold?: number | null;
-
-    /** Gets or sets the address fields. */
-    addressFields?: AddressControlBag | null;
-
-    /** Gets or sets the formatted HTML address. */
-    formattedHtmlAddress?: string | null;
-
-    /** Gets or sets the GeoFence image HTML. */
-    geoFenceImageHtml?: string | null;
-
-    /** Gets or sets the GeoPoint image HTML. */
-    geoPointImageHtml?: string | null;
-
-    geoPoint_WellKnownText?: string | null;
-
-    geoFence_WellKnownText?: string | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

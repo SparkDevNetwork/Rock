@@ -30,8 +30,17 @@ export type ServiceJobBag = {
      */
     assembly?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the fully qualified class name with Namespace of the Job class. This property is required. */
     class?: string | null;
+
+    /** Gets or sets the cron description. */
+    cronDescription?: string | null;
 
     /** Gets or sets the Cron Expression that is used to schedule the Job. This property is required. */
     cronExpression?: string | null;
@@ -44,6 +53,9 @@ export type ServiceJobBag = {
 
     /** Gets or sets the history count per job. */
     historyCount: number;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets a flag indicating if the Job is active. */
     isActive?: boolean | null;
@@ -66,16 +78,4 @@ export type ServiceJobBag = {
      * property of this job.
      */
     notificationEmails?: string | null;
-
-    /** Gets or sets the cron description. */
-    cronDescription?: string | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

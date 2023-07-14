@@ -424,6 +424,12 @@ namespace RockWeb.Blocks.Administration
                 {
                     databaseResults.AppendFormat( "<br />Azure Service Tier Objective: {0}", databaseConfig.ServiceObjective );
                 }
+
+                if ( System.Configuration.ConfigurationManager.ConnectionStrings["RockContextReadOnly"] != null ) 
+                {
+                    var rockContextReadOnly = new RockContextReadOnly();
+                    databaseResults.AppendFormat( "<br />RockContextReadOnly: {0}", rockContextReadOnly.Database.SqlQuery<string>( "SELECT DATABASEPROPERTYEX(DB_NAME(), 'Updateability')" ).First() );
+                }
             }
             catch ( Exception ex )
             {

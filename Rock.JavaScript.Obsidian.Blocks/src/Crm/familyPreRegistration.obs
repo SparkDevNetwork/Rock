@@ -75,7 +75,7 @@
                                     :disabled="isSaving || isNavigating"
                                     placeholder="Please enter name (Required)" />
 
-                                <div :class="getColumnClass(3)">
+                                <div class="col-sm-6">
                                     <StaticFormControl
                                         v-if="adult1.isFirstNameReadOnly"
                                         label="First Name"
@@ -86,7 +86,7 @@
                                         label="First Name"
                                         :rules="[atLeastOneAdultFirstNameRule, adult1FirstNameRule]" />
                                 </div>
-                                <div :class="getColumnClass(3)">
+                                <div class="col-sm-6">
                                     <StaticFormControl
                                         v-if="adult1.isLastNameReadOnly"
                                         label="Last Name"
@@ -97,15 +97,19 @@
                                         label="Last Name"
                                         :rules="[adult1LastNameRule]" />
                                 </div>
-                                <div v-if="config.adultGenderField?.isShown" :class="getColumnClass(3)">
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
                                     <GenderDropDownList
+                                        v-if="config.adultGenderField?.isShown"
                                         v-model="adult1.genderStringValue"
                                         :disabled="isSaving || isNavigating"
                                         label="Gender"
                                         :rules="isAdult1Entered && config.adultGenderField.isRequired ? 'required' : []" />
                                 </div>
-                                <div v-if="config.adultSuffixField?.isShown" :class="getColumnClass(3)">
+                                <div class="col-sm-6">
                                     <DefinedValuePicker
+                                        v-if="config.adultSuffixField?.isShown"
                                         v-model="adult1.suffixListItemBag"
                                         :definedTypeGuid="DefinedType.PersonSuffix"
                                         :disabled="isSaving || isNavigating"
@@ -114,15 +118,19 @@
                                         :rules="isAdult1Entered && config.adultSuffixField.isRequired ? 'required' : []"
                                         :showBlankItem="true" />
                                 </div>
-                                <div v-if="config.adultBirthdayField?.isShown" :class="getColumnClass(6)">
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
                                     <BirthdayPicker
+                                        v-if="config.adultBirthdayField?.isShown"
                                         v-model="adult1.birthDate"
                                         :disabled="isSaving || isNavigating"
                                         label="Birth Date"
                                         :rules="isAdult1Entered && config.adultBirthdayField.isRequired ? 'required' : ''" />
                                 </div>
-                                <div v-if="config.adultMaritalStatusField?.isShown" :class="getColumnClass(3)">
+                                <div class="col-sm-6">
                                     <DefinedValuePicker
+                                        v-if="config.adultMaritalStatusField?.isShown"
                                         v-model="adult1.maritalStatusListItemBag"
                                         :definedTypeGuid="DefinedType.PersonMaritalStatus"
                                         :disabled="isSaving || isNavigating"
@@ -131,23 +139,38 @@
                                         :rules="isAdult1Entered && config.adultMaritalStatusField.isRequired ? 'required': ''"
                                         :showBlankItem="true" />
                                 </div>
-                                <div v-if="config.adultMobilePhoneField?.isShown" :class="getColumnClass(3)">
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
                                     <PhoneNumberBox
+                                        v-if="config.adultMobilePhoneField?.isShown"
                                         v-model="adult1.mobilePhone"
                                         v-model:countryCode="adult1.mobilePhoneCountryCode"
                                         :disabled="isSaving || isNavigating"
                                         label="Mobile Phone"
                                         :rules="isAdult1Entered && config.adultMobilePhoneField.isRequired ? 'required' : []" />
                                 </div>
-                                <div v-if="config.adultEmailField?.isShown" :class="getColumnClass(6)">
+                                <div class="col-sm-6">
+                                    <CheckBox
+                                        v-if="config.displaySmsOptIn?.isShowFirstAdult"
+                                        v-model="adult1.isMessagingEnabled"
+                                        label=""
+                                        :disabled="isSaving || isNavigating"
+                                        :text="config.displaySmsOptIn?.smsOptInDisplayText ?? ''"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
                                     <EmailBox
+                                        v-if="config.adultEmailField?.isShown"
                                         v-model="adult1.email"
                                         :disabled="isSaving || isNavigating"
                                         label="Email"
                                         :rules="isAdult1Entered && config.adultEmailField.isRequired ? 'required' : []" />
                                 </div>
-                                <div v-if="config.adultCommunicationPreferenceField?.isShown" :class="getColumnClass(6)">
+                                <div class="col-sm-6">
                                     <RadioButtonList
+                                        v-if="config.adultCommunicationPreferenceField?.isShown"
                                         v-model="adult1.communicationPreferenceStringValue"
                                         :disabled="isSaving || isNavigating"
                                         :horizontal="true"
@@ -158,15 +181,19 @@
                                         label="Communication Preference"
                                         :rules="isAdult1Entered && config.adultCommunicationPreferenceField.isRequired ? 'required' : ''" />
                                 </div>
-                                <div v-if="config.adultRaceField?.isShown" :class="getColumnClass(3)">
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
                                     <RacePicker
+                                        v-if="config.adultRaceField?.isShown"
                                         v-model="adult1.raceListItemBag"
                                         :disabled="isSaving || isNavigating"
                                         :rules="isAdult1Entered && config.adultRaceField.isRequired ? 'required' : []"
                                         :showBlankItem="true" />
                                 </div>
-                                <div v-if="config.adultEthnicityField?.isShown" :class="getColumnClass(3)">
+                                <div class="col-sm-6">
                                     <EthnicityPicker
+                                        v-if="config.adultEthnicityField?.isShown"
                                         v-model="adult1.ethnicityListItemBag"
                                         :disabled="isSaving || isNavigating"
                                         :rules="isAdult1Entered && config.adultEthnicityField.isRequired ? 'required' : []"
@@ -192,7 +219,7 @@
                                     columnBreakpoint="sm"
                                     :displayWithinExistingRow="true"
                                     isEditMode
-                                    :numberOfColumns="config.columns"
+                                    :numberOfColumns="2"
                                     :showCategoryLabel="true" />
                             </div>
 
@@ -249,7 +276,7 @@
 
                             <div class="adult-2-fields">
                                 <div class="row">
-                                    <div :class="getColumnClass(3)">
+                                    <div class="col-sm-6">
                                         <StaticFormControl
                                             v-if="adult2.isFirstNameReadOnly"
                                             label="First Name"
@@ -260,7 +287,7 @@
                                             label="First Name"
                                             :rules="[atLeastOneAdultFirstNameRule, adult2FirstNameRule]" />
                                         </div>
-                                    <div :class="getColumnClass(3)">
+                                    <div class="col-sm-6">
                                         <StaticFormControl
                                             v-if="adult2.isLastNameReadOnly"
                                             label="Last Name"
@@ -270,15 +297,17 @@
                                             :disabled="isSaving || isNavigating"
                                             label="Last Name"
                                             :rules="[adult2LastNameRule]" />
-                                        </div>
-                                    <div v-if="config.adultGenderField?.isShown" :class="getColumnClass(3)">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div v-if="config.adultGenderField?.isShown" class="col-sm-6">
                                         <GenderDropDownList
                                             v-model="adult2.genderStringValue"
                                             :disabled="isSaving || isNavigating"
                                             label="Gender"
                                             :rules="isAdult2Entered && config.adultGenderField.isRequired ? 'required' : []" />
                                     </div>
-                                    <div v-if="config.adultSuffixField?.isShown" :class="getColumnClass(3)">
+                                    <div v-if="config.adultSuffixField?.isShown" class="col-sm-6">
                                         <DefinedValuePicker
                                             v-model="adult2.suffixListItemBag"
                                             :definedTypeGuid="DefinedType.PersonSuffix"
@@ -288,14 +317,16 @@
                                             :rules="isAdult2Entered && config.adultSuffixField.isRequired ? 'required' : []"
                                             :showBlankItem="true" />
                                     </div>
-                                    <div v-if="config.adultBirthdayField?.isShown" :class="getColumnClass(6)">
+                                </div>
+                                <div class="row">
+                                    <div v-if="config.adultBirthdayField?.isShown" class="col-sm-6">
                                         <BirthdayPicker
                                             v-model="adult2.birthDate"
                                             :disabled="isSaving || isNavigating"
                                             label="Birth Date"
                                             :rules="isAdult2Entered && config.adultBirthdayField.isRequired ? 'required' : ''" />
                                     </div>
-                                    <div v-if="config.adultMaritalStatusField?.isShown" :class="getColumnClass(3)">
+                                    <div v-if="config.adultMaritalStatusField?.isShown" class="col-sm-6">
                                         <DefinedValuePicker
                                             v-model="adult2.maritalStatusListItemBag"
                                             :definedTypeGuid="DefinedType.PersonMaritalStatus"
@@ -305,22 +336,35 @@
                                             :rules="isAdult2Entered && config.adultMaritalStatusField.isRequired ? 'required': ''"
                                             :showBlankItem="true" />
                                     </div>
-                                    <div v-if="config.adultMobilePhoneField?.isShown" :class="getColumnClass(3)">
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
                                         <PhoneNumberBox
+                                            v-if="config.adultMobilePhoneField?.isShown"
                                             v-model="adult2.mobilePhone"
                                             v-model:countryCode="adult2.mobilePhoneCountryCode"
                                             :disabled="isSaving || isNavigating"
                                             label="Mobile Phone"
                                             :rules="isAdult2Entered && config.adultMobilePhoneField.isRequired ? 'required' : []" />
                                     </div>
-                                    <div v-if="config.adultEmailField?.isShown" :class="getColumnClass(6)">
+                                    <div class="col-sm-6">
+                                        <CheckBox
+                                            v-if="config.displaySmsOptIn?.isShowAllAdults"
+                                            v-model="adult2.isMessagingEnabled"
+                                            label=""
+                                            :disabled="isSaving || isNavigating"
+                                            :text="config.displaySmsOptIn?.smsOptInDisplayText ?? ''"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div v-if="config.adultEmailField?.isShown" class="col-sm-6">
                                         <EmailBox
                                             v-model="adult2.email"
                                             :disabled="isSaving || isNavigating"
                                             label="Email"
                                             :rules="isAdult2Entered && config.adultEmailField.isRequired ? 'required' : []" />
                                     </div>
-                                    <div v-if="config.adultCommunicationPreferenceField?.isShown" :class="getColumnClass(6)">
+                                    <div v-if="config.adultCommunicationPreferenceField?.isShown" class="col-sm-6">
                                         <RadioButtonList
                                             v-model="adult2.communicationPreferenceStringValue"
                                             :disabled="isSaving || isNavigating"
@@ -332,7 +376,9 @@
                                             label="Communication Preference"
                                             :rules="isAdult2Entered && config.adultCommunicationPreferenceField.isRequired ? 'required' : ''" />
                                     </div>
-                                    <div :class="getColumnClass(3)">
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
                                         <RacePicker
                                             v-if="config.adultRaceField?.isShown"
                                             v-model="adult2.raceListItemBag"
@@ -340,7 +386,7 @@
                                             :rules="isAdult2Entered && config.adultRaceField.isRequired ? 'required' : []"
                                             :showBlankItem="true" />
                                     </div>
-                                    <div :class="getColumnClass(3)">
+                                    <div class="col-sm-6">
                                         <EthnicityPicker
                                             v-if="config.adultEthnicityField?.isShown"
                                             v-model="adult2.ethnicityListItemBag"
@@ -368,7 +414,7 @@
                                         columnBreakpoint="sm"
                                         :displayWithinExistingRow="true"
                                         isEditMode
-                                        :numberOfColumns="config.columns"
+                                        :numberOfColumns="2"
                                         :showCategoryLabel="true" />
                                 </div>
                             </div>
@@ -376,7 +422,7 @@
                             <hr />
 
                             <div class="row">
-                                <div :class="getColumnClass(6)">
+                                <div class="col-sm-6">
                                     <AddressControl
                                         v-if="config.addressField?.isShown"
                                         v-model="address"
@@ -386,14 +432,14 @@
                                         :useCountryAbbreviation="false"
                                      />
                                 </div>
-                                <div :class="getColumnClass(6)">
+                                <div class="col-sm-6">
                                     <AttributeValuesContainer
                                         v-if="config.familyAttributes"
                                         v-model="familyAttributeValues"
                                         :attributes="config.familyAttributes"
                                         columnBreakpoint="sm"
                                         isEditMode
-                                        :numberOfColumns="config.columns"
+                                        :numberOfColumns="2"
                                         :showCategoryLabel="false" />
                                 </div>
                             </div>
@@ -435,6 +481,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";
@@ -467,7 +514,6 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
-    const getColumnClass = useGetBootstrapColumnClass(config.columns);
     const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
 

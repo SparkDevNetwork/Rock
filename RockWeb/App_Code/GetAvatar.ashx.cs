@@ -374,6 +374,30 @@ namespace RockWeb
                 }
             }
 
+            // Person Alias Guid
+            if ( request.QueryString["PersonAliasGuid"] != null )
+            {
+                var personAliasGuid = request.QueryString["PersonAliasGuid"].AsGuidOrNull();
+
+                if ( personAliasGuid.HasValue )
+                {
+                    person = new PersonAliasService( new RockContext() ).GetPerson( personAliasGuid.Value );
+                    settings.PersonId = person?.Id;
+                }
+            }
+
+            // Person Alias Id
+            if ( request.QueryString["PersonAliasId"] != null )
+            {
+                var personAliasId = request.QueryString["PersonAliasId"].AsIntegerOrNull();
+
+                if ( personAliasId.HasValue )
+                {
+                    person = new PersonAliasService( new RockContext() ).GetPerson( personAliasId.Value );
+                    settings.PersonId = person?.Id;
+                }
+            }
+
             // Load configuration from the person object
             if ( person != null )
             {

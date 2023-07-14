@@ -28,24 +28,24 @@ export type RestKeyBag = {
     /** Gets or sets the API key associated with the UserLogin */
     apiKey?: string | null;
 
-    /** Gets or sets the Rock.Model.EntityType for the authentication service that this Rest Key. */
-    entityType?: ListItemBag | null;
-
-    /** Gets or sets the Name that this UserLogin is associated with. */
-    name?: string | null;
-
-    /** Gets or sets the Description that is associated with this Rest Key. This property is required. */
-    description?: string | null;
-
-    /** Gets or sets a flag indicating if this Rest Key is active. This property is required. */
-    isActive: boolean;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the Description that is associated with this Rest Key. This property is required. */
+    description?: string | null;
+
+    /** Gets or sets the Rock.Model.EntityType for the authentication service that this Rest Key. */
+    entityType?: ListItemBag | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets a flag indicating if this Rest Key is active. This property is required. */
+    isActive: boolean;
+
+    /** Gets or sets the Name that this UserLogin is associated with. */
+    name?: string | null;
 };

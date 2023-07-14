@@ -31,6 +31,12 @@ export type StreakBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** The current number of non excluded occurrences attended in a row */
+    currentStreakCount: number;
+
+    /** The date that the current streak began */
+    currentStreakStartDate?: string | null;
+
     /**
      * Gets or sets the System.DateTime when the person was enrolled in the streak type.
      * This is not the Streak Type start date.
@@ -45,6 +51,15 @@ export type StreakBag = {
 
     /** Gets or sets the Rock.Model.Location. */
     location?: ListItemBag | null;
+
+    /** The longest number of non excluded occurrences attended in a row */
+    longestStreakCount: number;
+
+    /** The date the longest streak ended */
+    longestStreakEndDate?: string | null;
+
+    /** The date the longest streak began */
+    longestStreakStartDate?: string | null;
 
     /** Gets or sets the Rock.Model.PersonAlias. */
     personAlias?: ListItemBag | null;
