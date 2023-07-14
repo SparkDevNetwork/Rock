@@ -229,7 +229,7 @@ namespace Rock.Jobs
                         // Copy the attribute qualifiers from the old block attribute to the new block attribute.
                         foreach ( var qualifierKvp in oldBlockAttribute.QualifierValues )
                         {
-                            migrationHelper.AddAttributeQualifier( newBlockAttribute.Guid.ToString(), qualifierKvp.Key, qualifierKvp.Value.Value, Guid.NewGuid().ToString() );
+                            migrationHelper.AddAttributeQualifierForSQL( newBlockAttribute.Guid.ToString(), qualifierKvp.Key, qualifierKvp.Value.Value, Guid.NewGuid().ToString() );
                         }
                     }
                 }
