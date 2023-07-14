@@ -73,6 +73,9 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// </summary>
         private static Guid RecipientSpouseGuid = new Guid( "00000000-0000-0000-0000-000000000002" );
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
+
         #region Methods
 
         /// <inheritdoc/>
