@@ -3389,6 +3389,40 @@ END" );
         }
 
         /// <summary>
+        /// This is a quick fix method. DO NOT USE
+        /// </summary>
+        /// <param name="attributeGuid"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="guid"></param>
+        internal void AddAttributeQualifierForSQL( string attributeGuid, string key, string value, string guid )
+        {
+            value = value?.Replace( "'", "''" ) ?? "";
+            string sql = $@"
+                DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+
+                IF NOT EXISTS(SELECT * FROM [AttributeQualifier] WHERE [Guid] = '{guid}')
+                BEGIN
+	                -- It's possible that the qualifier exists with a different GUID so also check for AttributeId and Key
+	                DECLARE @guid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [AttributeQualifier] WHERE AttributeId = @AttributeId AND [Key] = '{key}')
+	                IF @guid IS NOT NULL
+	                BEGIN
+		                UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Guid] = '{guid}', [Value] = '{value}' WHERE [Guid] = @guid
+	                END
+	                ELSE BEGIN
+		                INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+		                VALUES(1, @AttributeId, '{key}', '{value}', '{guid}')
+	                END
+                END
+                ELSE
+                BEGIN
+                    UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Key] = '{key}', [Value] = '{value}' WHERE [Guid] = '{guid}'
+                END";
+
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
         /// Adds the attribute qualifier.
         /// </summary>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
