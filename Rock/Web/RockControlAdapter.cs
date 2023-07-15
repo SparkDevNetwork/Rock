@@ -36,20 +36,23 @@ namespace Rock.Web
         {
             var rockBlock = ( Control as RockBlock );
 
-            // Start the block observability activity
-            ObservabilityHelper.StartActivity( $"BLOCK INIT {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" );
-            Activity.Current?.AddTag( "rock-otel-type", "rock-block" );
-            Activity.Current?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
-            Activity.Current?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
-            Activity.Current?.AddTag( "rock-node", RockMessageBus.NodeName );
-
-            // Call the blocks OnInit
-            //rockBlock.SendOnInit( e );
+            // Start the block observability activity. Note that some blocks are not loaded directly by RockPage and therefore don't have a block cache.
+            if ( rockBlock.BlockCache != null )
+            {
+                ObservabilityHelper.StartActivity( $"BLOCK INIT {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" );
+                Activity.Current?.AddTag( "rock-otel-type", "rock-block" );
+                Activity.Current?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
+                Activity.Current?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
+                Activity.Current?.AddTag( "rock-node", RockMessageBus.NodeName );
+            }
 
             base.OnInit( e );
 
             // Close out activity
-            Activity.Current?.Dispose();
+            if ( rockBlock.BlockCache != null )
+            {
+                Activity.Current?.Dispose();
+            }
         }
 
         /// <summary>
@@ -61,17 +64,21 @@ namespace Rock.Web
             var rockBlock = ( Control as RockBlock );
 
             // Start the block observability activity
-            ObservabilityHelper.StartActivity( $"BLOCK LOAD {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" );
-            Activity.Current?.AddTag( "rock-otel-type", "rock-block" );
-            Activity.Current?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
-            Activity.Current?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
+            if ( rockBlock.BlockCache != null )
+            {
+                ObservabilityHelper.StartActivity( $"BLOCK LOAD {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" );
+                Activity.Current?.AddTag( "rock-otel-type", "rock-block" );
+                Activity.Current?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
+                Activity.Current?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
+            }
 
-            // Call the blocks OnInit
-            //rockBlock.SendOnLoad( e );
             base.OnLoad( e );
 
             // Close out activity
-            Activity.Current?.Dispose();
+            if ( rockBlock.BlockCache != null )
+            {
+                Activity.Current?.Dispose();
+            }
         }
     }
 }
