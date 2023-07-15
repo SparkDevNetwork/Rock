@@ -100,25 +100,16 @@ namespace Rock.Migrations
         /// </summary>
         public void AddDotLiquidWarningBlockToHomePageUp()
         {
-            if ( RockInstanceConfig.LavaEngineName == "DotLiquid" )
+            if ( RockInstanceConfig.LavaEngineName != "Fluid" )
             {
                 // Add Html Block Instance to HomePage Main Zone
-                RockMigrationHelper.AddBlock( Rock.SystemGuid.Page.INTERNAL_HOMEPAGE, "", Rock.SystemGuid.BlockType.HTML_CONTENT, "DotLiquid Warning", "Main", "", "", 0, "CAEC8719-BEDF-4BE3-9847-55DE93624974" );
+                RockMigrationHelper.AddBlock( Rock.SystemGuid.Page.INTERNAL_HOMEPAGE, "", Rock.SystemGuid.BlockType.HTML_CONTENT, "DotLiquid Warning", "Main", "", "", -1, "CAEC8719-BEDF-4BE3-9847-55DE93624974" );
 
                 // ALLOW VIEW PERMISSION FOR RSR - Rock Administration
                 RockMigrationHelper.AddSecurityAuthForBlock( "CAEC8719-BEDF-4BE3-9847-55DE93624974", 0, "View", true, "628C51A8-4613-43ED-A18D-4A6FB999273E", Model.SpecialRole.None, "6FCE5668-D8E8-4847-B482-B0BBD304D2D3" );
 
-                // ALLOW VIEW PERMISSION FOR WEB - Administration
-                RockMigrationHelper.AddSecurityAuthForBlock( "CAEC8719-BEDF-4BE3-9847-55DE93624974", 0, "View", true, "1918E74F-C00D-4DDD-94C4-2E7209CE12C3", Model.SpecialRole.None, "85EDEAB4-7BEB-475E-8608-D03CA7389679" );
-
                 // DENY VIEW PERMISSION FOR All - Users
                 RockMigrationHelper.AddSecurityAuthForBlock( "CAEC8719-BEDF-4BE3-9847-55DE93624974", 0, "View", false, null, Model.SpecialRole.AllUsers, "3CE62E9B-11E8-4FC5-990F-E67CA94DDCF4" );
-
-                // DENY VIEW PERMISSION FOR Staff Like Workers (Allowed via Inheritance)
-                RockMigrationHelper.AddSecurityAuthForBlock( "CAEC8719-BEDF-4BE3-9847-55DE93624974", 0, "View", false, "300BA2C8-49A3-44BA-A82A-82E3FD8C3745", Model.SpecialRole.None, "98396DA8-7D8C-4177-850A-11AC5061C148" );
-
-                // DENY VIEW PERMISSION FOR Staff Workers (Allowed via Inheritance)
-                RockMigrationHelper.AddSecurityAuthForBlock( "CAEC8719-BEDF-4BE3-9847-55DE93624974", 0, "View", false, "2C112948-FF4C-46E7-981A-0257681EADF4", Model.SpecialRole.None, "07348354-53B9-4F0D-BCA8-C0089FA708A2" );
 
                 // Add Html Content
                 Sql( @"DECLARE @BlockId INT = (SELECT Id FROM Block WHERE [Guid] = 'CAEC8719-BEDF-4BE3-9847-55DE93624974');
@@ -126,7 +117,7 @@ IF @BlockId IS NOT NULL AND NOT EXISTS (SELECT Id FROM HtmlContent WHERE BlockId
 BEGIN
 	INSERT INTO HtmlContent ([BlockId], [Content], [IsApproved], [ApprovedDateTime], [Guid], [Version])
 	VALUES (@BlockId,'{% assign lavaEngine = ''LavaEngine'' | RockInstanceConfig %}
-{% if lavaEngine == ""DotLiquid"" %}
+{% if lavaEngine != ""Fluid"" %}
     <div class=""alert alert-warning"">
         <h4>Warning: Old Lava Engine Still In Use</h4>
         <p>
@@ -138,6 +129,7 @@ BEGIN
 {% endif %}', 1, GETDATE(), NEWID(), 0)
 END" );
             }
+
         }
 
         /// <summary>
