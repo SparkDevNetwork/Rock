@@ -492,75 +492,85 @@ namespace Rock.Jobs
 
             errorMessages = new List<string>();
 
-            foreach ( var kvpDirty in dirtyDictionary )
+            // Safety loop counter to quit after 1,000 iterations.  GetDirtyAttributeValues() can return up to 100,000
+            // attribute values per iteration, so 1,000 iterations will be up to 100,000,000 total attribute value records.
+            int loopCount = 0;
+            while ( dirtyDictionary.Count > 0 || loopCount <= 1000 )
             {
-                attributeIndex++;
-                var attributeId = kvpDirty.Key;
-                var attributeValues = kvpDirty.Value;
-                var attributeCache = AttributeCache.Get( attributeId );
-                var field = attributeCache.FieldType.Field;
-                var cache = new Dictionary<string, object>();
+                loopCount++;
 
-                // Make sure this isn't a bad field type.
-                if ( field == null )
+                foreach ( var kvpDirty in dirtyDictionary )
                 {
-                    continue;
-                }
+                    attributeIndex++;
+                    var attributeId = kvpDirty.Key;
+                    var attributeValues = kvpDirty.Value;
+                    var attributeCache = AttributeCache.Get( attributeId );
+                    var field = attributeCache.FieldType.Field;
+                    var cache = new Dictionary<string, object>();
 
-                statusMessage.Write( $"Updating dirty values for attribute {attributeIndex:N0} of {dirtyDictionary.Count:N0}." );
-
-                Field.PersistedValues placeholderValues = null;
-                var persistedValueSupported = field.IsPersistedValueSupported( attributeCache.ConfigurationValues );
-
-                try
-                {
-                    var valueGroups = attributeValues.GroupBy( v => v.Value );
-
-                    foreach ( var valueGroup in valueGroups )
+                    // Make sure this isn't a bad field type.
+                    if ( field == null )
                     {
-                        var sw = System.Diagnostics.Stopwatch.StartNew();
-                        var value = valueGroup.Key;
-                        var attributeValueIds = valueGroup.Select( grp => grp.Id ).ToList();
-                        Field.PersistedValues persistedValues;
+                        continue;
+                    }
 
-                        if ( persistedValueSupported )
+                    statusMessage.Write( $"Updating dirty values for attribute {attributeIndex:N0} of {dirtyDictionary.Count:N0}." );
+
+                    Field.PersistedValues placeholderValues = null;
+                    var persistedValueSupported = field.IsPersistedValueSupported( attributeCache.ConfigurationValues );
+
+                    try
+                    {
+                        var valueGroups = attributeValues.GroupBy( v => v.Value );
+
+                        foreach ( var valueGroup in valueGroups )
                         {
-                            persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, attributeCache.ConfigurationValues, cache );
-                        }
-                        else
-                        {
-                            if ( placeholderValues == null )
+                            var sw = System.Diagnostics.Stopwatch.StartNew();
+                            var value = valueGroup.Key;
+                            var attributeValueIds = valueGroup.Select( grp => grp.Id ).ToList();
+                            Field.PersistedValues persistedValues;
+
+                            if ( persistedValueSupported )
                             {
-                                placeholderValues = Helper.GetPersistedValuePlaceholderOrDefault( field, attributeCache.ConfigurationValues );
+                                persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, attributeCache.ConfigurationValues, cache );
+                            }
+                            else
+                            {
+                                if ( placeholderValues == null )
+                                {
+                                    placeholderValues = Helper.GetPersistedValuePlaceholderOrDefault( field, attributeCache.ConfigurationValues );
+                                }
+
+                                persistedValues = placeholderValues;
                             }
 
-                            persistedValues = placeholderValues;
-                        }
-
-                        using ( var rockContext = new RockContext() )
-                        {
-                            rockContext.Database.CommandTimeout = commandTimeout;
-
-                            Helper.BulkUpdateAttributeValueComputedColumns( attributeId, attributeValueIds, value, rockContext  );
-
-                            updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
-
-                            LogTimedMessage( $"Rebuild of {attributeValueIds.Count:N0} dirty values for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
-
-                            if ( attributeCache.IsReferencedEntityFieldType )
+                            using ( var rockContext = new RockContext() )
                             {
-                                sw.Restart();
-                                UpdateDirtyAttributeValueReferences( attributeId, value, attributeValueIds, rockContext );
-                                LogTimedMessage( $"Rebuild of entity references on {attributeValueIds.Count:N0} values for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
+                                rockContext.Database.CommandTimeout = commandTimeout;
+
+                                Helper.BulkUpdateAttributeValueComputedColumns( attributeId, attributeValueIds, value, rockContext );
+
+                                updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
+
+                                LogTimedMessage( $"Rebuild of {attributeValueIds.Count:N0} dirty values for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
+
+                                if ( attributeCache.IsReferencedEntityFieldType )
+                                {
+                                    sw.Restart();
+                                    UpdateDirtyAttributeValueReferences( attributeId, value, attributeValueIds, rockContext );
+                                    LogTimedMessage( $"Rebuild of entity references on {attributeValueIds.Count:N0} values for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
+                                }
                             }
                         }
                     }
+                    catch ( Exception ex )
+                    {
+                        errorMessages.Add( $"Error updating dirty attribute values for attribute #{attributeId}: {ex.Message}" );
+                        ExceptionLogService.LogException( ex );
+                    }
                 }
-                catch ( Exception ex )
-                {
-                    errorMessages.Add( $"Error updating dirty attribute values for attribute #{attributeId}: {ex.Message}" );
-                    ExceptionLogService.LogException( ex );
-                }
+
+                dirtyDictionary = GetDirtyAttributeValues( commandTimeout );
             }
 
             return updatedCount;
@@ -609,6 +619,8 @@ namespace Rock.Jobs
                         av.Id,
                         av.Value
                     } )
+                    .OrderBy( av => av.AttributeId )
+                    .Take( 100_000 ) // Limit this query to 100,000 records at a time to avoid running out of memory.
                     .ToList()
                     .GroupBy( av => av.AttributeId, av => (av.Id, av.Value) )
                     .ToDictionary( grp => grp.Key, grp => grp.ToList() );
