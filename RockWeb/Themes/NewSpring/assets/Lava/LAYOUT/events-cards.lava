@@ -1,0 +1,47 @@
+{% assign fallbackImage = 'Global' | Attribute:'ImageSquare','Url' %}
+{% assign displayCount = 0 | AsInteger %}
+{% assign campusid = campusid | AsInteger %}
+
+<div class="row">
+    {%- for event in Items -%}
+        {%- assign linkages = event.Linkages -%}
+        {%- assign campusLinkage = linkages | Where:'GroupCampusId',campusid | First -%}
+        {%- if campusid != empty and campusLinkage != null -%}
+            {%- assign slug = campusLinkage.UrlSlug | Prepend:'/events/' -%}
+        {%- elseif linkages != empty -%}
+            {%- assign slug = linkages | First | Property:'UrlSlug' | Prepend:'/events/' -%}
+        {%- else -%}
+            {%- assign slug = event.DetailsUrl -%}
+        {%- endif -%}
+        {%- capture imageurl -%}{{ event.ImageSquare | Default:fallbackImage }}{%- endcapture -%}
+        {%- if slug and slug != empty -%}<div class="col-md-4 col-sm-6 col-xs-12 push-bottom xs-push-half-bottom">
+
+            {% assign displayCount = displayCount | Plus:1 %}
+
+            <a href="{{ slug }}" class="text-decoration-none">
+
+                <div class="card ratio ratio-shuare bg-black text-white soft rounded-lg overflow-hidden">
+                    <div class="full-screen background-cover background-center" style="background-image:url('{{ imageurl }}'); opacity: 1;"></div>
+
+                    <div class="ratio-item bring-forward soft hard-bottom clearfix floating floating-left floating-bottom">
+
+                        <p class="position-absolute top-zero right-zero push-top push-right label label-info sans-serif circular display-inline-block push-half-bottom">{{ event.Campus.Name | Default:'All Campuses' }}</p>
+
+                        <div class="floating-item">
+                            <h4 class="text-white push-quarter-bottom">{{ event.Name }}</h4>
+                            {% assign time = event.StartDateTime | Date:'HHmmss' %}
+                            <p>{[ formatDate date:'{{ event.StartDateTime }}' ]}{% if time != '000000' %} - {{ event.StartDateTime | Date:'h:mm tt' }}{% endif %}</p>
+                        </div>
+                    </div>
+
+                    <div class="card-gradient"></div>
+                </div>
+
+            </a>
+
+        </div>{%- endif -%}
+        {%- if displayCount == 3 -%}
+            {%- break -%}
+        {%- endif -%}
+    {%- endfor -%}
+</div>

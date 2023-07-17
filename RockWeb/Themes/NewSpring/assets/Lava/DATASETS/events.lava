@@ -1,0 +1,53 @@
+{%- capture eventsString -%}
+{%- eventitemoccurrence where:'Id != null' iterator:'occurrences' securityenabled:'false' limit:'1000000' -%}[
+    {%- for occurrence in occurrences -%}
+        {%- assign fallbackImageLandscape = 'Global' | Attribute:'EventsImageLandscape','Url' -%}
+        {%- assign fallbackImageSquare = 'Global' | Attribute:'EventsImageSquare','Url' -%}
+        {%- assign calendarItem = occurrence.EventItem.EventCalendarItems | Where:'EventCalendarId',1 | First %}
+        {%- assign scheduledDates = occurrence.Schedule.iCalendarContent | DatesFromICal:'all' -%}
+        {%- assign now = 'Now' | Date -%}
+        {%- assign nowComparable = 'Now' | Date:'yyyyMMddHHmmss' -%}
+        {%- assign duration = occurrence.Schedule.DurationInMinutes -%}
+        {%- assign detailsUrlFirstChar = occurrence.EventItem.DetailsUrl | Slice: 0, 1 -%}
+        {%- for date in scheduledDates -%}{%- assign endDate = date | DateAdd:duration,'m' -%}{%- assign endDateComparable = endDate | Date:'yyyyMMddHHmmss' -%}
+        {%- if endDateComparable > nowComparable -%}{
+            "Id": {{ occurrence.Id | ToJSON }},
+            "EventItemId": {{ occurrence.EventItem.Id | ToJSON }},
+            {%- assign eventName = occurrence.EventItem.Name -%}
+            "Name": {{ occurrence | Attribute:'PublicEventName' | Default:eventName | ToJSON }},
+            "Campus": {
+                "Id": {{ occurrence.Campus.Id | ToJSON }},
+                "Name": {{ occurrence.Campus.Name | ToJSON }},
+            },
+            "CalendarIds": [{%- for eventCalendarItem in occurrence.EventItem.EventCalendarItems -%}{{- eventCalendarItem.EventCalendarId | ToJSON -}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}],
+            "StartDateTime": {{ date | Date:'yyyy-MM-ddTHH:mm:ss' | ToJSON }},
+            "EndDateTime": {{ endDate | Date:'yyyy-MM-ddTHH:mm:ss' | ToJSON }},
+            "Duration": {{ duration | ToJSON }},
+            "LocationDescription": {{ occurrence.Location | Trim | Escape | ToJSON }},
+            "Description": {{ occurrence.EventItem.Description | Trim | Escape | ToJSON }},
+            "Summary": {{ occurrence.EventItem.Summary | Trim | Escape | ToJSON }},
+            "Childcare": {{ occurrence.EventItem | Attribute:'Childcare' | ToJSON }},
+            "IsFeatured": {{ occurrence.EventItem | Attribute:'IsFeatured' | ToJSON }},
+            "IsFeaturedOccurrence": {{ occurrence | Attribute:'IsFeaturedOccurrence' | ToJSON }},
+            "ImageLandscape": {{ occurrence.EventItem | Attribute:'ImageLandscape' | Default:fallbackImageLandscape | ToJSON }},
+            "ImageSquare": {{ occurrence.EventItem | Attribute:'ImageSquare' | Default:fallbackImageSquare | ToJSON }},
+            "Contact": {
+                "PersonAliasId": {{ occurrence.ContactPersonAliasId | ToJSON }},
+                "Email": {{ occurrence.ContactEmail | Default:null | ToJSON }},
+                "Phone": {{ occurrence.ContactPhone | Default:null | ToJSON }},
+            },
+            "DetailsUrl": {{ occurrence.EventItem.DetailsUrl | ToJSON }},
+            "Linkages": [
+                {% for linkage in occurrence.Linkages %}{
+                    "GroupId": {{ linkage.Group.Id | ToJSON }},
+                    "GroupCampusId": {{ linkage.Group.Campus.Id | ToJSON }},
+                    "RegistrationInstanceId": {{ linkage.RegistrationInstanceId | ToJSON }},
+                    "PublicName": {{ linkage.PublicName | ToJSON }},
+                    "UrlSlug": {{ linkage.UrlSlug | ToJSON }},
+                }{% unless forloop.last %},{% endunless %}{% endfor %}
+            ],
+        },{%- endif -%}{%- endfor -%}
+
+    {%- endfor -%}
+]{%- endeventitemoccurrence -%}
+{%- endcapture -%}{%- assign events = eventsString | FromJSON | OrderBy:'StartDateTime' -%}{{ events | ToJSON }}

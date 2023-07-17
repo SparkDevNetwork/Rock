@@ -1,0 +1,429 @@
+:root {
+  --bible-page: #ede4df;
+  --lakeside: #3333cc;
+  --riggs-field: #5f8c46;
+  --prayers-up: #de6588;
+  --tiger-paw: #de7840;
+  --group-hug: #645ca0;
+  --new-wave: #63aece;
+  --dandy-lion: #daba4d;
+  --not-quite-black: #302e35;
+  --gatorade: #c0d164;
+  --heat-stroke: #da5e56;
+  --lakeside-darker: #262698;
+  --riggs-field-darker: #3c592c;
+  --prayers-up-darker: #ab4e69;
+  --tiger-paw-darker: #ab5c31;
+  --group-hug-darker: #443f6d;
+  --new-wave-darker: #4b849d;
+  --dandy-lion-darker: #a58d3a;
+  --gatorade-darker: #929e4c;
+  --heat-stroke-darker: #8b3c37;
+}
+
+body {
+  font-family: "colfax-web";
+  letter-spacing: -0.5px;
+}
+
+.container-fluid {
+  padding: 0 !important;
+}
+
+/*
+  
+  Utility Classes
+
+*/
+
+.text-geminis {
+  font-family: bd-geminis, sans-serif !important;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal !important;
+}
+
+.lead {
+  font-weight: 400;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-screen {
+  height: 100vh;
+}
+
+.w-screen {
+  width: 100vw;
+}
+
+.max-w-full {
+  max-width: 100%;
+}
+
+.max-h-full {
+  max-height: 100%;
+}
+
+.min-w-full {
+  min-width: 100%;
+}
+
+.min-h-full {
+  min-height: 100%;
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.opacity-20 {
+  opacity: 0.2;
+}
+
+.opacity-10 {
+  opacity: 0.1;
+}
+
+.opacity-5 {
+  opacity: 0.05;
+}
+
+.object-cover {
+  object-fit: cover;
+}
+
+.page-constrained {
+  max-width: 1200px;
+}
+
+/* 
+
+  COLORS 
+  
+*/
+
+.text-bible-page {
+  color: var(--bible-page);
+}
+.bg-bible-page {
+  background-color: var(--bible-page);
+}
+.fill-bible-page {
+  fill: var(--bible-page);
+}
+
+.text-lakeside {
+  color: var(--lakeside);
+}
+.bg-lakeside {
+  background-color: var(--lakeside);
+}
+.bg-lakeside-darker {
+  background-color: var(--lakeside-darker);
+}
+.fill-lakeside {
+  fill: var(--lakeside);
+}
+
+.text-riggs-field {
+  color: var(--riggs-field);
+}
+.bg-riggs-field {
+  background-color: var(--riggs-field);
+}
+.bg-riggs-field-darker {
+  background-color: var(--riggs-field-darker);
+}
+.fill-riggs-field {
+  fill: var(--riggs-field);
+}
+
+.text-prayers-up {
+  color: var(--prayers-up);
+}
+.bg-prayers-up {
+  background-color: var(--prayers-up);
+}
+.fill-prayers-up {
+  fill: var(--prayers-up);
+}
+
+.text-tiger-paw {
+  color: var(--tiger-paw);
+}
+.bg-tiger-paw {
+  background-color: var(--tiger-paw);
+}
+.bg-tiger-paw-darker {
+  background-color: var(--tiger-paw-darker);
+}
+.fill-tiger-paw {
+  fill: var(--tiger-paw);
+}
+
+.text-group-hug {
+  color: var(--group-hug);
+}
+.bg-group-hug {
+  background-color: var(--group-hug);
+}
+.bg-group-hug-darker {
+  background-color: var(--group-hug-darker);
+}
+.fill-group-hug {
+  fill: var(--group-hug);
+}
+
+.text-new-wave {
+  color: var(--new-wave);
+}
+.bg-new-wave {
+  background-color: var(--new-wave);
+}
+.bg-new-wave-darker {
+  background-color: var(--new-wave-darker);
+}
+.fill-new-wave {
+  fill: var(--new-wave);
+}
+
+.text-dandy-lion {
+  color: var(--dandy-lion);
+}
+.bg-dandy-lion {
+  background-color: var(--dandy-lion);
+}
+.bg-dandy-lion-darker {
+  background-color: var(--dandy-lion-darker);
+}
+.fill-dandy-lion {
+  fill: var(--dandy-lion);
+}
+
+.text-black {
+  color: var(--not-quite-black);
+}
+.bg-black {
+  background-color: var(--not-quite-black);
+}
+.fill-black {
+  fill: var(--not-quite-black);
+}
+
+.text-gatorade {
+  color: var(--gatorade);
+}
+.bg-gatorade {
+  background-color: var(--gatorade);
+}
+.bg-gatorade-darker {
+  background-color: var(--gatorade-darker);
+}
+.fill-gatorade {
+  fill: var(--gatorade);
+}
+
+.text-heat-stroke {
+  color: var(--heat-stroke);
+}
+.bg-heat-stroke {
+  background-color: var(--heat-stroke);
+}
+.bg-heat-stroke-darker {
+  background-color: var(--heat-stroke-darker);
+}
+.fill-heat-stroke {
+  fill: var(--heat-stroke);
+}
+
+/*
+  
+  Button Overrides
+
+*/
+.btn-primary {
+  background-color: var(--heat-stroke) !important;
+  border-color: var(--heat-stroke) !important;
+  box-shadow: 1px 1px var(--heat-stroke-darker), 2px 2px var(--heat-stroke-darker), 3px 3px var(--heat-stroke-darker), 4px 4px var(--heat-stroke-darker),
+    5px 5px var(--heat-stroke-darker);
+  transition: none;
+}
+
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:focus {
+  background-color: var(--heat-stroke) !important;
+  border-color: var(--heat-stroke) !important;
+  /* box-shadow: none; */
+}
+
+.btn-secondary {
+  background-color: var(--group-hug) !important;
+  border-color: var(--group-hug) !important;
+  box-shadow: 1px 1px var(--group-hug-darker), 2px 2px var(--group-hug-darker), 3px 3px var(--group-hug-darker), 4px 4px var(--group-hug-darker),
+    5px 5px var(--group-hug-darker);
+  transition: none;
+}
+
+.btn-secondary:hover,
+.btn-secondary:active,
+.btn-secondary:focus {
+  background-color: var(--group-hug) !important;
+  border-color: var(--group-hug) !important;
+  /* box-shadow: none; */
+}
+
+/*
+  
+  Text Shadows
+
+*/
+.text-shadow-lakeside {
+  text-shadow: 1px 1px var(--lakeside), 2px 2px var(--lakeside), 3px 3px var(--lakeside), 4px 4px var(--lakeside), 5px 5px var(--lakeside),
+    6px 6px var(--lakeside), 7px 7px var(--lakeside), 8px 8px var(--lakeside);
+}
+
+.text-shadow-riggs-field {
+  text-shadow: 1px 1px var(--riggs-field), 2px 2px var(--riggs-field), 3px 3px var(--riggs-field), 4px 4px var(--riggs-field), 5px 5px var(--riggs-field),
+    6px 6px var(--riggs-field), 7px 7px var(--riggs-field), 8px 8px var(--riggs-field);
+}
+
+.text-shadow-prayers-up {
+  text-shadow: 1px 1px var(--prayers-up), 2px 2px var(--prayers-up), 3px 3px var(--prayers-up), 4px 4px var(--prayers-up), 5px 5px var(--prayers-up),
+    6px 6px var(--prayers-up), 7px 7px var(--prayers-up), 8px 8px var(--prayers-up);
+}
+
+.text-shadow-tiger-paw {
+  text-shadow: 1px 1px var(--tiger-paw), 2px 2px var(--tiger-paw), 3px 3px var(--tiger-paw), 4px 4px var(--tiger-paw), 5px 5px var(--tiger-paw),
+    6px 6px var(--tiger-paw), 7px 7px var(--tiger-paw), 8px 8px var(--tiger-paw);
+}
+
+.text-shadow-group-hug {
+  text-shadow: 1px 1px var(--group-hug), 2px 2px var(--group-hug), 3px 3px var(--group-hug), 4px 4px var(--group-hug), 5px 5px var(--group-hug),
+    6px 6px var(--group-hug), 7px 7px var(--group-hug), 8px 8px var(--group-hug);
+}
+
+.text-shadow-new-wave {
+  text-shadow: 1px 1px var(--new-wave), 2px 2px var(--new-wave), 3px 3px var(--new-wave), 4px 4px var(--new-wave), 5px 5px var(--new-wave),
+    6px 6px var(--new-wave), 7px 7px var(--new-wave), 8px 8px var(--new-wave);
+}
+
+.text-shadow-dandy-lion {
+  text-shadow: 1px 1px var(--dandy-lion), 2px 2px var(--dandy-lion), 3px 3px var(--dandy-lion), 4px 4px var(--dandy-lion), 5px 5px var(--dandy-lion),
+    6px 6px var(--dandy-lion), 7px 7px var(--dandy-lion), 8px 8px var(--dandy-lion);
+}
+
+.text-shadow-gatorade {
+  text-shadow: 1px 1px var(--gatorade), 2px 2px var(--gatorade), 3px 3px var(--gatorade), 4px 4px var(--gatorade), 5px 5px var(--gatorade),
+    6px 6px var(--gatorade), 7px 7px var(--gatorade), 8px 8px var(--gatorade);
+}
+
+.text-shadow-heat-stroke {
+  text-shadow: 1px 1px var(--heat-stroke), 2px 2px var(--heat-stroke), 3px 3px var(--heat-stroke), 4px 4px var(--heat-stroke), 5px 5px var(--heat-stroke),
+    6px 6px var(--heat-stroke), 7px 7px var(--heat-stroke), 8px 8px var(--heat-stroke);
+}
+
+.mark-pattern {
+  background-image: url("./mark-pattern.svg");
+}
+
+section,
+#content {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.col-md-12 {
+  width: 100%;
+}
+
+/*
+  
+  Overrides for Workflow Entry Form
+
+*/
+
+#bid_20689 .panel-block .panel-heading {
+  display: none;
+}
+
+#bid_20689 div[id$="pnlPersonEntrySection"] > .row:first-child,
+#bid_20689 div[id$="pnlPersonEntryRow2"],
+#bid_20689 div[id$="pnlPersonEntryRow1Column2"],
+#bid_20689 div[id$="pePerson1_pnlRow"] {
+  display: none;
+}
+
+#bid_20689 div[id$="pnlPersonEntryRow1Column1"] {
+  width: 100%;
+}
+
+#bid_20689 .panel-body {
+  padding: 0;
+}
+
+#bid_20689 .panel {
+  background-color: transparent;
+}
+
+#bid_20689 div[id$="pnlPersonEntrySection"] + .actions .btn {
+  background-color: var(--group-hug) !important;
+  border-color: var(--group-hug) !important;
+  box-shadow: 1px 1px var(--group-hug-darker), 2px 2px var(--group-hug-darker), 3px 3px var(--group-hug-darker), 4px 4px var(--group-hug-darker),
+    5px 5px var(--group-hug-darker);
+  transition: none;
+}
+
+#bid_20689 div[id$="pnlPersonEntrySection"] + .actions .btn:hover,
+#bid_20689 div[id$="pnlPersonEntrySection"] + .actions .btn:active,
+#bid_20689 div[id$="pnlPersonEntrySection"] + .actions .btn:focus {
+  background-color: var(--group-hug) !important;
+  border-color: var(--group-hug) !important;
+  /* box-shadow: none; */
+}
+
+#bid_20689 label.control-label {
+  color: #ede4df;
+}
+
+#bid_20689 span[id$="pePerson1"] .form-group {
+  width: 100%;
+}
+
+/*
+  
+  Larger Screens
+
+*/
+@media only screen and (min-width: 768px) {
+  .hidden-desktop {
+    display: none;
+  }
+  .block-desktop {
+    display: block !important;
+  }
+
+  #bid_20689 span[id$="pePerson1"] .form-group {
+    width: 50%;
+    float: left;
+  }
+
+  #bid_20689 span[id$="pePerson1"] .form-group:nth-child(2n + 1) {
+    padding-right: 15px;
+  }
+}
