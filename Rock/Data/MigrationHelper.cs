@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using Rock.Jobs;
 using Rock.Model;
 
 namespace Rock.Data
@@ -2179,8 +2180,8 @@ END" );
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="key">The key. Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core_' prefix</param>
-        [Obsolete("Use AddOrUpdateEntityAttribute instead.")]
-        [RockObsolete("1.13")]
+        [Obsolete( "Use AddOrUpdateEntityAttribute instead." )]
+        [RockObsolete( "1.13" )]
         public void AddEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string category, string description, int order, string defaultValue, string guid, string key = null )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
@@ -2249,8 +2250,8 @@ END" );
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core_' prefix</param>
-        [Obsolete("Use AddNewEntityAttributeDeletingAllAttributeValues or AddOrUpdateEntityAttribute instead.")]
-        [RockObsolete("1.13")]
+        [Obsolete( "Use AddNewEntityAttributeDeletingAllAttributeValues or AddOrUpdateEntityAttribute instead." )]
+        [RockObsolete( "1.13" )]
         public void AddNewEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string abbreviatedName, string description, int order, string defaultValue, string guid, string key )
         {
             AddNewEntityAttributeDeletingAllAttributeValues( entityTypeName, fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierValue, name, abbreviatedName, description, order, defaultValue, guid, key );
@@ -2399,9 +2400,9 @@ END" );
                         , 0
                         , '{defaultValue?.Replace( "'", "''" ) ?? string.Empty}'
                         , 0
-                        , {(isRequired == true ? 1 : 0)}
+                        , {( isRequired == true ? 1 : 0 )}
                         , '{guid}')
-                END");
+                END" );
         }
 
         /// <summary>
@@ -4637,7 +4638,7 @@ END
                     , [EntityTypeId] = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{entityTypeGuid}')
                     , [UserSelectable] = {userSelectable.Bit()}
                     , [IsSystem] = {IsSystem.Bit()}
-                    , [IconCssClass] = {(iconCssClass.IsNullOrWhiteSpace() ? "NULL" : $"'{iconCssClass}'")}
+                    , [IconCssClass] = {( iconCssClass.IsNullOrWhiteSpace() ? "NULL" : $"'{iconCssClass}'" )}
                     , [AllowsWatching] = {AllowWatching.Bit()}
                 WHERE [Guid] = '{guid}'" );
         }
@@ -8250,6 +8251,41 @@ END
                 VALUES
                     (1, @AttributeId, @ServiceJobId, N'{value.Replace( "'", "''" )}', NEWID())"
             );
+        }
+
+        /// <summary>
+        /// Creates a new Post Update Job <see cref="Rock.Jobs.PostUpdateJobs.PostUpdateJob" /> to be run on Rock Start Up.
+        /// By default all Post Update Jobs need to be marked active and are system jobs so that they are not accidentally deleted by the admins.
+        /// </summary>
+        /// <param name="name">The Name of the Job as it should be shown on the job list block in the front end</param>
+        /// <param name="description">The brief description of what the job does</param>
+        /// <param name="jobType"></param>
+        /// <param name="cronExpression">The cron expression the job scheduler may use to run the job. For instance: <b>0 15 2 1/1 * ? *</b></param>
+        /// <param name="guid">The Job Guid</param>
+        public void AddPostUpdateServiceJob( string name, string description, string jobType, string cronExpression, string guid )
+        {
+            Migration.Sql( $@"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Guid] = '{guid}' )
+    BEGIN
+        INSERT INTO [ServiceJob] (
+            [IsSystem]
+            ,[IsActive]
+            ,[Name]
+            ,[Description]
+            ,[Class]
+            ,[CronExpression]
+            ,[NotificationStatus]
+            ,[Guid] )
+        VALUES ( 
+            1
+            ,1
+            ,'{name}'
+            ,'{description}'
+            ,'{jobType}'
+            ,'{cronExpression}'
+            ,1
+            ,'{guid}'
+            );
+    END" );
         }
 
         #endregion
