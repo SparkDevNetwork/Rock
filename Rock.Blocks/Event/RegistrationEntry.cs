@@ -1718,7 +1718,7 @@ namespace Rock.Blocks.Event
                   * any time it is called. This prevents us from creating duplicate Person entities for
                   * both the Registrar and first Registrant who are the same person in this scenario.
                 */
-                if ( isCreatedAsRegistrant )
+                if ( isCreatedAsRegistrant && registrar != null )
                 {
                     person = registrar;
                 }
