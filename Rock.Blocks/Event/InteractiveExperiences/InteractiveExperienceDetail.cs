@@ -566,6 +566,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         private static bool UpdateSchedules( InteractiveExperience interactiveExperience, List<InteractiveExperienceScheduleBag> scheduleBags, RockContext rockContext, out string errorMessage )
         {
             var experienceScheduleService = new InteractiveExperienceScheduleService( rockContext );
+            var experienceAnswerService = new InteractiveExperienceAnswerService( rockContext );
             var incomingScheduleGuids = scheduleBags?.Select( s => s.Guid ).ToList() ?? new List<Guid>();
 
             errorMessage = null;
@@ -579,6 +580,13 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     {
                         return false;
                     }
+
+                    var answersToDelete = experienceAnswerService
+                        .Queryable()
+                        .Where( a => a.InteractiveExperienceOccurrence.InteractiveExperienceScheduleId == schedule.Id )
+                        .ToList();
+
+                    experienceAnswerService.DeleteRange( answersToDelete );
 
                     interactiveExperience.InteractiveExperienceSchedules.Remove( schedule );
                     experienceScheduleService.Delete( schedule );
@@ -1196,6 +1204,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             using ( var rockContext = new RockContext() )
             {
                 var actionService = new InteractiveExperienceActionService( rockContext );
+                var answerService = new InteractiveExperienceAnswerService( rockContext );
+                var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
 
                 if ( !TryGetEntityForEditAction( idKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -1208,6 +1218,20 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 {
                     return ActionNotFound( "The specified action was not found." );
                 }
+
+                var answersToDelete = answerService
+                    .Queryable()
+                    .Where( a => a.InteractiveExperienceActionId == action.Id )
+                    .ToList();
+
+                answerService.DeleteRange( answersToDelete );
+
+                var occurrencesToUpdate = occurrenceService
+                    .Queryable()
+                    .Where( o => o.CurrentlyShownActionId == action.Id )
+                    .ToList();
+
+                occurrencesToUpdate.ForEach( o => o.CurrentlyShownActionId = null );
 
                 actionService.Delete( action );
 
