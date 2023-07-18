@@ -875,6 +875,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSendNowResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUpdatePreferenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestDetailAddPersonResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntryInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />

@@ -21,18 +21,5 @@
 // </copyright>
 //
 
-import { ScheduleExclusionBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleExclusionBag";
-
-export type ScheduleDetailOptionsBag = {
-    canDelete: boolean;
-
-    exclusions?: ScheduleExclusionBag[] | null;
-
-    hasAttendance: boolean;
-
-    hasScheduleWarning: boolean;
-
-    helpText?: string | null;
-
-    nextOccurrence?: string | null;
+export type PrayerRequestDetailAddPersonResponseBag = {
 };

@@ -170,7 +170,10 @@
     });
 
     const options = computed((): PrayerRequestDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {
+            isCampusRequired: false,
+            isLastNameRequired: false
+        };
     });
 
     // #endregion

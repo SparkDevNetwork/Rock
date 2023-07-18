@@ -55,9 +55,10 @@ export type PrayerRequestBag = {
     /** Gets or sets the number of times this request has been flagged. */
     flagCount?: number | null;
 
-    /**
-     * Gets or sets the group.
-     */
+    /** Gets the FullName as it needs to be sent to the frontend */
+    fullName?: string | null;
+
+    /** Gets or sets the group. */
     group?: ListItemBag | null;
 
     /** Gets or sets the identifier key of this entity. */
@@ -86,7 +87,4 @@ export type PrayerRequestBag = {
 
     /** Gets or sets the text/content of the request. */
     text?: string | null;
-
-    /** Gets the Full Name of the request. */
-    fullName?: string | null;
 };

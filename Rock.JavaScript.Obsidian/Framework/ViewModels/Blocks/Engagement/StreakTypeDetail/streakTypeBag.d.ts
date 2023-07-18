@@ -34,16 +34,26 @@ export type StreakTypeBag = {
     /** Gets or sets a description of the Streak Type. */
     description?: string | null;
 
-    structureType?: number | null;
-
     /**
      * This determines whether the streak type will write attendance records when marking someone as present or
      * if it will just update the enrolled individual’s map.
      */
     enableAttendance: boolean;
 
+    /** Gets or sets the first day of the week when the frequency is set to weekly */
+    firstDayOfWeek: number;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
+
+    /** Gets or sets the structure settings JSON. */
+    includeChildAccounts: boolean;
+
+    /**
+     * The Guid for the Interaction Channel associated with the Interaction Component.
+     * This is set only if the linked activity is Interaction Component
+     */
+    interactionComponentInteractionChannel?: ListItemBag | null;
 
     /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
@@ -61,7 +71,16 @@ export type StreakTypeBag = {
     requiresEnrollment: boolean;
 
     /** Gets or sets the System.DateTime associated with the least significant bit of all maps in this streak type. */
-    startDate?: string | null
+    startDate?: string | null;
+
+    /** Gets or sets a collection containing the Streaks that are of this streak type. */
+    streaks?: ListItemBag[] | null;
+
+    /**
+     * Gets or sets a collection containing the StreakTypeExclusions
+     * that are of this streak type.
+     */
+    streakTypeExclusions?: ListItemBag[] | null;
 
     /**
      * Gets or sets the Id of the Entity associated with attendance for this streak type. If not set, this streak type
@@ -69,17 +88,9 @@ export type StreakTypeBag = {
      */
     structureEntity?: ListItemBag | null;
 
-    /**
-     * Gets or sets the flag to include the child accounts in case of financial transaction
-     */
-    includeChildAccounts: boolean;
+    /** Gets or sets the attendance association */
+    structureType?: number | null;
 
-    /** Gets or sets the value of the first day of the week when the frequency is set to weekly */
-    firstDayOfWeek?: number | null
-
-    /** The Guid of the interaction channel associated with the interaction component */
-    interactionComponentInteractionChannel?: ListItemBag
-
-    /** The linked type text to be displayed in the frontend in view mode */
-    structureTypeDisplay?: string
+    /** The text display of structure type in view mode in the frontend */
+    structureTypeDisplay?: string | null;
 };

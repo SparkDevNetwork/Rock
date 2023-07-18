@@ -27,17 +27,25 @@ import { FinancialBatchCurrencyTotalsBag } from "@Obsidian/ViewModels/Blocks/Fin
 export type FinancialBatchDetailOptionsBag = {
     accounts?: FinancialBatchAccountTotalsBag[] | null;
 
+    /** The message to be shown on the frontend if the batch is automated. */
+    automatedToolTip?: string | null;
+
     currencyTypes?: FinancialBatchCurrencyTotalsBag[] | null;
 
-    transactionAmount?: number;
+    /** The message to be displayed if the batch is not editable. */
+    editModeMessage?: string | null;
 
-    transactionItemCount?: number;
+    /**
+     * Motive: a user who does not have the ReopenBatch permission should not be able to open a batch
+     * once closed even if they themselves were the ones who closed it.
+     * The front end is required to check this flag and not show the edit block button if the flag is set to true and the batch is closed.
+     */
+    isReopenAuthorized: boolean;
 
-    isStatusChangeDisabled?: boolean;
+    /** The flag which the frontend should use to determine if the status can be edited */
+    isStatusChangeDisabled: boolean;
 
-    isReopenAuthorized?: boolean;
+    transactionAmount: number;
 
-    editModeMessage?: string;
-
-    automatedToolTip?: string;
+    transactionItemCount: number;
 };

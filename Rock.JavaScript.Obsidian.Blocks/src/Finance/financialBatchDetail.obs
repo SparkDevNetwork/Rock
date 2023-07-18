@@ -144,7 +144,12 @@
     });
 
     const options = computed((): FinancialBatchDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {
+            isReopenAuthorized: false,
+            isStatusChangeDisabled: true,
+            transactionAmount: 0,
+            transactionItemCount: 0
+        };
     });
 
     const footerActions = computed((): PanelAction[] => {
