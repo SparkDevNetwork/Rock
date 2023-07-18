@@ -31,15 +31,10 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockSuspense from "@Obsidian/Controls/rockSuspense";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+import { alert, confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
 import { useHttp } from "@Obsidian/Utility/http";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
-
-// Define jQuery and Rock for showing security modal.
-declare function $(value: unknown): unknown;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
-declare const Rock: any;
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -487,8 +482,10 @@ export default defineComponent({
          *
          * @param event The event that triggered this handler.
          */
-        const onSecurityClick = (event: Event): void => {
-            Rock.controls.modal.show($(event.target), `/Secure/${props.entityTypeGuid}/${props.entityKey}?t=Secure ${props.entityTypeName}&pb=&sb=Done`);
+        const onSecurityClick = (): void => {
+            if (props.entityKey) {
+                showSecurity(props.entityTypeGuid, props.entityKey, props.entityTypeName);
+            }
         };
 
         /**

@@ -297,8 +297,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
             var personBenJones = GetWellKnownTestPerson( TestGuids.TestPeople.BenJones, dataContext );
             var personSarahSimmons = GetWellKnownTestPerson( TestGuids.TestPeople.SarahSimmons, dataContext );
 
-            var personAdmin = personAlishaMarble;
-
             var requestDate = _PrayerRequestTestPeriodStartDate;
 
             var prayerRequest = CreateNewPrayerRequest( _PrayerRequestTestPeriodStartDate.AddHours( 19 ).AddMinutes( 30 ),
@@ -319,7 +317,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 2 ).AddHours( 11 ).AddMinutes( 15 ),
                 "At times like these, we may find comfort in the words of Jesus in Matthew 6:25 - if we seek His kingdom first, He has promised that all these things will be added to us.",
                 personMariahJackson.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.FinancesAndJobW1C1 );
 
             noteService.Add( comment1 );
@@ -328,7 +325,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 4 ).AddHours( 7 ),
                 "I feel that God is using this as an opportunity for us as a church to demonstrate His love and genorosity. Let's all open our hearts and give whatever we can to help those who are affected by these difficult times.",
                 personBenJones.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.FinancesAndJobW1C2 );
 
             noteService.Add( comment2 );
@@ -338,7 +334,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 8 ),
                 "While praying through this, I felt God reassuring me with His promise: \"My God shall supply all your needs according to his riches in glory...\"",
                 personSarahSimmons.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.FinancesAndJobW2C1 );
 
             noteService.Add( comment3 );
@@ -374,8 +369,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
             var personBenJones = GetWellKnownTestPerson( TestGuids.TestPeople.BenJones, dataContext );
             var personSarahSimmons = GetWellKnownTestPerson( TestGuids.TestPeople.SarahSimmons, dataContext );
 
-            var personAdmin = personAlishaMarble;
-
             var requestDate = _PrayerRequestTestPeriodStartDate;
 
             var prayerRequest = CreateNewPrayerRequest( _PrayerRequestTestPeriodStartDate,
@@ -395,7 +388,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 2 ),
                 "I am upholding you in prayer, claiming the promise that God will provide for your needs according to His riches in glory!",
                 personSarahSimmons.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.TedDecker11 );
 
             noteService.Add( comment1 );
@@ -404,7 +396,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 4 ),
                 "Hang in there Ted, we are praying for you!",
                 personBenJones.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.TedDecker12 );
 
             noteService.Add( comment2 );
@@ -414,7 +405,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 8 ),
                 "Ted, I hope you find this scripture encouraging: [Psalm 90:17] \"May the favor of the Lord our God rest on us; establish the work of our hands for us — yes, establish the work of our hands.\"",
                 personSarahSimmons.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.TedDecker21 );
 
             noteService.Add( comment3 );
@@ -423,7 +413,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                  requestDate.AddDays( 10 ),
                  "We are praying for you - if there is anything we can do to help you during this time please let us know.",
                  personMariahJackson.PrimaryAliasId.Value,
-                 personAdmin.PrimaryAliasId.Value,
                  TestGuids.PrayerRequestCommentGuid.TedDecker22 );
 
             noteService.Add( comment4 );
@@ -457,8 +446,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
             var personBenJones = GetWellKnownTestPerson( TestGuids.TestPeople.BenJones, dataContext );
             var personSarahSimmons = GetWellKnownTestPerson( TestGuids.TestPeople.SarahSimmons, dataContext );
 
-            var personAdmin = personAlishaMarble;
-
             // Add new Prayer Request
             var requestDate = _PrayerRequestTestPeriodStartDate.AddDays( 4 );
 
@@ -482,7 +469,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 2 ),
                 "I am upholding you in prayer, claiming the promise that God will provide for your needs according to His riches in glory!",
                 personSarahSimmons.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.MariahJacksonComment1 );
 
             noteService.Add( comment1 );
@@ -491,7 +477,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 4 ),
                 "Remember that your mother is being cared for by Jehovah-Rapha, our God of healing.",
                 personBenJones.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.MariahJacksonComment2 );
 
             noteService.Add( comment2 );
@@ -501,7 +486,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 8 ),
                 "I hope you find this scripture encouraging: [Psalm 90:17] \"May the favor of the Lord our God rest on us; establish the work of our hands for us— yes, establish the work of our hands.\"",
                 personSarahSimmons.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.MariahJacksonComment3 );
 
             noteService.Add( comment3 );
@@ -529,8 +513,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
             var personBenJones = GetWellKnownTestPerson( TestGuids.TestPeople.BenJones, dataContext );
             var personSarahSimmons = GetWellKnownTestPerson( TestGuids.TestPeople.SarahSimmons, dataContext );
 
-            var personAdmin = personAlishaMarble;
-
             // Add new Prayer Request
             var requestDate = _PrayerRequestTestPeriodStartDate.AddDays( 9 );
 
@@ -552,7 +534,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 2 ).AddHours( 6 ).AddMinutes( 30 ),
                 "Ben, I've sent a little something in the mail for you that should help toward that car - let's both praise God for his blessings!",
                 personAlishaMarble.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.BenJonesComment1 );
 
             noteService.Add( comment1 );
@@ -561,7 +542,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddDays( 4 ).AddHours( 15 ).AddMinutes( 30 ),
                 "[Private] I was praying about your need and a friend of mine mentioned that they are getting a company vehicle soon and would like to donate their current family car to you!",
                 personSarahSimmons.PrimaryAliasId.Value,
-                personAdmin.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.BenJonesComment2 );
 
             comment2.IsPrivateNote = true;
@@ -591,8 +571,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
             var personBenJones = GetWellKnownTestPerson( TestGuids.TestPeople.BenJones, dataContext );
             var personSarahSimmons = GetWellKnownTestPerson( TestGuids.TestPeople.SarahSimmons, dataContext );
 
-            var personAdmin = personAlishaMarble;
-
             // Add new Prayer Request
             var requestDate = _PrayerRequestTestPeriodStartDate;
 
@@ -614,7 +592,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 requestDate.AddHours( 6 ).AddMinutes( 30 ),
                 "I pray that I would have similar 'afflictions'!",
                 personBenJones.PrimaryAliasId.Value,
-                personMariahJackson.PrimaryAliasId.Value,
                 TestGuids.PrayerRequestCommentGuid.SarahSimmonsComment1 );
 
             noteService.Add( comment1 );
@@ -687,7 +664,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
                 {
                     var commentByPerson = commentCandidateList.GetRandomElement();
 
-                    var comment = CreateNewPrayerRequestComment( requestId, commentDate, "I am upholding you in prayer!", commentByPerson.PrimaryAliasId.Value, adminPerson.PrimaryAliasId.Value );
+                    var comment = CreateNewPrayerRequestComment( requestId, commentDate, "I am upholding you in prayer!", commentByPerson.PrimaryAliasId.Value );
 
                     noteService.Add( comment );
                 }
@@ -752,7 +729,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
             return prayerRequest;
         }
 
-        private Note CreateNewPrayerRequestComment( int prayerRequestId, DateTime commentDateTime, string text, int createdByPersonAliasId, int approvedByPersonAliasId, string guidText = null )
+        private Note CreateNewPrayerRequestComment( int prayerRequestId, DateTime commentDateTime, string text, int createdByPersonAliasId, string guidText = null )
         {
             var newNote = new Note();
 
@@ -765,8 +742,6 @@ namespace Rock.Tests.Integration.Crm.Prayer
 
             newNote.EntityId = prayerRequestId;
             newNote.Caption = "Prayer Comment";
-            newNote.ApprovalStatus = NoteApprovalStatus.Approved;
-            newNote.ApprovedByPersonAliasId = approvedByPersonAliasId;
             newNote.IsAlert = false;
             newNote.IsPrivateNote = false;
             newNote.Text = text;

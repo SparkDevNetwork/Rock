@@ -219,6 +219,7 @@ import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
 import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
 import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
 import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
 import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/interactionChannelInteractionComponentPicker.obs";
@@ -7645,6 +7646,35 @@ const accountPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates new editor */
+const noteTextEditorGallery = defineComponent({
+    name: "NoteTextEditorGallery",
+    components: {
+        GalleryAndResult,
+        NoteTextEditor,
+        CheckBox
+    },
+    setup() {
+        return {
+            value: ref(""),
+            importCode: getSfcControlImportPath("noteTextEditor"),
+            exampleCode: `<NoteTextEditor v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection>
+
+    <NoteTextEditor v-model="value" :avatar="avatar" />
+
+    <template #settings>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates structured content editor */
 const structuredContentEditorGallery = defineComponent({
     name: "StructuredContentEditorGallery",
@@ -8107,6 +8137,7 @@ const controlGalleryComponents: Record<string, Component> = [
     groupTypeGroupPickerGallery,
     groupAndRolePickerGallery,
     accountPickerGallery,
+    noteTextEditorGallery,
     structuredContentEditorGallery,
     registrationInstancePickerGallery,
     interactionChannelInteractionComponentPickerGallery,

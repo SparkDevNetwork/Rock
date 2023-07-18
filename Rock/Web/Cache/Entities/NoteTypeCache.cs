@@ -16,10 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Core;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -113,6 +115,8 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [requires approvals]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
         public bool RequiresApprovals { get; private set; }
 
         /// <summary>
@@ -143,7 +147,17 @@ namespace Rock.Web.Cache
         public int? MaxReplyDepth { get; private set; }
 
         /// <summary>
-        /// Gets or sets the background color of each note
+        /// Gets or sets the base color to use when calculating the color pair for
+        /// notes of this type.
+        /// </summary>
+        /// <value>The base color to use when calculating the color pair.</value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string Color { get; set; }
+
+        /// <summary>
+        /// Gets or sets the background color of each note. This is automatically
+        /// calculated from <see cref="Color"/>.
         /// </summary>
         /// <value>
         /// The color of the background.
@@ -152,12 +166,24 @@ namespace Rock.Web.Cache
         public string BackgroundColor { get; private set; }
 
         /// <summary>
+        /// Gets or sets the foreground color of each note. This is automatically
+        /// calculated from <see cref="Color"/>.
+        /// </summary>
+        /// <value>
+        /// The color of the foreground.
+        /// </value>
+        [DataMember]
+        public string ForegroundColor { get; private set; }
+
+        /// <summary>
         /// Gets or sets the font color of the note text
         /// </summary>
         /// <value>
         /// The color of the font.
         /// </value>
         [DataMember]
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
         public string FontColor { get; private set; }
 
         /// <summary>
@@ -167,6 +193,8 @@ namespace Rock.Web.Cache
         /// The color of the border.
         /// </value>
         [DataMember]
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
         public string BorderColor { get; private set; }
 
         /// <summary>
@@ -176,6 +204,8 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [send approval notifications]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
         public bool SendApprovalNotifications { get; private set; }
 
         /// <summary>
@@ -194,10 +224,27 @@ namespace Rock.Web.Cache
         /// The approval URL template.
         /// </value>
         [DataMember]
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
         public string ApprovalUrlTemplate
         {
             get; private set;
         }
+
+        /// <summary>
+        /// Gets or sets the format the note text is stored in.
+        /// </summary>
+        /// <value>The format the note text is stored in.</value>
+        [DataMember]
+        public NoteFormatType FormatType { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether notes of this type allow
+        /// person mentions to be embedded in the text.
+        /// </summary>
+        /// <value><c>true</c> if person mentions are enabled; otherwise, <c>false</c>.</value>
+        [DataMember]
+        public bool IsMentionEnabled { get; private set; }
 
         #endregion
 
@@ -236,16 +283,42 @@ namespace Rock.Web.Cache
             UserSelectable = noteType.UserSelectable;
             IconCssClass = noteType.IconCssClass;
             Order = noteType.Order;
+#pragma warning disable CS0618 // Type or member is obsolete
             RequiresApprovals = noteType.RequiresApprovals;
+            SendApprovalNotifications = noteType.SendApprovalNotifications;
+            ApprovalUrlTemplate = noteType.ApprovalUrlTemplate;
+            Color = noteType.Color;
+            FontColor = noteType.FontColor;
+            BorderColor = noteType.BorderColor;
+#pragma warning restore CS0618 // Type or member is obsolete
             AllowsWatching = noteType.AllowsWatching;
             AllowsReplies = noteType.AllowsReplies;
             MaxReplyDepth = noteType.MaxReplyDepth;
-            BackgroundColor = noteType.BackgroundColor;
-            FontColor = noteType.FontColor;
-            BorderColor = noteType.BorderColor;
-            SendApprovalNotifications = noteType.SendApprovalNotifications;
             AutoWatchAuthors = noteType.AutoWatchAuthors;
-            ApprovalUrlTemplate = noteType.ApprovalUrlTemplate;
+            FormatType = noteType.FormatType;
+            IsMentionEnabled = noteType.IsMentionEnabled;
+
+            if ( noteType.Color.IsNotNullOrWhiteSpace() )
+            {
+                try
+                {
+                    var color = new Utility.RockColor( noteType.Color );
+                    var pair = Utility.RockColor.CalculateColorPair( color );
+
+                    BackgroundColor = pair.BackgroundColor.ToRGBA();
+                    ForegroundColor = pair.ForegroundColor.ToRGBA();
+                }
+                catch
+                {
+                    BackgroundColor = string.Empty;
+                    ForegroundColor = string.Empty;
+                }
+            }
+            else
+            {
+                BackgroundColor = string.Empty;
+                ForegroundColor = string.Empty;
+            }
         }
 
         /// <summary>

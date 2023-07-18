@@ -4368,6 +4368,116 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Note Editor
+
+        /// <summary>
+        /// Searches for possible mention candidates to display that match the request.
+        /// </summary>
+        /// <param name="options">The options that describe the mention sources to search for.</param>
+        /// <returns>An instance of <see cref="NoteEditorMentionSearchResultsBag"/> that contains the possible matches.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "NoteEditorMentionSearch" )]
+        [Authenticate]
+        [SecurityAction( "FullSearch", "Allows individuals to perform a full search of all individuals in the database." )]
+        [Rock.SystemGuid.RestActionGuid( "dca338b6-9749-427e-8238-1686c9587d16" )]
+        public IHttpActionResult NoteEditorMentionSearch( [FromBody] NoteEditorMentionSearchOptionsBag options )
+        {
+            var restAction = RestActionCache.Get( new Guid( "dca338b6-9749-427e-8238-1686c9587d16" ) );
+            var isFullSearchAllowed = restAction.IsAuthorized( "FullSearch", RockRequestContext.CurrentPerson );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var searchComponent = Rock.Search.SearchContainer.GetComponent( typeof( Rock.Search.Person.Name ).FullName );
+                var allowFirstNameOnly = searchComponent?.GetAttributeValue( "FirstNameSearch" ).AsBoolean() ?? false;
+                var personService = new PersonService( rockContext );
+
+                var personSearchOptions = new PersonService.PersonSearchOptions
+                {
+                    Name = options.Name,
+                    AllowFirstNameOnly = allowFirstNameOnly,
+                    IncludeBusinesses = false,
+                    IncludeDeceased = false
+                };
+
+                // Prepare the basic person search filter that wil be used
+                // for both the "full database" search as well as the priority
+                // list search.
+                var basicPersonSearchQry = personService.Search( personSearchOptions ).AsNoTracking();
+
+                // Get the query to run for a full-database search. The where
+                // clause will make it so we get no results unless full search
+                // is allowed.
+                var searchQry = basicPersonSearchQry
+                    .Where( p => isFullSearchAllowed || p.Id == 0 )
+                    .Select( p => new
+                    {
+                        Person = p,
+                        Priority = false
+                    } );
+
+                // This is intentionally commented out since we don't support
+                // this just yet. But it is here to see the pattern of how to
+                // provide priority search results based on values in the token.
+                //if ( DecryptedToken.GroupId.HasValue )
+                //{
+                //    var groupPersonIdQry = new GroupMemberService( rockContext ).Queryable()
+                //        .Where( gm => gm.GroupId == DecryptedToken.GroupId.Value )
+                //        .Select( gm => gm.PersonId );
+
+                //    var prioritySearchQry = basicPersonSearchQry
+                //        .Where( p => groupPersonIdQry.Contains( p.Id ) )
+                //        .Select( p => new
+                //        {
+                //            Person = p,
+                //            Priority = true
+                //        } );
+
+                //    searchQry = searchQry.Union( prioritySearchQry );
+                //}
+
+                // We want the priority people first and then after that sort by
+                // view count in descending order.
+                //
+                // Then take 50 total items, put it in C# memory and then get the
+                // distinct ones and finally limit to our final 25 people. This
+                // is done because if we do a Distinct() in SQL it will lose the
+                // sorting, but we can't do the sorting after a SQL .Distinct().
+                var people = searchQry
+                    .OrderByDescending( p => p.Priority )
+                    .ThenByDescending( p => p.Person.ViewedCount )
+                    .ThenBy( p => p.Person.Id )
+                    .Select( p => p.Person )
+                    .Take( 50 )
+                    .ToList()
+                    .DistinctBy( p => p.Id )
+                    .Take( 25 )
+                    .ToList();
+
+                var hasMultipleCampuses = CampusCache.All().Count( c => c.IsActive == true ) > 1;
+
+                // Convert the list of people into a collection of mention items.
+                var items = people
+                    .Select( p => new NoteMentionItemBag
+                    {
+                        CampusName = p.PrimaryCampusId.HasValue && hasMultipleCampuses
+                            ? CampusCache.Get( p.PrimaryCampusId.Value )?.CondensedName
+                            : string.Empty,
+                        DisplayName = p.FullName,
+                        Email = p.Email,
+                        Identifier = IdHasher.Instance.GetHash( p.PrimaryAliasId ?? 0 ),
+                        ImageUrl = p.PhotoUrl
+                    } )
+                    .ToList();
+
+                return Ok( new NoteEditorMentionSearchResultsBag
+                {
+                    Items = items
+                } );
+            }
+        }
+
+        #endregion
+
         #region Page Picker
 
         /// <summary>

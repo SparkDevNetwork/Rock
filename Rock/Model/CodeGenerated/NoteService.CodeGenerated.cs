@@ -113,10 +113,18 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Note target, Note source )
         {
             target.Id = source.Id;
+            #pragma warning disable 612, 618
             target.ApprovalsSent = source.ApprovalsSent;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             target.ApprovalStatus = source.ApprovalStatus;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             target.ApprovedDateTime = source.ApprovedDateTime;
+            #pragma warning restore 612, 618
             target.Caption = source.Caption;
             target.EditedByPersonAliasId = source.EditedByPersonAliasId;
             target.EditedDateTime = source.EditedDateTime;

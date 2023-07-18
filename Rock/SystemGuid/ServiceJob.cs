@@ -199,6 +199,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_160_UPDATE_WORKFLOWID_COLUMNS = "2222F9D2-4771-4B21-A630-E696DB0C329A";
 
         /// <summary>
+        /// The Job to run Post v16.0 Data Migrations to update the note data to match the new formatting.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_UPDATE_NOTE_DATA = "3768889a-ba73-4cff-91f9-cc0f92780745";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";

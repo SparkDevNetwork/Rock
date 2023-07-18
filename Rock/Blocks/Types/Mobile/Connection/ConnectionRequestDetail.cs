@@ -19,13 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-
-using OpenXmlPowerTools;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
+using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -354,22 +354,23 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var isEditable = request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             var activitiesViewModel = activities.ToList()
-            .Select( a => new ActivityViewModel
-            {
-                ActivityTypeGuid = a.ConnectionActivityType.Guid,
-                ConnectorGuid = a.ConnectorPersonAlias.Person.Guid,
-                CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
-                IsModifiable = IsActivityModifiable(a),
-                Note = a.Note,
-                Guid = a.Guid,
-                ActivityType = a.ConnectionActivityType.ToString(),
-                Connector = new ConnectorItemViewModel
+                .Select( a => new ActivityViewModel
                 {
-                    FirstName = a.ConnectorPersonAlias.Person.FirstName,
-                    LastName = a.ConnectorPersonAlias.Person.LastName,
-                    PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
-                }
-            } ).ToList();
+                    ActivityTypeGuid = a.ConnectionActivityType.Guid,
+                    ConnectorGuid = a.ConnectorPersonAlias.Person.Guid,
+                    CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
+                    IsModifiable = IsActivityModifiable(a),
+                    Note = a.Note.StripHtml(),
+                    Guid = a.Guid,
+                    ActivityType = a.ConnectionActivityType.ToString(),
+                    Connector = new ConnectorItemViewModel
+                    {
+                        FirstName = a.ConnectorPersonAlias.Person.FirstName,
+                        LastName = a.ConnectorPersonAlias.Person.LastName,
+                        PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
+                    }
+                } )
+                .ToList();
 
             var viewModel = new RequestViewModel
             {
@@ -1605,6 +1606,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
+                var noteService = new NoteService( rockContext );
                 int? connectorAliasId = null;
 
                 // Load the connection request. Include the connection opportunity
@@ -1668,6 +1670,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 requestActivity.ConnectionOpportunityId = request.ConnectionOpportunityId;
                 requestActivity.ConnectionActivityTypeId = activityTypeId;
                 requestActivity.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                var mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( activity.Note, requestActivity.Note );
                 requestActivity.Note = activity.Note;
                 requestActivity.ConnectorPersonAliasId = connectorAliasId;
 
@@ -1675,6 +1678,19 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 connectionRequestActivityService.Add( requestActivity );
 
                 rockContext.SaveChanges();
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            ConnectionRequestMention.CreateNotificationMessage( request, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
+                }
 
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }
@@ -1696,6 +1712,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
                 var connectionRequestService = new ConnectionRequestService( rockContext );
+                var noteService = new NoteService( rockContext );
 
                 var activityToUpdate = activityService.Get( activityGuid );
 
@@ -1742,10 +1759,25 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 activityToUpdate.ConnectionActivityTypeId = connectionActivityType.Id;
                 activityToUpdate.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                var mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( activity.Note, activityToUpdate.Note );
                 activityToUpdate.Note = activity.Note;
                 activityToUpdate.ConnectorPersonAliasId = connectorAliasId;
 
                 rockContext.SaveChanges();
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            ConnectionRequestMention.CreateNotificationMessage( request, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
+                }
+
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }
         }

@@ -104,6 +104,7 @@
     <Compile Include="Core\MoveType.cs" />
     <Compile Include="Core\NcoaType.cs" />
     <Compile Include="Core\NoteApprovalStatus.cs" />
+    <Compile Include="Core\NoteFormatType.cs" />
     <Compile Include="Core\NotificationMessageActionType.cs" />
     <Compile Include="Core\PrintFrom.cs" />
     <Compile Include="Core\PrintTo.cs" />

@@ -63,7 +63,7 @@ namespace Rock.Jobs.PostUpdateJobs
             var jobMigration = new JobMigration( sqlCommandTimeOut );
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            for ( int currentId = startingId; currentId < lastId; currentId += batchSize )
+            for ( int currentId = startingId; currentId <= lastId; currentId += batchSize )
             {
                 // run the sql for the batch
                 jobMigration.Sql( sql, new Dictionary<string, object>
