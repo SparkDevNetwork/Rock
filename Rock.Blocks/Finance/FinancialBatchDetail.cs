@@ -94,8 +94,6 @@ namespace Rock.Blocks.Finance
 
         #endregion
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>

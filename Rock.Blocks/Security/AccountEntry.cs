@@ -337,9 +337,6 @@ namespace Rock.Blocks.Security
         #region IRockObsidianBlockType Implementation
 
         /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
-        /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
             return GetInitializationBox();

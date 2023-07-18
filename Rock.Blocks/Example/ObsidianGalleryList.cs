@@ -45,12 +45,6 @@ namespace Rock.Blocks.Example
     [CustomizedGrid]
     public class ObsidianGalleryList : RockEntityListBlockType<Person>
     {
-        #region Properties
-
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>

@@ -85,7 +85,6 @@ namespace Rock.Blocks.WebFarm
 
         #endregion Keys
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
         private DateTime ChartMaxDate { get => RockDateTime.Now; }
 
         private DateTime? _chartMinDate = null;

@@ -279,6 +279,10 @@ namespace Rock.Blocks
             return RequestContext?.GetPageParameter( name );
         }
 
+        /// <summary>
+        /// Gets the JavaScript file URL to use for this block in Obsidian mode.
+        /// </summary>
+        /// <returns>A string that represents the path.</returns>
         private string GetObsidianFileUrl()
         {
             var type = GetType();
@@ -295,7 +299,7 @@ namespace Rock.Blocks
             // Filename convention is camelCase.
             var fileName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
 
-            return $"/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}";
+            return $"/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}.obs";
         }
 
         /// <summary>

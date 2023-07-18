@@ -405,8 +405,6 @@ namespace Rock.Blocks.Engagement.SignUp
 
         #region Properties
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         public bool IsAuthenticated
         {
             get

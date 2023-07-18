@@ -78,9 +78,6 @@ namespace Rock.Blocks.Workflow.FormBuilder
             public const string AnalyticsPage = "AnalyticsPage";
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>

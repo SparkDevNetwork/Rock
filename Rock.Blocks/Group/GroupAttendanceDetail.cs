@@ -476,9 +476,6 @@ namespace Rock.Blocks.Group
         #region IRockObsidianBlockType Implementation
 
         /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
-        /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
             using ( var rockContext = new RockContext() )

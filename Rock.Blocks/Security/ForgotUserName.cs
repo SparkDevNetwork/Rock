@@ -119,9 +119,6 @@ namespace Rock.Blocks.Security
 
         #region Properties
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         private string ConfirmationPageUrl => this.GetLinkedPageUrl( AttributeKey.ConfirmationPage );
 
         private bool CreateCommunicationRecord => GetAttributeValue( AttributeKey.CreateCommunicationRecord ).AsBoolean();

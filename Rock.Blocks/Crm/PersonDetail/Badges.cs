@@ -108,9 +108,6 @@ namespace Rock.Blocks.Crm.PersonDetail
 
         #endregion
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>

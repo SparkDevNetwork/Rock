@@ -227,8 +227,6 @@ namespace Rock.Blocks.Groups
 
         #endregion
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>

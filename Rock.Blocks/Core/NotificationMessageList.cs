@@ -47,9 +47,6 @@ namespace Rock.Blocks.Core
         #region Properties
 
         /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
-        /// <inheritdoc/>
         public override Version RequiredMobileVersion => new Version( 1, 5, 0, 15 );
 
         #endregion

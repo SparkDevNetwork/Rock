@@ -100,8 +100,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         #endregion
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>

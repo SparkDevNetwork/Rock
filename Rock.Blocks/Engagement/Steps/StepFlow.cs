@@ -117,9 +117,6 @@ namespace Rock.Blocks.Engagement.Steps
         private int currentColorIndex = 0;
         private string[] defaultColors = { "#ea5545", "#f46a9b", "#ef9b20", "#edbf33", "#ede15b", "#bdcf32", "#87bc45", "#27aeef", "#b33dc6" };
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Base Overrides
 
         /// <summary>

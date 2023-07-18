@@ -165,8 +165,6 @@ namespace Rock.Blocks.Group.Scheduling
 
         #region Properties
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         public IDictionary<string, string> PageParameters
         {
             get

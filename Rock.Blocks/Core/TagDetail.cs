@@ -63,8 +63,6 @@ namespace Rock.Blocks.Core
 
         #endregion Keys
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.vue";
-
         #region Methods
 
         /// <inheritdoc/>

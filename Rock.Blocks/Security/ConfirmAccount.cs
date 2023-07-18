@@ -157,9 +157,6 @@ namespace Rock.Blocks.Security
 
         #region Properties
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         private string ActionPageParameter => this.PageParameter( PageParameterKey.Action );
 
         private string CodeConfirmationPageParameter => this.PageParameter( PageParameterKey.CodeConfirmation );

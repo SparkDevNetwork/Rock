@@ -166,8 +166,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         #endregion Keys
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>

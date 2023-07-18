@@ -105,8 +105,6 @@ namespace Rock.Blocks.Utility
 
         #region Properties
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         /// <summary>
         /// Gets the lava template to use when displaying messages.
         /// </summary>

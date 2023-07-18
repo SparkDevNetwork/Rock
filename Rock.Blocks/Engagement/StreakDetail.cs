@@ -70,8 +70,6 @@ namespace Rock.Blocks.Engagement
 
         #endregion Keys
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>

@@ -126,8 +126,6 @@ namespace Rock.Blocks.Prayer
 
         #endregion
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>

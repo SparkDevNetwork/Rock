@@ -97,12 +97,6 @@ namespace Rock.Blocks.Engagement.SignUp
 
         #endregion
 
-        #region Properties
-
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>

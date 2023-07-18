@@ -31,7 +31,7 @@
     import ConfirmAccountAlert from "./ConfirmAccount/confirmAccountAlert.partial.obs";
     import DeleteConfirmation from "./ConfirmAccount/deleteConfirmation.partial.obs";
     import { ChangePasswordEvent, ConfirmAccountEvent, DeleteAccountEvent, ShowChangePasswordViewEvent, ShowDeleteConfirmationViewEvent } from "./ConfirmAccount/events";
-    import { ConfirmAccountView } from "./ConfirmAccount/views";
+    import { ConfirmAccountView } from "./ConfirmAccount/views.partial";
     import { ConfirmAccountViewType, ConfirmAccountViewTypeDescription } from "@Obsidian/Enums/Blocks/Security/ConfirmAccount/confirmAccountViewType";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

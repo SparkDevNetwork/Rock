@@ -712,8 +712,6 @@ namespace Rock.Blocks.Crm
 
         #endregion
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         public override object GetObsidianBlockInitialization()
         {
             return GetInitializationBox();

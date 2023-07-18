@@ -64,12 +64,6 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
         #endregion Keys
 
-        #region Properties
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
