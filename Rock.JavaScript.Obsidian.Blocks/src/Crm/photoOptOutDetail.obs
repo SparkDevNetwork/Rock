@@ -1,0 +1,46 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <div v-if="config.isOptOutSuccessful" class="alert alert-success">
+        You've been opted out and should no longer receive photo requests from us.
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { PhotoOptOutBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoOptOut/PhotoOptOutBag";
+
+    const config = useConfigurationValues<PhotoOptOutBag>();
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Handle any initial error conditions.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config) {
+        blockError.value = "That's odd. We could not find your record in our system. Please contact our office at the number below.";
+    }
+</script>

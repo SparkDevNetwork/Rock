@@ -270,5 +270,12 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.UpdatePersistedAttributeValues">Update Persisted Attribute Values</see> job.
         /// </summary>
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
+
+        /// <summary>
+        /// The Job to run data migration on Schedule Detail, Short Link Detail, Asset Storage Provider,
+        /// Streak Type Detial, Batch Detail, Event Detail, Prayer Request Detail, Streak Detail
+        /// Webforms blocks to chop them to obsidian blocks.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_REPLACE_8_BLOCKS_WITH_OBSIDIAN_BLOCKS = "7EF9B02B-8FA5-4424-93B2-BABB819DC4B9";
     }
 }

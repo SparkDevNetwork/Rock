@@ -152,6 +152,7 @@
     <Compile Include="Rock\Utility\ExtensionMethods\TypeExtensionsTests.cs" />
     <Compile Include="Rock\Communication\EmailAddressFieldValidatorTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\ICollectionExtensionTests.cs" />
+    <Compile Include="Rock\Utility\ExtensionMethods\EnumUtilityExtensionTests.cs" />
     <Compile Include="Rock\Utility\RockColorTests.cs" />
     <Compile Include="Rock\Utility\RockDateTimeHelperTests.cs" />
     <Compile Include="Rock\Utility\RockSerializableListTests.cs" />
@@ -216,6 +217,10 @@
     <ProjectReference Include="..\Rock.Tests.Shared\Rock.Tests.Shared.csproj">
       <Project>{d8de32c9-25da-4897-a750-7dd8755b3d45}</Project>
       <Name>Rock.Tests.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
+      <Project>{05BAAF85-9C53-4CCD-A535-036427B0DF72}</Project>
+      <Name>Rock.ViewModels</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185A31D7-3037-4DAE-8797-0459849A84BD}</Project>

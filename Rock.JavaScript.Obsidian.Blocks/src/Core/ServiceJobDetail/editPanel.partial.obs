@@ -1,0 +1,162 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="notificationEmails"
+                         label="Notification Emails"
+                         help="Additional email addresses that the notification email should be sent to for this job. Emails are sent using the 'Job Notification' system email template. If there are recipients defined in the template, it will send a job notification to those, too. <span class='tip tip-lava'></span>" />
+                <DropDownList label="Job Type"
+                              v-model="jobTypeClass"
+                              :items="jobTypeOptions"
+                              rules="required"
+                              help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>.<br>Examples:<br>Daily at 2:15am: <em>0 15 2 1/1 * ? *</em><br>Every Monday and Friday at 4:30pm: <em>0 30 16 ? * MON,FRI *</em>"/>
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" />
+            </div>
+            <div class="col-md-6">
+                <TextBox label="Cron Expression"
+                         v-model="cronExpression"
+                         rules="required"
+                         @update:modelValue="getCronDescription" />
+                <RockLabel>Cron Description</RockLabel>
+                <p>{{cronDescription}}</p>
+                <NumberBox v-model="historyCount"
+                           rules="gte:0"
+                           label="History Count"
+                           help="The number of job history records to keep for this job instance." />
+                <RockLabel>Last Status Message</RockLabel>
+                <p>{{lastStatusMessage}}</p>
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import NumberBox from "@Obsidian/Controls/numberBox";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { ServiceJobBag } from "@Obsidian/ViewModels/Blocks/Core/ServiceJobDetail/serviceJobBag";
+    import { ServiceJobDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ServiceJobDetail/serviceJobDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ServiceJobBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ServiceJobDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ServiceJobBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    //const notificationSatatus = propertyRef(props.modelValue.name ?? "", "Name");
+    const cronExpression = propertyRef(props.modelValue.cronExpression ?? "", "CronExpression");
+    const historyCount = propertyRef(props.modelValue.historyCount, "HistoryCount");
+    const notificationEmails = propertyRef(props.modelValue.notificationEmails ?? "", "NotificationEmails");
+    const lastStatusMessage = ref(props.modelValue.lastStatusMessage);
+    const cronDescription = ref(props.modelValue.cronDescription);
+    const invokeBlockAction = useInvokeBlockAction();
+    const jobTypeOptions = props.options.jobTypeOptions ?? [];
+    const jobTypeClass = propertyRef(props.modelValue.class ?? "", "Class");
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, cronExpression, historyCount, notificationEmails, jobTypeClass];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    async function getCronDescription(cronExpression: string): Promise<void> {
+        let response = await invokeBlockAction<{ cronDescription: string }>("GetCronDescription", {
+            cronExpression: cronExpression
+        });
+        if (response.isSuccess && response.data) {
+            cronDescription.value = response.data.cronDescription;
+        } else {
+            cronDescription.value = "";
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(cronDescription, props.modelValue.cronDescription ?? "");
+        updateRefValue(cronExpression, props.modelValue.cronExpression ?? "");
+        updateRefValue(historyCount, props.modelValue.historyCount);
+        updateRefValue(notificationEmails, props.modelValue.notificationEmails ?? "");
+        updateRefValue(jobTypeClass, props.modelValue.class ?? "");
+
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ServiceJobBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            cronExpression: cronExpression.value,
+            historyCount: historyCount.value,
+            notificationEmails: notificationEmails.value,
+            class: jobTypeClass.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -60,6 +60,10 @@ export default defineComponent({
         isCurrentDateOffset: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -124,6 +128,10 @@ export default defineComponent({
             }
 
             return this.asRockDateTimeOrNull ?? "";
+        },
+
+        isDisabled(): boolean {
+            return this.isCurrent || this.disabled;
         }
     },
 
@@ -225,12 +233,12 @@ export default defineComponent({
         <div class="form-control-group">
             <div class="form-row">
                 <div class="input-group input-width-md js-date-picker date">
-                    <input ref="input" type="text" :id="uniqueId" class="form-control" v-model.lazy="internalDateValue" :disabled="isCurrent" />
+                    <input ref="input" type="text" :id="uniqueId" class="form-control" v-model.lazy="internalDateValue" :disabled="isDisabled" />
                     <span class="input-group-addon">
                         <i class="fa fa-calendar"></i>
                     </span>
                 </div>
-                <BasicTimePicker v-model="internalTimeValue" :disabled="isCurrent" hideClear />
+                <BasicTimePicker v-model="internalTimeValue" :disabled="isDisabled" hideClear />
                 <div v-if="displayCurrentOption" class="input-group">
                     <div class="checkbox">
                         <label title="">
