@@ -78,7 +78,7 @@
 <script setup lang="ts">
     import { computed, onMounted, ref } from "vue";
     import CredentialLogin from "./Login/credentialLogin.partial.obs";
-    import Divider from "./divider.obs";
+    import Divider from "./Login/divider.partial.obs";
     import ExternalLogin from "./Login/externalLogin.partial.obs";
     import LoginMethodPicker from "./Login/loginMethodPicker.partial.obs";
     import PasswordlessLogin from "./Login/passwordlessLogin.partial.obs";
