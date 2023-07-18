@@ -171,10 +171,6 @@
     <Compile Include="Migrations\202307131911270_CodeGenerated_20230713.cs" />
     <Compile Include="Migrations\202307131911270_CodeGenerated_20230713.designer.cs">
       <DependentUpon>202307131911270_CodeGenerated_20230713.cs</DependentUpon>
-	</Compile>
-    <Compile Include="Migrations\202306072319460_ChopDetailBlocks.cs" />
-    <Compile Include="Migrations\202306072319460_ChopDetailBlocks.designer.cs">
-      <DependentUpon>202306072319460_ChopDetailBlocks.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
@@ -1810,9 +1806,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202307131911270_CodeGenerated_20230713.resx">
       <DependentUpon>202307131911270_CodeGenerated_20230713.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202306072319460_ChopDetailBlocks.resx">
-      <DependentUpon>202306072319460_ChopDetailBlocks.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
