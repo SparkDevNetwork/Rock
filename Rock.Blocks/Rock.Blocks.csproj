@@ -93,9 +93,7 @@
     <Compile Include="Cms\MediaAccountDetail.cs" />
     <Compile Include="Cms\MediaFolderDetail.cs" />
     <Compile Include="Cms\PageShortLinkDetail.cs" />
-    <Compile Include="Cms\PageRouteDetail.cs" />
     <Compile Include="Cms\PersistedDatasetDetail.cs" />
-    <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
     <Compile Include="Cms\PageRouteDetail.cs" />
     <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
     <Compile Include="Cms\SiteDetail.cs" />
@@ -116,7 +114,6 @@
     <Compile Include="Crm\BadgeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
     <Compile Include="Bus\QueueDetail.cs" />
-    <Compile Include="Finance\FinancialBatchDetail.cs" />
     <Compile Include="Security\ForgotUserName.cs" />
     <Compile Include="Security\ConfirmAccount.cs" />
     <Compile Include="Security\RestKeyDetail.cs" />

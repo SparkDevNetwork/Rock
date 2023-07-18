@@ -47,8 +47,6 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Blocks\Core\FollowingEventTypeDetail\FollowingEventTypeBag.cs" />
-    <Compile Include="Blocks\Core\FollowingEventTypeDetail\FollowingEventTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
@@ -61,12 +59,8 @@
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSmsOptInFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />
-    <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeBag.cs" />
-    <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\SearchKeyBag.cs" />
     <Compile Include="Blocks\Group\GroupSchedulePreference\PreferencePageContentBag.cs" />
-    <Compile Include="Blocks\Prayer\PrayerRequestDetail\PrayerRequestBag.cs" />
-    <Compile Include="Blocks\Prayer\PrayerRequestDetail\PrayerRequestDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentList\AssessmentListBag.cs" />
