@@ -79,7 +79,9 @@ namespace Rock.Jobs
             var currentBatch = 1;
 
             var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.SLIDING_DATE_RANGE.AsGuid() );
-            totalBatchSize = new AttributeValueService( new RockContext() )
+            var batchSizeQueryContext = new RockContext();
+            batchSizeQueryContext.Database.CommandTimeout = commandTimeout;
+            totalBatchSize = new AttributeValueService( batchSizeQueryContext )
                 .Queryable()
                 .Where( a => a.Attribute.FieldTypeId == fieldType.Id )
                 .Select( a => a.Id )
@@ -91,6 +93,7 @@ namespace Rock.Jobs
             {
                 using ( var rockContext = new RockContext() )
                 {
+                    rockContext.Database.CommandTimeout = commandTimeout;
                     var attributes = new AttributeValueService( rockContext )
                         .Queryable()
                         .Where( a => a.Attribute.FieldTypeId == fieldType.Id && a.Id > lastProcessedAttributeId )
