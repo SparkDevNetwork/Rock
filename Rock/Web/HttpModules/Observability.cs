@@ -41,6 +41,12 @@ namespace Rock.Web.HttpModules
     public class Observability : HttpModuleComponent
     {
         /// <summary>
+        /// This is used to ensure single access when adding the control adapter
+        /// to the browser context.
+        /// </summary>
+        private static readonly object _controlAdapterLock = new object();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Observability"/> class.
         /// </summary>
         public Observability()
@@ -81,7 +87,17 @@ namespace Rock.Web.HttpModules
             // Register a control adapter for handling Rock block events if we have not already registered one
             if ( !context.Request.Browser.Adapters.Contains( typeof( RockBlock ).FullName ) )
             {
-                context.Request.Browser.Adapters.Add( typeof( RockBlock ).FullName, typeof( RockControlAdapter ).FullName );
+                // Browser.Adapters is not a thread-safe dictionary. Make sure
+                // two requests don't modify at the same time.
+                lock ( _controlAdapterLock )
+                {
+                    // Check again since it could have been added before we
+                    // acquired the lock.
+                    if ( !context.Request.Browser.Adapters.Contains( typeof( RockBlock ).FullName ) )
+                    {
+                        context.Request.Browser.Adapters.Add( typeof( RockBlock ).FullName, typeof( RockControlAdapter ).FullName );
+                    }
+                }
             }
 
             // Create activity with the correct prefix
