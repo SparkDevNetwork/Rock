@@ -459,6 +459,7 @@
     <TypeScriptCompile Include="Framework\Enums\Core\moveType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\ncoaType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\noteApprovalStatus.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\noteFormatType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\notificationMessageActionType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\printFrom.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\printTo.ts" />

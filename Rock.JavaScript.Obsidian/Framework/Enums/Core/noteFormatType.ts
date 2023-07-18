@@ -21,28 +21,32 @@
 // </copyright>
 //
 
-/** Represents the approval status of a note */
-/** @deprecated This enum is no longer used and will be removed in the future. */
-export const NoteApprovalStatus = {
-    /** The Note is pending approval. */
-    PendingApproval: 0,
+/** Specifies the format of notes that belong to the NoteType. */
+export const NoteFormatType = {
+    /** The format of the notes is unknown, but assumed to be structured. */
+    Unknown: 0,
 
-    /** The Note has been approved. */
-    Approved: 1,
+    /**
+     * The format of the notes is unstructured data and not compatible
+     * with some of the more advanced features of notes.
+     */
+    Unstructured: 1,
 
-    /** The Note was denied. */
-    Denied: 2
+    /**
+     * The format of the notes is a structured format. Only Rock components
+     * should set the note text value.
+     */
+    Structured: 2
 } as const;
 
-/** Represents the approval status of a note */
-/** @deprecated This enum is no longer used and will be removed in the future. */
-export const NoteApprovalStatusDescription: Record<number, string> = {
-    0: "Pending Approval",
+/** Specifies the format of notes that belong to the NoteType. */
+export const NoteFormatTypeDescription: Record<number, string> = {
+    0: "Unknown",
 
-    1: "Approved",
+    1: "Unstructured",
 
-    2: "Denied"
+    2: "Structured"
 };
 
-/** Represents the approval status of a note */
-export type NoteApprovalStatus = typeof NoteApprovalStatus[keyof typeof NoteApprovalStatus];
+/** Specifies the format of notes that belong to the NoteType. */
+export type NoteFormatType = typeof NoteFormatType[keyof typeof NoteFormatType];

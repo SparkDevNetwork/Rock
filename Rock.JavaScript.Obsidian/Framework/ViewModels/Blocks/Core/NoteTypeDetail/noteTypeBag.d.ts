@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { NoteFormatType } from "@Obsidian/Enums/Core/noteFormatType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -34,12 +35,6 @@ export type NoteTypeBag = {
     /** Gets or sets a value indicating whether [allows watching]. */
     allowsWatching: boolean;
 
-    /**
-     * A optional Lava Template that can be used to general a URL where Notes of this type can be approved
-     * If this is left blank, the Approval URL will be a URL to the page (including a hash anchor to the note) where the note was originally created
-     */
-    approvalUrlTemplate?: string | null;
-
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
@@ -49,26 +44,26 @@ export type NoteTypeBag = {
     /** Gets or sets a value indicating whether [automatic watch authors]. */
     autoWatchAuthors: boolean;
 
-    /** Gets or sets the background color of each note */
-    backgroundColor?: string | null;
-
     /** Gets or sets the Rock.Model.BinaryFileType that will be used for attachments. */
     binaryFileType?: ListItemBag | null;
 
-    /** Gets or sets the border color of each note */
-    borderColor?: string | null;
+    /** Gets or sets the color of each note. */
+    color?: string | null;
 
     /** Gets or sets the Rock.Model.EntityType of the entities that Notes of this NoteType  */
     entityType?: ListItemBag | null;
 
-    /** Gets or sets the font color of the note text */
-    fontColor?: string | null;
+    /** Gets or sets the type of formatting used by notes of this type. */
+    formatType: NoteFormatType;
 
     /** Gets or sets the name of an icon CSS class.  */
     iconCssClass?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
+
+    /** Gets or sets a flag indicating if mentions are supported on this note type. */
+    isMentionEnabled: boolean;
 
     /** Gets or sets a flag indicating that this NoteType is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
@@ -78,12 +73,6 @@ export type NoteTypeBag = {
 
     /** Gets or sets the Name of the NoteType. This property is required. */
     name?: string | null;
-
-    /** Gets or sets a value indicating whether [requires approvals]. */
-    requiresApprovals: boolean;
-
-    /** Gets or sets a value indicating whether [send approval notifications]. */
-    sendApprovalNotifications: boolean;
 
     /** Gets or sets a value indicating whether the type is user selectable. */
     userSelectable: boolean;

@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import TextBox from "@Obsidian/Controls/textBox";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
@@ -29,6 +29,7 @@ import { watchPropertyChanges } from "@Obsidian/Utility/block";
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/NoteTypeDetail/noteTypeBag";
 import { NoteTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteTypeDetail/noteTypeDetailOptionsBag";
+import { NoteFormatType } from "@Obsidian/Enums/Core/noteFormatType";
 
 export default defineComponent({
     name: "Core.NoteTypeDetail.EditPanel",
@@ -71,28 +72,30 @@ export default defineComponent({
         const isSystem = propertyRef(props.modelValue.isSystem, "IsSystem");
         const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
         const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
-        const backgroundColor = propertyRef(props.modelValue.backgroundColor ?? "", "BackgroundColor");
-        const fontColor = propertyRef(props.modelValue.fontColor ?? "", "FontColor");
-        const borderColor = propertyRef(props.modelValue.borderColor ?? "", "BorderColor");
+        const color = propertyRef(props.modelValue.color ?? "", "Color");
         const userSelectable = propertyRef(props.modelValue.userSelectable, "UserSelectable");
-        const requiresApprovals = propertyRef(props.modelValue.requiresApprovals, "RequiresApprovals");
-        const sendApprovalNotifications = propertyRef(props.modelValue.sendApprovalNotifications, "SendApprovalNotifications");
         const allowsWatching = propertyRef(props.modelValue.allowsWatching, "AllowsWatching");
         const autoWatchAuthors = propertyRef(props.modelValue.autoWatchAuthors, "AutoWatchAuthors");
         const allowsReplies = propertyRef(props.modelValue.allowsReplies, "AllowsReplies");
         const maxReplyDepth = propertyRef(props.modelValue.maxReplyDepth, "MaxReplyDepth");
         const allowsAttachments = propertyRef(props.modelValue.allowsAttachments, "AllowsAttachments");
         const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? {}, "BinaryFileTypeId");
-        const approvalUrlTemplate = propertyRef(props.modelValue.approvalUrlTemplate ?? "", "ApprovalUrlTemplate");
+        const formatType = propertyRef(props.modelValue.formatType.toString(), "FormatType");
+        const isMentionEnabled = propertyRef(props.modelValue.isMentionEnabled, "IsMentionEnabled");
 
         // The properties that are being edited. This should only contain
         // objects returned by propertyRef().
-        const propRefs = [name, entityType, iconCssClass, backgroundColor, fontColor, borderColor, userSelectable, requiresApprovals,
-            sendApprovalNotifications, allowsWatching, autoWatchAuthors, allowsReplies, maxReplyDepth, allowsAttachments, binaryFileType, approvalUrlTemplate];
+        const propRefs = [name, entityType, iconCssClass, color, userSelectable,
+            allowsWatching, autoWatchAuthors, allowsReplies, maxReplyDepth, allowsAttachments,
+            binaryFileType, formatType, isMentionEnabled];
 
         // #endregion
 
         // #region Computed Values
+
+        const isChangingToStructuredFormat = computed((): boolean => {
+            return props.modelValue.formatType !== NoteFormatType.Structured && formatType.value === NoteFormatType.Structured.toString();
+        });
 
         // #endregion
 
@@ -111,17 +114,14 @@ export default defineComponent({
             updateRefValue(name, props.modelValue.name ?? "");
             updateRefValue(entityType, props.modelValue.entityType ?? {});
             updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-            updateRefValue(backgroundColor, props.modelValue.backgroundColor ?? "");
-            updateRefValue(fontColor, props.modelValue.fontColor ?? "");
-            updateRefValue(borderColor, props.modelValue.borderColor ?? "");
+            updateRefValue(color, props.modelValue.color ?? "");
             updateRefValue(userSelectable, props.modelValue.userSelectable);
-            updateRefValue(requiresApprovals, props.modelValue.requiresApprovals);
-            updateRefValue(sendApprovalNotifications, props.modelValue.sendApprovalNotifications);
             updateRefValue(allowsWatching, props.modelValue.allowsWatching);
             updateRefValue(maxReplyDepth, props.modelValue.maxReplyDepth);
             updateRefValue(allowsAttachments, props.modelValue.allowsAttachments);
             updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
-            updateRefValue(approvalUrlTemplate, props.modelValue.approvalUrlTemplate ?? "");
+            updateRefValue(formatType, props.modelValue.formatType.toString());
+            updateRefValue(isMentionEnabled, props.modelValue.isMentionEnabled);
         });
 
         // Determines which values we want to track changes on (defined in the
@@ -133,19 +133,16 @@ export default defineComponent({
                 name: name.value,
                 entityType: entityType.value,
                 iconCssClass: iconCssClass.value,
-                backgroundColor: backgroundColor.value,
-                fontColor: fontColor.value,
-                borderColor: borderColor.value,
+                color: color.value,
                 userSelectable: userSelectable.value,
-                requiresApprovals: requiresApprovals.value,
-                sendApprovalNotifications: sendApprovalNotifications.value,
                 allowsWatching: allowsWatching.value,
                 autoWatchAuthors: autoWatchAuthors.value,
                 allowsReplies: allowsReplies.value,
                 maxReplyDepth: maxReplyDepth.value,
                 allowsAttachments: allowsAttachments.value,
                 binaryFileType: binaryFileType.value,
-                approvalUrlTemplate: approvalUrlTemplate.value
+                formatType: parseInt(formatType.value) as NoteFormatType,
+                isMentionEnabled: isMentionEnabled.value
             };
 
             emit("update:modelValue", newValue);
@@ -162,19 +159,17 @@ export default defineComponent({
             isSystem,
             entityType,
             iconCssClass,
-            backgroundColor,
-            fontColor,
-            borderColor,
+            color,
             userSelectable,
-            requiresApprovals,
-            sendApprovalNotifications,
             allowsWatching,
             autoWatchAuthors,
             allowsReplies,
             maxReplyDepth,
             allowsAttachments,
             binaryFileType,
-            approvalUrlTemplate
+            formatType,
+            isMentionEnabled,
+            isChangingToStructuredFormat
         };
     },
 
@@ -196,29 +191,31 @@ export default defineComponent({
             <TextBox v-model="iconCssClass"
                 label="Icon CSS Class" />
 
-            <ColorPicker v-model="backgroundColor"
-                label="Background Color" />
+            <ColorPicker v-model="color"
+                label="Color"
+                help="The base color to use for notes of this type. The background and foreground colors will be automatically calculated from this color." />
+
+            <DropDownList v-model="formatType"
+                label="Content Format"
+                help="Structured format provides additional features and is the default for all new note types. Unstructured is a legacy format that is not checked for correctness and will be removed in the future."
+                :items="formatTypeItems" />
+
+            <NotificationBox v-if="isChangingToStructuredFormat" alertType="warning">
+                Once you change a note type to the Structured format, it cannot be changed back. Be sure this is what you want to do.
+            </NotificationBox>
 
             <ColorPicker v-model="fontColor"
                 label="Font Color" />
 
             <ColorPicker v-model="borderColor"
                 label="Border Color" />
-            
+
         </div>
 
         <div class="col-md-6">
 
             <CheckBox v-model="userSelectable"
                 label="User Selectable"
-                text="Yes" />
-
-            <CheckBox v-model="requiresApprovals"
-                label="Requires Approvals"
-                text="Yes" />
-
-            <CheckBox v-model="sendApprovalNotifications"
-                label="Send Approval Notifications"
                 text="Yes" />
 
             <CheckBox v-model="allowsWatching"
@@ -258,12 +255,14 @@ export default defineComponent({
                 </div>
             </TransitionVerticalCollapse>
 
-            <CodeEditor v-model="approvalUrlTemplate"
-                label="Approval URL Template"
-                help="An optional lava template that can be used to generate a URL where notes of this type can be approved. If this is left blank, the approval URL will be a URL to the page (including a hash anchor to the note) where the note was originally created."
-                theme="rock"
-                mode="text"
-                :editorHeight="200" />
+            <TransitionVerticalCollapse>
+                <div v-if="formatType !== NoteFormatType.Unstructured.toString()">
+                    <CheckBox v-model="isMentionEnabled"
+                        label="Enable Mentions"
+                        text="Yes"
+                        help="Mentions allow a person to be mentioned in the text of a note. Once saved the mentioned person will be notified." />
+                </div>
+            </TransitionVerticalCollapse>
 
         </div>
 

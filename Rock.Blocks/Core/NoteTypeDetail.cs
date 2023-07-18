@@ -178,19 +178,16 @@ namespace Rock.Blocks.Core
                 AllowsAttachments = entity.AllowsAttachments,
                 AllowsReplies = entity.AllowsReplies,
                 AllowsWatching = entity.AllowsWatching,
-                ApprovalUrlTemplate = entity.ApprovalUrlTemplate,
                 AutoWatchAuthors = entity.AutoWatchAuthors,
-                BackgroundColor = entity.BackgroundColor,
                 BinaryFileType = entity.BinaryFileType.ToListItemBag(),
-                BorderColor = entity.BorderColor,
+                Color = entity.Color,
                 EntityType = entity.EntityType.ToListItemBag(),
-                FontColor = entity.FontColor,
+                FormatType = entity.FormatType,
                 IconCssClass = entity.IconCssClass,
+                IsMentionEnabled = entity.IsMentionEnabled,
                 IsSystem = entity.IsSystem,
                 MaxReplyDepth = entity.MaxReplyDepth,
                 Name = entity.Name,
-                RequiresApprovals = entity.RequiresApprovals,
-                SendApprovalNotifications = entity.SendApprovalNotifications,
                 UserSelectable = entity.UserSelectable
             };
         }
@@ -256,41 +253,32 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.AllowsWatching ),
                 () => entity.AllowsWatching = box.Entity.AllowsWatching );
 
-            box.IfValidProperty( nameof( box.Entity.ApprovalUrlTemplate ),
-                () => entity.ApprovalUrlTemplate = box.Entity.ApprovalUrlTemplate );
-
             box.IfValidProperty( nameof( box.Entity.AutoWatchAuthors ),
                 () => entity.AutoWatchAuthors = box.Entity.AutoWatchAuthors );
-
-            box.IfValidProperty( nameof( box.Entity.BackgroundColor ),
-                () => entity.BackgroundColor = box.Entity.BackgroundColor );
 
             box.IfValidProperty( nameof( box.Entity.BinaryFileType ),
                 () => entity.BinaryFileTypeId = box.Entity.AllowsAttachments ? box.Entity.BinaryFileType.GetEntityId<BinaryFileType>( rockContext ) : null );
 
-            box.IfValidProperty( nameof( box.Entity.BorderColor ),
-                () => entity.BorderColor = box.Entity.BorderColor );
+            box.IfValidProperty( nameof( box.Entity.Color ),
+                () => entity.Color = box.Entity.Color );
 
             box.IfValidProperty( nameof( box.Entity.EntityType ),
                 () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ).Value );
 
-            box.IfValidProperty( nameof( box.Entity.FontColor ),
-                () => entity.FontColor = box.Entity.FontColor );
+            box.IfValidProperty( nameof( box.Entity.FormatType ),
+                () => entity.FormatType = box.Entity.FormatType );
 
             box.IfValidProperty( nameof( box.Entity.IconCssClass ),
                 () => entity.IconCssClass = box.Entity.IconCssClass );
+
+            box.IfValidProperty( nameof( box.Entity.IsMentionEnabled ),
+                () => entity.IsMentionEnabled = box.Entity.IsMentionEnabled );
 
             box.IfValidProperty( nameof( box.Entity.MaxReplyDepth ),
                 () => entity.MaxReplyDepth = box.Entity.MaxReplyDepth );
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
-
-            box.IfValidProperty( nameof( box.Entity.RequiresApprovals ),
-                () => entity.RequiresApprovals = box.Entity.RequiresApprovals );
-
-            box.IfValidProperty( nameof( box.Entity.SendApprovalNotifications ),
-                () => entity.SendApprovalNotifications = box.Entity.SendApprovalNotifications );
 
             box.IfValidProperty( nameof( box.Entity.UserSelectable ),
                 () => entity.UserSelectable = box.Entity.UserSelectable );

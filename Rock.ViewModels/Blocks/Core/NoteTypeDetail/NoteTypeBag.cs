@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Enums.Core;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
@@ -37,20 +38,9 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         public bool AllowsWatching { get; set; }
 
         /// <summary>
-        /// A optional Lava Template that can be used to general a URL where Notes of this type can be approved
-        /// If this is left blank, the Approval URL will be a URL to the page (including a hash anchor to the note) where the note was originally created
-        /// </summary>
-        public string ApprovalUrlTemplate { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [automatic watch authors].
         /// </summary>
         public bool AutoWatchAuthors { get; set; }
-
-        /// <summary>
-        /// Gets or sets the background color of each note
-        /// </summary>
-        public string BackgroundColor { get; set; }
 
         /// <summary>
         /// Gets or sets the Rock.Model.BinaryFileType that will be used for attachments.
@@ -58,9 +48,9 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         public ListItemBag BinaryFileType { get; set; }
 
         /// <summary>
-        /// Gets or sets the border color of each note
+        /// Gets or sets the color of each note.
         /// </summary>
-        public string BorderColor { get; set; }
+        public string Color { get; set; }
 
         /// <summary>
         /// Gets or sets the Rock.Model.EntityType of the entities that Notes of this NoteType 
@@ -68,14 +58,19 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         public ListItemBag EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the font color of the note text
+        /// Gets or sets the type of formatting used by notes of this type.
         /// </summary>
-        public string FontColor { get; set; }
+        public NoteFormatType FormatType { get; set; }
 
         /// <summary>
         /// Gets or sets the name of an icon CSS class. 
         /// </summary>
         public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if mentions are supported on this note type.
+        /// </summary>
+        public bool IsMentionEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating that this NoteType is part of the Rock core system/framework. This property is required.
@@ -91,16 +86,6 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         /// Gets or sets the Name of the NoteType. This property is required.
         /// </summary>
         public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [requires approvals].
-        /// </summary>
-        public bool RequiresApprovals { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [send approval notifications].
-        /// </summary>
-        public bool SendApprovalNotifications { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the type is user selectable.
