@@ -79,6 +79,9 @@ namespace Rock.Blocks.CMS
 
         #endregion Keys
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
+
         #region Methods
 
         /// <inheritdoc/>
