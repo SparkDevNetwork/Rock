@@ -59,11 +59,14 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Crm\FamilyPreRegistration.cs" />
     <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
     <Compile Include="Example\ObsidianGalleryList.cs" />
     <Compile Include="Group\GroupAttendanceDetail.cs" />
-    <Compile Include="RockObsidianEntityListBlockType.cs" />
-    <Compile Include="RockObsidianListBlockType.cs" />
+    <Compile Include="RockDetailBlockType.cs" />
+    <Compile Include="RockEntityListBlockType.cs" />
+    <Compile Include="RockListBlockType.cs" />
+    <Compile Include="Reporting\ServiceMetricsEntry.cs" />
     <Compile Include="Group\Scheduling\GroupScheduler.cs" />
     <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
@@ -93,7 +96,6 @@
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="ExtensionMethods\SettingsExtensions.cs" />
-    <Compile Include="IHasCustomActions.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -142,9 +144,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Finance\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="DefaultTvApplication.js" />
   </ItemGroup>

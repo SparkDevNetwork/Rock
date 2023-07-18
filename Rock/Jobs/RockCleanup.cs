@@ -32,6 +32,7 @@ using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -178,18 +179,18 @@ namespace Rock.Jobs
             batchAmount = GetAttributeValue( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
             commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
             lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
-            /* IMPORTANT!! MDP 2020-05-05
+            /* 
+                IMPORTANT!! MDP 2020-05-05
 
-            1 ) Whenever you do a new RockContext() in RockCleanup make sure to set the CommandTimeout, like this:
+                1) Whenever you do a new RockContext() in RockCleanup make sure to set the CommandTimeout, like this:
 
-                var rockContext = new RockContext();
-                rockContext.Database.CommandTimeout = commandTimeout;
+                    var rockContext = new RockContext();
+                    rockContext.Database.CommandTimeout = commandTimeout;
 
-            2) The cleanupTitle parameter on RunCleanupTask should short. The should be short enough so that the summary of all job tasks
-               only shows a one line summary of each task (doesn't wrap)
+                2) The cleanupTitle parameter on RunCleanupTask should short. The should be short enough so that the summary of all job tasks
+                   only shows a one line summary of each task (doesn't wrap)
 
-            3) The cleanupTitle parameter should be in {noun} format (look below for examples)
-
+                3) The cleanupTitle parameter should be in {noun} format (look below for examples)
             */
 
             RunCleanupTask( "exception log", () => this.CleanupExceptionLog() );
@@ -286,6 +287,8 @@ namespace Rock.Jobs
             RunCleanupTask( "update person viewed count", () => UpdatePersonViewedCount() );
 
             RunCleanupTask( "unused person preference", () => RemoveUnusedPersonPreferences() );
+
+            RunCleanupTask( "data view persisted values", () => RemoveUnneededDataViewPersistedValues() );
 
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
@@ -431,6 +434,9 @@ namespace Rock.Jobs
         /// <param name="cleanupMethod">The cleanup method.</param>
         private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod )
         {
+            // Start observability task
+            ObservabilityHelper.StartActivity( $"Task: {cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}" );
+
             var stopwatch = new Stopwatch();
             try
             {
@@ -457,6 +463,9 @@ namespace Rock.Jobs
                     Exception = new RockCleanupException( cleanupTitle, ex )
                 } );
             }
+
+            // Stop observability task
+            Activity.Current?.Dispose();
         }
 
         /// <summary>
@@ -594,6 +603,7 @@ namespace Rock.Jobs
             }
 
             resultCount += AddMissingAlternateIds();
+            resultCount += AddMissingPrimaryAliasIds();
 
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
@@ -772,6 +782,39 @@ namespace Rock.Jobs
             }
 
             return loginCount;
+        }
+
+        /// <summary>
+        /// Adds the missing primary alias ids; limited to 300 records as done when adding missing PersonAliases,
+        /// reason behind this is odds are if the PersonAlias creation was skipped for a record for some reason then
+        /// those same records will have a missing PrimaryAliasId so essentially we are updating the PrimaryAliasId
+        /// column for the Person records whose Aliases were recently added.
+        /// </summary>
+        private int AddMissingPrimaryAliasIds()
+        {
+            int resultCount = 0;
+
+            using ( var personRockContext = CreateRockContext() )
+            {
+                var personService = new PersonService( personRockContext );
+                var personSearchOptions = PersonService.PersonQueryOptions.AllRecords();
+                personSearchOptions.IncludeAnonymousVisitor = false;
+
+                var people = personService.Queryable( personSearchOptions )
+                    .Include( p => p.Aliases )
+                    .Where( p => p.PrimaryAliasId == null )
+                    .Take( 300 );
+
+                foreach ( var person in people )
+                {
+                    person.PrimaryAliasId = person.PrimaryAlias?.Id;
+                    resultCount++;
+                }
+
+                personRockContext.SaveChanges();
+            }
+
+            return resultCount;
         }
 
         /// <summary>
@@ -3054,6 +3097,35 @@ END
         }
 
         #endregion
+
+        /// <summary>
+        /// Removes the persisted values of DataViews that are no longer persisted.
+        /// </summary>
+        /// <returns></returns>
+        private int RemoveUnneededDataViewPersistedValues()
+        {
+            var removePersistedDataViewValueSql = @"
+    DECLARE @dataViewIds table (id int);
+    
+    INSERT INTO @dataViewIds
+    SELECT DISTINCT(dv.Id) FROM DataViewPersistedValue dvpv
+    JOIN DataView dv
+    ON dvpv.DataViewId = dv.Id
+    WHERE dv.PersistedScheduleIntervalMinutes IS NULL 
+    AND dv.PersistedScheduleId IS NULL
+    
+    WHILE (SELECT COUNT(*) FROM DataViewPersistedValue WHERE DataViewId IN (SELECT id from @dataViewIds)) > 0
+    BEGIN
+        DELETE TOP (1500) FROM DataViewPersistedValue WHERE DataViewId IN (SELECT id from @dataViewIds)
+    END
+";
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+                int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
+                return result;
+            }
+        }
 
         /// <summary>
         /// Creates a new <see cref="RockContext"/> that is properly configured

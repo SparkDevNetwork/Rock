@@ -310,6 +310,31 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             } );
         }
 
+
+        [TestMethod]
+        public void EntityCommandBlock_WhereWithLavaEmbeddedInStringLiteral_ResolvesLavaCorrectly()
+        {
+            var template = @"
+{% person where:'BirthDate < ""{{ 'Now' | Date }}"" && LastName == ""Decker"" && NickName == ""Ted""' iterator:'items' %}
+  {% for item in items %}
+    {{ item.NickName }} {{ item.LastName }} ({{ item.BirthDate | Date:'yyyy-MM-dd' }})
+  {% endfor %}
+{% endperson %}
+";
+
+            var expectedOutput = @"Ted Decker (1985-02-10)";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var options = new LavaTestRenderOptions
+                {
+                    EnabledCommands = "rockentity",
+                    IgnoreWhiteSpace = true
+                };
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, options );
+            } );
+        }
+
         /// <summary>
         /// If a custom Lava component encounters an error and the exception handling strategy is set to "render",
         /// the Exception thrown by the component should be visible in the render output because it may contain important configuration information.

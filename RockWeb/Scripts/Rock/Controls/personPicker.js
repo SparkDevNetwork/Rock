@@ -57,7 +57,6 @@
 
                     // make sure that at least one of the search fields has 3 chars in it
                     if ((search.name.length < 3) && (search.address.length < 3) && (search.phone.length < 3) && (search.email.length < 3)) {
-                        console.log('min length 3')
                         return;
                     }
 
@@ -256,6 +255,7 @@
 
                         setSelectedPerson(selectedPersonId, selectedText);
 
+                        $pickerSelect.trigger('onclick');
                         // Fire the postBack for the Select button.
                         var postBackUrl = $pickerSelect.prop('href');
                         if (postBackUrl) {
@@ -312,18 +312,14 @@
 
             $pickerControl.on('mouseenter',
                 function () {
-
                     // only show the X if there is something picked
                     if (($pickerPersonId.val() || '0') !== '0') {
-                        $pickerSelectNone.stop().show();
+                        $pickerSelectNone.addClass('show-hover');
                     }
-                }).on('mouseleave',
-                function () {
-                    $pickerSelectNone.fadeOut(500);
                 });
 
             $pickerCancel.on('click', function () {
-                
+
                 clearSearchFields();
                 $pickerMenu.slideUp(function () {
                     exports.personPickers[controlId].updateScrollbar();
@@ -331,12 +327,17 @@
             });
 
             $pickerSelectNone.on('click', function (e) {
+                // prevent the click from bubbling up to the pickerControl click event
+                e.preventDefault();
+                e.stopPropagation();
 
                 var selectedValue = '0',
                     selectedText = defaultText;
 
                 $pickerPersonId.val(selectedValue);
                 $pickerPersonName.val(selectedText);
+                // run onclick event from the button
+                $(this).trigger('onclick');
             });
 
             // disable the enter key : this will prevent the enter key from clearing the loaded search query.
@@ -409,6 +410,7 @@
                 setSelectedPerson(selectedValue, selectedText);
 
                 // fire the postBack of the btnSelect if there is one
+                $pickerSelect.trigger('onclick');
                 var postBackUrl = $pickerSelect.prop('href');
                 if (postBackUrl) {
                     window.location = postBackUrl;

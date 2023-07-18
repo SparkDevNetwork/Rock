@@ -37,6 +37,11 @@ namespace Rock.Jobs
             DbService.ExecuteCommand( sql, commandTimeout: _commandTimeout );
         }
 
+        public void Sql( string sql, Dictionary<string, object> parameters )
+        {
+            DbService.ExecuteCommand( sql, parameters: parameters, commandTimeout: _commandTimeout );
+        }
+
         public object SqlScalar( string sql )
         {
             return DbService.ExecuteScaler( sql );

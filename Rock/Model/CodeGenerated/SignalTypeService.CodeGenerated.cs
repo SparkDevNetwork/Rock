@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,47 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// SignalType View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( SignalType ) )]
-    public partial class SignalTypeViewModelHelper : ViewModelHelper<SignalType, SignalTypeBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override SignalTypeBag CreateViewModel( SignalType model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new SignalTypeBag
-            {
-                IdKey = model.IdKey,
-                Description = model.Description,
-                Name = model.Name,
-                Order = model.Order,
-                SignalColor = model.SignalColor,
-                SignalIconCssClass = model.SignalIconCssClass,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -171,20 +126,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static SignalTypeBag ToViewModel( this SignalType model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new SignalTypeViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

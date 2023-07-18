@@ -124,7 +124,7 @@ export const NoFilter = createFilter(_ => true);
 /**
  * A filter that returns `true` if `attendance.didAttend == true`.
  */
-export const DidAttendFilter = createFilter(attendance => attendance.didAttend);
+export const DidAttendFilter = createFilter(attendance => !!attendance.didAttend);
 
 // Cache "last name starts with" filters.
 const lastNameStartsWithFilters: Record<string, IAttendanceFilter> = {};

@@ -133,8 +133,6 @@
     const category = propertyRef(props.modelValue.category ?? null, "Category");
     const entityTypeGuid = EntityType.Snippet;
 
-    console.log(ownerPersonAlias);
-
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, content, name, ownerPersonAlias, category];
@@ -170,7 +168,8 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, ...propRefs], () => {
+    watch([attributeValues, isShared, ...propRefs], () => {
+
         const newValue: SnippetBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -178,7 +177,7 @@
             isActive: isActive.value,
             content: content.value,
             name: name.value,
-            ownerPersonAlias: ownerPersonAlias.value,
+            ownerPersonAlias: isShared.value ? null : ownerPersonAlias.value,
             category: category.value
         };
 

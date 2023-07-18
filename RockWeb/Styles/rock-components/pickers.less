@@ -4,9 +4,13 @@
 
 @picker-menu-padding: 8px;
 
-.picker {
-  .clearfix();
+.picker-select {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
 
+.picker {
   @media @sm {
     position: relative;
     width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
@@ -36,38 +40,30 @@
   }
 
   .picker-label {
-    float: left;
-    width: 225px;
-    max-width: ~"calc(100% - 25px)";
+    display: flex;
+    align-items: center;
+    width: 100%;
     padding: @input-padding-y @input-padding-x;
     font-size: @font-size-base;
     line-height: @line-height-computed;
     color: @input-color;
+    cursor: pointer;
     background-color: @input-bg;
     border: 1px solid @input-border;
     border-radius: @border-radius-base;
+    gap: 6px;
+
     &:hover {
       text-decoration: none;
     }
 
-    i {
-      float: left;
-      margin-right: 6px;
-      line-height: inherit;
-      vertical-align: bottom;
-    }
-
     span {
-      float: left;
-      width: ~"calc(100% - 42px)";
+      flex: 1 1 0;
+      min-height: @line-height-computed;
       overflow: hidden;
       line-height: inherit;
       text-overflow: ellipsis;
       white-space: nowrap;
-    }
-
-    .fa.fa-caret-down {
-      margin-top: 3px;
     }
 
     .has-error & {
@@ -103,10 +99,18 @@
   }
 
   .picker-select-none {
-    display: block;
-    float: left;
-    margin: 6px 0 0 6px;
-    cursor: pointer;
+    padding: 1px 6px;
+    font-size: 12px;
+    background: transparent;
+    color: fade(@input-color, 20%);
+    border-radius: 50%;
+    outline: none;
+
+    &:hover,
+    &:focus {
+      background: fade(@input-color, 10%);
+      color: inherit;
+    }
   }
 
   .scroll-container-picker {
@@ -153,8 +157,9 @@
 
   .picker-menu {
     width: 400px;
+    max-height: none; // Added to fix issue where picker paints incorrectly in modals.
     padding: @picker-menu-padding;
-    max-height: auto; // Added to fix issue where picker paints incorrectly in modals.
+    will-change: height;
 
     @media (max-width: @screen-xs-max) {
       position: static;
@@ -238,11 +243,11 @@
       float: left;
       width: 70px;
       height: 70px;
-      border-radius: 50%;
       margin-right: 8px;
       background-position: 50%;
       background-size: cover;
       border: 1px solid @photo-border;
+      border-radius: 50%;
     }
 
     .label.pull-right {
@@ -272,7 +277,24 @@
   }
 
   &.picker-person {
-    .picker-select {
+    .picker-select-none {
+      display: none;
+    }
+
+    .show-hover {
+      display: block;
+      // visibility: hidden;
+      color: transparent
+    }
+
+    .picker-label:hover .show-hover,
+    .picker-label:focus .show-hover,
+    .show-hover:focus {
+      // visibility: visible;
+      color: inherit;
+    }
+
+    .picker-select-list {
       padding: 0;
       list-style: none;
     }
@@ -308,11 +330,7 @@
   &.picker-lg {
     @media @sm {
       position: relative;
-      width: 350px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
-    }
-
-    .picker-label {
-      width: 325px;
+      width: 350px;
     }
   }
 }

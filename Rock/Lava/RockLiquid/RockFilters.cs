@@ -6271,6 +6271,49 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets the IdKey hash from IEntity or an integer Id value.
+        /// </summary>
+        /// <param name="input">The input object.</param>
+        /// <returns>An <see cref="IEntity"/> object or the original <paramref name="input"/>.</returns>
+        public static string ToIdHash( object input )
+        {
+            int? entityId = null;
+
+            if ( input is int )
+            {
+                entityId = Convert.ToInt32( input );
+            }
+
+            if ( input is IEntity )
+            {
+                IEntity entity = input as IEntity;
+                entityId = entity.Id;
+            }
+
+            if ( !entityId.HasValue )
+            {
+                return null;
+            }
+
+            return IdHasher.Instance.GetHash( entityId.Value );
+        }
+
+        /// <summary>
+        /// Gets the integer value from from a key-hash string.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int? FromIdHash( string input )
+        {
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return null;
+            }
+
+            return IdHasher.Instance.GetId( input );
+        }
+
+        /// <summary>
         /// Gets the current person.
         /// </summary>
         /// <param name="context">The context.</param>

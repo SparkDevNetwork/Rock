@@ -39,6 +39,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
     [Category( "{{ Domain }}" )]
     [Description( "Displays a list of {{ EntityName | SplitCase | Downcase | Pluralize }}." )]
     [IconCssClass( "fa fa-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the {{ EntityName | SplitCase | Downcase }} details.",
@@ -47,7 +48,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
     [Rock.SystemGuid.EntityTypeGuid( "{{ '' | UniqueIdentifier }}" )]
     [Rock.SystemGuid.BlockTypeGuid( "{{ '' | UniqueIdentifier }}" )]
     [CustomizedGrid]
-    public class {{ EntityName }}List : RockObsidianEntityListBlockType<{{ EntityName }}>
+    public class {{ EntityName }}List : RockEntityListBlockType<{{ EntityName }}>
     {
         #region Keys
 

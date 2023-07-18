@@ -287,7 +287,7 @@ namespace Rock.Model
         #endregion Virtual Methods
 
         /// <summary>
-        /// Gets a worklfow attribute value.
+        /// Gets a workflow attribute value.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="formatted">if set to <c>true</c> [formatted].</param>

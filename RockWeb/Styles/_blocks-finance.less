@@ -10,90 +10,8 @@
 // 1. Contributions
 // -------------------------
 
-// Decrease the size of the currency symbol. Used on Giving Overview KPIs.
-.currency-span {
-  display: inline-block;
-
-  > span {
-    font-size: .6em;
-    vertical-align: top;
-  }
-}
-
 .contribution-payment .tab-content {
   margin-top: @spacing-md-px;
-}
-
-.card-visa,
-.card-mastercard,
-.card-amex,
-.card-discover,
-.card-diners,
-.card-jcb {
-  display: inline-block;
-  width: 50px;
-  height: @spacing-lg-px;
-  overflow: hidden;
-  text-align: left;
-  text-indent: -999px;
-  background: url("../../../Assets/Images/sprite-cards.png") 0 0 no-repeat;
-}
-
-.card-mastercard {
-  background-position: -55px 0;
-}
-
-.card-amex {
-  background-position: -110px 0;
-}
-
-.card-discover {
-  background-position: -165px 0;
-}
-
-.card-diners {
-  background-position: -220px 0;
-}
-
-.card-jcb {
-  background-position: -660px 0;
-}
-
-.is-visa li,
-.is-mastercard li,
-.is-amex li,
-.is-discover li,
-.is-diners li,
-.is-jcb li,
-.is-nothing li {
-  opacity: .2;
-}
-
-.is-visa li.card-visa,
-.is-mastercard li.card-mastercard,
-.is-amex li.card-amex,
-.is-discover li.card-discover,
-.is-diners li.card-diners,
-.is-jcb li.card-jcb {
-  opacity: 1;
-}
-
-// Giving Overview Block Inactive Giver
-.inactive-giving {
-  position: relative;
-  opacity: .85;
-
-  &::before {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    bottom: -8px;
-    left: -8px;
-    z-index: -10;
-    content: " ";
-    background: fade(@ui-2, 100%);
-    border-radius: @border-radius-base;
-  }
 }
 
 // 2. Scheduled Transactions
@@ -134,117 +52,6 @@
   border: 2px solid @photo-border;
 }
 
-.transaction-matching {
-  .progress {
-    flex: 0 0 30%;
-    float: left;
-    width: 30%;
-    margin-bottom: 0;
-  }
-
-  .transaction-matching-details {
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-direction: column;
-    flex-direction: column;
-
-    .header {
-      -ms-flex: 1 1 auto;
-      flex: 1 1 auto;
-    }
-
-    .body {
-      -ms-flex: 1 1 auto;
-      flex: 1 1 auto;
-    }
-
-    .picker .picker-menu {
-      margin-top: -149px;
-    }
-  }
-
-  &.is-fullscreen {
-    .transaction-matching-details {
-      max-height: ~"calc(100vh - 145px)";
-      overflow-y: auto;
-    }
-
-    .actions {
-      margin-top: 15px;
-    }
-  }
-}
-
-
-.give-box {
-  position: relative;
-  height: 100px;
-  font-size: 100px;
-
-  input {
-    position: relative;
-    z-index: 1;
-    display: block;
-    width: 100%;
-    height: 100px;
-    padding: 0;
-    font-size: 100px;
-    line-height: 1;
-    text-align: center;
-    background: 0;
-    border: 0;
-
-    &:focus {
-      outline: none;
-    }
-  }
-
-  .decorator {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-pack: center;
-    -webkit-justify-content: center;
-    justify-content: center;
-    line-height: 1;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-box-pack: center;
-  }
-
-  .wrapper {
-    position: relative;
-    z-index: 0;
-    line-height: 1;
-    border-bottom: 1px solid #fff;
-  }
-
-  .currency-symbol {
-    position: absolute;
-    left: -24px;
-    display: inline-block;
-    width: 24px;
-    font-size: 32px;
-    text-align: center;
-    vertical-align: super;
-  }
-
-  .shadow-amount {
-    color: rgba(0,0,0,0);
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-}
-
 .transaction-entry-v2 {
   max-width: 600px;
   margin: 0 auto;
@@ -270,12 +77,6 @@
 
 .amount-summary {
   text-align: center;
-}
-
-.gateway-hosted-payment {
-  padding: 15px 15px 0;
-  margin-bottom: 15px;
-  border: 1px solid @panel-default-border;
 }
 
 .gateway-type-selector {
@@ -307,25 +108,3 @@
   }
 }
 
-.trend-bar {
-  height: 11px;
-  margin-top: 4px;
-
-  li {
-    float: left;
-    height: 100%;
-
-    span {
-      display: flex;
-      height: 100%;
-      margin-right: 2px;
-      background: @persondetails-badge-color;
-    }
-  }
-}
-
-.percentile-giving {
-  @media (min-width: @screen-sm) {
-    border-left: 1px solid @panel-border;
-  }
-}

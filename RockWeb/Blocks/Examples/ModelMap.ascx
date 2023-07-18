@@ -128,9 +128,10 @@
                             </small>
                         </div>
 
-                        <div>
-                            <h4 class="font-weight-medium rollover-container border-bottom border-gray-400 pb-1 mb-2"><asp:Literal ID="lClassName" runat="server" /> <asp:HyperLink ID="hlAnchor" runat="server" CssClass="text-color margin-l-sm small rollover-item"><i class="fa fa-xs fa-link"></i></asp:HyperLink></h4>
+                        <div id="divClass" runat="server">
+                            <h4 class="font-weight-medium rollover-container border-bottom border-gray-400 pb-1 mb-2"><asp:Literal ID="lClassName" runat="server" /> <asp:Literal ID="lActualTableName" runat="server" /> <asp:HyperLink ID="hlAnchor" runat="server" CssClass="text-color margin-l-sm small rollover-item"><i class="fa fa-xs fa-link"></i></asp:HyperLink></h4>
                             <asp:Literal ID="lClassDescription" runat="server" />
+                            <asp:Literal ID="lClassExample" runat="server" />
                         </div>
 
                         <asp:Literal ID="lClasses" runat="server" ViewStateMode="Disabled"></asp:Literal>

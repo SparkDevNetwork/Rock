@@ -41,13 +41,14 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <summary>
     /// Block used for finding a sign-up group/project.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IHasCustomActions" />
 
     [DisplayName( "Sign-Up Finder" )]
     [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Block used for finding a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -265,7 +266,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [Rock.SystemGuid.EntityTypeGuid( "BF09747C-786D-4979-BADF-2D0157F4CB21" )]
     [Rock.SystemGuid.BlockTypeGuid( "74A20402-00DF-4A87-98D1-B5A8920F1D32" )]
     [ContextAware( typeof( Campus ), IsConfigurable = true )]
-    public class SignUpFinder : RockObsidianBlockType, IHasCustomActions
+    public class SignUpFinder : RockBlockType, IHasCustomActions
     {
         #region Keys & Constants
 
@@ -404,7 +405,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
         #region Properties
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         public bool IsAuthenticated
         {

@@ -141,6 +141,7 @@ namespace Rock.Model
                 sortProperty = new SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
             }
 
+            Type returnType = null;
             IQueryable<IEntity> dataViewQuery;
             var personEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
             if ( this.EntityTypeId.HasValue && this.EntityTypeId.Value == personEntityTypeId && serviceInstance is PersonService personService )
@@ -152,6 +153,7 @@ namespace Rock.Model
 
                 */
 
+                returnType = typeof( Person );
                 dataViewQuery = personService.Queryable( this.IncludeDeceased ).Where( paramExpression, whereExpression, sortProperty );
             }
             else
@@ -162,11 +164,44 @@ namespace Rock.Model
                     throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine IService.Get for Report: {this}" );
                 }
 
+                // Get the specific, underlying IEntity type implementation (i.e. Group).
+                var genericArgs = getMethod.ReturnType.GetGenericArguments();
+                if ( genericArgs.Length > 0 )
+                {
+                    returnType = genericArgs.First();
+                }
+
                 dataViewQuery = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } ) as IQueryable<IEntity>;
             }
 
             // Add a comment to the query with the data view id for debugging.
-            dataViewQuery = dataViewQuery.TagWith( $"Data View Id: {this.Id}" );
+            /*
+                6/21/2023 - JPH
+
+                When calling the TagWith() method without explicitly specifying the underlying IEntity implementation type,
+                it will add a ParameterExpression of type IEntity to the query, which prevents the successful casting of the
+                returned IQueryable<IEntity> to a specific IEntity implementation (i.e. IQueryable<Group>). Many callers of
+                this GetQuery() method have a tendency to do exactly that: cast the resulting IQueryable to a specific type.
+                Rather than change all of those callers' handling of this return type, we'll use reflection below to ensure
+                we're passing the correct underlying type to the TagWith() method, so it doesn't handcuff our usage of the
+                returned IQueryable.
+
+                Reason: TagWith() in certain situations is causing query to be null
+                (https://app.asana.com/0/474497188512037/1204855716691596/f)
+             */
+            if ( returnType != null )
+            {
+                var tagWithMethod = typeof( TagWithExtensions ).GetMethod( "TagWith" );
+                if ( tagWithMethod != null )
+                {
+                    tagWithMethod = tagWithMethod.MakeGenericMethod( returnType );
+                    dataViewQuery = tagWithMethod.Invoke( null, new object[]
+                    {
+                        dataViewQuery,
+                        $"Data View Id: {this.Id}" // Here is where we're specifying the "tag" to be added.
+                    } ) as IQueryable<IEntity>;
+                }
+            }
 
             return dataViewQuery;
         }

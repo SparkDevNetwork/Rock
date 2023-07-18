@@ -1,5 +1,13 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PrayerSession.ascx.cs" Inherits="RockWeb.Blocks.Prayer.PrayerSession" %>
-
+<style>
+.prayer-session .panel-note {
+	 border: 0;
+	 box-shadow: none;
+}
+ .prayer-session .panel-note > .panel-body {
+	 padding: 0;
+}
+ </style>
 <asp:UpdatePanel ID="upPrayerSession" runat="server" UpdateMode="Always">
     <ContentTemplate>
 

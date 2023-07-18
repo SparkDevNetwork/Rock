@@ -60,13 +60,19 @@ namespace Rock.Jobs
         /// Gets the service job.
         /// </summary>
         /// <value>The service job.</value>
-        private Rock.Model.ServiceJob ServiceJob { get; set; }
+        protected Rock.Model.ServiceJob ServiceJob { get; set; }
 
         /// <summary>
         /// Gets the scheduler.
         /// </summary>
         /// <value>The scheduler.</value>
         internal Quartz.IScheduler Scheduler { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the logger used to capture output messages.
+        /// If not set, the default logger is used.
+        /// </summary>
+        internal IRockLogger Logger { get; set; }
 
         /// <summary>
         /// Executes this instance.
@@ -99,10 +105,13 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Updates the last status message.
+        /// NOTE: This method has a read and a write database operation and also writes to the Rock Logger with DEBUG level logging.
         /// </summary>
         /// <param name="statusMessage">The status message.</param>
         public void UpdateLastStatusMessage( string statusMessage )
         {
+            Log( RockLogLevel.Debug, statusMessage );
+
             Result = statusMessage;
             using ( var rockContext = new RockContext() )
             {
@@ -228,13 +237,18 @@ namespace Rock.Jobs
                 return;
             }
 
-            var messageTemplateSb = new StringBuilder( "Job ID: {jobId}, Job Name: {jobName}" );
+            var messageTemplateSb = new StringBuilder( "Job ID: {jobId}" );
 
             var propValues = new List<object>
             {
                 this.ServiceJobId,
-                this.ServiceJobName
             };
+
+            if (!string.IsNullOrWhiteSpace( this.ServiceJobName ) )
+            {
+                messageTemplateSb.Append( ", Job Name: {jobName}" );
+                propValues.Add( this.ServiceJobName );
+            }
 
             if ( start.HasValue )
             {
@@ -253,7 +267,8 @@ namespace Rock.Jobs
                 .Concat( propertyValues ?? new object[0] )
                 .ToArray();
 
-            RockLogger.Log.WriteToLog(
+            var logger = this.Logger ?? RockLogger.Log;
+             logger.WriteToLog(
                 logLevel,
                 exception,
                 RockLogDomains.Jobs,

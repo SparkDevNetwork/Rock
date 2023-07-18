@@ -19,7 +19,7 @@ import { computed, defineComponent, PropType, Ref, ref, watch } from "vue";
 import { PersonPickerSearchOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personPickerSearchOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
-import Panel from "./panel";
+import Panel from "./panel.obs";
 import TextBox from "./textBox";
 import { nextTick } from "vue";
 import { useHttp } from "@Obsidian/Utility/http";
@@ -229,7 +229,7 @@ export default defineComponent({
             };
 
             if (result.primaryAliasGuid === selectedSearchResult.value) {
-                styles["border"] = "2px solid var(--brand-color)";
+                styles["border"] = "2px solid var(--color-primary)";
             }
             else {
                 styles["border"] = "2px solid transparent";
@@ -418,11 +418,10 @@ export default defineComponent({
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i class="fa fa-user fa-fw"></i>
                     <span class="selected-name">{{ selectedName }}</span>
-                    <b class="fa fa-caret-down pull-right"></b>
-                </a>
-
-                <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onClear">
-                    <i class="fa fa-times"></i>
+                    <button role="button" type="button" aria-label="Clear selection" v-if="showClear" class="btn picker-select-none" @click.prevent.stop="onClear">
+                        <i class="fa fa-times"></i>
+                    </button>
+                    <b class="fa fa-caret-down"></b>
                 </a>
 
                 <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search">

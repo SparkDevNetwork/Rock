@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 
 using Rock.Attribute;
 using Rock.ClientService.Connection.ConnectionOpportunity;
@@ -33,12 +32,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
     /// <summary>
     /// Displays the list of connection opportunities for a single connection type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Connection Opportunity List" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the list of connection opportunities for a single connection type." )]
     [IconCssClass( "fa fa-list" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -77,7 +77,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST )]
-    public class ConnectionOpportunityList : RockMobileBlockType
+    public class ConnectionOpportunityList : RockBlockType
     {
         #region Block Attributes
 
@@ -130,10 +130,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         #region IRockMobileBlockType Implementation
 
         /// <inheritdoc/>
-        public override int RequiredMobileAbiVersion => 3;
-
-        /// <inheritdoc/>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Connection.ConnectionOpportunityList";
+        public override Version RequiredMobileVersion => new Version( 1, 3 );
 
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()

@@ -75,8 +75,22 @@ export const ServiceJob = {
     DataMigrations150SystemPhoneNumbers: "6DFE731E-F28B-40B3-8383-84212A301214",
     /** The Job to run Post v15.1 Data Migrations to cleanup duplicate mobile interaction entries. */
     DataMigrations151DuplicateMobileInteractionsCleanup: "D3D60B90-48D1-4718-905E-39638B44C665",
+    /** The Job to run Post v15.2 to replace web forms blocks with Obsidian blocks. */
+    DataMigrations152ReplaceWebFormsBlocksWithObsidianBlocks: "4232194C-90AE-4B44-93E7-1E5DE984A9E1",
     /** The Job to run Post v16.0 Move Person Preferences. */
     DataMigrations160MovePersonPreferences: "C8591D15-9D37-49D3-8DF8-1DB72EE42D29",
+    /** The Job to run v16.0 - Add New Indices To Interaction and InteractionSession. */
+    DataMigrations160PopulateInteractionSessionData: "4C734B0E-8024-4600-99F9-B6CFEE9F8250",
+    /** The Job to run v16.0 - Add New Indices To Interaction and InteractionSession. */
+    DataMigrations160UpdateInteractionSessionAndInteractionIndices: "30A8FE3D-8C2B-413E-9B94-F4B9212904B1",
+    /** The Job to run Post v16.0 Update InteractionSession InteractionChannelId. */
+    DataMigrations160UpdateInteractionSessionInteractionChannelId: "3BC5124D-0ED1-4D90-A9ED-D858FA4B5051",
+    /** The Job to run Post v16.0 Update InteractionSession SessionStartDateKey. */
+    DataMigrations160UpdateInteractionSessionSessionStartDateKey: "EBAD6B4D-D928-41FD-A0DD-445060810504",
+    /** The Job to run Post v16.0 Update Person PrimaryPersonAliasId. */
+    DataMigrations160UpdatePersonPrimaryPersonAliasId: "BC7564DC-594F-4B50-8988-1594849515F1",
+    /** The Job to run Post v16.0 Data Migrations to update the newly persisted WorkflowId column on Workflow entity with their correct values. */
+    DataMigrations160UpdateWorkflowidColumns: "2222F9D2-4771-4B21-A630-E696DB0C329A",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */

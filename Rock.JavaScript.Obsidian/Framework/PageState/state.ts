@@ -16,16 +16,14 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { IEntity } from "@Obsidian/ViewModels/entity";
 import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 
 export type State = {
     areSecondaryBlocksShown: boolean;
-    currentPerson: PersonBag | null;
+    currentPerson: CurrentPersonBag | null;
     isAnonymousVisitor: boolean;
     pageParameters: Record<string, unknown>;
-    contextEntities: Record<string, IEntity>;
     pageId: number;
     pageGuid: Guid;
     executionStartTime: number;

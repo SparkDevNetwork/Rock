@@ -40,6 +40,12 @@ export type EntityTagListGetAvailableTagsOptionsBag = {
      */
     entityKey?: string | null;
 
+    /** Gets or sets the entity qualifier column. */
+    entityQualifierColumn?: string | null;
+
+    /** Gets or sets the entity qualifier value. */
+    entityQualifierValue?: string | null;
+
     /** Gets or sets the entity type unique identifier. */
     entityTypeGuid?: Guid | null;
 
@@ -51,4 +57,7 @@ export type EntityTagListGetAvailableTagsOptionsBag = {
      * authorization checks.
      */
     securityGrantToken?: string | null;
+
+    /** Gets or sets whether to include inactive tags. */
+    showInactiveTags: boolean;
 };

@@ -192,6 +192,8 @@ namespace RockWeb.Blocks.Steps
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Steps/PersonProgramStepList.css" );
+
             ClearError();
             BlockUpdated += PersonProgramStepList_BlockUpdated;
 
@@ -422,14 +424,14 @@ namespace RockWeb.Blocks.Steps
             {
                 var attribute = step.Attributes[attributeCache.Key];
                 var rawValue = step.GetAttributeValue( attributeCache.Key );
-                
+
                 var showCondensed = !( attribute.FieldType.Field is BooleanFieldType );
 
                 var formattedValue = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, step.Id, rawValue, attribute.QualifierValues, showCondensed );
 
                 itemSummary.AppendLine( string.Format( formatString, attribute.Name, formattedValue ) );
             }
-        
+
             lStepStatus.Text = itemSummary.ToString();
         }
 

@@ -46,11 +46,11 @@
  * - timeIntervalPicker
  */
 
-import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
-import * as ObjectUtils from "@Obsidian/Utility/objectUtils";
+import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
+import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath } from "./ControlGallery/utils.partial";
+import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -90,7 +90,7 @@ import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import Rating from "@Obsidian/Controls/rating";
 import Fullscreen from "@Obsidian/Controls/fullscreen";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import FileUploader from "@Obsidian/Controls/fileUploader";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
@@ -106,7 +106,7 @@ import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
-import EntityTagList from "@Obsidian/Controls/entityTagList";
+import TagList from "@Obsidian/Controls/tagList.obs";
 import Following from "@Obsidian/Controls/following";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
 import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
@@ -174,7 +174,8 @@ import PanelWidget from "@Obsidian/Controls/panelWidget";
 import ProgressBar from "@Obsidian/Controls/progressBar";
 import RockLabel from "@Obsidian/Controls/rockLabel";
 import RockValidation from "@Obsidian/Controls/rockValidation";
-import TabbedContent from "@Obsidian/Controls/tabbedContent";
+import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import PagePicker from "@Obsidian/Controls/pagePicker.obs";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
@@ -222,6 +223,11 @@ import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.
 import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
 import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/interactionChannelInteractionComponentPicker.obs";
 import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
+import ValueList from "@Obsidian/Controls/valueList.obs";
+import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
+import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.obs";
+import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
+import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
 
 // #region Gallery Support
 
@@ -239,313 +245,6 @@ const displayStyleItems: ListItemBag[] = [
         text: "Condensed"
     }
 ];
-
-/**
- * Takes a gallery component's name and converts it to a name that is useful for the header and
- * sidebar by adding spaces and stripping out the "Gallery" suffix
- *
- * @param name Name of the control
- * @returns A string of code that can be used to import the given control file
- */
-function convertComponentName(name: string | undefined | null): string {
-    if (!name) {
-        return "Unknown Component";
-    }
-
-    return name.replace(/[A-Z]/g, " $&").replace(/Gallery$/, "").trim();
-}
-
-/**
- * Takes an element name and a collection of attribute keys and values and
- * constructs the example code. This can be used inside a computed call to
- * have the example code dynamically match the selected settings.
- *
- * @param elementName The name of the element to use in the example code.
- * @param attributes The attribute names and values to append to the element name.
- *
- * @returns A string of valid HTML content for how to use the component.
- */
-function buildExampleCode(elementName: string, attributes: Record<string, Ref<unknown> | unknown>): string {
-    const attrs: string[] = [];
-
-    for (const attr in attributes) {
-        let value = attributes[attr];
-        console.log("attributes", attr, value);
-
-        if (isRef(value)) {
-            value = value.value;
-        }
-
-        if (typeof value === "string") {
-            attrs.push(`${attr}="${value}"`);
-        }
-        else if (typeof value === "number") {
-            attrs.push(`:${attr}="${value}"`);
-        }
-        else if (typeof value === "boolean") {
-            attrs.push(`:${attr}="${value ? "true" : "false"}"`);
-        }
-        else if (value === undefined || value === null) {
-            /* Do nothing */
-        }
-    }
-
-    console.log(attrs);
-
-    return `<${elementName} ${attrs.join(" ")} />`;
-}
-
-/**
- * A wrapper component that describes the template used for each of the controls
- * within this control gallery
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const GalleryAndResult = defineComponent({
-    name: "GalleryAndResult",
-    inheritAttrs: false,
-    components: {
-        Switch,
-        SectionHeader,
-        TransitionVerticalCollapse,
-        CopyButton
-    },
-    props: {
-        // The value passed into/controlled by the component, if any
-        value: {
-            required: false
-        },
-        // If true, the provided value is a map of multiple values
-        hasMultipleValues: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        // Show another copy of the component so you can see that the value is reflected across them
-        enableReflection: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        // Code snippet showing how to import the component
-        importCode: {
-            type: String as PropType<string>
-        },
-        // Code snippet of the component being used
-        exampleCode: {
-            type: String as PropType<string>
-        },
-        // Describe what this component is/does
-        description: {
-            type: String as PropType<string>,
-            default: ""
-        },
-        /** Display the value raw and unformatted inside the PRE element. */
-        displayAsRaw: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        }
-    },
-
-    setup(props) {
-        // Calculate a header based on the name of the component, adding spaces and stripping out the "Gallery" suffix
-        const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);
-
-        const formattedValue = computed(() => {
-            if (props.displayAsRaw) {
-                return props.value;
-            }
-            else if (!props.hasMultipleValues) {
-                return JSON.stringify(props.value, null, 4);
-            }
-            else {
-                // Convert each property's value to a JSON string.
-                return ObjectUtils.fromEntries(
-                    Object.entries(props.value as Record<string, unknown>).map(([key, val]) => {
-                        return [
-                            key,
-                            JSON.stringify(val, null, 4)
-                        ];
-                    })
-                );
-            }
-        });
-
-        const styledImportCode = computed((): string | undefined => {
-            if (!props.importCode) {
-                return undefined;
-            }
-
-            return HighlightJs.highlight(props.importCode, {
-                language: "typescript"
-            })?.value;
-        });
-
-        const styledExampleCode = computed((): string | undefined => {
-            if (!props.exampleCode) {
-                return undefined;
-            }
-
-            return HighlightJs.highlight(props.exampleCode, {
-                language: "html"
-            })?.value;
-        });
-
-        const showReflection = ref(false);
-
-        return {
-            componentName,
-            formattedValue,
-            showReflection,
-            styledExampleCode,
-            styledImportCode,
-        };
-    },
-
-    template: `
-<v-style>
-.galleryContent-mainRow > div.well {
-    overflow-x: auto;
-}
-
-.galleryContent-reflectionToggle {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.galleryContent-valueBox {
-    max-height: 300px;
-    overflow: auto;
-}
-
-.galleryContent-codeSampleWrapper {
-    position: relative;
-}
-
-.galleryContent-codeSample {
-    padding-right: 3rem;
-    overflow-x: auto;
-}
-
-.galleryContent-codeCopyButton {
-    position: absolute;
-    top: 1.4rem;
-    transform: translateY(-50%);
-    right: .5rem;
-    z-index: 1;
-}
-
-.galleryContent-codeCopyButton::before {
-    content: "";
-    position: absolute;
-    top: -0.3rem;
-    right: -0.5rem;
-    bottom: -0.3rem;
-    left: -0.5rem;
-    background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
-    z-index: -1;
-}
-</v-style>
-
-<SectionHeader :title="componentName" :description="description" />
-<div class="galleryContent-mainRow mb-5 row">
-    <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-sm-6'">
-        <h4 class="mt-0">Test Control</h4>
-        <slot name="default" />
-
-        <div v-if="enableReflection" class="mt-3">
-            <div class="mb-3 galleryContent-reflectionToggle">
-                <Switch v-model="showReflection" text="Show Reflection" />
-            </div>
-            <TransitionVerticalCollapse>
-                <div v-if="showReflection">
-                    <h4 class="mt-0">Control Reflection</h4>
-                    <slot name="default" />
-                </div>
-            </TransitionVerticalCollapse>
-        </div>
-    </div>
-    <div v-if="value !== void 0" class="col-sm-6">
-        <div class="well">
-            <h4>Current Value<template v-if="hasMultipleValues">s</template></h4>
-            <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
-                <h5><code>{{ key }}</code></h5>
-                <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
-            </template>
-            <pre v-else class="m-0 p-0 border-0 galleryContent-valueBox">{{ formattedValue }}</pre>
-        </div>
-    </div>
-</div>
-<div v-if="$slots.settings" class="mb-5">
-    <h4 class="mt-0">Settings</h4>
-    <slot name="settings" />
-</div>
-<div v-if="importCode || exampleCode || $slots.usage" class="mb-5">
-    <h4 class="mt-0 mb-3">Usage Notes</h4>
-    <slot name="usage">
-        <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
-        <slot name="importNotes" />
-        <div v-if="importCode" class="galleryContent-codeSampleWrapper">
-            <pre class="galleryContent-codeSample"><code v-html="styledImportCode"></code></pre>
-            <CopyButton :value="importCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
-        </div>
-        <h5 v-if="exampleCode" class="mt-3 mb-2">Template Syntax</h5>
-        <slot name="syntaxNotes" />
-        <div v-if="exampleCode" class="galleryContent-codeSampleWrapper">
-            <pre class="galleryContent-codeSample"><code v-html="styledExampleCode"></code></pre>
-            <CopyButton :value="exampleCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
-        </div>
-    </slot>
-</div>
-
-<div v-if="$slots.header">
-    <p class="text-semibold font-italic">The <code>header</code> slot is no longer supported.</p>
-</div>
-
-<div v-if="$attrs.splitWidth !== void 0">
-    <p class="text-semibold font-italic">The <code>splitWidth</code> prop is no longer supported.</p>
-</div>
-
-<div v-if="$slots.gallery">
-    <p class="text-semibold font-italic">The <code>gallery</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
-    <slot name="gallery" />
-</div>
-<div v-if="$slots.result">
-    <p class="text-semibold font-italic">The <code>result</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
-    <slot name="result" />
-</div>
-`
-});
-
-/**
- * Generate a string of an import statement that imports the control will the given file name.
- * The control's name will be based off the filename
- *
- * @param fileName Name of the control's file
- * @returns A string of code that can be used to import the given control file
- */
-export function getControlImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}";`;
-}
-
-/**
- * Generate a string of an import statement that imports the SFC control will the given file name.
- * The control's name will be based off the filename
- *
- * @param fileName Name of the control's file
- * @returns A string of code that can be used to import the given control file
- */
-export function getSfcControlImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}.obs";`;
-}
-
-/**
- * Generate a string of an import statement that imports the template will the given file name.
- * The template's name will be based off the filename
- *
- * @param fileName Name of the control's file
- * @returns A string of code that can be used to import the given control file
- */
-export function getTemplateImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Templates/${fileName}";`;
-}
 
 // #endregion
 
@@ -596,18 +295,20 @@ const attributeValuesContainerGallery = defineComponent({
                 key: "text",
                 name: "Text Attribute",
                 order: 2,
-                configurationValues: {}
+                configurationValues: {},
+                preHtml: "<div class='bg-primary p-3'>"
             },
             color: {
                 attributeGuid: newGuid(),
                 categories: [categories[0], categories[2]],
                 description: "Favorite color? Or just a good one?",
                 fieldTypeGuid: FieldType.Color,
-                isRequired: false,
+                isRequired: true,
                 key: "color",
                 name: "Random Color",
                 order: 4,
-                configurationValues: {}
+                configurationValues: {},
+                postHtml: "</div>"
             },
             bool: {
                 attributeGuid: newGuid(),
@@ -629,7 +330,8 @@ const attributeValuesContainerGallery = defineComponent({
                 key: "textAgain",
                 name: "Some Text",
                 order: 5,
-                configurationValues: {}
+                configurationValues: {},
+                preHtml: "<h5>PRE HTML!</h5>"
             },
             single: {
                 attributeGuid: newGuid(),
@@ -664,6 +366,7 @@ const attributeValuesContainerGallery = defineComponent({
             showCategoryLabel,
             numberOfColumns,
             entityName,
+            showPrePost: ref(false),
             importCode: getControlImportPath("attributeValuesContainer"),
             exampleCode: `<AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="false" :showAbbreviatedName="false" :showEmptyValues="true" :displayAsTabs="false" :showCategoryLabel="true" :numberOfColumns="1" :entityTypeName="entityName" />`
         };
@@ -688,14 +391,15 @@ const attributeValuesContainerGallery = defineComponent({
 
     <template #settings>
         <div class="row">
-            <CheckBox formGroupClasses="col-sm-6" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
-            <CheckBox formGroupClasses="col-sm-6" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
+            <CheckBox formGroupClasses="col-sm-4" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
+            <CheckBox formGroupClasses="col-sm-4" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
+            <CheckBox formGroupClasses="col-sm-4" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
         </div>
         <div class="row">
-            <CheckBox formGroupClasses="col-sm-6" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
-            <CheckBox formGroupClasses="col-sm-6" v-model="displayAsTabs" label="Category Tabs" text="Show" help="Default: false; If any attributes are in a category, display each category as a tab. Not applicable while editing." />
+            <CheckBox formGroupClasses="col-sm-4" v-model="displayAsTabs" label="Category Tabs" text="Show" help="Default: false; If any attributes are in a category, display each category as a tab. Not applicable while editing." />
+            <CheckBox formGroupClasses="col-sm-4" v-model="showCategoryLabel" label="Category Labels" text="Show" help="Default: false; Only applies when not displaying tabs." />
+            <CheckBox formGroupClasses="col-sm-4" v-model="showPrePost" label="Render Pre/Post HTML" text="Show" help="Default: true" />
         </div>
-        <CheckBox v-model="showCategoryLabel" label="Category Labels" text="Show" help="Default: false; Only applies when not displaying tabs." />
         <div class="row">
             <NumberBox formGroupClasses="col-sm-6" v-model="numberOfColumns" label="Number of Columns" help="Default: 1; Only applies when not displaying tabs." />
             <TextBox formGroupClasses="col-sm-6" v-model="entityName" label="Entity Type" help="Default: ''; Appears in the heading when category labels are showing." />
@@ -2232,7 +1936,7 @@ const panelGallery = defineComponent({
             simulateHelp: computed((): boolean => simulateValues.value.includes("helpContent")),
             isFullscreenPageOnly: ref(true),
             value: ref(true),
-            importCode: getControlImportPath("panel"),
+            importCode: getSfcControlImportPath("panel"),
             exampleCode: `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">
     <template #helpContent>Help Content</template>
     <template #drawer>Drawer Content</template>
@@ -3058,22 +2762,28 @@ const copyButtonGallery = defineComponent({
 });
 
 /** Demonstrates entity tag list */
-const entityTagListGallery = defineComponent({
-    name: "EntityTagListGallery",
+const tagListGallery = defineComponent({
+    name: "TagListGallery",
     components: {
         GalleryAndResult,
         CheckBox,
-        EntityTagList
+        RockButton,
+        TagList
     },
     setup() {
         const store = useStore();
 
         return {
+            control: ref(null),
             disabled: ref(false),
+            delaySave: ref(false),
+            showInactive: ref(false),
+            disallowNewTags: ref(false),
             entityTypeGuid: EntityType.Person,
             entityKey: store.state.currentPerson?.idKey ?? "",
-            importCode: getControlImportPath("entityTagList"),
-            exampleCode: `<EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
+            btnType: BtnType.Primary,
+            importCode: getSfcControlImportPath("tagList"),
+            exampleCode: `<TagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
         };
     },
     template: `
@@ -3081,10 +2791,67 @@ const entityTagListGallery = defineComponent({
     :value="value"
     :importCode="importCode"
     :exampleCode="exampleCode">
-    <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
+
+    <TagList
+        :entityTypeGuid="entityTypeGuid"
+        :entityKey="entityKey"
+        :disabled="disabled"
+        :showInactiveTags="showInactive"
+        :disallowNewTags="disallowNewTags"
+        :delaySave="delaySave"
+        ref="control" />
 
     <template #settings>
-        <CheckBox label="Disabled" v-model="disabled" />
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox label="Disabled" v-model="disabled" help="Makes it read-only. You can't add or remove tags if it's disabled." />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Delay Saving Value" v-model="delaySave" help="If checked, creating new tags, adding tags and removing tags is not saved to the server until the component's <code>saveTagValues</code> method is called." />
+                <RockButton v-if="delaySave" :btnType="btnType" type="button" @click="control.saveTagValues()"><i class="fa fa-save" /> Save Values</RockButton>
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Disallow New Tags" v-model="disallowNewTags" help="If checked, no new tags can be created, though you can still add existing tags" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Show Inactive Tags" v-model="showInactive" />
+            </div>
+        </div>
+        <p>
+            This control takes multiple props for filtering the tags to show and giving specifiers about what it tags. Below is a list of those props:
+        </p>
+        <table class="table" style="max-width:450px;">
+            <tr>
+                <th scope="col">Prop</th>
+                <th scope="col">Type</th>
+                <th scope="col" class="text-center">Required</th>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityTypeGuid</code></th>
+                <td>GUID String</td>
+                <td class="text-center"><i class="fa fa-check text-success"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityKey</code></th>
+                <td>String</td>
+                <td class="text-center"><i class="fa fa-check text-success"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>categoryGuid</code></th>
+                <td>GUID String</td>
+                <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityQualifierColumn</code></th>
+                <td>String</td>
+                <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+            </tr>
+            <tr>
+                <th scope="row"><code>entityQualifierValue</code></th>
+                <td>String</td>
+                <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+            </tr>
+        </table>
     </template>
 </GalleryAndResult>`
 });
@@ -3633,8 +3400,9 @@ const dataViewPickerGallery = defineComponent({
             entityTypeGuid: ref(null),
             multiple: ref(false),
             value: ref(null),
+            displayPersistedOnly: ref(false),
             importCode: getControlImportPath("dataViewPicker"),
-            exampleCode: `<DataViewPicker label="Data View" v-model="value" />`
+            exampleCode: `<DataViewPicker label="Data View" v-model="value" :displayOnlyPersisted="true"/>`
         };
     },
     template: `
@@ -3646,6 +3414,7 @@ const dataViewPickerGallery = defineComponent({
     <DataViewPicker label="Data Views"
         v-model="value"
         :multiple="multiple"
+        :displayPersistedOnly="displayPersistedOnly"
         :showBlankItem="showBlankItem"
         :entityTypeGuid="entityTypeGuid?.value" />
     <template #settings>
@@ -3655,6 +3424,9 @@ const dataViewPickerGallery = defineComponent({
             </div>
             <div class="col-md-4">
                 <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Display Only Persisted" v-model="displayPersistedOnly" />
             </div>
         </div>
     </template>
@@ -5261,6 +5033,7 @@ const keyValueListGallery = defineComponent({
             displayValueFirst,
             valueOptions,
             value: ref(null),
+            fullWidth: ref(false),
             keyPlaceholder: ref("Key"),
             valuePlaceholder: ref("Value"),
             importCode: getControlImportPath("keyValueList"),
@@ -5275,14 +5048,17 @@ const keyValueListGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" />
+    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" :fullWidth="fullWidth" />
 
     <template #settings>
         <div class="row">
-            <CheckBox formGroupClasses="col-md-3" label="Limit Possible Values" v-model="limitValues" />
-            <CheckBox formGroupClasses="col-md-3" label="Show Value First" v-model="displayValueFirst" />
-            <TextBox formGroupClasses="col-md-3" label="Placeholder for Key Field" v-model="keyPlaceholder" />
-            <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePlaceholder" />
+            <CheckBox formGroupClasses="col-md-4" label="Limit Possible Values" v-model="limitValues" />
+            <CheckBox formGroupClasses="col-md-4" label="Show Value First" v-model="displayValueFirst" />
+            <CheckBox formGroupClasses="col-md-4" label="Full Width" v-model="fullWidth" />
+        </div>
+        <div class="row">
+            <TextBox formGroupClasses="col-md-4" label="Placeholder for Key Field" v-model="keyPlaceholder" />
+            <TextBox formGroupClasses="col-md-4" label="Placeholder for Value Field" v-model="valuePlaceholder" />
         </div>
     </template>
 </GalleryAndResult>`
@@ -5627,6 +5403,45 @@ const rangeSliderGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates tabbed bar */
+const tabbedBarGallery = defineComponent({
+    name: "TabbedBarGallery",
+    components: {
+        GalleryAndResult,
+        TabbedBar,
+        DropDownList
+    },
+    setup() {
+        return {
+            list: ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians"],
+            type: ref("tabs"),
+            typeItems: [{value: "tabs", text: "Tabs"}, {value: "pills", text: "Pills" }],
+            importCode: getSfcControlImportPath("tabbedBar"),
+            exampleCode: `<TabbedBar :tabs="arrayOfItems">
+    <template #default="{item}">
+        {{ item }}
+    </template>
+</TabbedBar`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <TabbedBar :tabs="list" :type="type">
+    </TabbedBar>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Type" v-model="type" :items="typeItems" :showBlankItem="false" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates tabbed content */
 const tabbedContentGallery = defineComponent({
     name: "TabbedContentGallery",
@@ -5639,8 +5454,8 @@ const tabbedContentGallery = defineComponent({
     setup() {
         return {
             list: ["Matthew", "Mark", "Luke", "John"],
-            importCode: getControlImportPath("tabbedContent"),
-            exampleCode: `<TabbedContent :tabList="arrayOfItems">
+            importCode: getSfcControlImportPath("tabbedContent"),
+            exampleCode: `<TabbedContent :tabs="arrayOfItems">
     <template #tab="{item}">
         {{ item }}
     </template>
@@ -5656,7 +5471,7 @@ const tabbedContentGallery = defineComponent({
     :exampleCode="exampleCode" >
 
 
-    <TabbedContent :tabList="list">
+    <TabbedContent :tabs="list">
         <template #tab="{item}">
             {{ item }}
         </template>
@@ -8038,6 +7853,111 @@ const workflowPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates value list component */
+const valueListGallery = defineComponent({
+    name: "ValueListGallery",
+    components: {
+        GalleryAndResult,
+        ValueList,
+        CheckBox,
+        TextBox
+    },
+    setup() {
+        const usePredefinedValues = ref(false);
+        const displayValueFirst = ref(false);
+        const options: ListItemBag[] = [
+            {
+                text: "Option 1",
+                value: "1"
+            },
+            {
+                text: "Option 2",
+                value: "2"
+            },
+            {
+                text: "Option 3",
+                value: "3"
+            },
+        ];
+
+        const customValues = computed(() => usePredefinedValues.value ? options : null);
+
+        return {
+            usePredefinedValues: usePredefinedValues,
+            displayValueFirst,
+            customValues,
+            fullWidth: ref(false),
+            useDefinedType: ref(false),
+            value: ref(null),
+            definedTypeGuid: DefinedType.PersonConnectionStatus,
+            valuePrompt: ref("Value"),
+            importCode: getSfcControlImportPath("valueList"),
+            exampleCode: `<ValueList label="List of Values" v-model="value" :customValues="customValues" :valuePrompt="valuePrompt" :definedTypeGuid="definedTypeGuid" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <ValueList label="List of Values" v-model="value" :customValues="customValues" :valuePrompt="valuePrompt" :fullWidth="fullWidth" :definedTypeGuid="useDefinedType ? definedTypeGuid : null" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-md-3" label="Use Predefined Values" v-model="usePredefinedValues" help="Enabling this will pass a pre-made <code>ListItemBag[]</code> of options to the ValueList component via the <code>customValues</code> prop." :disabled="useDefinedType" />
+            <CheckBox formGroupClasses="col-md-3" label="Use Defined Type" v-model="useDefinedType" help="Enabling this will pass the Connection Status Defined Type's GUID to the ValueList component via the <code>definedTypeGuid</code> prop." :disabled="usePredefinedValues" />
+            <CheckBox formGroupClasses="col-md-3" label="Full Width" v-model="fullWidth" />
+            <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePrompt" />
+        </div>
+        <p>
+            There are 2 different props that control what options users can choose/enter.
+            The <code>definedTypeGuid</code> prop takes a GUID string and will limit users to choosing values from a list of defined values of that type.
+            The <code>customValues</code> option allows you to pass a <code>ListItemBag</code> array in as a list of options that the user can choose from a dropdown.
+            If both of those props are specified, the <code>definedTypeGuid</code> prop will take precedence.
+            If neither option is used, a text box is shown, allowing users to manually type in any values.
+        </p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates block template picker component */
+const blockTemplatePickerGallery = defineComponent({
+    name: "BlockTemplatePickerGallery",
+    components: {
+        GalleryAndResult,
+        BlockTemplatePicker,
+        DefinedValuePicker
+    },
+    setup() {
+        return {
+            value: ref(null),
+            templateKey: ref(null),
+            definedTypeGuid: DefinedType.TemplateBlock,
+            templateBlockGuid: ref(null),
+            importCode: getSfcControlImportPath("blockTemplatePicker"),
+            exampleCode: `<BlockTemplatePicker label="Select a Template" v-model="value" :templateBlockValueGuid="templateBlockValueGuid" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{value, templateKey}"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    hasMultipleValues
+    enableReflection >
+
+    <BlockTemplatePicker label="Select a Template" v-model="value" v-model:templateKey="templateKey" :templateBlockValueGuid="templateBlockGuid?.value" />
+
+    <template #settings>
+        <div class="row">
+            <DefinedValuePicker label="Template Block" formGroupClasses="col-md-4" v-model="templateBlockGuid" :definedTypeGuid="definedTypeGuid" showBlankItem />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -8090,7 +8010,7 @@ const controlGalleryComponents: Record<string, Component> = [
     categoryPickerGallery,
     locationItemPickerGallery,
     copyButtonGallery,
-    entityTagListGallery,
+    tagListGallery,
     followingGallery,
     achievementTypePickerGallery,
     badgeComponentPickerGallery,
@@ -8138,6 +8058,7 @@ const controlGalleryComponents: Record<string, Component> = [
     rockLabelGallery,
     rockValidationGallery,
     rangeSliderGallery,
+    tabbedBarGallery,
     tabbedContentGallery,
     transitionVerticalCollapseGallery,
     valueDetailListGallery,
@@ -8186,6 +8107,11 @@ const controlGalleryComponents: Record<string, Component> = [
     registrationInstancePickerGallery,
     interactionChannelInteractionComponentPickerGallery,
     workflowPickerGallery,
+    valueListGallery,
+    blockTemplatePickerGallery,
+    DropDownMenuGallery,
+    DropDownContentGallery,
+    ButtonDropDownListGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

@@ -25,7 +25,7 @@ import RockForm from "./rockForm";
 import { useStore } from "@Obsidian/PageState";
 import { SaveFinancialAccountFormSaveAccountOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountOptionsBag";
 import { SaveFinancialAccountFormSaveAccountResultBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountResultBag";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { useHttp } from "@Obsidian/Utility/http";
 
 const store = useStore();
@@ -89,7 +89,7 @@ const SaveFinancialAccountForm = defineComponent({
     },
     computed: {
         /** The person currently authenticated */
-        currentPerson(): PersonBag | null {
+        currentPerson(): CurrentPersonBag | null {
             return store.state.currentPerson;
         },
 

@@ -42,6 +42,7 @@ namespace Rock.Blocks.Group.Scheduling
     [Category( "Group Scheduling" )]
     [Description( "Allows group schedules for groups and locations to be managed by a scheduler." )]
     [IconCssClass( "fa fa-calendar-alt" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -79,7 +80,7 @@ namespace Rock.Blocks.Group.Scheduling
 
     [Rock.SystemGuid.EntityTypeGuid( "7ADCE833-A785-4A54-9805-7335809C5367" )]
     [Rock.SystemGuid.BlockTypeGuid( "511D8E2E-4AF3-48D8-88EF-2AB311CD47E0" )]
-    public class GroupScheduler : RockObsidianBlockType
+    public class GroupScheduler : RockBlockType
     {
         #region Keys & Constants
 
@@ -164,7 +165,7 @@ namespace Rock.Blocks.Group.Scheduling
 
         #region Properties
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         public IDictionary<string, string> PageParameters
         {

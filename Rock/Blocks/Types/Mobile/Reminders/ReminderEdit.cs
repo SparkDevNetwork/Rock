@@ -35,6 +35,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
     [Category( "Reminders" )]
     [Description( "Allows adding/editing of reminders." )]
     [IconCssClass( "fa fa-edit" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -57,7 +58,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_REMINDERS_REMINDER_EDIT )]
     [SystemGuid.BlockTypeGuid( SystemGuid.BlockType.MOBILE_REMINDERS_REMINDER_EDIT )]
-    public class ReminderEdit : RockMobileBlockType
+    public class ReminderEdit : RockBlockType
     {
         #region Keys
 
@@ -160,11 +161,8 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
         #region IRockMobileBlockType Implementation
 
-        /// <inheritdoc />
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <inheritdoc />
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Reminders.ReminderEdit";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         /// <summary>
         /// Gets the mobile configuration values.
@@ -199,14 +197,23 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             var reminderService = new ReminderService( rockContext );
             var reminderType = new ReminderTypeService( rockContext ).Get( reminderTypeGuid );
 
-            IEntity entity = new EntityTypeService( rockContext ).GetEntity( reminderType.EntityTypeId, entityGuid );
+            if( reminderType == null )
+            {
+                return;
+            }
+
+            var entityId = Reflection.GetEntityIdForEntityType( reminderType.EntityType.Id, entityGuid, rockContext );
+            if( entityId == null )
+            {
+                return;
+            }
 
             //
             // Create a new reminder.
             //
             var reminder = new Reminder
             {
-                EntityId = entity.Id,
+                EntityId = entityId.Value,
                 ReminderTypeId = reminderType.Id,
                 ReminderDate = reminderDate,
                 Note = note,

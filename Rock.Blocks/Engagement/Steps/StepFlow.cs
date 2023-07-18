@@ -33,14 +33,13 @@ namespace Rock.Blocks.Engagement.Steps
     /// <summary>
     /// An example block.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Step Flow" )]
     [Category( "Steps" )]
     [Description( "Show the flow of individuals as they move through different steps in a given step program." )]
     [IconCssClass( "fa fa-users" )]
-    [Rock.SystemGuid.EntityTypeGuid( "308D8252-7712-4A45-8DE4-737C3EEAEA8F" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2B4E0128-BCDF-48BF-AEC9-85001169DA3E" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -88,7 +87,9 @@ namespace Rock.Blocks.Engagement.Steps
 
     #endregion Block Attributes
 
-    public class StepFlow : RockObsidianBlockType
+    [Rock.SystemGuid.EntityTypeGuid( "308D8252-7712-4A45-8DE4-737C3EEAEA8F" )]
+    [Rock.SystemGuid.BlockTypeGuid( "2B4E0128-BCDF-48BF-AEC9-85001169DA3E" )]
+    public class StepFlow : RockBlockType
     {
         #region Attribute Keys
 
@@ -115,6 +116,9 @@ namespace Rock.Blocks.Engagement.Steps
         public List<ListItemBag> Campuses { get; set; }
         private int currentColorIndex = 0;
         private string[] defaultColors = { "#ea5545", "#f46a9b", "#ef9b20", "#edbf33", "#ede15b", "#bdcf32", "#87bc45", "#27aeef", "#b33dc6" };
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Base Overrides
 

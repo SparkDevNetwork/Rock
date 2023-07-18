@@ -102,7 +102,7 @@ namespace Rock.Chart
             var availableColors = this.BaseColors ?? ChartColorPaletteGenerator.GetPreferredChartColors();
             foreach ( var color in availableColors )
             {
-                var queueColor = new RockColor( color.ToArgb() );
+                var queueColor = color.Clone();
                 if ( _lightenPercentage != 0 )
                 {
                     queueColor.Lighten( _lightenPercentage );

@@ -36,12 +36,13 @@ namespace Rock.Blocks.Types.Mobile.Core
     /// <summary>
     /// Displays entity notes to the user and allows adding new notes.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Notes" )]
     [Category( "Mobile > Core" )]
     [Description( "Displays entity notes to the user and allows adding new notes." )]
     [IconCssClass( "fa fa-sticky-note" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -141,7 +142,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [ContextAware]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_NOTES_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "5B337D89-A298-4620-A0BE-078A41BC054B" )]
-    public class Notes : RockMobileBlockType
+    public class Notes : RockBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileContent block.
@@ -286,21 +287,8 @@ namespace Rock.Blocks.Types.Mobile.Core
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 2;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Core.Notes";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 2 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

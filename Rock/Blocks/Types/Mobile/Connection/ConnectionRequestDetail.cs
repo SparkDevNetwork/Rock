@@ -41,12 +41,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
     /// <summary>
     /// Displays the details of the given connection request for editing state, status, etc.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Connection Request Detail" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
     [IconCssClass( "fa fa-id-card" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -90,7 +91,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL )]
-    public class ConnectionRequestDetail : RockMobileBlockType
+    public class ConnectionRequestDetail : RockBlockType
     {
         #region Block Attributes
 
@@ -155,10 +156,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         #region IRockMobileBlockType Implementation
 
         /// <inheritdoc/>
-        public override int RequiredMobileAbiVersion => 3;
-
-        /// <inheritdoc/>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Connection.ConnectionRequestDetail";
+        public override Version RequiredMobileVersion => new Version( 1, 3 );
 
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()
@@ -344,6 +342,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             // Get all the workflows that can be manually triggered by the person.
             var connectionWorkflows = GetConnectionOpportunityManualWorkflowTypes( request.ConnectionOpportunity, RequestContext.CurrentPerson )
+                .Where( w => w.ManualTriggerFilterConnectionStatusId == null || w.ManualTriggerFilterConnectionStatusId == request.ConnectionStatusId )
                 .Select( w => new WorkflowTypeItemViewModel
                 {
                     Guid = w.Guid,
@@ -1729,6 +1728,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionBadRequest( "Unable to find that connection activity type." );
                 }
 
+                if( !activity.ConnectorGuid.HasValue )
+                {
+                    return ActionBadRequest( "Invalid connector was specified." );
+
+                }
                 var connectorAliasId = personAliasService.GetPrimaryAliasId( activity.ConnectorGuid.Value );
 
                 if ( !connectorAliasId.HasValue )

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,12 +29,13 @@ namespace Rock.Blocks.Types.Mobile.Events
     /// <summary>
     /// Displays a page to configure and prepare a prayer session.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Prayer Session Setup" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Displays a page to configure and prepare a prayer session." )]
     [IconCssClass( "fa fa-pray" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -73,7 +74,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_PRAYER_SESSION_SETUP_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "4A3B0D13-FC32-4354-A224-9D450F860BE9")]
-    public class PrayerSessionSetup : RockMobileBlockType
+    public class PrayerSessionSetup : RockBlockType
     {
         #region Block Attributes
 
@@ -152,21 +153,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Prayer.PrayerSessionSetup";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

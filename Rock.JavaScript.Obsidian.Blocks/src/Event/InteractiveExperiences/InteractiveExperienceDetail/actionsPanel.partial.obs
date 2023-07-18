@@ -106,7 +106,7 @@
     min-width: 35px;
     padding: 8px 0;
     color: #fff;
-    background-color: var(--brand-info);
+    background-color: var(--color-info);
 }
 
 .action-item-body {
@@ -135,7 +135,7 @@
     height: 36px;
     padding: 0;
     color: #fff;
-    background-color: var(--brand-info);
+    background-color: var(--color-info);
     border-radius: 50%;
 }
 
@@ -172,7 +172,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import Modal from "@Obsidian/Controls/modal";
-    import Panel from "@Obsidian/Controls/panel";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -286,7 +286,7 @@
 
     const isMultipleSubmissionsVisible = computed((): boolean => {
         return selectedActionType.value?.isMultipleSubmissionSupported === true
-        && selectedActionType.value?.isQuestionSupported === true;
+            && selectedActionType.value?.isQuestionSupported === true;
     });
 
     const isAnonymousResponsesVisible = computed((): boolean => {

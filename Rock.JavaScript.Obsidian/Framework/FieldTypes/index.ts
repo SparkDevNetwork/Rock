@@ -38,6 +38,9 @@ registerFieldType(FieldTypeGuids.Campus, new CampusFieldType());
 import { CampusesFieldType } from "./campusesField.partial";
 registerFieldType(FieldTypeGuids.Campuses, new CampusesFieldType());
 
+import { CategoriesFieldType } from "./categoriesField.partial";
+registerFieldType(FieldTypeGuids.Categories, new CategoriesFieldType());
+
 import { CategoryFieldType } from "./categoryField.partial";
 registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 
@@ -130,6 +133,9 @@ registerFieldType(FieldTypeGuids.MonthDay, new MonthDayFieldType());
 
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());
+
+import { NoteTypeField } from "./noteTypeField.partial";
+registerFieldType(FieldTypeGuids.NoteType, new NoteTypeField());
 
 import { NoteTypesField } from "./noteTypesField.partial";
 registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());

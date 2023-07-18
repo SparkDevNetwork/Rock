@@ -101,7 +101,7 @@ namespace Rock.Reporting.Dashboard
             writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, widgetCssList.AsDelimited( " " ) );
             writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-dashboard" );
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-dashboard panel-block" );
             writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
 
             writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-body" );

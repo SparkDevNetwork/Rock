@@ -41,6 +41,11 @@ export default defineComponent({
             required: false
         },
 
+        displayPersistedOnly: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         ...standardAsyncPickerProps
     },
 
@@ -58,6 +63,7 @@ export default defineComponent({
         const itemProvider = ref(new DataViewTreeItemProvider());
         itemProvider.value.entityTypeGuid = props.entityTypeGuid;
         itemProvider.value.securityGrantToken = securityGrantToken.value;
+        itemProvider.value.displayPersistedOnly = props.displayPersistedOnly;
 
         // #endregion
 
@@ -69,7 +75,7 @@ export default defineComponent({
         });
 
         // When this changes, we need to refetch the data, so reset the whole itemProvider
-        watch(() => props.entityTypeGuid, () => {
+        watch([() => props.entityTypeGuid, () => props.displayPersistedOnly], () => {
             const oldProvider = itemProvider.value;
             const newProvider = new DataViewTreeItemProvider();
 
@@ -77,6 +83,7 @@ export default defineComponent({
             newProvider.securityGrantToken = oldProvider.securityGrantToken;
             // Use new value
             newProvider.entityTypeGuid = props.entityTypeGuid;
+            newProvider.displayPersistedOnly = props.displayPersistedOnly;
 
             // Set the provider to the new one
             itemProvider.value = newProvider;

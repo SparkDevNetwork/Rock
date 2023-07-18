@@ -273,6 +273,7 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddCSSLink( "~/Styles/Blocks/Finance/TransactionMatching.css" );
             RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
             RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 

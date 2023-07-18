@@ -29,7 +29,7 @@ import { newGuid } from "@Obsidian/Utility/guid";
 import { List } from "@Obsidian/Utility/linq";
 import Page from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
 import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
 import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
@@ -136,7 +136,7 @@ export default defineComponent({
             amountToPayToday: 0,
             sessionExpirationDateMs: null,
             registrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid(),
-            ownFamilyGuid: store.state.currentPerson?.primaryFamilyGuid || newGuid()
+            ownFamilyGuid: viewModel.currentPersonFamilyGuid || newGuid()
         };
         const registrationEntryState = reactive(staticRegistrationEntryState);
 
@@ -198,7 +198,7 @@ export default defineComponent({
     },
     computed: {
         /** The person currently authenticated */
-        currentPerson(): PersonBag | null {
+        currentPerson(): CurrentPersonBag | null {
             return store.state.currentPerson;
         },
 

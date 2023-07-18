@@ -328,13 +328,29 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Updates the type of the mobile block.
+        /// Updates the Entity block or creates it if it is not already present in the database.
+        /// This method serves as a syntactic sugar over the <see cref="MigrationHelper.UpdateMobileBlockType(string, string, string, string)" /> which was origianlly used to add or updated the obsidian blocks.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="entityName">Name of the entity.</param>
         /// <param name="category">The category.</param>
         /// <param name="guid">The unique identifier.</param>
+        public void AddOrUpdateEntityBlockType( string name, string description, string entityName, string category, string guid )
+        {
+            UpdateMobileBlockType( name, description, entityName, category, guid );
+        }
+
+        /// <summary>
+        /// Updates the Entity block or creates it if it is not already present in the database.
+        /// This method was first written for the mobile blocks and later repurposed for Obsidian.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="entityName">Name of the entity.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="guid">The unique identifier.</param>
+        // DO NOT RENAME: This method is being used by older migrations and so the name of the function should not be changed.
         public void UpdateMobileBlockType( string name, string description, string entityName, string category, string guid )
         {
             Migration.Sql( $@"
@@ -3348,6 +3364,40 @@ END" );
         /// <param name="guid">The unique identifier.</param>
         public void AddAttributeQualifier( string attributeGuid, string key, string value, string guid )
         {
+            string sql = $@"
+                DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+
+                IF NOT EXISTS(SELECT * FROM [AttributeQualifier] WHERE [Guid] = '{guid}')
+                BEGIN
+	                -- It's possible that the qualifier exists with a different GUID so also check for AttributeId and Key
+	                DECLARE @guid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [AttributeQualifier] WHERE AttributeId = @AttributeId AND [Key] = '{key}')
+	                IF @guid IS NOT NULL
+	                BEGIN
+		                UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Guid] = '{guid}', [Value] = '{value}' WHERE [Guid] = @guid
+	                END
+	                ELSE BEGIN
+		                INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+		                VALUES(1, @AttributeId, '{key}', '{value}', '{guid}')
+	                END
+                END
+                ELSE
+                BEGIN
+                    UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Key] = '{key}', [Value] = '{value}' WHERE [Guid] = '{guid}'
+                END";
+
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// This is a quick fix method. DO NOT USE
+        /// </summary>
+        /// <param name="attributeGuid"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="guid"></param>
+        internal void AddAttributeQualifierForSQL( string attributeGuid, string key, string value, string guid )
+        {
+            value = value?.Replace( "'", "''" ) ?? "";
             string sql = $@"
                 DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
 

@@ -34,9 +34,8 @@ namespace Rock.Blocks.Types.Mobile.Communication
 {
     /// <summary>
     /// The mobile adaptation of the web CommunicationEntry block.
-    /// Implements the <see cref="Rock.Blocks.RockMobileBlockType" />
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     #region Block Attributes
 
@@ -108,6 +107,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [Category( "Mobile > Communication" )]
     [Description( "Allows you to send communications to a set of recipients." )]
     [IconCssClass( "fa fa-comment-o" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     // This block uses a unique security action that determines whether someone can send out communications immediately or has
     // to submit them for approval.
@@ -115,7 +115,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_COMMUNICATION_COMMUNICATIONENTRY_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "B0182DA2-82F7-4798-A48E-88EBE61F2109" )]
-    public class CommunicationEntry : RockMobileBlockType
+    public class CommunicationEntry : RockBlockType
     {
 
         #region Attribute Keys
@@ -228,21 +228,8 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Communication.CommunicationEntry";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

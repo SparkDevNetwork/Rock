@@ -36,12 +36,13 @@ namespace Rock.Blocks.Types.Mobile.Communication
     /// <summary>
     /// Displays a single SMS conversation between Rock and individual.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "SMS Conversation" )]
     [Category( "Mobile > Communication" )]
     [Description( "Displays a single SMS conversation between Rock and individual." )]
     [IconCssClass( "fa fa-comments" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -70,7 +71,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "99812f83-b514-4a76-a79d-01a97369f726" )]
     [Rock.SystemGuid.BlockTypeGuid( "4ef4250e-2d22-426c-adac-571c1301d18e" )]
-    public class SmsConversation : RockMobileBlockType
+    public class SmsConversation : RockBlockType
     {
         #region Block Attributes
 
@@ -88,21 +89,8 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Communication.SmsConversation";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -182,9 +170,6 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
             using ( var rockContext = new RockContext() )
             {
-
-                string photoUrl = null;
-
                 // Get the person via either their Guid.
                 var person = new PersonService( rockContext )
                     .GetQueryableByKey( personGuid.ToString() )
@@ -196,11 +181,6 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 if ( person == null )
                 {
                     return ActionBadRequest( "Individual was not found." );
-                }
-
-                if ( person.PhotoId.HasValue )
-                {
-                    photoUrl = MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Id={person.PhotoId.Value}&maxwidth=512&maxheight=512" );
                 }
 
                 var responses = new CommunicationResponseService( rockContext )
@@ -231,7 +211,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     Messages = messages,
                     PersonGuid = person.Guid,
                     PhoneNumber = person.PhoneNumbers.GetFirstSmsNumber(),
-                    PhotoUrl = photoUrl,
+                    PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( person.PhotoUrl ),
                     Snippets = snippets
                 };
 
