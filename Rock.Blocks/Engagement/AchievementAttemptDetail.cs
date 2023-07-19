@@ -84,7 +84,7 @@ namespace Rock.Blocks.Engagement
         private RockContext _rockContext = null;
         private AchievementTypeCache _achievementTypeCache = null;
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}";
 
         #region Methods
 

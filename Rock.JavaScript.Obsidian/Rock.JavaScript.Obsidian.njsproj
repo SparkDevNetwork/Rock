@@ -231,6 +231,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\EventItemDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManager\" />
@@ -814,6 +815,10 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\streakDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\streakTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\streakTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventCalendarItemAttributeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemOccurenceAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\experienceManagerOccurrencesInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManager\experienceManagerInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceVisualizer\experienceVisualizerInitializationBox.d.ts" />
