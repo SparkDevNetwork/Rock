@@ -267,6 +267,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmSettings\" />
@@ -925,6 +926,10 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\appleTvAppBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\appleTvAppDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\appleTvPageBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\appleTvPageDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\rockCacheabilityBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\timeIntervalBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmMetricBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmNodeDetailOptionsBag.d.ts" />
