@@ -67,6 +67,7 @@
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />
     <Compile Include="Event\EventItemDetail.cs" />
+    <Compile Include="Event\EventCalendarDetail.cs" />
     <Compile Include="Finance\BusinessDetail.cs" />
     <Compile Include="Engagement\StreakTypeDetail.cs" />
     <Compile Include="Prayer\PrayerRequestDetail.cs" />

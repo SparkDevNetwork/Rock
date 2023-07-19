@@ -231,6 +231,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\EventItemDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\" />
@@ -815,6 +816,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\streakDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\streakTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\streakTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventAttributeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventCalendarBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventCalendarDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventCalendarItemAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemDetailOptionsBag.d.ts" />

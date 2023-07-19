@@ -78,6 +78,9 @@
     <Content Include="src\Engagement\streakTypeDetail.obs" />
     <Content Include="src\Engagement\StreakTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StreakTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\eventCalendarDetail.obs" />
+    <Content Include="src\Event\EventCalendarDetail\editPanel.partial.obs" />
+    <Content Include="src\Event\EventCalendarDetail\viewPanel.partial.obs" />
     <Content Include="src\Event\eventItemDetail.obs" />
     <Content Include="src\Event\EventItemDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventItemDetail\viewPanel.partial.obs" />
@@ -242,6 +245,7 @@
     <Folder Include="src\Bus\" />
     <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
+    <Folder Include="src\Event\EventCalendarDetail\" />
     <Folder Include="src\Event\EventItemDetail\" />
     <Folder Include="src\Finance\BusinessDetail\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
@@ -381,6 +385,7 @@
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementAttemptDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Prayer\PrayerRequestDetail\types.d.ts" />
