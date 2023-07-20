@@ -20,6 +20,7 @@ using Rock.Enums.Crm;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.Utility.Enums;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -950,6 +951,9 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue EthnicityValue { get; set; }
 
+        /// <inheritdoc/>
+        public virtual ICollection<PersonQueryableAttributeValue> EntityAttributeValues { get; set; }
+
         #endregion
 
         #region Methods
@@ -965,7 +969,7 @@ namespace Rock.Model
             return this.FullName;
         }
 
-        #endregion
+#endregion
     }
 
     #region Entity Configuration
