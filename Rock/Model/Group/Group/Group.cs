@@ -23,6 +23,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Lava;
@@ -78,6 +79,7 @@ namespace Rock.Model
         [Required]
         [HideFromReporting]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int GroupTypeId { get; set; }
 
         /// <summary>
@@ -90,6 +92,7 @@ namespace Rock.Model
         [HideFromReporting]
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
+        [EnableAttributeQualification]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -579,6 +582,9 @@ namespace Rock.Model
         /// The inactive group reason.
         /// </value>
         public virtual DefinedValue InactiveReasonValue { get; set; }
+
+        /// <inheritdoc/>
+        public virtual ICollection<GroupQueryableAttributeValue> EntityAttributeValues { get; set; }
 
         /// <summary>
         /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.

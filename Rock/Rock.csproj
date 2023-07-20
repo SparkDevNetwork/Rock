@@ -1112,6 +1112,7 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncInfo.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncResult.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
+    <Compile Include="Model\Group\Group\Group.GroupQueryableAttributeValue.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
     <Compile Include="Observability\ObservabilityHelper.cs" />
