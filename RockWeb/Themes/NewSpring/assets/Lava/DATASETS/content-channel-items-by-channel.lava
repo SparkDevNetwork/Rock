@@ -110,6 +110,7 @@
         "ImageLandscape": {{ item | Attribute:'ImageLandscape' | ToJSON }},
         "ImageSquare": {{ item | Attribute:'ImageSquare' | ToJSON }},
         "ImagePortrait": {{ item | Attribute:'ImagePortrait' | ToJSON }},
+        "BackgroundImageSquare": {{ item | Attribute:'BackgroundImageSquare' | ToJSON }},
         "ImageApp": {{ item | Attribute:'ImageApp' | ToJSON }},
         "BackgroundColor": {{ item | Attribute:'BackgroundColor' | Replace:'#','' | ToJSON }},
         "ForegroundColor": {{ item | Attribute:'ForegroundColor' | Replace:'#','' | ToJSON }},
