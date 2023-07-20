@@ -763,7 +763,7 @@ SELECT
     [m].[definition] AS [Definition]
 FROM [sys].[sql_modules] AS [m]
 INNER JOIN [sys].[objects] AS [o] ON [o].[object_id] = [m].[object_id]
-WHERE [o].[name] LIKE 'vEntityAttributeValue_%' AND [o].[type] = 'V'
+WHERE [o].[name] LIKE 'EntityAttributeValue_%' AND [o].[type] = 'V'
 " ).ToList();
 
                 // Don't use the cache since it might not be safe yet.

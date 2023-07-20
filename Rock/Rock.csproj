@@ -597,6 +597,7 @@
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
+    <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
     <Compile Include="Attribute\GroupMemberRequirementFieldAttribute.cs" />
     <Compile Include="Attribute\IconSvgAttribute.cs" />
