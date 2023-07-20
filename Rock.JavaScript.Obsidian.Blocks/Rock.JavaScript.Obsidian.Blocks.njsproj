@@ -198,6 +198,7 @@
     <Content Include="src\Utility\realTimeDebugger.obs" />
     <Content Include="src\Utility\smsTestTransport.obs" />
     <Content Include="src\Utility\SmsTestTransport\attachment.partial.obs" />
+    <Content Include="src\WorkFlow\workflowTriggerDetail.obs" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>

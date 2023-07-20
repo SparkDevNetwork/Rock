@@ -279,6 +279,8 @@
     <Folder Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversation\" />
     <Folder Include="Framework\ViewModels\Blocks\Utility\" />
     <Folder Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\" />
+    <Folder Include="Framework\ViewModels\Blocks\Workflow\" />
+    <Folder Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\" />
     <Folder Include="Framework\ViewModels\Cms\" />
     <Folder Include="Framework\ViewModels\Communication\" />
     <Folder Include="Framework\ViewModels\Connection\" />
@@ -968,6 +970,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\customSettingsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\themeListItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\topicAndChannelBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\workflowTriggerBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\workflowTriggerDetailBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\workflowTriggerDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\blockCustomActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionAttributeFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionCustomFieldBag.d.ts" />
