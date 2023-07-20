@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class MediaFolder : IHasQueryableAttributes<MediaFolder.MediaFolderQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<MediaFolderQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class MediaFolderQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

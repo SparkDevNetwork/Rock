@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class Following : IHasQueryableAttributes<Following.FollowingQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<FollowingQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class FollowingQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

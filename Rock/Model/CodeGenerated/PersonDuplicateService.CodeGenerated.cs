@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class PersonDuplicate : IHasQueryableAttributes<PersonDuplicate.PersonDuplicateQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<PersonDuplicateQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class PersonDuplicateQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

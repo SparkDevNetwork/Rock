@@ -951,9 +951,6 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue EthnicityValue { get; set; }
 
-        /// <inheritdoc/>
-        public virtual ICollection<PersonQueryableAttributeValue> EntityAttributeValues { get; set; }
-
         #endregion
 
         #region Methods

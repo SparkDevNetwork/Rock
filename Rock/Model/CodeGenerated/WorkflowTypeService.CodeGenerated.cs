@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -130,6 +131,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class WorkflowType : IHasQueryableAttributes<WorkflowType.WorkflowTypeQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<WorkflowTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class WorkflowTypeQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

@@ -967,6 +967,11 @@ GO
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
+            var hasQueryableAttributes = typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( type )
+                && type != typeof( Rock.Model.Attribute )
+                && type != typeof( Rock.Model.AttributeValue );
+
+            var modelInheritance = new List<string>();
             var properties = GetEntityProperties( type, false, true, true );
 
             var sb = new StringBuilder();
@@ -994,10 +999,22 @@ GO
             sb.AppendLine( "" );
 
             sb.AppendLine( "using System;" );
+
+            if ( hasQueryableAttributes )
+            {
+                sb.AppendLine( "using System.Collections.Generic;" );
+            }
+
             sb.AppendLine( "using System.Linq;" );
             sb.AppendLine( "" );
             sb.AppendLine( @"using Rock.Data;
 " );
+
+
+            if ( hasQueryableAttributes )
+            {
+                modelInheritance.Add( $"IHasQueryableAttributes<{type.Name}.QueryableAttributeValue>" );
+            }
 
             sb.AppendFormat( "namespace {0}" + Environment.NewLine, type.Namespace );
             sb.AppendLine( "{" );
@@ -1019,6 +1036,22 @@ GO
             sb.Append( GetCanDeleteCode( rootFolder, type ) );
 
             sb.AppendLine( "    }" );
+
+            if ( hasQueryableAttributes )
+            {
+                sb.AppendLine();
+                sb.AppendLine( $"    public partial class {type.Name} : IHasQueryableAttributes<{type.Name}.{type.Name}QueryableAttributeValue>" );
+                sb.AppendLine( "    {" );
+
+                sb.AppendLine( "        /// <inheritdoc/>" );
+                sb.AppendLine( $"        public virtual ICollection<{type.Name}QueryableAttributeValue> EntityAttributeValues {{ get; set; }} " );
+                sb.AppendLine();
+                sb.AppendLine( "        /// <inheritdoc/>" );
+                sb.AppendLine( $"        public class {type.Name}QueryableAttributeValue : QueryableAttributeValue" );
+                sb.AppendLine( "        {" );
+                sb.AppendLine( "        }" );
+                sb.AppendLine( "    }" );
+            }
 
             sb.AppendFormat( @"
     /// <summary>

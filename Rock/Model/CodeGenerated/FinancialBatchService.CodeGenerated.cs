@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -54,6 +55,17 @@ namespace Rock.Model
 
             // ignoring FinancialTransaction,BatchId
             return true;
+        }
+    }
+
+    public partial class FinancialBatch : IHasQueryableAttributes<FinancialBatch.FinancialBatchQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<FinancialBatchQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class FinancialBatchQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

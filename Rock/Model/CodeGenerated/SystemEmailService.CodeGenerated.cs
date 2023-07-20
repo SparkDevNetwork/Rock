@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -88,6 +89,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class SystemEmail : IHasQueryableAttributes<SystemEmail.SystemEmailQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<SystemEmailQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class SystemEmailQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

@@ -25,7 +25,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T">The <see cref="QueryableAttributeValue"/> subclass that represents the attribute values for this entity.</typeparam>
     internal interface IHasQueryableAttributes<T>
-        where T : QueryableAttributeValue
+        where T : QueryableAttributeValue, new()
     {
         /// <summary>
         /// Gets the entity attribute values. This should only be used inside

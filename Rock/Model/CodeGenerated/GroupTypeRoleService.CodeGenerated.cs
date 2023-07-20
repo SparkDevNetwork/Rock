@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -82,6 +83,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class GroupTypeRole : IHasQueryableAttributes<GroupTypeRole.GroupTypeRoleQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<GroupTypeRoleQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class GroupTypeRoleQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

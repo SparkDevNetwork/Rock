@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,6 +59,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class NoteType : IHasQueryableAttributes<NoteType.NoteTypeQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<NoteTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class NoteTypeQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -140,7 +152,9 @@ namespace Rock.Model
             #pragma warning restore 612, 618
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.FormatType = source.FormatType;
             target.IconCssClass = source.IconCssClass;
+            target.IsMentionEnabled = source.IsMentionEnabled;
             target.IsSystem = source.IsSystem;
             target.MaxReplyDepth = source.MaxReplyDepth;
             target.Name = source.Name;

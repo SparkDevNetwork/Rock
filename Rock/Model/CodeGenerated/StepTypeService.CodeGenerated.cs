@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -70,6 +71,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class StepType : IHasQueryableAttributes<StepType.StepTypeQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<StepTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class StepTypeQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

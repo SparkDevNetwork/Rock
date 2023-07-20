@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class CommunicationTemplateAttachment : IHasQueryableAttributes<CommunicationTemplateAttachment.CommunicationTemplateAttachmentQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<CommunicationTemplateAttachmentQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class CommunicationTemplateAttachmentQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

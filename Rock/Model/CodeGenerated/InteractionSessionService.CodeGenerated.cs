@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -64,6 +65,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class InteractionSession : IHasQueryableAttributes<InteractionSession.InteractionSessionQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<InteractionSessionQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class InteractionSessionQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

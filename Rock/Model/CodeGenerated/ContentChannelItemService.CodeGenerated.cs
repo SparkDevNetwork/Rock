@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,6 +59,17 @@ namespace Rock.Model
 
             // ignoring ContentChannelItemSlug,ContentChannelItemId
             return true;
+        }
+    }
+
+    public partial class ContentChannelItem : IHasQueryableAttributes<ContentChannelItem.ContentChannelItemQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<ContentChannelItemQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class ContentChannelItemQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

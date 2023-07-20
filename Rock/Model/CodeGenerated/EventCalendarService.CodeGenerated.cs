@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class EventCalendar : IHasQueryableAttributes<EventCalendar.EventCalendarQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<EventCalendarQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class EventCalendarQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

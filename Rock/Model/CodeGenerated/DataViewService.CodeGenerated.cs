@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -132,6 +133,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class DataView : IHasQueryableAttributes<DataView.DataViewQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<DataViewQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class DataViewQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

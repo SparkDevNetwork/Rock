@@ -32,7 +32,7 @@ namespace Rock.Model
     [Table( "SmsPipeline" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "64DA3A06-FD39-4E5B-8126-38404FB0092A")]
-    public class SmsPipeline : Model<SmsPipeline>
+    public partial class SmsPipeline : Model<SmsPipeline>
     {
         #region Entity Properties
 

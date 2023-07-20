@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -54,6 +55,17 @@ namespace Rock.Model
 
             // ignoring Attendance,OccurrenceId
             return true;
+        }
+    }
+
+    public partial class AttendanceOccurrence : IHasQueryableAttributes<AttendanceOccurrence.AttendanceOccurrenceQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<AttendanceOccurrenceQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class AttendanceOccurrenceQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

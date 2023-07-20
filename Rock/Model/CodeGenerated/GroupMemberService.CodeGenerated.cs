@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -62,6 +63,17 @@ namespace Rock.Model
 
             // ignoring RegistrationRegistrant,GroupMemberId
             return true;
+        }
+    }
+
+    public partial class GroupMember : IHasQueryableAttributes<GroupMember.GroupMemberQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<GroupMemberQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class GroupMemberQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

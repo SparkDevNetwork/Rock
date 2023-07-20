@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,6 +59,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class Layout : IHasQueryableAttributes<Layout.LayoutQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<LayoutQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class LayoutQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -238,6 +239,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class BinaryFile : IHasQueryableAttributes<BinaryFile.BinaryFileQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<BinaryFileQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class BinaryFileQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

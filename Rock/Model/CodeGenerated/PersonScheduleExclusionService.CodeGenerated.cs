@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,6 +59,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class PersonScheduleExclusion : IHasQueryableAttributes<PersonScheduleExclusion.PersonScheduleExclusionQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<PersonScheduleExclusionQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class PersonScheduleExclusionQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

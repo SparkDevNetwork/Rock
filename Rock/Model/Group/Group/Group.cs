@@ -583,9 +583,6 @@ namespace Rock.Model
         /// </value>
         public virtual DefinedValue InactiveReasonValue { get; set; }
 
-        /// <inheritdoc/>
-        public virtual ICollection<GroupQueryableAttributeValue> EntityAttributeValues { get; set; }
-
         /// <summary>
         /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
         /// </summary>

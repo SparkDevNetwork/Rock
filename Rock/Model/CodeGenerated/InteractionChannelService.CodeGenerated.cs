@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -64,6 +65,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class InteractionChannel : IHasQueryableAttributes<InteractionChannel.InteractionChannelQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<InteractionChannelQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class InteractionChannelQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class StepWorkflow : IHasQueryableAttributes<StepWorkflow.StepWorkflowQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<StepWorkflowQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class StepWorkflowQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

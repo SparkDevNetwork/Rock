@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class SiteDomain : IHasQueryableAttributes<SiteDomain.SiteDomainQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<SiteDomainQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class SiteDomainQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

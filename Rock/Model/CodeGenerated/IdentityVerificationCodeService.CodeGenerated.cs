@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,6 +59,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class IdentityVerificationCode : IHasQueryableAttributes<IdentityVerificationCode.IdentityVerificationCodeQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<IdentityVerificationCodeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class IdentityVerificationCodeQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

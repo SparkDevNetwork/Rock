@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -54,6 +55,17 @@ namespace Rock.Model
 
             // ignoring Note,ParentNoteId
             return true;
+        }
+    }
+
+    public partial class Note : IHasQueryableAttributes<Note.NoteQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<NoteQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class NoteQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

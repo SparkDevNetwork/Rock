@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -142,6 +143,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class Campus : IHasQueryableAttributes<Campus.CampusQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<CampusQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class CampusQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

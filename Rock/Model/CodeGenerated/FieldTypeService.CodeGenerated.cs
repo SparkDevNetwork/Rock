@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -76,6 +77,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class FieldType : IHasQueryableAttributes<FieldType.FieldTypeQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<FieldTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class FieldTypeQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

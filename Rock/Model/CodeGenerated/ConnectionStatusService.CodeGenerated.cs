@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -70,6 +71,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class ConnectionStatus : IHasQueryableAttributes<ConnectionStatus.ConnectionStatusQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<ConnectionStatusQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class ConnectionStatusQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

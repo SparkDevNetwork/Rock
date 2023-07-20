@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -58,6 +59,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class InteractiveExperienceOccurrence : IHasQueryableAttributes<InteractiveExperienceOccurrence.InteractiveExperienceOccurrenceQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<InteractiveExperienceOccurrenceQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class InteractiveExperienceOccurrenceQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

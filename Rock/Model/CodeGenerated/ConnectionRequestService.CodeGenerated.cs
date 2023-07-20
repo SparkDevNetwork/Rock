@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -54,6 +55,17 @@ namespace Rock.Model
 
             // ignoring ConnectionRequestActivity,ConnectionRequestId
             return true;
+        }
+    }
+
+    public partial class ConnectionRequest : IHasQueryableAttributes<ConnectionRequest.ConnectionRequestQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<ConnectionRequestQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class ConnectionRequestQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

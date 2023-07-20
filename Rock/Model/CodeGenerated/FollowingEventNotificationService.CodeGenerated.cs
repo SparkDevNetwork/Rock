@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class FollowingEventNotification : IHasQueryableAttributes<FollowingEventNotification.FollowingEventNotificationQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<FollowingEventNotificationQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class FollowingEventNotificationQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

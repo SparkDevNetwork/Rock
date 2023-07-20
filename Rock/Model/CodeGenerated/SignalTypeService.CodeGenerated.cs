@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class SignalType : IHasQueryableAttributes<SignalType.SignalTypeQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<SignalTypeQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class SignalTypeQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

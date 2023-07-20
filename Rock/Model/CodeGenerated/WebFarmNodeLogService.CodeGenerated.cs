@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class WebFarmNodeLog : IHasQueryableAttributes<WebFarmNodeLog.WebFarmNodeLogQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<WebFarmNodeLogQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class WebFarmNodeLogQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

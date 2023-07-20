@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,7 +33,7 @@ namespace Rock.Model
     [Table( "PersonScheduleExclusion" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "07204F06-C09C-4B37-921A-C31C042938B9")]
-    public class PersonScheduleExclusion : Model<PersonScheduleExclusion>
+    public partial class PersonScheduleExclusion : Model<PersonScheduleExclusion>
     {
         #region Entity Properties
 

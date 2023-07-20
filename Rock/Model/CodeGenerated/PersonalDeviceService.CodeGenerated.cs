@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -64,6 +65,17 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    public partial class PersonalDevice : IHasQueryableAttributes<PersonalDevice.PersonalDeviceQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<PersonalDeviceQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class PersonalDeviceQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

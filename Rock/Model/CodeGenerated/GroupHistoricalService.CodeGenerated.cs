@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,6 +53,17 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    public partial class GroupHistorical : IHasQueryableAttributes<GroupHistorical.GroupHistoricalQueryableAttributeValue>
+    {
+        /// <inheritdoc/>
+        public virtual ICollection<GroupHistoricalQueryableAttributeValue> EntityAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class GroupHistoricalQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
