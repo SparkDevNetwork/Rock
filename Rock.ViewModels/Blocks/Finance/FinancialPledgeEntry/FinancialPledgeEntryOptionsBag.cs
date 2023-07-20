@@ -15,11 +15,13 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
 using System;
+using System.Collections.Generic;
 
-namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
+namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry
 {
-    public class FinancialPledgeDetailOptionsBag
+    public class FinancialPledgeEntryOptionsBag
     {
         /// <summary>
         /// Gets or sets the select group type unique identifier.
@@ -62,11 +64,43 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
         public bool RequirePledgeFrequency { get; set; }
 
         /// <summary>
+        /// Gets or sets the pledge frequencies.
+        /// </summary>
+        /// <value>
+        /// The pledge frequencies.
+        /// </value>
+        public List<ListItemBag> PledgeFrequencies { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show date range].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show date range]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowDateRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the groups.
+        /// </summary>
+        /// <value>
+        /// The groups.
+        /// </value>
+        public List<ListItemBag> Groups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the groups label.
+        /// </summary>
+        /// <value>
+        /// The groups label.
+        /// </value>
+        public string GroupsLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pledge term.
+        /// </summary>
+        /// <value>
+        /// The pledge term.
+        /// </value>
+        public string PledgeTerm { get; set; }
     }
 }

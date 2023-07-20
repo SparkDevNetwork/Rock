@@ -22,10 +22,23 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type FinancialPledgeDetailOptionsBag = {
+export type FinancialPledgeEntryOptionsBag = {
+    /** Gets or sets the groups. */
+    groups?: ListItemBag[] | null;
+
+    /** Gets or sets the groups label. */
+    groupsLabel?: string | null;
+
     /** Gets or sets the note message. */
     noteMessage?: string | null;
+
+    /** Gets or sets the pledge frequencies. */
+    pledgeFrequencies?: ListItemBag[] | null;
+
+    /** Gets or sets the pledge term. */
+    pledgeTerm?: string | null;
 
     /** Gets or sets a value indicating whether require that a user select a specific pledge frequency (when pledge frequency is shown) */
     requirePledgeFrequency: boolean;

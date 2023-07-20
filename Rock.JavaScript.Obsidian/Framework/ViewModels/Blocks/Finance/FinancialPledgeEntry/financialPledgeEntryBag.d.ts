@@ -24,7 +24,7 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-export type FinancialPledgeBag = {
+export type FinancialPledgeEntryBag = {
     /** Gets or sets the Rock.Model.FinancialAccount or account that the pledge is being directed toward. */
     account?: ListItemBag | null;
 
@@ -33,9 +33,6 @@ export type FinancialPledgeBag = {
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
-
-    /** Gets or sets the current action i.e. if it is a save or confirming duplicate pledges */
-    buttonAction?: string | null;
 
     /** Gets or sets the Current logged in person */
     currentPerson?: ListItemBag | null;
@@ -76,9 +73,12 @@ export type FinancialPledgeBag = {
     /** Gets or sets the receipt text. */
     receiptText?: string | null;
 
+    /** Gets or sets the current action i.e. if it is a save or confirming duplicate pledges */
+    saveButtonText?: string | null;
+
     /** Gets or sets the start date of the pledge period. */
     startDate?: string | null;
 
     /** Gets or sets the pledge amount that is promised to be given. */
-    totalAmount: number;
+    totalAmount?: number | null;
 };

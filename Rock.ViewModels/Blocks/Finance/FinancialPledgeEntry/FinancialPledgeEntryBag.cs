@@ -19,9 +19,9 @@ using System;
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
+namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry
 {
-    public class FinancialPledgeBag : EntityBagBase
+    public class FinancialPledgeEntryBag : EntityBagBase
     {
         /// <summary>
         /// Gets or sets the Rock.Model.FinancialAccount or account that the pledge is being directed toward.
@@ -86,7 +86,7 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
         /// <summary>
         /// Gets or sets the pledge amount that is promised to be given.
         /// </summary>
-        public decimal TotalAmount { get; set; }
+        public decimal? TotalAmount { get; set; }
 
         /// <summary>
         /// Gets or sets the receipt text.
@@ -102,7 +102,7 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
         /// <value>
         /// The action.
         /// </value>
-        public string ButtonAction { get; set; } = "Save";
+        public string SaveButtonText { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is duplicate pledge.

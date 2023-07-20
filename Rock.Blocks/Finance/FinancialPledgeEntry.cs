@@ -16,17 +16,20 @@
 //
 
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail;
+using Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 namespace Rock.Blocks.Finance
@@ -143,7 +146,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.EntityTypeGuid( "fad28407-5128-4ddb-9c1c-a0c2233f3e73" )]
     [Rock.SystemGuid.BlockTypeGuid( "0455ecbd-d54d-4485-bf4d-f469048ae10f" )]
-    public class FinancialPledgeDetail : RockDetailBlockType
+    public class FinancialPledgeEntry : RockDetailBlockType
     {
         #region Keys
 
@@ -173,8 +176,6 @@ namespace Rock.Blocks.Finance
             public const string PledgeTerm = "PledgeTerm";
         }
 
-        private const string btnConfirm = "Confirm";
-
         #endregion Keys
 
         #region Methods
@@ -184,12 +185,12 @@ namespace Rock.Blocks.Finance
         {
             using ( var rockContext = new RockContext() )
             {
-                var box = new DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag>();
+                var box = new DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag>();
 
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+                box.Options = GetBoxOptions( rockContext, box.Entity );
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<FinancialPledge>();
 
                 return box;
@@ -200,23 +201,64 @@ namespace Rock.Blocks.Finance
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private FinancialPledgeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private FinancialPledgeEntryOptionsBag GetBoxOptions( RockContext rockContext, FinancialPledgeEntryBag bag )
         {
-            var dateRange = GetAttributeValue( AttributeKey.PledgeDateRange );
-            var dateRangePicker = new DateRangePicker() { DelimitedValues = dateRange };
+            Guid? groupTypeGuid = GetAttributeValue( AttributeKey.SelectGroupType ).AsGuidOrNull();
+            var currentPerson = GetCurrentPerson();
 
-            var options = new FinancialPledgeDetailOptionsBag()
+            var options = new FinancialPledgeEntryOptionsBag()
             {
-                SelectGroupTypeGuid = GetAttributeValue( AttributeKey.SelectGroupType ).AsGuidOrNull(),
                 NoteMessage = GetAttributeValue( AttributeKey.NoteMessage ),
                 SaveButtonText = GetAttributeValue( AttributeKey.SaveButtonText ),
                 ShowPledgeFrequency = GetAttributeValue( AttributeKey.ShowPledgeFrequency ).AsBoolean(),
                 RequirePledgeFrequency = GetAttributeValue( AttributeKey.RequirePledgeFrequency ).AsBoolean(),
-                ShowDateRange = dateRangePicker.LowerValue == null || dateRangePicker.UpperValue == null
+                ShowDateRange = bag.StartDate == null || bag.EndDate == null,
+                PledgeTerm = GetAttributeValue( AttributeKey.PledgeTerm )
             };
+
+            if ( groupTypeGuid.HasValue )
+            {
+                var groups = new GroupMemberService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.Group.GroupType.Guid == groupTypeGuid.Value &&
+                        m.PersonId == currentPerson.Id &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active &&
+                        m.Group.IsActive && !m.Group.IsArchived )
+                    .Select( m => new
+                    {
+                        m.Guid,
+                        Name = m.Group.Name,
+                        GroupTypeName = m.Group.GroupType.Name
+                    } )
+                    .Distinct()
+                    .OrderBy( g => g.Name )
+                    .ToList();
+
+                if ( groups.Any() )
+                {
+                    options.GroupsLabel = "For " + groups.First().GroupTypeName;
+                    options.Groups = groups.ConvertAll( g => new ListItemBag() { Text = g.Name, Value = g.Guid.ToString() } );
+                    options.SelectGroupTypeGuid = groupTypeGuid;
+                }
+            }
+
+            if ( options.ShowPledgeFrequency )
+            {
+                options.PledgeFrequencies = new List<ListItemBag>();
+
+                var frequencies = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() )
+                    .DefinedValues.Where( dv => dv.IsActive )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Value );
+
+                foreach ( var frequency in frequencies )
+                {
+                    options.PledgeFrequencies.Add( new ListItemBag() { Text = frequency.Value, Value = frequency.Guid.ToString() } );
+                }
+            }
 
             return options;
         }
@@ -248,46 +290,27 @@ namespace Rock.Blocks.Finance
         /// </summary>
         /// <param name="box">The box to be populated.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag> box, RockContext rockContext )
         {
-            var entity = GetInitialEntity( rockContext );
-
-            if ( entity == null )
+            var entity = new FinancialPledge
             {
-                box.ErrorMessage = $"The {FinancialPledge.FriendlyTypeName} was not found.";
-                return;
-            }
+                Id = 0,
+                Guid = Guid.Empty
+            };
 
-            var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
-            if ( entity.Id != 0 )
+            // New entity is being created, prepare for edit mode by default.
+            if ( box.IsEditable )
             {
-                // Existing entity was found, prepare for view mode by default.
-                if ( isViewable )
-                {
-                    box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( FinancialPledge.FriendlyTypeName );
-                }
+                box.Entity = GetEntityBagForEdit( entity );
+                box.SecurityGrantToken = GetSecurityGrantToken( entity );
             }
             else
             {
-                // New entity is being created, prepare for edit mode by default.
-                if ( box.IsEditable )
-                {
-                    box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( FinancialPledge.FriendlyTypeName );
-                }
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( FinancialPledge.FriendlyTypeName );
             }
         }
 
@@ -295,15 +318,15 @@ namespace Rock.Blocks.Finance
         /// Gets the entity bag that is common between both view and edit modes.
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
-        /// <returns>A <see cref="FinancialPledgeBag"/> that represents the entity.</returns>Sni
-        private FinancialPledgeBag GetCommonEntityBag( FinancialPledge entity )
+        /// <returns>A <see cref="FinancialPledgeEntryBag"/> that represents the entity.</returns>Sni
+        private FinancialPledgeEntryBag GetCommonEntityBag( FinancialPledge entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var entityBag = new FinancialPledgeBag
+            var entityBag = new FinancialPledgeEntryBag
             {
                 IdKey = entity.IdKey,
                 Account = entity.Account.ToListItemBag(),
@@ -311,47 +334,34 @@ namespace Rock.Blocks.Finance
                 CurrentPerson = RequestContext.CurrentPerson.ToListItemBag(),
                 PersonAlias = entity.PersonAlias.ToListItemBag(),
                 PledgeFrequencyValue = entity.PledgeFrequencyValue.ToListItemBag(),
-                TotalAmount = entity.TotalAmount
+                SaveButtonText = GetAttributeValue( AttributeKey.SaveButtonText )
             };
 
-            if ( entity.StartDate != DateTime.MinValue )
+            var pledgeDateRange = GetAttributeValue( AttributeKey.PledgeDateRange );
+
+            if ( pledgeDateRange.IsNotNullOrWhiteSpace() )
             {
-                entityBag.StartDate = entity.StartDate;
+                var dateRangePicker = new DateRangePicker() { DelimitedValues = pledgeDateRange };
+                var dateRange = dateRangePicker.DateRange;
+
+                entityBag.StartDate = dateRange.Start;
+                entityBag.EndDate = dateRange.End;
             }
 
-            if ( entity.EndDate != DateTime.MinValue )
+            if ( entity.TotalAmount > 0 )
             {
-                entityBag.EndDate = entity.EndDate;
+                entityBag.TotalAmount = entity.TotalAmount;
             }
 
             return entityBag;
         }
 
         /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="FinancialPledgeBag"/> that represents the entity.</returns>
-        private FinancialPledgeBag GetEntityBagForView( FinancialPledge entity )
-        {
-            if ( entity == null )
-            {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity );
-
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
-
-            return bag;
-        }
-
-        /// <summary>
         /// Gets the bag for editing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="FinancialPledgeBag"/> that represents the entity.</returns>
-        private FinancialPledgeBag GetEntityBagForEdit( FinancialPledge entity )
+        /// <returns>A <see cref="FinancialPledgeEntryBag"/> that represents the entity.</returns>
+        private FinancialPledgeEntryBag GetEntityBagForEdit( FinancialPledge entity )
         {
             if ( entity == null )
             {
@@ -372,7 +382,7 @@ namespace Rock.Blocks.Finance
         /// <param name="box">The box containing the information to be updated.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( FinancialPledge entity, DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag> box, RockContext rockContext )
+        private bool UpdateEntityFromBox( FinancialPledge entity, DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag> box, RockContext rockContext )
         {
             if ( box.ValidProperties == null )
             {
@@ -385,7 +395,7 @@ namespace Rock.Blocks.Finance
                 () => entity.PersonAliasId = box.Entity.PersonAlias.GetEntityId<PersonAlias>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.EndDate ),
-                () => entity.EndDate = box.Entity.EndDate ?? DateTime.MinValue );
+                () => entity.EndDate = box.Entity.EndDate ?? DateTime.MaxValue );
 
             box.IfValidProperty( nameof( box.Entity.Group ),
                 () => entity.GroupId = box.Entity.Group.GetEntityId<Rock.Model.Group>( rockContext ) );
@@ -397,7 +407,7 @@ namespace Rock.Blocks.Finance
                 () => entity.StartDate = box.Entity.StartDate ?? DateTime.MinValue );
 
             box.IfValidProperty( nameof( box.Entity.TotalAmount ),
-                () => entity.TotalAmount = box.Entity.TotalAmount );
+                () => entity.TotalAmount = box.Entity.TotalAmount.GetValueOrDefault() );
 
             if ( !isNew )
             {
@@ -417,17 +427,6 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="FinancialPledge"/> to be viewed or edited on the page.</returns>
-        private FinancialPledge GetInitialEntity( RockContext rockContext )
-        {
-            return GetInitialEntity<FinancialPledge, FinancialPledgeService>( rockContext, PageParameterKey.FinancialPledgeId );
-        }
-
-        /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
@@ -444,12 +443,13 @@ namespace Rock.Blocks.Finance
         {
             using ( var rockContext = new RockContext() )
             {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
+                var entity = new FinancialPledge
                 {
-                    entity.LoadAttributes( rockContext );
-                }
+                    Id = 0,
+                    Guid = Guid.Empty
+                };
+
+                entity.LoadAttributes( rockContext );
 
                 return GetSecurityGrantToken( entity );
             }
@@ -517,7 +517,7 @@ namespace Rock.Blocks.Finance
         /// <param name="rockContext">The rock context.</param>
         /// <param name="entityBag">The entity bag.</param>
         /// <returns></returns>
-        private Person FindPerson( RockContext rockContext, FinancialPledgeBag entityBag )
+        private Person FindPerson( RockContext rockContext, FinancialPledgeEntryBag entityBag )
         {
             Person person;
             var personService = new PersonService( rockContext );
@@ -552,7 +552,7 @@ namespace Rock.Blocks.Finance
 
                 if ( person == null )
                 {
-                    var definedValue = DefinedValueCache.Get( GetAttributeValue( "NewConnectionStatus" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
+                    var definedValue = DefinedValueCache.Get( GetAttributeValue( AttributeKey.NewConnectionStatus ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
                     person = new Person
                     {
                         FirstName = entityBag.FirstName,
@@ -560,11 +560,10 @@ namespace Rock.Blocks.Finance
                         Email = entityBag.Email,
                         EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
                         ConnectionStatusValueId = definedValue.Id,
+                        IsSystem = false,
+                        RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
+                        RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id
                     };
-
-                    person.IsSystem = false;
-                    person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                    person.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
 
                     PersonService.SaveNewPerson( person, rockContext, null, false );
                 }
@@ -593,23 +592,24 @@ namespace Rock.Blocks.Finance
         /// Gets the box that will contain all the information needed to begin
         /// the edit operation.
         /// </summary>
-        /// <param name="key">The identifier of the entity to be edited.</param>
         /// <returns>A box that contains the entity and any other information required.</returns>
         [BlockAction]
-        public BlockActionResult Edit( string key )
+        public BlockActionResult InitializeBox()
         {
             using ( var rockContext = new RockContext() )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
+                var entity = new FinancialPledge
                 {
-                    return actionError;
-                }
+                    Id = 0,
+                    Guid = Guid.Empty
+                };
 
-                entity.LoadAttributes( rockContext );
+                var bag = GetEntityBagForEdit( entity );
 
-                var box = new DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag>
+                var box = new DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = bag,
+                    Options = GetBoxOptions( rockContext, bag )
                 };
 
                 return ActionOk( box );
@@ -622,7 +622,7 @@ namespace Rock.Blocks.Finance
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag> box )
+        public BlockActionResult Save( DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag> box )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -660,7 +660,7 @@ namespace Rock.Blocks.Finance
                     return ActionBadRequest( validationMessage );
                 }
 
-                if ( box.Entity.ButtonAction != btnConfirm && isNew )
+                if ( box.Entity.SaveButtonText == GetAttributeValue( AttributeKey.SaveButtonText ) && isNew )
                 {
                     var duplicatePledges = entityService.Queryable()
                         .Where( a => a.PersonAlias.PersonId == person.Id )
@@ -678,7 +678,7 @@ namespace Rock.Blocks.Finance
                         }
 
                         box.Entity.DuplicatePledgeWarningText += "</ul>";
-                        box.Entity.ButtonAction = btnConfirm;
+                        box.Entity.SaveButtonText = "Add Pledge";
                         box.Entity.IsDuplicatePledge = true;
                         return ActionOk( box.Entity );
                     }
@@ -690,7 +690,7 @@ namespace Rock.Blocks.Finance
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-                var entityBag = GetEntityBagForView( entity );
+                var entityBag = GetEntityBagForEdit( entity );
 
                 if ( isNew )
                 {
@@ -712,6 +712,17 @@ namespace Rock.Blocks.Finance
                     string appRoot = RequestContext.ResolveRockUrl( "~/" );
                     string themeRoot = RequestContext.ResolveRockUrl( "~~/" );
                     entityBag.ReceiptText = entityBag.ReceiptText.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                    // if a ConfirmationEmailTemplate is configured, send an email
+                    var confirmationEmailTemplateGuid = GetAttributeValue( AttributeKey.ConfirmationEmailTemplate ).AsGuidOrNull();
+                    if ( confirmationEmailTemplateGuid.HasValue )
+                    {
+                        var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid.Value );
+                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
+                        emailMessage.AppRoot = RequestContext.ResolveRockUrl( "~/" );
+                        emailMessage.ThemeRoot = RequestContext.ResolveRockUrl( "~~/" );
+                        emailMessage.Send();
+                    }
 
                     return ActionOk( entityBag );
                 }
@@ -756,7 +767,7 @@ namespace Rock.Blocks.Finance
         /// <param name="box">The box that contains all the information about the entity being edited.</param>
         /// <returns>A box that contains the entity and attribute information.</returns>
         [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag> box )
+        public BlockActionResult RefreshAttributes( DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag> box )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -774,7 +785,7 @@ namespace Rock.Blocks.Finance
                 // Reload attributes based on the new property values.
                 entity.LoadAttributes( rockContext );
 
-                var refreshedBox = new DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag>
+                var refreshedBox = new DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag>
                 {
                     Entity = GetEntityBagForEdit( entity )
                 };

@@ -140,8 +140,8 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUpdatePreferenceBag.cs" />
     <Compile Include="Blocks\Group\GroupRegistration\GroupRegistrationBag.cs" />
     <Compile Include="Blocks\Group\GroupRegistration\GroupRegistrationBlockBox.cs" />
-    <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
-    <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeEntry\FinancialPledgeEntryBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeEntry\FinancialPledgeEntryOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryMetricCategoryBag.cs" />
     <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryGetMetricsResponseBag.cs" />
     <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryGetMetricsRequestBag.cs" />

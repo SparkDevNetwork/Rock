@@ -88,7 +88,7 @@
     <Compile Include="Reporting\ServiceMetricsEntry.cs" />
     <Compile Include="Group\Scheduling\GroupScheduler.cs" />
     <Compile Include="Finance\FinancialBatchDetail.cs" />
-    <Compile Include="Finance\FinancialPledgeDetail.cs" />
+    <Compile Include="Finance\FinancialPledgeEntry.cs" />
     <Compile Include="Group\GroupRegistration.cs" />
     <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
