@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Configuration;
 using System.Data.Entity;
 using System.Data.Entity.Migrations.Infrastructure;
@@ -24,6 +25,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -157,6 +159,11 @@ namespace Rock.WebStartup
             }
 
             ShowDebugTimingMessage( "Plugin Migrations" );
+
+            // Create the dynamic attribute value views.
+            LogStartupMessage( "Creating Queryable Attribute Values" );
+            InitializeQueryableAttributeValues();
+            ShowDebugTimingMessage( "Queryable Attribute Values" );
 
             /* 2020-05-20 MDP
                Plugins use Direct SQL to update data,
@@ -721,6 +728,208 @@ namespace Rock.WebStartup
             return result;
         }
 
+        #region Queryable Attribute Values
+
+        /// <summary>
+        /// Initialize all the custom SQL views that handle the queryable
+        /// attribute values for SQL based joins.
+        /// </summary>
+        /// <remarks>
+        /// At this stage, the RockContext is initialized but standard framework
+        /// methods that generate EF queries may or may not work so be careful.
+        /// </remarks>
+        private static void InitializeQueryableAttributeValues()
+        {
+            var genericHasEntityAttributes = typeof( IHasQueryableAttributes<> );
+
+            // Find all core entity types and then all plugin entity types.
+            var types = Reflection.SearchAssembly( typeof( IEntity ).Assembly, typeof( IEntity ) )
+                .Union( Reflection.FindTypes( typeof( IRockEntity ) ) )
+                .Select( a => a.Value )
+                .Where( a => !a.IsAbstract
+                    && a.GetCustomAttribute<NotMappedAttribute>() == null
+                    && a.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null )
+                .ToList();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeService = new EntityTypeService( rockContext );
+                var knownViews = new List<string>();
+
+                // Execute query to get all existing views and their definitions.
+                var existingViews = rockContext.Database.SqlQuery<SqlViewDefinition>( @"
+SELECT
+    [o].[name] AS [Name],
+    [m].[definition] AS [Definition]
+FROM [sys].[sql_modules] AS [m]
+INNER JOIN [sys].[objects] AS [o] ON [o].[object_id] = [m].[object_id]
+WHERE [o].[name] LIKE 'vEntityAttributeValue_%' AND [o].[type] = 'V'
+" ).ToList();
+
+                // Don't use the cache since it might not be safe yet.
+                var entityTypeIds = entityTypeService.Queryable()
+                    .Where( et => et.IsEntity )
+                    .Select( et => new
+                    {
+                        et.Id,
+                        et.Name
+                    } )
+                    .ToList()
+                    .ToDictionary( et => et.Name, et => et.Id );
+
+                // Check each type we found by way of reflection.
+                foreach ( var type in types )
+                {
+                    var hasEntityAttributes = type
+                        .GetInterfaces()
+                        .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
+
+                    var entityTableName = type.GetCustomAttribute<TableAttribute>()?.Name;
+
+                    // If the entity does not implement IHasQueryableAttributes<> or
+                    // has not specified a table name, then we can't set up the view.
+                    if ( hasEntityAttributes == null || entityTableName.IsNullOrWhiteSpace() )
+                    {
+                        continue;
+                    }
+
+                    // Try to get from our custom cache, otherwise create a new one.
+                    if ( !entityTypeIds.TryGetValue( type.FullName, out var entityTypeId ) )
+                    {
+                        entityTypeId = new EntityTypeService( rockContext ).Get( type, true, null ).Id;
+                    }
+
+                    var viewName = CreateOrUpdateAttributeValueView( rockContext, type, entityTypeId, entityTableName, existingViews );
+
+                    knownViews.Add( viewName );
+                }
+
+                // Drop any old views we no longer need.
+                var oldViewNames = existingViews
+                    .Select( v => v.Name )
+                    .Where( v => !knownViews.Contains( v ) )
+                    .ToList();
+
+                foreach ( var viewName in oldViewNames )
+                {
+                    rockContext.Database.ExecuteSqlCommand( $"DROP VIEW [{viewName}]" );
+                }
+            }
+        }
+
+        /// <remarks>
+        /// At this stage, the RockContext is initialized but standard framework
+        /// methods that generate EF queries may or may not work so be careful.
+        /// </remarks>
+        private static string CreateOrUpdateAttributeValueView( RockContext rockContext, Type type, int entityTypeId, string entityTableName, List<SqlViewDefinition> viewDefinitions )
+        {
+            var viewName = $"EntityAttributeValue_{entityTableName}";
+            var qualifierChecks = string.Empty;
+
+            // Find all properties that have been decorated as valid for use
+            // with attribute qualification.
+            var qualifierColumns = type.GetProperties()
+                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null )
+                .Select( p => p.Name )
+                .ToList();
+
+            // If we found any then construct an additional where clause to be
+            // used to limit to those qualifications.
+            if ( qualifierColumns.Any() )
+            {
+                var checks = qualifierColumns
+                    .Select( c => $"([A].[EntityTypeQualifierColumn] = '{c}' AND [A].[EntityTypeQualifierValue] = [E].[{c}])" )
+                    .JoinStrings( "\n        OR " );
+
+                qualifierChecks = $"\n        OR {checks}";
+            }
+
+            var sql = $@"
+CREATE VIEW [dbo].[{viewName}]
+AS
+SELECT
+    CAST([AV].[Id] AS BIGINT) AS [Id],
+    [E].[Id] AS [EntityId],
+    [A].[Id] AS [AttributeId],
+    [A].[Key],
+    [AV].[Value],
+    [AV].[PersistedTextValue],
+    [AV].[PersistedHtmlValue],
+    [AV].[PersistedCondensedTextValue],
+    [AV].[PersistedCondensedHtmlValue],
+    [AV].[ValueChecksum]
+FROM [{entityTableName}] AS [E]
+INNER JOIN [AttributeValue] AS [AV] ON [AV].[EntityId] = [E].[Id]
+INNER JOIN [Attribute] AS [A] ON [A].[Id] = [AV].[AttributeId]
+WHERE [A].[EntityTypeId] = {entityTypeId}
+    AND (
+        (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = ''){qualifierChecks}
+    )
+
+UNION
+
+SELECT
+    CAST([A].[Id] + 4294967295 AS BIGINT) AS [Id],
+    [E].[Id] AS [EntityId],
+    [A].[Id] AS [AttributeId],
+    [A].[Key],
+    [A].[DefaultValue] AS [Value],
+    [A].[DefaultPersistedTextValue],
+    [A].[DefaultPersistedHtmlValue],
+    [A].[DefaultPersistedCondensedTextValue],
+    [A].[DefaultPersistedCondensedHtmlValue],
+    CHECKSUM([A].[DefaultValue]) AS [ValueChecksum]
+FROM [{entityTableName}] AS [E]
+INNER JOIN [Attribute] AS [A] ON [A].[EntityTypeId] = {entityTypeId}
+LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]
+WHERE [AV].[Id] IS NULL
+    AND (
+        (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = ''){qualifierChecks}
+    )
+";
+
+            var existingDefinition = viewDefinitions.Where( v => v.Name == viewName )
+                .Select( v => v.Definition )
+                .FirstOrDefault();
+
+            // We only need to create the view if it doesn't exist or doesn't match.
+            if ( existingDefinition == null )
+            {
+                // View doesn't exist.
+                rockContext.Database.ExecuteSqlCommand( sql );
+                //Debug.WriteLine( $"Created attribute view for '{entityTableName}'." );
+            }
+            else if ( existingDefinition != sql )
+            {
+                // View exists but doesn't match definition.
+                rockContext.Database.ExecuteSqlCommand( $"DROP VIEW [dbo].[{viewName}]" );
+                rockContext.Database.ExecuteSqlCommand( sql );
+                //Debug.WriteLine( $"Updated attribute view for '{entityTableName}'." );
+            }
+
+            return viewName;
+        }
+
+        /// <summary>
+        /// Contains the name and original SQL used to create a view.
+        /// </summary>
+        private class SqlViewDefinition
+        {
+            /// <summary>
+            /// Gets or sets the name of the view.
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the original SQL used to create the view.
+            /// </summary>
+            public string Definition { get; set; }
+        }
+
+        #endregion
+
+        #region Lava
+
         /// <summary>
         /// Initializes Rock's Lava system (which uses DotLiquid)
         /// Doing this in startup will force the static Liquid class to get instantiated
@@ -1021,6 +1230,10 @@ namespace Rock.WebStartup
             engine.RegisterSafeType( typeof( Utilities.ColorPair ) );
         }
 
+        #endregion
+
+        #region Logging
+
         /// <summary>
         /// Logs the error to database (or filesystem if database isn't available)
         /// </summary>
@@ -1128,6 +1341,8 @@ namespace Rock.WebStartup
                 // ignore
             }
         }
+
+        #endregion
 
         /// <summary>
         /// Handles the AssemblyResolve event of the AppDomain.

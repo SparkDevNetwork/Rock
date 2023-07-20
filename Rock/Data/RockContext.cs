@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 using Rock.Model;
@@ -2435,11 +2436,11 @@ namespace Rock.Data
                 }
 
                 // look for IRockEntity classes
-                var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IRockEntity ) )
+                var pluginEntityTypeList = Reflection.FindTypes( typeof( Rock.Data.IRockEntity ) )
                     .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && ( a.Value.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null ) )
                     .OrderBy( a => a.Key ).Select( a => a.Value );
 
-                foreach ( var entityType in entityTypeList )
+                foreach ( var entityType in pluginEntityTypeList )
                 {
                     try
                     {
@@ -2452,7 +2453,7 @@ namespace Rock.Data
                 }
 
                 // add configurations that might be in plugin assemblies
-                foreach ( var assembly in entityTypeList.Select( a => a.Assembly ).Distinct() )
+                foreach ( var assembly in pluginEntityTypeList.Select( a => a.Assembly ).Distinct() )
                 {
                     try
                     {
@@ -2463,10 +2464,89 @@ namespace Rock.Data
                         ExceptionLogService.LogException( new Exception( $"Exception occurred when adding Plugin Entity Configurations from {assembly} to RockContext", ex ), null );
                     }
                 }
+
+                // Find all core models in the Rock DLL.
+                var coreEntityTypeList = Reflection.SearchAssembly( typeof( IEntity ).Assembly, typeof( IEntity ) )
+                    .Select( a => a.Value )
+                    .Where( a => !a.IsAbstract
+                        && a.GetCustomAttribute<NotMappedAttribute>() == null
+                        && a.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null )
+                    .ToList();
+
+                ConfigureEntityAttributes( modelBuilder, coreEntityTypeList );
+                ConfigureEntityAttributes( modelBuilder, pluginEntityTypeList );
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( new Exception( "Exception occurred when adding Plugin Entities to RockContext", ex ), null );
+            }
+        }
+
+        /// <summary>
+        /// Configures an entity for queryable attribute values in the database.
+        /// This uses reflection to perform the EF navigation property
+        /// configuration.
+        /// </summary>
+        /// <param name="modelBuilder">The database model builder.</param>
+        /// <param name="entityTypes">The types that need to be configured.</param>
+        private void ConfigureEntityAttributes( DbModelBuilder modelBuilder, IEnumerable<Type> entityTypes )
+        {
+            var genericHasEntityAttributes = typeof( IHasQueryableAttributes<> );
+            var genericEntityMethod = modelBuilder.GetType().GetMethod( "Entity" );
+
+            foreach ( var entityType in entityTypes )
+            {
+                var hasEntityAttributes = entityType
+                    .GetInterfaces()
+                    .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
+
+                var entityTableName = entityType.GetCustomAttribute<TableAttribute>()?.Name;
+
+                if ( hasEntityAttributes == null || entityTableName.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                var entityAttributeValueType = hasEntityAttributes.GetGenericArguments()[0];
+
+                // First configure the real entity so that the EntityAttributeValues
+                // navigation property works.
+
+                // modelBuilder.Entity<entityType>()
+                var entityMethod = genericEntityMethod.MakeGenericMethod( entityType );
+                var entityTypeConfiguration = entityMethod.Invoke( modelBuilder, new object[0] );
+
+                // .HasMany( a => a.EntityAttributeValues )
+                var navigationPropertyType = typeof( ICollection<> ).MakeGenericType( entityAttributeValueType );
+                var navigationPropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityType, navigationPropertyType );
+                var navigationPropertyParameter = Expression.Parameter( entityType );
+                var navigationPropertyExpression = Expression.Lambda( Expression.Property( navigationPropertyParameter, "EntityAttributeValues" ), navigationPropertyParameter );
+                var hasManyMethod = entityTypeConfiguration.GetType().GetMethod( "HasMany" ).MakeGenericMethod( entityAttributeValueType );
+                var manyNavigationPropertyConfiguration = hasManyMethod.Invoke( entityTypeConfiguration, new object[] { navigationPropertyExpression } );
+
+                // .WithRequired()
+                var withRequiredMethod = manyNavigationPropertyConfiguration.GetType().GetMethod( "WithRequired", new Type[0] );
+                var dependentNavigationPropertyConfiguration = withRequiredMethod.Invoke( manyNavigationPropertyConfiguration, new object[0] );
+
+                // .HasForeignKey()
+                var foreignKeyPropertyType = typeof( int );
+                var foreignKeyPropertyAccessorType = typeof( Func<,> ).MakeGenericType( entityAttributeValueType, typeof( int ) );
+                var foreignKeyParameter = Expression.Parameter( entityAttributeValueType );
+                var foreignKeyExpression = Expression.Lambda( foreignKeyPropertyAccessorType, Expression.Property( foreignKeyParameter, "EntityId" ), foreignKeyParameter );
+                var foreignKeyMethod = dependentNavigationPropertyConfiguration.GetType().GetMethod( "HasForeignKey" ).MakeGenericMethod( foreignKeyPropertyType );
+                var cascadableNavigationPropertyConfiguration = ( System.Data.Entity.ModelConfiguration.Configuration.CascadableNavigationPropertyConfiguration ) foreignKeyMethod.Invoke( dependentNavigationPropertyConfiguration, new object[] { foreignKeyExpression } );
+
+                cascadableNavigationPropertyConfiguration.WillCascadeOnDelete( false );
+
+                // Now configure the entity attribute value type's table name.
+
+                // modelBuilder.Entity<entityAttributeValueType>()
+                entityMethod = genericEntityMethod.MakeGenericMethod( entityAttributeValueType );
+                entityTypeConfiguration = entityMethod.Invoke( modelBuilder, new object[0] );
+
+                // .ToTable( "name" )
+                var toTableMethod = entityTypeConfiguration.GetType().GetMethod( "ToTable", new [] { typeof( string ) } );
+                toTableMethod.Invoke( entityTypeConfiguration, new object[] { $"EntityAttributeValue_{entityTableName}" } );
             }
         }
     }
