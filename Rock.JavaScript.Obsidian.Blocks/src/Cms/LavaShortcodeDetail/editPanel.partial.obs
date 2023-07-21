@@ -8,16 +8,7 @@
                     <TextBox v-model="name"
                              label="Name"
                              rules="required" />
-                </div>
 
-                <div class="col-md-6">
-                    <CheckBox v-model="isActive"
-                              label="Active" />
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
                     <TextBox v-model="tagName"
                              help="This will be the name of the shortcode when used in Lava."
                              label="Tag Name"
@@ -25,6 +16,9 @@
                 </div>
 
                 <div class="col-md-6">
+                    <CheckBox v-model="isActive"
+                              label="Active" />
+
                     <RadioButtonList v-model="tagType"
                                      :items="tagTypes"
                                      :repeatColumns="0"
@@ -35,10 +29,14 @@
                 </div>
             </div>
 
-            <CategoryPicker v-model="categories"
-                            label="Categories"
-                            multiple
-                            :entityTypeGuid="EntityType.LavaShortcode" />
+            <div class="row">
+                <div class="col-md-2">
+                    <CategoryPicker v-model="categories"
+                                    label="Categories"
+                                    multiple
+                                    :entityTypeGuid="EntityType.LavaShortcode" />
+                </div>
+            </div>
 
             <TextBox v-model="description"
                      label="Description"
@@ -75,22 +73,24 @@
 
         <div v-else>
 
-            <p v-text="description"/>
+            <p v-text="description" />
 
             <NotificationBox alertType="info">
                 <strong>Note</strong> This is a system lava shortcode so editing is limited.
             </NotificationBox>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <ValueDetailList :modelValue="propertyValues" />
                 </div>
-            </div>
 
-            <CategoryPicker v-model="categories"
-                            label="Categories"
-                            multiple
-                            :entityTypeGuid="EntityType.LavaShortcode" />
+                <div class="col-md-2">
+                    <CategoryPicker v-model="categories"
+                                    label="Categories"
+                                    multiple
+                                    :entityTypeGuid="EntityType.LavaShortcode" />
+                </div>
+            </div>
 
             <CodeEditor v-model="markup"
                         label="Short Code Markup"
@@ -99,12 +99,12 @@
                         :editorHeight="850"
                         rules="required" />
 
-            <RockLabel>Parameters</RockLabel>
+            <strong>Parameters</strong>
             <pre>
                 <p v-for="parameter in parameters"><strong>{{ parameter.key }} : </strong>{{ parameter.value }}</p>
             </pre>
 
-            <RockLabel>Enabled Commands</RockLabel>
+            <strong>Enabled Commands</strong>
             <p v-text="enabledCommandsText" />
         </div>
 
