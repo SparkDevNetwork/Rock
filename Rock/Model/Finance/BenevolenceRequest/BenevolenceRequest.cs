@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -218,6 +218,7 @@ namespace Rock.Model
         /// </value>
         [HideFromReporting]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int BenevolenceTypeId { get; set; }
 
         /// <summary>

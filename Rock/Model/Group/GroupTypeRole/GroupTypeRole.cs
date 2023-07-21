@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,6 +54,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? GroupTypeId { get; set; }
 
         /// <summary>

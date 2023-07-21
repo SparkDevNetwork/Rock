@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -63,6 +63,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [EnableAttributeQualification]
         public int? AccountId { get; set; }
 
         /// <summary>

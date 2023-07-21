@@ -68,6 +68,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> representing the Id of the Group's Parent Group.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? ParentGroupId { get; set; }
 
         /// <summary>

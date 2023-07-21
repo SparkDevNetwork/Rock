@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -52,6 +52,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the ActivityTypeID of the <see cref="Rock.Model.WorkflowActivity"/> that is being performed.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int ActivityTypeId { get; set; }
 
         /// <summary>

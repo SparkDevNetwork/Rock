@@ -296,6 +296,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
+        [EnableAttributeQualification]
         public int? GroupTypePurposeValueId { get; set; }
 
         /// <summary>

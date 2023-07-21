@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -73,6 +73,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that the action is operating against.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int EntityTypeId { get; set; }
 
         /// <summary>
