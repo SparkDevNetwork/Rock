@@ -1786,6 +1786,18 @@ namespace Rock.Blocks.Event
                 {
                     switch ( field.PersonFieldType )
                     {
+                        case RegistrationPersonFieldType.Email:
+                            // Only update the person's email if they are in the same family as the logged in person (not the registrar)
+                            var currentPersonId = GetCurrentPerson()?.Id;
+                            var isFamilyMember = currentPersonId.HasValue && person.GetFamilies().ToList().Select( f => f.ActiveMembers().Where( m => m.PersonId == currentPersonId ) ).Any();
+                            if ( isFamilyMember )
+                            {
+                                string email = fieldValue.ToString().Trim();
+                                History.EvaluateChange( personChanges, "Email", person.Email, email );
+                                person.Email = email;
+                            }
+                            break;
+
                         case RegistrationPersonFieldType.Campus:
                             var campusGuid = fieldValue.ToString().AsGuidOrNull();
                             updateExistingCampus = campusGuid.HasValue;

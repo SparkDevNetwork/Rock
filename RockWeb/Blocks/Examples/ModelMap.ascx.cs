@@ -380,7 +380,7 @@ namespace RockWeb.Blocks.Examples
                             {
                                 Name = p.Name,
                                 IsInherited = p.DeclaringType != type,
-                                IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
+                                IsVirtual = p.GetGetMethod( true ) != null && p.GetGetMethod( true ).IsVirtual && !p.GetGetMethod( true ).IsFinal,
                                 IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( LavaVisibleAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
                                 IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ),
                                 ObsoleteMessage = GetObsoleteMessage( p ),
