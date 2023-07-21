@@ -1,0 +1,12 @@
+<template>
+    <div v-html="registrationsListLavaHTML"></div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { RegistrationListLavaBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationListLavaBox";
+
+    const config = useConfigurationValues<RegistrationListLavaBox>();
+    const registrationsListLavaHTML = ref(config?.html ?? "");
+</script>

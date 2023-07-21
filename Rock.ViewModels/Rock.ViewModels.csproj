@@ -65,6 +65,7 @@
     <Compile Include="Blocks\Event\EventCalendarDetail\EventAttributeBag.cs" />
     <Compile Include="Blocks\Event\EventCalendarDetail\EventCalendarBag.cs" />
     <Compile Include="Blocks\Event\EventCalendarDetail\EventCalendarDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationListLavaBox.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSmsOptInFieldBag.cs" />

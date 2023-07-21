@@ -44,6 +44,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -69,6 +70,7 @@
     <Compile Include="Tv\AppleTvAppDetail.cs" />
     <Compile Include="Event\EventItemDetail.cs" />
     <Compile Include="Event\EventCalendarDetail.cs" />
+    <Compile Include="Event\RegistrationListLava.cs" />
     <Compile Include="Finance\BusinessDetail.cs" />
     <Compile Include="Engagement\StreakTypeDetail.cs" />
     <Compile Include="Prayer\PrayerRequestDetail.cs" />
