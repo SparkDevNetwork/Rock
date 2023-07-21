@@ -56,8 +56,8 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.description) {
-            valueBuilder.addTextValue("Description", props.modelValue.description);
+        if (props.modelValue.mediaAccount?.value) {
+            valueBuilder.addTextValue("Account", props.modelValue.mediaAccount.text ?? "");
         }
 
         return valueBuilder.build();
@@ -71,10 +71,6 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.mediaAccount?.value) {
-            valueBuilder.addTextValue("Account", props.modelValue.mediaAccount.text ?? "");
-        }
-
         if (props.modelValue.contentChannel?.value) {
             valueBuilder.addTextValue("Content Channel", props.modelValue.contentChannel.text ?? "");
         }
@@ -85,6 +81,18 @@
 
         if (props.modelValue.contentChannelItemStatus) {
             valueBuilder.addTextValue("Content Channel Item Status", props.modelValue.contentChannelItemStatus ?? "");
+        }
+
+        if (props.modelValue.workflowType?.text) {
+            valueBuilder.addTextValue("Workflow Type", props.modelValue.workflowType?.text ?? "");
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        if (props.modelValue.metricData) {
+            valueBuilder.addHtmlValue("", props.modelValue.metricData);
         }
 
         return valueBuilder.build();
