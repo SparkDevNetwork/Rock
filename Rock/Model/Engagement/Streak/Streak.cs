@@ -43,6 +43,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [Index( "IX_StreakTypeId", IsUnique = false )]
         [Index( "IX_StreakTypeId_PersonAliasId", 0, IsUnique = true )]
+        [EnableAttributeQualification]
         public int StreakTypeId { get; set; }
 
         /// <summary>

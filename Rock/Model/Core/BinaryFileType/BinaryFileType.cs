@@ -82,6 +82,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32" /> representing the Id of the storage service <see cref="Rock.Model.EntityType"/>.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? StorageEntityTypeId { get; set; }
 
         /// <summary>

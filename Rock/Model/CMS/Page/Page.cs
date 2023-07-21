@@ -83,6 +83,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> that represents the Id of the parent Page.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? ParentPageId { get; set; }
 
         /// <summary>
@@ -101,6 +102,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Layout"/> that this Page uses.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int LayoutId { get; set; }
 
         /// <summary>

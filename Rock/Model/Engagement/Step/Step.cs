@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -52,6 +52,7 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int StepTypeId { get; set; }
 
         /// <summary>

@@ -55,6 +55,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
+        [EnableAttributeQualification]
         public int NoteTypeId { get; set; }
 
         /// <summary>

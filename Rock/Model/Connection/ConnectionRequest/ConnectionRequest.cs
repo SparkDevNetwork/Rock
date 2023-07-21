@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary>
@@ -102,6 +103,7 @@ namespace Rock.Model
         /// The campus identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -168,6 +170,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int ConnectionTypeId { get; set; }
 
         /// <summary>

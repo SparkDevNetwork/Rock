@@ -59,6 +59,7 @@ namespace Rock.Model
         /// Gets or sets the snippet type identifier.
         /// </summary>
         [DataMember]
+        [EnableAttributeQualification]
         public int SnippetTypeId { get; set; }
 
         /// <summary>

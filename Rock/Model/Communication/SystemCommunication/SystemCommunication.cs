@@ -63,6 +63,7 @@ namespace Rock.Model
         /// The category identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? CategoryId { get; set; }
 
         /// <summary>

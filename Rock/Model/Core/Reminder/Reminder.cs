@@ -40,6 +40,7 @@ namespace Rock.Model
         /// The reminder type identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int ReminderTypeId { get; set; }
 
         /// <summary>
