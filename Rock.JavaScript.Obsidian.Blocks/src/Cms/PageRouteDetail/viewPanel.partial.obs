@@ -2,7 +2,7 @@
 <template>
     <fieldset>
         <NotificationBox v-if="isSystem" alertType="info">
-            <strong>Note</strong> Because this page route is used by Rock, editing is not enabled.
+            <strong>Note</strong> Because this page route is used by Rock, editing is restricted.
         </NotificationBox>
 
         <ValueDetailList :modelValue="topValues" />

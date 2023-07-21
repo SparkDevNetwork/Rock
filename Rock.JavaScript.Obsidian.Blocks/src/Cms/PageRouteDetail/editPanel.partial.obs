@@ -1,20 +1,26 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
+        <NotificationBox v-if="isSystem" alertType="info">
+            <strong>Note</strong> Because this page route is used by Rock, editing is restricted.
+        </NotificationBox>
+
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <PagePicker v-model="page"
                             label="Page"
                             rules="required"
                             :multiple="false"
                             showSelectCurrentPage
+                            :disabled="isSystem"
                             @update:modelValue="onUpdateSelectedPage" />
                 <RockLabel>Site</RockLabel>
                 <p>{{ site }}</p>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 col-md-offset-4">
                 <TextBox v-model="route"
                          label="Route"
+                         :disabled="isSystem"
                          rules="required" />
                 <CheckBox v-model="isGlobal"
                           label="Is Global"
@@ -27,6 +33,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";
@@ -64,6 +71,7 @@
     const page = ref<PageRouteValueBag>({
         page: props.modelValue.page ?? {}
     });
+    const isSystem = ref(props.modelValue.isSystem ?? false);
 
     const invokeBlockAction = useInvokeBlockAction();
     // The properties that are being edited. This should only contain
