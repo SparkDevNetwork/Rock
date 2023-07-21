@@ -204,7 +204,10 @@ namespace Rock.Web.Cache.NonEntities
             {
                 tableName = commandText.Substring( indexOfFrom ).Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries )[1].Trim();
 
-                if ( tableName.StartsWith( "(" ) )
+                // Check for
+                // * SELECTS with sub queries (starts with a '(' )
+                // * DELETES with alias (the alias for this in EF is a)
+                if ( tableName.StartsWith( "(" ) || tableName == "a" )
                 {
                     tableName = ParseSelectForTable( commandText, ( iterationCount + 1 ) );
                 }
