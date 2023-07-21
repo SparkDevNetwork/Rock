@@ -41,6 +41,7 @@
     <Content Include="Framework\Controls\interactionChannelInteractionComponentPicker.obs" />
     <Content Include="Framework\Controls\interactionChannelPicker.obs" />
     <Content Include="Framework\Controls\interactionComponentPicker.obs" />
+    <Content Include="Framework\Controls\mediaSelector.obs" />
     <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
     <Content Include="Framework\Controls\cacheabilityPicker.obs" />
@@ -369,6 +370,7 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\detailPanelMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\gatewayEmitStrings.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\mediaSelectorMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mergeTemplateOwnership.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\modalAlertType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\pickerDisplayStyle.ts" />

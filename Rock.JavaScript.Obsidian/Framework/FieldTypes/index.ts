@@ -131,6 +131,9 @@ registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
 import { MonthDayFieldType } from "./monthDayField.partial";
 registerFieldType(FieldTypeGuids.MonthDay, new MonthDayFieldType());
 
+import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
+registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
+
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());
 

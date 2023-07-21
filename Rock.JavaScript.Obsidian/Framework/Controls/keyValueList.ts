@@ -19,12 +19,7 @@ import DropDownList from "./dropDownList";
 import RockFormField from "./rockFormField";
 import TextBox from "./textBox";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
-export type KeyValueItem = {
-    key?: string | null;
-
-    value?: string | null;
-};
+import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 
 export default defineComponent({
     name: "KeyValueListField.Edit",

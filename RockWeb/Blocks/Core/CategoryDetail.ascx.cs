@@ -140,6 +140,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
+                msImage.MediaItems = new Dictionary<string, string>();
                 string categoryIdParam = PageParameter( "CategoryId" );
                 if ( !string.IsNullOrEmpty( categoryIdParam ) )
                 {
@@ -257,7 +258,7 @@ namespace RockWeb.Blocks.Core
 
             var rockContext = new RockContext();
             CategoryService categoryService = new CategoryService( rockContext );
-
+            var value = msImage.Value;
             int categoryId = hfCategoryId.ValueAsInt();
 
             if ( categoryId == 0 )
@@ -450,6 +451,11 @@ namespace RockWeb.Blocks.Core
 
             SetEditMode( true );
 
+            msImage.MediaItems = new Dictionary<string, string>()
+            {
+                { "Sample Key 1", "https://fastly.picsum.photos/id/1/5000/3333.jpg?hmac=Asv2DU3rA_5D1xSe22xZK47WEAN0wjWeFOhzd13ujW4" },
+                { "Sample Key 2", "https://fastly.picsum.photos/id/870/200/300.jpg?blur=2&grayscale&hmac=ujRymp644uYVjdKJM7kyLDSsrqNSMVRPnGU99cKl6Vs" }
+            };
             tbName.Text = category.Name;
             tbDescription.Text = category.Description;
 

@@ -30,6 +30,7 @@
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
                                 <Rock:ColorPicker ID="cpHightlightColor" runat="server" Label="Highlight Color" />
+                                <Rock:MediaSelector ID="msImage" runat="server" Label="Media Selector" Required="true" Mode="Audio" />
                             </div>
                         </div>
 
