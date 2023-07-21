@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -36,6 +37,7 @@ namespace Rock.Field.Types
     public abstract class EnumFieldType<T> : FieldType where T : struct
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
+        private const string OPTIONS = "options";
 
         private Dictionary<int, string> _EnumValues { get; set; }
 
@@ -124,6 +126,43 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( privateConfigurationValues.ContainsKey( OPTIONS ) )
+            {
+                privateConfigurationValues.Remove( OPTIONS );
+            }
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            var enumValues = new List<ListItemBag>()
+            {
+                new ListItemBag() { Text = "None", Value = "" }
+            };
+
+            foreach ( var enumValue in _EnumValues )
+            {
+                enumValues.Add( new ListItemBag()
+                {
+                    Text = enumValue.Value,
+                    Value = enumValue.Key.ToString()
+                } );
+            }
+
+            publicConfigurationValues[OPTIONS] = enumValues.ToCamelCaseJson( false, true );
+
+            return publicConfigurationValues;
+        }
 
         #endregion
 
