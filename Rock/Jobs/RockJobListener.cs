@@ -154,7 +154,7 @@ namespace Rock.Jobs
 
             // Complete the observability
             Activity.Current?.AddTag( "rock-job-duration", context.JobRunTime.TotalSeconds );
-            Activity.Current?.AddTag( "rock-job-message", rockJobInstance.Result ?? context.Result as string );
+            Activity.Current?.AddTag( "rock-job-message", rockJobInstance?.Result ?? context.Result as string );
             Activity.Current?.AddTag( "rock-job-result", jobException == null ? "Success" : "Failed" );
             Activity.Current?.Dispose();
 
