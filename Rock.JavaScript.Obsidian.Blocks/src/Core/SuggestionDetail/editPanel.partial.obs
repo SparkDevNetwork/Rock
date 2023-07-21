@@ -41,7 +41,7 @@
                                               :attributes="entityAttributes"
                                               isEditMode
                                               showEmptyValues
-                                              :numberOfColumns="2"
+                                              :numberOfColumns="1"
                                               :entityTypeName="entityTypeName" />
             </div>
         </div>
@@ -49,7 +49,7 @@
         <CodeEditor v-model="entityNotificationFormatLava"
                     theme="rock"
                     label="Notification Format"
-                    mode="text"
+                    mode="lava"
                     :editorHeight="200"
                     help="How the entity should be formatted in the following suggestion notification email when this suggestion is made for the entity. The entity is available to Lava as an 'Entity' object." />
     </fieldset>

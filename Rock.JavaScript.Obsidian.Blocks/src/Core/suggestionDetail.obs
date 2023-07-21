@@ -9,7 +9,7 @@
                  :name="panelName"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Category"
+                 :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isFollowVisible="true"
@@ -45,7 +45,7 @@
     const errorMessage = ref("");
 
     const suggestionDetailEditBag = ref<SuggestionDetailBag>(config.entity as SuggestionDetailBag);
-    const entityTypeGuid = EntityType.Category;
+    const entityTypeGuid = EntityType.FollowingSuggestionType;
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.Add);
 
     const refreshAttributesDebounce = debounce(async () => {
@@ -80,7 +80,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return suggestionDetailEditBag.value?.name ?? "";
+        return suggestionDetailEditBag.value?.name ?? "Add Following Suggestion Type";
     });
 
     /**
