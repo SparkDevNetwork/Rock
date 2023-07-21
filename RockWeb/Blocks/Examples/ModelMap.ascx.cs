@@ -373,7 +373,9 @@ namespace RockWeb.Blocks.Examples
                         PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | BindingFlags.Instance )
                             .Where( m => m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property )
                             .ToArray();
-                        foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
+
+                        // Only fetch properties whose getter is public 
+                        foreach ( PropertyInfo p in properties.Where( p => p.GetMethod.IsPublic ).OrderBy( i => i.Name ).ToArray() )
                         {
 #pragma warning disable CS0618 // LavaIncludeAttribute is obsolete
                             var property = new MProperty
@@ -620,7 +622,7 @@ namespace RockWeb.Blocks.Examples
                     // Read the InnerXml contents of the summary Element.
                     var reader = name.Element( "summary" ).CreateReader();
                     reader.MoveToContent();
-                    xmlComment.Summary = MakeSummaryHtml( reader.ReadInnerXml() );
+                    xmlComment.Summary = MakeSummaryHtml( reader.ReadInnerXml(), p.DeclaringType?.FullName );
                     xmlComment.Value = name.Element( "value" ).ValueSafe();
                     xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
                     xmlComment.Returns = name.Element( "returns" ).ValueSafe();
@@ -675,7 +677,7 @@ namespace RockWeb.Blocks.Examples
                         var reader = name.Element( "summary" ).CreateReader();
                         reader.MoveToContent();
                         var xml = reader.ReadInnerXml();
-                        xmlComment.Summary = MakeSummaryHtml( xml );
+                        xmlComment.Summary = MakeSummaryHtml( xml, p.DeclaringType?.FullName );
                     }
 
                     xmlComment.Value = name.Element( "value" ).ValueSafe();
@@ -727,29 +729,49 @@ namespace RockWeb.Blocks.Examples
         /// <param name="innerXml">The inner XML.</param>
         /// <returns></returns>
         ///
-        private string MakeSummaryHtml( string innerXml )
+        private string MakeSummaryHtml( string innerXml, string fullClassName = null )
         {
             innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"\s+", " " );
-            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*?)""(?:\s*/>|>(.*)</see>)" );
             while ( match.Success )
             {
                 var updatedValue = match.Value;
-                System.Text.RegularExpressions.Regex.Match( match.Value, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+                System.Text.RegularExpressions.Regex.Match( match.Value, @"<see cref=""T:(.*?)""(?:\s*/>|>(.*)</see>)" );
 
                 var entityType = EntityTypeCache.Get( match.Groups[1].Value );
                 if ( entityType != null )
                 {
-                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)""\s*/>", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)""></see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">{1}</a>", entityType.Id, entityType.FriendlyName ) );
                     updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"">(.*)</see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
                 }
                 else
                 {
-                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)""\s*/>", "<a href=\"#$2\">$2</a>" );
                 }
 
                 innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, match.Value, updatedValue );
                 match = match.NextMatch();
             }
+
+            // Now replace any cref property references
+            var propertyRefMatch = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""P:(.*?)""(?:\s*/>|>(.*)</see>)" );
+            while ( propertyRefMatch.Success )
+            {
+                var updatedValue = propertyRefMatch.Value;
+                // The propertyName will be something like: "Rock.Model.Interaction.InteractionTimeToServe"
+                var propertyName = propertyRefMatch.Groups[1].Value;
+                // Now shorten it to just InteractionTimeToServe -- if the property is from the given class;
+                // Otherwise it should be left as is
+                var fullPropertyName = propertyName.Replace( fullClassName + ".", string.Empty );
+                // Now we can shorten it to remove the redundant "Rock.Model." if it's in the property name
+                var partialPropertyName = fullPropertyName.Replace( "Rock.Model.", string.Empty );
+                updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""P:(.*)\.([^.]*)""\s*/>", $"<code>{partialPropertyName}</code>" );
+                updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""P:(.*)\.([^.]*)""\s*/></see>", $"<code>{partialPropertyName}</code>" );
+                innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, propertyRefMatch.Value, updatedValue );
+                propertyRefMatch = propertyRefMatch.NextMatch();
+            }
+
             return innerXml;
         }
 
