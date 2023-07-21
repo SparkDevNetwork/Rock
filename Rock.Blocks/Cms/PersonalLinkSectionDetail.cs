@@ -60,7 +60,7 @@ namespace Rock.Blocks.Cms
 
         private static class PageParameterKey
         {
-            public const string PersonalLinkSectionId = "PersonalLinkSectionId";
+            public const string PersonalLinkSectionId = "SectionId";
         }
 
         private static class NavigationUrlKey
