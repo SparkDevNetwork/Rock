@@ -612,12 +612,17 @@ namespace RockWeb.Blocks.Connection
 
             // Hide default bulk update and replace with custom action.
             gRequests.Actions.ShowBulkUpdate = false;
-            // Add a custom button with an EventHandler for bulk updates
+
+            // Add a custom button with an EventHandler for bulk updates.
+            // Note that the EventHandler is used to handle the navigation event, but the Route is needed
+            // to determine the security level associated with this action.
+            var bulkUpdatePageReference = new PageReference( GetAttributeValue( AttributeKey.BulkUpdateRequestsPage ) );
             var customActionConfigEventButton = new CustomActionConfigEvent
             {
                 IconCssClass = "fa fa-truck fa-fw",
                 HelpText = "Update selected requests",
-                EventHandler = LbUpdateConnections_Click
+                EventHandler = LbUpdateConnections_Click,
+                Route = bulkUpdatePageReference.Route
             };
 
             gRequests.Actions.AddCustomActionBlockButton( customActionConfigEventButton );
