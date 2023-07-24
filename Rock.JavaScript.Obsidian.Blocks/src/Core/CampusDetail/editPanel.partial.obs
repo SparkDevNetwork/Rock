@@ -69,7 +69,8 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";
-    import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";
+    import KeyValueList from "@Obsidian/Controls/keyValueList";
+    import  { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import LocationPicker from "@Obsidian/Controls/locationItemPicker";
     import PersonPicker from "@Obsidian/Controls/personPicker";
     import CheckBox from "@Obsidian/Controls/checkBox";

@@ -160,6 +160,7 @@ import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
 import BasicTimePicker from "@Obsidian/Controls/basicTimePicker.obs";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer";
+import MediaSelector from "@Obsidian/Controls/mediaSelector.obs";
 import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
 import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
@@ -229,6 +230,8 @@ import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
 import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.obs";
 import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
+import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
+import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 
 // #region Gallery Support
 
@@ -985,6 +988,54 @@ const checkBoxListGallery = defineComponent({
         <div class="row">
             <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
             <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates media selector list */
+const mediaSelectorGallery = defineComponent({
+    name: "mediaSelectorGallery",
+    components: {
+        GalleryAndResult,
+        MediaSelector,
+        KeyValueList,
+        DropDownList
+    },
+    setup() {
+        return {
+            items: ref([""]),
+            mediaItems: [
+            ] as KeyValueItem[],
+            modeOptions: [
+                {
+                    text: "Image",
+                    value: "0"
+                },
+                {
+                    text: "Audio",
+                    value: "1"
+                }
+            ] as ListItemBag[],
+            mode: ref(MediaSelectorMode.Image),
+            itemWidth: "100px",
+            importCode: getControlImportPath("mediaSelector"),
+            exampleCode: `<MediaSelector label="MediaSelector" v-model="value" :mediaItems="mediaItems" :itemWidth="itemWidth" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{'output:modelValue': items, 'input:items': mediaItems}"
+    hasMultipleValues
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MediaSelector label="MediaSelector" v-model="items" :mediaItems="mediaItems" :mode="mode"/>
+
+    <template #settings>
+        <div class="row">
+            <KeyValueList label="Media Items" v-model="mediaItems" />
+            <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
         </div>
     </template>
 </GalleryAndResult>`
@@ -8010,6 +8061,7 @@ const controlGalleryComponents: Record<string, Component> = [
     switchGallery,
     inlineSwitchGallery,
     checkBoxListGallery,
+    mediaSelectorGallery,
     listBoxGallery,
     phoneNumberBoxGallery,
     dropDownListGallery,
