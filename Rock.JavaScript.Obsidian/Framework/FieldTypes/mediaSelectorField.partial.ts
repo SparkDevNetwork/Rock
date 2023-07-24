@@ -19,9 +19,9 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
-    MediaItems = "mediaItems",
+    MediaItems = "mediaitems",
     Mode = "mode",
-    ItemWidth = "itemWidth"
+    ItemWidth = "itemwidth"
 }
 
 

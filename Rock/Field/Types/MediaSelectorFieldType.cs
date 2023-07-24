@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Attribute;
@@ -39,6 +40,42 @@ namespace Rock.Field.Types
         private const string MEDIA_ITEMS = "mediaitems";
 
         #endregion
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            if ( privateConfigurationValues.ContainsKey( MEDIA_ITEMS ) )
+            {
+                var mediaItems = privateConfigurationValues[MEDIA_ITEMS];
+                if ( mediaItems.IsNotNullOrWhiteSpace() )
+                {
+                    var mediaItemsPublicValue = new KeyValueListFieldType().GetPublicEditValue( mediaItems, new Dictionary<string, string>() );
+                    publicConfigurationValues[MEDIA_ITEMS] = mediaItemsPublicValue;
+                }
+            }
+
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( publicConfigurationValues.ContainsKey( MEDIA_ITEMS ) )
+            {
+                var mediaItems = privateConfigurationValues[MEDIA_ITEMS];
+                if ( mediaItems.IsNotNullOrWhiteSpace() )
+                {
+                    var mediaItemsPrivateValue = new KeyValueListFieldType().GetPrivateEditValue( mediaItems, new Dictionary<string, string>() );
+                    privateConfigurationValues[MEDIA_ITEMS] = mediaItemsPrivateValue;
+                }
+            }
+
+            return privateConfigurationValues;
+        }
 
         #region WebForms
 #if WEBFORMS
@@ -175,7 +212,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            
+
 
             return control;
         }
@@ -208,7 +245,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is MediaSelector )
                 {
-                    ( ( MediaSelector ) control ).Value =  value;
+                    ( ( MediaSelector ) control ).Value = value;
                 }
             }
         }

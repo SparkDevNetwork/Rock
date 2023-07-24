@@ -1003,7 +1003,7 @@ const mediaSelectorGallery = defineComponent({
     },
     setup() {
         return {
-            items: ref(["green"]),
+            items: ref([""]),
             mediaItems: [
             ] as KeyValueItem[],
             modeOptions: [
@@ -1019,7 +1019,7 @@ const mediaSelectorGallery = defineComponent({
             mode: ref(MediaSelectorMode.Image),
             itemWidth: "100px",
             importCode: getControlImportPath("mediaSelector"),
-            exampleCode: `<MediaSelector label="MediaSelector" v-model="value" :items="mediaItems" :itemWidth="itemWidth" />`
+            exampleCode: `<MediaSelector label="MediaSelector" v-model="value" :mediaItems="mediaItems" :itemWidth="itemWidth" />`
         };
     },
     template: `

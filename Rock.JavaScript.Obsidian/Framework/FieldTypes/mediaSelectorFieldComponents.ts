@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, inject, ref, watch } from "vue";
+import { defineComponent, inject, ref, watch } from "vue";
 import MediaSelector from "@Obsidian/Controls/mediaSelector.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -24,14 +24,20 @@ import { ConfigurationValueKey } from "./mediaSelectorField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
+import { toNumber } from "@Obsidian/Utility/numberUtils";
 
-function parseKeyValueItemValue(modelValue: string | undefined): KeyValueItem[] {
+function parseKeyValueItemValue(keyValueItemValue: string | undefined): KeyValueItem[] {
     try {
-        return JSON.parse(modelValue ?? "[]") as KeyValueItem[];
+        return JSON.parse(keyValueItemValue ?? "[]");
     }
     catch {
         return [];
     }
+}
+
+function parseMediaSelectorMode(modeNumber: string | undefined) : MediaSelectorMode {
+    const mediaSelectorModeNumber = toNumber(modeNumber);
+    return mediaSelectorModeNumber == 0 ? MediaSelectorMode.Image : MediaSelectorMode.Audio;
 }
 
 export const EditComponent = defineComponent({
@@ -43,22 +49,10 @@ export const EditComponent = defineComponent({
 
     props: getFieldEditorProps(),
 
-    setup(props) {
-        const itemWidth = computed((): string => {
-            return props.configurationValues[ConfigurationValueKey.ItemWidth] ?? "";
-        });
-
-        const mode = computed((): MediaSelectorMode => {
-            return MediaSelectorMode[props.configurationValues[ConfigurationValueKey.ItemWidth]] ?? MediaSelectorMode.Image;
-        });
-
+    setup() {
         return {
-            mode,
-            itemWidth,
             isRequired: inject("isRequired") as boolean
         };
-
-
     },
 
     data() {
@@ -71,10 +65,27 @@ export const EditComponent = defineComponent({
         /** The options to choose from */
         options(): KeyValueItem[] {
             try {
-                return JSON.parse(this.configurationValues[ConfigurationValueKey.MediaItems] ?? "[]") as KeyValueItem[];
+                const ds = JSON.parse(this.configurationValues[ConfigurationValueKey.MediaItems] ?? "[]") as KeyValueItem[];
+                return ds.map(v => {
+                    return {
+                        key: v.key,
+                        value: v.value
+                    } as KeyValueItem;
+                });
             }
             catch {
                 return [];
+            }
+        },
+        itemWidth() : string {
+            return this.configurationValues[ConfigurationValueKey.ItemWidth] ?? "";
+        },
+        mode() : MediaSelectorMode {
+            try {
+                return parseMediaSelectorMode(this.configurationValues[ConfigurationValueKey.Mode]);
+            }
+            catch {
+                return MediaSelectorMode.Image;
             }
         }
     },
@@ -95,7 +106,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<MediaSelector v-model="internalValue" v-bind="checkBoxListConfigAttributes" :items="options" :mode="mode" :itemWidth="itemWidth" />
+<MediaSelector v-model="internalValue" :mediaItems="options" :mode="mode" :itemWidth="itemWidth" />
 `
 });
 
@@ -131,7 +142,7 @@ export const ConfigurationComponent = defineComponent({
         // Define the properties that will hold the current selections.
         const itemWidth = ref("");
         const mediaItems = ref<KeyValueItem[]>([]);
-        const mode = ref(MediaSelectorMode.Image);
+        const mode = ref("");
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -147,7 +158,7 @@ export const ConfigurationComponent = defineComponent({
             // Construct the new value that will be emitted if it is different
             // than the current value.
         newValue[ConfigurationValueKey.ItemWidth] = itemWidth.value ?? "";
-            newValue[ConfigurationValueKey.Mode] = mode.value?.toString();
+            newValue[ConfigurationValueKey.Mode] = mode.value?.toString() ?? "0";
             newValue[ConfigurationValueKey.MediaItems] = JSON.stringify(mediaItems.value ?? []);
 
             // Compare the new value and the old value.
@@ -181,7 +192,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            mode.value = MediaSelectorMode[props.modelValue[ConfigurationValueKey.Mode]];
+            mode.value = props.modelValue[ConfigurationValueKey.Mode] ?? "0";
             mediaItems.value = parseKeyValueItemValue(props.modelValue[ConfigurationValueKey.MediaItems]);
             itemWidth.value = props.modelValue[ConfigurationValueKey.ItemWidth] ?? "";
         }, {

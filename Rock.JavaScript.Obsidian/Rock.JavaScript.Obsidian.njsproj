@@ -467,6 +467,8 @@
     <TypeScriptCompile Include="Framework\FieldTypes\imageFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListFieldComponents.ts" />
+    <TypeScriptCompile Include="Framework\FieldTypes\mediaSelectorField.partial.ts" />
+    <TypeScriptCompile Include="Framework\FieldTypes\mediaSelectorFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\registryEntryField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\registryEntryFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeField.partial.ts" />
