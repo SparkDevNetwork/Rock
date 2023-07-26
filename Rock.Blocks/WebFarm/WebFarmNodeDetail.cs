@@ -15,11 +15,6 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -27,6 +22,10 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail;
 using Rock.Web.Cache;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 
 namespace Rock.Blocks.WebFarm
 {
@@ -43,13 +42,25 @@ namespace Rock.Blocks.WebFarm
 
     #region Block Attributes
 
-    #endregion
+    [IntegerField(
+        "Node CPU Chart Hours",
+        Key = AttributeKey.CpuChartHours,
+        Description = "The amount of hours represented by the width of the Node CPU chart.",
+        DefaultIntegerValue = 24,
+        Order = 2 )]
+
+    #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "8471bf7f-6d0d-411b-899f-cd853f496bb9" )]
     [Rock.SystemGuid.BlockTypeGuid( "6bba1fc0-ac56-4e58-9e99-eb20da7aa415" )]
     public class WebFarmNodeDetail : RockDetailBlockType
     {
         #region Keys
+
+        private static class AttributeKey
+        {
+            public const string CpuChartHours = "CpuChartHours";
+        }
 
         private static class PageParameterKey
         {
@@ -62,6 +73,25 @@ namespace Rock.Blocks.WebFarm
         }
 
         #endregion Keys
+
+        private static readonly int _cpuMetricSampleCount = 200;
+        private DateTime ChartMaxDate { get => RockDateTime.Now; }
+
+        private DateTime? _chartMinDate = null;
+
+        private DateTime ChartMinDate
+        {
+            get
+            {
+                if ( !_chartMinDate.HasValue )
+                {
+                    var hours = GetAttributeValue( AttributeKey.CpuChartHours ).AsInteger();
+                    _chartMinDate = ChartMaxDate.AddHours( 0 - hours );
+                }
+
+                return _chartMinDate.Value;
+            }
+        }
 
         #region Methods
 
@@ -172,17 +202,36 @@ namespace Rock.Blocks.WebFarm
                 return null;
             }
 
-            return new WebFarmNodeBag
+            var unresponsiveMinutes = 10;
+            var unresponsiveDateTime = RockDateTime.Now.AddMinutes( 0 - unresponsiveMinutes );
+
+            var bag = new WebFarmNodeBag
             {
                 IdKey = entity.IdKey,
                 CurrentLeadershipPollingIntervalSeconds = entity.CurrentLeadershipPollingIntervalSeconds,
                 IsActive = entity.IsActive,
                 IsCurrentJobRunner = entity.IsCurrentJobRunner,
                 IsLeader = entity.IsLeader,
+                IsUnresponsive = entity.IsActive && !entity.StoppedDateTime.HasValue && entity.LastSeenDateTime < unresponsiveDateTime,
                 LastSeenDateTime = entity.LastSeenDateTime,
                 NodeName = entity.NodeName,
-                WebFarmNodeMetrics = entity.WebFarmNodeMetrics.Select( wfnm => new WebFarmMetricBag { MetricValue = wfnm.MetricValue, MetricValueDateTime = wfnm.MetricValueDateTime } ).ToList()
+                WebFarmNodeMetrics = entity.WebFarmNodeMetrics
+                .Where( wfnm =>
+                    wfnm.MetricType == WebFarmNodeMetric.TypeOfMetric.CpuUsagePercent &&
+                    wfnm.MetricValueDateTime >= ChartMinDate &&
+                    wfnm.MetricValueDateTime <= ChartMaxDate )
+                .Select( wfnm => new WebFarmMetricBag { MetricValue = wfnm.MetricValue, MetricValueDateTime = wfnm.MetricValueDateTime } )
+                .ToList()
             };
+
+            if ( bag.IsActive && !bag.IsUnresponsive && bag.WebFarmNodeMetrics.Count > 1 )
+            {
+                var metrics = bag.WebFarmNodeMetrics.ConvertAll( x => new Rock.Model.WebFarmNodeMetricService.MetricViewModel() { MetricValue = x.MetricValue, MetricValueDateTime = x.MetricValueDateTime } );
+                var samples = WebFarmNodeMetricService.CalculateMetricSamples( metrics, _cpuMetricSampleCount, ChartMinDate, ChartMaxDate );
+                bag.ChartHtml = GetChartHtml( samples );
+            }
+
+            return bag;
         }
 
         /// <summary>
@@ -356,7 +405,38 @@ namespace Rock.Blocks.WebFarm
             return true;
         }
 
-        #endregion
+        /// <summary>
+        /// Gets the chart HTML.
+        /// </summary>
+        /// <returns></returns>
+        private string GetChartHtml( decimal[] samples )
+        {
+            if ( samples == null || samples.Length <= 1 )
+            {
+                return string.Empty;
+            }
+
+            return string.Format(
+@"<canvas
+    class='js-chart''
+    data-chart='{{
+        ""labels"": [{0}],
+        ""datasets"": [{{
+            ""data"": [{1}],
+            ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
+            ""borderColor"": ""#009CE3"",
+            ""borderWidth"": 2,
+            ""pointRadius"": 0,
+            ""pointHoverRadius"": 0
+        }}]
+    }}'>
+</canvas>",
+                samples.Select( s => "\"\"" ).JoinStrings( "," ),
+                samples.Select( s => ( ( int ) s ).ToString() ).JoinStrings( "," )
+            );
+        }
+
+        #endregion Methods
 
         #region Block Actions
 
@@ -523,6 +603,6 @@ namespace Rock.Blocks.WebFarm
             }
         }
 
-        #endregion
+        #endregion Block Actions
     }
 }

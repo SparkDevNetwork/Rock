@@ -15,12 +15,6 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -30,6 +24,12 @@ using Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail;
 using Rock.ViewModels.Blocks.WebFarm.WebFarmSettings;
 using Rock.Web;
 using Rock.WebFarm;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+using static Rock.Model.WebFarmNodeMetricService;
 
 namespace Rock.Blocks.WebFarm
 {
@@ -52,7 +52,6 @@ namespace Rock.Blocks.WebFarm
         Description = "The page where the node details can be seen",
         DefaultValue = Rock.SystemGuid.Page.WEB_FARM_NODE,
         Order = 1 )]
-
     [IntegerField(
         "Node CPU Chart Hours",
         Key = AttributeKey.CpuChartHours,
@@ -60,7 +59,7 @@ namespace Rock.Blocks.WebFarm
         DefaultIntegerValue = 4,
         Order = 2 )]
 
-    #endregion
+    #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "d9510038-0547-45f3-9eca-c2ca85e64416" )]
     public class WebFarmSettings : RockDetailBlockType
@@ -75,7 +74,7 @@ namespace Rock.Blocks.WebFarm
 
         private static class PageParameterKey
         {
-            public const string WebFarmSettingId = "WebFarmSettingId";
+            public const string WebFarmNodeId = "WebFarmNodeId";
         }
 
         private static class NavigationUrlKey
@@ -85,9 +84,11 @@ namespace Rock.Blocks.WebFarm
 
         #endregion Keys
 
+        private static readonly int _cpuMetricSampleCount = 50;
         private DateTime ChartMaxDate { get => RockDateTime.Now; }
 
         private DateTime? _chartMinDate = null;
+
         private DateTime ChartMinDate
         {
             get
@@ -155,7 +156,7 @@ namespace Rock.Blocks.WebFarm
         private void SetBoxInitialEntityState( DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag> box, RockContext rockContext )
         {
             var isViewable = BlockCache.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized(  Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
             // Existing entity was found, prepare for view mode by default.
             if ( isViewable )
@@ -219,6 +220,7 @@ namespace Rock.Blocks.WebFarm
                 .AsNoTracking()
                 .Select( wfn => new WebFarmNodeBag
                 {
+                    IdKey = wfn.Id.ToString(),
                     CurrentLeadershipPollingIntervalSeconds = wfn.CurrentLeadershipPollingIntervalSeconds,
                     IsCurrentJobRunner = wfn.IsCurrentJobRunner,
                     IsActive = wfn.IsActive,
@@ -236,11 +238,24 @@ namespace Rock.Blocks.WebFarm
                             MetricValueDateTime = wfnm.MetricValueDateTime,
                             MetricValue = wfnm.MetricValue
                         } )
-                        .ToList()
+                        .ToList(),
                 } )
                 .ToList();
 
-            nodes.ForEach( n => n.HumanReadableLastSeen = WebFarmNodeService.GetHumanReadablePastTimeDifference( n.LastSeenDateTime ) );
+            foreach ( var node in nodes )
+            {
+                node.NodeDetailPageUrl = this.GetLinkedPageUrl( AttributeKey.NodeDetailPage, new Dictionary<string, string> {
+                    { PageParameterKey.WebFarmNodeId, node.IdKey }
+                } );
+                node.HumanReadableLastSeen = WebFarmNodeService.GetHumanReadablePastTimeDifference( node.LastSeenDateTime );
+
+                if ( node.IsActive && !node.IsUnresponsive && node.WebFarmNodeMetrics.Count > 1 )
+                {
+                    var metrics = node.WebFarmNodeMetrics.ConvertAll( x => new MetricViewModel() { MetricValue = x.MetricValue, MetricValueDateTime = x.MetricValueDateTime } );
+                    var samples = WebFarmNodeMetricService.CalculateMetricSamples( metrics, _cpuMetricSampleCount, ChartMinDate, ChartMaxDate );
+                    node.ChartHtml = GetChartHtml( samples );
+                }
+            }
 
             return nodes;
         }
@@ -323,7 +338,38 @@ namespace Rock.Blocks.WebFarm
             return securityGrant.ToToken();
         }
 
-        #endregion
+        /// <summary>
+        /// Gets the chart HTML.
+        /// </summary>
+        /// <returns></returns>
+        private string GetChartHtml( decimal[] samples )
+        {
+            if ( samples == null || samples.Length <= 1 )
+            {
+                return string.Empty;
+            }
+
+            return string.Format(
+@"<canvas
+    class='js-chart''
+    data-chart='{{
+        ""labels"": [{0}],
+        ""datasets"": [{{
+            ""data"": [{1}],
+            ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
+            ""borderColor"": ""#009CE3"",
+            ""borderWidth"": 2,
+            ""pointRadius"": 0,
+            ""pointHoverRadius"": 0
+        }}]
+    }}'>
+</canvas>",
+                samples.Select( s => "\"\"" ).JoinStrings( "," ),
+                samples.Select( s => ( ( int ) s ).ToString() ).JoinStrings( "," )
+            );
+        }
+
+        #endregion Methods
 
         #region Block Actions
 
@@ -371,6 +417,6 @@ namespace Rock.Blocks.WebFarm
             }
         }
 
-        #endregion
+        #endregion Block Actions
     }
 }

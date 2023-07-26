@@ -74,5 +74,21 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail
         /// Gets or sets the web farm node metrics.
         /// </summary>
         public List<WebFarmMetricBag> WebFarmNodeMetrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the node detail page URL.
+        /// </summary>
+        /// <value>
+        /// The node detail page URL.
+        /// </value>
+        public string NodeDetailPageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the chart HTML.
+        /// </summary>
+        /// <value>
+        /// The chart HTML.
+        /// </value>
+        public string ChartHtml { get; set; }
     }
 }

@@ -31,6 +31,9 @@ export type WebFarmNodeBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets the chart HTML. */
+    chartHtml?: string | null;
+
     /** Gets or sets the current leadership polling interval seconds. */
     currentLeadershipPollingIntervalSeconds: number;
 
@@ -54,6 +57,9 @@ export type WebFarmNodeBag = {
 
     /** Gets or sets the last seen date time. */
     lastSeenDateTime?: string | null;
+
+    /** Gets or sets the node detail page URL. */
+    nodeDetailPageUrl?: string | null;
 
     /** Gets or sets a Node Name. */
     nodeName?: string | null;

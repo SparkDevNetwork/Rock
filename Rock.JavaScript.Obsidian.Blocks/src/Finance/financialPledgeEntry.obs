@@ -1,8 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
-        <Panel v-if="!blockError"
-               type="block">
+        <Panel type="block">
 
             <template #default>
 

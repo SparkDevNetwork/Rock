@@ -5,12 +5,15 @@
         <ValueDetailList :modelValue="topValues" />
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <ValueDetailList :modelValue="leftSideValues" />
             </div>
 
-            <div class="col-md-6">
-                <ValueDetailList :modelValue="rightSideValues" />
+            <div class="col-md-7">
+                <span class="control-label">CPU Utilization</span>
+                <div style="height:250px;">
+                    <div v-html="chartHtml"></div>
+                </div>
             </div>
         </div>
 
@@ -18,8 +21,27 @@
     </fieldset>
 </template>
 
+<style>
+    .card .indicator {
+        height: 4px;
+    }
+
+    .server-meta {
+        font-size: 20px;
+    }
+
+    .bg-disabled {
+        background: #F5F5F5;
+        color: #AEAEAE;
+    }
+
+    .bg-disabled .indicator {
+        background: #A3A3A3;
+    }
+</style>
+
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType, ref, onMounted } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
@@ -44,6 +66,7 @@
 
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const chartHtml = ref(props.modelValue?.chartHtml ?? "");
 
     // #endregion
 
@@ -71,19 +94,24 @@
         if (props.modelValue.lastSeenDateTime) {
             const date = RockDateTime.parseISO(props.modelValue.lastSeenDateTime);
             if (date) {
-                valueBuilder.addTextValue("Last Seen", date.toString());
+                valueBuilder.addTextValue("Last Seen", date.toLocaleString({
+                    dateStyle: "short",
+                    timeStyle: "short"
+                }));
             }
         }
 
         if (props.modelValue.isLeader) {
             valueBuilder.addTextValue("Is Leader", "Yes");
-        } else {
+        }
+        else {
             valueBuilder.addTextValue("Is Leader", "No");
         }
 
         if (props.modelValue.isCurrentJobRunner) {
             valueBuilder.addTextValue("Job Runner", "Yes");
-        } else {
+        }
+        else {
             valueBuilder.addTextValue("Job Runner", "No");
         }
 
@@ -94,28 +122,54 @@
         return valueBuilder.build();
     });
 
-    /** The values to display at half-width on the left side of the block. */
-    const rightSideValues = computed((): ValueDetailListItem[] => {
-        const valueBuilder = new ValueDetailListItemBuilder();
-
-        if (!props.modelValue) {
-            return valueBuilder.build();
-        }
-
-        if (props.modelValue.webFarmNodeMetrics) {
-            valueBuilder.addTextValue("CPU Utilization", "");
-        }
-
-        return valueBuilder.build();
-    });
-
     // #endregion
 
     // #region Functions
+        onMounted(() => {
+        var $ = window["$"];
+        var options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                display: false
+            },
+            scales: {
+                yAxes: [{
+                    display: false,
+                    ticks: {
+                        min: 0,
+                        max: 100
+                    }
+                }],
+                xAxes: [{
+                    display: false
+                }]
+            },
+            hover: {
+                mode: "nearest",
+                intersect: false
+            },
+            tooltips: {
+                hasIndicator: true,
+                intersect: false,
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || "";
+                        if (label) {
+                            label = "CPU: " + label + "%";
+                        }
 
-    // #endregion
+                        return label;
+                    }
+                }
+            }
+        };
 
-    // #region Event Handlers
-
+        $(".js-chart").each(() =>  {
+            var el = $(this);
+            var data = el.attr("data-chart") ? JSON.parse(el.attr("data-chart")) : {};
+            //var chart = new Chart(el, { type: "line", data: data, options: options });
+        });
+    });
     // #endregion
 </script>
