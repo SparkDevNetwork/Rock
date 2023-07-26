@@ -97,7 +97,7 @@
                 valueBuilder.addTextValue("Last Seen", date.toLocaleString({
                     dateStyle: "short",
                     timeStyle: "short"
-                }));
+                } as Intl.DateTimeFormatOptions));
             }
         }
 
