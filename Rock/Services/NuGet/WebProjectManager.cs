@@ -312,7 +312,7 @@ namespace Rock.Services.NuGet
         [RockObsolete( "1.13.3" )]
         public bool IsPackageInstalled( IPackage package, bool anyVersion )
         {
-            return (anyVersion) ? LocalRepository.Exists( package.Id ) : LocalRepository.Exists( package );
+            return ( anyVersion ) ? LocalRepository.Exists( package.Id ) : LocalRepository.Exists( package );
         }
 
         /// <summary>

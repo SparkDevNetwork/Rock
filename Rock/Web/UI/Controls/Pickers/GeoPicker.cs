@@ -501,7 +501,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 string guid = ViewState["MapStyleValueGuid"] as string;
-                return (guid == null) ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() :  guid.AsGuid();
+                return ( guid == null ) ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() : guid.AsGuid();
             }
             set { ViewState["MapStyleValueGuid"] = value.ToString(); }
         }
