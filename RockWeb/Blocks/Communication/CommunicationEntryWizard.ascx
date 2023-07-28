@@ -140,7 +140,7 @@
                             <Rock:NotificationBox ID="nbListWarning" runat="server" NotificationBoxType="Info" />
                             <Rock:Grid ID="gRecipientList" runat="server" OnRowDataBound="gRecipientList_RowDataBound">
                                 <Columns>
-                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName"  />
+                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName" />
                                     <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
                                     <Rock:RockLiteralField ID="lRecipientListAlert" HeaderText="Notes" />
                                     <Rock:RockLiteralField ID="lRecipientListAlertEmail" HeaderText="Email" />
@@ -194,15 +194,15 @@
                                     <Rock:Grid
                                         ID="gIndividualRecipients"
                                         runat="server"
-                                        DisplayType="Light"
                                         OnRowDataBound="gIndividualRecipients_RowDataBound"
+                                        AllowSorting="true"
                                         HideDeleteButtonForIsSystem="false"
                                         ShowConfirmDeleteDialog="false">
                                         <Columns>
                                             <Rock:SelectField></Rock:SelectField>
                                             <asp:BoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
-                                            <Rock:RockLiteralField ID="lRecipientAlertEmail" HeaderText="Email" />
-                                            <Rock:RockLiteralField ID="lRecipientAlertSMS" HeaderText="SMS" />
+                                            <Rock:RockLiteralField ID="lRecipientAlertEmail" HeaderText="Email" SortExpression="Email" />
+                                            <Rock:RockLiteralField ID="lRecipientAlertSMS" HeaderText="SMS" SortExpression="SmsPhoneNumber" />
                                             <Rock:RockLiteralField ID="lRecipientAlert" HeaderText="Notes" />
                                             <Rock:DeleteField OnClick="gIndividualRecipients_DeleteClick" />
                                         </Columns>
