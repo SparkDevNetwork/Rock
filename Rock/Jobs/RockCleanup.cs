@@ -158,6 +158,17 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Keys to identify specific RockCleanupJob Tasks.
+        /// </summary>
+        public static class JobTaskKey
+        {
+            /// <summary>
+            /// Remove interaction sessions that do not have any associated interactions.
+            /// </summary>
+            public const string InteractionSessionCleanup = "InteractionSessionCleanup";
+        }
+
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -173,13 +184,29 @@ namespace Rock.Jobs
         private int commandTimeout;
         private int batchAmount;
         private DateTime lastRunDateTime;
+        private List<string> _enabledTaskKeys = null;
 
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
-            batchAmount = GetAttributeValue( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
-            commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
-            lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
+            // Read the job configuration from the data store.
+            var args = new RockCleanupActionArgs
+            {
+                DefaultBatchSize = GetAttributeValue( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull(),
+                DefaultCommandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull(),
+                LastExecutionDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime()
+            };
+            Execute( args );
+        }
+
+        internal void Execute( RockCleanupActionArgs args )
+        {
+            // Set global variables.
+            batchAmount = args.DefaultBatchSize ?? 1000;
+            commandTimeout = args.DefaultCommandTimeout ?? 900;
+            lastRunDateTime = args.LastExecutionDateTime ?? RockDateTime.Now.AddDays( -1 );
+            _enabledTaskKeys = args.EnabledTaskKeys;
+
             /* 
                 IMPORTANT!! MDP 2020-05-05
 
@@ -202,7 +229,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "old interaction", () => CleanupOldInteractions() );
 
-            RunCleanupTask( "unused interaction session", () => CleanupUnusedInteractionSessions() );
+            RunCleanupTask( "unused interaction session", () => CleanupUnusedInteractionSessions(), JobTaskKey.InteractionSessionCleanup );
 
             RunCleanupTask( "audit log", () => PurgeAuditLog() );
 
@@ -429,8 +456,19 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="cleanupTitle">The cleanup title.</param>
         /// <param name="cleanupMethod">The cleanup method.</param>
-        private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod )
+        /// <param name="taskKey"></param>
+        private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod, string taskKey = null )
         {
+            // If an enabled action filter exists, check if this action is included in the filter.
+            if ( _enabledTaskKeys != null
+                 && _enabledTaskKeys.Any() )
+            {
+                if ( taskKey == null || !_enabledTaskKeys.Contains( taskKey ) )
+                {
+                    return;
+                }
+            }
+
             // Start observability task
             using ( var activity = ObservabilityHelper.StartActivity( $"Task: {cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}" ) )
             {
@@ -3136,6 +3174,27 @@ END
         /// </remarks>
         internal class RockCleanupActionArgs
         {
+            /// <summary>
+            /// The number of records to process for each iteration of a batch operation.
+            /// </summary>
+            public int? DefaultBatchSize;
+
+            /// <summary>
+            /// The default timeout (in seconds) for database operations.
+            /// </summary>
+            public int? DefaultCommandTimeout;
+
+            /// <summary>
+            /// The last time this job was executed.
+            /// </summary>
+            public DateTime? LastExecutionDateTime;
+
+            /// <summary>
+            /// A set of task identifiers indicating the tasks that will be performed for this job execution.
+            /// If not specified, all tasks will be performed.
+            /// </summary>
+            public List<string> EnabledTaskKeys = new List<string>();
+
             /// <summary>
             /// The path to the image cache.
             /// </summary>

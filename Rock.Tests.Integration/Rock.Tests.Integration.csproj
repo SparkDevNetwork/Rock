@@ -203,7 +203,7 @@
     <Compile Include="Modules\Core\FieldTypesListing.cs" />
     <Compile Include="Modules\Crm\CrmModuleTestHelper.cs" />
     <Compile Include="Modules\Crm\PersonAddressTests.cs" />
-    <Compile Include="Modules\Engagement\Interactions\TestDataHelper.Interactions.cs" />
+    <Compile Include="Modules\Engagement\Interactions\InteractionsDataManager.cs" />
     <Compile Include="Modules\Reporting\DataFilter\DataViewTests.cs" />
     <Compile Include="Modules\Reporting\DataFilter\NumericDataFilterFactoryBase.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
