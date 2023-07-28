@@ -1440,14 +1440,6 @@ namespace Rock.Jobs
         private int CleanupUnusedInteractionSessions()
         {
             int totalRowsDeleted = 0;
-            var currentDateTime = RockDateTime.Now;
-
-            // If there are no channels with a retention policy then don't bother looking for orphans.
-            var interactionChannelsWithRentionDurations = InteractionChannelCache.All().Where( ic => ic.RetentionDuration.HasValue );
-            if ( !interactionChannelsWithRentionDurations.Any() )
-            {
-                return 0;
-            }
 
             // delete any InteractionSession records that are no longer used.
             using ( var interactionSessionRockContext = CreateRockContext() )
@@ -2634,7 +2626,7 @@ SELECT @@ROWCOUNT
         private int SynchronizeLegacySmsPhoneNumbers()
         {
             List<int> systemPhoneNumberIds;
-                
+
             using ( var rockContext = CreateRockContext() )
             {
                 systemPhoneNumberIds = new SystemPhoneNumberService( rockContext )
