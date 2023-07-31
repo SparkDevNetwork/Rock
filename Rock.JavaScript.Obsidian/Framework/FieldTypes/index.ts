@@ -152,6 +152,9 @@ registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
 import { PersonFieldType } from "./personField.partial";
 registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
 
+import { RangeSliderFieldType } from "./rangeSliderField.partial";
+registerFieldType(FieldTypeGuids.RangeSlider, new RangeSliderFieldType());
+
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
 
