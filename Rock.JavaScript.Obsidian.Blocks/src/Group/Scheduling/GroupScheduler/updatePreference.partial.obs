@@ -4,7 +4,7 @@
            title="Update Preference"
            saveText="Save"
            :subtitle="subtitle"
-           :saveButtonDisabled="isUpdatingDisabled"
+           :isSaveButtonDisabled="isUpdatingDisabled"
            @save="onSave">
 
         <NotificationBox v-if="loadPreferencesErrorMessage" :alertType="AlertType.Warning">

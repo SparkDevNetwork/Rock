@@ -36,6 +36,11 @@ export default defineComponent({
             required: true
         },
 
+        modalWrapperClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         title: {
             type: String as PropType<string>,
             default: ""
@@ -56,7 +61,17 @@ export default defineComponent({
             default: ""
         },
 
-        saveButtonDisabled: {
+        isFooterHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isSaveButtonDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        clickBackdropToClose: {
             type: Boolean as PropType<boolean>,
             default: false
         }
@@ -141,6 +156,11 @@ export default defineComponent({
          * Event handler for when the scrollable is clicked.
          */
         const onScrollableClick = (): void => {
+            if (props.clickBackdropToClose) {
+                onClose();
+                return;
+            }
+
             // If we aren't already shaking, start shaking to let the user know
             // they are doing something not allowed.
             if (!isShaking.value) {
@@ -287,7 +307,7 @@ export default defineComponent({
 
     template: `
 <teleport :to="container" v-if="modelValue">
-    <div>
+    <div :class="modalWrapperClasses">
         <div class="modal-backdrop" style="z-index: 1050;"></div>
 
         <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1050;">
@@ -318,9 +338,9 @@ export default defineComponent({
                         <div ref="modalBodyPaddingElement" style="transition: 0.15s padding-bottom"></div>
                     </div>
 
-                    <div class="modal-footer">
+                    <div v-if="!isFooterHidden" class="modal-footer">
                         <RockButton @click="onClose" btnType="link">{{ cancelText }}</RockButton>
-                        <RockButton v-if="saveText" type="submit" btnType="primary" :disabled="saveButtonDisabled">{{ saveText }}</RockButton>
+                        <RockButton v-if="saveText" type="submit" btnType="primary" :disabled="isSaveButtonDisabled">{{ saveText }}</RockButton>
                         <slot name="customButtons" />
                     </div>
                 </RockForm>

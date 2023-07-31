@@ -3,7 +3,7 @@
     <Modal v-model="isVisible"
            title="Clone Schedules"
            saveText="Clone"
-           :saveButtonDisabled="isCloningDisabled"
+           :isSaveButtonDisabled="isCloningDisabled"
            @save="onSave">
 
         <NotificationBox :alertType="AlertType.Info">
