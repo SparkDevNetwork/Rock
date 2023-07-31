@@ -2056,11 +2056,11 @@ namespace Rock.Blocks.Event
                 registrant.Guid = registrantInfo.Guid;
                 registrantService.Add( registrant );
                 registrant.RegistrationId = context.Registration.Id;
+                registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
             }
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
-            registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
 
             // Check if discount applies
             var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
