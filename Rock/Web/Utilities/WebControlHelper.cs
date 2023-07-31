@@ -163,7 +163,7 @@ namespace Rock.Web.Utilities
                 throw new Exception( string.Format( "Control Name \"{0}\" does not match specified Type \"{1}\".", controlName, typeof( TControl ).Name ) );
             }
 
-            return (TControl)control;
+            return ( TControl ) control;
         }
 
         /// <summary>
