@@ -307,7 +307,16 @@ namespace RockWeb.Blocks.Administration
             var job = new ServiceJobService( new RockContext() ).Get( e.RowKeyId );
             if ( job != null )
             {
-                new ProcessRunJobNow.Message { JobId = job.Id }.Send();
+                // Force the job to run as an entirely new activity instead of
+                // inheriting the curring page activity. This must be done on
+                // a task otherwise we will wipe out the current activity.
+                System.Threading.Tasks.Task.Run( () =>
+                {
+                    System.Diagnostics.Activity.Current = null;
+
+                    new ProcessRunJobNow.Message { JobId = job.Id }.Send();
+                } );
+
                 mdGridWarning.Show( string.Format( "The '{0}' job has been started.", job.Name ), ModalAlertType.Information );
 
                 // wait a split second for the job to start so that the grid will show the status (if it changed)

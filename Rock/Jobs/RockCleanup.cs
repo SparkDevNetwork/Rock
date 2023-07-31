@@ -431,37 +431,35 @@ namespace Rock.Jobs
         private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod )
         {
             // Start observability task
-            ObservabilityHelper.StartActivity( $"Task: {cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}" );
-
-            var stopwatch = new Stopwatch();
-            try
+            using ( var activity = ObservabilityHelper.StartActivity( $"Task: {cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}" ) )
             {
-                this.UpdateLastStatusMessage( $"{cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}..." );
-                stopwatch.Start();
-                var cleanupRowsAffected = cleanupMethod();
-                stopwatch.Stop();
-
-                rockCleanupJobResultList.Add( new RockCleanupJobResult
+                var stopwatch = new Stopwatch();
+                try
                 {
-                    Title = cleanupTitle,
-                    RowsAffected = cleanupRowsAffected,
-                    Elapsed = stopwatch.Elapsed
-                } );
-            }
-            catch ( Exception ex )
-            {
-                stopwatch.Stop();
-                rockCleanupJobResultList.Add( new RockCleanupJobResult
-                {
-                    Title = cleanupTitle,
-                    RowsAffected = 0,
-                    Elapsed = stopwatch.Elapsed,
-                    Exception = new RockCleanupException( cleanupTitle, ex )
-                } );
-            }
+                    this.UpdateLastStatusMessage( $"{cleanupTitle.Pluralize().ApplyCase( LetterCasing.Title )}..." );
+                    stopwatch.Start();
+                    var cleanupRowsAffected = cleanupMethod();
+                    stopwatch.Stop();
 
-            // Stop observability task
-            Activity.Current?.Dispose();
+                    rockCleanupJobResultList.Add( new RockCleanupJobResult
+                    {
+                        Title = cleanupTitle,
+                        RowsAffected = cleanupRowsAffected,
+                        Elapsed = stopwatch.Elapsed
+                    } );
+                }
+                catch ( Exception ex )
+                {
+                    stopwatch.Stop();
+                    rockCleanupJobResultList.Add( new RockCleanupJobResult
+                    {
+                        Title = cleanupTitle,
+                        RowsAffected = 0,
+                        Elapsed = stopwatch.Elapsed,
+                        Exception = new RockCleanupException( cleanupTitle, ex )
+                    } );
+                }
+            }
         }
 
         /// <summary>

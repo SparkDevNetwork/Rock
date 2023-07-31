@@ -24,7 +24,7 @@ namespace Rock.Observability
     /// </summary>
     public static class RockActivitySource
     {
-        #region Private Methods
+        #region Private Fields
         private static ActivitySource _activitySource = null;
         private const string _sourceVersion = "1.0.0";
         #endregion

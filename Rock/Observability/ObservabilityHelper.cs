@@ -19,7 +19,6 @@ using OpenTelemetry;
 using OpenTelemetry.Trace;
 using Rock.SystemKey;
 using System;
-using Rock.Field.Types;
 using System.Configuration;
 using System.Diagnostics;
 using Rock.Bus;
@@ -31,11 +30,11 @@ namespace Rock.Observability
     /// </summary>
     public static class ObservabilityHelper
     {
-        private static TracerProvider _curretTracerProvider;
+        private static TracerProvider _currentTracerProvider;
 
         static ObservabilityHelper()
         {
-            _curretTracerProvider = null;
+            _currentTracerProvider = null;
         }
 
         #region Properties
@@ -55,10 +54,10 @@ namespace Rock.Observability
         public static TracerProvider ConfigureTraceProvider()
         {
             // Determine if a trace provider is already configured.
-            var traceProviderPreviouslyConfigured = _curretTracerProvider != null;
+            var traceProviderPreviouslyConfigured = _currentTracerProvider != null;
 
             // Clear out the current trace provider
-            _curretTracerProvider?.Dispose();
+            _currentTracerProvider?.Dispose();
 
             Uri endpointUri = null;
             Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out endpointUri );
@@ -69,8 +68,7 @@ namespace Rock.Observability
 
             if ( observabilityEnabled && endpointUri != null )
             {
-
-                _curretTracerProvider = Sdk.CreateTracerProviderBuilder()
+                _currentTracerProvider = Sdk.CreateTracerProviderBuilder()
                     .AddOtlpExporter( o =>
                     {
                         o.Endpoint = endpointUri;
@@ -93,7 +91,7 @@ namespace Rock.Observability
                 }
             }
 
-            return _curretTracerProvider;
+            return _currentTracerProvider;
         }
 
         /// <summary>
@@ -103,26 +101,68 @@ namespace Rock.Observability
         /// <param name="kind"></param>
         public static Activity StartActivity( string name, ActivityKind kind = ActivityKind.Internal )
         {
-            RockActivitySource.ActivitySource.StartActivity( name, kind );
+            // Some systems only support an activity chain with up to 10,000
+            // total related activities. We store the number on the root
+            // activity and if it exceeds 9,999 then we don't start an activity.
+            if ( Activity.Current != null )
+            {
+                var rootActivity = GetRootActivity( Activity.Current );
+                var childCount = rootActivity.GetTagItem( "rock-descendant-count" ) as int? ?? 0;
+
+                rootActivity.SetTag( "rock-descendant-count", childCount + 1 );
+
+                if ( childCount >= 9_999 )
+                {
+                    return null;
+                }
+            }
+
+            var activity = RockActivitySource.ActivitySource.StartActivity( name, kind );
+
+            if ( activity == null )
+            {
+                return null;
+            }
 
             var nodeName = RockMessageBus.NodeName.ToLower();
             var machineName = Environment.MachineName.ToLower();
 
             // Add on default attributes
-            Activity.Current?.AddTag( "rock-node", nodeName );
+            activity.AddTag( "rock-node", nodeName );
 
             if (nodeName != machineName )
             {
-                Activity.Current?.AddTag( "service.instance.id", $"{machineName} ({nodeName})" );
+                activity.AddTag( "service.instance.id", $"{machineName} ({nodeName})" );
             }
             else
             {
-                Activity.Current?.AddTag( "service.instance.id", machineName );
+                activity.AddTag( "service.instance.id", machineName );
             }
-            
-            Activity.Current?.AddTag( "service.version", VersionInfo.VersionInfo.GetRockProductVersionFullName() );
 
-            return Activity.Current;
+            activity.AddTag( "service.version", VersionInfo.VersionInfo.GetRockProductVersionFullName() );
+
+            return activity;
+        }
+
+        /// <summary>
+        /// Finds the root activity of the given activity. This walks up the
+        /// Parent chain until no more parents are found.
+        /// </summary>
+        /// <param name="activity">The activity to start with when walking up the ancestor tree.</param>
+        /// <returns>The ancestor Activity that has no parent or <c>null</c> if <paramref name="activity"/> was also null.</returns>
+        private static Activity GetRootActivity( Activity activity )
+        {
+            if ( activity == null )
+            {
+                return null;
+            }
+
+            while ( activity.Parent != null )
+            {
+                activity = activity.Parent;
+            }
+
+            return activity;
         }
     }
 }
