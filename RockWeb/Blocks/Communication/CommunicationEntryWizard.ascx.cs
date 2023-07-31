@@ -3661,7 +3661,10 @@ function onTaskCompleted( resultData )
                     return null;
                 }
 
-                var recipientPersonsLookup = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
+                var recipientPersonsLookup = new PersonService( rockContext )
+                    .Queryable()
+                    .Where( a => recipientPersonIdQuery
+                    .Contains( a.Id ) )
                     .Select( a => new
                     {
                         PersonId = a.Id,
