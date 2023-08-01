@@ -1346,6 +1346,16 @@ Rock.settings.initialize({{
 
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
+                            // Prevent XSS attacks in page parameters.
+                            var sanitizedPageParameters = new Dictionary<string, string>();
+                            foreach ( var pageParam in PageParameters() )
+                            {
+                                var sanitizedKey = pageParam.Key.Replace( "</", "<\\/" );
+                                var sanitizedValue = pageParam.Value.ToStringSafe().Replace( "</", "<\\/" );
+
+                                sanitizedPageParameters.AddOrReplace( sanitizedKey, sanitizedValue );
+                            }
+
                             var script = $@"
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
@@ -1353,7 +1363,7 @@ Obsidian.onReady(() => {{
             executionStartTime: new Date().getTime(),
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
-            pageParameters: {PageParameters().ToJson()},
+            pageParameters: {sanitizedPageParameters.ToJson()},
             currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel( CurrentPerson ).ToCamelCaseJson( false, false ) )},
             contextEntities: {GetContextViewModels().ToCamelCaseJson( false, false )},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
