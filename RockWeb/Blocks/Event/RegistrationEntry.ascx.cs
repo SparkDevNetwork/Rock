@@ -5809,6 +5809,7 @@ namespace RockWeb.Blocks.Event
                                         {
                                             // Compute the DiscountedCost using the DiscountAmountRemaining
                                             feeCostSummary.DiscountedCost = feeCostSummary.Cost - discountAmountRemaining;
+                                            discountAmountRemaining = 0.0m;
                                         }
                                     }
                                 }
