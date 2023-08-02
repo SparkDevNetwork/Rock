@@ -15,15 +15,17 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.IO;
+using System.Linq;
+using System.Text;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Rock.Jobs
 {
@@ -212,20 +214,23 @@ namespace Rock.Jobs
             try
             {
                 // Creating and saving the blocks outside the rockContext.wrapTransaction as we need to ensure the rockContext writes the blocks to the database before the SQL to update the Attributes and Auth are run
-                var copiedBlockMappings = AddCopiesOfBlocksInSameLocationsButWithNewBlockType( oldBlockTypeGuid, newBlockTypeId.Value, rockContext );
-                rockContext.SaveChanges();
 
                 rockContext.WrapTransaction( () =>
                 {
+                    var copiedBlockMappings = AddCopiesOfBlocksInSameLocationsButWithNewBlockType( oldBlockTypeGuid, newBlockTypeId.Value, rockContext );
+                    rockContext.SaveChanges();
+
                     CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings );
 
                     CopyAuthFromOldBlocksToNewBlocks( migrationHelper, copiedBlockMappings );
 
+                    CopyPersonPreferenceFromOldBlocksToNewBlocks( rockContext, copiedBlockMappings );
+
                     DeleteOldBlocks( migrationHelper, copiedBlockMappings );
 
                     ChopBlock( oldBlockTypeGuid, rockContext );
+                    rockContext.SaveChanges();
                 } );
-                rockContext.SaveChanges();
             }
             catch ( Exception ex )
             {
@@ -233,6 +238,39 @@ namespace Rock.Jobs
                 ErrorMessage.Add( $"Error while replacing the block {BlockTypeCache.Get( oldBlockTypeId.Value ).Name} with the block {BlockTypeCache.Get( newBlockTypeId.Value ).Name}. Error message: {ex.Message}" );
                 return;
             }
+        }
+
+        private void CopyPersonPreferenceFromOldBlocksToNewBlocks( RockContext rockContext, Dictionary<Block, Block> copiedBlockMappings )
+        {
+            var blockEntityType = EntityTypeCache.Get( typeof( Block ) );
+            PersonPreferenceService personPreferenceService = new PersonPreferenceService( rockContext );
+            var oldBlockIds = copiedBlockMappings.Keys
+                .Select( b => b.Id )
+                .ToList();
+            var blockIdMap = copiedBlockMappings
+                .ToDictionary( c => c.Key.Id, c => c.Value.Id );
+            var oldBlocksPreferences = personPreferenceService
+                .Queryable()
+                .AsNoTracking()
+                .Where( p => p.EntityTypeId == blockEntityType.Id && oldBlockIds.Contains( p.EntityId.Value ) )
+                .ToList();
+
+            var newBlockPreferences = new List<PersonPreference>();
+            foreach ( var oldBlockPersonPreference in oldBlocksPreferences )
+            {
+                // Copy over the Person preference from the old block to new block with the appropriate key
+                // For instance for an old block with Block Id = 913 and Person Preference Key = block-913-GroupIds
+                // the new corresponding block having the Id = 1279 will have the Person Preference Key = block-1279-GroupIds
+                var newBlockPersonPreference = oldBlockPersonPreference.CloneWithoutIdentity();
+                newBlockPersonPreference.EntityId = blockIdMap[newBlockPersonPreference.EntityId.Value];
+                newBlockPreferences.Add( newBlockPersonPreference );
+                var newBlockPersonPreferenceKeyPrefix = PersonPreferenceService.GetPreferencePrefix( blockEntityType.GetEntityType(), newBlockPersonPreference.EntityId.ToIntSafe() );
+                var oldBlockPersonPreferenceKeyPrefix = PersonPreferenceService.GetPreferencePrefix( blockEntityType.GetEntityType(), oldBlockPersonPreference.EntityId.ToIntSafe() );
+                newBlockPersonPreference.Key = $"{newBlockPersonPreferenceKeyPrefix}{oldBlockPersonPreference.Key.Substring( oldBlockPersonPreferenceKeyPrefix.Length )}";
+            }
+
+            personPreferenceService.AddRange( newBlockPreferences );
+            rockContext.SaveChanges();
         }
 
         private void ChopBlock( Guid oldBlockTypeGuid, RockContext rockContext )
@@ -244,7 +282,7 @@ namespace Rock.Jobs
             var blockTypeService = new BlockTypeService( rockContext );
             var blockTypeToBeDeleted = blockTypeService.Get( oldBlockTypeGuid );
 
-            var blockTypeFilePath = blockTypeToBeDeleted?.Path
+            var blockTypeFilePath = blockTypeToBeDeleted?.Path?
                 .Replace( '/', Path.DirectorySeparatorChar )
                 .Replace( "~", AppDomain.CurrentDomain.BaseDirectory ) ?? "";
             if ( File.Exists( blockTypeFilePath ) )

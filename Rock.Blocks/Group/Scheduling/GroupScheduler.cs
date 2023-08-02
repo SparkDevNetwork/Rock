@@ -116,25 +116,32 @@ namespace Rock.Blocks.Group.Scheduling
 
         private static class PersonPreferenceKey
         {
-            public const string GroupIds = "group-ids";
-            public const string LocationIds = "location-ids";
-            public const string ScheduleIds = "schedule-ids";
+            public const string GroupId = "GroupId";
+            public const string GroupIds = "GroupIds";
+            public const string LocationIds = "LocationIds";
+            public const string ScheduleId = "ScheduleId";
+            public const string ScheduleIds = "ScheduleIds";
 
-            public const string RangeType = "range-type";
-            public const string TimeUnit = "time-unit";
-            public const string TimeValue = "time-value";
-            public const string LowerDate = "lower-date";
-            public const string UpperDate = "upper-date";
+            public const string RangeType = "RangeType";
+            public const string TimeUnit = "TimeUnit";
+            public const string TimeValue = "TimeValue";
+            public const string LowerDate = "LowerDate";
+            public const string UpperDate = "UpperDate";
 
-            public const string ResourceListSourceType = "resource-list-source-type";
-            public const string AlternateGroupId = "alternate-group-id";
-            public const string DataViewId = "data-view-id";
+            public const string ShowChildGroups = "ShowChildGroups";
+            public const string SelectedDate = "EndOfWeekDate";
+            public const string SelectAllSchedules = "SelectAllSchedules";
 
-            public const string CloneSourceDate = "clone-source-date";
-            public const string CloneDestinationDate = "clone-destination-date";
-            public const string CloneGroups = "clone-groups";
-            public const string CloneLocations = "clone-locations";
-            public const string CloneSchedules = "clone-schedules";
+            public const string ResourceListSourceType = "ResourceListSourceType";
+            public const string GroupMemberFilterType = "GroupMemberFilterType";
+            public const string AlternateGroupId = "AlternateGroupId";
+            public const string DataViewId = "DataViewId";
+
+            public const string CloneSourceDate = "CloneSourceDate";
+            public const string CloneDestinationDate = "CloneDestinationDate";
+            public const string CloneGroups = "CloneGroups";
+            public const string CloneLocations = "CloneLocations";
+            public const string CloneSchedules = "CloneSchedules";
         }
 
         private const string NoScheduleTemplateValue = "0";
