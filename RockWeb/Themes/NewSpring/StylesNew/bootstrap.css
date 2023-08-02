@@ -6382,15 +6382,15 @@ h3,
 }
 h4,
 .h4 {
-  font-size: 30px;
+  font-size: 28px;
 }
 h5,
 .h5 {
-  font-size: 28px;
+  font-size: 24px;
 }
 h6,
 .h6 {
-  font-size: 26px;
+  font-size: 20px;
 }
 p {
   margin: 0 0 14px;
@@ -7754,7 +7754,7 @@ output {
   padding-top: 13px;
   font-size: 20px;
   line-height: 1.4;
-  color: #b4b4b4;
+  color: #a4a4a4;
 }
 .form-control {
   display: block;
@@ -7763,7 +7763,7 @@ output {
   padding: 12px 24px;
   font-size: 20px;
   line-height: 1.4;
-  color: #b4b4b4;
+  color: #a4a4a4;
   background-color: #fff;
   background-image: none;
   border: 1px solid #ccc;
@@ -7820,10 +7820,10 @@ select.form-control[size]:not([size="1"]) {
 }
 select.form-control:-moz-focusring {
   color: transparent;
-  text-shadow: 0 0 0 #b4b4b4;
+  text-shadow: 0 0 0 #a4a4a4;
 }
 select.form-control:focus::-ms-value {
-  color: #b4b4b4;
+  color: #a4a4a4;
   background-color: #fff;
 }
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
@@ -9088,7 +9088,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   font-size: 20px;
   font-weight: 400;
   line-height: 1;
-  color: #b4b4b4;
+  color: #a4a4a4;
   text-align: center;
   background-color: #f0f0f0;
   border: 1px solid #ccc;
@@ -9223,7 +9223,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .nav-tabs > li.active > a,
 .nav-tabs > li.active > a:hover,
 .nav-tabs > li.active > a:focus {
-  color: #b4b4b4;
+  color: #a4a4a4;
   cursor: default;
   background-color: #fff;
   border: 1px solid #ddd;
