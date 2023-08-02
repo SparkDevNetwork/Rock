@@ -2889,7 +2889,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             ddlSignatureDocumentTemplate.Items.Clear();
             ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
-            SignatureDocumentTemplateState = new SignatureDocumentTemplateService( rockContext ).Queryable().AsNoTracking().OrderBy( t => t.Name ).ToList();
+            SignatureDocumentTemplateState = new SignatureDocumentTemplateService( rockContext ).Queryable().Where( d => d.IsActive || d.Name == lRequiredSignedDocument.Text ).AsNoTracking().OrderBy( t => t.Name ).ToList();
 
             foreach ( var documentType in SignatureDocumentTemplateState )
             {
