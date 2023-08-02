@@ -17,25 +17,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Text;
-using EntityFramework.Utilities;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.SystemGuid;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
-    /// <summary>
-    /// Run once job for v15 to replace WebForms blocks with Obsidian blocks.
-    /// </summary>
-    [DisplayName( "Rock Update Helper v15.0 - Replace WebForms Blocks with Obsidian blocks" )]
-    [Description( "This job will replace WebForms blocks with Obsidian blocks on all sites, pages, and layouts." )]
-
     [IntegerField(
         "Command Timeout",
         Key = AttributeKey.CommandTimeout,
@@ -51,16 +44,25 @@ namespace Rock.Jobs
         IsRequired = true,
         Order = 1 )]
 
-    [BooleanField(
-        "Should Keep Old Blocks",
-        Key = AttributeKey.ShouldKeepOldBlocks,
-        Description = "Determines if old blocks should be kept instead of being deleted. By default, old blocks will be deleted.",
-        IsRequired = false,
-        DefaultBooleanValue = false,
+    [CustomRadioListField(
+        "Migration Strategy",
+        Key = AttributeKey.MigrationStrategy,
+        Description = "Determines if the blocks should be chopped instead of swapped. By default,the old blocks are swapped with the new ones.",
+        IsRequired = true,
+        DefaultValue = "Swap",
+        ListSource = "Swap, Chop",
         Order = 2 )]
 
-    [RockInternal( "1.15" )]
-    internal class PostV15DataMigrationsReplaceWebFormsBlocksWithObsidianBlocks : RockJob
+    [BooleanField(
+        "Should Keep Old Blocks (FOR TESTING PURPOSES ONLY)",
+        Key = AttributeKey.ShouldKeepOldBlocks,
+        Description = "Determines if old blocks should be kept instead of being deleted. By default, old blocks will be deleted. NOTE: This attribute is ignored incase of the Chop Migration Strategy.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 3 )]
+
+    [RockInternal( "1.16" )]
+    internal class PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks : RockJob
     {
         #region Keys
 
@@ -69,11 +71,14 @@ namespace Rock.Jobs
             public const string CommandTimeout = "CommandTimeout";
             public const string ShouldKeepOldBlocks = "ShouldKeepOldBlocks";
             public const string BlockTypeGuidReplacementPairs = "BlockTypeGuidReplacementPairs";
+            public const string MigrationStrategy = "MigrationStrategy";
         }
 
         #endregion
 
         #region Properties
+
+        private readonly List<string> ErrorMessage = new List<string>();
 
         private Dictionary<Guid, Guid> BlockTypeGuidReplacementPairs
         {
@@ -93,6 +98,45 @@ namespace Rock.Jobs
         /// </value>
         private bool ShouldKeepOldBlocks => this.GetAttributeValue( AttributeKey.ShouldKeepOldBlocks ).AsBoolean();
 
+        /// <summary>
+        /// Determines if old blocks should chopped off and be deleted.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> to delete the old block type from Rock; otherwise, <c>false</c> Keep the old block type.
+        /// </value>
+        private string MigrationStrategy => this.GetAttributeValue( AttributeKey.MigrationStrategy );
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// The function to serialize the key value pair of the current guid to the new guid to be stored in the AttributeValue table in the database
+        /// </summary>
+        /// <param name="dictionary"></param>
+        /// <returns></returns>
+        public static string SerializeDictionary( Dictionary<string, string> dictionary )
+        {
+            const string keyValueSeparator = "^";
+
+            if ( dictionary?.Any() != true )
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+
+            var first = dictionary.First();
+            sb.Append( $"{first.Key}{keyValueSeparator}{first.Value}" );
+
+            foreach ( var kvp in dictionary.Skip( 1 ) )
+            {
+                sb.Append( $"|{kvp.Key}{keyValueSeparator}{kvp.Value}" );
+            }
+
+            return sb.ToString();
+        }
+
         #endregion
 
         /// <inheritdoc/>
@@ -102,9 +146,11 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
             var migrationHelper = new MigrationHelper( jobMigration );
-            using ( var rockContext = new RockContext() )
+            ReplaceBlocks( migrationHelper );
+
+            if ( ErrorMessage.Any() )
             {
-                ReplaceBlocks( rockContext, migrationHelper );
+                throw new RockJobWarningException( string.Join( ",\n", ErrorMessage ) );
             }
 
             DeleteJob();
@@ -114,13 +160,15 @@ namespace Rock.Jobs
         /// Replaces site, page, and layout WebForms block instances with Obsidian block instances.
         /// <para>Uses a combination of EF and the migration helper.</para>
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="migrationHelper">The migration helper.</param>
-        private void ReplaceBlocks( RockContext rockContext, MigrationHelper migrationHelper )
+        private void ReplaceBlocks( MigrationHelper migrationHelper )
         {
             foreach ( var blockTypeGuidPair in BlockTypeGuidReplacementPairs )
             {
-                ReplaceBlocksOfOneBlockTypeWithBlocksOfAnotherBlockType( blockTypeGuidPair.Key, blockTypeGuidPair.Value, rockContext, migrationHelper );
+                using ( var rockContext = new RockContext() )
+                {
+                    ReplaceBlocksOfOneBlockTypeWithBlocksOfAnotherBlockType( blockTypeGuidPair.Key, blockTypeGuidPair.Value, rockContext, migrationHelper );
+                }
             }
         }
 
@@ -145,28 +193,78 @@ namespace Rock.Jobs
             var oldBlockTypeId = BlockTypeCache.GetId( oldBlockTypeGuid );
             if ( !oldBlockTypeId.HasValue )
             {
-                throw new Exception( $"BlockType could not be found for guid '{oldBlockTypeGuid}'" );
+                ErrorMessage.Add( $"BlockType could not be found for guid '{oldBlockTypeGuid}' for the current block" );
+                return;
             }
 
             var newBlockTypeId = BlockTypeCache.GetId( newBlockTypeGuid );
             if ( !newBlockTypeId.HasValue )
             {
-                throw new Exception( $"BlockType could not be found for guid '{newBlockTypeGuid}'" );
+                ErrorMessage.Add( $"BlockType could not be found for guid '{newBlockTypeGuid}' for the new block" );
+                return;
             }
 
             var blockTypeEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.BLOCK_TYPE.AsGuid() );
             if ( !blockTypeEntityTypeId.HasValue )
             {
-                throw new Exception( $"EntityType could not be found for guid '{SystemGuid.EntityType.BLOCK_TYPE}'" );
+                ErrorMessage.Add( $"EntityType could not be found for guid '{SystemGuid.EntityType.BLOCK_TYPE}'" );
+                return;
             }
 
-            var copiedBlockMappings = AddCopiesOfBlocksInSameLocationsButWithNewBlockType( oldBlockTypeGuid, newBlockTypeId.Value, rockContext );
+            try
+            {
+                // Creating and saving the blocks outside the rockContext.wrapTransaction as we need to ensure the rockContext writes the blocks to the database before the SQL to update the Attributes and Auth are run
 
-            CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings );
+                rockContext.WrapTransaction( () =>
+                {
+                    var copiedBlockMappings = AddCopiesOfBlocksInSameLocationsButWithNewBlockType( oldBlockTypeGuid, newBlockTypeId.Value, rockContext );
+                    rockContext.SaveChanges(); // saving the new blocks so that the attributes and person preferences may be copied over.
 
-            CopyAuthFromOldBlocksToNewBlocks( migrationHelper, copiedBlockMappings );
+                    CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings );
 
-            DeleteOldBlocks( migrationHelper, copiedBlockMappings );
+                    CopyAuthFromOldBlocksToNewBlocks( migrationHelper, copiedBlockMappings );
+
+                    DeleteOldBlocks( migrationHelper, copiedBlockMappings );
+
+                    ChopBlock( oldBlockTypeGuid, rockContext );
+                    rockContext.SaveChanges();
+                } );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                ErrorMessage.Add( $"Error while replacing the block {BlockTypeCache.Get( oldBlockTypeId.Value ).Name} with the block {BlockTypeCache.Get( newBlockTypeId.Value ).Name}. Error message: {ex.Message}" );
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Delete the old block along with the ascx file incase the migration strategy is CHOP
+        /// </summary>
+        /// <param name="oldBlockTypeGuid"></param>
+        /// <param name="rockContext"></param>
+        private void ChopBlock( Guid oldBlockTypeGuid, RockContext rockContext )
+        {
+            if ( this.MigrationStrategy != "Chop" )
+            {
+                return;
+            }
+            var blockTypeService = new BlockTypeService( rockContext );
+            var blockTypeToBeDeleted = blockTypeService.Get( oldBlockTypeGuid );
+
+            var blockTypeFilePath = blockTypeToBeDeleted?.Path?
+                .Replace( '/', Path.DirectorySeparatorChar )
+                .Replace( "~", AppDomain.CurrentDomain.BaseDirectory ) ?? "";
+            if ( File.Exists( blockTypeFilePath ) )
+            {
+                File.Delete( blockTypeFilePath );
+            }
+            var sourceCodeBlockTypeFilePath = blockTypeFilePath + ".cs";
+            if ( File.Exists( sourceCodeBlockTypeFilePath ) )
+            {
+                File.Delete( sourceCodeBlockTypeFilePath );
+            }
+            blockTypeService.Delete( blockTypeToBeDeleted );
         }
 
         /// <summary>
@@ -182,7 +280,6 @@ namespace Rock.Jobs
 
             var oldBlocks = blockService.Queryable()
                 .Where( b => b.BlockType.Guid == oldBlockTypeGuid )
-                .OrderBy( b => b.Order )
                 .ToList();
             var replacedBlocksMap = new Dictionary<Model.Block, Model.Block>();
 
@@ -200,9 +297,6 @@ namespace Rock.Jobs
                 // Keep track of the block instance that is replacing the old one.
                 replacedBlocksMap.AddOrReplace( oldBlock, newBlock );
             }
-
-            // Save the new blocks.
-            rockContext.SaveChanges();
 
             return replacedBlocksMap;
         }
@@ -258,6 +352,11 @@ namespace Rock.Jobs
 
         private void DeleteOldBlocks( MigrationHelper migrationHelper, Dictionary<Model.Block, Model.Block> copiedBlockMappings )
         {
+            // Keeping old blocks is not compactible with Chop. So ignore the Should Keep Old Blocks if the Migration Type is set to chop.
+            if ( this.MigrationStrategy == "Chop" )
+            {
+                return;
+            }
             if ( !this.ShouldKeepOldBlocks )
             {
                 foreach ( var oldBlock in copiedBlockMappings.Keys )

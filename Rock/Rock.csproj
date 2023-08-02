@@ -946,6 +946,7 @@
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
+    <Compile Include="Jobs\PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
     <Compile Include="Jobs\PostV151DataMigrationsDuplicateMobileInteractionsCleanup.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsMobileRestUserGroup.cs" />
     <Compile Include="Jobs\PostV15DataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
