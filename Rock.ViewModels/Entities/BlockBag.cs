@@ -85,7 +85,7 @@ namespace Rock.ViewModels.Entities
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the order that this Block appears in the Rock.Model.Block.Page/Layout zone that the Block is implemented in.  Blocks are 
+        /// Gets or sets the order that this Block appears in the Rock.Model.Page/Layout zone that the Block is implemented in.  Blocks are 
         /// displayed/rendered in Ascending (1,2,3,...) order. The lower the number the higher in the Zone the Block will appear.  Rock.Model.Page Blocks have
         /// priority over layout Blocks, so they will appear higher in the Zone than Rock.Model.Site/Layout Blocks. This property is required
         /// </summary>
