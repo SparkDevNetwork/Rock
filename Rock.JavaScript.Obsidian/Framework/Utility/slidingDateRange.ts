@@ -206,6 +206,27 @@ export function parseSlidingDateRangeString(value: string): SlidingDateRange | n
 }
 
 /**
+ * Formats the pipe delimited string.
+ *
+ * @param value The pipe delimited string that should be formatted.
+ *
+ * @returns A string that formats the sliding date range.
+ */
+export function slidingDateRangeToString(value: SlidingDateRange): string {
+
+    switch (value.rangeType) {
+        case RangeType.Current:
+            return `Current||${getTextForValue(value.timeUnit?.toString() ?? "", timeUnitOptions)}||`;
+
+        case RangeType.DateRange:
+            return `DateRange|||${value.lowerDate ?? ""}|${value.upperDate ?? ""}`;
+
+        default:
+            return `${getTextForValue(value.rangeType.toString(), rangeTypeOptions)}|${value.timeValue ?? ""}|${getTextForValue(value.timeUnit?.toString() ?? "", timeUnitOptions)}||`;
+    }
+}
+
+/**
  * Calculates the start and end dates in a sliding date range.
  *
  * @param value The sliding date range to use when calculating dates.
