@@ -4,14 +4,14 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Site"
+          :entityTypeGuid="EntityType.Site"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
           tooltipField="name"
           stickyHeader
           liveUpdates
-          :entityTypeGuid="EntityType.Site"
-          :expectedRowCount="config.expectedRowCount ?? undefined"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
-        <Column name="name"
+         <Column name="name"
                 title="Name"
                 :filter="textValueFilter"
                 filterValue="{{ row.name }}"
@@ -44,19 +44,17 @@
         <TextColumn name="domains"
                     title="Domains"
                     field="domains"
-                    :filter="pickExistingValueFilter"
+                    :filter="textValueFilter"
                     visiblePriority="md" />
-
         <TextColumn name="theme"
                     title="Theme"
                     field="theme"
                     :filter="pickExistingValueFilter"
-                    visiblePriority="sm" />
-
+                    visiblePriority="xs" />
         <BooleanColumn name="isSystem"
                        title="Is System"
                        field="isSystem"
-                       visiblePriority="sm" />
+                       visiblePriority="xs" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -69,14 +67,17 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { SiteListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteList/siteListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import Grid, { AttributeColumns, BooleanColumn, DeleteColumn, Column, pickExistingValueFilter, SecurityColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { NavigationUrlKey } from "./SiteList/types.partial";
     import { reactive, ref } from "vue";
 
-    const config = useConfigurationValues<ListBlockBox<Record<string, string>>>();
+    const config = useConfigurationValues<ListBlockBox<SiteListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const errorMessage = ref("");
+
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
@@ -106,55 +107,46 @@
     // #region Event Handlers
 
     /**
-     * Called when a row has been selected by the person.
+     * Called when a row has been selected by the individual.
      *
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
-        let detailPage = `/admin/cms/sites/${key}`;
-        if (config.options?.["DetailPage"]) {
-            detailPage = `${config.options["DetailPage"]}?SiteId=${key}`;
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
         }
-        window.location.href = detailPage;
     }
 
     /**
-     * Called when a row's delete button has been clicked by the person. This
+     * Called when a row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
-     *
-     * @param key The key of the row that should be deleted.
      */
     async function onDeleteClick(key: string): Promise<void> {
-        errorMessage.value = "";
-
         const result = await invokeBlockAction<string>("Delete", {
-            key: key
+            key
         });
 
-        if (!result.isSuccess) {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete site.";
-            await alert(errorMessage.value);
-        }
-        else {
-            if (gridData) {
-                const index = (gridData.rows ?? []).findIndex(r => r["idKey"] === key);
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
 
                 if (index !== -1) {
                     gridData.rows?.splice(index, 1);
                 }
             }
         }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete site.");
+        }
     }
 
     /**
-     * Called when the Add button has been clicked by the person.
+     * Called when the Add button has been clicked by the indivual.
      */
     function onAddItem(): void {
-        let detailPage = `/admin/cms/sites/0`;
-        if (config.options?.["DetailPage"]) {
-            detailPage = `${config.options["DetailPage"]}`;
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
-        window.location.href = detailPage;
     }
 
     // #endregion

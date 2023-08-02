@@ -24,26 +24,26 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Cms.SiteList;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
 {
     /// <summary>
-    /// Demonstrates the various parts of the Obsidian List blocks.
+    /// Displays a list of sites.
     /// </summary>
 
     [DisplayName( "Site List" )]
     [Category( "CMS" )]
-    [Description( "Displays the list of sites." )]
-    [IconCssClass( "fa fa-question" )]
+    [Description( "Displays a list of sites." )]
+    [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    #region Block Attributes
-    [LinkedPage(
-        "Detail Page",
-        Key = AttributeKey.DetailPage,
-        Order = 0 )]
-
+    [LinkedPage( "Detail Page",
+        Description = "The page that will show the site details.",
+        Key = AttributeKey.DetailPage )]
     [EnumsField(
         "Site Type",
         "Includes Items with the following Type.",
@@ -58,38 +58,77 @@ namespace Rock.Blocks.Cms
         IsRequired = true,
         Key = AttributeKey.ShowDeleteColumn,
         Order = 2 )]
-    #endregion
 
-    [Rock.SystemGuid.EntityTypeGuid( "F3F57167-C120-4166-8D9B-87CA1C6B5169" )]
-    [Rock.SystemGuid.BlockTypeGuid( "093913DC-29FB-4261-BEE4-A6EB9EC90DA5" )]
+    [Rock.SystemGuid.EntityTypeGuid( "12a8c8ae-7bbe-41d2-9448-8d7eae298099" )]
+    [Rock.SystemGuid.BlockTypeGuid( "d27a9c0d-e118-4172-8f8e-368c973f5486" )]
     [CustomizedGrid]
     public class SiteList : RockEntityListBlockType<Site>
     {
-        #region Attribute Keys
+        #region Keys
+
         private static class AttributeKey
         {
-            public const string SiteType = "SiteType";
+             public const string SiteType = "SiteType";
             public const string ShowDeleteColumn = "ShowDeleteColumn";
             public const string DetailPage = "DetailPage";
         }
-        #endregion
+
+        private static class NavigationUrlKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Keys
 
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
+            var box = new ListBlockBox<SiteListOptionsBag>();
             var builder = GetGridBuilder();
 
-            return new ListBlockBox<Dictionary<string, object>>
+            box.IsAddEnabled = GetIsAddEnabled();
+            box.IsDeleteEnabled = GetAttributeValue(AttributeKey.ShowDeleteColumn).AsBoolean();
+            box.ExpectedRowCount = null;
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions();
+            box.GridDefinition = builder.BuildDefinition();
+
+            return box;
+        }
+
+        /// <summary>
+        /// Gets the box options required for the component to render the list.
+        /// </summary>
+        /// <returns>The options that provide additional details to the block.</returns>
+        private SiteListOptionsBag GetBoxOptions()
+        {
+            var options = new SiteListOptionsBag();
+
+            return options;
+        }
+
+        /// <summary>
+        /// Determines if the add button should be enabled in the grid.
+        /// <summary>
+        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
+        private bool GetIsAddEnabled()
+        {
+            var entity = new Site();
+
+            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Gets the box navigation URLs required for the page to operate.
+        /// </summary>
+        /// <returns>A dictionary of key names and URL values.</returns>
+        private Dictionary<string, string> GetBoxNavigationUrls()
+        {
+            return new Dictionary<string, string>
             {
-                IsAddEnabled = true,
-                IsDeleteEnabled = GetAttributeValue(AttributeKey.ShowDeleteColumn).AsBoolean(),
-                GridDefinition = builder.BuildDefinition(),
-                Options = new Dictionary<string, object>()
-                {
-                    { AttributeKey.DetailPage, this.GetLinkedPageUrl(AttributeKey.DetailPage) },
-                }
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "SiteId", "((Key))" )
             };
         }
 
@@ -105,44 +144,50 @@ namespace Rock.Blocks.Cms
                 qry = qry.Where( s => siteType.Contains( s.SiteType ) );
             }
 
-            return qry.Take( RequestContext.GetPageParameter( "count" ).AsIntegerOrNull() ?? 1_000 );
+            return qry;
         }
 
-        /// <summary>
-        /// Gets the grid builder that will be used to construct the definition
-        /// and the final row data.
-        /// </summary>
-        /// <returns>A <see cref="GridBuilder{T}"/> instance that will handle building the grid data.</returns>
+        /// <inheritdoc/>
         protected override GridBuilder<Site> GetGridBuilder()
         {
             return new GridBuilder<Site>()
                 .WithBlock( this )
-                .AddField( "guid", p => p.Guid.ToString() )
-                .AddField( "idKey", p => p.IdKey )
-                .AddTextField( "name", p => p.Name )
-                .AddTextField( "description", p => p.Description )
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddField( "isSystem", a => a.IsSystem )
+                .AddTextField( "name", a => a.Name )
+                .AddTextField( "description", a => a.Description )
+                .AddTextField( "theme", a => a.Theme )
                 .AddTextField( "siteIconUrl", p => GetSiteIconUrl( p ) )
                 .AddTextField( "domains", p => p.SiteDomains.Select( a => a.Domain ).JoinStringsWithCommaAnd() )
-                .AddTextField( "theme", p => p.Theme )
-                .AddField( "isSystem", p => p.IsSystem )
+                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
+
+        #endregion
+
+        #region Block Actions
 
         /// <summary>
         /// Deletes the specified entity.
         /// </summary>
         /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new SiteService( rockContext );
+                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
+                if ( entity == null )
                 {
-                    return actionError;
+                    return ActionBadRequest( $"{Site.FriendlyTypeName} not found." );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to delete ${Site.FriendlyTypeName}." );
                 }
 
                 var sitePages = new List<int> {
@@ -178,50 +223,8 @@ namespace Rock.Blocks.Cms
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                return ActionOk();
             }
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Site entity, out BlockActionResult error )
-        {
-            var entityService = new SiteService( rockContext );
-            error = null;
-
-            // Determine if we are editing an existing entity or creating a new one.
-            if ( idKey.IsNotNullOrWhiteSpace() )
-            {
-                // If editing an existing entity then load it and make sure it
-                // was found and can still be edited.
-                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
-            }
-            else
-            {
-                // Create a new entity.
-                entity = new Site();
-                entityService.Add( entity );
-            }
-
-            if ( entity == null )
-            {
-                error = ActionBadRequest( $"{Site.FriendlyTypeName} not found." );
-                return false;
-            }
-
-            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                error = ActionBadRequest( $"Not authorized to edit ${Site.FriendlyTypeName}." );
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -234,7 +237,7 @@ namespace Rock.Blocks.Cms
             string path;
 
             // If this is a Person, use the Person properties.
-            if ( site != null && site.FavIconBinaryFileId.HasValue )
+            if ( site != null && site.SiteLogoBinaryFileId.HasValue )
             {
                 path = string.Format( "/GetImage.ashx?id={0}&height=50px", site.FavIconBinaryFileId.Value );
             }
