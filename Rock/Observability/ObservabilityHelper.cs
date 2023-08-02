@@ -32,6 +32,17 @@ namespace Rock.Observability
     {
         private static TracerProvider _currentTracerProvider;
 
+        /// <summary>
+        /// The version number is used for every activity, which can be hundreds
+        /// per request. And the value never changes so only grab it once.
+        /// </summary>
+        private static readonly Lazy<string> _rockVersion = new Lazy<string>( () => VersionInfo.VersionInfo.GetRockProductVersionFullName() );
+
+        /// <summary>
+        /// Cache the machine name to reduce the load from a Win32 native call.
+        /// </summary>
+        private static readonly Lazy<string> _machineName = new Lazy<string>( () => Environment.MachineName.ToLower() );
+
         static ObservabilityHelper()
         {
             _currentTracerProvider = null;
@@ -125,7 +136,7 @@ namespace Rock.Observability
             }
 
             var nodeName = RockMessageBus.NodeName.ToLower();
-            var machineName = Environment.MachineName.ToLower();
+            var machineName = _machineName.Value;
 
             // Add on default attributes
             activity.AddTag( "rock-node", nodeName );
@@ -139,7 +150,7 @@ namespace Rock.Observability
                 activity.AddTag( "service.instance.id", machineName );
             }
 
-            activity.AddTag( "service.version", VersionInfo.VersionInfo.GetRockProductVersionFullName() );
+            activity.AddTag( "service.version", _rockVersion.Value );
 
             return activity;
         }

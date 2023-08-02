@@ -54,7 +54,7 @@ namespace Rock.Web
     /// </summary>
     public class BrowserInfo : RockDynamic
     {
-        private ClientInfo _client = null;
+        private readonly ClientInfo _client = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BrowserInfo"/> class.
@@ -71,8 +71,8 @@ namespace Rock.Web
         /// <param name="userAgent">The user agent.</param>
         public BrowserInfo( string userAgent )
         {
-            UAParser.Parser uaParser = UAParser.Parser.GetDefault();
-            _client = uaParser.Parse( userAgent );
+            // Get the client info from cache or create it.
+            _client = Rock.Net.ClientInformation.GetClientInfoForUserAgent( userAgent );
         }
 
         /// <summary>
