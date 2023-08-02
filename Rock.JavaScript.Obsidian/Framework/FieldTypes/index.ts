@@ -176,6 +176,9 @@ registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
 
+import { SlidingDateRangeFieldType } from "./slidingDateRangeField.partial";
+registerFieldType(FieldTypeGuids.SlidingDateRange, new SlidingDateRangeFieldType());
+
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
 

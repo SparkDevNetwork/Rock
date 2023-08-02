@@ -17,7 +17,7 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "./numberUtils";
-import { SlidingDateRangeType as RangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+import { SlidingDateRangeType as RangeType, SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
 import { TimeUnitType as TimeUnit } from "@Obsidian/Enums/Controls/timeUnitType";
 import { DayOfWeek, RockDateTime } from "./rockDateTime";
 
@@ -203,28 +203,6 @@ export function parseSlidingDateRangeString(value: string): SlidingDateRange | n
     }
 
     return range;
-}
-
-/**
- * Convert a SlidingDateRange object into a pipe delimited string that represents
- * the object. This string representation is used in attribute values as well as
- * other places in Rock.
- *
- * @param value The SlidingDateRange object to be represented as a string.
- *
- * @returns A string that represents the SlidingDateRange object.
- */
-export function slidingDateRangeToString(value: SlidingDateRange): string {
-    switch (value.rangeType) {
-        case RangeType.Current:
-            return `Current||${getTextForValue(value.timeUnit?.toString() ?? "", timeUnitOptions)}||`;
-
-        case RangeType.DateRange:
-            return `DateRange|||${value.lowerDate ?? ""}|${value.upperDate ?? ""}`;
-
-        default:
-            return `${getTextForValue(value.rangeType.toString(), rangeTypeOptions)}|${value.timeValue ?? ""}|${getTextForValue(value.timeUnit?.toString() ?? "", timeUnitOptions)}||`;
-    }
 }
 
 /**
