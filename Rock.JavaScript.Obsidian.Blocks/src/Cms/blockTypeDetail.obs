@@ -7,15 +7,16 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.BlockType"
                  entityTypeName="BlockType"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="false"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
+                 :isFollowVisible="false"
                  :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -82,7 +83,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return blockTypeViewBag.value?.name ?? "";
+        return "Edit Block Type";
     });
 
     /**

@@ -22,6 +22,20 @@ namespace Rock.ViewModels.Blocks.Core.ServiceJobDetail
 {
     public class ServiceJobDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the job type options.
+        /// </summary>
+        /// <value>
+        /// The job type options.
+        /// </value>
         public List<ListItemBag> JobTypeOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notification status options.
+        /// </summary>
+        /// <value>
+        /// The notification status options.
+        /// </value>
+        public List<ListItemBag> NotificationStatusOptions { get; set; }
     }
 }

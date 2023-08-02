@@ -37,7 +37,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Crm
 {
     [DisplayName( "Family Pre Registration" )]
-    [Category( "Obsidian > CRM" )]
+    [Category( "CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
 
     #region Block Attributes

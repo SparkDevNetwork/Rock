@@ -45,7 +45,7 @@ namespace Rock.Blocks.Prayer
         EntityTypeQualifierValue = "",
         IsRequired = false,
         DefaultValue = "",
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.CategorySelection,
         Order = 0,
         Key = AttributeKey.GroupCategoryId )]
 
@@ -57,14 +57,14 @@ namespace Rock.Blocks.Prayer
         EntityTypeQualifierValue = "",
         IsRequired = false,
         DefaultValue = "4B2D88F5-6E45-4B4B-8776-11118C8E8269",
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.CategorySelection,
         Order = 1,
         Key = AttributeKey.DefaultCategory )]
 
     [BooleanField( "Enable Auto Approve",
         Description = "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.",
         DefaultBooleanValue = true,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 2,
         Key = AttributeKey.EnableAutoApprove )]
 
@@ -72,42 +72,42 @@ namespace Rock.Blocks.Prayer
         Description = "Number of days until the request will expire (only applies when auto-approve is enabled).",
         IsRequired = false,
         DefaultIntegerValue = 14,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 3,
         Key = AttributeKey.ExpireDays )]
 
     [BooleanField( "Enable Urgent Flag",
         Description = "If enabled, requesters will be able to flag prayer requests as urgent.",
         DefaultBooleanValue = false,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 4,
         Key = AttributeKey.EnableUrgentFlag )]
 
     [BooleanField( "Enable Comments Flag",
         Description = "If enabled, requesters will be able to set whether or not they want to allow comments on their requests.",
         DefaultBooleanValue = false,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 5,
         Key = AttributeKey.EnableCommentsFlag )]
 
     [BooleanField( "Default Allow Comments Setting",
         Description = "This is the default setting for 'Allow Comments' on prayer requests. If the 'Enable Comments Flag' setting is enabled, the requester can override this default setting.",
         DefaultBooleanValue = true,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 6,
         Key = AttributeKey.DefaultAllowCommentsSetting )]
 
     [BooleanField( "Enable Public Display Flag",
         Description = "If enabled, requesters will be able set whether or not they want their request displayed on the public website.",
         DefaultBooleanValue = false,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 7,
         Key = AttributeKey.EnablePublicDisplayFlag )]
 
     [BooleanField( "Default To Public",
         Description = "If enabled, all prayers will be set to public by default",
         DefaultBooleanValue = false,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 8,
         Key = AttributeKey.DefaultToPublic )]
 
@@ -115,42 +115,42 @@ namespace Rock.Blocks.Prayer
         Description = "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.",
         IsRequired = false,
         DefaultIntegerValue = 250,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 9,
         Key = AttributeKey.CharacterLimit )]
 
     [BooleanField( "Require Last Name",
         Description = "Require that a last name be entered.",
         DefaultBooleanValue = true,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 10,
         Key = AttributeKey.RequireLastName )]
 
     [BooleanField( "Show Campus",
         Description = "Should the campus field be displayed? If there is only one active campus then the campus field will not show.",
         DefaultBooleanValue = true,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 11,
         Key = AttributeKey.ShowCampus )]
 
     [BooleanField( "Require Campus",
         Description = "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.",
         DefaultBooleanValue = false,
-        Category = AttributeCategory.PrayerRequest,
+        Category = AttributeCategory.Features,
         Order = 12,
         Key = AttributeKey.RequireCampus )]
 
     [BooleanField( "Enable Person Matching",
         Description = "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.",
         DefaultBooleanValue = false,
-        Category = AttributeCategory.PersonMatching,
+        Category = AttributeCategory.Features,
         Order = 13,
         Key = AttributeKey.EnablePersonMatching )]
 
     [BooleanField( "Create Person If No Match Found",
         Description = "When person matching is enabled this setting determines if a person should be created if a matched record is not found. This setting has no impact if person matching is disabled.",
         DefaultBooleanValue = true,
-        Category = AttributeCategory.PersonMatching,
+        Category = AttributeCategory.Features,
         Order = 14,
         Key = AttributeKey.CreatePersonIfNoMatchFound )]
 
@@ -160,7 +160,7 @@ namespace Rock.Blocks.Prayer
         IsRequired = false,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT,
-        Category = AttributeCategory.PersonMatching,
+        Category = AttributeCategory.Features,
         Order = 15,
         Key = AttributeKey.ConnectionStatus )]
 
@@ -170,7 +170,7 @@ namespace Rock.Blocks.Prayer
         IsRequired = false,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
-        Category = AttributeCategory.PersonMatching,
+        Category = AttributeCategory.Features,
         Order = 16,
         Key = AttributeKey.RecordStatus )]
 
@@ -225,8 +225,8 @@ namespace Rock.Blocks.Prayer
         private static class AttributeCategory
         {
             public const string OnSaveBehavior = "On Save Behavior";
-            public const string PersonMatching = "Person Matching";
-            public const string PrayerRequest = "Prayer Request";
+            public const string CategorySelection = "Category Selection";
+            public const string Features = "Features";
         }
 
         #endregion
@@ -698,7 +698,8 @@ namespace Rock.Blocks.Prayer
                 IsRequesterInfoShown = this.RequestContext.GetContextEntity<Person>() == null,
                 IsUrgentShown = this.IsUrgentShown,
                 ParentPageUrl = this.IsPageRedirectedToParentOnSave ? this.GetParentPageUrl() : null,
-                DefaultRequest = this.RequestPageParameter
+                DefaultRequest = this.RequestPageParameter,
+                IsMobilePhoneShown = this.IsPersonMatchingEnabled
             };
 
             // Load the categories. The Category drop down will not be shown if they are not loaded.

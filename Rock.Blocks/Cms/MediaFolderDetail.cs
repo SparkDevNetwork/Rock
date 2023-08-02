@@ -38,7 +38,7 @@ namespace Rock.Blocks.Cms
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Media Folder Detail" )]
-    [Category( "Cms" )]
+    [Category( "CMS" )]
     [Description( "Displays the details of a particular media folder." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]

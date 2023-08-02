@@ -12,7 +12,7 @@
                          label="Description"
                          textMode="multiline" />
             </div>
-            <div class="col-md-2">
+            <div class="col-md-4">
                 <WorkflowTypePicker v-model="workflowType"
                                     label="Workflow Type"
                                     help="The type of workflow to trigger when a new media element is added to this folder." />

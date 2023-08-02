@@ -15,9 +15,14 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
 {
-    public class MergeTemplateDetailOptionsBag
+    public class MergeTemplateFileValidationBag
     {
+        public string FileName { get; set; }
+        public ListItemBag MergeTemplateTypeEntityType { get; set; }
+        public string FileTypeWarningMessage { get; set; }
     }
 }

@@ -37,7 +37,7 @@ namespace Rock.Blocks.Cms
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Personal Link Section Detail" )]
-    [Category( "Cms" )]
+    [Category( "CMS" )]
     [Description( "Displays the details of a particular personal link section." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -192,7 +192,7 @@ namespace Rock.Blocks.Cms
             return new PersonalLinkSectionBag
             {
                 IdKey = entity.IdKey,
-                IsShared = entity.IsShared,
+                IsShared = entity.Id == 0 ? GetAttributeValue( AttributeKey.SharedSection ).AsBoolean() : entity.IsShared,
                 Name = entity.Name
             };
         }

@@ -47,7 +47,7 @@ namespace Rock.Blocks.Core
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Attributes" )]
-    [Category( "Obsidian > Core" )]
+    [Category( "Core" )]
     [Description( "Allows for the managing of attributes." )]
     [IconCssClass( "fa fa-list-ul" )]
     [SupportedSiteTypes( Model.SiteType.Web )]

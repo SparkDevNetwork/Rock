@@ -39,7 +39,7 @@ namespace Rock.Blocks.Security
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Login" )]
-    [Category( "Obsidian > Security" )]
+    [Category( "Security" )]
     [Description( "Allows the user to authenticate." )]
     [IconCssClass( "fa fa-user-lock" )]
     [SupportedSiteTypes( Model.SiteType.Web )]

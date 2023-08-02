@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
+
         <ValueDetailList :modelValue="topValues" />
 
         <div class="row">
@@ -12,36 +13,25 @@
                 <ValueDetailList :modelValue="rightSideValues" />
             </div>
         </div>
-
-        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
-    import { AssessmentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeDetail/assessmentTypeBag";
-    import { AssessmentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeDetail/assessmentTypeDetailOptionsBag";
+    import { SuggestionDetailBag } from "@Obsidian/ViewModels/Blocks/Core/SuggestionDetail/suggestionDetailBag";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<AssessmentTypeBag | null>,
+            type: Object as PropType<SuggestionDetailBag | null>,
             required: false
-        },
-
-        options: {
-            type: Object as PropType<AssessmentTypeDetailOptionsBag>,
-            required: true
         }
     });
 
     // #region Values
 
-    const attributes = ref(props.modelValue?.attributes ?? {});
-    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     // #endregion
 
     // #region Computed Values
@@ -55,7 +45,7 @@
         }
 
         if (props.modelValue.description) {
-            valueBuilder.addTextValue("", props.modelValue.description);
+            valueBuilder.addTextValue("Description", props.modelValue.description);
         }
 
         return valueBuilder.build();
@@ -69,11 +59,13 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addTextValue("Requires Request", props.modelValue.requiresRequest ? "True" : "False");
+        if (props.modelValue.entityType?.text) {
+            valueBuilder.addTextValue("Suggestion Type", props.modelValue.entityType.text);
+        }
 
-        valueBuilder.addTextValue("Minimum Days To Retake", props.modelValue.minimumDaysToRetake ? props.modelValue.minimumDaysToRetake.toString() : "0");
-
-        valueBuilder.addTextValue("Valid Duration", props.modelValue.validDuration.toString());
+        if (props.modelValue.reasonNote) {
+            valueBuilder.addTextValue("Reason Note", props.modelValue.reasonNote);
+        }
 
         return valueBuilder.build();
     });
@@ -89,13 +81,13 @@
         return valueBuilder.build();
     });
 
-    // #endregion
+        // #endregion
 
-    // #region Functions
+        // #region Functions
 
-    // #endregion
+        // #endregion
 
-    // #region Event Handlers
+        // #region Event Handlers
 
-    // #endregion
+        // #endregion
 </script>

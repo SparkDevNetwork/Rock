@@ -10,6 +10,7 @@
 
             <div class="col-md-6">
                 <CheckBox v-model="isActive"
+                          text="Yes"
                           label="Active" />
             </div>
         </div>
@@ -17,7 +18,8 @@
         <div class="well">
             <div class="row">
                 <div class="col-md-6">
-                    <ComponentPicker label="Component Type"
+                    <ComponentPicker label="Account Type"
+                                     rules="required"
                                      v-model="componentEntityType"
                                      :containerType="containerType" />
                 </div>

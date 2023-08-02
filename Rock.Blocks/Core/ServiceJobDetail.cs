@@ -19,17 +19,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.CMS.PageShortLinkDetail;
 using Rock.ViewModels.Blocks.Core.ServiceJobDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Core
 {
@@ -38,7 +37,7 @@ namespace Rock.Blocks.Core
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
-    [DisplayName( "Service Job Detail" )]
+    [DisplayName( "Scheduled Job Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular service job." )]
     [IconCssClass( "fa fa-question" )]
@@ -96,8 +95,32 @@ namespace Rock.Blocks.Core
         {
             var options = new ServiceJobDetailOptionsBag
             {
-                JobTypeOptions = ServiceJobService.GetJobTypes()
+                JobTypeOptions = ServiceJobService.GetJobTypes(),
+                NotificationStatusOptions = GetNotificationStatusOptions()
             };
+
+            return options;
+        }
+
+        /// <summary>
+        /// Gets the notification status options.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private List<ListItemBag> GetNotificationStatusOptions()
+        {
+            var type = typeof( JobNotificationStatus );
+            var names = Enum.GetNames( typeof( JobNotificationStatus ) );
+            var options = new List<ListItemBag>();
+
+            foreach ( var name in names )
+            {
+                object value = Enum.Parse( type, name );
+                var fieldInfo = value.GetType().GetField( name );
+                var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
+
+                options.Add(new ListItemBag() { Text = description, Value = name });
+            }
 
             return options;
         }
@@ -184,6 +207,8 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
+            var isNew = entity.Id == 0;
+
             var serviceJobBag = new ServiceJobBag
             {
                 IdKey = entity.IdKey,
@@ -193,11 +218,12 @@ namespace Rock.Blocks.Core
                 Description = entity.Description,
                 EnableHistory = entity.EnableHistory,
                 HistoryCount = entity.HistoryCount,
-                IsActive = entity.IsActive,
+                IsActive = isNew ? true : entity.IsActive,
                 IsSystem = entity.IsSystem,
-                LastStatusMessage = entity.LastStatusMessage,
+                LastStatusMessage = entity.LastStatusMessage.ConvertCrLfToHtmlBr(),
                 Name = entity.Name,
-                NotificationEmails = entity.NotificationEmails
+                NotificationEmails = entity.NotificationEmails,
+                NotificationStatus = isNew ? JobNotificationStatus.All.ToString() : entity.NotificationStatus.ToString(),
             };
 
             if ( entity.CronExpression.IsNotNullOrWhiteSpace() )
@@ -291,6 +317,9 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Entity.NotificationEmails ),
                 () => entity.NotificationEmails = box.Entity.NotificationEmails );
+
+            box.IfValidProperty( nameof( box.Entity.NotificationStatus ),
+                () => entity.NotificationStatus = box.Entity.NotificationStatus.ConvertToEnum<JobNotificationStatus>() );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>

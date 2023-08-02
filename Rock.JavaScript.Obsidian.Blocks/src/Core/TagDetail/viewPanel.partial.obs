@@ -57,7 +57,7 @@
         }
 
         if (props.modelValue.description) {
-            valueBuilder.addTextValue("Description", props.modelValue.description);
+            valueBuilder.addTextValue("", props.modelValue.description);
         }
 
         return valueBuilder.build();
@@ -73,7 +73,8 @@
 
         if (!props.modelValue.ownerPersonAlias) {
             valueBuilder.addTextValue("Scope", "Organizational");
-        } else {
+        }
+        else {
             valueBuilder.addTextValue("Scope", "Personal");
         }
 
@@ -92,8 +93,8 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.iconCssClass) {
-            valueBuilder.addTextValue("Icon CSS Class", props.modelValue.iconCssClass);
+        if (props.modelValue.ownerPersonAlias?.text) {
+            valueBuilder.addTextValue("Owner", props.modelValue.ownerPersonAlias.text);
         }
 
         return valueBuilder.build();

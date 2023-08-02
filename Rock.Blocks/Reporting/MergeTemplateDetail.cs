@@ -18,13 +18,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Reporting
@@ -35,7 +38,7 @@ namespace Rock.Blocks.Reporting
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Merge Template Detail" )]
-    [Category( "Reporting" )]
+    [Category( "Core" )]
     [Description( "Displays the details of a particular merge template." )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
@@ -255,6 +258,37 @@ namespace Rock.Blocks.Reporting
 
             var bag = GetCommonEntityBag( entity );
 
+            var mergeTemplateOwnership = this.GetAttributeValue( AttributeKey.MergeTemplatesOwnership ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Global );
+
+            if ( entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) || mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal )
+            {
+                // If Authorized to EDIT, owner should be able to be changed, or converted to Global
+                bag.ShowPersonPicker = true;
+                bag.IsPersonRequired = false;
+                bag.ShowCategoryPicker = true;
+            }
+            else if ( mergeTemplateOwnership == MergeTemplateOwnership.Global )
+            {
+                bag.ShowPersonPicker = true;
+                bag.IsPersonRequired = false;
+                bag.ShowCategoryPicker = true;
+                bag.ExcludedCategoryIds = new List<string>()
+                {
+                    CategoryCache.Get( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() ).Guid.ToString()
+                };
+            }
+            else if ( mergeTemplateOwnership == MergeTemplateOwnership.Personal )
+            {
+                // if ONLY personal merge templates are permitted, hide the category since it'll always be saved in the personal category
+                bag.ShowCategoryPicker = false;
+
+                // merge template should be only for the current person, so hide the person picker
+                bag.ShowPersonPicker = false;
+
+                // it is required, but not shown..
+                bag.IsPersonRequired = false;
+            }
+
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
             return bag;
@@ -404,6 +438,72 @@ namespace Rock.Blocks.Reporting
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the Name and best matching MergeTemplateType based on the selected file and check if the selected file type matches the MergeTemplateType 
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier</param>
+        /// <param name="mergeTemplateTypeGuid">The <see cref="MergeTemplateType"/> guid</param>
+        /// <param name="rockContext">The rock context</param>
+        /// <returns></returns>
+        private MergeTemplateFileValidationBag GetMergeTemplateValidationBag( int binaryFileId, Guid? mergeTemplateTypeGuid, RockContext rockContext )
+        {
+            var bag = new MergeTemplateFileValidationBag();
+            var binaryFile = new BinaryFileService( rockContext ).Get( binaryFileId );
+            var mergeTemplateEntityType = EntityTypeCache.Get( mergeTemplateTypeGuid ?? Guid.Empty );
+
+            if ( binaryFile == null )
+            {
+                return bag;
+            }
+
+            bag.FileName = Path.GetFileNameWithoutExtension( binaryFile.FileName ).SplitCase().ReplaceWhileExists( "  ", " " );
+
+            string fileExtension = Path.GetExtension( binaryFile.FileName ).TrimStart( '.' );
+            if ( string.IsNullOrWhiteSpace( fileExtension ) )
+            {
+                // nothing more to do
+                return bag;
+            }
+
+            MergeTemplateType mergeTemplateType = null;
+
+            if ( mergeTemplateEntityType != null )
+            {
+                mergeTemplateType = MergeTemplateTypeContainer.GetComponent( mergeTemplateEntityType.Name );
+            }
+            else
+            {
+                foreach ( var templateType in MergeTemplateTypeContainer.Instance.Components.Values.Where( item => item.Value.IsActive ).Select( item => item.Value ) )
+                {
+                    if ( templateType.SupportedFileExtensions?.Any() == true && templateType.SupportedFileExtensions.Contains( fileExtension ) )
+                    {
+                        mergeTemplateType = templateType;
+                        break;
+                    }
+                }
+            }
+
+            if ( mergeTemplateType == null )
+            {
+                bag.FileTypeWarningMessage = "Warning: Please select a template type.";
+                return bag;
+            }
+
+            if ( !mergeTemplateType.SupportedFileExtensions.Contains( fileExtension ) )
+            {
+                bag.FileTypeWarningMessage = string.Format(
+                    "Warning: The selected template type doesn't support '{0}' files. Please use a {1} file for this template type.",
+                    fileExtension,
+                    mergeTemplateType.SupportedFileExtensions.Select( a => a.Quoted() ).ToList().AsDelimited( ", ", " or " ) );
+            }
+            else
+            {
+                bag.MergeTemplateTypeEntityType = new ListItemBag() { Text = mergeTemplateType.EntityType.FriendlyName, Value = mergeTemplateType.EntityType.Guid.ToString() };
+            }
+
+            return bag;
         }
 
         #endregion
@@ -570,6 +670,17 @@ namespace Rock.Blocks.Reporting
                 }
 
                 return ActionOk( refreshedBox );
+            }
+        }
+
+        [BlockAction]
+        public BlockActionResult ValidateFile( ListItemBag binaryFile, Guid? mergeTemplateTypeGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileId = binaryFile.GetEntityId<BinaryFile>( rockContext ) ?? 0;
+                var bag = GetMergeTemplateValidationBag( binaryFileId, mergeTemplateTypeGuid, rockContext );
+                return ActionOk( bag );
             }
         }
 

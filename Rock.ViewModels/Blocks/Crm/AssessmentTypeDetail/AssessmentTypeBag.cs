@@ -54,7 +54,7 @@ namespace Rock.ViewModels.Blocks.Crm.AssessmentTypeDetail
         /// <summary>
         /// Gets or sets the number of days given for the Rock.Model.AssessmentType. to be retaken.
         /// </summary>
-        public int MinimumDaysToRetake { get; set; }
+        public int? MinimumDaysToRetake { get; set; }
 
         /// <summary>
         /// Gets or sets the RequiresRequest flag for the Rock.Model.AssessmentType.

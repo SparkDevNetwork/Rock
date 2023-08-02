@@ -37,7 +37,7 @@ namespace Rock.Blocks.Workflow
     /// </summary>
 
     [DisplayName( "Workflow Trigger Detail" )]
-    [Category( "Workflow" )]
+    [Category( "WorkFlow" )]
     [Description( "Displays the details of a particular workflow trigger." )]
     [IconCssClass( "fa fa-question" )]
 

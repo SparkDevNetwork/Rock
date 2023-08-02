@@ -108,6 +108,9 @@ export type PrayerRequestEntryInitializationBox = {
     /** Determines if the last name field is required. */
     isLastNameRequired: boolean;
 
+    /** Determines if the "Mobile Phone" field is shown. */
+    isMobilePhoneShown: boolean;
+
     /** Determines if the parent page will be redirected to on successful save. */
     isPageRedirectedToParentOnSave: boolean;
 

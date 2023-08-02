@@ -7,11 +7,6 @@
                          label="Name"
                          rules="required" />
             </div>
-
-            <div class="col-md-6">
-                <CheckBox v-model="isActive"
-                          label="Active" />
-            </div>
         </div>
 
         <TextBox v-model="description"
@@ -19,17 +14,18 @@
                  textMode="multiline" />
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-3">
                 <EntityTypePicker v-model="entityType"
                                   label="Entity Type"
-                                  rules="required"
                                   :multiple="false"
+                                  showBlankItem
                                   :includeGlobalOption="false" />
             </div>
         </div>
         <div class="row">
             <div class="col-md-6">
-                <ComponentPicker label="Component Type"
+                <ComponentPicker label="Badge Type"
+                                 rules="required"
                                  v-model="badgeComponentEntityType"
                                  :containerType="containerType" />
             </div>
@@ -44,14 +40,17 @@
             </div>
         </div>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+        <div class="row">
+            <div class="col-md-6">
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
+            </div>
+        </div>
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";
     import ComponentPicker from "@Obsidian/Controls/componentPicker";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";

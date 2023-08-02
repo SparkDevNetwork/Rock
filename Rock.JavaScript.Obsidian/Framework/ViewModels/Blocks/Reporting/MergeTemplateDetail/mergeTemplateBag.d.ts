@@ -38,8 +38,14 @@ export type MergeTemplateBag = {
     /** Gets or sets the description. */
     description?: string | null;
 
+    /** Gets or sets the excluded category ids. */
+    excludedCategoryIds?: string[] | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
+
+    /** Gets or sets a value indicating whether this instance is person required. */
+    isPersonRequired: boolean;
 
     /** Gets or sets the merge template ownership. */
     mergeTemplateOwnership: MergeTemplateOwnership;
@@ -52,6 +58,12 @@ export type MergeTemplateBag = {
 
     /** Gets or sets the person alias. */
     personAlias?: ListItemBag | null;
+
+    /** Gets or sets a value indicating whether [show category picker]. */
+    showCategoryPicker: boolean;
+
+    /** Gets or sets a value indicating whether [show person picker]. */
+    showPersonPicker: boolean;
 
     /** Gets or sets the template binary file. */
     templateBinaryFile?: ListItemBag | null;

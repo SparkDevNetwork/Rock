@@ -21,19 +21,12 @@
 // </copyright>
 //
 
-export type PhotoOptOutBag = {
-    /** Gets or sets the type of the alert. */
-    alertType?: string | null;
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
+export type MergeTemplateFileValidationBag = {
+    fileName?: string | null;
 
-    /** Gets or sets the TagId of the Rock.Model.Tag that this TaggedItem is tagged with. */
-    isOptOutSuccessful: boolean;
+    fileTypeWarningMessage?: string | null;
 
-    /** Gets or sets the success message. */
-    successMessage?: string | null;
+    mergeTemplateTypeEntityType?: ListItemBag | null;
 };

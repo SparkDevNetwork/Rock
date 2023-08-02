@@ -80,7 +80,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return restKeyViewBag.value?.name ?? "Rest Key Detail";
+        return restKeyViewBag.value?.idKey ? "Edit REST Key" : "Add REST Key";
     });
 
     /**

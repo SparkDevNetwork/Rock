@@ -5,11 +5,11 @@
         <ValueDetailList :modelValue="topValues" />
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-sm-6 col-md-7 col-lg-8">
                 <ValueDetailList :modelValue="leftSideValues" />
             </div>
 
-            <div class="col-md-6">
+            <div class="col-sm-6 col-md-5 col-lg-4">
                 <ValueDetailList :modelValue="rightSideValues" />
             </div>
         </div>
@@ -56,10 +56,6 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.mediaAccount?.value) {
-            valueBuilder.addTextValue("Account", props.modelValue.mediaAccount.text ?? "");
-        }
-
         return valueBuilder.build();
     });
 
@@ -69,6 +65,10 @@
 
         if (!props.modelValue) {
             return valueBuilder.build();
+        }
+
+        if (props.modelValue.mediaAccount?.value) {
+            valueBuilder.addTextValue("Account", props.modelValue.mediaAccount.text ?? "");
         }
 
         if (props.modelValue.contentChannel?.value) {
@@ -91,10 +91,6 @@
             valueBuilder.addTextValue("Description", props.modelValue.description);
         }
 
-        if (props.modelValue.metricData) {
-            valueBuilder.addHtmlValue("", props.modelValue.metricData);
-        }
-
         return valueBuilder.build();
     });
 
@@ -104,6 +100,11 @@
 
         if (!props.modelValue) {
             return valueBuilder.build();
+        }
+
+
+        if (props.modelValue.metricData) {
+            valueBuilder.addHtmlValue("", props.modelValue.metricData);
         }
 
         return valueBuilder.build();

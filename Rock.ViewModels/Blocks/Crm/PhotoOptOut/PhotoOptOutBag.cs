@@ -30,5 +30,21 @@ namespace Rock.ViewModels.Blocks.Crm.PhotoOptOut
         /// </summary>
         /// <value>The error message.</value>
         public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the success message.
+        /// </summary>
+        /// <value>
+        /// The success message.
+        /// </value>
+        public string SuccessMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the alert.
+        /// </summary>
+        /// <value>
+        /// The type of the alert.
+        /// </value>
+        public string AlertType { get; set; }
     }
 }

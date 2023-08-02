@@ -7,16 +7,17 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
+                 entityTypeName="Tag"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="!isSecurityVisible"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -97,6 +98,10 @@
      */
     const entityKey = computed((): string => {
         return tagViewBag.value?.idKey ?? "";
+    });
+
+    const isSecurityVisible = computed((): boolean => {
+        return !tagViewBag.value?.ownerPersonAlias?.value;
     });
 
     /**

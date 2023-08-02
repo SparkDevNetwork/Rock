@@ -63,19 +63,19 @@
         }
 
         if (props.modelValue.timeToLiveSeconds) {
-            valueBuilder.addTextValue("Time To Live", props.modelValue.timeToLiveSeconds.toString())
+            valueBuilder.addTextValue("Time To Live", `${props.modelValue.timeToLiveSeconds.toString()} seconds`);
         }
 
-        if (props.modelValue.messagesConsumedLastMinute) {
-            valueBuilder.addTextValue("Messages Last Minute", props.modelValue.messagesConsumedLastMinute.toString())
+        if (props.modelValue.messagesConsumedLastMinute != null) {
+            valueBuilder.addTextValue("Messages Last Minute", props.modelValue.messagesConsumedLastMinute.toString());
         }
 
-        if (props.modelValue.messagesConsumedLastHour) {
-            valueBuilder.addTextValue("Messages Last Hour", props.modelValue.messagesConsumedLastHour.toString())
+        if (props.modelValue.messagesConsumedLastHour != null) {
+            valueBuilder.addTextValue("Messages Last Hour", props.modelValue.messagesConsumedLastHour.toString());
         }
 
-        if (props.modelValue.messagesConsumedLastDay) {
-            valueBuilder.addTextValue("Messages Last Day", props.modelValue.messagesConsumedLastDay.toString())
+        if (props.modelValue.messagesConsumedLastDay != null) {
+            valueBuilder.addTextValue("Messages Last Day", props.modelValue.messagesConsumedLastDay.toString());
         }
 
         return valueBuilder.build();

@@ -15,8 +15,10 @@
                                  rules="required" />
             </div>
             <div class="col-md-6">
+                <NotificationBox v-if="warningMessage" alertType="warning">{{ warningMessage }}</NotificationBox>
                 <FileUploader v-model="templateBinaryFile"
                               label="Template File"
+                              rules="required"
                               :binaryFileTypeGuid="binaryFileTypeGuid"
                               uploadButtonText="Upload"
                               :showDeleteButton="true" />
@@ -26,6 +28,7 @@
                                 rules="required"
                                 :entityTypeGuid="entityTypeGuid" />
                 <PersonPicker v-if="showPersonPicker"
+                              :rules="personPickerRules"
                               v-model="personAlias"
                               label="Person"
                               help="Set this to make it a personal merge template. Leave it blank to make it a global." />
@@ -45,14 +48,15 @@
     import ComponentPicker from "@Obsidian/Controls/componentPicker";
     import PersonPicker from "@Obsidian/Controls/personPicker";
     import TextBox from "@Obsidian/Controls/textBox";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { MergeTemplateBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateDetail/mergeTemplateBag";
     import { MergeTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateDetail/mergeTemplateDetailOptionsBag";
+    import { MergeTemplateFileValidationBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateDetail/mergeTemplateFileValidationBag";
     import { Guid } from "@Obsidian/Types";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import FileUploader from "@Obsidian/Controls/fileUploader";
-    import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
 
     const props = defineProps({
         modelValue: {
@@ -86,14 +90,18 @@
     const templateBinaryFile = propertyRef(props.modelValue.templateBinaryFile ?? null, "TemplateBinaryFileId");
     const category = propertyRef(props.modelValue.category ?? null, "CategoryId");
     const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAliasId");
-    const showPersonPicker = ref(props.modelValue.mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal);
-    const showCategory = ref(props.modelValue.mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal || props.modelValue.mergeTemplateOwnership == MergeTemplateOwnership.Global);
+    const showPersonPicker = ref(props.modelValue.showPersonPicker);
+    const showCategory = ref(props.modelValue.showCategoryPicker);
     const entityTypeGuid = ref(props.entityTypeGuid);
     const containerType = ref("Rock.MergeTemplates.MergeTemplateTypeContainer");
     const binaryFileTypeGuid = BinaryFiletype.MergeTemplate;
+    const warningMessage = ref("");
+    const personPickerRules = ref(props.modelValue.isPersonRequired ? "required" : "");
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, name, mergeTemplateTypeEntityType, templateBinaryFile, category, personAlias];
+
+    const invokeBlockAction = useInvokeBlockAction();
 
     // #endregion
 
@@ -108,6 +116,28 @@
     // #region Event Handlers
 
     // #endregion
+
+    watch(() => [templateBinaryFile.value, mergeTemplateTypeEntityType.value], async () => {
+
+        if (templateBinaryFile.value?.value) {
+            const response = await invokeBlockAction<MergeTemplateFileValidationBag>("ValidateFile", {
+                binaryFile: templateBinaryFile.value,
+                mergeTemplateTypeGuid: mergeTemplateTypeEntityType?.value?.value ?? ""
+            });
+
+            if (response.isSuccess && response.data) {
+                if (!name.value) {
+                    name.value = response.data.fileName ?? "";
+                }
+
+                warningMessage.value = response.data.fileTypeWarningMessage ?? "";
+
+                if (!mergeTemplateTypeEntityType.value?.value) {
+                    mergeTemplateTypeEntityType.value = response.data.mergeTemplateTypeEntityType ?? {};
+                }
+            }
+        }
+    });
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {

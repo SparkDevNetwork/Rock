@@ -546,6 +546,8 @@ namespace Rock.Blocks.Tv
 
                     // Create/Modify API Key
                     additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, box.Entity.ApiKey, $"tv_application_{entity.Id}", entity.Name, rockContext );
+                    additionalSettings.ApplicationStyles = box.Entity.ApplicationStyles;
+                    additionalSettings.ApplicationScript = box.Entity.ApplicationJavascript;
                     entity.AdditionalSettings = additionalSettings.ToJson();
                     rockContext.SaveChanges();
                 } );

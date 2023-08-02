@@ -62,6 +62,10 @@
             return valueBuilder.build();
         }
 
+        if (props.modelValue.name) {
+            valueBuilder.addTextValue("Name", props.modelValue.name);
+        }
+
         if (props.modelValue.path) {
             valueBuilder.addTextValue("Path", props.modelValue.path);
         }

@@ -82,7 +82,7 @@
             valueBuilder.addTextValue("Enable Page Views", props.modelValue.enablePageViews ? "True" : "False");
         }
 
-        if (props.modelValue.pageViewRetentionPeriod) {
+        if (props.modelValue.pageViewRetentionPeriod !== null) {
             valueBuilder.addTextValue("Page View Retention", `${props.modelValue.pageViewRetentionPeriod} days`);
         }
 

@@ -15,8 +15,8 @@
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -91,7 +91,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return campusViewBag.value?.name ?? "";
+        return campusViewBag.value?.name ?? "Add Campus";
     });
 
     /**

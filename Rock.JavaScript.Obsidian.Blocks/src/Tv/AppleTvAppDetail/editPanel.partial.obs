@@ -13,9 +13,9 @@
 
         <TextBox v-model="description" label="Description" textMode="multiline" />
 
-        <CodeEditor v-if="isApplicationJsVisible" v-model="applicationJavascript" label="Application Javascript" theme="rock" mode="text" :editorHeight="200" />
+        <CodeEditor v-if="isApplicationJsVisible" v-model="applicationJavascript" label="Application Javascript" theme="rock" mode="text" :editorHeight="600" />
 
-        <CodeEditor v-model="applicationStyles" label="Application Styles" theme="rock" mode="text" :editorHeight="200" />
+        <CodeEditor v-model="applicationStyles" label="Application Styles" theme="rock" mode="text" :editorHeight="400" />
 
         <div class="row">
             <div class="col-md-6">
@@ -27,6 +27,15 @@
                            v-model="pageViewRetentionPeriod"
                            label="Page View Retention Period"
                            help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+
+                <div class="row">
+                    <div class="col-md-6 col-sm-6">
+                        <PagePicker v-model="loginPage"
+                                    :multiple="false"
+                                    label="Authentication Page"
+                                    help="The page on your public website that will be used in the authentication process." />
+                    </div>
+                </div>
             </div>
             <div class="col-md-6">
                 <TextBox v-model="apiKey"
@@ -37,15 +46,6 @@
                 <CheckBox v-model="enablePageViewGeoTracking"
                           label="Enable Page View Geo Tracking"
                           help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-2">
-                <PagePicker v-model="loginPage"
-                            :multiple="false"
-                            label="Authentication Page"
-                            help="The page on your public website that will be used in the authentication process." />
             </div>
         </div>
 
@@ -95,7 +95,7 @@
     const loginPage = propertyRef(props.modelValue.loginPage ?? {}, "LoginPageId");
     const applicationStyles = ref(props.modelValue.applicationStyles ?? "");
     const applicationJavascript = ref(props.modelValue.applicationJavascript ?? "");
-    const pageViewRetentionPeriod = ref(props.modelValue.pageViewRetentionPeriod ?? 0);
+    const pageViewRetentionPeriod = ref(props.modelValue.pageViewRetentionPeriod ?? null);
     const apiKey = ref(props.modelValue.apiKey ?? "");
     const isApplicationJsVisible = ref(props.modelValue.showApplicationJavascript);
 
@@ -129,7 +129,7 @@
         updateRefValue(loginPage, props.modelValue.loginPage ?? {});
         updateRefValue(applicationStyles, props.modelValue.applicationStyles ?? "");
         updateRefValue(applicationJavascript, props.modelValue.applicationJavascript ?? "");
-        updateRefValue(pageViewRetentionPeriod, props.modelValue.pageViewRetentionPeriod ?? 0);
+        updateRefValue(pageViewRetentionPeriod, props.modelValue.pageViewRetentionPeriod ?? null);
         updateRefValue(apiKey, props.modelValue.apiKey ?? "");
     });
 

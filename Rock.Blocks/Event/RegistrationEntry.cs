@@ -49,7 +49,7 @@ namespace Rock.Blocks.Event
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Registration Entry" )]
-    [Category( "Obsidian > Event" )]
+    [Category( "Event" )]
     [Description( "Block used to register for a registration instance." )]
     [IconCssClass( "fa fa-clipboard-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]

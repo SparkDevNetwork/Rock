@@ -5,44 +5,63 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
-                         rules="required" />
+                         rules="required"
+                         :disabled="!isEditable || isSystem" />
             </div>
 
             <div class="col-md-6">
                 <CheckBox v-model="isActive"
-                          label="Active" />
+                          label="Active"
+                          :disabled="!isEditable || isSystem" />
             </div>
         </div>
 
         <TextBox v-model="description"
                  label="Description"
-                 textMode="multiline" />
+                 textMode="multiline"
+                 :disabled="!isEditable || isSystem" />
 
         <div class="row">
             <div class="col-md-6">
+                <DropDownList label="Notification Status"
+                              v-model="notificationStatus"
+                              :items="notificationStatusOptions"
+                              :disabled="!isEditable"/>
                 <TextBox v-model="notificationEmails"
                          label="Notification Emails"
+                         :disabled="!isEditable"
                          help="Additional email addresses that the notification email should be sent to for this job. Emails are sent using the 'Job Notification' system email template. If there are recipients defined in the template, it will send a job notification to those, too. <span class='tip tip-lava'></span>" />
                 <DropDownList label="Job Type"
                               v-model="jobTypeClass"
                               :items="jobTypeOptions"
                               rules="required"
-                              help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>.<br>Examples:<br>Daily at 2:15am: <em>0 15 2 1/1 * ? *</em><br>Every Monday and Friday at 4:30pm: <em>0 30 16 ? * MON,FRI *</em>"/>
-                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" />
+                              :disabled="!isEditable || isSystem"/>
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="isEditable" :numberOfColumns="1" />
             </div>
             <div class="col-md-6">
                 <TextBox label="Cron Expression"
                          v-model="cronExpression"
                          rules="required"
-                         @update:modelValue="getCronDescription" />
-                <RockLabel>Cron Description</RockLabel>
-                <p>{{cronDescription}}</p>
+                         :disabled="!isEditable || isSystem"
+                         @update:modelValue="getCronDescription"
+                         help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>.<br>Examples:<br>Daily at 2:15am: <em>0 15 2 1/1 * ? *</em><br>Every Monday and Friday at 4:30pm: <em>0 30 16 ? * MON,FRI *</em>" />
+                <div v-if="idkey" class="form-group static-control">
+                    <label class="control-label">Cron Description</label>
+                    <div class="control-wrapper">
+                        <div class="form-control-static">
+                            {{ cronDescription }}
+                        </div>
+                    </div>
+                </div>
                 <NumberBox v-model="historyCount"
+                           class="input-width-lg"
                            rules="gte:0"
-                           label="History Count"
+                           label="Job History Count"
                            help="The number of job history records to keep for this job instance." />
-                <RockLabel>Last Status Message</RockLabel>
-                <p>{{lastStatusMessage}}</p>
+                <div v-if="idkey">
+                    <RockLabel>Last Status Message</RockLabel>
+                    <p v-html="lastStatusMessage"></p>
+                </div>
             </div>
         </div>
     </fieldset>
@@ -70,6 +89,11 @@
         options: {
             type: Object as PropType<ServiceJobDetailOptionsBag>,
             required: true
+        },
+
+        isEditable: {
+            type: Object as PropType<boolean>,
+            required: true
         }
     });
 
@@ -85,7 +109,7 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
-    //const notificationSatatus = propertyRef(props.modelValue.name ?? "", "Name");
+    const notificationStatus = propertyRef(props.modelValue.notificationStatus ?? "", "JobNotificationStatus");
     const cronExpression = propertyRef(props.modelValue.cronExpression ?? "", "CronExpression");
     const historyCount = propertyRef(props.modelValue.historyCount, "HistoryCount");
     const notificationEmails = propertyRef(props.modelValue.notificationEmails ?? "", "NotificationEmails");
@@ -93,10 +117,13 @@
     const cronDescription = ref(props.modelValue.cronDescription);
     const invokeBlockAction = useInvokeBlockAction();
     const jobTypeOptions = props.options.jobTypeOptions ?? [];
+    const notificationStatusOptions = props.options.notificationStatusOptions ?? [];
     const jobTypeClass = propertyRef(props.modelValue.class ?? "", "Class");
+    const idkey = ref(props.modelValue.idKey);
+    const isSystem = ref(props.modelValue.isSystem);
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, cronExpression, historyCount, notificationEmails, jobTypeClass];
+    const propRefs = [description, isActive, name, cronExpression, historyCount, notificationEmails, jobTypeClass, notificationStatus];
 
     // #endregion
 
@@ -112,7 +139,8 @@
         });
         if (response.isSuccess && response.data) {
             cronDescription.value = response.data.cronDescription;
-        } else {
+        }
+        else {
             cronDescription.value = "";
         }
     }
@@ -135,7 +163,7 @@
         updateRefValue(historyCount, props.modelValue.historyCount);
         updateRefValue(notificationEmails, props.modelValue.notificationEmails ?? "");
         updateRefValue(jobTypeClass, props.modelValue.class ?? "");
-
+        updateRefValue(notificationStatus, props.modelValue.notificationStatus ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -150,7 +178,8 @@
             cronExpression: cronExpression.value,
             historyCount: historyCount.value,
             notificationEmails: notificationEmails.value,
-            class: jobTypeClass.value
+            class: jobTypeClass.value,
+            notificationStatus: notificationStatus.value
         };
 
         emit("update:modelValue", newValue);

@@ -34,7 +34,7 @@ namespace Rock.Blocks.Security
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Confirm Account" )]
-    [Category( "Obsidian > Security" )]
+    [Category( "Security" )]
     [Description( "Block for user to confirm a newly created login account, usually from an email that was sent to them." )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 

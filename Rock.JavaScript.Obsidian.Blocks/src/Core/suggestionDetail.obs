@@ -7,15 +7,21 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
+                 entityTypeName="Following Suggestion Type"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @save="onSave">
+
+        <template #view>
+            <ViewPanel :modelValue="suggestionDetailViewBag" />
+        </template>
+
         <template #edit>
             <EditPanel v-model="suggestionDetailEditBag" @propertyChanged="onPropertyChanged" />
         </template>
@@ -27,6 +33,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import EditPanel from "./SuggestionDetail/editPanel.partial.obs";
+    import ViewPanel from "./SuggestionDetail/viewPanel.partial.obs";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
@@ -44,6 +51,7 @@
     const blockError = ref("");
     const errorMessage = ref("");
 
+    const suggestionDetailViewBag = ref(config.entity);
     const suggestionDetailEditBag = ref<SuggestionDetailBag>(config.entity as SuggestionDetailBag);
     const entityTypeGuid = EntityType.FollowingSuggestionType;
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.Add);
@@ -167,6 +175,9 @@
     }
     else if (!config.entity) {
         blockError.value = "The specified following suggestion type could not be viewed.";
+    }
+    else if (!config.isEditable) {
+        panelMode.value = DetailPanelMode.View;
     }
     else if (!config.entity.idKey) {
         suggestionDetailEditBag.value = config.entity;

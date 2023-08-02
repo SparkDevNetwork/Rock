@@ -206,7 +206,7 @@ namespace Rock.Blocks.Core
                 IconCssClass = entity.IconCssClass,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
-                OwnerPersonAlias = entity.Id == 0 ? GetCurrentPerson().ToListItemBag() : entity.OwnerPersonAlias.ToListItemBag()
+                OwnerPersonAlias = entity.Id == 0 ? GetCurrentPerson().PrimaryAlias.ToListItemBag() : entity.OwnerPersonAlias.ToListItemBag()
             };
         }
 
