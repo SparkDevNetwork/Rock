@@ -28,6 +28,7 @@ type CheckDiscountCodeResult = {
     usagesRemaining: number | null;
     discountAmount: number;
     discountPercentage: number;
+    discountMaxRegistrants: number;
 };
 
 export default defineComponent({
@@ -66,6 +67,8 @@ export default defineComponent({
         discountCodeSuccessMessage(): string {
             const discountAmount = this.registrationEntryState.discountAmount;
             const discountPercent = this.registrationEntryState.discountPercentage;
+            const discountMaxRegistrants = this.registrationEntryState.discountMaxRegistrants ?? 0;
+            const registrantCount = this.registrationEntryState.registrants.length;
 
             if (!discountPercent && !discountAmount) {
                 return "";
@@ -74,6 +77,11 @@ export default defineComponent({
             const discountText = discountPercent ?
                 `${asFormattedString(discountPercent * 100, 0)}%` :
                 `$${asFormattedString(discountAmount, 2)}`;
+
+            if(discountMaxRegistrants != 0 && registrantCount > discountMaxRegistrants) {
+                const registrantTerm = discountMaxRegistrants == 1 ? "registrant" : "registrants";
+                return `Your ${discountText} discount code was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
+            }
 
             return `Your ${discountText} discount code for all registrants was successfully applied.`;
         },
@@ -111,7 +119,10 @@ export default defineComponent({
                 });
 
                 if (result.isError || !result.data) {
-                    if (this.discountCodeInput != "") {
+                    if(result.errorMessage != null && result.errorMessage !="") {
+                        this.discountCodeWarningMessage = result.errorMessage;
+                    }
+                    else if (this.discountCodeInput != "") {
                         this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
                     }
                 }
@@ -121,6 +132,7 @@ export default defineComponent({
                     this.registrationEntryState.discountAmount = result.data.discountAmount;
                     this.registrationEntryState.discountPercentage = result.data.discountPercentage;
                     this.registrationEntryState.discountCode = result.data.discountCode;
+                    this.registrationEntryState.discountMaxRegistrants = result.data.discountMaxRegistrants;
                 }
             }
             finally {

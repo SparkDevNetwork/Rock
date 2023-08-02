@@ -254,14 +254,20 @@ namespace Rock.Blocks.Event
                         DiscountCode = registration.DiscountCode,
                         UsagesRemaining = (int?) null,
                         DiscountAmount = registration.DiscountAmount,
-                        DiscountPercentage = registration.DiscountPercentage
+                        DiscountPercentage = registration.DiscountPercentage,
+                        DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants.Value
                     } );
                 }
 
-                if ( discount == null )
+                if ( discount == null || discount.UsagesRemaining < 1 )
                 {
                     // The code is not found
                     return ActionNotFound();
+                }
+
+                if ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
+                {
+                    return ActionForbidden( $"The discount requires a minimum of {discount.RegistrationTemplateDiscount.MinRegistrants.Value} registrants" );
                 }
 
                 return ActionOk( new
@@ -269,7 +275,8 @@ namespace Rock.Blocks.Event
                     DiscountCode = discount.RegistrationTemplateDiscount.Code,
                     UsagesRemaining = discount.UsagesRemaining,
                     DiscountAmount = discount.RegistrationTemplateDiscount.DiscountAmount,
-                    DiscountPercentage = discount.RegistrationTemplateDiscount.DiscountPercentage
+                    DiscountPercentage = discount.RegistrationTemplateDiscount.DiscountPercentage,
+                    DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants
                 } );
             }
         }

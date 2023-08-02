@@ -132,6 +132,7 @@ export default defineComponent({
             discountCode: viewModel.session?.discountCode || "",
             discountAmount: viewModel.session?.discountAmount || 0,
             discountPercentage: viewModel.session?.discountPercentage || 0,
+            discountMaxRegistrants: viewModel.session?.discountMaxRegistrants || 0,
             successViewModel: viewModel.successViewModel,
             amountToPayToday: 0,
             sessionExpirationDateMs: null,
