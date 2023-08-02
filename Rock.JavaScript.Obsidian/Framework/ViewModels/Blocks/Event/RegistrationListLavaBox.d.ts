@@ -22,11 +22,22 @@
 //
 
 /**
- * Class RegistrationListLava.
+ * Class ExperienceManagerOccurrencesInitializationBox.
  * Implements the Rock.ViewModels.Blocks.BlockBox
  */
-
 export type RegistrationListLavaBox = {
-    /** Gets the HTML to be rendered for the block in the frontend */
+    /**
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
+     */
+    errorMessage?: string | null;
+
+    /** Gets the HTML to be rendered in the front end for the registration list lava block. */
     html?: string | null;
+
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -55,6 +55,7 @@ namespace Rock.Blocks.Event
 
     #endregion
     [Rock.SystemGuid.BlockTypeGuid( "C0CFDAB7-BB29-499E-BD0A-468B0856C037" )]
+    [Rock.SystemGuid.EntityTypeGuid( "52C84E33-FE5F-4023-8365-A5FE1F71C93B")]
     public class RegistrationListLava : RockBlockType
     {
         #region Keys

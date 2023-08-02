@@ -1101,20 +1101,6 @@ namespace Rock.Client.Enums
 
 }
 
-namespace Rock.Client.Enums.Blocks.Security.ConfirmAccount
-{
-    /// <summary>
-    /// </summary>
-    public enum ConfirmAccountViewType
-    {
-        AccountConfirmation = 0x0,
-        Alert = 0x1,
-        DeleteConfirmation = 0x2,
-        ChangePassword = 0x3,
-        Content = 0x4,
-    }
-}
-
 namespace Rock.Client.Enums.Crm
 {
     /// <summary>
@@ -1303,6 +1289,15 @@ namespace Rock.Client.Enums.Core
 
     /// <summary>
     /// </summary>
+    public enum NoteFormatType
+    {
+        Unknown = 0x0,
+        Unstructured = 0x1,
+        Structured = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum NotificationMessageActionType
     {
         Invalid = 0x0,
@@ -1339,6 +1334,21 @@ namespace Rock.Client.Enums.Blocks.Crm.FamilyPreRegistration
 
 }
 
+namespace Rock.Client.Enums.Blocks.Security.ConfirmAccount
+{
+    /// <summary>
+    /// </summary>
+    public enum ConfirmAccountViewType
+    {
+        AccountConfirmation = 0x0,
+        Alert = 0x1,
+        DeleteConfirmation = 0x2,
+        ChangePassword = 0x3,
+        Content = 0x4,
+    }
+
+}
+
 namespace Rock.Client.Enums.Cms
 {
     /// <summary>
@@ -1365,6 +1375,14 @@ namespace Rock.Client.Enums.Controls
         Thursday = 0x4,
         Friday = 0x5,
         Saturday = 0x6,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MediaSelectorMode
+    {
+        Image = 0x0,
+        Audio = 0x1,
     }
 
     /// <summary>

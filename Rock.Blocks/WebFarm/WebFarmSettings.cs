@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,6 +62,7 @@ namespace Rock.Blocks.WebFarm
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "d9510038-0547-45f3-9eca-c2ca85e64416" )]
+    [Rock.SystemGuid.EntityTypeGuid( "3AA0CC1E-3C16-4AB2-BF03-9EA2FD3239E9")]
     public class WebFarmSettings : RockDetailBlockType
     {
         #region Keys

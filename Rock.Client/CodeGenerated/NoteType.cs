@@ -88,7 +88,13 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.Core.NoteFormatType FormatType { get; set; }
+
+        /// <summary />
         public string IconCssClass { get; set; }
+
+        /// <summary />
+        public bool IsMentionEnabled { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
@@ -176,7 +182,9 @@ namespace Rock.Client
             #pragma warning restore 612, 618
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.FormatType = source.FormatType;
             this.IconCssClass = source.IconCssClass;
+            this.IsMentionEnabled = source.IsMentionEnabled;
             this.IsSystem = source.IsSystem;
             this.MaxReplyDepth = source.MaxReplyDepth;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
