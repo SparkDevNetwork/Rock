@@ -1,0 +1,125 @@
+{% if dataset and dataset != empty and cciid and cciid != empty %}
+
+    {% assign cciid = cciid | AsInteger %}
+    {% assign Item = dataset | PersistedDataset | Where:'Id', cciid | First %}
+    {% assign now = 'Now' | Date:'yyyyMMddHHmmss' %}
+    {% assign startDate = Item.PublishDateTime | Date:'yyyyMMddHHmmss' %}
+    {% assign endDate = Item.EndDateTime | Date:'yyyyMMddHHmmss' %}
+
+    {% comment %}
+        Set current item slug so we can determine what the active slide should be
+    {% endcomment %}
+    {% assign currentSlug = 'Global' | Page:'Path' | Split:'/' | Last %}
+    {% assign children = Item.Children %}
+
+    {% if showfuturecontent != 'true' %}
+
+        {% comment %}
+            This loops through the items from the parent's children and strips out anything that is future-dated or expired.
+        {% endcomment %}
+        {%- capture displayItemsString -%}
+            {%- assign now = 'Now' | Date:'yyyyMMddHHmmss' -%}
+            [{%- for child in children -%}
+                {%- assign status = child.Status %}
+                {%- assign publishDateTime = child.PublishDateTime | Date:'yyyyMMddHHmmss' -%}
+                {%- assign expireDateTime = child.ExpireDateTime | Date:'yyyyMMddHHmmss' -%}
+                {%- if status == 2 and publishDateTime <= now and expireDateTime == null or status == 2 and publishDateTime <= now and expireDateTime > now  -%}
+                    {{ child | ToJSON }},
+                {%- endif -%}
+            {%- endfor -%}]
+        {%- endcapture -%}
+
+        {% comment %}
+            This reassigns the results of the above filtered loop to the "children" object that is used by the card list below.
+        {% endcomment %}
+        {% assign children = displayItemsString | ReplaceLast:',', '' | StripNewlines | FromJSON %}
+
+    {% endif %}
+
+    {% if children and children != empty %}
+
+        {% comment %}
+            If we're between the beginning/ending dates of this collection, make the latest item in the swiper active, otherwise make the first active
+        {% endcomment %}
+
+        {% if now >= startDate and now < endDate %}
+            {% assign initialslide = children | Size | Minus:1 %}
+        {% else %}
+            {% assign initialslide = children | Where:'Slug', currentSlug | First | Property:'Index' %}
+        {% endif %}
+
+        {[ swiper id:'entries' initialslide:'{{ initialslide }}' ]}
+            {% for child in children %}
+
+                {% assign Item = child.Dataset | PersistedDataset | Where:'Slug',child.Slug | First %}
+                {% if Item and Item != empty %}
+
+                    [[ item data:'' ]]
+                        {% assign parentId = Item.Parents | First | Property:'Id' | AsInteger %}
+                        {% assign parentDataset = Item.Parents | First | Property:'Dataset' %}
+                        {% assign parent = parentDataset |  PersistedDataset | Where:'Id',parentId | First %}
+
+                        {% assign dataset = Item.Dataset %}
+                        {% assign type = Item.ChannelName | Split:' - ' | Index:1 | Singularize %}
+                        {% assign childChannelId = Item.ChannelId %}
+                        {% assign guid = Item.Guid %}
+                        {% assign id = Item.Id %}
+                        {% assign cciid = Item.Id %}
+                        {% assign title = Item.Title | Replace:"'","’" %}
+                        {% assign titlesize = 'h4' %}
+                        {% capture content %}
+                            {% if Item.Summary != empty %}
+                                <p class="push-half-bottom">
+                                    {{ Item.Summary | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:140,'...' }}
+                                </p>
+                            {% elseif Item.Content != empty %}
+                                <p class="push-half-bottom">
+                                    {{ Item.Content | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:140,'...' }}
+                                </p>
+                            {% endif %}
+                        {% endcapture %}
+
+                        {% capture subtitle %}
+                            {% if Item.IsDateVisible == 'Yes' %}
+                                {% if Item.ActualDate != empty %}
+                                    {[ formatDate date:'{{ Item.ActualDate }}' ]}
+                                {% else %}
+                                    {[ formatDate date:'{{ Item.PublishDateTime }}' ]}
+                                {% endif %}
+                            {% endif %}
+                        {% endcapture %}
+
+                        {% capture video %}{% endcapture %}
+                        {% if type contains "Devotional" %}
+                            {% assign sessionNumber = child.Index | Plus:1 %}
+                            {% assign label = 'Session ' | Append:sessionNumber %}
+                        {% else %}
+                            {% if Item.VideoImageLandscape and Item.VideoImageLandscape != empty %}
+                                {% assign imageurl = Item.VideoImageLandscape | Trim %}
+                            {% elseif Item.ImageLandscape and Item.ImageLandscape != empty %}
+                                {% assign imageurl = Item.ImageLandscape %}
+                            {% elseif parent.ImageLandscape and parent.ImageLandscape != empty %}
+                                {% assign imageurl = parent.ImageLandscape %}
+                            {% endif %}
+                        {% endif %}
+
+                        {% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ Item.Id }}' ]}{% endcapture %}
+
+                        {% assign linktext = type | Singularize | Prepend:' ' | Prepend:Item.ChannelVerb %}
+
+                        {[ card id:'{{ id }}' dataset:'{{ dataset }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+                    [[ enditem ]]
+                {% endif %}
+
+            {% endfor %}
+        {[ endswiper ]}
+    {% endif %}
+
+{% else %}
+
+    <div class="alert alert-danger">
+        <p>Either the dataset, cciid, or both parameters were not provided.</p>
+    </div>
+
+{% endif %}

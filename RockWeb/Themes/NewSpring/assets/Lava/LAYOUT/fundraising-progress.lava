@@ -1,0 +1,101 @@
+{% assign group = 'Global' | PageParameter:'GroupId' | GroupById %}
+{% assign groupId = group.Id | AsString %}
+
+{% if groupId and groupId != empty %}
+    <section class="bg-white soft xs-soft-half hard-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">
+    <h2>Fundraising Progress</h2>
+
+    {% sql return:'members' %}
+        SELECT
+            gm.Id,
+            gm.PersonId,
+            gtr.Name,
+            p.LastName,
+            p.NickName,
+            (
+                SELECT
+                    CASE
+                        WHEN SUM(ftd.Amount) IS NULL THEN 0.00
+                        ELSE SUM(ftd.Amount)
+                    END
+                FROM FinancialTransaction ft
+                JOIN FinancialTransactionDetail ftd
+                ON ftd.TransactionId = ft.Id
+                WHERE ftd.EntityTypeId = 90
+                AND ftd.EntityId = gm.Id
+            ) 'AmountRaised',
+            CASE
+                WHEN av2.[Value] IS NOT NULL AND av2.[Value] != '' THEN av2.[Value]
+                ELSE av.[Value]
+            END 'FundraisingGoal'
+        FROM GroupMember gm
+        JOIN [Group] g
+        ON gm.GroupId = g.Id
+        JOIN Person p
+        ON gm.PersonId = p.Id
+        JOIN GroupTypeRole gtr
+        ON gm.GroupRoleId = gtr.Id
+        LEFT JOIN AttributeValue av2
+        ON av2.EntityId = gm.Id
+        AND av2.AttributeId = 46538
+        LEFT JOIN AttributeValue av
+        ON av.EntityId = g.Id
+        AND av.AttributeId = 46527
+        WHERE gm.GroupId = {{ groupId }}
+        AND gm.GroupMemberStatus = 1
+        AND gm.IsArchived = 0
+        ORDER BY gtr.[Order], p.LastName, p.NickName
+    {% endsql %}
+
+    {% assign totalGoal = 0 %}
+    {% assign totalRaised = 0 %}
+    {% for member in members %}
+        {% assign totalGoal = totalGoal | Plus:member.FundraisingGoal %}
+        {% assign totalRaised = totalRaised | Plus:member.AmountRaised %}
+    {% endfor %}
+    {% assign totalPercent = totalRaised | DividedBy:totalGoal,2 | Times:100 | AtMost:100 %}
+
+    <div class="panel panel-block overflow-hidden">
+        <div class="bg-gray-lighter padding-t-md padding-l-md padding-r-md padding-b-sm">
+            <div class="clearfix">
+                <p class="pull-right">{{ totalRaised | FormatAsCurrency | Replace:'.00','' }} <span class="italic">of</span> <strong>{{ totalGoal | FormatAsCurrency | Replace:'.00','' }}</strong></p>
+                <h3 class="h4">Total Progress</h3>
+            </div>
+
+            {[ progressBar percent:'{{ totalPercent }}' striped:'true' ]}
+
+            <div class="progress hidden">
+                <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{ totalPercent }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 200px; width: {{ totalPercent }}%;">
+                    {{ totalPercent }}% Complete
+                </div>
+            </div>
+        </div>
+
+
+
+        <ul class="list-group">
+        {% for member in members %}
+            {% assign fundraisingGoal = member.FundraisingGoal | AsInteger %}
+            {% assign amountRaised = member.AmountRaised | AsInteger %}
+            {% assign percentRaised = amountRaised | DividedBy:fundraisingGoal,2 | Times:100 | AtMost:100 %}
+        <li class="list-group-item">
+            {% assign memberPerson = member.PersonId | PersonById %}
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 soft-half-top">
+                    <p class="pull-right">{{ amountRaised | FormatAsCurrency | Replace:'.00','' }} <span class="italic">of</span> <span class="stronger">{{ fundraisingGoal | FormatAsCurrency | Replace:'.00','' }}</span></p>
+                    <h3 class="h4 push-half-bottom">{{ memberPerson.FullName }}</h3>
+                </div><div class="col-xs-12 col-sm-12 col-md-12">
+
+                    {[ progressBar percent:'{{ percentRaised }}' striped:'true' ]}
+
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+        </ul>
+
+    </div>
+    </section>
+{% else %}
+    <p class="alert alert-danger">No GroupId specified.</p>
+{% endif %}

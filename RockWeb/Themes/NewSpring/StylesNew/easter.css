@@ -1,0 +1,99 @@
+:root {
+  --orange: #ff5f1e;
+  --pink: #ee79c7;
+  --pink-light: #fcd2e2;
+  --blue: #005be1;
+  --blue-dark: #00449b;
+}
+svg,
+.crisp-edges {
+  shape-rendering: crisp-edges !important;
+}
+.bg-orange {
+  background-color: var(--orange);
+}
+.bg-pink {
+  background-color: var(--pink);
+}
+.bg-pink-light {
+  background-color: var(--pink-light);
+}
+.bg-blue {
+  background-color: var(--blue);
+}
+.bg-blue-dark {
+  background-color: var(--blue-dark);
+}
+.fill-orange {
+  fill: var(--orange);
+}
+.fill-pink {
+  fill: var(--pink);
+}
+.fill-pink-light {
+  fill: var(--pink-light);
+}
+.fill-blue {
+  fill: var(--blue);
+}
+.fill-blue-dark {
+  fill: var(--blue-dark);
+}
+.text-orange {
+  color: var(--orange);
+}
+.text-pink {
+  color: var(--pink);
+}
+.text-pink-light {
+  color: var(--pink-light);
+}
+.text-blue {
+  color: var(--blue);
+}
+.text-blue-dark {
+  color: var(--blue-dark);
+}
+.swiper-pagination-bullet-active {
+  background-color: var(--pink) !important;
+}
+.easter h1,
+.easter h2,
+.easter h3,
+.easter h4,
+.easter h5,
+.easter h6 {
+  font-family: "proxima-nova", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.easter h3,
+.easter h4,
+.easter h5,
+.easter h6 {
+  letter-spacing: 0px;
+}
+.easter .btn-primary {
+  background-color: var(--orange);
+}
+.easter .btn-primary:hover {
+  background-color: #ea4400;
+}
+.easter .btn-blue {
+  background-color: var(--blue);
+  color: #fff;
+}
+.easter .btn-blue:hover,
+.easter .btn-blue:focus {
+  background-color: var(--blue-dark);
+}
+.easter .btn-pink {
+  background-color: var(--pink);
+  color: #fff;
+}
+.easter .btn-pink:hover,
+.easter .btn-pink:focus {
+  background-color: #e84cb4;
+}

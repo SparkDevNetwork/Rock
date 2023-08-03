@@ -1,0 +1,405 @@
+{%- comment -%}
+  Disable iOS phone number hyperlinking
+{%- endcomment -%}
+{{ 'telephone=no' | AddMetaTagToHead:'name','format-detection' }}
+
+{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign groupTypes = 'Global' | Attribute:'GroupToolboxGroupTypes','RawValue' | Split:',' %}
+{% capture groupTypeGuids %}{% for type in groupTypes %}'{{ type }}'{% unless forloop.last %},{% endunless %}{% endfor %}{% endcapture %}
+{% assign person = 'Global' | PageParameter:'PersonId' | PersonById %}
+{% assign group = 'Global' | PageParameter:'GroupId' | GroupById %}
+{% assign groupId = group.Id | AsString %}
+{% assign groupMember = person | Group:groupId,'All' | First %}
+{% assign status = groupMember.GroupMemberStatus %}
+
+{%- comment -%}
+  Redirect to 404 if person doesn't have access or if person isn't in group from url
+{%- endcomment -%}
+{% assign currentPersonCanEditGroup = group.Id | HasRightsTo:'View','Rock.Model.Group' %}
+{% if currentPersonCanEditGroup == false %}
+  {{ '/page-not-found' | PageRedirect }}
+{% endif %}
+
+{% assign groupMemberPersonIds = group.Members | Select:'PersonId' %}
+{% if groupMemberPersonIds contains person.Id %}
+{% else %}
+  {{ '/page-not-found' | PageRedirect }}
+{% endif %}
+
+{% sql return:'groups' %}
+  -- Groups this person leads
+  SELECT
+    DISTINCT g.Id 'GroupId',
+    gt.Name 'GroupType'
+  FROM GroupMember gm
+  JOIN GroupTypeRole gtr
+  ON gm.GroupRoleId = gtr.Id
+  JOIN [Group] g
+  ON gm.GroupId = g.Id
+  JOIN GroupType gt
+  ON g.GroupTypeId = gt.Id
+  WHERE gm.PersonId = {{ person.Id }}
+  AND gt.Guid IN ({{ groupTypeGuids }})
+  AND g.IsActive = 1
+  AND g.IsArchived = 0
+  AND gm.GroupMemberStatus != 0
+  AND gm.IsArchived = 0
+  AND gtr.IsLeader = 1
+  AND gtr.Name != 'Coach'
+{% endsql %}
+{% assign groupsLeadCount = groups | Size %}
+
+{% sql return:'leaders' %}
+  -- Coaches this person leads (as hub leader)
+  SELECT
+    DISTINCT gm2.PersonId,
+    g2.Id 'GroupId',
+    gtr2.Name 'GroupRole'
+  FROM GroupMember gm
+  JOIN [Group] g
+  ON gm.GroupId = g.Id
+  JOIN GroupTypeRole gtr
+  ON gm.GroupRoleId = gtr.Id
+  JOIN [Group] g2
+  ON g2.ParentGroupId = g.Id
+  JOIN GroupMember gm2
+  ON gm2.GroupId = g2.Id
+  JOIN GroupTypeRole gtr2
+  ON gm2.GroupRoleId = gtr2.Id
+  WHERE gm.PersonId = {{ person.Id }}
+  AND g.GroupTypeId = 156 -- Coaching Group
+  AND g.IsArchived = 0 -- Coaching Group Isn't Archived
+  AND gtr.IsLeader = 1 -- Leaders of Coaching Group
+  AND g2.IsArchived = 0 -- Child Groups of Coaching Group That Aren't Archived
+  AND gm2.IsArchived = 0 -- Leaders of Coaching Group Who Aren't Archived
+  AND gtr2.IsLeader = 1 -- Leaders of Child Groups of Coaching Group
+  AND gm2.PersonId != {{ person.Id }} -- Don't list themselves
+{% endsql %}
+
+<div class="push-top">
+  <div class="text-center">
+    <p><a href="/groups/{{ group.Id }}/toolbox" class="btn btn-primary hidden"><i class="fal fa-chevron-left push-quarter-right"></i> Back to Group</a></p>
+    <div class="ratio ratio-square background-cover background-center circular mx-auto" style="background-image:url('{{ person.PhotoUrl }}'); max-width: 250px; border: 5px solid #fff;"></div>
+    <h2 class="h1 strongest push-top push-half-bottom">{{ person.NickName }} {{ person.LastName }}</h2>
+
+    <div class="push-bottom">
+      <p class="h5 flush">
+        <span class="label label-default letter-spacing-condensed sans-serif strong">{{ groupMember.GroupRole.Name }}</span>
+        {% if groupMember.GroupMemberStatus == 'Inactive' %}
+          <span class="label label-danger letter-spacing-condensed sans-serif strong">{{ groupMember.GroupMemberStatus }}</span>
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% comment %}
+    Group Member Contact Information
+  {% endcomment %}
+  {% capture emailActive %}{% if person.Email and person.Email != empty and person.EmailPreference != 'Do Not Email' %}true{% else %}false{% endif %}{% endcapture %}
+  {% assign mobileNumber = person.PhoneNumbers | Where:'NumberTypeValueId',12 | Select:'NumberFormatted' %}
+  {% assign smsNumber = person.PhoneNumbers | Where:'NumberTypeValueId',12 | Where:'IsMessagingEnabled',true | Select:'NumberFormatted' %}
+
+  <div class="row row-condensed push-bottom xs-push-half-bottom">
+    <div class="col-xs-4">
+      <a href="mailto:{{ person.Email }}" class="btn btn-block {% if emailActive == 'false' %}btn-disabled{% else %}btn-default{% endif %} text-center" {% if emailActive == 'false' %}disabled title="Person has no email address or they do not wish to be emailed."{% endif %}><i class="fal fa-lg fa-envelope"></i></a>
+    </div><div class="col-xs-4">
+      <a href="tel:/{{ mobileNumber }}" class="btn btn-block text-center {% if mobileNumber == empty or mobileNumber == '' %}btn-disabled{% else %}btn-default{% endif %}" {% if mobileNumber == empty or mobileNumber == '' %}disabled title="Person has no mobile number."{% endif %}><i class="fal fa-lg fa-phone"></i></a>
+    </div><div class="col-xs-4">
+      <a href="sms:/{{ smsNumber }}" class="btn btn-block text-center {% if smsNumber == empty or smsNumber == '' %}btn-disabled{% else %}btn-default{% endif %}" {% if smsNumber == empty or smsNumber == '' %}disabled title="Person has no SMS-enabled mobile number."{% endif %}><i class="fal fa-lg fa-comments"></i></a>
+    </div>
+  </div>
+
+  <div class="row row-condensed">
+    <div class="col-md-12 col-sm-6 col-xs-12">
+
+      {% comment %}
+        Group Member Basic Info
+      {% endcomment %}
+      <h2 class="h4 xs-h5 text-uppercase strongest push-top">{{ person.NickName | Possessive }} Information</h2>
+
+      {% assign homeAddress = person | Address:'Home' %}
+      <ul class="list-group push-bottom xs-push-half-bottom rounded">
+        <li class="list-group-item">
+            <i class="fal fa-fw fa-map-marker-alt position-relative push-quarter-right"></i> {{ person | Campus | Property:'Name' }}
+          </li>
+        {% if person.Age and person.Age != empty %}
+          <li class="list-group-item"><i class="fal fa-fw fa-birthday-cake position-relative push-quarter-right"></i> {{ person.Age }} years old{% if person.BirthDate and person.BirthDate != empty %} &middot; <span class="text-gray-light">{[ formatDate date:'{{ person.BirthDate }}' ]}</span>{% endif %}</li>
+        {% endif %}
+
+        {% assign phones = person.PhoneNumbers | OrderBy:'NumberTypeValueId' %}
+
+        {% for phone in phones %}
+
+          {% if phone.NumberTypeValueId == 136 %}
+            {% assign icon = 'building' %}
+          {% elseif phone.NumberTypeValueId == 12 %}
+            {% assign icon = 'mobile' %}
+          {% elseif phone.NumberTypeValueId == 13 %}
+            {% assign icon = 'home' %}
+          {% else %}
+            {% assign icon = 'phone' %}
+          {% endif %}
+
+          <li class="list-group-item">
+            <i class="fal fa-fw fa-{{ icon }} position-relative push-quarter-right"></i> {{ phone.NumberFormatted }}
+          </li>
+
+        {% endfor %}
+
+        {% if emailActive == 'true' %}
+          <li class="list-group-item"><i class="fal fa-fw fa-envelope position-relative push-quarter-right"></i> {{ person.Email }}</li>
+        {% endif %}
+
+        {% if homeAddress and homeAddress != empty %}
+          <li class="list-group-item">
+            <i class="fal fa-fw fa-home position-relative push-quarter-right pull-left" style="top:4px;"></i> {{ homeAddress }}
+          </li>
+        {% endif %}
+      </ul>
+
+      {% comment %}
+        Group Member Actions
+      {% endcomment %}
+      <p>
+        <a href="/workflows/119?PersonId={{ person.Id }}" class="btn btn-block btn-primary"><i class="fal fa-fw fa-exclamation-triangle position-relative push-quarter-right"></i> Report an Error</a>
+      </p>
+
+    </div><div class="col-md-12 col-sm-6 col-xs-12">
+
+      {% comment %}
+        Group Member Person Attributes
+      {% endcomment %}
+      <h2 class="h4 xs-h5 text-uppercase strongest push-top">{{ person.NickName | Possessive }} Journey</h2>
+
+      {% assign salvationStatus = person | Attribute:'HasBeenSaved' %}
+      {% assign salvationDate = person | Attribute:'SalvationDate' %}
+      {% assign baptismStatus = person | Attribute:'HasBeenBaptized' %}
+      {% assign baptismDate = person | Attribute:'BaptismDate' %}
+      {% assign firstServeDate = person | Attribute:'FirstServeDateAll' %}
+      {%- comment -%}
+        Let's count leading a group as serving, even if there's no value for the first serve date attribute
+      {%- endcomment -%}
+      {% if groupsLeadCount >= 1 %}
+        {% assign servingStatus = true %}
+      {% else %}
+        {% assign servingStatus = null %}
+      {% endif %}
+      {% assign connectDate = person | Attribute:'ConnectDate' %}
+      {% assign connectWeek1 = person | Attribute:'God' %}
+      {% assign connectWeek2 = person | Attribute:'Freedom' %}
+      {% assign connectWeek3 = person | Attribute:'Purpose' %}
+      {% assign connectWeek4 = person | Attribute:'Family' %}
+
+      {% capture salvationText %}
+        {% if salvationStatus != empty or salvationDate != empty %}
+          <i class="fas fa-fw fa-sm fa-heart push-quarter-right text-danger"></i>
+          {% if salvationDate and salvationDate != empty %}
+            {{ person.NickName }} was saved on {[ formatDate date:'{{ salvationDate }}' ]}.
+          {% else %}
+            {{ person.NickName }} has been saved.
+          {% endif %}
+        {% else %}
+          <i class="fal fa-fw fa-sm fa-heart push-quarter-right text-gray-light"></i> No <a href="/salvation">salvation</a> recorded for {{ person.NickName }}.
+        {% endif %}
+      {% endcapture %}
+
+      {% capture baptismText %}
+        {% if baptismStatus != empty or baptismDate != empty %}
+          <i class="fas fa-fw fa-sm fa-tint push-quarter-right text-info"></i>
+          {% if baptismDate and baptismDate != empty %}
+            {{ person.NickName }} was baptized on {[ formatDate date:'{{ baptismDate }}' ]}.
+          {% else %}
+            {{ person.NickName }} has been baptized.
+          {% endif %}
+        {% else %}
+          <i class="fal fa-fw fa-sm fa-tint push-quarter-right text-gray-light"></i> No <a href="/baptism">baptism</a> recorded for {{ person.NickName }}.
+        {% endif %}
+      {% endcapture %}
+
+      {% capture servingText %}
+        {% if firstServeDate and firstServeDate != empty or servingStatus == true %}
+          <i class="fas fa-fw fa-sm fa-hand-holding-heart push-quarter-right text-warning"></i>
+          {% if firstServeDate and firstServeDate != empty %}
+            {{ person.NickName }} started serving on {[ formatDate date:'{{ firstServeDate }}' ]}.
+          {% else %}
+            {{ person.NickName }} is currently serving.
+          {% endif %}
+        {% else %}
+          <i class="fal fa-fw fa-sm fa-hand-holding-heart push-quarter-right text-gray-light"></i> {{ person.NickName }} has not yet started <a href="/serving">serving</a>.
+        {% endif %}
+      {% endcapture %}
+
+      {% capture connectText %}
+        {% if connectDate != empty or connectWeek1 != empty and connectWeek2 != empty and connectWeek3 != empty and connectWeek4 != empty %}
+          <i class="fas fa-fw fa-sm fa-link push-quarter-right text-primary"></i>
+          {% if connectDate != empty %}
+            {{ person.NickName }} completed Connect on {[ formatDate date:'{{ connectDate }}' ]}.
+          {% else %}
+            {{ person.NickName }} has completed Connect.
+          {% endif %}
+        {% else %}
+          <i class="fal fa-fw fa-sm fa-link push-quarter-right text-gray-light"></i> {{ person.NickName }} has not yet completed <a href="/connect">Connect</a>.
+        {% endif %}
+      {% endcapture %}
+
+      {% capture groupLeaderText %}
+        {% if groupsLeadCount >= 1 %}
+          <i class="fas fa-fw fa-sm fa-users push-quarter-right text-secondary"></i>
+            {{ person.NickName }} is a group leader.
+        {% else %}
+          <i class="fal fa-fw fa-sm fa-users push-quarter-right text-gray-light"></i> {{ person.NickName }} is not <a href="/groups/leaders">leading a group</a>.
+        {% endif %}
+      {% endcapture %}
+
+      <ul class="list-group push-bottom xs-push-half-bottom rounded">
+        <li class="list-group-item">{{ salvationText | Trim }}</li>
+        <li class="list-group-item">{{ baptismText | Trim }}</li>
+        <li class="list-group-item">{{ servingText | Trim }}</li>
+        <li class="list-group-item">{{ connectText | Trim }}</li>
+        <li class="list-group-item">{{ groupLeaderText | Trim }}</li>
+      </ul>
+
+    </div>
+  </div>
+
+  {% comment %}
+    Group Member Groups They Lead
+  {% endcomment %}
+  {% if groups and groups != empty %}
+  <h2 class="h4 xs-h5 text-uppercase strongest push-top">Groups {{ person.NickName }} Leads</h2>
+  <div class="row row-condensed">
+
+    {% for row in groups %}<div class="col-md-12 col-sm-6 col-xs-12">
+      {% assign group = row.GroupId | GroupById %}
+      {% assign groupName = group.Name | Replace:"'","’" %}
+      {% assign linkurl = '/groups/' | Append:group.Id | Append:'/toolbox' %}
+      {% assign groupTypeImage = group.GroupType | Attribute:'ImageSquare' %}
+      {% assign groupImageUrl = group | Attribute:'ImageSquare' | WithFallback:'',groupTypeImage %}
+
+      {[ cardAction title:'{{ groupName }}' imageurl:'{{ groupImageUrl }}' linkurl:linkurl ]}
+          <p class="sans-serif letter-spacing-condensed strong text-gray-light push-quarter-top flush-bottom"><small>{{ row.GroupType }}</small></p>
+      {[ endcardAction ]}
+
+    </div>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% comment %}
+    Group Member Coaches They Lead
+  {% endcomment %}
+  {% if leaders and leaders != empty %}
+
+    <h2 class="h4 xs-h5 text-uppercase strongest push-top">Leaders {{ person.NickName }} Coaches</h2>
+    <div class="row row-condensed">
+      {% for row in leaders %}<div class="col-md-12 col-sm-6 col-xs-12">
+
+        {% assign linkurl = '/groups/' | Append:row.GroupId | Append:'/toolbox/' | Append:row.PersonId %}
+        {% assign coach = row.PersonId | PersonById %}
+        {% assign groupTypeId = group.GroupTypeId | AsString %}
+        {% assign mobile = coach | PhoneNumber:'Mobile', true %}
+        {% assign home = coach | PhoneNumber:'Home', true %}
+        {% assign work = coach | PhoneNumber:'Work', true %}
+        {% assign phone = mobile | WithFallback:'',home | WithFallback:'',work %}
+        {% assign sms = coach.PhoneNumbers | Where:'IsMessagingEnabled',true | First | Property:'NumberFormattedWithCountryCode' %}
+
+        {% assign cardtype = 'primary' %}
+        {% assign texttype = 'primary' %}
+        {% assign note = row.GroupRole %}
+
+        {% capture actionsString %}[
+          {
+            "IconCSSClass": "fal fa-lg fa-inbox",
+            "Url": "{% if coach.EmailPreference != 'DoNotEmail' and coach.Email and coach.Email != empty %}mailto:{{ coach.Email }}{% endif %}",
+            "OnClick": "",
+            "Title": "{% if coach.EmailPreference != 'DoNotEmail' and coach.Email and coach.Email != empty %}{% else %}Person has no email address or they do not wish to be emailed.{% endif %}",
+            "NewWindow": false
+          },
+          {
+            "IconCSSClass": "fal fa-lg fa-phone",
+            "Url": "{% if phone and phone != empty %}tel:{{ phone }}{% endif %}",
+            "OnClick": "",
+            "Title": "{% if phone and phone != empty %}{% else %}Person has no phone number.{% endif %}",
+            "NewWindow": false
+          },
+          {
+            "IconCSSClass": "fal fa-lg fa-comment",
+            "Url": "{% if sms and sms != empty %}sms:{{ sms }}{% endif %}",
+            "OnClick": "",
+            "Title": "{% if sms == empty %}Person has no SMS-enabled number.{% endif %}",
+            "NewWindow": false
+          }
+        ]{% endcapture %}
+        {% assign cardactions = actionsString | FromJSON %}
+
+        {[ cardAction cardtype:'{{ cardtype }}' title:'{{ coach.NickName }}<br>{{ coach.LastName }}' imageurl:'{{ coach.PhotoUrl }}&maxwidth=200&maxheight=200' linkurl:linkurl cardactions:cardactions ]}
+          {% if note and note != empty %}
+            <p class="sans-serif letter-spacing-condensed strong text-{{ texttype }} push-quarter-top flush-bottom"><small>{{ note }}</small></p>
+          {% endif %}
+        {[ endcardAction ]}
+
+      </div>{% endfor %}
+    </div>
+  {% endif %}
+
+
+  {% comment %}
+    Group Member's Family Information
+  {% endcomment %}
+  {% assign families = person | Groups: "10",'All' | OrderBy:'DateTimeAdded desc' %}
+  {% assign familyCount = families | Size %}
+
+  {% for family in families %}
+    {% assign familyGroup = family.GroupId | GroupById %}
+    {% assign familyMembers = familyGroup.Members | OrderBy:'Person.AgeClassification, Person.Age desc' %}
+    {% assign familyMemberCount = familyMembers | Size %}
+
+    {% if familyMemberCount > 1 %}
+      <h2 class="h4 xs-h5 text-uppercase strongest push-top">{{ familyGroup.Name | Prepend:'The ' }}</h2>
+
+      <div class="row row-condensed">
+        {% for familyMember in familyMembers %}{% assign member = familyMember.PersonId | PersonById %}{% if member.Id != person.Id %}<div class="col-md-12 col-sm-6 col-xs-12">
+
+            {% assign cardactions = null %}
+            {% if member.AgeClassification == 'Adult' %}
+              {% assign mobile = member | PhoneNumber:'Mobile', true %}
+              {% assign home = member | PhoneNumber:'Home', true %}
+              {% assign work = member | PhoneNumber:'Work', true %}
+              {% assign phone = mobile | WithFallback:'',home | WithFallback:'',work %}
+              {% assign sms = member.PhoneNumbers | Where:'IsMessagingEnabled',true | First | Property:'NumberFormattedWithCountryCode' %}
+
+              {% capture actionsString %}[
+                {
+                  "IconCSSClass": "fal fa-lg fa-envelope",
+                  "Url": "{% if member.EmailPreference != 'DoNotEmail' and member.Email and member.Email != empty %}mailto:{{ member.Email }}{% endif %}",
+                  "OnClick": "",
+                  "Title": "{% if member.EmailPreference != 'DoNotEmail' and member.Email and member.Email != empty %}{% else %}Person has no email address or they do not wish to be emailed.{% endif %}",
+                  "NewWindow": false
+                },
+                {
+                  "IconCSSClass": "fal fa-lg fa-phone",
+                  "Url": "{% if phone and phone != empty %}tel:{{ phone }}{% endif %}",
+                  "OnClick": "",
+                  "Title": "{% if phone and phone != empty %}{% else %}Person has no phone number.{% endif %}",
+                  "NewWindow": false
+                },
+                {
+                  "IconCSSClass": "fal fa-lg fa-comment",
+                  "Url": "{% if sms and sms != empty %}sms:{{ sms }}{% endif %}",
+                  "OnClick": "",
+                  "Title": "{% if sms == empty %}Person has no SMS-enabled number.{% endif %}",
+                  "NewWindow": false
+                }
+              ]{% endcapture %}
+              {% assign cardactions = actionsString | FromJSON %}
+            {% endif %}
+
+            {[ cardAction cardtype:'' title:'{{ member.NickName }}<br>{{ member.LastName }}' imageurl:'{{ member.PhotoUrl }}&maxwidth=200&maxheight=200' linkurl:'' cardactions:cardactions ]}
+                <p class="sans-serif letter-spacing-condensed strong text-gray-darker push-quarter-top flush-bottom"><small>{{ member.AgeClassification }}{% if member.Age and member.Age != empty %} <span class="text-gray-light">({{ member.Age }})</span>{% endif %}</small></p>
+            {[ endcardAction ]}
+
+        </div>{% endif %}{% endfor %}
+      </div>
+    {% endif %}
+
+  {% endfor %}
+</div>

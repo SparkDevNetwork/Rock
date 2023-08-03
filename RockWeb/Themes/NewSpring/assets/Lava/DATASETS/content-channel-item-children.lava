@@ -1,0 +1,38 @@
+{% sql return:'associations' %}
+  SELECT
+      DISTINCT cci.[Id]
+      ,   pd.[AccessKey] 'Dataset'
+      ,   cc.[ChildItemsManuallyOrdered]
+  FROM [ContentChannelItemAssociation] ccia
+  JOIN [ContentChannelItem] cci ON ccia.[ContentChannelItemId] = cci.[Id]
+  JOIN [ContentChannel] cc ON cci.[ContentChannelId] = cc.[Id]
+  JOIN [AttributeValue] av ON av.[EntityId] = cci.[ContentChannelId]
+  JOIN [PersistedDataset] pd ON av.[Value] = pd.[Id]
+  WHERE cci.[ContentChannelTypeId] = 11
+  AND av.[AttributeId] = 107096
+  {% endsql %}
+  [
+  {% for association in associations %}{
+    {% sql return:'children' %}
+      SELECT
+      ccia.[Order] 'Index'
+      ,   ccia.[ChildContentChannelItemId] 'Id'
+      ,   cci.[ContentChannelId] 'ChannelId'
+      ,   cci.[Status]
+      ,   cci.[StartDateTime] 'PublishDateTime'
+      ,   cci.[ExpireDateTime] 'ExpireDateTime'
+      ,   ccis.[Slug]
+      ,   pd.[AccessKey] 'Dataset'
+      FROM [ContentChannelItemAssociation] ccia
+      JOIN [ContentChannelItem] cci ON ccia.[ChildContentChannelItemId] = cci.[Id]
+      JOIN [ContentChannelItemSlug] ccis ON ccis.[ContentChannelItemId] = cci.[Id]
+      JOIN [AttributeValue] av ON av.[EntityId] = cci.[ContentChannelId]
+      JOIN [PersistedDataset] pd ON av.[Value] = pd.[Id]
+      WHERE ccia.[ContentChannelItemId] = {{ association.Id }}
+      AND av.[AttributeId] = 107096 -- Persisted Dataset Attribute Id
+    {% endsql %}
+    "Id": {{ association.Id | ToJSON }},
+    "Dataset": {{ association.Dataset | ToJSON }},
+    "Children": {% if association.ChildItemsManuallyOrdered == true %}{{ children | OrderBy:'Order' | ToJSON }}{% else %}{{ children | OrderBy:'PublishDateTime' | ToJSON }}{% endif %}
+  }{% unless forloop.last %},{% endunless %}{% endfor %}
+  ]
