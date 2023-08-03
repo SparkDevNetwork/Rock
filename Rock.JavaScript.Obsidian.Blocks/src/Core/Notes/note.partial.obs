@@ -103,6 +103,8 @@
                                     :showDate="noteOptions.showCreateDate"
                                     :showPrivate="noteOptions.showPrivate"
                                     :showSecurity="noteOptions.showSecurity"
+                                    autoSize
+                                    autoFocus
                                     @cancel="onNoteEditCancel"
                                     @save="onNoteSave" />
                     </div>
@@ -118,6 +120,8 @@
                             :showDate="noteOptions.showCreateDate"
                             :showPrivate="noteOptions.showPrivate"
                             :showSecurity="noteOptions.showSecurity"
+                            autoSize
+                            autoFocus
                             @cancel="onNoteEditCancel"
                             @save="onNoteSave" />
             </div>

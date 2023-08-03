@@ -23,7 +23,8 @@
                                 :showPrivate="noteOptions.showPrivate"
                                 :showSecurity="noteOptions.showSecurity"
                                 :hideCancel="config.addAlwaysVisible"
-                                :autoSize="config.addAlwaysVisible"
+                                autoSize
+                                autoFocus
                                 @cancel="onNoteAddCancel"
                                 @save="onNoteAddSave" />
                 </div>
@@ -40,7 +41,8 @@
                                 :showPrivate="noteOptions.showPrivate"
                                 :showSecurity="noteOptions.showSecurity"
                                 :hideCancel="config.addAlwaysVisible"
-                                :autoSize="config.addAlwaysVisible"
+                                autoSize
+                                autoFocus
                                 @cancel="onNoteAddCancel"
                                 @save="onNoteAddSave" />
                 </div>
