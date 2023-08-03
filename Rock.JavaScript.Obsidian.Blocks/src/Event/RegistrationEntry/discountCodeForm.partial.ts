@@ -115,7 +115,7 @@ export default defineComponent({
                 const result = await this.invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", {
                     code: this.discountCodeInput,
                     registrantCount: this.registrationEntryState.registrants.length,
-                    registrationGuid: this.registrationEntryState.viewModel?.session?.registrationGuid ?? null
+                    registrationGuid: this.viewModel.session?.registrationGuid ?? null
                 });
 
                 if (result.isError || !result.data) {
