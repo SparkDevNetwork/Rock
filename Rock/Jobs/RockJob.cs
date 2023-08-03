@@ -158,6 +158,8 @@ namespace Rock.Jobs
                 catch
                 {
                     activity?.AddTag( "rock-job-result", "Failed" );
+                    /// the exception needs to be thrown so that the Scheduler catches it and passes it to the <see cref="Rock.Jobs.RockJobListener.JobWasExecuted" /> for logging to the front end
+                    throw;
                 }
                 finally
                 {
