@@ -267,7 +267,12 @@ namespace Rock.Blocks.Event
 
                 if ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
                 {
-                    return ActionForbidden( $"The discount requires a minimum of {discount.RegistrationTemplateDiscount.MinRegistrants.Value} registrants" );
+                    if ( discount.RegistrationTemplateDiscount.AutoApplyDiscount == true )
+                    {
+                        return ActionForbidden( $"The discount requires a minimum of {discount.RegistrationTemplateDiscount.MinRegistrants.Value} registrants" );
+                    }
+
+                    return ActionNotFound();
                 }
 
                 return ActionOk( new

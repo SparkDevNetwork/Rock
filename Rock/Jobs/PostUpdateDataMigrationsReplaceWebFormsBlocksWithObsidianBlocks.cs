@@ -150,7 +150,7 @@ namespace Rock.Jobs
 
             if ( ErrorMessage.Any() )
             {
-                throw new RockJobWarningException( String.Join( ",\n", ErrorMessage ) );
+                throw new RockJobWarningException( string.Join( ",\n", ErrorMessage ) );
             }
 
             DeleteJob();
@@ -218,7 +218,7 @@ namespace Rock.Jobs
                 rockContext.WrapTransaction( () =>
                 {
                     var copiedBlockMappings = AddCopiesOfBlocksInSameLocationsButWithNewBlockType( oldBlockTypeGuid, newBlockTypeId.Value, rockContext );
-                    rockContext.SaveChanges();
+                    rockContext.SaveChanges(); // saving the new blocks so that the attributes and person preferences may be copied over.
 
                     CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings );
 
@@ -353,7 +353,7 @@ namespace Rock.Jobs
                         // Copy the attribute qualifiers from the old block attribute to the new block attribute.
                         foreach ( var qualifierKvp in oldBlockAttribute.QualifierValues )
                         {
-                            migrationHelper.AddAttributeQualifier( newBlockAttribute.Guid.ToString(), qualifierKvp.Key, qualifierKvp.Value.Value, Guid.NewGuid().ToString() );
+                            migrationHelper.AddAttributeQualifierForSQL( newBlockAttribute.Guid.ToString(), qualifierKvp.Key, qualifierKvp.Value.Value, Guid.NewGuid().ToString() );
                         }
                     }
                 }
