@@ -27,7 +27,14 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a interaction <see cref="Rock.Model.Interaction"/>.
+    /// Represents a record of an interaction (or communication, etc.) between an
+    /// individual and the organization. It serves as a fundamental building block
+    /// for tracking and managing various forms of engagements, communications, and
+    /// activities of people.
+    ///
+    /// Note: Due to the amount of interaction data in a system, these should be
+    /// queried using the InteractionComponentId and optionally the
+    /// InteractionDateKey (when practical).
     /// </summary>
     [RockDomain( "Core" )]
     [NotAudited]
