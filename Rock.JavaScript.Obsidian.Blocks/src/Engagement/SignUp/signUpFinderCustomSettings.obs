@@ -203,7 +203,7 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList";
     import CodeEditor from "@Obsidian/Controls/codeEditor";

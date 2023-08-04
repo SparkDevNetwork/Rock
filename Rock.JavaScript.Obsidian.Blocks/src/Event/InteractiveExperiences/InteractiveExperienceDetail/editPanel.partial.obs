@@ -330,7 +330,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import ColorPicker from "@Obsidian/Controls/colorPicker";
-    import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader";
     import GroupPicker from "@Obsidian/Controls/groupPicker";
     import Modal from "@Obsidian/Controls/modal";

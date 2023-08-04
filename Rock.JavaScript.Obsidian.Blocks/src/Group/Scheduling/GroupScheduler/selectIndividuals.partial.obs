@@ -118,7 +118,7 @@
     import AvailableResources from "./availableResources.partial.obs";
     import { IRemainingResourceSpots, ISchedulerResource, ISchedulerResourceParameters, OccurrenceDateTitle } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
-    import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";
     import GroupPicker from "@Obsidian/Controls/groupPicker";
     import Loading from "@Obsidian/Controls/loading";

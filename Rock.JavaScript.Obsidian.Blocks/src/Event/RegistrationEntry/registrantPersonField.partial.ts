@@ -23,7 +23,7 @@ import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
-import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import ComponentFromUrl from "@Obsidian/Controls/componentFromUrl";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";

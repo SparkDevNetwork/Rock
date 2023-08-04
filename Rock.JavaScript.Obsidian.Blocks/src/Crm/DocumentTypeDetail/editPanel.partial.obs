@@ -96,10 +96,10 @@
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import TextBox from "@Obsidian/Controls/textBox";
-    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import NumberBox from "@Obsidian/Controls/numberBox";
-    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
+    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";

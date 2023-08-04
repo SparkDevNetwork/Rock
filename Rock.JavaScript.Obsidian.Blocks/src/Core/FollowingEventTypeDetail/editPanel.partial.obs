@@ -61,7 +61,7 @@
     import TextBox from "@Obsidian/Controls/textBox";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import ComponentPicker from "@Obsidian/Controls/componentPicker";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import { FollowingEventTypeBag } from "@Obsidian/ViewModels/Blocks/Core/FollowingEventTypeDetail/followingEventTypeBag";
     import { FollowingEventTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/FollowingEventTypeDetail/followingEventTypeDetailOptionsBag";

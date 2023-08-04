@@ -61,7 +61,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";
     import NumberBox from "@Obsidian/Controls/numberBox";
-    import ComponentPicker from "@Obsidian/Controls/componentPicker";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";

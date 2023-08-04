@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker";

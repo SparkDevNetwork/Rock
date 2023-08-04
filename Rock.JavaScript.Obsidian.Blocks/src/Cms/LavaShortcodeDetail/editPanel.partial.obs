@@ -118,7 +118,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";

@@ -90,7 +90,7 @@
     import TextBox from "@Obsidian/Controls/textBox";
     import Toggle from "@Obsidian/Controls/toggle";
     import PersonPicker from "@Obsidian/Controls/personPicker";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
     import RockLabel from "@Obsidian/Controls/rockLabel";

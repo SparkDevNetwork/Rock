@@ -80,7 +80,7 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { WorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowTriggerDetail/workflowTriggerBag";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";

@@ -479,7 +479,7 @@
     import { convertPersonToChildRequest, convertPersonToPersonRequest, createPersonViewModel, useGetBootstrapColumnClass } from "./FamilyPreRegistration/utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";

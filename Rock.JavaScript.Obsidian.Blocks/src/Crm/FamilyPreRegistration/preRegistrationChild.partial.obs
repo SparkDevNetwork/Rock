@@ -182,7 +182,7 @@
     import { ChildRequestBag } from "./types.partial";
     import { createPersonViewModel, getNumberAsOrdinalString, useGetBootstrapColumnClass } from "./utils.partial";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList";

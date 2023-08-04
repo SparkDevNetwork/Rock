@@ -84,7 +84,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
-    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";

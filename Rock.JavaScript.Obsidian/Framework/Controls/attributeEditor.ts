@@ -21,7 +21,7 @@ import CheckBox from "./checkBox";
 import TextBox from "./textBox";
 import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
 import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
-import CategoryPicker from "./categoryPicker";
+import CategoryPicker from "./categoryPicker.obs";
 import FieldTypeEditor from "./fieldTypeEditor";
 import StaticFormControl from "./staticFormControl";
 import PanelWidget from "./panelWidget";

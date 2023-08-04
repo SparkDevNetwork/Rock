@@ -60,7 +60,7 @@
     import PhoneNumberDetails from "./phoneNumberDetails.partial.obs";
     import Address from "@Obsidian/Controls/addressControl.obs";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
-    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
     import EmailBox from "@Obsidian/Controls/emailBox";

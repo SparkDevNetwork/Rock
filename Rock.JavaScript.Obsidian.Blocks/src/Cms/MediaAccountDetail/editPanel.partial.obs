@@ -35,7 +35,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import TextBox from "@Obsidian/Controls/textBox";
-    import ComponentPicker from "@Obsidian/Controls/componentPicker";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountBag";

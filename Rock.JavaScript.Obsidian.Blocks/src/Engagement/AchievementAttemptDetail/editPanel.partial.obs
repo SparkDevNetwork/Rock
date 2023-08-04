@@ -42,7 +42,7 @@
     import { AchievementAttemptBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptBag";
     import { AchievementAttemptDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptDetailOptionsBag";
     import NumberBox from "@Obsidian/Controls/numberBox";
-    import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker";
+    import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
 
     const props = defineProps({
