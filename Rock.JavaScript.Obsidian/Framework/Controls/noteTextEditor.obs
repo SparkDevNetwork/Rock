@@ -128,7 +128,7 @@
 .mention-search-container {
     width: 450px;
     max-width: 100%;
-    height: 216px;
+    max-height: 216px;
     overflow-x: clip;
     overflow-y: auto;
 }
