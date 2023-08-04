@@ -209,7 +209,7 @@ namespace RockWeb.Blocks.Event
         private void gCalendarItemOccurrenceList_Add( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
+            qryParams.Add( "EventCalendarId", GetEventCalendarId( _eventItem ) );
             qryParams.Add( "EventItemId", _eventItem.Id.ToString() );
             qryParams.Add( "EventItemOccurrenceId", "0" );
             NavigateToLinkedPage( "DetailPage", qryParams );
@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.Event
                 if ( eventItemOccurrence != null )
                 {
                     var qryParams = new Dictionary<string, string>();
-                    qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
+                    qryParams.Add( "EventCalendarId", GetEventCalendarId( _eventItem ) );
                     qryParams.Add( "EventItemId", _eventItem.Id.ToString() );
                     qryParams.Add( "EventItemOccurrenceId", "0" );
                     qryParams.Add( "CopyFromId", eventItemOccurrence.Id.ToString() );
@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Event
                 if ( eventItemOccurrence != null )
                 {
                     var qryParams = new Dictionary<string, string>();
-                    qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
+                    qryParams.Add( "EventCalendarId", GetEventCalendarId( _eventItem ) );
                     qryParams.Add( "EventItemId", _eventItem.Id.ToString() );
                     qryParams.Add( "EventItemOccurrenceId", eventItemOccurrence.Id.ToString() );
                     NavigateToLinkedPage( "DetailPage", qryParams );
@@ -520,6 +520,32 @@ namespace RockWeb.Blocks.Event
                     gCalendarItemOccurrenceList.Columns.Add( boundField );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets an appropriate Event Calendar identifier for a given Event Item.  If the calendar id is specified in the page parameter
+        /// collection, that value will be used, if not the calendar id from the first Event Calendar Item attached to the Event Item will
+        /// be used.
+        /// NOTE: This is necessary because this block has been used on pages/routes which do not supply the event calendar id (e.g., the link
+        /// from a followed event).
+        /// </summary>
+        /// <param name="eventItem">The <see cref="EventItem"/>.</param>
+        /// <returns></returns>
+        private string GetEventCalendarId( EventItem eventItem )
+        {
+            int? calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
+            if ( calendarId.HasValue )
+            {
+                return calendarId.Value.ToString();
+            }
+
+            var calendarItem = eventItem.EventCalendarItems.FirstOrDefault();
+            if ( calendarItem != null )
+            {
+                return calendarItem.EventCalendarId.ToString();
+            }
+
+            return string.Empty;
         }
 
         #endregion
