@@ -227,7 +227,8 @@
     <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberBag.cs" />
     <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberDetailOptionsBag.cs" />
-    <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
+    <Compile Include="Blocks\Core\CampusList\CampusListOptionsBag.cs" />
+	<Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
     <Compile Include="Blocks\Core\CategoryDetail\CategoryBag.cs" />
