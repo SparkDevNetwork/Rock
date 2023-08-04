@@ -200,7 +200,7 @@ namespace Rock.Blocks.Event
         /// <param name="code">The code.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CheckDiscountCode( string code, int registrantCount, Guid? registrationGuid )
+        public BlockActionResult CheckDiscountCode( string code, int registrantCount, Guid? registrationGuid, bool isAutoApply )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -209,7 +209,7 @@ namespace Rock.Blocks.Event
                 RegistrationTemplateDiscountWithUsage discount = null;
                 var registration = registrationGuid != null ? new RegistrationService( rockContext ).Get( registrationGuid.ToString() ) : null;
 
-                if ( code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
+                if ( isAutoApply && code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
                     // if no code is provided and there is no code already saved in the registration check for an auto apply discount, if there are none discount will be null which returns ActionNotFound
                     var registrationTemplateDiscountCodes = registrationTemplateDiscountService
@@ -219,11 +219,18 @@ namespace Rock.Blocks.Event
                         .Select( d => d.Code )
                         .ToList();
 
-                    foreach( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
+                    foreach ( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
                     {
                         discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, registrationTemplateDiscountCode );
 
-                        if ( discount == null || ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value ) )
+                        // This means the date is outside the defined date range, or the max usages has already been hit.
+                        if ( discount == null )
+                        {
+                            continue;
+                        }
+
+                        // Check if the registration meets the discount's minimum required registrants
+                        if (  discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
                         {
                             continue;
                         }
@@ -263,7 +270,8 @@ namespace Rock.Blocks.Event
 
                 if ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
                 {
-                    if ( discount.RegistrationTemplateDiscount.AutoApplyDiscount == true )
+                    // Do not show an error if the discount is being auto applied.
+                    if ( !isAutoApply || discount.RegistrationTemplateDiscount.AutoApplyDiscount == false )
                     {
                         return ActionForbidden( $"The discount requires a minimum of {discount.RegistrationTemplateDiscount.MinRegistrants.Value} registrants" );
                     }
