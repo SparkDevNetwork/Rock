@@ -19,21 +19,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Event
 {
@@ -44,13 +38,57 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the occurrence details for a given calendar event item." )]
 
-    [LinkedPage( "Detail Page", "The page to view linkage details", true, "", "", 0 )]
-    [LinkedPage( "Registration Instance Page", "The page to view registration details", true, "", "", 1 )]
-    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
-    [LinkedPage( "Content Item Detail Page", "The page for viewing details about a content item", true, "", "", 3 )]
+    #region Block Attributes
+
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Description = "The page to view linkage details",
+        IsRequired = true,
+        Order = 0 )]
+
+    [LinkedPage( "Registration Instance Page",
+        Key = AttributeKey.RegistrationInstancePage,
+        Description = "The page to view registration details",
+        IsRequired = true,
+        Order = 1 )]
+
+    [LinkedPage( "Group Detail Page",
+        Key = AttributeKey.GroupDetailPage,
+        Description = "The page for viewing details about a group",
+        IsRequired = true,
+        Order = 2 )]
+
+    [LinkedPage( "Content Item Detail Page",
+        Key = AttributeKey.ContentItemDetailPage,
+        Description = "The page for viewing details about a content item",
+        IsRequired = true,
+        Order = 3 )]
+
+    #endregion Block Attributes
+
     [Rock.SystemGuid.BlockTypeGuid( "94230E7A-8EB7-4407-9B8E-888B54C71E39" )]
     public partial class EventItemOccurrenceList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        #region Keys
+
+        private class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string RegistrationInstancePage = "RegistrationInstancePage";
+            public const string GroupDetailPage = "GroupDetailPage";
+            public const string ContentItemDetailPage = "ContentItemDetailPage";
+        }
+
+        private class PageParameterKey
+        {
+            public const string EventCalendarId = "EventCalendarId";
+            public const string EventItemId = "EventItemId";
+            public const string EventItemOccurrenceId = "EventItemOccurrenceId";
+            public const string CopyFromId = "CopyFromId";
+        }
+
+        #endregion Keys
+
         #region Properties
 
         private EventItem _eventItem = null;
@@ -92,13 +130,13 @@ namespace RockWeb.Blocks.Event
                     var registrationField = gCalendarItemOccurrenceList.ColumnsOfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Registration" );
                     if ( registrationField != null )
                     {
-                        registrationField.DataNavigateUrlFormatString = LinkedPageUrl( "RegistrationInstancePage" ) + "?RegistrationInstanceId={0}";
+                        registrationField.DataNavigateUrlFormatString = LinkedPageUrl( AttributeKey.RegistrationInstancePage ) + "?RegistrationInstanceId={0}";
                     }
 
                     var groupField = gCalendarItemOccurrenceList.ColumnsOfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Group" );
                     if ( groupField != null )
                     {
-                        groupField.DataNavigateUrlFormatString = LinkedPageUrl( "GroupDetailPage" ) + "?GroupId={0}";
+                        groupField.DataNavigateUrlFormatString = LinkedPageUrl( AttributeKey.GroupDetailPage ) + "?GroupId={0}";
                     }
 
                     AddAttributeColumns();
@@ -117,6 +155,7 @@ namespace RockWeb.Blocks.Event
                 }
             }
         }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -132,7 +171,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -151,7 +190,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Rs the filter_ display filter value.
+        /// Handles the DisplayFilterValue event of the rFilter control.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -208,11 +247,14 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gCalendarItemOccurrenceList_Add( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "EventCalendarId", GetEventCalendarId( _eventItem ) );
-            qryParams.Add( "EventItemId", _eventItem.Id.ToString() );
-            qryParams.Add( "EventItemOccurrenceId", "0" );
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            var qryParams = new Dictionary<string, string>
+            {
+                { PageParameterKey.EventCalendarId, GetEventCalendarId( _eventItem ) },
+                { PageParameterKey.EventItemId, _eventItem.Id.ToString() },
+                { PageParameterKey.EventItemOccurrenceId, "0" }
+            };
+
+            NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
         }
 
         /// <summary>
@@ -228,12 +270,15 @@ namespace RockWeb.Blocks.Event
                 EventItemOccurrence eventItemOccurrence = eventItemOccurrenceService.Get( e.RowKeyId );
                 if ( eventItemOccurrence != null )
                 {
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams.Add( "EventCalendarId", GetEventCalendarId( _eventItem ) );
-                    qryParams.Add( "EventItemId", _eventItem.Id.ToString() );
-                    qryParams.Add( "EventItemOccurrenceId", "0" );
-                    qryParams.Add( "CopyFromId", eventItemOccurrence.Id.ToString() );
-                    NavigateToLinkedPage( "DetailPage", qryParams );
+                    var qryParams = new Dictionary<string, string>
+                    {
+                        { PageParameterKey.EventCalendarId, GetEventCalendarId( _eventItem ) },
+                        { PageParameterKey.EventItemId, _eventItem.Id.ToString() },
+                        { PageParameterKey.EventItemOccurrenceId, "0" },
+                        { PageParameterKey.CopyFromId, eventItemOccurrence.Id.ToString() }
+                    };
+
+                    NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
                 }
             }
         }
@@ -251,11 +296,14 @@ namespace RockWeb.Blocks.Event
                 EventItemOccurrence eventItemOccurrence = eventItemOccurrenceService.Get( e.RowKeyId );
                 if ( eventItemOccurrence != null )
                 {
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams.Add( "EventCalendarId", GetEventCalendarId( _eventItem ) );
-                    qryParams.Add( "EventItemId", _eventItem.Id.ToString() );
-                    qryParams.Add( "EventItemOccurrenceId", eventItemOccurrence.Id.ToString() );
-                    NavigateToLinkedPage( "DetailPage", qryParams );
+                    var qryParams = new Dictionary<string, string>
+                    {
+                        { PageParameterKey.EventCalendarId, GetEventCalendarId( _eventItem ) },
+                        { PageParameterKey.EventItemId, _eventItem.Id.ToString() },
+                        { PageParameterKey.EventItemOccurrenceId, eventItemOccurrence.Id.ToString() }
+                    };
+
+                    NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
                 }
             }
         }
@@ -298,7 +346,7 @@ namespace RockWeb.Blocks.Event
             BindCampusGrid();
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -467,6 +515,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Formats the Content Items.
+        /// </summary>
+        /// <param name="items"></param>
+        /// <returns></returns>
         private string FormatContentItems( IEnumerable<ContentChannelItem> items )
         {
             var qryParams = new Dictionary<string, string> { { "ContentItemId", "" } };
@@ -475,7 +528,7 @@ namespace RockWeb.Blocks.Event
             foreach ( var item in items )
             {
                 qryParams["ContentItemId"] = item.Id.ToString();
-                itemLinks.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", LinkedPageUrl( "ContentItemDetailPage", qryParams ), item.Title, item.ContentChannelType.Name ) );
+                itemLinks.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", LinkedPageUrl( AttributeKey.ContentItemDetailPage, qryParams ), item.Title, item.ContentChannelType.Name ) );
             }
             return itemLinks.AsDelimited( "<br/>" );
         }
@@ -533,7 +586,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private string GetEventCalendarId( EventItem eventItem )
         {
-            int? calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
+            int? calendarId = PageParameter( PageParameterKey.EventCalendarId ).AsIntegerOrNull();
             if ( calendarId.HasValue )
             {
                 return calendarId.Value.ToString();
@@ -548,7 +601,7 @@ namespace RockWeb.Blocks.Event
             return string.Empty;
         }
 
-        #endregion
+        #endregion Methods
 
         #region ISecondaryBlock
 
@@ -561,13 +614,31 @@ namespace RockWeb.Blocks.Event
             pnlContent.Visible = visible;
         }
 
-        #endregion
+        #endregion ISecondaryBlock
 
+        #region Helper Class
+
+        /// <summary>
+        /// Event Item Occurence with Dates
+        /// </summary>
         public class EventItemOccurrenceWithDates
         {
+            /// <summary>
+            /// The Event Item Occurrence.
+            /// </summary>
             public EventItemOccurrence EventItemOccurrence { get; set; }
+
+            /// <summary>
+            /// The Next Start Date/Time.
+            /// </summary>
             public DateTime? NextStartDateTime { get; set; }
+
+            /// <summary>
+            /// The list of Start Dates/Times.
+            /// </summary>
             public List<DateTime> StartDateTimes { get; set; }
         }
+
+        #endregion Helper Class
     }
 }
