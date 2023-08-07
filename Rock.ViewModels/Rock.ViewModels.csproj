@@ -56,6 +56,8 @@
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvAppDetail\AppleTvAppBag.cs" />

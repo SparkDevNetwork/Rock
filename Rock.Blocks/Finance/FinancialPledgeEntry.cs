@@ -229,7 +229,7 @@ namespace Rock.Blocks.Finance
                         m.Group.IsActive && !m.Group.IsArchived )
                     .Select( m => new
                     {
-                        m.Guid,
+                        m.Group.Guid,
                         Name = m.Group.Name,
                         GroupTypeName = m.Group.GroupType.Name
                     } )
