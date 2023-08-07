@@ -48,7 +48,7 @@ export default defineComponent({
         };
     },
     mounted() {
-        this.tryDiscountCode();
+        this.tryDiscountCode(true);
     },
     data() {
         return {
@@ -109,21 +109,24 @@ export default defineComponent({
     methods: {
         /** Send a user input discount code to the server so the server can check and send back
          *  the discount amount. */
-        async tryDiscountCode(): Promise<void> {
+        async tryDiscountCode(isAutoApply: boolean): Promise<void> {
             this.loading = true;
             try {
                 const result = await this.invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", {
                     code: this.discountCodeInput,
                     registrantCount: this.registrationEntryState.registrants.length,
-                    registrationGuid: this.viewModel.session?.registrationGuid ?? null
+                    registrationGuid: this.viewModel.session?.registrationGuid ?? null,
+                    isAutoApply: isAutoApply ?? false
                 });
 
                 if (result.isError || !result.data) {
-                    if(result.errorMessage != null && result.errorMessage !="") {
-                        this.discountCodeWarningMessage = result.errorMessage;
-                    }
-                    else if (this.discountCodeInput != "") {
-                        this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
+                    if(!isAutoApply) {
+                        if(result.errorMessage != null && result.errorMessage !="") {
+                            this.discountCodeWarningMessage = result.errorMessage;
+                        }
+                        else if (this.discountCodeInput != "") {
+                            this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
+                        }
                     }
                 }
                 else {
@@ -156,7 +159,7 @@ export default defineComponent({
         <label class="control-label">Discount Code</label>
         <div class="input-group">
             <input type="text" :disabled="loading || !isDiscountCodeAllowed" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
-            <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode">
+            <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
                 Apply
             </RockButton>
         </div>

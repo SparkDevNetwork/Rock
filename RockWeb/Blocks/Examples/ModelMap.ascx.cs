@@ -779,22 +779,22 @@ namespace RockWeb.Blocks.Examples
         private string MakeSummaryHtml( string innerXml, string fullClassName = null )
         {
             innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"\s+", " " );
-            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*?)""(?:\s*/>|>(.*)</see>)" );
+            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see\w* cref=""T:(.*?)""(?:\s*/>|>(.*)</see\w*>)" );
             while ( match.Success )
             {
                 var updatedValue = match.Value;
-                System.Text.RegularExpressions.Regex.Match( match.Value, @"<see cref=""T:(.*?)""(?:\s*/>|>(.*)</see>)" );
+                System.Text.RegularExpressions.Regex.Match( match.Value, @"<see\w* cref=""T:(.*?)""(?:\s*/>|>(.*)</see\w*>)" );
 
                 var entityType = EntityTypeCache.Get( match.Groups[1].Value );
                 if ( entityType != null )
                 {
-                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)""\s*/>", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
-                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)""></see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">{1}</a>", entityType.Id, entityType.FriendlyName ) );
-                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"">(.*)</see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""T:(.*)\.([^.]*)""\s*/>", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""T:(.*)\.([^.]*)""></see\w*>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">{1}</a>", entityType.Id, entityType.FriendlyName ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""T:(.*)\.([^.]*)"">(.*)</see\w*>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
                 }
                 else
                 {
-                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)""\s*/>", "<a href=\"#$2\">$2</a>" );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""T:(.*)\.([^.]*)""\s*/>", "<a href=\"#$2\">$2</a>" );
                 }
 
                 innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, match.Value, updatedValue );
@@ -807,7 +807,7 @@ namespace RockWeb.Blocks.Examples
             innerXml = innerXml.Replace( "<code>", "<pre>" ).Replace( "</code>", "</pre>" );
 
             // Now replace any cref property references
-            var propertyRefMatch = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""P:(.*?)""(?:\s*/>|>(.*)</see>)" );
+            var propertyRefMatch = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see\w* cref=""P:(.*?)""(?:\s*/>|>(.*)</see\w*>)" );
             while ( propertyRefMatch.Success )
             {
                 var updatedValue = propertyRefMatch.Value;
@@ -818,8 +818,8 @@ namespace RockWeb.Blocks.Examples
                 var fullPropertyName = propertyName.Replace( fullClassName + ".", string.Empty );
                 // Now we can shorten it to remove the redundant "Rock.Model." if it's in the property name
                 var partialPropertyName = fullPropertyName.Replace( "Rock.Model.", string.Empty );
-                updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""P:(.*)\.([^.]*)""\s*/>", $"<code>{partialPropertyName}</code>" );
-                updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""P:(.*)\.([^.]*)""\s*/></see>", $"<code>{partialPropertyName}</code>" );
+                updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""P:(.*)\.([^.]*)""\s*/>", $"<code>{partialPropertyName}</code>" );
+                updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""P:(.*)\.([^.]*)""\s*/></see\w*>", $"<code>{partialPropertyName}</code>" );
                 innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, propertyRefMatch.Value, updatedValue );
                 propertyRefMatch = propertyRefMatch.NextMatch();
             }

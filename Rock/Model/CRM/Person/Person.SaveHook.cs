@@ -372,6 +372,11 @@ namespace Rock.Model
                     PersonService.UpdatePrimaryAlias( this.Entity.Id, this.Entity.PrimaryAliasId.Value, RockContext );
                 }
 
+                if ( this.Entity.Age.HasValue && this.Entity.Age != Entry.OriginalValues[nameof( Person.Age )].ToStringSafe().AsIntegerOrNull() )
+                {
+                    PersonService.UpdateFamilyMemberRoleByAge( this.Entity.Id, this.Entity.Age.Value, RockContext );
+                }
+
                 // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
                 PersonService.UpdatePersonAgeClassification( this.Entity.Id, RockContext );
                 PersonService.UpdatePrimaryFamily( this.Entity.Id, RockContext );
