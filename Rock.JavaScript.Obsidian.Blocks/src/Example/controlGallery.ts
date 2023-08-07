@@ -47,7 +47,7 @@
  */
 
 import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
-import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath } from "./ControlGallery/utils.partial";
+import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/utils.partial";
 import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -230,27 +230,10 @@ import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
 import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.obs";
 import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
+import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmountPickerGallery.partial.obs";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 
-// #region Gallery Support
-
-const displayStyleItems: ListItemBag[] = [
-    {
-        value: PickerDisplayStyle.Auto,
-        text: "Auto"
-    },
-    {
-        value: PickerDisplayStyle.List,
-        text: "List"
-    },
-    {
-        value: PickerDisplayStyle.Condensed,
-        text: "Condensed"
-    }
-];
-
-// #endregion
 
 // #region Control Gallery
 
@@ -5471,13 +5454,13 @@ const tabbedBarGallery = defineComponent({
         return {
             list: ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians"],
             type: ref("tabs"),
-            typeItems: [{value: "tabs", text: "Tabs"}, {value: "pills", text: "Pills" }],
+            typeItems: [{ value: "tabs", text: "Tabs" }, { value: "pills", text: "Pills" }],
             importCode: getSfcControlImportPath("tabbedBar"),
             exampleCode: `<TabbedBar :tabs="arrayOfItems">
     <template #default="{item}">
         {{ item }}
     </template>
-</TabbedBar`
+</TabbedBar>`
         };
     },
     template: `
@@ -7648,8 +7631,8 @@ const accountPickerGallery = defineComponent({
     components: {
         GalleryAndResult,
         CheckBox,
-        AccountPicker,
-        TextBox,
+        AccountPicker, https://configurelaptop.eu/cat/custom-laptop/
+            TextBox,
         RockButton
     },
     setup() {
@@ -8199,6 +8182,7 @@ const controlGalleryComponents: Record<string, Component> = [
     DropDownMenuGallery,
     DropDownContentGallery,
     ButtonDropDownListGallery,
+    CampusAccountAmountPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

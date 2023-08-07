@@ -377,6 +377,8 @@
     <Compile Include="Blocks\Prayer\PrayerRequestEntry\PrayerRequestEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Prayer\PrayerRequestEntry\PrayerRequestEntrySaveResponseBag.cs" />
     <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsResultItemBag.cs" />
+    <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetContentChannelItemsOptionsBag.cs" />

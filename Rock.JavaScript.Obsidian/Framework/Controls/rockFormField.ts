@@ -41,8 +41,13 @@ export default defineComponent({
         },
 
         name: {
-            type: String as PropType<string>,
+            type: String,
             required: true
+        },
+
+        disableLabel: {
+            type: Boolean,
+            default: false
         },
 
         ...standardRockFormFieldProps
@@ -116,8 +121,8 @@ export default defineComponent({
 
     template: `
 <slot name="pre" />
-<div v-if="label || help" class="form-group" :class="[classAttr, formGroupClasses, isRequired && !isRequiredIndicatorHidden ? 'required' : '', errorClasses]">
-    <RockLabel :for="uniqueId" :help="help">
+<div v-if="label || help || disableLabel" class="form-group" :class="[classAttr, formGroupClasses, isRequired && !isRequiredIndicatorHidden ? 'required' : '', errorClasses]">
+    <RockLabel :for="uniqueId" :help="help" v-if="!disableLabel">
         {{label}} <slot name="besideLabel" />
     </RockLabel>
     <slot v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />

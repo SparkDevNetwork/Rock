@@ -88,7 +88,7 @@
             return standardProps.displayStyle;
         }
 
-        return standardProps.multiple  ? PickerDisplayStyle.List : PickerDisplayStyle.Auto;
+        return standardProps.multiple ? PickerDisplayStyle.List : PickerDisplayStyle.Auto;
     });
 
     const isPickerVisible = computed((): boolean => {
