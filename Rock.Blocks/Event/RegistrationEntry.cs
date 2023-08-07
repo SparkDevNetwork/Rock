@@ -255,14 +255,14 @@ namespace Rock.Blocks.Event
                     return ActionOk( new
                     {
                         DiscountCode = registration.DiscountCode,
-                        UsagesRemaining = (int?) null,
+                        RegistrationUsagesRemaining = (int?) null,
                         DiscountAmount = registration.DiscountAmount,
                         DiscountPercentage = registration.DiscountPercentage,
                         DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants.Value
                     } );
                 }
 
-                if ( discount == null || discount.UsagesRemaining < 1 )
+                if ( discount == null || discount.RegistrationUsagesRemaining < 1 )
                 {
                     // The code is not found
                     return ActionNotFound();
@@ -282,7 +282,7 @@ namespace Rock.Blocks.Event
                 return ActionOk( new
                 {
                     DiscountCode = discount.RegistrationTemplateDiscount.Code,
-                    UsagesRemaining = discount.UsagesRemaining,
+                    RegistrationUsagesRemaining = discount.RegistrationUsagesRemaining,
                     DiscountAmount = discount.RegistrationTemplateDiscount.DiscountAmount,
                     DiscountPercentage = discount.RegistrationTemplateDiscount.DiscountPercentage,
                     DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants
@@ -2085,14 +2085,12 @@ namespace Rock.Blocks.Event
             // Check if discount applies
             var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
             var isWithinMaxRegistrants = !maxRegistrants.HasValue || index < maxRegistrants.Value;
-            var usesRemaining = context.Discount?.UsagesRemaining ?? int.MaxValue;
-            var isWithinUsageCap = usesRemaining >= 1;
-            registrant.DiscountApplies = isWithinMaxRegistrants && isWithinUsageCap;
+            registrant.DiscountApplies = isWithinMaxRegistrants;
 
-            if ( registrant.DiscountApplies && context.Discount?.UsagesRemaining != null )
-            {
-                context.Discount.UsagesRemaining--;
-            }
+            /*
+                2023-08-07 edrotnign
+                Do not check the value RegistrationTemplateDiscount.MaxUsage here. That is a registration level value and this is a registrant level operation.
+             */
 
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
             var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
