@@ -142,11 +142,7 @@ namespace Rock.Jobs
         /// <inheritdoc/>
         public override void Execute()
         {
-            // get the configured timeout, or default to 240 minutes if it is blank
-            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
-            var jobMigration = new JobMigration( commandTimeout );
-            var migrationHelper = new MigrationHelper( jobMigration );
-            ReplaceBlocks( migrationHelper );
+            ReplaceBlocks();
 
             if ( ErrorMessage.Any() )
             {
@@ -160,13 +156,17 @@ namespace Rock.Jobs
         /// Replaces site, page, and layout WebForms block instances with Obsidian block instances.
         /// <para>Uses a combination of EF and the migration helper.</para>
         /// </summary>
-        /// <param name="migrationHelper">The migration helper.</param>
-        private void ReplaceBlocks( MigrationHelper migrationHelper )
+        private void ReplaceBlocks()
         {
+            // get the configured timeout, or default to 240 minutes if it is blank
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
+
             foreach ( var blockTypeGuidPair in BlockTypeGuidReplacementPairs )
             {
                 using ( var rockContext = new RockContext() )
                 {
+                    var jobMigration = new JobMigration( rockContext, commandTimeout );
+                    var migrationHelper = new MigrationHelper( jobMigration );
                     ReplaceBlocksOfOneBlockTypeWithBlocksOfAnotherBlockType( blockTypeGuidPair.Key, blockTypeGuidPair.Value, rockContext, migrationHelper );
                 }
             }
