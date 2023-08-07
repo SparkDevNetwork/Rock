@@ -38,6 +38,9 @@ registerFieldType(FieldTypeGuids.Campuses, new CampusesFieldType());
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 
+import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
+registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
+
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
 
