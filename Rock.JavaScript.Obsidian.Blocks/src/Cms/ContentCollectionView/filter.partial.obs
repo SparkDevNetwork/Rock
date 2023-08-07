@@ -31,7 +31,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import { SearchFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/searchFilterBag";
     import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";

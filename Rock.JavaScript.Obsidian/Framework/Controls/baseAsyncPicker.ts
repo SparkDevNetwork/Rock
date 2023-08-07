@@ -21,7 +21,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import CheckBoxList from "./checkBoxList";
-import DropDownList from "./dropDownList";
+import DropDownList from "./dropDownList.obs";
 import RadioButtonList from "./radioButtonList";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 

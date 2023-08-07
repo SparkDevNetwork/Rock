@@ -239,7 +239,7 @@
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import TextBox from "@Obsidian/Controls/textBox";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { GroupAttendanceDetailDateSelectionMode } from "@Obsidian/Enums/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailDateSelectionMode";
     import { GroupAttendanceDetailLocationSelectionMode } from "@Obsidian/Enums/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailLocationSelectionMode";
     import { GroupAttendanceDetailScheduleSelectionMode } from "@Obsidian/Enums/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailScheduleSelectionMode";

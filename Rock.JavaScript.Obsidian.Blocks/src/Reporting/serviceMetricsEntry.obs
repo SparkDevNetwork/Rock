@@ -81,7 +81,7 @@
     import MetricItemTree from "./ServiceMetricsEntry/metricItemTree.obs";
     import MetricParametersStepper from "./ServiceMetricsEntry/metricParametersStepper.partial.obs";
     import { StepperController } from "./ServiceMetricsEntry/types.partial";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";

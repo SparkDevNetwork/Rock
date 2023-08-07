@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <span ref="anchorElement" @click.prevent="onAnchorClick">
         <slot name="anchor">

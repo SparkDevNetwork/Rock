@@ -18,7 +18,7 @@ import { defineComponent, ref, computed, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { asTrueFalseOrNull, asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { ConfigurationValueKey } from "./booleanField.partial";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import Toggle from "@Obsidian/Controls/toggle";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -87,7 +87,7 @@ export const EditComponent = defineComponent({
 
             return falseText || "No";
         });
-        
+
         // configuration for a toggle button
         const toggleOptions = computed((): Record<string, unknown> => ({
                 trueText: trueText.value,
@@ -246,7 +246,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

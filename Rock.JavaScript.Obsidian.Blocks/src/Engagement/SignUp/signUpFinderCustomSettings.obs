@@ -208,7 +208,7 @@
     import CheckBoxList from "@Obsidian/Controls/checkBoxList";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
     import Modal from "@Obsidian/Controls/modal";

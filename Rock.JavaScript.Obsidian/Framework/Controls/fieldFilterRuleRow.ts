@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import DropDownList from "./dropDownList";
+import DropDownList from "./dropDownList.obs";
 import TextBox from "./textBox";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { areEqual } from "@Obsidian/Utility/guid";

@@ -24,7 +24,7 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DatePartsPicker, { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import TextBox from "@Obsidian/Controls/textBox";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import CheckBox from "@Obsidian/Controls/checkBox";

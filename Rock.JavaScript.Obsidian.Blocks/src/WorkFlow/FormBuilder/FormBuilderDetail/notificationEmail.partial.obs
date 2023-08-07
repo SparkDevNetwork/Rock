@@ -47,7 +47,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import PersonPicker from "@Obsidian/Controls/personPicker";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

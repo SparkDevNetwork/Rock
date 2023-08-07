@@ -75,7 +75,7 @@
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
     import { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
     import CurrencyBox from "@Obsidian/Controls/currencyBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeBag";

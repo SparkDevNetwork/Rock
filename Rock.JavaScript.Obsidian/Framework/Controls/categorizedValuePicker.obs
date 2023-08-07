@@ -25,7 +25,7 @@
     import NotificationBox from "./notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import RockButton from "./rockButton";
-    import DropDownList from "./dropDownList";
+    import DropDownList from "./dropDownList.obs";
 
     const props = defineProps({
         modelValue: {

@@ -17,7 +17,7 @@
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { useHttp } from "@Obsidian/Utility/http";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
 import RockLabel from "@Obsidian/Controls/rockLabel";
 import TextBox from "@Obsidian/Controls/textBox";

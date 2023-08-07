@@ -73,7 +73,7 @@ import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progres
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import Dialog from "@Obsidian/Controls/dialog";
 import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
 import CheckBox from "@Obsidian/Controls/checkBox";
@@ -126,9 +126,9 @@ import { SlidingDateRange, rangeTypeOptions } from "@Obsidian/Utility/slidingDat
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
-import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
-import SectionHeader from "@Obsidian/Controls/sectionHeader";
+import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { useStore } from "@Obsidian/PageState";
@@ -752,7 +752,7 @@ const dropDownListGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <DropDownList label="Select" v-model="value" :items="[]" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+    <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
 
     <template #settings>
         <div class="row">

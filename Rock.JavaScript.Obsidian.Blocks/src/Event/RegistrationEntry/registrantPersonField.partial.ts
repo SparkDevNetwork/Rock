@@ -21,7 +21,7 @@ import AddressControl from "@Obsidian/Controls/addressControl.obs";
 import { getDefaultAddressControlModel } from "@Obsidian/Utility/address";
 import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";

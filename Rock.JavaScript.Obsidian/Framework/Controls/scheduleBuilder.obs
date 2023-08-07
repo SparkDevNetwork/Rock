@@ -292,12 +292,12 @@
     import DatePicker from "./datePicker.obs";
     import DateRangePicker, { DateRangeParts } from "./dateRangePicker";
     import DateTimePicker from "./dateTimePicker";
-    import DropDownList from "./dropDownList";
+    import DropDownList from "./dropDownList.obs";
     import Modal from "./modal";
     import NumberBox from "./numberBox";
     import RadioButtonList from "./radioButtonList";
     import RockFormField from "./rockFormField";
-    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";
     import { Event, Calendar, RecurrenceRule } from "@Obsidian/Utility/internetCalendar";
     import { containsRequiredRule } from "@Obsidian/ValidationRules";

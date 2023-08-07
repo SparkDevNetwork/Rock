@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, PropType, ref, TransitionGroup, watch } from "vue";
-import DropDownList from "./dropDownList";
+import DropDownList from "./dropDownList.obs";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { updateRefValue } from "@Obsidian/Utility/component";

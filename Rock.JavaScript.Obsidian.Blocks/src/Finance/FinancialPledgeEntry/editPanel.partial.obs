@@ -61,7 +61,7 @@
     import { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
     import CurrencyBox from "@Obsidian/Controls/currencyBox";
     import RockLabel from "@Obsidian/Controls/rockLabel";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { FinancialPledgeEntryBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryBag";
     import { FinancialPledgeEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryOptionsBag";

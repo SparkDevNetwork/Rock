@@ -17,7 +17,7 @@
 import { PropType, computed, defineComponent } from "vue";
 import { normalizeRules, rulesPropType } from "@Obsidian/ValidationRules";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import DropDownList from "./dropDownList";
+import DropDownList from "./dropDownList.obs";
 import { Gender } from "@Obsidian/Enums/Crm/gender";
 
 export default defineComponent({

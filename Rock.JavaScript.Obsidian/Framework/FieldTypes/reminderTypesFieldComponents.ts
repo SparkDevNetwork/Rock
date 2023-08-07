@@ -20,7 +20,7 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationValueKey } from "./reminderTypesField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

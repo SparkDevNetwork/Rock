@@ -19,7 +19,7 @@ import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown";
 import NumberUpDownGroup, { NumberUpDownGroupOption } from "@Obsidian/Controls/numberUpDownGroup";
 import Number from "@Obsidian/Utility/numberUtils";

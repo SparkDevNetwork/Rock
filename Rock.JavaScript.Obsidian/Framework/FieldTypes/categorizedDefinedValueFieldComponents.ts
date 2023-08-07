@@ -18,7 +18,7 @@
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import CategorizedValuePicker from "@Obsidian/Controls/categorizedValuePicker.obs";
 import RockLabel from "@Obsidian/Controls/rockLabel";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

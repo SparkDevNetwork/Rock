@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader";
 import { ConfigurationValueKey, ConfigurationPropertyKey } from "./fileField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -127,7 +127,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

@@ -337,9 +337,9 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
     import SectionContainer from "@Obsidian/Controls/sectionContainer";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import TextBox from "@Obsidian/Controls/textBox";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";

@@ -80,7 +80,7 @@
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CheckBox from "@Obsidian/Controls/checkBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker";
     import PersonPicker from "@Obsidian/Controls/personPicker";
     import TextBox from "@Obsidian/Controls/textBox";

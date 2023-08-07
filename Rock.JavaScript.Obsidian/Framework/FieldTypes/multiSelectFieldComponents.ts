@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, inject, ref, watch } from "vue";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import ListBox from "@Obsidian/Controls/listBox";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -244,7 +244,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

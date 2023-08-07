@@ -17,9 +17,9 @@
 
 import { computed, defineComponent, PropType } from "vue";
 import InlineSwitch from "./inlineSwitch";
-import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import SectionHeader from "./sectionHeader";
+import SectionHeader from "./sectionHeader.obs";
 
 /**
  * Displays the UI for the Confirmation Email component in the Communications

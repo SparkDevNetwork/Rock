@@ -165,7 +165,7 @@
 
 <script setup lang="ts">
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import NotesContainer from "./notesContainer.partial.obs";
     import NoteEditor from "./noteEditor.partial.obs";
     import { ColorPair } from "@Obsidian/Core/Utilities/colorPair";

@@ -143,7 +143,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import Modal from "@Obsidian/Controls/modal";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 
     const props = defineProps({
         modelValue: {

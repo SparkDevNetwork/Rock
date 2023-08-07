@@ -53,7 +53,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { updateRefValue } from "@Obsidian/Utility/component";

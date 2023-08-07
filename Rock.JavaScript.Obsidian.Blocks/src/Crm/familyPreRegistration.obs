@@ -476,7 +476,7 @@
     import { computed, nextTick, ref } from "vue";
     import PreRegistrationChildren from "./FamilyPreRegistration/preRegistrationChildren.partial.obs";
     import { ChildRequestBag, CreateAccountRequest, PersonRequestBag } from "./FamilyPreRegistration/types.partial";
-    import { convertPersonToChildRequest, convertPersonToPersonRequest, createPersonViewModel, useGetBootstrapColumnClass } from "./FamilyPreRegistration/utils.partial";
+    import { convertPersonToChildRequest, convertPersonToPersonRequest, createPersonViewModel } from "./FamilyPreRegistration/utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
@@ -484,7 +484,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";

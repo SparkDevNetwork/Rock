@@ -103,7 +103,7 @@
     import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker";
     import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";

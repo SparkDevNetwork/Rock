@@ -44,7 +44,7 @@
 <script setup lang="ts">
     import { onMounted, ref, shallowRef, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { dispatchBlockEvent, getSecurityGrant, provideSecurityGrant, useBlockGuid, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";

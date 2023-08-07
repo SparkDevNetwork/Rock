@@ -20,7 +20,7 @@ import GatewayControl from "@Obsidian/Controls/gatewayControl";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockValidation from "@Obsidian/Controls/rockValidation";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";

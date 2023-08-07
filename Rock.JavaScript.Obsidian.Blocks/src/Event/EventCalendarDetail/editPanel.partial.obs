@@ -164,7 +164,7 @@
     import PanelWidget from "@Obsidian/Controls/panelWidget";
     import Modal from "@Obsidian/Controls/modal";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { EventAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor";

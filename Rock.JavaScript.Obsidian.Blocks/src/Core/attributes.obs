@@ -106,7 +106,7 @@
     import RockField from "@Obsidian/Controls/rockField";
     import RockForm from "@Obsidian/Controls/rockForm";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Block from "@Obsidian/Templates/block";
     import RockButton from "@Obsidian/Controls/rockButton";
     import TextBox from "@Obsidian/Controls/textBox";

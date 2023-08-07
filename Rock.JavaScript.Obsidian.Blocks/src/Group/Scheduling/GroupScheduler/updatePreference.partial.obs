@@ -56,7 +56,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import { ISchedulerResourceAttend } from "./types.partial";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";

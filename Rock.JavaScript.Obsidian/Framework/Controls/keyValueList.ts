@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import DropDownList from "./dropDownList";
+import DropDownList from "./dropDownList.obs";
 import RockFormField from "./rockFormField";
 import TextBox from "./textBox";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
