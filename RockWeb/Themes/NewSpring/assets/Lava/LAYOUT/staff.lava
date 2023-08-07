@@ -2,7 +2,6 @@
 {% assign lastSegment = 'Global' | Page:'Path' | Split:'/' | Last %}
 {% assign staffTeams = 'staff_teams' | PersistedDataset %}
 
-
 {% if lastSegment == 'staff' %}
     {% assign group = staffTeams | Where:'Id',2069928 | First %}
     {% assign groupName = 'Lead Pastors' %}
@@ -27,6 +26,9 @@
     {% assign groupName = lastSegment | Replace:'-',' ' | Capitalize %}
     {% assign groupName = groupName | Replace:'And','and' | Replace:'Kidspring','KidSpring' | Replace:'Newspring','NewSpring' %}
     {% assign groupId = staffTeams | Where:'Id',1936475 | First | Property:'ChildGroups' | Where:'Name',groupName | First | Property:'Id' %}
+    {% if groupId == '' %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
     {% assign group = staffTeams | Where:'Id',groupId | First %}
     {% assign groupName = groupName | Append:' Team' %}
     {% assign members = group.Members %}
@@ -34,6 +36,9 @@
 {% elseif pagePath contains 'campus' %}
     {% assign groupName = lastSegment | Append:' Team' | Replace:'-',' ' | Capitalize %}
     {% assign groupId = staffTeams | Where:'Id',2084074 | First | Property:'ChildGroups' | Where:'Name',groupName | First | Property:'Id' %}
+    {% if groupId == '' %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
     {% assign group = staffTeams | Where:'Id',groupId | First %}
     {% assign members = group.Members %}
     {% assign childGroups = staffTeams | Where:'Id',2084074 | First | Property:'ChildGroups' | Where:'IsPublic',true | OrderBy:'Name' %}
