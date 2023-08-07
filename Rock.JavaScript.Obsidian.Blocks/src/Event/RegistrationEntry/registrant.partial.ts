@@ -26,18 +26,41 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
+import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import RockForm from "@Obsidian/Controls/rockForm";
 import FeeField from "./feeField.partial";
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
+import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 
 const store = useStore();
+
+function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
+    const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
+
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    const comparedToFormField = formFields.find(ff => areEqual(ff.guid, rule.comparedToRegistrationTemplateFormFieldGuid));
+    if (!comparedToFormField?.attribute?.fieldTypeGuid) {
+        return false;
+    }
+
+    const fieldType = getFieldType(comparedToFormField.attribute.fieldTypeGuid);
+
+    if (!fieldType) {
+        return false;
+    }
+
+    return fieldType.doesValueMatchFilter(value, rule.comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
+}
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrant",
@@ -141,16 +164,55 @@ export default defineComponent({
                 .filter(f => !this.isWaitList || f.showOnWaitList);
         },
 
+        /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
+        currentFormFieldsAugmented(): RegistrationEntryBlockFormFieldViewModel[] {
+            const fields = JSON.parse(JSON.stringify(this.currentFormFields));
+
+            fields.forEach((value, index) => {
+                if (value.fieldSource != this.fieldSources.personField) {
+                    let isVisible = true;
+                    switch (value.visibilityRuleType) {
+                        case FilterExpressionType.GroupAll:
+                            isVisible = value.visibilityRules.every(vr => isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAllFalse:
+                            isVisible = value.visibilityRules.every(vr => !isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAny:
+                            isVisible = value.visibilityRules.some(vr => isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAnyFalse:
+                            isVisible = value.visibilityRules.some(vr => !isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        default:
+                            isVisible = true;
+                            break;
+                    }
+
+                    if (isVisible === false) {
+                        value.preHtml = "";
+                        value.postHtml = "";
+                    }
+                }
+            });
+
+            return fields;
+        },
+
         /** The current fields as pre-post items to allow pre-post HTML to be rendered */
         prePostHtmlItems(): ItemWithPreAndPostHtml[] {
-            return this.currentFormFields
+            return this.currentFormFieldsAugmented
                 .map(f => ({
                     preHtml: f.preHtml,
                     postHtml: f.postHtml,
                     slotName: f.guid
                 }));
         },
-        currentPerson(): PersonBag | null {
+        currentPerson(): CurrentPersonBag | null {
             return store.state.currentPerson;
         },
         pluralFeeTerm(): string {
@@ -183,11 +245,11 @@ export default defineComponent({
             }
 
             // Add the current person (registrant) if not already added
-            if (this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[this.currentPerson.primaryFamilyGuid]) {
-                usedFamilyGuids[this.currentPerson.primaryFamilyGuid] = true;
+            if (this.viewModel.currentPersonFamilyGuid && this.currentPerson?.fullName && !usedFamilyGuids[this.viewModel.currentPersonFamilyGuid]) {
+                usedFamilyGuids[this.viewModel.currentPersonFamilyGuid] = true;
                 options.push({
                     text: this.currentPerson.fullName,
-                    value: this.currentPerson.primaryFamilyGuid
+                    value: this.viewModel.currentPersonFamilyGuid
                 });
             }
 
@@ -205,20 +267,13 @@ export default defineComponent({
 
         /** The people that can be picked from because they are members of the same family. */
         familyMemberOptions(): ListItemBag[] {
-            const selectedFamily = this.currentRegistrant.familyGuid;
-
-            if (!selectedFamily) {
-                return [];
-            }
 
             const usedFamilyMemberGuids = this.registrationEntryState.registrants
                 .filter(r => r.personGuid && r.personGuid !== this.currentRegistrant.personGuid)
                 .map(r => r.personGuid);
 
             return this.viewModel.familyMembers
-                .filter(fm =>
-                    areEqual(fm.familyGuid, selectedFamily) &&
-                    !usedFamilyMemberGuids.includes(fm.guid))
+                .filter(fm => !usedFamilyMemberGuids.includes(fm.guid))
                 .map(fm => ({
                     text: fm.fullName,
                     value: fm.guid
@@ -353,7 +408,7 @@ export default defineComponent({
                     }
                 }
             }
-        }
+        },
     },
     watch: {
         "currentRegistrant.familyGuid"(): void {

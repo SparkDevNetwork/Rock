@@ -69,6 +69,7 @@ export type SessionRenewalResult = {
 };
 
 export type RegistrationEntryBlockViewModel = {
+    currentPersonFamilyGuid?: Guid | null;
     timeoutMinutes: number | null;
     registrantsSameFamily: RegistrantsSameFamily;
     maxRegistrants: number;

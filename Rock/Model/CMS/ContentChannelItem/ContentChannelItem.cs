@@ -173,7 +173,7 @@ namespace Rock.Model
         /// <value>
         /// The item global key.
         /// </value>
-        [MaxLength( 100 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string ItemGlobalKey { get; set; }
 

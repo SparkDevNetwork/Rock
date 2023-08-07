@@ -87,7 +87,7 @@
     const errorMessage = ref<string | null>();
 
     const stepStack = ref<AccountEntryStep[]>([]);
-    const accountEntryStep = computed<AccountEntryStep | null>(() => stepStack.value.length ? stepStack.value[stepStack.value.length - 1] : null);
+    const accountEntryStep = computed<AccountEntryStep | null | undefined>(() => stepStack.value.length ? stepStack.value[stepStack.value.length - 1] : config.accountEntryRegisterStepBox?.step || null);
 
     const registrationInfo = ref<AccountEntryRegisterRequestBox>({
         accountInfo: {
@@ -157,22 +157,16 @@
         return config.sentLoginCaption || "Your username has been emailed to you. If you've forgotten your password, the email includes a link to reset your password.";
     });
 
-    const successCaption = computed<string>(() => {
-        return config.successCaption || "{0}, Your account has been created.";
-    });
+    //#endregion
 
+    //#region Event Handlers
 
-
-        //#endregion
-
-        //#region Event Handlers
-
-        /**
-        * Event handler for the username being checked.
-        *
-        * @param username The username to check.
-        */
-        async function onCheckUsernameAvailability(username: string): Promise<void> {
+    /**
+     * Event handler for the username being checked.
+     *
+     * @param username The username to check.
+     */
+    async function onCheckUsernameAvailability(username: string): Promise<void> {
         if (config.isUsernameAvailabilityCheckDisabled) {
             isUsernameAvailable.value = null;
         }
@@ -335,37 +329,7 @@
             const response = await invokeBlockAction<AccountEntryRegisterResponseBox>("Register", { box: registrationInfo.value });
 
             if (response?.data?.step || response?.data?.step === AccountEntryStep.Registration) {
-                switch (response.data.step) {
-                    case AccountEntryStep.Completed: {
-                        showCompletedStepNext(response.data.completedStepBag);
-                        break;
-                    }
-
-                    case AccountEntryStep.ConfirmationSent: {
-                        showConfirmationSentStepNext(response.data.confirmationSentStepBag);
-                        break;
-                    }
-
-                    case AccountEntryStep.DuplicatePersonSelection: {
-                        showDuplicatePersonSelectionStepNext(response.data.duplicatePersonSelectionStepBag);
-                        break;
-                    }
-
-                    case AccountEntryStep.PasswordlessConfirmationSent: {
-                        showPasswordlessConfirmationSentStepNext(response.data.passwordlessConfirmationSentStepBag);
-                        break;
-                    }
-
-                    case AccountEntryStep.ExistingAccount: {
-                        showExistingAccountStepNext(response.data.existingAccountStepBag);
-                        break;
-                    }
-
-                    case AccountEntryStep.Registration: {
-                        showRegistrationStepNext();
-                        break;
-                    }
-                }
+                displayStep(response.data);
             }
             else {
                 showError(response?.errorMessage || "An unexpected error occurred");
@@ -459,16 +423,44 @@
         stepStack.value.push(AccountEntryStep.Registration);
     }
 
-    //#endregion
-    if (config?.step || config?.step === AccountEntryStep.Completed) {
-        showCompletedStepNext({
-                isPlainCaption: true,
-                caption: successCaption.value,
-                isRedirectAutomatic: false
-            });
-    } else {
-        showRegistrationStepNext();
+    /**
+     * Shows the "Registration" step.
+     */
+    function displayStep(data: AccountEntryRegisterResponseBox ): void {
+        switch (data.step) {
+            case AccountEntryStep.Completed: {
+                showCompletedStepNext(data.completedStepBag);
+                break;
+            }
+
+            case AccountEntryStep.ConfirmationSent: {
+                showConfirmationSentStepNext(data.confirmationSentStepBag);
+                break;
+            }
+
+            case AccountEntryStep.DuplicatePersonSelection: {
+                showDuplicatePersonSelectionStepNext(data.duplicatePersonSelectionStepBag);
+                break;
+            }
+
+            case AccountEntryStep.PasswordlessConfirmationSent: {
+                showPasswordlessConfirmationSentStepNext(data.passwordlessConfirmationSentStepBag);
+                break;
+            }
+
+            case AccountEntryStep.ExistingAccount: {
+                showExistingAccountStepNext(data.existingAccountStepBag);
+                break;
+            }
+
+            case AccountEntryStep.Registration: {
+                showRegistrationStepNext();
+                break;
+            }
+        }
     }
-    
+
+    //#endregion
+    displayStep(config.accountEntryRegisterStepBox || { step: AccountEntryStep.Registration });
     onConfigurationValuesChanged(useReloadBlock());
 </script>

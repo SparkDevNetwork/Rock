@@ -404,6 +404,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// </summary>
         private static bool InitializeSqlServerDatabaseForLocal( bool recreateArchive )
         {
+            var restoreDatabase = ( TestDatabaseHelper.DatabaseRefreshStrategy != DatabaseRefreshStrategySpecifier.Never );
+
             if ( DatabaseExists( ConnectionString ) )
             {
                 if ( recreateArchive )
@@ -420,27 +422,78 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             if ( recreateArchive )
             {
-                var fileName = GetCurrentArchiveFileName();
+                var fileName = GetArchiveFileNameForCurrentMigration();
                 DeleteArchiveFile( new FileInfo( fileName ) );
+
+                restoreDatabase = true;
             }
 
-            // Create a new database and archive it.
-            var testSource = GetOrGenerateLocalDatabaseArchive( ConnectionString, SampleDataUrl );
+            if ( restoreDatabase )
+            {
+                // Restore the database from the archive.
+                var testSource = GetOrGenerateLocalDatabaseArchive( ConnectionString, SampleDataUrl );
 
-            RestoreLocalDatabaseFromArchive( ConnectionString, testSource );
+                RestoreLocalDatabaseFromArchive( ConnectionString, testSource );
+            }
 
             RockCache.ClearAllCachedItems();
 
-            // Verify that the test database is valid.
-            var valid = ValidateSampleDataForActiveDatabase( SampleDataUrl );
-
-            if ( !valid )
+            if ( restoreDatabase )
             {
-                TestHelper.Log( $"Invalid Sample Data. Sample data key does not match the sample data set specified for this test run. To refresh the test data set, delete the existing database. [Expected=\"{SampleDataUrl}\"]" );
-                throw new Exception( $"Invalid Sample Data. Required sample data key not found in target database." );
+                // Verify that the test database is valid.
+                var valid = ValidateSampleDataForActiveDatabase( SampleDataUrl );
+
+                if ( !valid )
+                {
+                    TestHelper.Log( $"Invalid Sample Data. Sample data key does not match the sample data set specified for this test run. To refresh the test data set, delete the existing database. [Expected=\"{SampleDataUrl}\"]" );
+                    throw new Exception( $"Invalid Sample Data. Required sample data key not found in target database." );
+                }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Resets the database by using a previously stored snapshot.
+        /// </summary>
+        public static void CreateSnapshot( string snapshotName, bool overwriteExisting = false )
+        {
+            if ( !IsLocalDbInstance() )
+            {
+                throw new NotImplementedException( "Reset is not available for a remote database." );
+            }
+
+            CreateLocalDatabaseArchive( ConnectionString, snapshotName, overwriteExisting );
+        }
+
+        /// <summary>
+        /// Resets the database by using a previously stored snapshot.
+        /// </summary>
+        public static void RestoreSnapshot( string snapshotName = "default" )
+        {
+            if ( !IsLocalDbInstance() )
+            {
+                throw new NotImplementedException( "Reset is not available for a remote database." );
+            }
+
+            if ( DatabaseExists( ConnectionString ) )
+            {
+                // Remove the database from the local server.
+                DeleteDatabase( ConnectionString );
+            }
+
+            string archivePath;
+            if ( snapshotName == "default" )
+            {
+                // If the default snapshot does not exist, create it.
+                archivePath = GetArchiveFileNameForCurrentMigration();
+            }
+            else
+            {
+                archivePath = GetArchiveFileName( snapshotName );
+            }
+
+            RestoreLocalDatabaseFromArchive( ConnectionString, archivePath );
         }
 
         /// <summary>
@@ -706,9 +759,14 @@ DROP DATABASE [{name}];";
             }
         }
 
-        private static string GetCurrentArchiveFileName()
+        private static string GetArchiveFileNameForCurrentMigration()
         {
-            var archivePath = Path.Combine( GetTempPath(), $"Snapshot-{GetTargetMigration()}.zip" );
+            return GetArchiveFileName( GetTargetMigration() );
+        }
+
+        private static string GetArchiveFileName( string archiveName )
+        {
+            var archivePath = Path.Combine( GetTempPath(), $"Snapshot-{archiveName}.zip" );
 
             return archivePath;
         }
@@ -720,7 +778,7 @@ DROP DATABASE [{name}];";
         /// <returns>A string containing the path to the archive.</returns>
         private static string GetOrGenerateLocalDatabaseArchive( string connectionString, string sampleDataUrl )
         {
-            var archivePath = GetCurrentArchiveFileName();
+            var archivePath = GetArchiveFileNameForCurrentMigration();
 
             if ( File.Exists( archivePath ) )
             {
@@ -849,6 +907,89 @@ EXEC sp_detach_db '{dbName}', 'true';";
             File.Delete( logFile );
 
             TestHelper.Log( $"Test database archive created. [{archivePath}]" );
+
+            return archivePath;
+        }
+
+        /// <summary>
+        /// This method archives the local database referenced by the connection string.
+        /// </summary>
+        /// <returns>A string containing the path to the archive.</returns>
+        private static string CreateLocalDatabaseArchive( string connectionString, string snapshotName, bool overwrite = false ) //, string sampleDataUrl )
+        {
+            var archivePath = GetArchiveFileName( snapshotName );
+            if ( File.Exists( archivePath ) )
+            {
+                if ( !overwrite )
+                {
+                    throw new Exception( $"Database archive \"{ snapshotName }\" already exists." );
+                }
+
+                File.Delete( archivePath );
+            }
+
+            //
+            // Create a new database and archive it.
+            //
+            if ( string.IsNullOrWhiteSpace( connectionString ) )
+            {
+                throw new Exception( "A database connection string must be provided." );
+            }
+
+            var csbTarget = new SqlConnectionStringBuilder( connectionString );
+
+            var csbMaster = new SqlConnectionStringBuilder( connectionString );
+            csbMaster.InitialCatalog = "master";
+
+            var dbName = csbTarget.InitialCatalog;
+            var dataFile = Path.Combine( GetDataPath(), $"{dbName}_Data.mdf" );
+            var logFile = Path.Combine( GetDataPath(), $"{dbName}_Log.ldf" );
+
+            // Shrink the database and log files.
+            TestHelper.Log( $"Creating test database archive..." );
+
+            var sqlShrink = $@"USE [{dbName}];
+DBCC SHRINKFILE ([{dbName}], 1);
+DBCC SHRINKFILE ([{dbName}_Log], 1);
+USE [master];";
+
+            DbService.ExecuteCommand( csbMaster.ConnectionString, sqlShrink );
+
+            // Detach the database but leave the files intact.
+            var sqlDetach = $@"
+ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+EXEC sp_detach_db '{dbName}', 'true';";
+
+            DbService.ExecuteCommand( csbMaster.ConnectionString, sqlDetach );
+
+            // Zip up the data and log files.
+            using ( var archiveWriter = File.Create( archivePath ) )
+            {
+                using ( var zipArchive = new ZipArchive( archiveWriter, ZipArchiveMode.Create, false ) )
+                {
+                    // Add the MDF data file to the archive.
+                    var mdfEntry = zipArchive.CreateEntry( $"{dbName}.mdf" );
+                    using ( var writer = mdfEntry.Open() )
+                    {
+                        using ( var reader = File.OpenRead( dataFile ) )
+                        {
+                            reader.CopyTo( writer );
+                        }
+                    }
+
+                    // Add the LDF log file to the archive.
+                    var ldfEntry = zipArchive.CreateEntry( $"{dbName}_Log.ldf" );
+                    using ( var writer = ldfEntry.Open() )
+                    {
+                        using ( var reader = File.OpenRead( logFile ) )
+                        {
+                            reader.CopyTo( writer );
+                        }
+                    }
+                }
+            }
+
+            TestHelper.Log( $"Database archive created. [{archivePath}]" );
 
             return archivePath;
         }

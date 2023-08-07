@@ -290,7 +290,7 @@ Schedule Active = {{isScheduleActive}}
 {[mediaplayer media:'18' ]}{[endmediaplayer]}
 ";
             var expectedOutput = @"
-<div id=`mediaplayer_*` style=`--plyr-color-main:var(--brand-primary);`$></div>
+<div id=`mediaplayer_*` style=`--plyr-color-main:var(--color-primary);`$></div>
 <script>
 (function(){newRock.UI.MediaPlayer(`#mediaplayer_*`,{`autopause`:true,`autoplay`:false,`clickToPlay`:true,`controls`:`play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen`,`debug`:false,`hideControls`:true,`mediaUrl`:``,`muted`:false,`posterUrl`:``,`resumePlaying`:false,`seekTime`:10.0,`trackProgress`:true,`type`:``,`volume`:1.0,`writeInteraction`:true});})();
 </script>

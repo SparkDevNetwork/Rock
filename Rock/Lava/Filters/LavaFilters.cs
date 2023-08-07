@@ -1062,7 +1062,7 @@ namespace Rock.Lava
             }
 
             var rockStartDate = LavaDateTime.ConvertToRockDateTime( startDto.Value );
-            var nextSundayDate =  RockDateTime.GetSundayDate( rockStartDate );
+            var nextSundayDate = RockDateTime.GetSundayDate( rockStartDate );
             var output = nextSundayDate.ToShortDateString();
 
             return output;
@@ -2065,25 +2065,25 @@ namespace Rock.Lava
                     }
 
                     // Check qualifer for "TextValue" and if true return PersistedTextValue
-                    if (qualifier.Equals( "TextValue", StringComparison.OrdinalIgnoreCase ))
+                    if ( qualifier.Equals( "TextValue", StringComparison.OrdinalIgnoreCase ) )
                     {
                         return item.AttributeValues[attributeKey].PersistedTextValue;
                     }
 
                     // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
-                    if (qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ))
+                    if ( qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ) )
                     {
                         return item.AttributeValues[attributeKey].PersistedTextValue;
                     }
 
                     // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
-                    if (qualifier.Equals( "CondensedTextValue", StringComparison.OrdinalIgnoreCase ))
+                    if ( qualifier.Equals( "CondensedTextValue", StringComparison.OrdinalIgnoreCase ) )
                     {
                         return item.AttributeValues[attributeKey].PersistedCondensedTextValue;
                     }
 
                     // Check qualifer for "CondensedHtmlValue" and if true return PersistedTextValue
-                    if (qualifier.Equals( "CondensedHtmlValue", StringComparison.OrdinalIgnoreCase ))
+                    if ( qualifier.Equals( "CondensedHtmlValue", StringComparison.OrdinalIgnoreCase ) )
                     {
                         return item.AttributeValues[attributeKey].PersistedCondensedHtmlValue;
                     }
@@ -6136,7 +6136,7 @@ namespace Rock.Lava
             // not then we can assume the second parameter is for the alternate person
             if ( parameter1 is Person )
             {
-                personObject = (Person)parameter1;
+                personObject = ( Person ) parameter1;
             }
             else
             {
@@ -6221,6 +6221,49 @@ namespace Rock.Lava
             var entityType = cache.GetType().GetGenericArgumentsOfBaseType( entityCacheType )[1];
 
             return Rock.Reflection.GetIEntityForEntityType( entityType, cache.Id );
+        }
+
+        /// <summary>
+        /// Gets the IdKey hash from IEntity or an integer Id value.
+        /// </summary>
+        /// <param name="input">The input object.</param>
+        /// <returns>An <see cref="IEntity"/> object or the original <paramref name="input"/>.</returns>
+        public static string ToIdHash( object input )
+        {
+            int? entityId = null;
+
+            if ( input is int )
+            {
+                entityId = Convert.ToInt32( input );
+            }
+
+            if ( input is IEntity )
+            {
+                IEntity entity = input as IEntity;
+                entityId = entity.Id;
+            }
+
+            if ( !entityId.HasValue )
+            {
+                return null;
+            }
+
+            return IdHasher.Instance.GetHash( entityId.Value );
+        }
+
+        /// <summary>
+        /// Gets the integer value from from a key-hash string.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int? FromIdHash( string input )
+        {
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return null;
+            }
+
+            return IdHasher.Instance.GetId( input );
         }
 
         /// <summary>
@@ -6354,7 +6397,7 @@ namespace Rock.Lava
             }
 
             // If a color scheme was not provided check the request object to use the clients preference
-            if ( colorScheme.IsNotNullOrWhiteSpace() && HttpContext.Current.Request.Headers["Sec-CH-Prefers-Color-Scheme"] != null && HttpContext.Current.Request.Headers["Sec-CH-Prefers-Color-Scheme"] == "dark")
+            if ( colorScheme.IsNotNullOrWhiteSpace() && HttpContext.Current.Request.Headers["Sec-CH-Prefers-Color-Scheme"] != null && HttpContext.Current.Request.Headers["Sec-CH-Prefers-Color-Scheme"] == "dark" )
             {
                 colorSchemeValue = ColorScheme.Dark;
             }
@@ -6597,7 +6640,7 @@ namespace Rock.Lava
         public static int Hue( string input )
         {
             var color = new RockColor( input );
-            
+
             return Convert.ToInt32( color.Hue );
         }
 

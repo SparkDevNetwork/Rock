@@ -210,6 +210,11 @@ export class DataViewTreeItemProvider implements ITreeItemProvider {
     public securityGrantToken?: string | null;
 
     /**
+     * The flag sets whether only persisted data view should be shown by the picker
+     */
+    public displayPersistedOnly: boolean = false;
+
+    /**
      * Gets the child items from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -224,6 +229,7 @@ export class DataViewTreeItemProvider implements ITreeItemProvider {
             entityTypeGuidFilter: this.entityTypeGuid,
             lazyLoad: false,
             securityGrantToken: this.securityGrantToken,
+            displayPersistedOnly: this.displayPersistedOnly
         };
 
         const response = await post<TreeItemBag[]>("/api/v2/Controls/DataViewPickerGetDataViews", {}, options);

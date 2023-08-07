@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -76,73 +72,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// Attribute View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( Attribute ) )]
-    public partial class AttributeViewModelHelper : ViewModelHelper<Attribute, AttributeBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override AttributeBag CreateViewModel( Attribute model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new AttributeBag
-            {
-                IdKey = model.IdKey,
-                AbbreviatedName = model.AbbreviatedName,
-                AllowSearch = model.AllowSearch,
-                AttributeColor = model.AttributeColor,
-                DefaultPersistedCondensedHtmlValue = model.DefaultPersistedCondensedHtmlValue,
-                DefaultPersistedCondensedTextValue = model.DefaultPersistedCondensedTextValue,
-                DefaultPersistedHtmlValue = model.DefaultPersistedHtmlValue,
-                DefaultPersistedTextValue = model.DefaultPersistedTextValue,
-                DefaultValue = model.DefaultValue,
-                Description = model.Description,
-                EnableHistory = model.EnableHistory,
-                EntityTypeId = model.EntityTypeId,
-                EntityTypeQualifierColumn = model.EntityTypeQualifierColumn,
-                EntityTypeQualifierValue = model.EntityTypeQualifierValue,
-                FieldTypeId = model.FieldTypeId,
-                IconCssClass = model.IconCssClass,
-                IsActive = model.IsActive,
-                IsAnalytic = model.IsAnalytic,
-                IsAnalyticHistory = model.IsAnalyticHistory,
-                IsDefaultPersistedValueDirty = model.IsDefaultPersistedValueDirty,
-                IsGridColumn = model.IsGridColumn,
-                IsIndexEnabled = model.IsIndexEnabled,
-                IsMultiValue = model.IsMultiValue,
-                IsPublic = model.IsPublic,
-                IsRequired = model.IsRequired,
-                IsSystem = model.IsSystem,
-                Key = model.Key,
-                Name = model.Name,
-                Order = model.Order,
-                PostHtml = model.PostHtml,
-                PreHtml = model.PreHtml,
-                ShowOnBulk = model.ShowOnBulk,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -241,20 +170,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static AttributeBag ToViewModel( this Attribute model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new AttributeViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

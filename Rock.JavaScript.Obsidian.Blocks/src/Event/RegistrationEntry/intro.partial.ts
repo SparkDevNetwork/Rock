@@ -24,7 +24,7 @@ import { areEqual } from "@Obsidian/Utility/guid";
 import { getDefaultRegistrantInfo, getForcedFamilyGuid } from "./utils.partial";
 import { RegistrationEntryBlockViewModel, RegistrationEntryState } from "./types.partial";
 import { useStore } from "@Obsidian/PageState";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 
 const store = useStore();
 
@@ -51,7 +51,7 @@ export default defineComponent({
     },
     computed: {
         /** The currently authenticated person */
-        currentPerson(): PersonBag | null {
+        currentPerson(): CurrentPersonBag | null {
             return store.state.currentPerson;
         },
 

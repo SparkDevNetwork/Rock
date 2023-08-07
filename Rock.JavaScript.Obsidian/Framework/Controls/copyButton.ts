@@ -78,6 +78,7 @@ export default defineComponent({
     template: `
 <RockButton
     class="btn-copy-to-clipboard"
+    isSquare
     :onClick="copy"
     data-toggle="tooltip"
     :data-placement="tooltipPlacement"

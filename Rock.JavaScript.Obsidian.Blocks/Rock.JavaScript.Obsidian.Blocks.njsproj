@@ -34,6 +34,9 @@
     <Content Include="build\build-fast.js" />
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
+    <Content Include="src\Crm\familyPreRegistration.obs" />
+    <Content Include="src\Crm\FamilyPreRegistration\preRegistrationChild.partial.obs" />
+    <Content Include="src\Crm\FamilyPreRegistration\preRegistrationChildren.partial.obs" />
     <Content Include="src\Communication\snippetDetail.obs" />
     <Content Include="src\Communication\SnippetDetail\editPanel.partial.obs" />
     <Content Include="src\Communication\SnippetDetail\viewPanel.partial.obs" />
@@ -125,6 +128,7 @@
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
+    <Folder Include="src\Crm\FamilyPreRegistration\" />
     <Folder Include="src\Crm\PersonDetail\" />
     <Folder Include="src\Engagement\" />
     <Folder Include="src\Engagement\SignUp\" />
@@ -196,6 +200,8 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
+    <TypeScriptCompile Include="src\Crm\FamilyPreRegistration\types.partial.ts" />
+    <TypeScriptCompile Include="src\Crm\FamilyPreRegistration\utils.partial.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Crm\assessmentTypeDetail.ts" />
     <TypeScriptCompile Include="src\Crm\AssessmentTypeDetail\editPanel.partial.ts" />

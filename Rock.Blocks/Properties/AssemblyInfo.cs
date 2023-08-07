@@ -15,3 +15,6 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("e8c5f154-201f-4c67-bcdc-34787deffeae")]
 
+
+// The following type forwardings were setup in Rock 1.16.0
+[assembly:TypeForwardedTo( typeof( Rock.Blocks.IHasCustomActions ) )]

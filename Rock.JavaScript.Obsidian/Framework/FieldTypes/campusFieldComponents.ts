@@ -60,14 +60,22 @@ export const EditComponent = defineComponent({
 
         watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
+        const shouldHidePicker = computed((): boolean => {
+            return asBoolean(!props.configurationValues[ConfigurationValueKey.ForceVisible])
+            && options.value.length <= 1
+            && props.configurationValues[ConfigurationValueKey.FilterCampusTypes] == ""
+            && props.configurationValues[ConfigurationValueKey.FilterCampusStatus] == "";
+        });
+
         return {
             internalValue,
-            options
+            options,
+            shouldHidePicker
         };
     },
 
     template: `
-<DropDownList v-if="options.length > 1" v-model="internalValue" :items="options" />
+<DropDownList v-if="!shouldHidePicker" v-model="internalValue" :items="options" />
 `
 });
 

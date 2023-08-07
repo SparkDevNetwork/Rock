@@ -903,7 +903,9 @@ namespace Rock.Tests.UnitTests.Lava
         {
             LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
-                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( RockDateTime.Now, DayOfWeek.Saturday, new TimeSpan( 16, 30, 0 ) );
+                // Get the expected datetime for the test time zone.
+                var nowDateTime = TimeZoneInfo.ConvertTime( DateTime.UtcNow, timeZone );
+                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( nowDateTime, DayOfWeek.Saturday, new TimeSpan( 16, 30, 0 ) );
 
                 VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
                     new List<DateTime> { expectedDateTime },
@@ -919,7 +921,9 @@ namespace Rock.Tests.UnitTests.Lava
         {
             LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
-                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( RockDateTime.Now, DayOfWeek.Saturday, new TimeSpan(17,30,0) );
+                // Get the expected datetime for the test time zone.
+                var nowDateTime = TimeZoneInfo.ConvertTime( DateTime.UtcNow, timeZone );
+                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( nowDateTime, DayOfWeek.Saturday, new TimeSpan(17,30,0) );
 
                 VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
                     new List<DateTime> { expectedDateTime },

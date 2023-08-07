@@ -19,10 +19,12 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 import RockSuspense from "./rockSuspense";
 import LoadingIndicator from "./loadingIndicator";
 import { List } from "@Obsidian/Utility/linq";
-import TabbedContent from "./tabbedContent";
+import TabbedContent from "./tabbedContent.obs";
 import RockField from "./rockField";
 import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicAttributeCategoryBag";
 import { emptyGuid } from "@Obsidian/Utility/guid";
+import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "./itemsWithPreAndPostHtml";
+import { Guid } from "@Obsidian/Types";
 
 type CategorizedAttributes = PublicAttributeCategoryBag & {
     attributes: PublicAttributeBag[]
@@ -35,6 +37,7 @@ export default defineComponent({
         LoadingIndicator,
         RockSuspense,
         TabbedContent,
+        ItemsWithPreAndPostHtml
     },
     props: {
         modelValue: {
@@ -42,7 +45,7 @@ export default defineComponent({
             required: true
         },
         isEditMode: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: false
         },
         attributes: {
@@ -50,32 +53,54 @@ export default defineComponent({
             required: true
         },
         showEmptyValues: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: true
         },
         showAbbreviatedName: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: false
         },
         displayWithinExistingRow: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: false
         },
         displayAsTabs: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: false
         },
         showCategoryLabel: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: true
         },
+        showPrePostHtml: {
+            type: Boolean,
+            default: true
+        },
+
+        /**
+         * The total number of columns in this container.
+         *
+         * An attribute will be added in each column.
+         */
         numberOfColumns: {
-            type: Number as PropType<number>,
+            type: Number,
             default: 1
         },
         entityTypeName: {
-            type: String as PropType<string>,
+            type: String,
             default: ""
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The breakpoint to use for each column.
+         */
+        columnBreakpoint: {
+            type: String as PropType<"xs" | "sm" | "md" | "lg">,
+            default: "md"
         }
     },
 
@@ -148,6 +173,10 @@ export default defineComponent({
             return `${props.entityTypeName} Attributes`;
         });
 
+        const attributeCategoryNames = computed((): string[] => {
+            return attributeCategories.value.map(a => a.name ?? "");
+        });
+
         const columnClass = computed(() => {
             let numColumns = props.numberOfColumns;
 
@@ -165,14 +194,46 @@ export default defineComponent({
                 numColumns = 12;
             }
 
-            return `col-md-${12 / numColumns}`;
+            return `col-${props.columnBreakpoint}-${12 / numColumns}`;
         });
+
+        function getCategoryAttributes(categoryName: string): PublicAttributeBag[] {
+            return attributeCategories.value
+                .find(c => c.name === categoryName)
+                ?.attributes ?? [];
+        }
 
         const onUpdateValue = (key: string, value: string): void => {
             values.value[key] = value;
 
             emit("update:modelValue", values.value);
         };
+
+        const prePostHtmlItems = computed<Record<Guid, ItemWithPreAndPostHtml[]>>(() => {
+            const items: Record<Guid, ItemWithPreAndPostHtml[]> = {};
+
+            attributeCategories.value.forEach((ac) => {
+                items[ac.guid ?? emptyGuid] = items[ac.guid ?? emptyGuid] || [];
+
+                ac.attributes.forEach(attr => {
+                    let preHtml = attr.preHtml ?? "";
+                    let postHtml = attr.postHtml ?? "";
+
+                    if (props.numberOfColumns > 1) {
+                        preHtml = `<div class="${columnClass.value}">` + preHtml;
+                        postHtml += "</div>";
+                    }
+
+                    items[ac.guid ?? emptyGuid].push({
+                        slotName: attr.attributeGuid ?? "",
+                        preHtml,
+                        postHtml
+                    });
+                });
+            });
+
+            return items;
+        });
 
         watch(() => props.modelValue, () => {
             values.value = { ...props.modelValue };
@@ -183,9 +244,12 @@ export default defineComponent({
             validAttributes,
             values,
             attributeCategories,
+            attributeCategoryNames,
             actuallyDisplayAsTabs,
             defaultCategoryHeading,
-            columnClass
+            getCategoryAttributes,
+            columnClass,
+            prePostHtmlItems,
         };
     },
 
@@ -203,12 +267,9 @@ export default defineComponent({
             />
         </div>
 
-        <TabbedContent v-else-if="actuallyDisplayAsTabs" :tabList="attributeCategories">
-            <template #tab="{item}">
-                {{ item.name }}
-            </template>
+        <TabbedContent v-else-if="actuallyDisplayAsTabs" :tabs="attributeCategoryNames">
             <template #tabpane="{item}">
-                <div v-for="a in item.attributes" :key="a.attributeGuid">
+                <div v-for="a in getCategoryAttributes(item)" :key="a.attributeGuid">
                     <RockField
                         :isEditMode="isEditMode"
                         :attribute="a"
@@ -226,8 +287,21 @@ export default defineComponent({
                 <h4 v-if="showCategoryLabel && cat.guid == '0' && !isEditMode">{{defaultCategoryHeading}}</h4>
                 <h4 v-else-if="showCategoryLabel && cat.guid != '0'">{{cat.name}}</h4>
 
-                <div class="attribute-value-container-display row">
-                    <div :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid">
+                <div :class="{'attribute-value-container-display': true, 'row': numberOfColumns > 1}">
+                    <ItemsWithPreAndPostHtml :items="prePostHtmlItems[cat.guid]" v-if="isEditMode && showPrePostHtml" >
+                        <template v-slot:[a.attributeGuid] v-for="a in cat.attributes" :key="a.attributeGuid ?? ''">
+                            <RockField
+                                :isEditMode="isEditMode"
+                                :attribute="a"
+                                :modelValue="values[a.key]"
+                                @update:modelValue="onUpdateValue(a.key, $event)"
+                                :showEmptyValue="showEmptyValues"
+                                :showAbbreviatedName="showAbbreviatedName"
+                            />
+                        </template>
+                    </ItemsWithPreAndPostHtml>
+
+                    <div v-else :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid">
                         <RockField
                             :isEditMode="isEditMode"
                             :attribute="a"

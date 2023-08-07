@@ -128,6 +128,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlContent.Visible = isVisible;
             if ( isVisible )
             {
+                RockPage.AddCSSLink( "~/Styles/Blocks/Crm/GivingOverview.css", true );
                 ShowDetail();
             }
         }
@@ -200,11 +201,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ShowMessageIfStale()
         {
-            /* 2021-09-30 MDP 
-              
-             Rules for when giving characteristics are considered stale 
+            /* 2021-09-30 MDP
 
-            Show the ‘stale’ message when the last gift was over { TypicalFrequency + 2* Frequency Standard Deviation }   days. 
+             Rules for when giving characteristics are considered stale
+
+            Show the ‘stale’ message when the last gift was over { TypicalFrequency + 2* Frequency Standard Deviation }   days.
 
             Message should be worded as:
 
@@ -380,7 +381,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             string growthPercentDisplay;
 
             // Show growth Percent
-            // If more than 1000% show HIGH or LOW 
+            // If more than 1000% show HIGH or LOW
             if ( growthPercent > 1000 )
             {
                 growthPercentDisplay = "HIGH";

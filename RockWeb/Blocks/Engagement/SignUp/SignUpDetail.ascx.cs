@@ -192,9 +192,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
             {
                 /*
                  * 12/16/2022 - JPH
-                 * 
+                 *
                  * For the first release of this feature, we are allowing at most "Custom" and/or "Named" schedule types.
-                 * 
+                 *
                  * Reason: Sign-Up Groups / short term serving projects - simplified UI (minus weekly schedule types).
                  */
                 return this.AllowedScheduleTypes.HasFlag( ScheduleType.Custom ) || this.CurrentGroupType.AllowedScheduleTypes.HasFlag( ScheduleType.Named );
@@ -350,6 +350,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            RockPage.AddCSSLink( "~/Styles/Blocks/Engagement/SignUpDetail.css" );
 
             nbNotAuthorizedToView.Text = EditModeMessage.NotAuthorizedToView( Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
@@ -1437,7 +1439,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                         else
                         {
                             // If we got here, this means:
-                            //  1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and exisingGroupLocation now point to the same object).
+                            //  1) The existing opportunity's GroupLocation did not change (however, groupLocationToSave and existingGroupLocation now point to the same object).
                             //  2) We found an existing Schedule based on the previous Schedule Id.
                             //  3) The last thing we need to do is compare the existing Schedule with the new/edited instance.
 
@@ -2351,18 +2353,18 @@ namespace RockWeb.Blocks.Engagement.SignUp
             {
                 /*
                  * 12/7/2022 - JPH
-                 * 
+                 *
                  * We're excluding the "Project Type" attribute from this <Rock:AttributeValuesContainer /> control,
                  * and will add it manually as a control managed outside of the AVC. This is for two reasons:
-                 * 
+                 *
                  *   1. This block should only show reminder-related controls if the Project Type == "In-Person",
                  *      and the AVC doesn't provide an easy way to hook into the change event of its child controls.
                  *      Building the Project Type's control outside of the AVC will give us more flexibility in this regard.
                  *   2. We want to display the Project Type attribute as a set of radio buttons,
                  *      which the defined value field type doesn't currently support.
-                 * 
+                 *
                  * Note that any/all other attributes tied to this group/group type WILL be managed by the AVC.
-                 * 
+                 *
                  * Reason: Sign-Up Groups / short term serving projects
                  */
                 var excludedAttributes = group.Attributes

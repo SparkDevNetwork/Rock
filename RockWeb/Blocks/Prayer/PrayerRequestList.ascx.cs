@@ -126,6 +126,8 @@ namespace RockWeb.Blocks.Prayer
 
             gPrayerRequests.GetColumnByHeaderText( "Prayer Count" ).Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
             gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
+
+            AddDynamicControls();
         }
 
         /// <summary>
@@ -212,7 +214,6 @@ namespace RockWeb.Blocks.Prayer
             cbShowExpired.Checked = gfFilter.GetFilterPreference( FilterSetting.ShowExpired ).AsBooleanOrNull() ?? false;
 
             BindAttributes();
-            AddDynamicControls();
         }
 
         /// <summary>

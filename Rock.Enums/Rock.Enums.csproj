@@ -46,6 +46,9 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="AI\ModerationFlags.cs" />
+    <Compile Include="AI\ChatMessageRole.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Engagement\SignUp\RegisterMode.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailScheduleSelectionMode.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailLocationSelectionMode.cs" />

@@ -1238,6 +1238,33 @@ namespace Rock.Client.Enums.Core.Grid
 
 }
 
+namespace Rock.Client.Enums.AI
+{
+    /// <summary>
+    /// </summary>
+    public enum ChatMessageRole
+    {
+        User = 0x0,
+        System = 0x1,
+        Assistant = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    [Flags]
+    public enum ModerationFlags
+    {
+        None = 0x0,
+        Hate = 0x1,
+        Threat = 0x2,
+        SelfHarm = 0x4,
+        Sexual = 0x8,
+        SexualMinor = 0x10,
+        Violent = 0x20,
+    }
+
+}
+
 namespace Rock.Client.Enums.Core
 {
     /// <summary>
@@ -1280,6 +1307,20 @@ namespace Rock.Client.Enums.Communication
         ShowUnreadReplies = 0x0,
         ShowAllReplies = 0x1,
         ShowAllMessages = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Crm.FamilyPreRegistration
+{
+    /// <summary>
+    /// </summary>
+    public enum CommunicationPreference
+    {
+        None = 0x0,
+        Email = 0x1,
+        SMS = 0x2,
+        PushNotification = 0x3,
     }
 
 }

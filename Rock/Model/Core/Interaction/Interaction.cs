@@ -27,8 +27,29 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a interaction <see cref="Rock.Model.Interaction"/>.
+    /// Represents an <see cref="Rock.Model.Interaction"/> which holds information
+    /// about an aspect of an operation with Rock such as 'page views',
+    ///  communication 'clicks/opens', etc.
+    /// <para>When querying this model, it's critical to always use the
+    /// InteractionComponentId to narrow down the number of records that need to
+    /// be searched. There is an index on that property/column and it will
+    /// dramatically improve the performance of these queries.
+    /// Additionally, when querying for Interactions from a particular date range,
+    /// it is advisable to use the InteractionDateKey property instead if the
+    /// InteractionDateTime property. Apart from having an Index on the InteractionDateKey
+    /// property the string comparison of the DateKey values provides a performance boost</para>
     /// </summary>
+    /// <example>
+    /// <code>
+    /// SELECT [PersonAliasId], COUNT(1)
+    /// FROM [Interaction] i
+    /// INNER JOIN [InteractionComponent] comp ON i.[InteractionComponentId] = comp.[Id]
+    /// WHERE
+    /// 	comp.[InteractionChannelId] = 3 -- External Website
+    /// 	AND [InteractionDateKey] >= 20230501 AND [InteractionDateKey] &lt;= 20230509
+    /// GROUP BY i.[PersonAliasId]
+    /// </code>
+    /// </example>
     [RockDomain( "Core" )]
     [NotAudited]
     [Table( "Interaction" )]
@@ -55,6 +76,14 @@ namespace Rock.Model
          *      Includes InteractionDateTime, InteractionComponentId
          *      This was added for RockWeb.Blocks.Reporting.InteractionSessionList
          *      
+         *  InteractionComponentId, InteractionDateKey
+         *      Includes PersonAliasId, InteractionSessionId, InteractionTimeToServe, EntityId, InteractionSummary
+         *      
+         *  SessionStartDateKey
+         *      Includes DeviceTypeId, DurationSeconds, InteractionSessionLocationId, InteractionCount, InteractionChannelId
+         *      
+         *  InteractionDateKey
+         *      Includes InteractionComponentId, PersonAliasId, InteractionSessionId, InteractionTimeToServe
          */
 
         #region Entity Properties

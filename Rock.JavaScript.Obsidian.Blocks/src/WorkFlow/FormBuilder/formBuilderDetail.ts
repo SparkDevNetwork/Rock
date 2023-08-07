@@ -18,7 +18,7 @@
 import { nextTick } from "vue";
 import { computed, defineComponent, ref, watch } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -338,6 +338,448 @@ export default defineComponent({
     },
 
     template: `
+<v-style>
+    .inline-svg {
+        display: inline-flex;
+        width: 1.25em;
+        height: 1em;
+        line-height: 1;
+        fill: currentColor;
+    }
+
+    .form-builder-detail {
+        --zone-border: #ebebeb;
+        --zone-configurable-border: #f5faff;
+        --zone-configurable-hover-border: #dfe0e1;
+        --zone-action-bg: #f5faff;
+        --zone-action-border: #dde7f2;
+        --zone-action-color: #89a1b9;
+        --zone-action-hover-color: #737475;
+        --zone-active-color: #c9eaf9;
+        --zone-active-action-color: #83bad3;
+        --zone-highlight-color: #ee7725;
+        --zone-highlight-action-text-color: #e4bda2;
+        --flex-col-gutter: 30px;
+        --zone-border-radius: 6px;
+    }
+
+    .form-builder-detail .zone-body .configurable-zone > .zone-content-container > .zone-content {
+        pointer-events: none;
+    }
+
+    .form-builder-detail .zone-body > div > .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-builder-detail .configurable-zone {
+        position: relative;
+        display: flex;
+        margin-bottom: 12px;
+        transition: border-color 108ms cubic-bezier(.2, .2, .38, .9);
+    }
+
+    .form-builder-detail .configurable-zone.zone-section {
+        flex-grow: 1;
+    }
+
+    .form-builder-detail .configurable-zone.zone-section > .zone-actions {
+        position: relative;
+    }
+
+    .form-builder-detail .configurable-zone > .zone-content-container {
+        display: flex;
+        flex-grow: 1;
+        background: #fff;
+        border: 2px dotted var(--zone-border);
+        border-right: 2px solid var(--zone-action-border);
+        border-radius: var(--zone-border-radius) 0 0 var(--zone-border-radius);
+    }
+
+    .form-builder-detail .configurable-zone > .zone-content-container > .zone-content {
+        flex-grow: 1;
+    }
+
+    .form-builder-detail .configurable-zone > .zone-content-container > .zone-content > .zone-body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        padding: 20px;
+    }
+
+    .form-builder-detail .configurable-zone > .zone-actions {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        background-color: var(--zone-action-bg);
+        border: 2px solid var(--zone-action-border);
+        border-left: 0;
+    }
+
+    .form-builder-detail .configurable-zone.active > .zone-content-container {
+        border-color: var(--zone-active-color);
+    }
+
+    .form-builder-detail .configurable-zone.active > .zone-actions {
+        background-color: var(--zone-active-color);
+        border-color: var(--zone-active-color);
+    }
+
+    .form-builder-detail .configurable-zone.highlight > .zone-content-container {
+        border-color: var(--zone-highlight-color);
+        border-right-style: dotted;
+    }
+
+    .form-builder-detail .form-section {
+        display: flex;
+        flex: 1 1 auto;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        min-height: 50px;
+        margin: 0 calc(-.5 * var(--flex-col-gutter)) -10px;
+    }
+
+    .form-builder-detail .form-layout .form-template-item {
+        padding: 16px;
+        margin: 0 0 12px;
+        font-size: 18px;
+    }
+
+    .form-builder-detail .form-layout .form-template-item.form-template-item-field {
+        flex-basis: calc(100% - var(--flex-col-gutter) - 40px);
+        margin: 0 calc(.5 * var(--flex-col-gutter) + 40px) 12px calc(.5 * var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .form-section .configurable-zone {
+        --zone-border: var(--zone-configurable-border);
+    }
+
+    .form-builder-detail .form-section .configurable-zone > .zone-actions {
+        border-style: dotted;
+        border-radius: 0 var(--zone-border-radius) var(--zone-border-radius) 0;
+        opacity: 0;
+        transition: opacity 116ms cubic-bezier(.2, .2, .38, .9), transform 116ms cubic-bezier(.2, .2, .38, .9);
+        transform: scaleX(0);
+        transform-origin: 0% 0%;
+    }
+
+    .form-builder-detail .form-section .configurable-zone > .zone-content-container {
+        border-right: 2px dotted var(--zone-border);
+    }
+
+    .form-builder-detail .form-section .configurable-zone.active,
+    .form-builder-detail .form-section .configurable-zone:hover {
+        --zone-border: var(--zone-configurable-hover-border);
+    }
+
+    .form-builder-detail .form-section .configurable-zone.active > .zone-content-container,
+    .form-builder-detail .form-section .configurable-zone:hover > .zone-content-container {
+        border-right-color: transparent;
+    }
+
+    .form-builder-detail .form-section .configurable-zone.active > .zone-actions,
+    .form-builder-detail .form-section .configurable-zone:hover > .zone-actions {
+        opacity: 1;
+        transform: scaleX(1);
+        transform-origin: 0% 0%;
+    }
+
+    .form-builder-detail .flex-col {
+        margin-right: calc(.5 * var(--flex-col-gutter));
+        margin-left: calc(.5 * var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-1 {
+        flex-basis: calc(8.3333% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-2 {
+        flex-basis: calc(16.6666% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-3 {
+        flex-basis: calc(25% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-4 {
+        flex-basis: calc(33.3333% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-5 {
+        flex-basis: calc(41.6666% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-6 {
+        flex-basis: calc(50% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-7 {
+        flex-basis: calc(58.3333% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-8 {
+        flex-basis: calc(66.6666% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-9 {
+        flex-basis: calc(75% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-10 {
+        flex-basis: calc(83.3333% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-11 {
+        flex-basis: calc(91.6666% - var(--flex-col-gutter));
+    }
+
+    .form-builder-detail .flex-col-12 {
+        flex-basis: calc(100% - var(--flex-col-gutter));
+    }
+
+    .form-builder-grow {
+        position: relative;
+        display: flex;
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    .form-builder-container {
+        display: flex;
+        flex: 1 1 auto;
+        overflow: hidden;
+    }
+
+    .form-builder-scroll {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    .form-layout {
+        position: relative;
+        display: flex;
+        flex: 1 1 0;
+        flex-direction: column;
+        padding: 1rem;
+        overflow-y: auto;
+    }
+
+    .form-layout-body {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .form-sidebar {
+        position: relative;
+        z-index: 20;
+        display: flex;
+        flex: 1 0 auto;
+        flex-direction: column;
+        min-width: 320px;
+        max-width: 320px;
+        overflow: hidden;
+        background-color: ;
+        border-right: 1px solid #dfe0e1;
+    }
+
+    .form-sidebar .panel-body {
+        padding: 12px 16px;
+    }
+
+    .form-sidebar .panel-title {
+        padding: 0 16px !important;
+        font-size: 16px;
+    }
+
+    .sidebar-back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        color: #fff;
+        cursor: pointer;
+        background-color: #484848;
+    }
+
+    .sidebar-back:hover {
+        background-color: #3d3d3d;
+    }
+
+    .sidebar-header {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        font-size: 14px;
+        font-weight: 600;
+        border-bottom: 1px solid #dfe0e1;
+    }
+
+    .sidebar-header .title {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+    }
+
+    .sidebar-header .icon {
+        width: 1em;
+        height: 1em;
+        margin-right: 8px;
+        font-size: 1.125rem;
+    }
+
+    .sidebar-body {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .sidebar-panels {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .sidebar-panels .panel-default {
+        margin-bottom: 0;
+        border: 0;
+        border-top: 1px solid var(--panel-border);
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .sidebar-panels > div:nth-child(2) > .panel {
+        border-top: 0;
+    }
+
+    .sidebar-panels > div:last-child {
+        border-bottom: 1px solid var(--panel-border);
+    }
+
+    .sidebar-panels .panel-heading {
+        background: var(--theme-lightest);
+        border-bottom: 0;
+        transition: .1s background-color ease-in-out;
+    }
+
+    .sidebar-panels .panel-heading > .panel-aside {
+        color: #737475;
+    }
+
+    .sidebar-panels .panel-heading:hover {
+        background: #fcfcfc;
+    }
+
+    .sidebar-panels .panel-heading:hover > .panel-aside {
+        color: var(--text-color);
+    }
+
+    .sidebar-panels .panel-heading:active {
+        background: #dfe0e1;
+    }
+
+    .form-template-item-list {
+        --gutter: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: calc(-1 * var(--gutter));
+        margin-right: calc(-.5 * var(--gutter));
+        margin-left: calc(-.5 * var(--gutter));
+    }
+
+    .form-template-item-list .form-template-item {
+        flex-shrink: 0;
+        width: calc(50% - var(--gutter));
+        max-width: 100%;
+        margin-top: var(--gutter);
+        margin-right: calc(var(--gutter) * .5);
+        margin-left: calc(var(--gutter) * .5);
+    }
+
+    .zone-action {
+        z-index: 10;
+        width: 100% !important;
+        padding: 6px 4px;
+        color: var(--zone-action-color);
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .zone-action:hover {
+        color: var(--zone-action-hover-color);
+    }
+
+    .configurable-zone.active .zone-action {
+        color: var(--zone-active-action-color);
+    }
+
+    .zone-action.zone-action-delete:hover {
+        color: var(--color-danger);
+    }
+
+    .zone-action-move {
+        margin-bottom: auto;
+        cursor: grab;
+    }
+
+    .section-header {
+        display: flex;
+    }
+
+    .section-header-content {
+        flex-grow: 1;
+        align-items: center;
+    }
+
+    .form-template-item {
+        display: flex;
+        align-items: center;
+        padding: 7px 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: grab;
+        background-color: #fff;
+        border: 1px solid #e1e1e1;
+        border-left-width: 3px;
+        border-radius: 3px;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);
+        transition: all 108ms cubic-bezier(.2, .2, .38, .9);
+        transform: scale(1);
+    }
+
+    .form-template-item > .fa {
+        margin-right: 6px;
+    }
+
+    .form-template-item > .icon {
+        width: 18px;
+        height: 18px;
+        margin-right: 3px;
+    }
+
+    .form-template-item > .text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .form-template-item:hover {
+        border-color: var(--color-primary);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px -1px rgba(0, 0, 0, .1);
+        transform: scale(1.02);
+    }
+
+    .form-template-item.form-template-item-section {
+        border-left-color: #009ce3;
+    }
+</v-style>
+
 <NotificationBox v-if="blockError" alertType="warning">
     {{ blockError }}
 </NotificationBox>

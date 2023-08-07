@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Examples
     {
         #region Fields
 
-        private const string DEFINED_TYPE_ROUTE = "/admintools/general/defined-type/";
+        private const string DEFINED_TYPE_ROUTE = "/admin/general/defined-types/";
 
         #endregion Fields
 
@@ -446,8 +446,33 @@ namespace RockWeb.Blocks.Examples
                         pageReference.QueryString["EntityType"] = entityType.Guid.ToString();
 
                         lClassName.Text = mClass.Name;
+                        lActualTableName.Text = "";
+
+                        // Check if there is a TableAttribute.
+                        if ( System.Attribute.IsDefined( type, typeof( TableAttribute ) ) )
+                        {
+                            // Get the custom attribute.
+                            TableAttribute attribute = ( TableAttribute ) System.Attribute.GetCustomAttribute( type, typeof( TableAttribute ) );
+                            string tableName = attribute.Name;
+
+                            // Check if the table name is different than the class name.
+                            if ( !tableName.Equals( lClassName.Text ) )
+                            {
+                                lActualTableName.Text = "<small>[" + tableName + "]</small>";
+                            }
+                        }
+
                         hlAnchor.NavigateUrl = pageReference.BuildUrl();
                         lClassDescription.Text = mClass.Comment != null ? mClass.Comment.Summary : string.Empty;
+                        lClassExample.Text = ExampleNode( mClass );
+                        if ( divClass.HasCssClass( "mb-4" ) )
+                        {
+                            divClass.RemoveCssClass( "mb-4" );
+                        }
+                        if ( lClassDescription.Text.IsNotNullOrWhiteSpace() || lClassExample.Text.IsNotNullOrWhiteSpace())
+                        {
+                            divClass.AddCssClass( "mb-4" );
+                        }
                         lClasses.Text = ClassNode( mClass );
 
                         pnlClassDetail.Visible = true;
@@ -556,6 +581,27 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Examples the node.
+        /// </summary>
+        /// <param name="mClass">The m class.</param>
+        /// <returns></returns>
+        private string ExampleNode(MClass mClass)
+        {
+            if (!string.IsNullOrWhiteSpace(mClass.Comment.Example))
+            {
+                return $@"
+<h4>Example</h4>
+<div class=""well"">
+    {mClass.Comment.Example}
+</div>";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Reads the XML comments from the Rock assembly XML file.
         /// </summary>
         /// <param name="rockDll">The rock DLL.</param>
@@ -624,6 +670,7 @@ namespace RockWeb.Blocks.Examples
                     xmlComment.Value = name.Element( "value" ).ValueSafe();
                     xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
                     xmlComment.Returns = name.Element( "returns" ).ValueSafe();
+                    xmlComment.Example = name.Element( "example" ).ValueSafe();
                 }
             }
             catch
@@ -750,6 +797,11 @@ namespace RockWeb.Blocks.Examples
                 innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, match.Value, updatedValue );
                 match = match.NextMatch();
             }
+
+            innerXml = innerXml.Replace( "<para>", "<p>" ).Replace( "</para>", "</p>" );
+            innerXml = innerXml.Replace( "<c>", "<code>" ).Replace( "</c>", "</code>" );
+            innerXml = innerXml.Replace( "<example>", "<p>" ).Replace( "</example>", "</p>" );
+            innerXml = innerXml.Replace( "<code>", "<pre>" ).Replace( "</code>", "</pre>" );
             return innerXml;
         }
 
@@ -915,6 +967,8 @@ namespace RockWeb.Blocks.Examples
         public string[] Params { get; set; }
 
         public string Returns { get; set; }
+
+        public string Example { get; set; }
     }
 
     #endregion

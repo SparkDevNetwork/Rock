@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,64 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// Interaction View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( Interaction ) )]
-    public partial class InteractionViewModelHelper : ViewModelHelper<Interaction, InteractionBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override InteractionBag CreateViewModel( Interaction model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new InteractionBag
-            {
-                IdKey = model.IdKey,
-                Campaign = model.Campaign,
-                ChannelCustom1 = model.ChannelCustom1,
-                ChannelCustom2 = model.ChannelCustom2,
-                ChannelCustomIndexed1 = model.ChannelCustomIndexed1,
-                Content = model.Content,
-                EntityId = model.EntityId,
-                InteractionComponentId = model.InteractionComponentId,
-                InteractionData = model.InteractionData,
-                InteractionDateTime = model.InteractionDateTime,
-                InteractionEndDateTime = model.InteractionEndDateTime,
-                InteractionLength = model.InteractionLength,
-                InteractionSessionId = model.InteractionSessionId,
-                InteractionSummary = model.InteractionSummary,
-                InteractionTimeToServe = model.InteractionTimeToServe,
-                Medium = model.Medium,
-                Operation = model.Operation,
-                PersonalDeviceId = model.PersonalDeviceId,
-                PersonAliasId = model.PersonAliasId,
-                RelatedEntityId = model.RelatedEntityId,
-                RelatedEntityTypeId = model.RelatedEntityTypeId,
-                Source = model.Source,
-                Term = model.Term,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -205,20 +143,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static InteractionBag ToViewModel( this Interaction model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new InteractionViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

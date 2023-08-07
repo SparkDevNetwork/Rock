@@ -134,17 +134,31 @@ namespace Rock.Model
                 return null;
             }
 
-            // Look up and validate the discount by the code
+            // Look up and validate the discount by the code unless the registration has already been saved with the discount
             if ( discountCode.IsNotNullOrWhiteSpace() )
             {
-                var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
-
-                context.Discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, discountCode );
-
-                if ( context.Discount == null )
+                if ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() )
                 {
-                    errorMessage = "The discount code is not valid";
-                    return null;
+                    var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
+
+                    context.Discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, discountCode );
+
+                    if ( context.Discount == null )
+                    {
+                        errorMessage = "The discount code is not valid";
+                        return null;
+                    }
+                }
+                else
+                {
+                    var registrationDiscount = new RegistrationTemplateDiscountService( new RockContext() ).GetDiscountsForRegistrationInstance( registrationInstanceId ).Where( d => d.Code == discountCode ).FirstOrDefault();
+                    if ( registrationDiscount != null )
+                    {
+                        context.Discount = new RegistrationTemplateDiscountWithUsage
+                        {
+                            RegistrationTemplateDiscount = registrationDiscount
+                        };
+                    }
                 }
             }
 

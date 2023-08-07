@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.IO.Compression;
+using System.IO;
 using System.Web.UI;
 
 using Rock.Web.UI;
@@ -66,6 +68,46 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack )
             {
                 BindGrid();
+            }
+
+            ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( lbDownload );
+        }
+
+        /// <summary>
+        /// Downloads the log files from the filesystem as a zipped folder
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDownload_Click(object sender, EventArgs e)
+        {
+            var logFiles = Rock.Logging.RockLogger.Log.LogFiles;
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, true))
+                {
+                    foreach (var file in logFiles)
+                    {
+                        var entryName = Path.GetFileName(file);
+                        var entry = zip.CreateEntry(entryName);
+                        entry.LastWriteTime = System.IO.File.GetLastWriteTime(file);
+                        using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var entryStream = entry.Open())
+                        {
+                            fileStream.CopyTo(entryStream);
+                        }
+                    }
+                }
+
+                byte[] bytes = ms.ToArray();
+
+                Response.ContentType = "application/octet-stream";
+                Response.AddHeader("content-disposition", "attachment; filename= RockLogs.zip");
+                Response.BufferOutput = true;
+                Response.BinaryWrite(bytes);
+                Response.Flush();
+                Response.SuppressContent = true;
+                System.Web.HttpContext.Current.ApplicationInstance.CompleteRequest();
             }
         }
         #endregion

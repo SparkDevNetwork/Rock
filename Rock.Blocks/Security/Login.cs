@@ -37,11 +37,12 @@ namespace Rock.Blocks.Security
     /// <summary>
     /// Allows the user to authenticate.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Login" )]
     [Category( "Obsidian > Security" )]
     [Description( "Allows the user to authenticate." )]
     [IconCssClass( "fa fa-user-lock" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -230,7 +231,7 @@ namespace Rock.Blocks.Security
     [Rock.SystemGuid.EntityTypeGuid( "D9482EF9-F774-4E37-AC84-8B340CBCA364" )]
     [Rock.SystemGuid.BlockTypeGuid( "5437C991-536D-4D9C-BE58-CBDB59D1BBB3" )]
 
-    public class Login : RockObsidianBlockType
+    public class Login : RockBlockType
     {
         #region Categories
 
@@ -410,7 +411,7 @@ namespace Rock.Blocks.Security
         #region IRockObsidianBlockType Implementation
 
         /// <inheritdoc/>
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
@@ -738,7 +739,8 @@ namespace Rock.Blocks.Security
         /// <returns>The current page URL.</returns>
         private string GetCurrentPageUrl()
         {
-            return $"{this.RequestContext.RootUrlPath}page/{PageCache.Id}";
+            var rootUrl = this.RequestContext.RootUrlPath?.TrimEnd( '/' );
+            return $"{rootUrl}/page/{PageCache.Id}";
         }
 
         /// <summary>

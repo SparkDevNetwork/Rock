@@ -167,18 +167,31 @@
                                                     </div>
                                                 </div>
                                             </asp:PlaceHolder>
+
                                             <asp:PlaceHolder ID="phGiveAsBusiness" runat="server" Visible="false">
                                                 <asp:HiddenField ID="hfBusinessesLoaded" runat="server" />
                                                 <Rock:RockRadioButtonList ID="cblBusiness" runat="server" Label="Business" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="cblBusinessOption_SelectedIndexChanged" />
                                                 <Rock:RockTextBox ID="txtBusinessName" runat="server" Label="Business Name" />
                                             </asp:PlaceHolder>
+
                                             <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="Address" />
-                                            <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
-                                            <Rock:EmailBox ID="txtEmail" runat="server" Label="Email"></Rock:EmailBox>
+
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <Rock:EmailBox ID="txtEmail" runat="server" Label="Email"></Rock:EmailBox>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
+                                                </div>
+                                            </div>
+                                            
+                                            <Rock:RockCheckBox ID="cbSmsOptIn" runat="server" Visible="false"/>
                                             <Rock:RockCheckBox ID="cbGiveAnonymously" runat="server" Text="Give Anonymously" />
+
                                             <asp:PlaceHolder ID="phBusinessContact" runat="server" Visible="false">
                                                 <hr />
                                                 <h4>Business Contact</h4>
+
                                                 <div class="row">
                                                     <div class="col-sm-6">
                                                         <Rock:RockTextBox ID="txtBusinessContactFirstName" runat="server" Label="First Name" />
@@ -187,8 +200,18 @@
                                                         <Rock:RockTextBox ID="txtBusinessContactLastName" runat="server" Label="Last Name" />
                                                     </div>
                                                 </div>
-                                                <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
-                                                <Rock:RockTextBox ID="txtBusinessContactEmail" runat="server" Label="Email"></Rock:RockTextBox>
+
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <Rock:RockTextBox ID="txtBusinessContactEmail" runat="server" Label="Email"></Rock:RockTextBox>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
+                                                    </div>
+                                                </div>
+
+                                                <Rock:RockCheckBox ID="cbBusinessContactSmsOptIn" runat="server" Visible="false" />
+
                                             </asp:PlaceHolder>
                                         </fieldset>
                                     </div>

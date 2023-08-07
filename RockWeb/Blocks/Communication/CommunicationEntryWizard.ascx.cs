@@ -249,6 +249,9 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Communication/EmailEditor.css", true );
+            RockPage.AddCSSLink( "~/Styles/Blocks/Shared/Devices.css", true );
+
             // Tell the browsers to not cache. This will help prevent browser using stale communication wizard stuff after navigating away from this page
             Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
             Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
@@ -3674,6 +3677,7 @@ function onTaskCompleted( resultData )
                 }
 
                 var recipientPersonsLookup = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
+                    .ToList()
                     .Select( a => new
                     {
                         PersonId = a.Id,

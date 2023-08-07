@@ -15,14 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -125,7 +128,7 @@ namespace RockWeb.Blocks.Administration
                 gPageBlocks.GridReorder += gPageBlocks_GridReorder;
                 gPageBlocks.GridRebind += gPageBlocks_GridRebind;
 
-                LoadBlockTypes( !Page.IsPostBack );
+                LoadBlockTypes( !Page.IsPostBack, _Page.Layout.Site.SiteType );
 
                 string script = string.Format(
                     @"Sys.Application.add_load(function () {{
@@ -187,7 +190,7 @@ namespace RockWeb.Blocks.Administration
                 liSite.RemoveCssClass( "active" );
                 divSite.RemoveCssClass( "active" );
             }
-            else if( hfOption.Value == "Layout" )
+            else if ( hfOption.Value == "Layout" )
             {
                 liPage.RemoveCssClass( "active" );
                 divPage.RemoveCssClass( "active" );
@@ -622,7 +625,9 @@ namespace RockWeb.Blocks.Administration
         /// <summary>
         /// Loads the block types.
         /// </summary>
-        private void LoadBlockTypes( bool registerBlockTypes )
+        /// <param name="registerBlockTypes">If <c>true</c> then a search for unregistered blocks will be performed.</param>
+        /// <param name="siteType">The type of site the to use when filtering supported block types.</param>
+        private void LoadBlockTypes( bool registerBlockTypes, SiteType siteType )
         {
             if ( registerBlockTypes )
             {
@@ -639,31 +644,15 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            // Get a list of BlockTypes that does not include Mobile block types.
-            var allExceptMobileBlockTypes = BlockTypeCache.All();
-            foreach ( var cachedBlockType in BlockTypeCache.All().Where( b => string.IsNullOrEmpty( b.Path ) ) )
+            List<BlockTypeCache> blockTypesToDisplay = BlockTypeService.BlockTypesToDisplay( siteType );
+
+            var blockTypes = blockTypesToDisplay.Select( b => new
             {
-                try
-                {
-                    var blockCompiledType = cachedBlockType.GetCompiledType();
-
-                    if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
-                    {
-                        allExceptMobileBlockTypes.Remove( cachedBlockType );
-                    }
-                }
-                catch ( Exception )
-                {
-                    // Intentionally ignored
-                }
-            }
-
-            var blockTypes = allExceptMobileBlockTypes.Select( b => new {
                 b.Id,
                 b.Name,
                 b.Category,
                 b.Description,
-                IsObsidian = typeof( Rock.Blocks.IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() )
+                IsObsidian = typeof( IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() )
             } ).ToList();
 
             ddlBlockType.Items.Clear();

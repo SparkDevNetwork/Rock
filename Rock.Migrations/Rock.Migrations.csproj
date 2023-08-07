@@ -116,6 +116,62 @@
     <Compile Include="Migrations\202306011959060_CodeGenerated_20230601.designer.cs">
       <DependentUpon>202306011959060_CodeGenerated_20230601.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202306082032176_AiSetup.cs" />
+    <Compile Include="Migrations\202306082032176_AiSetup.designer.cs">
+      <DependentUpon>202306082032176_AiSetup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306121854027_NamePronunciationOverrideAddedToPerson.cs" />
+    <Compile Include="Migrations\202306121854027_NamePronunciationOverrideAddedToPerson.designer.cs">
+      <DependentUpon>202306121854027_NamePronunciationOverrideAddedToPerson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306131734421_UpdateInteractionSessionIndices.cs" />
+    <Compile Include="Migrations\202306131734421_UpdateInteractionSessionIndices.designer.cs">
+      <DependentUpon>202306131734421_UpdateInteractionSessionIndices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306151802148_Rollup_20230615.cs" />
+    <Compile Include="Migrations\202306151802148_Rollup_20230615.designer.cs">
+      <DependentUpon>202306151802148_Rollup_20230615.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306151844225_CodeGenerated_20230615.cs" />
+    <Compile Include="Migrations\202306151844225_CodeGenerated_20230615.designer.cs">
+      <DependentUpon>202306151844225_CodeGenerated_20230615.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306261626455_UpdateContentChannelItemSlugLength.cs" />
+    <Compile Include="Migrations\202306261626455_UpdateContentChannelItemSlugLength.designer.cs">
+      <DependentUpon>202306261626455_UpdateContentChannelItemSlugLength.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306291812377_Rollup_20230629.cs" />
+    <Compile Include="Migrations\202306291812377_Rollup_20230629.designer.cs">
+      <DependentUpon>202306291812377_Rollup_20230629.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306291842040_CodeGenerated_20230629.cs" />
+    <Compile Include="Migrations\202306291842040_CodeGenerated_20230629.designer.cs">
+      <DependentUpon>202306291842040_CodeGenerated_20230629.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.cs" />
+    <Compile Include="Migrations\202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.designer.cs">
+      <DependentUpon>202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202307111932377_ObservabilitySetup.cs" />
+    <Compile Include="Migrations\202307111932377_ObservabilitySetup.designer.cs">
+      <DependentUpon>202307111932377_ObservabilitySetup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202307112114079_Rollup_20230711.cs" />
+    <Compile Include="Migrations\202307112114079_Rollup_20230711.designer.cs">
+      <DependentUpon>202307112114079_Rollup_20230711.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202307121922371_PersistWorkflowIdColumn.cs" />
+    <Compile Include="Migrations\202307121922371_PersistWorkflowIdColumn.designer.cs">
+      <DependentUpon>202307121922371_PersistWorkflowIdColumn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202307131737155_Rollup_20230713.cs" />
+    <Compile Include="Migrations\202307131737155_Rollup_20230713.designer.cs">
+      <DependentUpon>202307131737155_Rollup_20230713.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202307131911270_CodeGenerated_20230713.cs" />
+    <Compile Include="Migrations\202307131911270_CodeGenerated_20230713.designer.cs">
+      <DependentUpon>202307131911270_CodeGenerated_20230713.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1709,6 +1765,48 @@
     <EmbeddedResource Include="Migrations\202306011959060_CodeGenerated_20230601.resx">
       <DependentUpon>202306011959060_CodeGenerated_20230601.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306082032176_AiSetup.resx">
+      <DependentUpon>202306082032176_AiSetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306121854027_NamePronunciationOverrideAddedToPerson.resx">
+      <DependentUpon>202306121854027_NamePronunciationOverrideAddedToPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306131734421_UpdateInteractionSessionIndices.resx">
+      <DependentUpon>202306131734421_UpdateInteractionSessionIndices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306151802148_Rollup_20230615.resx">
+      <DependentUpon>202306151802148_Rollup_20230615.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306151844225_CodeGenerated_20230615.resx">
+      <DependentUpon>202306151844225_CodeGenerated_20230615.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306261626455_UpdateContentChannelItemSlugLength.resx">
+      <DependentUpon>202306261626455_UpdateContentChannelItemSlugLength.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306291812377_Rollup_20230629.resx">
+      <DependentUpon>202306291812377_Rollup_20230629.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306291842040_CodeGenerated_20230629.resx">
+      <DependentUpon>202306291842040_CodeGenerated_20230629.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.resx">
+      <DependentUpon>202306301640149_UpdatePrimaryAliasIdColumnToPersistedColumn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202307111932377_ObservabilitySetup.resx">
+      <DependentUpon>202307111932377_ObservabilitySetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202307112114079_Rollup_20230711.resx">
+      <DependentUpon>202307112114079_Rollup_20230711.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202307121922371_PersistWorkflowIdColumn.resx">
+      <DependentUpon>202307121922371_PersistWorkflowIdColumn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202307131737155_Rollup_20230713.resx">
+      <DependentUpon>202307131737155_Rollup_20230713.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202307131911270_CodeGenerated_20230713.resx">
+      <DependentUpon>202307131911270_CodeGenerated_20230713.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
     </EmbeddedResource>
@@ -2889,6 +2987,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Migrations\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
+    <None Include="Migrations\UpdateChartShortcode.sql" />
+    <None Include="Migrations\202306151802148_UpdateChartShortcode.sql" />
     <Content Include="Migrations\Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication.sql">
       <DependentUpon>202302092033593_Rollup_20230209.cs</DependentUpon>
     </Content>

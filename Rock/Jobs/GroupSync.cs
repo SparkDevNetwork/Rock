@@ -103,7 +103,7 @@ namespace Rock.Jobs
 
             if ( groupsChangedCount > 0 )
             {
-                resultSb.AppendLine( $"{circleSuccess} {result.DeletedMemberCount} {"person".PluralizeIf( result.DeletedMemberCount != 1 ).Titleize()} Deleted" );
+                resultSb.AppendLine( $"{circleSuccess} {result.DeletedMemberCount} {"person".PluralizeIf( result.DeletedMemberCount != 1 ).Titleize()} Removed" );
                 resultSb.AppendLine( $"{circleSuccess} {result.AddedMemberCount} {"person".PluralizeIf( result.AddedMemberCount != 1 ).Titleize()} Added" );
             }
 

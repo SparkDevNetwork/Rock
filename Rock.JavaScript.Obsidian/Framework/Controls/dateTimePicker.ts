@@ -220,7 +220,7 @@ export default defineComponent({
     },
 
     template: `
-<RockFormField formGroupClasses="date-picker" #default="{uniqueId}" name="datepicker" v-model.lazy="internalDateValue">
+<RockFormField formGroupClasses="date-time-picker" #default="{uniqueId}" name="datepicker" v-model.lazy="internalDateValue">
     <div class="control-wrapper">
         <div class="form-control-group">
             <div class="form-row">
@@ -230,7 +230,7 @@ export default defineComponent({
                         <i class="fa fa-calendar"></i>
                     </span>
                 </div>
-                <BasicTimePicker v-model="internalTimeValue" :disabled="isCurrent" />
+                <BasicTimePicker v-model="internalTimeValue" :disabled="isCurrent" hideClear />
                 <div v-if="displayCurrentOption" class="input-group">
                     <div class="checkbox">
                         <label title="">

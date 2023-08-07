@@ -35,12 +35,13 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular media folder.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Media Folder Detail" )]
     [Category( "Cms" )]
     [Description( "Displays the details of a particular media folder." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -48,7 +49,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "29cf7521-2dcd-467a-98fa-1c28c16c8b69" )]
     [Rock.SystemGuid.BlockTypeGuid( "662af7bb-5b61-43c6-bda6-a6e7aab8fc00" )]
-    public class MediaFolderDetail : RockObsidianDetailBlockType
+    public class MediaFolderDetail : RockDetailBlockType
     {
         #region Keys
 
@@ -65,6 +66,9 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
+
         #region Methods
 
         /// <inheritdoc/>
@@ -78,7 +82,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<MediaFolder>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<MediaFolder>();
 
                 return box;
             }

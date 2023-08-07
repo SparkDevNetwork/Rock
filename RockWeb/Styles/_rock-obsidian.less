@@ -45,14 +45,14 @@
         padding: 10px;
         margin: 2px;
         color: #616161;
-        transition: color 0.2s, background-color 0.2s, border-radius 0.2s;
+        transition: color .2s, background-color .2s, border-radius .2s;
 
         &:hover {
           color: #212121;
         }
 
         &.active {
-          background-color: rgba(0, 0, 0, 0.05);
+          background-color: rgba(0, 0, 0, .05);
           border-radius: 4px;
         }
       }
@@ -140,34 +140,32 @@
 
 .picker.picker-obsidian {
   width: initial;
-  max-width: 600px;
 
   > .picker-label {
-    width: 100%;
     max-width: initial;
-
-    .fa.fa-times {
-      margin-top: 3px;
-      margin-right: 12px;
-      color: rgba(0, 0, 0, 0.25);
-      opacity: 0;
-      transition: opacity 0.3s, color 0.3s;
-
-      &:hover {
-        color: rgba(0, 0, 0, 0.5);
-      }
-    }
   }
 
-  > .picker-label:hover .fa.fa-times {
-    opacity: 1;
+  .picker-select-none {
+    display: none;
   }
 
-  &.picker-show-clear .picker-label span {
-    width: ~"calc(100% - 68px)";
+  &.picker-show-clear .picker-select-none {
+    display: block;
   }
 
   &.picker-full-width {
     max-width: initial;
   }
+}
+
+// rockslide Vue transition
+.rockslide-enter-active,
+.rockslide-leave-active {
+  transition: all .6s ease;
+}
+
+.rockslide-enter,
+.rockslide-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
 }

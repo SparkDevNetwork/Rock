@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using System;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -26,7 +26,10 @@ namespace Rock.Tasks
 {
     /// <summary>
     /// Sends an email to group leaders whenever a new registration adds a registrant to their group
+    /// There is a spelling error in the naming of this class. A new class with the correct spelling has been made. This class is dead code.
     /// </summary>
+    [Obsolete( "Use ProcessSendRegistrationNotification instead.", true )]
+    [RockObsolete( "1.16" )]
     public sealed class ProcesSendRegistrationNotification : BusStartedTask<ProcesSendRegistrationNotification.Message>
     {
         /// <summary>

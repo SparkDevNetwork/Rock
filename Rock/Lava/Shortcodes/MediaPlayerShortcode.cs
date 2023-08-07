@@ -385,7 +385,7 @@ so you can customize this to be exactly what you want.</p>
             settings.AddOrIgnore( ParameterKeys.HideControlsStopped, "false" );
             settings.AddOrIgnore( ParameterKeys.Media, "" );
             settings.AddOrIgnore( ParameterKeys.Muted, "false" );
-            settings.AddOrIgnore( ParameterKeys.PrimaryColor, "var(--brand-primary)" );
+            settings.AddOrIgnore( ParameterKeys.PrimaryColor, "var(--color-primary)" );
             settings.AddOrIgnore( ParameterKeys.RelatedEntityId, "" );
             settings.AddOrIgnore( ParameterKeys.RelatedEntityTypeId, "" );
             settings.AddOrIgnore( ParameterKeys.SeekTime, "10" );
@@ -470,7 +470,7 @@ so you can customize this to be exactly what you want.</p>
             var elementId = $"mediaplayer_{Guid.NewGuid()}";
 
             // Construct the CSS style for this media player.
-            var style = $"--plyr-color-main: {( primaryColor.IsNotNullOrWhiteSpace() ? primaryColor : "var(--brand-primary)" )};";
+            var style = $"--plyr-color-main: {( primaryColor.IsNotNullOrWhiteSpace() ? primaryColor : "var(--color-primary)" )};";
             style += ( width.IsNotNullOrWhiteSpace() ? $" width:{width}" : "" );
 
             // Construct the JavaScript to initialize the player.

@@ -34,6 +34,9 @@ export type DataViewPickerGetDataViewsOptionsBag = {
      */
     defaultIconCssClass?: string | null;
 
+    /** Gets if the dataView Picker should show only persisted data views */
+    displayPersistedOnly: boolean;
+
     /**
      * Gets or sets the item property value to compare against. This should
      * be either an integer-string, Guid-string or plain string for

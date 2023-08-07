@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 9 )]
     [BooleanField( "Display Security Column", "Should the Security column be displayed?", false, "", 10 )]
     [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 11 )]
-    [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 12 )]
+    [CustomDropdownListField( "Limit to Active Status", "Select which groups (and groupmembers) to show, based on active status. Select [All] to filter by any status. Selecting Active will not show inactive/archived groups/groupmembers.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 12, Key = AttributeKey.LimittoActiveStatus )]
     [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 13 )]
     [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 14 )]
     [BooleanField( "Allow Add", "Should block support adding new group?", true, "", 15 )]
@@ -119,6 +119,7 @@ namespace RockWeb.Blocks.Groups
             public const string GroupPickerType = "GroupPickerType";
             public const string RootGroup = "RootGroup";
             public const string LimittoSecurityRoleGroups = "LimittoSecurityRoleGroups";
+            public const string LimittoActiveStatus = "LimittoActiveStatus";
         }
 
         #endregion
@@ -775,7 +776,7 @@ namespace RockWeb.Blocks.Groups
                 lElevatedSecurityLevelField.Visible = onlySecurityGroups && GroupListGridMode == GridListGridMode.GroupList;
             }
 
-            var qryGroups = groupService.Queryable()
+            var qryGroups = groupService.AsNoFilter()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
 
             var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
@@ -788,7 +789,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            string limitToActiveStatus = GetAttributeValue( "LimittoActiveStatus" );
+            string limitToActiveStatus = GetAttributeValue( AttributeKey.LimittoActiveStatus );
 
             bool showActive = true;
             bool showInactive = true;
@@ -816,6 +817,10 @@ namespace RockWeb.Blocks.Groups
                 {
                     showInactive = false;
                 }
+                else
+                {
+                    showActive = false;
+                }
             }
 
             var groupTypePurposeValue = gfSettings.GetFilterPreference( "Group Type Purpose" ).AsIntegerOrNull();
@@ -829,7 +834,7 @@ namespace RockWeb.Blocks.Groups
                 if ( personContext != null )
                 {
                     // limit to Groups that the person is a member of
-                    var qry = new GroupMemberService( rockContext ).Queryable( true )
+                    var qry = new GroupMemberService( rockContext ).Queryable( true, true )
                         .Where( m => m.PersonId == personContext.Id )
                         .Join( qryGroups, gm => gm.GroupId, g => g.Id, ( gm, g ) => new { Group = g, GroupMember = gm } );
 
@@ -837,12 +842,12 @@ namespace RockWeb.Blocks.Groups
                     if ( showActive && !showInactive )
                     {
                         // Show only active Groups and active Memberships.
-                        qry = qry.Where( gmg => gmg.Group.IsActive && gmg.GroupMember.GroupMemberStatus == GroupMemberStatus.Active );
+                        qry = qry.Where( gmg => gmg.Group.IsActive && !gmg.Group.IsArchived && gmg.GroupMember.GroupMemberStatus == GroupMemberStatus.Active && !gmg.GroupMember.IsArchived );
                     }
                     else if ( !showActive )
                     {
                         // Show only inactive Groups or inactive Memberships.
-                        qry = qry.Where( gmg => !gmg.Group.IsActive || gmg.GroupMember.GroupMemberStatus == GroupMemberStatus.Inactive );
+                        qry = qry.Where( gmg => !gmg.Group.IsActive || gmg.Group.IsArchived || gmg.GroupMember.IsArchived || gmg.GroupMember.GroupMemberStatus == GroupMemberStatus.Inactive );
                     }
 
                     if ( groupTypePurposeValue.HasValue && gfSettings.Visible )

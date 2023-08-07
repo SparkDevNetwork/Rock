@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -108,100 +104,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// GroupType View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( GroupType ) )]
-    public partial class GroupTypeViewModelHelper : ViewModelHelper<GroupType, GroupTypeBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override GroupTypeBag CreateViewModel( GroupType model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new GroupTypeBag
-            {
-                IdKey = model.IdKey,
-                AdministratorTerm = model.AdministratorTerm,
-                AllowAnyChildGroupType = model.AllowAnyChildGroupType,
-                AllowedScheduleTypes = ( int ) model.AllowedScheduleTypes,
-                AllowGroupSync = model.AllowGroupSync,
-                AllowMultipleLocations = model.AllowMultipleLocations,
-                AllowSpecificGroupMemberAttributes = model.AllowSpecificGroupMemberAttributes,
-                AllowSpecificGroupMemberWorkflows = model.AllowSpecificGroupMemberWorkflows,
-                AttendanceCountsAsWeekendService = model.AttendanceCountsAsWeekendService,
-                AttendancePrintTo = ( int ) model.AttendancePrintTo,
-                AttendanceReminderFollowupDays = model.AttendanceReminderFollowupDays,
-                AttendanceReminderSendStartOffsetMinutes = model.AttendanceReminderSendStartOffsetMinutes,
-                AttendanceReminderSystemCommunicationId = model.AttendanceReminderSystemCommunicationId,
-                AttendanceRule = ( int ) model.AttendanceRule,
-                DefaultGroupRoleId = model.DefaultGroupRoleId,
-                Description = model.Description,
-                EnableGroupHistory = model.EnableGroupHistory,
-                EnableGroupTag = model.EnableGroupTag,
-                EnableInactiveReason = model.EnableInactiveReason,
-                EnableLocationSchedules = model.EnableLocationSchedules,
-                EnableRSVP = model.EnableRSVP,
-                EnableSpecificGroupRequirements = model.EnableSpecificGroupRequirements,
-                GroupAttendanceRequiresLocation = model.GroupAttendanceRequiresLocation,
-                GroupAttendanceRequiresSchedule = model.GroupAttendanceRequiresSchedule,
-                GroupCapacityRule = ( int ) model.GroupCapacityRule,
-                GroupMemberTerm = model.GroupMemberTerm,
-                GroupsRequireCampus = model.GroupsRequireCampus,
-                GroupStatusDefinedTypeId = model.GroupStatusDefinedTypeId,
-                GroupTerm = model.GroupTerm,
-                GroupTypeColor = model.GroupTypeColor,
-                GroupTypePurposeValueId = model.GroupTypePurposeValueId,
-                GroupViewLavaTemplate = model.GroupViewLavaTemplate,
-                IconCssClass = model.IconCssClass,
-                IgnorePersonInactivated = model.IgnorePersonInactivated,
-                InheritedGroupTypeId = model.InheritedGroupTypeId,
-                IsCapacityRequired = model.IsCapacityRequired,
-                IsIndexEnabled = model.IsIndexEnabled,
-                IsSchedulingEnabled = model.IsSchedulingEnabled,
-                IsSystem = model.IsSystem,
-                LocationSelectionMode = ( int ) model.LocationSelectionMode,
-                Name = model.Name,
-                Order = model.Order,
-                RequiresInactiveReason = model.RequiresInactiveReason,
-                RequiresReasonIfDeclineSchedule = model.RequiresReasonIfDeclineSchedule,
-                RSVPReminderOffsetDays = model.RSVPReminderOffsetDays,
-                RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
-                ScheduleCancellationWorkflowTypeId = model.ScheduleCancellationWorkflowTypeId,
-                ScheduleConfirmationEmailOffsetDays = model.ScheduleConfirmationEmailOffsetDays,
-                ScheduleConfirmationLogic = ( int ) model.ScheduleConfirmationLogic,
-                ScheduleConfirmationSystemCommunicationId = model.ScheduleConfirmationSystemCommunicationId,
-                ScheduleReminderEmailOffsetDays = model.ScheduleReminderEmailOffsetDays,
-                ScheduleReminderSystemCommunicationId = model.ScheduleReminderSystemCommunicationId,
-                SendAttendanceReminder = model.SendAttendanceReminder,
-                ShowAdministrator = model.ShowAdministrator,
-                ShowConnectionStatus = model.ShowConnectionStatus,
-                ShowInGroupList = model.ShowInGroupList,
-                ShowInNavigation = model.ShowInNavigation,
-                ShowMaritalStatus = model.ShowMaritalStatus,
-                TakesAttendance = model.TakesAttendance,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -328,20 +230,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static GroupTypeBag ToViewModel( this GroupType model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new GroupTypeViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

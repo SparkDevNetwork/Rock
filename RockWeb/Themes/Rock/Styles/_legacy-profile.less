@@ -1,0 +1,494 @@
+
+.personprofilebar-bio,
+.personprofilebar-badge,
+.personprofilebar-family,
+.pagetabs,
+.person-content {
+  padding: 15px;
+}
+
+.personprofilebar-bio {
+  position: relative;
+  padding-top: 50px;
+  color: @persondetails-bio-color;
+  background-color: @persondetails-bio-bg;
+  border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
+
+  .action-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 401; // get this above the fluid-box photo
+    display: flex;
+    height: 40px;
+
+    .action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      color: @persondetails-bio-color;
+      border: 0 solid darken(@persondetails-bio-bg, @const-border-darken-amt);
+      border-width: 0 0 1px 1px;
+    }
+
+    .action-extended {
+      width: auto;
+      .dropdown {
+        display: flex;
+        align-items: center;
+        height: 100%;
+      }
+
+      .dropdown-menu {
+        right: -1px;
+      }
+    }
+  }
+
+  .name {
+    margin-top: 0;
+    margin-bottom: 4px;
+    text-align: center;
+
+    .full-name,
+    .previous-names {
+      display: none;
+      font-size: @font-size-lg;
+    }
+
+    .firstname {
+      font-size: @persondetails-bio-firstname-font-size;
+      font-weight: @persondetails-bio-firstname-font-weight;
+    }
+  }
+
+  .labels {
+    margin-bottom: @spacing-sm-px;
+    text-align: center;
+  }
+
+  .nav li .persondetails-actions {
+    padding: 2px 15px 0;
+    color: inherit;
+
+    &:hover,
+    &:focus {
+      background-color: transparent;
+    }
+  }
+
+  .photo {
+    position: relative;
+    max-width: 200px;
+    padding: 5px;
+    margin: 0 auto;
+    background-color: @persondetails-bio-photo-border;
+
+    .following-status {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 500;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      border-top: 70px solid @persondetails-bio-photo-following;
+      border-right: 70px solid transparent;
+      opacity: .4;
+      transition: 1s;
+
+      i {
+        position: absolute;
+        top: -61px;
+        left: 8px;
+        font-size: 24px;
+        color: @white;
+        opacity: 0;
+        transition: 1s;
+      }
+
+      &:hover i {
+        opacity: .5;
+      }
+
+      &.following {
+        opacity: 1;
+
+        i {
+          opacity: 1;
+        }
+      }
+    }
+
+    a.fluidbox-opened + .following-status {
+      // hide the following fold if the photo is zoomed
+      opacity: 0 !important;
+    }
+
+    img {
+      width: 100%;
+      max-width: 200px;
+      height: auto;
+      max-height: 200px;
+    }
+
+    .fluidbox-ghost {
+      cursor: -webkit-zoom-in;
+      cursor: -moz-zoom-in;
+    }
+
+    .fluidbox-opened .fluidbox-ghost {
+      cursor: -webkit-zoom-out;
+      cursor: -moz-zoom-out;
+    }
+  }
+
+  .social-icons {
+    text-align: center;
+
+    .btn {
+      font-size: @font-size-base;
+      color: #fff;
+      background-color: @gray;
+      border: 0;
+      border-radius: @border-radius-base;
+
+      &:hover {
+        opacity: .8;
+      }
+
+      &:first-child {
+        margin-left: 0;
+      }
+    }
+  }
+
+  .taglist {
+    margin-top: @spacing-md-px;
+  }
+
+  .demographics {
+    margin-top: @spacing-md-px;
+    text-align: center;
+
+    @media @md {
+      float: left;
+      width: 50%;
+    }
+  }
+
+  .personcontact {
+    padding-bottom: 30px;
+    margin-top: @spacing-md-px;
+    text-align: center;
+
+    @media @md {
+      float: left;
+      width: 50%;
+    }
+
+    .email {
+      .email-status {
+        i {
+          color: @persondetails-bio-color;
+        }
+
+        &.do-not-email i {
+          color: @brand-danger;
+        }
+
+        &.not-active i {
+          color: @brand-warning;
+        }
+      }
+    }
+  }
+}
+
+.persondetails-group {
+  header {
+    position: relative;
+    display: flex;
+    margin: 0 -15px;
+    background-color: @persondetails-bio-bg;
+    border-top: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
+    border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
+
+    h1 {
+      float: left;
+      margin: 10px 15px;
+      font-size: @font-size-h4;
+      font-weight: 600;
+      line-height: 25px;
+    }
+
+    .action-wrapper {
+      float: right;
+      margin-left: auto;
+
+      .action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        float: right;
+        width: 45px;
+        height: 100%;
+        text-align: center;
+        cursor: pointer;
+        border-left: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
+      }
+    }
+  }
+
+  // Fix Extra Padding On the First Family
+  .group-members:first-child &:first-child {
+    header {
+      margin: -15px -15px 0;
+      border-top-width: 0;
+    }
+  }
+
+  .group-details {
+    margin-bottom: 12px;
+  }
+
+  .groupmembers {
+    .member {
+      a {
+        display: block;
+        padding: 8px;
+        border-radius: @border-radius-base;
+        .clearfix();
+      }
+
+      .person-image {
+        position: relative;
+        overflow: hidden;
+        background-color: #fafafa;
+        background-position: center;
+        background-size: cover;
+        border: none;
+        border-color: @persondetails-familybar-photo-bg;
+        border-radius: 50%;
+
+        &::after {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          pointer-events: none;
+          content: "";
+          border: 1px solid rgba(0,0,0,.0975);
+          border-radius: 50%;
+        }
+      }
+
+      &:hover {
+        background-color: darken(@persondetails-familybar-bg, 8%);
+        border-radius: @border-radius-base;
+
+      }
+    }
+  }
+
+  .addresses ul {
+    margin: 0;
+    list-style: none;
+
+    li {
+      display: block;
+      margin-bottom: @spacing-md-px;
+      clear: both;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    h4 {
+      margin: 0;
+      font-size: @font-size-h6;
+      font-weight: @font-weight-semibold;
+    }
+
+    .address {
+      .actions {
+        a {
+          padding: 1px;
+        }
+      }
+    }
+
+    & a.map,
+    & div.actions,
+    & div.address {
+      float: left;
+      margin-right: 12px;
+    }
+  }
+}
+
+.personprofilebar-badge {
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0; // Fixes Inconsistent Spacing
+  color: @persondetails-badge-color;
+  background-color: @persondetails-badge-bg;
+  border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
+
+  .rockbadge-container {
+    margin: @spacing-sm-px 0;
+    text-align: center;
+
+    .badge {
+      display: inline-block; // fixes issue in default browser on Android
+      padding: 3px 6px 0;
+      background-color: inherit;
+
+      &:empty {
+        display: none;
+      }
+
+      .tooltip-inner {
+        max-width: 300px;
+        padding: 12px;
+      }
+    }
+
+    .badge-grid {
+      margin: -5px 0;
+    }
+
+    .badge-debug {
+      position: absolute;
+      right: 12px;
+      z-index: 9999;
+      width: 900px;
+      text-align: left;
+    }
+
+    .rockbadge-grid {
+      margin: -5px 0;
+    }
+  }
+}
+
+.personprofilebar-family {
+  min-height: 60px;
+  color: @persondetails-familybar-color;
+  background: @persondetails-familybar-bg;
+  border-bottom: 1px solid darken(@persondetails-familybar-bg, @const-border-darken-amt);
+
+  a {
+    color: @persondetails-familybar-color;
+  }
+}
+
+// person profile
+.personprofile {
+  margin: -5px -15px 0;
+
+  @media (min-width: @screen-md-min) {
+    margin: -35px -35px 0;
+  }
+}
+
+.personprofilebar-bio,
+.personprofilebar-family {
+  small {
+    // lighten up small elements a bit
+    opacity: .7;
+  }
+}
+
+.personprofilebar-bio {
+  .name {
+    font-weight: 700;
+  }
+
+  .name .firstname {
+    font-size: .488em;
+    font-weight: @font-weight-light;
+  }
+
+  .previous-names {
+    font-weight: @font-weight-light;
+  }
+}
+
+.personprofilebar-bio,
+.personprofilebar-family {
+  small {
+    // lighten up small elements a bit
+    opacity: .7;
+  }
+}
+
+.personprofilebar-bio {
+  .name {
+    font-weight: 700;
+  }
+
+  .name .firstname {
+    font-size: .488em;
+    font-weight: @font-weight-light;
+  }
+
+  .previous-names {
+    font-weight: @font-weight-light;
+  }
+}
+
+
+@media (min-width: @screen-sm-min), print {
+  // bio bar
+  .personprofilebar-bio {
+    padding: @spacing-md-px;
+
+    .name {
+      text-align: left;
+
+      .full-name,
+      .previous-names {
+        display: inline;
+      }
+    }
+
+    .labels {
+      text-align: right;
+    }
+
+    .photo {
+      margin: 0;
+    }
+
+    .demographics {
+      text-align: left;
+    }
+
+    .personcontact {
+      padding-bottom: 0;
+      text-align: left;
+    }
+
+    .social-icons {
+      text-align: left;
+
+      .icon {
+        float: left;
+      }
+    }
+  }
+
+  .personprofilebar-badge {
+    .rockbadge-container {
+      text-align: left;
+
+      &:last-child {
+        text-align: right;
+      }
+    }
+  }
+}
