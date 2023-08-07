@@ -48,6 +48,9 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
+    <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
+    <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveResponseBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
