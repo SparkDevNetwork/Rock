@@ -17,7 +17,7 @@
 import { computed, defineComponent, inject, ref, watch } from "vue";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import ListBox from "@Obsidian/Controls/listBox";
+import ListBox from "@Obsidian/Controls/listBox.obs";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import TextBox from "@Obsidian/Controls/textBox";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";

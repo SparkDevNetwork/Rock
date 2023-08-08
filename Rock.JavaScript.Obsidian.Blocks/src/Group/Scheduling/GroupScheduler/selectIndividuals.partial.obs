@@ -121,7 +121,7 @@
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import Modal from "@Obsidian/Controls/modal";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { ResourceListSourceType, ResourceListSourceTypeDescription } from "@Obsidian/Enums/Blocks/Group/Scheduling/resourceListSourceType";

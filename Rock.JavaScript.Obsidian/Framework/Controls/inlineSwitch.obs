@@ -1,0 +1,57 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="custom-control custom-switch">
+        <input v-model="internalValue" :id="uniqueId" class="custom-control-input" type="checkbox" />
+        <label :class="labelClass" :for="uniqueId">
+            <template v-if="label">{{ label }}</template>
+            <template v-else>&nbsp;</template>
+        </label>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isBold: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        uniqueId: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalUniqueId = `inline-switch-${newGuid()}`;
+
+    const uniqueId = computed((): string => props.uniqueId || internalUniqueId);
+
+    const labelClass = computed((): string[] => {
+        const classes = ["custom-control-label"];
+
+        if (props.isBold) {
+            classes.push("custom-control-label-bold");
+        }
+
+        return classes;
+    });
+</script>

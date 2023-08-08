@@ -58,7 +58,7 @@
 </template>
 
 <script lang="ts" setup>
-    import LocationItemPicker from "./locationItemPicker";
+    import LocationItemPicker from "./locationItemPicker.obs";
     import LocationAddressPicker from "./locationAddressPicker.obs";
     import GeoPicker from "./geoPicker.obs";
     import RadioButtonList from "./radioButtonList";

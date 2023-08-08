@@ -80,7 +80,7 @@
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import InputGroupDropDown from "@Obsidian/Controls/inputGroupDropDown.obs";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter";

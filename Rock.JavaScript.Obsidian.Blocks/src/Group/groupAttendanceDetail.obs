@@ -231,7 +231,7 @@
     import { AttendanceSortByDelegate, AttendanceFilterByDelegate, AttendanceGroupByDelegate, ModalOptionsBag } from "./GroupAttendanceDetail/types.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
-    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import Modal from "@Obsidian/Controls/modal";
     import Panel from "@Obsidian/Controls/panel.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker";

@@ -17,7 +17,7 @@
 
 import { Component, defineComponent, markRaw, PropType } from "vue";
 import NotificationBox from "./notificationBox.obs";
-import LoadingIndicator from "./loadingIndicator";
+import LoadingIndicator from "./loadingIndicator.obs";
 
 export default defineComponent({
     name: "ComponentFromUrl",

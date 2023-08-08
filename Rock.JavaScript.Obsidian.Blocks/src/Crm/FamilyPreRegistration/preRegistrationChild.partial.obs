@@ -190,7 +190,7 @@
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";

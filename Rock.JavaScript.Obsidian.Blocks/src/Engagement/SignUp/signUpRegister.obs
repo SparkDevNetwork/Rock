@@ -79,7 +79,7 @@
     import RegisterAnonymous from "./SignUpRegister/registerAnonymous.partial.obs";
     import RegisterFamily from "./SignUpRegister/registerFamily.partial.obs";
     import RegisterGroup from "./SignUpRegister/registerGroup.partial.obs";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";

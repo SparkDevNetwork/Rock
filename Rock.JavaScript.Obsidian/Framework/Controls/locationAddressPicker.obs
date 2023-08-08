@@ -48,7 +48,7 @@
     import { FormError } from "@Obsidian/Utility/form";
     import RockValidation from "./rockValidation";
     import { validateAddress } from "@Obsidian/Utility/address";
-    import Loading from "./loading";
+    import Loading from "./loading.obs";
 
     const props = defineProps({
         ...standardRockFormFieldProps,

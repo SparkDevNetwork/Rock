@@ -19,7 +19,7 @@ import { getFieldEditorProps } from "./utils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import LocationList from "@Obsidian/Controls/locationList.obs";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
+import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 import { ConfigurationValueKey } from "./locationListField.partial";

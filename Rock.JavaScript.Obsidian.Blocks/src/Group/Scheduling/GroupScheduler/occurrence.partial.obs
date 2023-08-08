@@ -58,7 +58,7 @@
     import ScheduledResource from "./scheduledResource.partial.obs";
     import SelectIndividuals from "./selectIndividuals.partial.obs";
     import { IScheduleProgress, ISchedulerResourceAttend, ReloadAllOccurrences, ReloadOccurrencesContainingResource, ReloadScheduleOccurrences, ResourceAction } from "./types.partial";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { NoDragScroll as vNoDragScroll } from "@Obsidian/Directives/dragScroll";

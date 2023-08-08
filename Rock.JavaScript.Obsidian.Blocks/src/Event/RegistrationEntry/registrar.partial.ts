@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject } from "vue";
-import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
+import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
 import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList";
 import StaticFormControl from "@Obsidian/Controls/staticFormControl";

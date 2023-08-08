@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { computed, defineComponent, onMounted, PropType, ref } from "vue";
-import LoadingIndicator from "./loadingIndicator";
+import LoadingIndicator from "./loadingIndicator.obs";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { onSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
 import { GatewayEmitStrings } from "@Obsidian/Enums/Controls/gatewayEmitStrings";

@@ -197,7 +197,7 @@
     import RockForm from "@Obsidian/Controls/rockForm";
     import PanelWidget from "@Obsidian/Controls/panelWidget";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";

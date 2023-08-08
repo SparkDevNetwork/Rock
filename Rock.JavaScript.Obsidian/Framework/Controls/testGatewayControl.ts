@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType, ref } from "vue";
-import LoadingIndicator from "./loadingIndicator";
+import LoadingIndicator from "./loadingIndicator.obs";
 import TextBox from "./textBox";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { onSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";

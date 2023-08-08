@@ -45,7 +45,7 @@
     import { AddressControlConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/addressControlConfigurationBag";
     import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
     import { post } from "@Obsidian/Utility/http";
-    import Loading from "./loading";
+    import Loading from "./loading.obs";
 
 
     type FullAddress = Required<{

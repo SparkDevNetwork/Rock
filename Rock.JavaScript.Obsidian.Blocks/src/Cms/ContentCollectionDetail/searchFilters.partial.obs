@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import InlineSwitch from "@Obsidian/Controls/inlineSwitch";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
     import Modal from "@Obsidian/Controls/modal";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";

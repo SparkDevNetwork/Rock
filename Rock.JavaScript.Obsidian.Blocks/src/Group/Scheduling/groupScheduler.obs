@@ -253,7 +253,7 @@
     import OccurrenceDate from "./GroupScheduler/occurrenceDate.partial.obs";
     import SelectFilters from "./GroupScheduler/selectFilters.partial.obs";
     import { NavigationUrlKey, ReloadAllOccurrences, ReloadOccurrencesContainingResource } from "./GroupScheduler/types.partial";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";

@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import HelpBlock from "./helpBlock";
+import HelpBlock from "./helpBlock.obs";
 
 export default defineComponent({
     name: "RockLabel",

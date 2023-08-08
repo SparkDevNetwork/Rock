@@ -92,7 +92,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Kpi from "@Obsidian/Controls/kpi.obs";
     import ExperienceActionButtons from "./experienceActionButtons.partial.obs";
-    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

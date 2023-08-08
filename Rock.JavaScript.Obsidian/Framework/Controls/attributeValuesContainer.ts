@@ -17,7 +17,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import RockSuspense from "./rockSuspense";
-import LoadingIndicator from "./loadingIndicator";
+import LoadingIndicator from "./loadingIndicator.obs";
 import { List } from "@Obsidian/Utility/linq";
 import TabbedContent from "./tabbedContent.obs";
 import RockField from "./rockField";

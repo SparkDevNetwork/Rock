@@ -210,7 +210,7 @@
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
-    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import Modal from "@Obsidian/Controls/modal";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";

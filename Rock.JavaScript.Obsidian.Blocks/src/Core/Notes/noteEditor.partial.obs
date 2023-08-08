@@ -107,7 +107,7 @@
     import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
-    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
     import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";

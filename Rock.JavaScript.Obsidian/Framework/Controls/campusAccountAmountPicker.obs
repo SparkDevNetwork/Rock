@@ -24,7 +24,7 @@
     import RockFormField from "./rockFormField";
     import CurrencyBox from "./currencyBox.obs";
     import CampusPicker from "./campusPicker.obs";
-    import Loading from "./loading";
+    import Loading from "./loading.obs";
     import { Guid } from "@Obsidian/Types";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { useVModelPassthrough, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";

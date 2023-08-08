@@ -50,7 +50,7 @@
     import AttributeValuesContainer from "./attributeValuesContainer";
     import TextBox from "./textBox";
     import RockButton from "./rockButton";
-    import Loading from "./loading";
+    import Loading from "./loading.obs";
     import NotificationBox from "./notificationBox.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";

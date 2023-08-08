@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import LoadingIndicator from "./loadingIndicator";
+import LoadingIndicator from "./loadingIndicator.obs";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 
 /*

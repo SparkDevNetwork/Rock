@@ -1,0 +1,66 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TreeItemPicker v-model="internalValue"
+                    formGroupClasses="location-item-picker"
+                    iconCssClass="fa fa-home"
+                    :provider="itemProvider"
+                    :multiple="multiple">
+
+        <template #pickerContentSuperHeader v-if="$slots.pickerContentSuperHeader">
+            <slot name="pickerContentSuperHeader" />
+        </template>
+        <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
+            <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #inputGroupPrepend="{ isInputGroupSupported }" v-if="$slots.inputGroupPrepend">
+            <slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #append="{ isInputGroupSupported }" v-if="$slots.append">
+            <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+    </TreeItemPicker>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { LocationTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import TreeItemPicker from "./treeItemPicker.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        securityGrantToken: {
+            type: String as PropType<string | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void;
+    }>();
+
+    const internalValue = ref(props.modelValue ?? null);
+
+    // Configure the item provider with our settings. These are not reactive
+    // since we don't do lazy loading so there is no point.
+    const itemProvider = new LocationTreeItemProvider();
+    itemProvider.securityGrantToken = props.securityGrantToken;
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, props.modelValue ?? null);
+    });
+</script>
