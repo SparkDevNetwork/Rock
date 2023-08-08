@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, inject, ref, watch } from "vue";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import TextBox from "@Obsidian/Controls/textBox";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";

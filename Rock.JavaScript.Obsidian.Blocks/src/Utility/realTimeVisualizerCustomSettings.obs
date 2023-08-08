@@ -74,7 +74,7 @@
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import KeyValueList from "@Obsidian/Controls/keyValueList";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";

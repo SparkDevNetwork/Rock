@@ -113,9 +113,9 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import EmailBox from "@Obsidian/Controls/emailBox";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";

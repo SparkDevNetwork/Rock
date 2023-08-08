@@ -155,7 +155,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";

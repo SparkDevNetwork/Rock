@@ -16,7 +16,7 @@
 //
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
-import EmailBox from "@Obsidian/Controls/emailBox";
+import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import TextBox from "@Obsidian/Controls/textBox";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 

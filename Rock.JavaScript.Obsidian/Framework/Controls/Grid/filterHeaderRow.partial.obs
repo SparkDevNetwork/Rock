@@ -155,14 +155,22 @@
         // then clear the search.
         if (quickFilterContainerElement.value?.contains(event.target)) {
             if (event.key === "Escape") {
-                quickFilterValue.value = "";
+                if (quickFilterValue.value === "") {
+                    const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+
+                    searchBox?.blur();
+                    isSearchVisible.value = false;
+                }
+                else {
+                    quickFilterValue.value = "";
+                }
             }
         }
 
         // If no other input type element has focus and they hit the hotkey
         // for searching, open the search bar and focus the search box.
         if (!isTreeFocusable(event.target)) {
-            if (event.key === "/" && event.ctrlKey) {
+            if (event.key === "F" && event.ctrlKey && event.shiftKey) {
                 isSearchVisible.value = true;
 
                 nextTick(() => {

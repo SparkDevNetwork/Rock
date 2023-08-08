@@ -35,7 +35,7 @@
     import { PropType, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel";

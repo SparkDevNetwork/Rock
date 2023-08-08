@@ -16,7 +16,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import { SignUpFilterType } from "./signUpFilterType.partial";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropLownList from "@Obsidian/Controls/dropDownList.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

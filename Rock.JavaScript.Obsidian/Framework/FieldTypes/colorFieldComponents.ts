@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, ref, watch } from "vue";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import ColorPicker from "@Obsidian/Controls/colorPicker";
+import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

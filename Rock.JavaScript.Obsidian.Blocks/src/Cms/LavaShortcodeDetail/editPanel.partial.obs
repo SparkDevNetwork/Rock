@@ -116,10 +116,10 @@
     import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import KeyValueList from "@Obsidian/Controls/keyValueList";

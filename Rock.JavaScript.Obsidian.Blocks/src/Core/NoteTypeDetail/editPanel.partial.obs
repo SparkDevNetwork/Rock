@@ -97,8 +97,8 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
-    import ColorPicker from "@Obsidian/Controls/colorPicker";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";

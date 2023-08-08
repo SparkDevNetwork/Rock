@@ -10,7 +10,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import DropDownList from "./dropDownList.obs";
-    import CheckBoxList from "./checkBoxList";
+    import CheckBoxList from "./checkBoxList.obs";
 
     const props = defineProps({
         modelValue: {

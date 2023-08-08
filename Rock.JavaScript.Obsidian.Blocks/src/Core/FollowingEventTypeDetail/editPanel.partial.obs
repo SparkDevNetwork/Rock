@@ -57,12 +57,12 @@
 <script setup lang="ts">
     import { PropType, ref, watch, computed } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import { FollowingEventTypeBag } from "@Obsidian/ViewModels/Blocks/Core/FollowingEventTypeDetail/followingEventTypeBag";
     import { FollowingEventTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/FollowingEventTypeDetail/followingEventTypeDetailOptionsBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";

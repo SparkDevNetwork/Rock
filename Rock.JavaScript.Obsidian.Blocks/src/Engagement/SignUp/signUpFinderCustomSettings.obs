@@ -204,9 +204,9 @@
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";

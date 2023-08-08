@@ -183,10 +183,10 @@
     import { createPersonViewModel, getNumberAsOrdinalString, useGetBootstrapColumnClass } from "./utils.partial";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import EmailBox from "@Obsidian/Controls/emailBox";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
     import GradePicker from "@Obsidian/Controls/gradePicker";

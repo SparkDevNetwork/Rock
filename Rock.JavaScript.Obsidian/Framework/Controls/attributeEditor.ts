@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import CheckBox from "./checkBox";
+import CheckBox from "./checkBox.obs";
 import TextBox from "./textBox";
 import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
 import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";

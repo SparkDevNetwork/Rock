@@ -148,9 +148,9 @@
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
     import Modal from "@Obsidian/Controls/modal";

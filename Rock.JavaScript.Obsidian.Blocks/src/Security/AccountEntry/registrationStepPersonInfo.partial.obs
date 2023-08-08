@@ -62,8 +62,7 @@
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
-    import EmailBox from "@Obsidian/Controls/emailBox";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
     import TextBox from "@Obsidian/Controls/textBox";
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
@@ -137,12 +136,12 @@
         }
     });
 
-    const internalBirthday = computed<BirthdayPickerBag>({
+    const internalBirthday = computed<BirthdayPickerBag | undefined>({
         get() {
-            return props.modelValue?.birthday ?? getDefaultDatePartsPickerModel();
+            return props.modelValue?.birthday ?? undefined;
         },
-        set(newValue: BirthdayPickerBag) {
-            emit("update:modelValue", { ...props.modelValue, birthday: newValue });
+        set(newValue: BirthdayPickerBag | undefined) {
+            emit("update:modelValue", { ...props.modelValue, birthday: newValue ?? null });
         }
     });
 

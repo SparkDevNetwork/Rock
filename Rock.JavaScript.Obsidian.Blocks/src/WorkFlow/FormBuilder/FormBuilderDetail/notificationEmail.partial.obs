@@ -48,7 +48,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import PersonPicker from "@Obsidian/Controls/personPicker";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import EmailBox from "@Obsidian/Controls/emailBox";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import EmailSource from "../Shared/emailSource.partial.obs";

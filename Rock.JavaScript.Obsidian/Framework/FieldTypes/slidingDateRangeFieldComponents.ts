@@ -18,7 +18,7 @@ import { defineComponent, ref, watch, computed } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import { ConfigurationValueKey } from "./slidingDateRangeField.partial";
 import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { updateRefValue } from "@Obsidian/Utility/component";

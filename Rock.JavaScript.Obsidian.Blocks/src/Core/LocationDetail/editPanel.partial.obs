@@ -69,7 +69,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import LocationPicker from "@Obsidian/Controls/locationPicker.obs";

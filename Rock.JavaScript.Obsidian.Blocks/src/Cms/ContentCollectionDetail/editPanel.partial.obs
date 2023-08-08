@@ -78,8 +78,8 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import TextBox from "@Obsidian/Controls/textBox";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";

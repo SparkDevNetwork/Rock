@@ -17,7 +17,7 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import CheckBox from "@Obsidian/Controls/checkBox";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import { ConfigurationValueKey } from "./personField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

@@ -71,7 +71,7 @@
     import { PropType, ref, watch } from "vue";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

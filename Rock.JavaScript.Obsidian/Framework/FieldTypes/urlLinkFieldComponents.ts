@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, computed, PropType, ref, watch  } from "vue";
-import CheckBox from "@Obsidian/Controls/checkBox";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
@@ -95,7 +95,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

@@ -230,14 +230,14 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader";
     import PanelWidget from "@Obsidian/Controls/panelWidget";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Modal from "@Obsidian/Controls/modal";
     import RockButton from "@Obsidian/Controls/rockButton";

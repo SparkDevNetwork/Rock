@@ -287,17 +287,18 @@
 
 <script setup lang="ts">
     import { PropType, computed, ref, shallowRef, watch } from "vue";
-    import CheckBoxList from "./checkBoxList";
+    import CheckBoxList from "./checkBoxList.obs";
     import DatePickerBase from "./datePickerBase.obs";
     import DatePicker from "./datePicker.obs";
-    import DateRangePicker, { DateRangeParts } from "./dateRangePicker";
-    import DateTimePicker from "./dateTimePicker";
+    import DateRangePicker from "./dateRangePicker.obs";
+    import DateTimePicker from "./dateTimePicker.obs";
     import DropDownList from "./dropDownList.obs";
     import Modal from "./modal";
     import NumberBox from "./numberBox";
     import RadioButtonList from "./radioButtonList";
     import RockFormField from "./rockFormField";
     import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
+    import type { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";
     import { Event, Calendar, RecurrenceRule } from "@Obsidian/Utility/internetCalendar";
     import { containsRequiredRule } from "@Obsidian/ValidationRules";
@@ -946,7 +947,7 @@
     }
 
     function onAddExclusionDateRange(): void {
-        addExclusionDateRangeValue.value = {};
+        addExclusionDateRangeValue.value = undefined;
         isAddExclusionDateRangeVisible.value = true;
     }
 

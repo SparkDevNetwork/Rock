@@ -18,7 +18,7 @@
 import { defineComponent, inject } from "vue";
 import Loading from "@Obsidian/Controls/loading";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import CurrencyBox from "@Obsidian/Controls/currencyBox";
+import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
 import HelpBlock from "@Obsidian/Controls/helpBlock";
 import { ValidationRule } from "@Obsidian/ValidationRules";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";

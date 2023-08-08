@@ -20,7 +20,7 @@ import { useSuspense } from "@Obsidian/Utility/suspense";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import CheckBoxList from "./checkBoxList";
+import CheckBoxList from "./checkBoxList.obs";
 import DropDownList from "./dropDownList.obs";
 import RadioButtonList from "./radioButtonList";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";

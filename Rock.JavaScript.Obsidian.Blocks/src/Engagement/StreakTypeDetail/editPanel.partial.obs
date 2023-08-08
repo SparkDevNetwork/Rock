@@ -97,7 +97,7 @@
     import { PropType, ref, watch, computed } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";

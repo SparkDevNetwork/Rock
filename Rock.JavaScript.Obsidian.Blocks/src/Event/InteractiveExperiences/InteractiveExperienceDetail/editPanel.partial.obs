@@ -327,9 +327,9 @@
     import { computed, PropType, ref, shallowRef, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
-    import ColorPicker from "@Obsidian/Controls/colorPicker";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader";
     import GroupPicker from "@Obsidian/Controls/groupPicker";

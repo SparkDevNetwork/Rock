@@ -70,10 +70,10 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
-    import EmailBox from "@Obsidian/Controls/emailBox";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import Toggle from "@Obsidian/Controls/toggle";
     import { tooltip } from "@Obsidian/Utility/tooltip";

@@ -17,7 +17,7 @@
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import CheckBox from "@Obsidian/Controls/checkBox";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 

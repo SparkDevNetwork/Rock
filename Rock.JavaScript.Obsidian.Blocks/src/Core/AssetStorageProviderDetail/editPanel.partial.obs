@@ -34,7 +34,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";

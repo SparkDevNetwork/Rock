@@ -37,7 +37,7 @@
 <script setup lang="ts">
     import { ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import EmailBox from "@Obsidian/Controls/emailBox";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
     import { SendInstructionsResultType } from "@Obsidian/Enums/Blocks/Security/ForgotUserName/sendInstructionsResultType";

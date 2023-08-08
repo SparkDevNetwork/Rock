@@ -97,10 +97,10 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import TextBox from "@Obsidian/Controls/textBox";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";

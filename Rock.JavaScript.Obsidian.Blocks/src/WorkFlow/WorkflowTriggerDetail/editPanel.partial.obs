@@ -75,7 +75,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { WorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowTriggerDetail/workflowTriggerBag";

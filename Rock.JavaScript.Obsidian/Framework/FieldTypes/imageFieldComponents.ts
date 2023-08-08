@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import CheckBox from "@Obsidian/Controls/checkBox";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
 import { ConfigurationValueKey, ConfigurationPropertyKey } from "./imageField.partial";
