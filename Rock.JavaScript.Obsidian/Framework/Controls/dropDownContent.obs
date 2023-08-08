@@ -40,12 +40,18 @@
 <script setup lang="ts">
     import { arrow, autoUpdate, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { ref, watch } from "vue";
+    import { PropType, ref, watch } from "vue";
 
     const props = defineProps({
         modelValue: {
             type: Boolean,
             default: false
+        },
+
+        /** Any elements (or child elements) that match these selectors will not cause the drop-down content to close when clicked. */
+        preventCloseOnClickSelectors: {
+            type: Object as PropType<string[]>,
+            default: [ ".datepicker" ]
         }
     });
 
@@ -93,6 +99,10 @@
         }
 
         if (dropdownElement.value?.contains(event.target) === true) {
+            return;
+        }
+
+        if (props.preventCloseOnClickSelectors.some(selector => Array.from(document.querySelectorAll(selector)).some(element => element.contains(event.target as HTMLElement)))) {
             return;
         }
 

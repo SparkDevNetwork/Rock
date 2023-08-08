@@ -1,0 +1,485 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="library-viewer-item-list-filters">
+        <DropDownContent v-model="internalModelValue">
+            <template #anchor>
+                <RockButton btnType="default" btnSize="xs" class="library-viewer-toolbar-button"><i class="fa fa-filter" /> {{ appliedFilterOptions.filterButtonText }}</RockButton>
+            </template>
+
+            <div class="library-viewer-item-list-filters-container p-3">
+                <div class="container-fluid">
+                    <DropDownList v-model="internalTopics"
+                                :enhanceForLongLists="true"
+                                :grouped="false"
+                                :items="topicOptions"
+                                label="Topics"
+                                :multiple="true"
+                                :showBlankItem="true" />
+
+                    <DropDownList v-model="internalOrganizations"
+                                :enhanceForLongLists="true"
+                                :grouped="false"
+                                :items="organizationOptions"
+                                label="Organizations"
+                                :multiple="true"
+                                :showBlankItem="true" />
+
+                    <CheckBoxList v-model="internalDownloads"
+                                :horizontal="true"
+                                :items="downloadOptions"
+                                label="Downloads" />
+
+                    <CheckBoxList v-model="internalLicenseTypes"
+                                :horizontal="true"
+                                :items="licenseTypeOptions"
+                                label="License Type" />
+
+                    <CheckBoxList v-model="internalExperienceLevels"
+                                :horizontal="true"
+                                :items="experienceLevelOptions"
+                                label="Experience Level" />
+
+                    <SlidingDateRangePicker v-model="internalPublishedDate"
+                                            label="Publish Date"
+                                            previewLocation="Top" />
+
+                    <RockButton v-if="!areFiltersAppliedOnClose" @click="onApplyClicked" btnSize="xs">Apply Filters</RockButton>
+                    <RockButton @click="onClearAllClicked" btnSize="xs" class="ml-1">Clear All</RockButton>
+                </div>
+            </div>
+        </DropDownContent>
+    </div>
+</template>
+
+<style scoped>
+    .library-viewer-item-list-filters-container {
+        border-radius: 6px;
+        border: 1px solid var(--theme-colors-light, #F2E3D9);
+        background: var(--theme-colors-lightest, #FAF7F5);
+    }
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { compareStrings } from "./utils.partial";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ContentLibraryItemExperienceLevel, ContentLibraryItemExperienceLevelDescription } from "@Obsidian/Enums/Cms/contentLibraryItemExperienceLevel";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { SlidingDateRange, RangeType, calculateSlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
+    import { LibraryViewerItemFiltersBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemFiltersBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    type FilterOptions = {
+        filterButtonText: string;
+        filter(item: LibraryViewerItemBag): boolean;
+    };
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        items: {
+            type: Object as PropType<LibraryViewerItemBag[]>,
+            required: true
+        },
+        areFiltersAppliedOnClose: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "filteredItems", value: LibraryViewerItemBag[]): void
+    }>();
+
+    enum DownloadItem {
+        Trending = "Trending",
+        Popular = "Popular"
+    }
+
+    const downloadOptions: ListItemBag[] = [
+        {
+            text: "Trending",
+            value: DownloadItem.Trending
+        },
+        {
+            text: "Popular",
+            value: DownloadItem.Popular
+        },
+    ];
+
+    const defaultFilterOption: FilterOptions = {
+        filterButtonText: "Filter",
+        filter(_item) {
+            return true;
+        }
+    };
+
+    //#region Values
+
+    const internalModelValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const pendingFilters = ref<LibraryViewerItemFiltersBag>({
+        mustBePopular: false,
+        mustBeTrending: false
+    });
+
+    const appliedFilterOptions = ref<FilterOptions>(defaultFilterOption);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const licenseTypeOptions = computed<ListItemBag[]>(() => {
+        const distinctLicenseTypes: Record<string, ListItemBag> = {};
+
+        for (let licenseType of props.items.filter(item => !!item.licenseType).map(item => item.licenseType!)) {
+            if (licenseType.value && !distinctLicenseTypes[licenseType.value]) {
+                distinctLicenseTypes[licenseType.value] = licenseType;
+            }
+        }
+
+        // Sort by: Open, Author Attribution, Organization Attribution, then alphabetically by text.
+        const licenseTypePreferredOrder: string[] = [
+            DefinedValue.LibraryLicenseTypeOpen.toLowerCase(),
+            DefinedValue.LibraryLicenseTypeAuthorAttribution.toLowerCase(),
+            DefinedValue.LibraryLicenseTypeOrganizationAttribution.toLowerCase()
+        ];
+        return Object.values(distinctLicenseTypes).sort((licenseType1, licenseType2) => {
+            const index1 = licenseTypePreferredOrder.indexOf(licenseType1.value!);
+            const index2 = licenseTypePreferredOrder.indexOf(licenseType2.value!);
+
+            if (index1 === -1 && index2 === -1) {
+                // If the preferred order is not defined for either license type,
+                // then sort them by text alphabetically.
+                return compareStrings(licenseType1.text, licenseType2.text);
+            }
+
+            if (index1 === -1) {
+                // If the first license type is not in the preferred order list,
+                // then the second license type should be displayed first.
+                return 1;
+            }
+
+            if (index2 === -1) {
+                // If the second license type is not in the preferred order list,
+                // then the first license type should be displayed first.
+                return -1;
+            }
+
+            if (index1 < index2) {
+                return -1;
+            }
+            else if (index1 > index2) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        });
+    });
+
+    const experienceLevelOptions = computed<ListItemBag[]>(() => {
+        const distinctExperienceLevels: Record<string, ListItemBag> = {};
+
+        for (let experienceLevel of props.items.filter(item => !!item.experienceLevel).map(item => item.experienceLevel!)) {
+            if (experienceLevel.value && !distinctExperienceLevels[experienceLevel.value]) {
+                distinctExperienceLevels[experienceLevel.value] = experienceLevel;
+            }
+        }
+
+        // Sort the experience levels by value (which are the stringified enum values)
+        return Object.values(distinctExperienceLevels).sort((a, b) => compareStrings(a.value, b.value));
+    });
+
+    const topicOptions = computed<ListItemBag[]>(() => {
+        const distinctTopics: Record<string, ListItemBag> = {};
+
+        for (let topic of props.items.filter(item => !!item.topic).map(item => item.topic)) {
+            if (topic?.value && !distinctTopics[topic.value]) {
+                distinctTopics[topic.value] = topic;
+            }
+        }
+
+        return Object.values(distinctTopics).sort((topic1, topic2) => compareStrings(topic1.text, topic2.text));
+    });
+
+    const organizationOptions = computed<ListItemBag[]>(() => {
+        const distinctOrganizations: Record<string, ListItemBag> = {};
+
+        for (let organizationName of props.items.filter(item => !!item.sourcePublisherName).map(item => item.sourcePublisherName!)) {
+            if (!distinctOrganizations[organizationName]) {
+                distinctOrganizations[organizationName] = {
+                    text: organizationName,
+                    value: organizationName
+                };
+            }
+        }
+
+        return Object.values(distinctOrganizations).sort((organization1, organization2) => compareStrings(organization1.text, organization2.text));
+    });
+
+    const internalDownloads = computed<string[]>({
+        get() {
+            const downloads: string[] = [];
+
+            if (pendingFilters.value.mustBeTrending) {
+                downloads.push(DownloadItem.Trending);
+            }
+
+            if (pendingFilters.value.mustBePopular) {
+                downloads.push(DownloadItem.Popular);
+            }
+
+            return downloads;
+        },
+        set(newValue: string[]) {
+            pendingFilters.value.mustBePopular = newValue.some(v => v === DownloadItem.Popular);
+            pendingFilters.value.mustBeTrending = newValue.some(v => v === DownloadItem.Trending);
+        }
+    });
+
+    const internalOrganizations = computed<string[]>({
+        get() {
+            return pendingFilters.value.organizations ?? [];
+        },
+        set(newValue: string[]) {
+            pendingFilters.value.organizations = newValue;
+        }
+    });
+
+    const internalPublishedDate = computed<SlidingDateRange>({
+        get(): SlidingDateRange {
+            if (pendingFilters.value.publishedDate) {
+                const slidingDateRange = parseSlidingDateRangeString(pendingFilters.value.publishedDate);
+
+                if (slidingDateRange) {
+                    return slidingDateRange;
+                }
+            }
+
+            return {
+                rangeType: RangeType.All,
+            };
+        },
+        set(newValue: SlidingDateRange) {
+            if (newValue) {
+                pendingFilters.value.publishedDate = slidingDateRangeToString(newValue);
+            }
+            else {
+                pendingFilters.value.publishedDate = null;
+            }
+        }
+    });
+
+    const internalTopics = computed<string[]>({
+        get() {
+            return pendingFilters.value.topics ?? [];
+        },
+        set(newValue: string[]) {
+            pendingFilters.value.topics = newValue;
+        }
+    });
+
+    const internalLicenseTypes = computed<string[]>({
+        get() {
+            return pendingFilters.value.licenseTypes ?? [];
+        },
+        set(newValue: string[]) {
+            pendingFilters.value.licenseTypes = newValue;
+        }
+    });
+
+    const internalExperienceLevels = computed<string[]>({
+        get() {
+            return pendingFilters.value.experienceLevels?.map((e: ContentLibraryItemExperienceLevel): string => e.toString()) ?? [];
+        },
+        set(newValue: string[]) {
+            pendingFilters.value.experienceLevels = newValue.map((e: string) => ContentLibraryItemExperienceLevel[ContentLibraryItemExperienceLevelDescription[Number(e)]]);
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /** Gets the license type name for a license type guid. */
+    function getLicenseTypeName(licenseTypeGuid: string | null | undefined): string | null | undefined {
+        return licenseTypeOptions.value.find(o => o.value?.toLowerCase() === licenseTypeGuid?.toLowerCase())?.text;
+    }
+
+    /** Emits the `filteredItems` event. */
+    function onFilteredItemsChanged(): void {
+        emit("filteredItems", props.items.filter(appliedFilterOptions.value.filter));
+    }
+
+    /** Gets the topic name for a topic guid. */
+    function getTopicName(topicGuid: string | null | undefined): string | null | undefined {
+        return topicOptions.value.find(o => o.value?.toLowerCase() === topicGuid?.toLowerCase())?.text;
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the Apply button being clicked.
+     */
+    function onApplyClicked(): void {
+        const selectedFilters: FilterOptions[] = [];
+
+        // Build the filter options.
+
+        const experienceLevels = pendingFilters.value.experienceLevels;
+        if (experienceLevels?.length) {
+            for (let experienceLevel of experienceLevels) {
+                selectedFilters.push({
+                    filterButtonText: ContentLibraryItemExperienceLevelDescription[experienceLevel],
+                    filter(item) {
+                        return experienceLevel === ContentLibraryItemExperienceLevel[ContentLibraryItemExperienceLevelDescription[Number(item.experienceLevel?.value)]];
+                    }
+                });
+            }
+        }
+
+        const licenseTypeGuids = pendingFilters.value.licenseTypes;
+        if (licenseTypeGuids?.length) {
+            for (let licenseTypeGuid of licenseTypeGuids) {
+                selectedFilters.push({
+                    filterButtonText: getLicenseTypeName(licenseTypeGuid) ?? licenseTypeGuid,
+                    filter(item) {
+                        return !!item.licenseType?.value && licenseTypeGuid.toLowerCase() === item.licenseType.value.toLowerCase();
+                    }
+                });
+            }
+        }
+
+        if (pendingFilters.value.mustBePopular) {
+            selectedFilters.push({
+                filterButtonText: "Popular",
+                filter(item) {
+                    return item.isPopular;
+                }
+            });
+        }
+
+        if (pendingFilters.value.mustBeTrending) {
+            selectedFilters.push({
+                filterButtonText: "Trending",
+                filter(item) {
+                    return item.isTrending;
+                }
+            });
+        }
+
+        const organizationNames = pendingFilters.value.organizations;
+        if (organizationNames?.length) {
+            for (let organizationName of organizationNames) {
+                selectedFilters.push({
+                    filterButtonText: organizationName,
+                    filter(item) {
+                        return !!item.sourcePublisherName && organizationName.toLowerCase() === item.sourcePublisherName.toLowerCase();
+                    }
+                });
+            }
+        }
+
+        const publishedDate = pendingFilters.value.publishedDate;
+        if (publishedDate) {
+            const slidingDateRange = parseSlidingDateRangeString(publishedDate);
+
+            if (slidingDateRange) {
+                const dateRange = calculateSlidingDateRange(slidingDateRange);
+
+                if (dateRange.start || dateRange.end) {
+                    selectedFilters.push({
+                        filterButtonText: "Publish Date",
+                        filter(item) {
+                            const itemPublishedDate = RockDateTime.parseISO(item.publishedDateTime ?? "");
+
+                            if (!itemPublishedDate) {
+                                return false;
+                            }
+
+                            if (dateRange.start && itemPublishedDate.toMilliseconds() < dateRange.start.toMilliseconds()) {
+                                return false;
+                            }
+
+                            if (dateRange.end && itemPublishedDate.toMilliseconds() >= dateRange.end.toMilliseconds()) {
+                                return false;
+                            }
+
+                            return true;
+                        }
+                    });
+                }
+            }
+        }
+
+        const topicGuids = pendingFilters.value.topics;
+        if (topicGuids?.length) {
+            for (let topicGuid of topicGuids) {
+                selectedFilters.push({
+                    filterButtonText: getTopicName(topicGuid) ?? topicGuid,
+                    filter(item) {
+                        return !!item.topic?.value && topicGuid.toLowerCase() === item.topic.value.toLowerCase();
+                    }
+                });
+            }
+        }
+
+        // Update the `appliedFilterOptions` value with the selected filters.
+        // There is a watcher observing this value. When the value is changed,
+        // the `filteredItems` event is emitted.
+        if (selectedFilters.length) {
+            appliedFilterOptions.value = {
+                filterButtonText: selectedFilters.length === 1 ? `Filter: ${selectedFilters[0].filterButtonText}` : `Filters Applied: ${selectedFilters.length}`,
+                filter(item) {
+                    return selectedFilters.some(f => f.filter(item));
+                }
+            };
+        }
+        else {
+            appliedFilterOptions.value = defaultFilterOption;
+        }
+    }
+
+    /**
+     * Event handler for the Clear All button being clicked.
+     */
+    function onClearAllClicked(): void {
+        pendingFilters.value = {
+            mustBePopular: false,
+            mustBeTrending: false
+        };
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(() => [props.items, appliedFilterOptions.value], () => {
+        onFilteredItemsChanged();
+    });
+
+    watch(() => internalModelValue.value, (wasOpen, isOpen) => {
+        // If the filters controls is closed
+        // AND if applyFiltersOnClose is true,
+        // then apply the filters.
+        if (!wasOpen && isOpen && props.areFiltersAppliedOnClose) {
+            onApplyClicked();
+        }
+    });
+
+    //#endregion
+</script>

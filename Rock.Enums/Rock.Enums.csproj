@@ -65,6 +65,7 @@
     <Compile Include="Cms\ContentChannelItemStatus.cs" />
     <Compile Include="Cms\ContentCollectionFilterControl.cs" />
     <Compile Include="Cms\ContentControlType.cs" />
+    <Compile Include="Cms\ContentLibraryItemExperienceLevel.cs" />
     <Compile Include="Cms\DisplayInNavWhen.cs" />
     <Compile Include="Cms\PersistedDatasetDataFormat.cs" />
     <Compile Include="Cms\PersistedDatasetScriptType.cs" />

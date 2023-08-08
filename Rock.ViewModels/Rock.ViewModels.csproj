@@ -51,6 +51,8 @@
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveResponseBag.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerDownloadItemBag.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerValidationResultsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
@@ -113,6 +115,9 @@
     <Compile Include="Blocks\Core\NotificationMessageList\MarkMessagesAsReadResponseBag.cs" />
     <Compile Include="Blocks\Core\NotificationMessageList\NotificationMessageBag.cs" />
     <Compile Include="Blocks\Core\NotificationMessageList\NotificationMessageListInitializationBox.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerItemBag.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerItemFiltersBag.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerInitializationBox.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpDetail\SignUpDetailInitializationBox.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterRequestBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterResponseBag.cs" />

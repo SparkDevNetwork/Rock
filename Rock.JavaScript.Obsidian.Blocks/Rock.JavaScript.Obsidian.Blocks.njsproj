@@ -38,6 +38,14 @@
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\libraryViewer.obs" />
+    <Content Include="src\Cms\LibraryViewer\itemBadgeList.partial.obs" />
+    <Content Include="src\Cms\LibraryViewer\itemDownloadsLabel.partial.obs" />
+    <Content Include="src\Cms\LibraryViewer\itemList.partial.obs" />
+    <Content Include="src\Cms\LibraryViewer\itemListFilters.partial.obs" />
+    <Content Include="src\Cms\LibraryViewer\itemListSort.partial.obs" />
+    <Content Include="src\Cms\LibraryViewer\itemPreview.partial.obs" />
+    <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
     <Content Include="src\Core\categoryDetail.vue" />
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
@@ -211,6 +219,7 @@
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LavaShortcodeDetail\" />
     <Folder Include="src\Cms\LayoutDetail\" />
+    <Folder Include="src\Cms\LibraryViewer\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
     <Folder Include="src\Cms\MediaFolderDetail\" />
     <Folder Include="src\Cms\PageShortLinkDetail\" />
@@ -316,6 +325,7 @@
     <TypeScriptCompile Include="src\Cms\LayoutDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\LibraryViewer\utils.partial.ts" />
     <TypeScriptCompile Include="src\Cms\mediaAccountDetail.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\types.partail.ts" />
