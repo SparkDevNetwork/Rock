@@ -25,7 +25,7 @@ import { RegistrationEntryBlockViewModel, RegistrationEntryState, RegistrationEn
 
 type CheckDiscountCodeResult = {
     discountCode: string;
-    usagesRemaining: number | null;
+    registrationUsagesRemaining: number | null;
     discountAmount: number;
     discountPercentage: number;
     discountMaxRegistrants: number;
