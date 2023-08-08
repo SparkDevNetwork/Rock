@@ -22,7 +22,7 @@ import { getDefaultAddressControlModel } from "@Obsidian/Utility/address";
 import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
+import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import ComponentFromUrl from "@Obsidian/Controls/componentFromUrl";

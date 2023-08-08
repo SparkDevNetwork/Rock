@@ -235,7 +235,7 @@
     import NumberBox from "@Obsidian/Controls/numberBox";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
-    import FileUploader from "@Obsidian/Controls/fileUploader";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import PanelWidget from "@Obsidian/Controls/panelWidget";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";

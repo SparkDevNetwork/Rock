@@ -16,7 +16,6 @@
 //
 import { defineComponent, PropType } from "vue";
 import LoadingIndicator from "./loadingIndicator";
-// import { ValidationField } from "./gatewayControl";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 
 /*

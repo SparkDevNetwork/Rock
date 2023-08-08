@@ -17,8 +17,8 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
-import GroupPicker from "@Obsidian/Controls/groupPicker";
-import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
+import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ConfigurationValueKey } from "./groupMemberField.partial";

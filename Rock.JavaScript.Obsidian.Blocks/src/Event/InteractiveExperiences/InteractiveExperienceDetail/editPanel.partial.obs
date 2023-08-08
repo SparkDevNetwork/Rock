@@ -332,7 +332,7 @@
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader";
-    import GroupPicker from "@Obsidian/Controls/groupPicker";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
     import Modal from "@Obsidian/Controls/modal";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";

@@ -56,7 +56,7 @@
     import { MergeTemplateFileValidationBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateDetail/mergeTemplateFileValidationBag";
     import { Guid } from "@Obsidian/Types";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
-    import FileUploader from "@Obsidian/Controls/fileUploader";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 
     const props = defineProps({
         modelValue: {

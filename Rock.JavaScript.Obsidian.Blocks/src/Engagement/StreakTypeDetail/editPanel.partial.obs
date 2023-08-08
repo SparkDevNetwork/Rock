@@ -105,7 +105,7 @@
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
-    import GroupPicker from "@Obsidian/Controls/groupPicker";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
     import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
     import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
     import { toNumber } from "@Obsidian/Utility/numberUtils";

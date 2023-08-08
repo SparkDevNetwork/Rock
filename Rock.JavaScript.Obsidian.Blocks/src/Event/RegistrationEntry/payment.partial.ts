@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, inject, ref } from "vue";
-import GatewayControl from "@Obsidian/Controls/gatewayControl";
+import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
 import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
 import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import RockForm from "@Obsidian/Controls/rockForm";

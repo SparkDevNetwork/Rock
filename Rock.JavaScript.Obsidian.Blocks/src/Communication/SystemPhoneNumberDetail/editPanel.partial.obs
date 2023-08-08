@@ -81,7 +81,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import GroupPicker from "@Obsidian/Controls/groupPicker";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker";
     import TextBox from "@Obsidian/Controls/textBox";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
