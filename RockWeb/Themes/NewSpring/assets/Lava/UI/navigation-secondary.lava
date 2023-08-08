@@ -1,0 +1,118 @@
+{% assign useNewStyles = CurrentPage | Attribute:'UseNewStyles' %}
+
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+
+    {% if useNewStyles == 'Yes' %}
+        <section id="navigation-secondary" class="py-3 px-2 py-md-4 px-md-3 bring-forward drop-shadow">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-content-center px-2">
+
+                <h2 class="h6 mb-0 d-flex justify-content-between" style="margin-top: 2px;">{{ Page.Title }} <i class="fas fa-caret-down hidden-md hidden-lg hidden-xl" role="button" data-toggle="collapse" href="#nav-secondary" aria-expanded="false" aria-controls="nav-secondary"></i></h2>
+
+                <div class="collapse" id="nav-secondary">
+                    <ul class="px-2 py-1 px-md-0 py-md-0 d-flex flex-column flex-md-row list-unstyled mb-0 gap-x-sm-4 text-center mt-2 mt-md-0 rounded">
+                        {% for page in IncludePageList %}
+                            {% assign path = 'Global' | Page:'Path' %}
+                            {% assign parts = page | PropertyToKeyValue %}
+                            {% if parts.Value contains '#' %}
+                                {% capture value %}{% assign valueparts = parts.Value | Split:'#' %}#{{ valueparts[1] }}{% endcapture %}
+                            {% else %}
+                                {% assign value = parts.Value %}
+                            {% endif %}
+                            <li class="d-flex flex-wrap align-content-center">
+                                <a href="{{ value }}" data-scroll class="d-flex w-100 py-1 py-md-0 height-max-content text-decoration-none font-sans font-medium {% if parts.Value == path %}text-white{% endif %}">{{ parts.Key }}</a>
+                            </li>
+                        {% endfor %}
+                        {% for childPage in Page.Pages %}
+                            <li class="d-flex flex-wrap align-content-center">
+                                <a href="{{ childPage.Url }}" class="d-flex w-100 py-1 py-md-0 height-max-content text-decoration-none font-sans font-medium {% if childPage.Current == 'true' %}text-white{% endif %}">{{ childPage.Title }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+    {% else %}
+        <!-- Secondary Nav -->
+        <section class="nav-secondary bg-gray-dark hard flush hidden-xs hidden-sm">
+            <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
+
+                <a href="{{ Page.Url }}" class="hidden-sm hidden-xs">
+                    <h2 class="h4 text-white flush pull-left" style="position: relative; top: 6px;">{{ Page.Title }}</h2>
+                </a>
+
+                <ul class="list-inline flush">
+                    {% for page in IncludePageList %}
+                        {% assign path = 'Global' | Page:'Path' %}
+                        {% assign parts = page | PropertyToKeyValue %}
+                        {% if parts.Value contains '#' %}
+                            {% capture value %}{% assign valueparts = parts.Value | Split:'#' %}#{{ valueparts[1] }}{% endcapture %}
+                        {% else %}
+                            {% assign value = parts.Value %}
+                        {% endif %}
+                        <li>
+                            <a href="{{ value }}" class="btn btn-sm btn-link text-hover-white {% if parts.Value == path %}text-white{% endif %}"
+                            data-scroll="">{{ parts.Key }}</a>
+                        </li>
+                    {% endfor %}
+                    {% for childPage in Page.Pages %}
+                        <li>
+                            <a href="{{ childPage.Url }}" class="btn btn-sm btn-link text-hover-white {% if childPage.Current == 'true' %}text-white{% endif %}" data-scroll="">{{ childPage.Title }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <!-- Mobile Secondary Nav -->
+        <section class="bg-primary hard flush hidden-md hidden-lg">
+            <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
+
+                <a id="mobileSecondaryNavTrigger" class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-left flush-bottom" role="button" data-toggle="collapse" data-parent="#accordion" href="#mobileSecondaryNav" aria-expanded="false" aria-controls="mobileSecondaryNav">
+                    <span class="h5 text-white display-inline-block flush" style="padding: 4px 0;">{{ Page.Title }}</span>
+                    <i class="position-relative fas fa-angle-down fa-lg pull-right" style="top: 7px; font-size: 1.6em;"></i>
+                </a>
+
+                {%- comment -%}
+                    Flip the arrow on the dropdown when it is expaneded/collapsed
+                {%- endcomment -%}
+                <script>
+                    $('#mobileSecondaryNavTrigger').on('click', function (e) {
+                        var target = $(e.target);
+                        var icon = $(target.find('i'))
+                        if (icon.hasClass('fa-angle-down')) {
+                            icon.removeClass('fa-angle-down');
+                            icon.addClass('fa-angle-up');
+                        } else {
+                            icon.removeClass('fa-angle-up');
+                            icon.addClass('fa-angle-down');
+                        }
+                    });
+                </script>
+
+                <div class="panel panel-default rounded overflow-hidden flush-bottom hidden-md hidden-lg">
+                    <div id="mobileSecondaryNav" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                        <div class="panel-body hard" style="background-color: transparent;">
+                            <div class="list-group list-group-dark text-left">
+                                {% assign path = 'Global' | Page:'Path' %}
+                                {% for page in IncludePageList %}
+                                    {% assign parts = page | PropertyToKeyValue %}
+                                    {% if parts.Value contains '#' %}
+                                        {% capture value %}{% assign valueparts = parts.Value | Split:'#' %}#{{ valueparts[1] }}{% endcapture %}
+                                    {% else %}
+                                        {% assign value = parts.Value %}
+                                    {% endif %}
+                                    <a href="{{ value }}" class="list-group-item text-gray-darker sans-serif strong  text-decoration-none {% if parts.Value == path %}active{% endif %}">{{ parts.Key }}</button>
+                                {% endfor %}
+                                {% for childPage in Page.Pages %}
+                                    <a href="{{ childPage.Url }}" class="list-group-item text-gray-darker sans-serif strong  text-decoration-none {%  if childPage.Url == path %}active{% endif %}">{{ childPage.Title }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+{% endif %}

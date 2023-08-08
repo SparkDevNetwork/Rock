@@ -1,0 +1,12 @@
+[{% capture pagesConditional -%}{% layout where:'SiteId == 22' iterator:'layouts' %}{% for layout in layouts %}LayoutId == {{ layout.Id }}{% unless forloop.last %} || {% endunless %}{% endfor %}{% endlayout %}{%- endcapture %}
+{% page where:'{{ pagesConditional }}' iterator:'pages' -%}
+    {%- for page in pages -%}{
+        {% assign pageTitle = page.PageTitle %}{% assign pageDescription = page.Description %}{% assign pageMetaTitle = page | Attribute:'PageMetaTitle' %}{% assign pageMetaDescription = page | Attribute:'PageMetaDescription' %}{% assign pageMetaImage = page | Attribute:'PageMetaImage','Url' %}{% capture pageHasHero -%}{[ isHeroPresentOnPage pageid:'{{ page.Id }}' ]}{%- endcapture %}{% capture pageMetadataFromContentChannelItem -%}{{ page | Attribute:'MetaDataFromContentChannelItem','RawValue' }}{%- endcapture %}
+        "Id": {{ page.Id }},
+        "PageHasHero": {{ pageHasHero | ToJSON }},
+        "MetadataFromContentChannelItem": {{ pageMetadataFromContentChannelItem | ToJSON }},
+        "MetaTitle": {% if pageMetaTitle and pageMetaTitle != empty %}{{ pageMetaTitle | ToJSON }}{% else %}{{ pageTitle | ToJSON }}{% endif %},
+        "MetaDescription": {% if pageMetaDescription and pageMetaDescription != empty %}{{ pageMetaDescription | ToJSON }}{% else %}{{ pageDescription | ToJSON }}{% endif %},
+        "MetaImage": {{ pageMetaImage | ToJSON }}
+    }{% unless forloop.last %},{% endunless %}{%- endfor -%}
+{%- endpage %}]

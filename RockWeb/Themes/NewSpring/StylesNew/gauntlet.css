@@ -1,0 +1,262 @@
+:root {
+  --bible-page: #ede4df;
+  --lakeside: #3333cc;
+  --riggs-field: #5f8c46;
+  --prayers-up: #de6588;
+  --tiger-paw: #de7840;
+  --group-hug: #645ca0;
+  --new-wave: #63aece;
+  --dandy-lion: #daba4d;
+  --not-quite-black: #302e35;
+  --gatorade: #c0d164;
+  --heat-stroke: #da5e56;
+  --lakeside-darker: #262698;
+  --riggs-field-darker: #3c592c;
+  --prayers-up-darker: #612c3b;
+  --tiger-paw-darker: #ab5c31;
+  --group-hug-darker: #2d2852;
+  --new-wave-darker: #265467;
+  --dandy-lion-darker: #a58d3a;
+  --gatorade-darker: #5c642e;
+  --heat-stroke-darker: #622723;
+}
+/* 
+
+  COLORS 
+  
+*/
+.text-bible-page {
+  color: var(--bible-page);
+}
+a.text-bible-page:hover {
+  color: var(--bible-page-darker);
+}
+.bg-bible-page {
+  background-color: var(--bible-page);
+}
+.fill-bible-page {
+  fill: var(--bible-page);
+}
+.text-lakeside {
+  color: var(--lakeside);
+}
+a.text-lakeside:hover {
+  color: var(--lakeside-darker);
+}
+.bg-lakeside {
+  background-color: var(--lakeside);
+}
+.bg-lakeside-darker {
+  background-color: var(--lakeside-darker);
+}
+.fill-lakeside {
+  fill: var(--lakeside);
+}
+.text-riggs-field {
+  color: var(--riggs-field);
+}
+a.text-riggs-field:hover {
+  color: var(--riggs-field-darker);
+}
+.bg-riggs-field {
+  background-color: var(--riggs-field);
+}
+.bg-riggs-field-darker {
+  background-color: var(--riggs-field-darker);
+}
+.fill-riggs-field {
+  fill: var(--riggs-field);
+}
+.text-prayers-up {
+  color: var(--prayers-up);
+}
+a.text-prayers-up:hover {
+  color: var(--prayers-up-darker);
+}
+.bg-prayers-up {
+  background-color: var(--prayers-up);
+}
+.fill-prayers-up {
+  fill: var(--prayers-up);
+}
+.text-tiger-paw {
+  color: var(--tiger-paw);
+}
+a.text-tiger-paw:hover {
+  color: var(--tiger-paw-darker);
+}
+.bg-tiger-paw {
+  background-color: var(--tiger-paw);
+}
+.bg-tiger-paw-darker {
+  background-color: var(--tiger-paw-darker);
+}
+.fill-tiger-paw {
+  fill: var(--tiger-paw);
+}
+.text-group-hug {
+  color: var(--group-hug);
+}
+a.text-group-hug:hover {
+  color: var(--group-hug-darker);
+}
+.text-group-hug-darker {
+  color: var(--group-hug-darker);
+}
+a.text-group-hug-darker:hover {
+  color: var(--group-hug-darker-darker);
+}
+.bg-group-hug {
+  background-color: var(--group-hug);
+}
+.bg-group-hug-darker {
+  background-color: var(--group-hug-darker);
+}
+.fill-group-hug {
+  fill: var(--group-hug);
+}
+.text-new-wave {
+  color: var(--new-wave);
+}
+a.text-new-wave:hover {
+  color: var(--new-wave-darker);
+}
+.bg-new-wave {
+  background-color: var(--new-wave);
+}
+.bg-new-wave-darker {
+  background-color: var(--new-wave-darker);
+}
+.fill-new-wave {
+  fill: var(--new-wave);
+}
+.text-dandy-lion {
+  color: var(--dandy-lion);
+}
+a.text-dandy-lion:hover {
+  color: var(--dandy-lion-darker);
+}
+.bg-dandy-lion {
+  background-color: var(--dandy-lion);
+}
+.bg-dandy-lion-darker {
+  background-color: var(--dandy-lion-darker);
+}
+.fill-dandy-lion {
+  fill: var(--dandy-lion);
+}
+.text-black {
+  color: var(--not-quite-black);
+}
+.bg-black {
+  background-color: var(--not-quite-black);
+}
+.fill-black {
+  fill: var(--not-quite-black);
+}
+.text-gatorade {
+  color: var(--gatorade);
+}
+a.text-gatorade:hover {
+  color: var(--gatorade-darker);
+}
+.bg-gatorade {
+  background-color: var(--gatorade);
+}
+.bg-gatorade-darker {
+  background-color: var(--gatorade-darker);
+}
+.fill-gatorade {
+  fill: var(--gatorade);
+}
+.text-heat-stroke {
+  color: var(--heat-stroke);
+}
+a.text-heat-stroke:hover {
+  color: var(--heat-stroke-darker);
+}
+.bg-heat-stroke {
+  background-color: var(--heat-stroke);
+}
+.bg-heat-stroke-darker {
+  background-color: var(--heat-stroke-darker);
+}
+.fill-heat-stroke {
+  fill: var(--heat-stroke);
+}
+/*
+  
+  Buttons
+
+*/
+.btn-heat-stroke,
+.btn-heat-stroke:hover,
+.btn-heat-stroke:focus {
+  background-color: var(--heat-stroke);
+  color: #fff;
+}
+.btn-group-hug,
+.btn-group-hug:hover,
+.btn-group-hug:focus {
+  background-color: var(--group-hug);
+  color: #fff;
+}
+.btn-prayers-up,
+.btn-prayers-up:hover,
+.btn-prayers-up:focus {
+  background-color: var(--prayers-up);
+  color: #fff;
+}
+.btn-new-wave,
+.btn-new-wave:hover,
+.btn-new-wave:focus {
+  background-color: var(--new-wave);
+  color: #fff;
+}
+.btn-gatorade,
+.btn-gatorade:hover,
+.btn-gatorade:focus {
+  background-color: var(--gatorade);
+  color: #fff;
+}
+/*
+
+  Backgrounds
+
+*/
+.bg-pattern {
+  background-color: transparent !important;
+  background-repeat: repeat;
+  background-size: 45%;
+  background-attachment: fixed;
+}
+.bg-pattern-combined {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Combined.png);
+}
+.bg-pattern-bolts {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Bolts2.png);
+}
+.bg-pattern-exclamation {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Exclamation2.png);
+}
+.bg-pattern-flowers {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Flowers2.png);
+}
+.bg-pattern-stars {
+  background-image: url(https://dg0ddngxdz549.cloudfront.net/newspring/Gauntlet/2023/patterns/Stars2.png);
+}
+@media only screen and (min-width: 500px) {
+  .bg-pattern {
+    background-size: 35%;
+  }
+}
+@media only screen and (min-width: 768px) {
+  .bg-pattern {
+    background-size: 25%;
+  }
+}
+@media only screen and (min-width: 1200px) {
+  .bg-pattern {
+    background-size: 15%;
+  }
+}

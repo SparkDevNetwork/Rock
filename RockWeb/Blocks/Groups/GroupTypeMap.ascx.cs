@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.Groups
                     ILavaTemplate lavaTemplate = null;
 
                     if ( LavaService.RockLiquidIsEnabled )
-                    {                        
+                    {
                         if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
                         {
                             template = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( "InfoWindowContents" ).Trim() );

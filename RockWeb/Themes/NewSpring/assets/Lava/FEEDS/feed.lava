@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+{% assign firstItemId = Items | First | Property:'Id' | AsInteger %}
+{% assign dataset = 'content_channel_items' | PersistedDataset | Where:'Id',firstItemId | First | Property:'PersistedDataset' %}
+
+{% comment %} dataset for this channel must exist{% endcomment %}
+{% if dataset and dataset != empty %}
+
+<rss version="2.0"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:admin="http://webns.net/mvcb/"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:media="http://search.yahoo.com/mrss/"
+    xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+    xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0">
+
+<channel>
+{% assign PublicApplicationRoot = 'Global' | Attribute:'PublicApplicationRoot' | ReplaceLast:'/','' %}
+{% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+{% assign orgEmail = 'Global' | Attribute:'OrganizationEmail' %}
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{% assign feedDescription = 'Global' | Attribute:'FeedDescription' | Escape %}
+{% assign channelImage = Channel | Attribute:'ImageLandscape','Url' %}
+{% assign channelFeedKeywords = Channel | Attribute:'RSSFeedKeywords' %}
+{% assign fallbackImage = 'http://s3.amazonaws.com/ns.images/newspring/icons/newspring.podcast.png' %}
+
+    {% assign channelCategory = Channel.Name | Split:' - ' | First %}
+    <title>{{ orgName }}{% if channelCategory != 'NewSpring' %} - {{ channelCategory }}{% endif %} - {{ Channel.Name | Split:' - ' | Last }}{% if feedtype == 'Audio' or feedtype == 'Video' %} {{ feedtype }}{% endif %}</title>
+    <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
+    <description><![CDATA[{% if Channel.Description and Channel.Description != empty %}{{ Channel.Description }}{% else %}{{ feedDescription }}{% endif %}]]></description>
+    <language>en-US</language>
+    <copyright>Free to distribute. Do not sell.</copyright>
+    <webMaster>{{ orgEmail }} ({{ orgName }})</webMaster>
+    <category>{{ Channel.Name | Split:' - ' | Last }}</category>
+    <generator>Rock RMS, https://www.rockrms.com/</generator>
+    <ttl>1440</ttl>
+    <image>
+        <url>{{ channelImage | Default:fallbackImage | Split:'?' | First }}</url>
+        <title>{{ orgName }}{% if channelCategory != 'NewSpring' %} - {{ channelCategory }}{% endif %} - {{ Channel.Name | Split:' - ' | Last }}{% if feedtype == 'Audio' or feedtype == 'Video' %} {{ feedtype }}{% endif %}</title>
+        <link>{{ PublicApplicationRoot }}{{ Channel.ChannelUrl }}</link>
+    </image>
+
+    {% comment %}
+        Add iTunes Tags for Audio/Video Feeds
+    {% endcomment %}
+    {% if feedtype == 'Audio' or feedtype == 'Video' %}
+        <itunes:image href="{{ channelImage | Default:fallbackImage | Split:'?' | First }}"/>
+        <itunes:author>NewSpring Church</itunes:author>
+        <itunes:summary>{% if Channel.Description and Channel.Description != empty %}<![CDATA[{{ Channel.Description }}]]>{% else %}{{ feedDescription }}{% endif %}</itunes:summary>
+        <itunes:keywords>{% if channelFeedKeywords and channelFeedKeywords != empty %}{{ channelFeedKeywords }}{% else %}newspring,church,newspring church,fuse,community,god,jesus,anderson{% endif %}</itunes:keywords>
+        <itunes:owner>
+            <itunes:name>{{ orgName}}</itunes:name>
+            <itunes:email>{{ orgEmail }}</itunes:email>
+        </itunes:owner>
+        <itunes:category text="Religion &amp; Spirituality">
+            <itunes:category text="Christianity"/>
+        </itunes:category>
+    {% endif %}
+
+
+    {% for item in Items -%}
+
+        {% assign itemId = item.Id | AsInteger %}
+        {% assign pItem = dataset | PersistedDataset | Where:'Id',itemId | First %}
+
+        {% assign parentItemId = pItem.Parents | First | Property:'Id' | AsInteger %}
+        {% assign parentDataset = pItem.Parents | First | Property:'Dataset' %}
+        {% assign pParent = parentDataset | PersistedDataset | Where:'Id',parentItemId | First %}
+
+        <item>
+            <title><![CDATA[{% if pParent.Title and pParent.Title != empty %}{{ pParent.Title }}: {% endif %}{{ pItem.Title }}]]></title>
+            <link>{{ pItem.Permalink | Trim }}</link>
+            <pubDate>{{ pItem.PublishDateTime | Date:'ddd, dd MMM yyyy HH:mm:00 EST' }}</pubDate>
+            <category>{{ pItem.ChannelName | Split:' - ' | Last }}</category>
+            <media:content
+                url="{% if pItem.ImageSquare and pItem.ImageSquare != empty %}{{ pItem.ImageSquare | Split:'?' | First }}{% elseif pParent.ImageSquare and pParent.ImageSquare != empty %}{{ pParent.ImageSquare | Split:'?' | First }}{% else %}{{ fallbackImage | Split:'?' | First }}{% endif %}"
+                medium="image"
+                isDefault="true"/>
+
+            {% capture description %}
+                {% assign scriptureCount = pItem.Scriptures | Size %}
+                {% if pItem.Scriptures and pItem.Scriptures != empty %}<p>Read: {% for scripture in pItem.Scriptures %}{% if scriptureCount > 1 and forloop.last %} &amp; {% endif %}{{ scripture.Book }} {{ scripture.Reference }}{% if scriptureCount > 2 %}{% unless forloop.last %}, {% endunless %}{% endif %}{% endfor %}</p>{% endif %}
+
+                {% if feedtype == 'Editorial' and pItem.Video and pItem.Video != empty %}
+                    {[ wistiaEmbed id:'{{ pItem.Video }}' ]}<br>
+                {% endif %}
+
+                {% if pItem.Summary and pItem.Summary != empty %}{{ pItem.Summary | HtmlDecode | StripHtml }}{% endif %}
+
+                {% if pItem.Content and pItem.Content != empty %}{{ pItem.Content | HtmlDecode | StripHtml | Replace:'src="https://rock.newspring.cc//s3','src="https://s3' }}{% endif %}
+
+            {% endcapture %}
+            {% assign description = description | Trim %}
+
+            {% if description and description != empty %}
+                {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' ]}
+                    <description><![CDATA[
+                        {{ description }}
+                    ]]></description>
+                {[ endscripturize ]}
+            {% endif %}
+
+            <guid>{{ pItem.Guid }}</guid>
+
+            {% if feedtype and feedtype != 'Editorial' %}
+
+                <itunes:image href="{% if pItem.ImageSquare and pItem.ImageSquare != empty %}{{ pItem.ImageSquare | Split:'?' | First }}{% elseif pParent.ImageSquare and pParent.ImageSquare != empty %}{{ pParent.ImageSquare | Split:'?' | First }}{% else %}{{ fallbackImage | Split:'?' | First }}{% endif %}"/>
+
+                {% assign communicatorCount = pItem.Communicators | Size %}
+                {% if pItem.Communicators and pItem.Communicators != empty %}
+                    <itunes:author>{% for person in pItem.Communicators %}{% if communicatorCount > 1 and forloop.last %} &amp; {% endif %}{{ person.Name }}{% if communicatorCount > 2 %}{% unless forloop.last %}, {% endunless %}{% endif %}{% endfor %}</itunes:author>
+                {% else %}
+                    <itunes:author>NewSpring Church</itunes:author>
+                {% endif %}
+
+                {% if pItem.Subtitle and pItem.Subtitle != empty %}<itunes:subtitle>{{ pItem.Subtitle }}</itunes:subtitle>{% endif %}
+                {% if pItem.Summary and pItem.Summary != empty or pItem.Content and pItem.Content != empty %}
+                    <itunes:summary><![CDATA[{% if pItem.Summary and pItem.Summary != empty %}{{ pItem.Summary | HtmlDecode | StripHtml }}{% else %}{{ pItem.Content | HtmlDecode | StripHtml | Truncate:200,'...' }}{% endif %}]]></itunes:summary>
+                {% endif %}
+
+                {% if pItem.Tags and pItem.Tags != empty %}
+                    {% assign tagCount = pItem.Tags | Size %}
+                    <itunes:keywords>{% for tag in pItem.Tags %}{{ tag.Name }}{% unless forloop.last %},{% endunless %}{% endfor %}</itunes:keywords>
+                {% endif %}
+
+                {% if feedtype and feedtype == 'Audio' or feedtype == 'Video' %}
+                    {% if feedtype and feedtype == 'Audio' %}
+
+                        {% if pItem.AudioFile and pItem.AudioFile != empty %}
+                            <enclosure url="{{ pItem.AudioFile | Split:'?' | First }}" length="" type="audio/mp3"/>
+                        {% endif %}
+
+                    {% elseif feedtype and feedtype == 'Video' %}
+
+                        {%- capture videoFile -%}
+                            {%- if pItem.VideoFileHigh and pItem.VideoFileHigh != empty -%}
+                                {{ pItem.VideoFileHigh }}
+                            {%- elseif pItem.VideoFileMid and pItem.VideoFileMid != empty -%}
+                                {{ pItem.VideoFileMid }}
+                            {%- elseif pItem.VideoFileLow and pItem.VideoFileLow != empty -%}
+                                {{ pItem.VideoFileLow }}
+                            {%- endif -%}
+                        {%- endcapture -%}
+
+                        {% if videoFile and videoFile != empty %}
+                            <enclosure url="{{ videoFile | Split:'?' | First | Trim }}" length="" type="video/mp4"/>
+                        {% endif %}
+
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+
+        </item>
+
+    {% endfor -%}
+
+</channel>
+</rss>
+{% endif %}
