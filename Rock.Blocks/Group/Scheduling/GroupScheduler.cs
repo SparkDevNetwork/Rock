@@ -27,6 +27,7 @@ using Rock.Enums.Blocks.Group.Scheduling;
 using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
