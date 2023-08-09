@@ -83,7 +83,7 @@
 <script setup lang="ts">
 import { PropType, computed, ref, watch } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import TextBox from "@Obsidian/Controls/textBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";

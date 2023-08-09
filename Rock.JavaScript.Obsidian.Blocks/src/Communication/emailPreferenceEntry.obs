@@ -138,8 +138,8 @@
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import Switch from "@Obsidian/Controls/switch";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";

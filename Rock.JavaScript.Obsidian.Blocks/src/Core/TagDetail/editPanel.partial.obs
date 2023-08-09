@@ -65,7 +65,7 @@
     import { PropType, ref, watch, computed } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";

@@ -16,7 +16,7 @@
 //
 import { defineComponent, ref, computed, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
-import TextBox from "@Obsidian/Controls/textBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";

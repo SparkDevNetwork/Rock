@@ -38,7 +38,7 @@
     import { PropType, reactive, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import DropDownList from "./dropDownList.obs";
-    import TextBox from "./textBox";
+    import TextBox from "./textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { AddressControlGetConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/addressControlGetConfigurationOptionsBag";

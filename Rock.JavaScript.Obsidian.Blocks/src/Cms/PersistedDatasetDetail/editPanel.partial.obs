@@ -82,7 +82,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";

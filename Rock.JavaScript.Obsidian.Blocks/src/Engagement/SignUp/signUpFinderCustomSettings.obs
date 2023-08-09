@@ -208,7 +208,7 @@
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";

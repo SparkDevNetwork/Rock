@@ -109,7 +109,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Block from "@Obsidian/Templates/block";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";

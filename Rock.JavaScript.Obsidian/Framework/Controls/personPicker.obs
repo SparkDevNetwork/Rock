@@ -53,7 +53,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
     import Panel from "./panel.obs";
-    import TextBox from "./textBox";
+    import TextBox from "./textBox.obs";
     import { nextTick } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
     import { sleep } from "@Obsidian/Utility/promiseUtils";

@@ -17,7 +17,7 @@
 import { defineComponent, computed, PropType, ref, watch  } from "vue";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
+import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ConfigurationValueKey } from "./urlLinkField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";

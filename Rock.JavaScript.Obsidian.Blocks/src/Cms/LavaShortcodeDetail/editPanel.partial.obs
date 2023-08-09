@@ -117,7 +117,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
@@ -131,7 +131,7 @@
     import { LavaShortcodeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
 

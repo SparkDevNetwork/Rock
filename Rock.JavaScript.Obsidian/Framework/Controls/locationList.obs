@@ -48,7 +48,7 @@
     import RockLabel from "./rockLabel.obs";
     import RockForm from "./rockForm.obs";
     import AttributeValuesContainer from "./attributeValuesContainer.obs";
-    import TextBox from "./textBox";
+    import TextBox from "./textBox.obs";
     import RockButton from "./rockButton.obs";
     import Loading from "./loading.obs";
     import NotificationBox from "./notificationBox.obs";

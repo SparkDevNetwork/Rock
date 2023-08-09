@@ -134,7 +134,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";

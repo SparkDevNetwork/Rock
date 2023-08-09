@@ -29,7 +29,7 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AppleTvPageBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/appleTvPageBag";
     import { AppleTvPageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/appleTvPageDetailOptionsBag";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";

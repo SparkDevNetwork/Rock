@@ -95,7 +95,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";

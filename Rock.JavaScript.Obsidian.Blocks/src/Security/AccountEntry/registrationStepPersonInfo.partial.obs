@@ -64,7 +64,7 @@
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
     import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
     import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";

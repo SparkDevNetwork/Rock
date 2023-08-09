@@ -25,7 +25,7 @@ import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.ob
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import TextBox from "@Obsidian/Controls/textBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { PropType } from "vue";

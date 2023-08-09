@@ -19,9 +19,9 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { asTrueFalseOrNull, asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { ConfigurationValueKey } from "./booleanField.partial";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import Toggle from "@Obsidian/Controls/toggle";
+import Toggle from "@Obsidian/Controls/toggle.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
-import TextBox from "@Obsidian/Controls/textBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 

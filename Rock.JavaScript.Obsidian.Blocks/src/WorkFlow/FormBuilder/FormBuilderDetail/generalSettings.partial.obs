@@ -54,7 +54,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";

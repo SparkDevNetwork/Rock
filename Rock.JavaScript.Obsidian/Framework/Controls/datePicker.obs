@@ -29,7 +29,7 @@
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import RockFormField from "./rockFormField.obs";
-    import TextBox from "./textBox";
+    import TextBox from "./textBox.obs";
     import DatePickerBase from "./datePickerBase.obs";
 
     const props = defineProps({

@@ -17,7 +17,7 @@
 import { defineComponent, inject, ref, watch } from "vue";
 import MediaSelector from "@Obsidian/Controls/mediaSelector.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import TextBox from "@Obsidian/Controls/textBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./mediaSelectorField.partial";

@@ -49,7 +49,7 @@
     import { computed, onMounted, PropType, ref, watch } from "vue";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import RockFormField from "./rockFormField.obs";
-    import TextBox from "./textBox";
+    import TextBox from "./textBox.obs";
     import BasicTimePicker from "./basicTimePicker.obs";
     import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
     import { padLeft } from "@Obsidian/Utility/stringUtils";

@@ -77,7 +77,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ContentCollectionBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";

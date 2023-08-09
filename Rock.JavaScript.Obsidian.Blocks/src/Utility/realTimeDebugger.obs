@@ -124,7 +124,7 @@
     import Block from "@Obsidian/Templates/block";
     import ConnectionStatus from "@Obsidian/Controls/connectionStatus.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";

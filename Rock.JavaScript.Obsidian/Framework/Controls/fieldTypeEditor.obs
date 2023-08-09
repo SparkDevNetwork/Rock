@@ -18,7 +18,7 @@
     import RockField from "./rockField.obs";
     import NotificationBox from "./notificationBox.obs";
     import DropDownList from "./dropDownList.obs";
-    import StaticFormControl from "./staticFormControl";
+    import StaticFormControl from "./staticFormControl.obs";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { useHttp } from "@Obsidian/Utility/http";
     import { areEqual, newGuid } from "@Obsidian/Utility/guid";

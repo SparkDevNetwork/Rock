@@ -20,7 +20,7 @@ import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
-import TextBox from "@Obsidian/Controls/textBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationValueKey } from "./singleSelectField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

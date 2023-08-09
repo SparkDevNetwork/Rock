@@ -20,7 +20,7 @@ import { useHttp } from "@Obsidian/Utility/http";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
 import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-import TextBox from "@Obsidian/Controls/textBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import { ConfigurationValueKey, GroupAndRoleValue } from "./groupAndRoleField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

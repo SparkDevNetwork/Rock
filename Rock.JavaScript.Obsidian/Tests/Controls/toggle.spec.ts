@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import Toggle from "../../Framework/Controls/toggle";
+import Toggle from "../../Framework/Controls/toggle.obs";
 import JavaScriptAnchor from "../../Framework/Controls/javaScriptAnchor.obs";
 import assert = require("assert");
 

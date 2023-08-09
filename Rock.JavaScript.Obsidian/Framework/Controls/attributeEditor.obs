@@ -129,12 +129,12 @@
     import { Guid } from "@Obsidian/Types";
     import { computed, PropType, ref, watch } from "vue";
     import CheckBox from "./checkBox.obs";
-    import TextBox from "./textBox";
+    import TextBox from "./textBox.obs";
     import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import CategoryPicker from "./categoryPicker.obs";
     import FieldTypeEditor from "./fieldTypeEditor.obs";
-    import StaticFormControl from "./staticFormControl";
+    import StaticFormControl from "./staticFormControl.obs";
     import Panel from "./panel.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
 

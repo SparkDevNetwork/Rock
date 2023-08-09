@@ -158,7 +158,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockFormFieldError from "@Obsidian/Controls/rockFormFieldError.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
     import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/customSettingsBag";

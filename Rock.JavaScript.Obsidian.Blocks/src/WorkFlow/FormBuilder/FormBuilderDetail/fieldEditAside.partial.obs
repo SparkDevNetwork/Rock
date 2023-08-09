@@ -81,8 +81,8 @@
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
-    import InlineSwitch from "@Obsidian/Controls/switch";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import InlineSwitch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";

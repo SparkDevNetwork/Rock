@@ -338,7 +338,7 @@
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
     import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";

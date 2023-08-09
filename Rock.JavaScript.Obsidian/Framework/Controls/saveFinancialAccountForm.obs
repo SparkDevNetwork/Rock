@@ -38,7 +38,7 @@
     import NotificationBox from "./notificationBox.obs";
     import InlineCheckBox from "./inlineCheckBox.obs";
     import RockButton from "./rockButton.obs";
-    import TextBox from "./textBox";
+    import TextBox from "./textBox.obs";
     import RockForm from "./rockForm.obs";
     import { useStore } from "@Obsidian/PageState";
     import { SaveFinancialAccountFormSaveAccountOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountOptionsBag";

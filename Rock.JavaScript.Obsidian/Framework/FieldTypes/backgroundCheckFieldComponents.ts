@@ -18,7 +18,7 @@
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
-import TextBox from "@Obsidian/Controls/textBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

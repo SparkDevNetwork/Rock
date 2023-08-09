@@ -47,7 +47,7 @@
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";

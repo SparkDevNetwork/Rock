@@ -58,7 +58,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import Switch from "@Obsidian/Controls/switch";
+    import Switch from "@Obsidian/Controls/switch.obs";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";

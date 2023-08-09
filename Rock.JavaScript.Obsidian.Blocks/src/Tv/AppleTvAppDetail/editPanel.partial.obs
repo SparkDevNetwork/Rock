@@ -60,7 +60,7 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AppleTvAppBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvAppDetail/appleTvAppBag";
     import { AppleTvAppDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvAppDetail/appleTvAppDetailOptionsBag";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";

@@ -51,7 +51,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
