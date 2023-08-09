@@ -1,13 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <CheckBoxList v-if="!displayAsDropDown"
-        v-model="props.modelValue"
+        v-model="modelValue"
         :label="props.label"
         :items="props.items"
         :horizontal="true"
         :repeatColumns="4" />
     <DropLownList v-if="displayAsDropDown"
-        v-model="props.modelValue"
+        v-model="modelValue"
         :label="props.label ?? ''"
         :items="props.items"
         :multiple="true" />
@@ -47,7 +47,7 @@
         (e: "update:modelValue", value: string[]): void
     }>();
 
-    useVModelPassthrough(props, "modelValue", emit);
+    const modelValue = useVModelPassthrough(props, "modelValue", emit);
 
     // #region Computed Values
 

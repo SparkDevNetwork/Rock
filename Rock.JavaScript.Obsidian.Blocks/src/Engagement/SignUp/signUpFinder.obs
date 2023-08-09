@@ -8,56 +8,56 @@
         {{ errorMessage }}
     </NotificationBox>
 
-    <div v-if="!blockErrorMessage">
-        <RockForm @submit="onSearch">
+    <div v-if="!blockErrorMessage" class="sign-up-finder">
+        <RockForm @submit="onSearch" class="filters">
             <div class="row d-flex flex-wrap">
-                <div v-if="projectTypes.length" :class="columnClass">
+                <div v-if="projectTypes.length" :class="columnClass" class="filters-projecttype">
                     <SignUpFilter v-model="selectedProjectTypes"
                                   :label="config.projectTypeFilterLabel"
                                   :items="projectTypes"
                                   :displayAs="displayAs"
                                   @update:modelValue="onProjectTypesUpdated" />
                 </div>
-                <div v-if="campuses.length" :class="columnClass">
+                <div v-if="campuses.length" :class="columnClass" class="filters-campus">
                     <SignUpFilter v-model="selectedCampuses"
                                   label="Campus"
                                   :items="campuses"
                                   :displayAs="displayAs" />
                 </div>
-                <div v-if="namedSchedules.length" :class="columnClass">
+                <div v-if="namedSchedules.length" :class="columnClass" class="filters-namedschedule">
                     <SignUpFilter v-model="selectedNamedSchedules"
                                   :label="config.namedScheduleFilterLabel"
                                   :items="namedSchedules"
                                   :displayAs="displayAs" />
                 </div>
-                <div v-for="a in attributeFilters" :key="a.key" :class="columnClass">
-                    <div class="form-group">
-                        <RockLabel>{{ a.attribute.name }}</RockLabel>
-                        <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
-                                             :attribute="a.attribute" />
-                    </div>
-                </div>
-                <div v-if="config.displayDateRange" :class="columnClass">
+                <div v-if="config.displayDateRange" :class="columnClass" class="filters-daterange">
                     <DateRangePicker v-model="selectedDateRange"
                                      label="Date Range"
                                      :disallowPastDateSelection="true" />
                 </div>
-                <div v-if="config.displayLocationSort" :class="columnClass">
+                <div v-if="config.displayLocationSort" :class="columnClass" class="filters-locationsort">
                     <TextBox v-model="selectedLocationSort" :label="config.locationSortLabel" class="input-max-w-xl" />
                 </div>
-                <div v-if="config.displayLocationRangeFilter" :class="columnClass">
+                <div v-if="config.displayLocationRangeFilter" :class="columnClass" class="filters-locationrange">
                     <NumberBox v-model="selectedLocationRange" label="Within" formGroupClasses="input-max-w-md">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">Miles</span>
                         </template>
                     </NumberBox>
                 </div>
-                <div v-if="config.displaySlotsAvailableFilter" :class="columnClass">
+                <div v-if="config.displaySlotsAvailableFilter" :class="columnClass" class="filters-slots">
                     <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" label="Spots Available">
                         <template #inputGroupPrepend>
                             <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
                         </template>
                     </NumberBox>
+                </div>
+                <div v-for="a in attributeFilters" :key="a.key" :class="columnClass" class="filters-attributes">
+                    <div class="form-group">
+                        <RockLabel>{{ a.attribute.name }}</RockLabel>
+                        <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
+                                             :attribute="a.attribute" />
+                    </div>
                 </div>
             </div>
             <div class="actions">
@@ -66,9 +66,9 @@
             </div>
         </RockForm>
 
-        <Loading :isLoading="isSearching">
-            <div ref="resultsHeaderElement"></div>
-            <div ref="resultsElement"></div>
+        <Loading :isLoading="isSearching" class="results">
+            <div ref="resultsHeaderElement" class="results-header"></div>
+            <div ref="resultsElement" class="results-body"></div>
         </Loading>
     </div>
 </template>
