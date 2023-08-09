@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField v-bind="fieldProps" :rules="internalRules" :formGroupClasses="`structure-content-editor ${fieldProps.formGroupClasses}`" #default="{ uniqueId, field }" name="sceContent" :modelValue="modelValue">
         <div class="control-wrapper">

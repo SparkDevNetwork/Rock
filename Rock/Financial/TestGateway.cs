@@ -154,7 +154,7 @@ namespace Rock.Financial
         /// <returns></returns>
         public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
         {
-            return "/Obsidian/Controls/testGatewayControl.obs.js";
+            return "/Obsidian/Controls/Internal/testGatewayControl.obs.js";
         }
 
         /// <inheritdoc/>

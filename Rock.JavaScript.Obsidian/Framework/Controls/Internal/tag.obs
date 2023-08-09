@@ -1,5 +1,4 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
-<!-- This component is used internally and is not meant for outside use-->
 <template>
     <span :class="tagClass" :style="tagStyle">
         <span v-if="iconCssClass" class="tag-icon">

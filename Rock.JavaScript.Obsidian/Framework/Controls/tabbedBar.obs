@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="tabbed-bar" :class="{ 'pills': props.type === 'pills' }">
         <ul class="toolbar-nav" ref="toolbarNavElement">

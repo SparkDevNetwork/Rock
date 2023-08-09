@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <TransitionVerticalCollapse>
         <div v-if="isReconnecting || isDisconnected">

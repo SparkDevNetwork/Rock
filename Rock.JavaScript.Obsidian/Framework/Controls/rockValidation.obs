@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
     <NotificationBox v-show="hasErrors" alertType="validation">
         Please correct the following:
         <ul>

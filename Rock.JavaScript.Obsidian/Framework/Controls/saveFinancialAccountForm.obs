@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
     <div>
         <NotificationBox v-if="successMessage" alertType="success" class="m-0">
             <strong v-if="successTitle">{{ successTitle }}:</strong>

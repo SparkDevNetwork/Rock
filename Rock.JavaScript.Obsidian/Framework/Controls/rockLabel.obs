@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
     <label class="control-label">
         <slot />
         <HelpBlock v-if="props.help" :text="props.help" />

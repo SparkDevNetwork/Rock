@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
     <div style="max-width: 600px; margin-left: auto; margin-right: auto;">
         <TextBox label="Credit Card" v-model="cardNumber" />
     </div>

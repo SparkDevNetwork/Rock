@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div style="overflow-x: hidden; max-width: 100%;">
         <ul class="rocktree">
@@ -11,7 +12,7 @@
     import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
-    import TreeListItem from "./treeListItem.obs";
+    import TreeListItem from "./Internal/treeListItem.obs";
 
     const props = defineProps({
         modelValue: {

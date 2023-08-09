@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
     <RockFormField
                    :formGroupClasses="'rock-radio-button-list ' + formGroupClasses"
                    #default="{ uniqueId }" name="radiobuttonlist" v-model="internalValue">

@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <li class="progress-step progress-tracker-priority">
         <div v-if="props.isPast" class="progress-step-link">

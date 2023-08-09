@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
     <button :class="cssClass" :disabled="isButtonDisabled" @click="onButtonClick" :type="type">
         <template v-if="isButtonLoading">
             {{ loadingText }}

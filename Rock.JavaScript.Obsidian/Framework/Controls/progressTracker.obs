@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
     <nav class="progress-tracker" style="margin: 20px auto; max-width: 1200px; width:100%">
         <div :id="progressTrackerContainerElementId" class="progress-tracker-container d-none d-md-block">
             <ul :id="progressTrackerElementId" class="progress-steps">

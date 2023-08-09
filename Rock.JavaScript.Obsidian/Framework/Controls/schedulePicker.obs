@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <TreeItemPicker v-model="internalValue"
                     formGroupClasses="category-picker"

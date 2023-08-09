@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
     <RockFormField
                    :modelValue="internalValue"
                    formGroupClasses="social-security-number-box"

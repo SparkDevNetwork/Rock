@@ -1025,7 +1025,6 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV141UpdateValueAsColumns.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV14DataMigrationsCreateFKIndexes.cs" />
     <Compile Include="Jobs\RockJob.cs" />
-	<Compile Include="Jobs\PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />

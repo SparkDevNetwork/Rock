@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <LocationItemPicker v-if="selectedOption == '0'" v-model="itemValue" v-model:showPopup="popupStatus">
         <template #pickerContentSuperHeader>
