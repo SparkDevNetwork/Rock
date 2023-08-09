@@ -16,7 +16,7 @@
 <script setup lang="ts">
     import { PropType } from "vue";
     import { DeleteAccountEvent } from "./events";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ConfirmAccountDeleteConfirmationViewOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountDeleteConfirmationViewOptionsBag";

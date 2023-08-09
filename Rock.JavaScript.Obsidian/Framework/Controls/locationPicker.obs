@@ -61,7 +61,7 @@
     import LocationItemPicker from "./locationItemPicker.obs";
     import LocationAddressPicker from "./locationAddressPicker.obs";
     import GeoPicker from "./geoPicker.obs";
-    import RadioButtonList from "./radioButtonList";
+    import RadioButtonList from "./radioButtonList.obs";
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";

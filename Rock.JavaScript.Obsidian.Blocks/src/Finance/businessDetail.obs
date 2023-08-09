@@ -51,7 +51,7 @@
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import EditPanel from "./BusinessDetail/editPanel.partial.obs";

@@ -75,7 +75,7 @@
     import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { ContentCollectionBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionBag";

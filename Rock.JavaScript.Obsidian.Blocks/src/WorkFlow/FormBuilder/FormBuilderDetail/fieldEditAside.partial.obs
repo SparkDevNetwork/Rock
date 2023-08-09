@@ -79,7 +79,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockForm from "@Obsidian/Controls/rockForm";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
     import InlineSwitch from "@Obsidian/Controls/switch";
     import TextBox from "@Obsidian/Controls/textBox";

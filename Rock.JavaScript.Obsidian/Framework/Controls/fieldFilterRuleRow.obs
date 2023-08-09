@@ -25,7 +25,7 @@
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
-    import RockAttributeFilter from "./rockAttributeFilter";
+    import RockAttributeFilter from "./rockAttributeFilter.obs";
 
     const props = defineProps({
         modelValue: {

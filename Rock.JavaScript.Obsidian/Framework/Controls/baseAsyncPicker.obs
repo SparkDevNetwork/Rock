@@ -75,7 +75,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import CheckBoxList from "./checkBoxList.obs";
     import DropDownList from "./dropDownList.obs";
-    import RadioButtonList from "./radioButtonList";
+    import RadioButtonList from "./radioButtonList.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 
     /**

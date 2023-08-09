@@ -18,7 +18,7 @@
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import TextBox from "@Obsidian/Controls/textBox";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
 import { ConfigurationValueKey } from "./communicationPreferenceField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import RockButton from "./rockButton";
+import RockButton from "./rockButton.obs";
 
 export default defineComponent({
     name: "PanelWidget",

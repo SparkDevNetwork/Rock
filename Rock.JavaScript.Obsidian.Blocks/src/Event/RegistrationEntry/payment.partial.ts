@@ -22,7 +22,7 @@ import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlB
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockValidation from "@Obsidian/Controls/rockValidation";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";

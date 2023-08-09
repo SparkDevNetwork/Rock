@@ -14,7 +14,7 @@
     import { PropType } from "vue";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
     import Dialog from "./dialog.obs";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
 
     defineProps({
         /**

@@ -19,7 +19,7 @@ import { defineComponent, inject, PropType } from "vue";
 import Dialog from "@Obsidian/Controls/dialog.obs";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import { toWord } from "@Obsidian/Utility/numberUtils";
 import { pluralConditional } from "@Obsidian/Utility/stringUtils";
 import { SessionRenewalResult, RegistrationEntryState } from "./types.partial";

@@ -40,7 +40,7 @@
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import EditPanel from "./WebFarmNodeDetail/editPanel.partial.obs";
     import ViewPanel from "./WebFarmNodeDetail/viewPanel.partial.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

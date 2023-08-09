@@ -83,8 +83,8 @@
     import Loading from "@Obsidian/Controls/loading.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import RockForm from "@Obsidian/Controls/rockForm";
     import TextBox from "@Obsidian/Controls/textBox";

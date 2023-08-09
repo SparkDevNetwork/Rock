@@ -215,7 +215,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import PanelWidget from "@Obsidian/Controls/panelWidget";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";

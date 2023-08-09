@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import RockField from "@Obsidian/Controls/rockField";
+    import RockField from "@Obsidian/Controls/rockField.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FormField } from "../Shared/types.partial";

@@ -83,7 +83,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
     import TextBox from "./textBox";
     import EmailBox from "./emailBox.obs";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";

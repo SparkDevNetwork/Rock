@@ -133,11 +133,11 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import Toggle from "@Obsidian/Controls/toggle";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";

@@ -70,7 +70,7 @@
     import LoadingIndicator from "./loadingIndicator.obs";
     import { List } from "@Obsidian/Utility/linq";
     import TabbedContent from "./tabbedContent.obs";
-    import RockField from "./rockField";
+    import RockField from "./rockField.obs";
     import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicAttributeCategoryBag";
     import { emptyGuid } from "@Obsidian/Utility/guid";
     import ItemsWithPreAndPostHtml from "./itemsWithPreAndPostHtml.obs";

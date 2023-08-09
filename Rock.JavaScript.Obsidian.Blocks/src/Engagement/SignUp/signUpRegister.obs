@@ -81,7 +81,7 @@
     import RegisterGroup from "./SignUpRegister/registerGroup.partial.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm";
     import { RegisterMode } from "@Obsidian/Enums/Blocks/Engagement/SignUp/registerMode";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";

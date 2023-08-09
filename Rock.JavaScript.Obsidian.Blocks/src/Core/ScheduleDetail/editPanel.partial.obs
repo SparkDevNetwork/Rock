@@ -86,7 +86,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import Numberbox from "@Obsidian/Controls/numberBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
     import { tooltip } from "@Obsidian/Utility/tooltip";

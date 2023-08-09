@@ -49,7 +49,7 @@
     import RockForm from "./rockForm";
     import AttributeValuesContainer from "./attributeValuesContainer.obs";
     import TextBox from "./textBox";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
     import Loading from "./loading.obs";
     import NotificationBox from "./notificationBox.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";

@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
     import { ComponentPublicInstance, onMounted, PropType, ref } from "vue";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
 
     const props = defineProps({
         value: {

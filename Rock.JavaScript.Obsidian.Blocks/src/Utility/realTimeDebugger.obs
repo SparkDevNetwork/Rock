@@ -125,7 +125,7 @@
     import ConnectionStatus from "@Obsidian/Controls/connectionStatus.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ref } from "vue";

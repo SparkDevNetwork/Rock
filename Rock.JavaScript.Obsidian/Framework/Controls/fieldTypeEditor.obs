@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
     import { Component, computed, PropType, ref, watch } from "vue";
-    import RockField from "./rockField";
+    import RockField from "./rockField.obs";
     import NotificationBox from "./notificationBox.obs";
     import DropDownList from "./dropDownList.obs";
     import StaticFormControl from "./staticFormControl";

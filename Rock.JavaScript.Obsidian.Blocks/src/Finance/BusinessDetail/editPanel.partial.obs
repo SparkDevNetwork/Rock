@@ -139,7 +139,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel";
     import Modal from "@Obsidian/Controls/modal.obs";

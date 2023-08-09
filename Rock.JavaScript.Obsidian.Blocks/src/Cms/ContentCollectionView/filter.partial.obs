@@ -32,7 +32,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { SearchFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/searchFilterBag";
     import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

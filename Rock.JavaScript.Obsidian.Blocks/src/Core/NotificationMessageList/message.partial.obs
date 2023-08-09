@@ -107,7 +107,7 @@
 </style>
 
 <script setup lang="ts">
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";

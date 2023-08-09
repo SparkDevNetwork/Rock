@@ -32,7 +32,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ref } from "vue";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Block from "@Obsidian/Templates/block";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import RockForm from "@Obsidian/Controls/rockForm";

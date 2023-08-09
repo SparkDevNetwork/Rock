@@ -35,7 +35,7 @@ li.disabled > button {
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({

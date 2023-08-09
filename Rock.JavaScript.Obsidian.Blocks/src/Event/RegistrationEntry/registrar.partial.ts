@@ -19,7 +19,7 @@ import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject } from "vue";
 import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
 import EmailBox from "@Obsidian/Controls/emailBox.obs";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
 import StaticFormControl from "@Obsidian/Controls/staticFormControl";
 import TextBox from "@Obsidian/Controls/textBox";
 import { getRegistrantBasicInfo,  } from "./utils.partial";

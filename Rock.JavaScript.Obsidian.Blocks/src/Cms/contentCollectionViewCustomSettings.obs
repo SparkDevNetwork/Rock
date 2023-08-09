@@ -155,7 +155,7 @@
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockFormFieldError from "@Obsidian/Controls/rockFormFieldError";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import TextBox from "@Obsidian/Controls/textBox";

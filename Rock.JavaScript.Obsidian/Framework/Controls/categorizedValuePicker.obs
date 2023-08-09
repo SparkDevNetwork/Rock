@@ -24,7 +24,7 @@
     import { useVModelPassthrough, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import NotificationBox from "./notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
     import DropDownList from "./dropDownList.obs";
 
     const props = defineProps({

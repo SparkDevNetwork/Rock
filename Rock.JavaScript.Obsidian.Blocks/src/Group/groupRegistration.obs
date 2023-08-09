@@ -31,7 +31,7 @@ import EditPanel from "./GroupRegistration/editPanel.partial.obs";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { GroupRegistrationBlockBox } from "@Obsidian/ViewModels/Blocks/Group/GroupRegistration/groupRegistrationBlockBox";
 import { GroupRegistrationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRegistration/groupRegistrationBag";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 import Panel from "@Obsidian/Controls/panel.obs";
@@ -93,7 +93,8 @@ async function onSave(): Promise<void> {
         else if (result.statusCode === 201 && typeof result.data === "string") {
             window.location.href = makeUrlRedirectSafe(result.data);
         }
-    } else {
+    }
+ else {
         errorMessage.value = result.data ?? "Unknown error while trying to save group.";
     }
 }

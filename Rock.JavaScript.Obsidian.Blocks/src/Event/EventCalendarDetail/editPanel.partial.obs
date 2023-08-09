@@ -168,7 +168,7 @@
     import { EventAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";

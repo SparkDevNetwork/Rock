@@ -123,7 +123,7 @@
     import Loading from "./loading.obs";
     import TextBox from "./textBox";
     import TreeList from "./treeList";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

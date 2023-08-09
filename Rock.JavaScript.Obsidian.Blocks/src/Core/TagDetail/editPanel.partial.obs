@@ -70,7 +70,7 @@
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { TagBag } from "@Obsidian/ViewModels/Blocks/Core/TagDetail/tagBag";

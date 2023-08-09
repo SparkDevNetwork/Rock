@@ -22,7 +22,7 @@ import RockValidation from "@Obsidian/Controls/rockValidation";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import EmailBox from "@Obsidian/Controls/emailBox.obs";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { getRegistrantBasicInfo } from "./utils.partial";
 import CostSummary from "./costSummary.partial";

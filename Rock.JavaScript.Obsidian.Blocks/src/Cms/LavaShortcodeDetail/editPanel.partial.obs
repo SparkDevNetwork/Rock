@@ -121,7 +121,7 @@
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
     import  { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import RockLabel from "@Obsidian/Controls/rockLabel";

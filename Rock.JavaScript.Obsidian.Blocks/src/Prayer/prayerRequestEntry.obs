@@ -118,7 +118,7 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm";
     import TextBox from "@Obsidian/Controls/textBox";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";

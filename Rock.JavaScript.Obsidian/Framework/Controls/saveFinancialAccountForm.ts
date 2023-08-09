@@ -19,7 +19,7 @@ import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject, PropType } from "vue";
 import NotificationBox from "./notificationBox.obs";
 import InlineCheckBox from "./inlineCheckBox.obs";
-import RockButton from "./rockButton";
+import RockButton from "./rockButton.obs";
 import TextBox from "./textBox";
 import RockForm from "./rockForm";
 import { useStore } from "@Obsidian/PageState";

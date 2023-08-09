@@ -493,8 +493,8 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl";
     import TextBox from "@Obsidian/Controls/textBox";

@@ -70,10 +70,11 @@ import Toggle from "@Obsidian/Controls/toggle";
 import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
 import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
 import StaticFormControl from "@Obsidian/Controls/staticFormControl";
-import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
+import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
+import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
 import RockForm from "@Obsidian/Controls/rockForm";
-import RockButton from "@Obsidian/Controls/rockButton";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import Dialog from "@Obsidian/Controls/dialog.obs";
 import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
@@ -90,7 +91,7 @@ import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox"
 import TimePicker from "@Obsidian/Controls/timePicker.obs";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
-import Rating from "@Obsidian/Controls/rating";
+import Rating from "@Obsidian/Controls/rating.obs";
 import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
 import PersonPicker from "@Obsidian/Controls/personPicker.obs";
@@ -149,7 +150,7 @@ import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker.obs";
 import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
 import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
 import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
-import RemoteAuthsPicker from "@Obsidian/Controls/remoteAuthsPicker";
+import RemoteAuthsPicker from "@Obsidian/Controls/remoteAuthsPicker.obs";
 import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
 import StepProgramStepTypePicker from "@Obsidian/Controls/stepProgramStepTypePicker.obs";
 import StepProgramStepStatusPicker from "@Obsidian/Controls/stepProgramStepStatusPicker.obs";
@@ -187,8 +188,8 @@ import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker.obs";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
 import MetricCategoryPicker from "@Obsidian/Controls/metricCategoryPicker.obs";
 import MetricItemPicker from "@Obsidian/Controls/metricItemPicker.obs";
-import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker";
-import ReportPicker from "@Obsidian/Controls/reportPicker";
+import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker.obs";
+import ReportPicker from "@Obsidian/Controls/reportPicker.obs";
 import SchedulePicker from "@Obsidian/Controls/schedulePicker";
 import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicker.obs";
 import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
@@ -5312,7 +5313,7 @@ const rockButtonGallery = defineComponent({
             isLoading: ref(false),
             isSquare: ref(false),
             loadingText: ref("Loading..."),
-            importCode: `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton";`,
+            importCode: `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton.obs";`,
             exampleCode: `<RockButton
     :btnSize="BtnSize.Default"
     :btnType="BtnType.Default"

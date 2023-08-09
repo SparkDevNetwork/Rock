@@ -27,7 +27,7 @@ import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Contr
 import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
 import BadgeList from "@Obsidian/Controls/badgeList.obs";
 import EntityTagList from "@Obsidian/Controls/tagList.obs";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockSuspense from "@Obsidian/Controls/rockSuspense";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";

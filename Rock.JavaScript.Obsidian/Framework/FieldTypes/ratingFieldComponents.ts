@@ -17,7 +17,7 @@
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import Rating from "@Obsidian/Controls/rating";
+import Rating from "@Obsidian/Controls/rating.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import { ConfigurationValueKey, RatingValue } from "./ratingField.partial";
 

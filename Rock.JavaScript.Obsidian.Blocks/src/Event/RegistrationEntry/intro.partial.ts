@@ -18,7 +18,7 @@
 import { defineComponent, inject } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import { toTitleCase, pluralConditional } from "@Obsidian/Utility/stringUtils";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { getDefaultRegistrantInfo, getForcedFamilyGuid } from "./utils.partial";
