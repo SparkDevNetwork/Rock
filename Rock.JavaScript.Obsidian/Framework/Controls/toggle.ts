@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType } from "vue";
-import JavaScriptAnchor from "./javaScriptAnchor";
+import JavaScriptAnchor from "./javaScriptAnchor.obs";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({

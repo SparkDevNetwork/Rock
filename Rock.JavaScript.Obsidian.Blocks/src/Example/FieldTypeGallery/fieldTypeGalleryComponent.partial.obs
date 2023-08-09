@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-    import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
+    import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor.obs";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import { PropType, ref } from "vue";
     import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";

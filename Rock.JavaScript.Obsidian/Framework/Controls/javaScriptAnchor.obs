@@ -1,0 +1,10 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <a href="javascript:void(0);">
+        <slot />
+    </a>
+</template>
+
+<script setup lang="ts">
+    // Intentionally blank.
+</script>

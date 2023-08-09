@@ -1,0 +1,58 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row form-row field-criteria">
+        <div v-if="hasCompareColumn" :class="compareColumnClass">
+            <span v-if="hasCompareLabel" class="data-view-filter-label">{{ compareLabel }}</span>
+            <slot v-else name="compare" />
+        </div>
+
+        <div :class="valueColumnClass">
+            <slot />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, useSlots } from "vue";
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        compareLabel: {
+            type: String as PropType<string>
+        },
+    });
+
+    const slots = useSlots();
+
+    /** True if the compare column should be displayed. */
+    const hasCompareColumn = computed((): boolean => !!slots.compare || !!props.compareLabel);
+
+    /** True if we have a plain text label to display in the compare column. */
+    const hasCompareLabel = computed((): boolean => !!props.compareLabel);
+
+    /** The CSS class to use for the compare column width. */
+    const compareColumnClass = computed((): string => {
+        if (slots.compare) {
+            return "col-xs-12 col-md-4";
+        }
+        else if (props.compareLabel) {
+            return "col-xs-12 col-md-2";
+        }
+        else {
+            return "";
+        }
+    });
+
+    /** The CSS class to use for the value column width. */
+    const valueColumnClass = computed((): string => {
+        if (slots.compare) {
+            return "col-xs-12 col-md-8";
+        }
+        else if (props.compareLabel) {
+            return "col-xs-12 col-md-10";
+        }
+        else {
+            return "col-xs-12 col-md-12";
+        }
+    });
+</script>

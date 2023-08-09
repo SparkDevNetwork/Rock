@@ -137,7 +137,7 @@
     import RockFormField from "./rockFormField";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import Fullscreen from "@Obsidian/Controls/fullscreen";
+    import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 
     const props = defineProps({
         /**

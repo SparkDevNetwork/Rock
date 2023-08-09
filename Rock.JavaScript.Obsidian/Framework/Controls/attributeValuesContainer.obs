@@ -73,7 +73,8 @@
     import RockField from "./rockField";
     import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicAttributeCategoryBag";
     import { emptyGuid } from "@Obsidian/Utility/guid";
-    import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "./itemsWithPreAndPostHtml";
+    import ItemsWithPreAndPostHtml from "./itemsWithPreAndPostHtml.obs";
+    import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
     import { Guid } from "@Obsidian/Types";
 
     type CategorizedAttributes = PublicAttributeCategoryBag & {

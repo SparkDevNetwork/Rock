@@ -22,7 +22,7 @@ import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import FieldFilterContainer from "@Obsidian/Controls/fieldFilterContainer";
+import FieldFilterContainer from "@Obsidian/Controls/fieldFilterContainer.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

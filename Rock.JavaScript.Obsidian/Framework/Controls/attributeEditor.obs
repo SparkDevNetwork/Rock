@@ -134,7 +134,7 @@
     import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import CategoryPicker from "./categoryPicker.obs";
-    import FieldTypeEditor from "./fieldTypeEditor";
+    import FieldTypeEditor from "./fieldTypeEditor.obs";
     import StaticFormControl from "./staticFormControl";
     import PanelWidget from "./panelWidget";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";

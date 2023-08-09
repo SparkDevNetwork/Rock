@@ -18,7 +18,7 @@
 import { defineComponent, provide, reactive, ref } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
-import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
+import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor.obs";
 import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
 import RockButton from "@Obsidian/Controls/rockButton";
 import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
