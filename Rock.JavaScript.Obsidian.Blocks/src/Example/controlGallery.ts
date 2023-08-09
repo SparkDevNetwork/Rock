@@ -1914,11 +1914,16 @@ const addressControlGallery = defineComponent({
     name: "AddressControlGallery",
     components: {
         GalleryAndResult,
+        RockForm,
+        RockButton,
+        CheckBox,
         AddressControl
     },
     setup() {
         return {
             value: ref({}),
+            submit: ref(false),
+            required: ref(false),
             importCode: getSfcControlImportPath("addressControl"),
             exampleCode: `<AddressControl label="Address" v-model="value" />`
         };
@@ -1928,9 +1933,19 @@ const addressControlGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <AddressControl label="Address" v-model="value" />
+
+    <RockForm v-model:submit="submit">
+    <AddressControl label="Address" v-model="value" :rules="required ? 'required' : ''" />
+
+    <RockButton @click="submit=true">Validate</RockButton>
+    </RockForm>
 
     <template #settings>
+        <div class="row">
+            <div class="col-sm-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+        </div>
         <p>All props match that of a <code>Rock Form Field</code></p>
     </template>
 </GalleryAndResult>`
