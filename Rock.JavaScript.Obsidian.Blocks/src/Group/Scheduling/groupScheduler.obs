@@ -184,6 +184,7 @@
 
             <SelectFilters v-model:isVisible="isSelectingFilters"
                            :filters="filters"
+                           :disallowGroupSelection="disallowGroupSelection"
                            @filtersApplied="onFiltersApplied" />
 
             <CloneSchedules v-model:isVisible="isSelectingCloneSettings"
@@ -298,6 +299,7 @@
     const filters = ref<GroupSchedulerFiltersBag | null | undefined>(config.appliedFilters?.filters);
     const scheduleOccurrences = ref<GroupSchedulerOccurrenceBag[] | null | undefined>(config.appliedFilters?.scheduleOccurrences);
     const navigationUrls = ref<Record<string, string> | null | undefined>(config.appliedFilters?.navigationUrls);
+    const disallowGroupSelection = ref<boolean>(config.disallowGroupSelection);
 
     const isSelectingFilters = ref(false);
 
@@ -340,7 +342,7 @@
                 iconCssClass: "fa fa-clipboard",
                 type: "default",
                 handler: onCopyToClipboardClick,
-                disabled: isSchedulingDisabled.value
+                disabled: isBusy.value || !anyGroupsSelected.value
             });
         }
 

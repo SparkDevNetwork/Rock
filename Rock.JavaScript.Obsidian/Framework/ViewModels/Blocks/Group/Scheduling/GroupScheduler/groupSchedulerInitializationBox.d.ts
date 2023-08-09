@@ -28,6 +28,9 @@ export type GroupSchedulerInitializationBox = {
     /** Gets or sets the applied filters, to limit what is shown on the Group Scheduler. */
     appliedFilters?: GroupSchedulerAppliedFiltersBag | null;
 
+    /** Gets or sets whether to disallow group selection. */
+    disallowGroupSelection: boolean;
+
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.
