@@ -16,7 +16,7 @@
 
 import { defineComponent, PropType } from "vue";
 import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
-import RockFormField from "./rockFormField";
+import RockFormField from "./rockFormField.obs";
 
 export default defineComponent({
     name: "SocialSecurityNumberBox",

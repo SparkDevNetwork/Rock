@@ -57,7 +57,7 @@
     import { DragSource as vDragSource, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import Switch from "@Obsidian/Controls/switch";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

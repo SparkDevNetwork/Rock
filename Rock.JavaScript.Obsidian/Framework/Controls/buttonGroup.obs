@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
     import { PropType, computed } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";

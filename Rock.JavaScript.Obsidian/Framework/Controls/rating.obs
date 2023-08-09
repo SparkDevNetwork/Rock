@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
 
     const props = defineProps({
         /** The value provided to use from the parent component. */

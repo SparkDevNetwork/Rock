@@ -85,8 +85,8 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";

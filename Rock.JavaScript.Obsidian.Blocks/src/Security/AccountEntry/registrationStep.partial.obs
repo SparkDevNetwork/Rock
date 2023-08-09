@@ -41,7 +41,7 @@
     import AccountInfo from "./registrationStepAccountInfo.partial.obs";
     import PersonInfo from "./registrationStepPersonInfo.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";

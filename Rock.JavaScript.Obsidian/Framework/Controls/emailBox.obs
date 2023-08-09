@@ -21,7 +21,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({

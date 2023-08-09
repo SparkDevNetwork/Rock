@@ -237,7 +237,7 @@
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { GroupAttendanceDetailDateSelectionMode } from "@Obsidian/Enums/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailDateSelectionMode";

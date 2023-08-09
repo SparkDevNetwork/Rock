@@ -62,7 +62,7 @@
     import CompletionSettings from "../Shared/completionSettings.partial.obs";
     import ConfirmationEmail from "../Shared/confirmationEmail.partial.obs";
     import PersonEntrySettings from "../Shared/personEntrySettings.partial.obs";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import { FormCompletionAction } from "../Shared/types.partial";
     import { TemplateEditDetail } from "./types.partial";
     import { useSources } from "./utils.partial";

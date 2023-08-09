@@ -46,7 +46,7 @@
     import AddressControl from "./addressControl.obs";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { FormError } from "@Obsidian/Utility/form";
-    import RockValidation from "./rockValidation";
+    import RockValidation from "./rockValidation.obs";
     import { validateAddress } from "@Obsidian/Utility/address";
     import Loading from "./loading.obs";
 

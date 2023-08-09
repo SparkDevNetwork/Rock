@@ -296,7 +296,7 @@
     import Modal from "./modal.obs";
     import NumberBox from "./numberBox.obs";
     import RadioButtonList from "./radioButtonList.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
     import type { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";

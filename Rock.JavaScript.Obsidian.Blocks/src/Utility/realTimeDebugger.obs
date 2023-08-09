@@ -126,7 +126,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ref } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";

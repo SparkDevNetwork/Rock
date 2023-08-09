@@ -25,7 +25,7 @@
 <script setup="" lang="ts">
     import { Guid } from "@Obsidian/Types";
     import { PropType, ref, watch } from "vue";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";

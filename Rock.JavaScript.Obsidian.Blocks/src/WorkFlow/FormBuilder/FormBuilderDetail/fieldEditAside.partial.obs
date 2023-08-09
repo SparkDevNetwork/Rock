@@ -77,7 +77,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";

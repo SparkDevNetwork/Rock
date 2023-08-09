@@ -33,7 +33,7 @@
     import { computed, PropType, ref, useSlots, watch } from "vue";
     import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
     import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
 
     const props = defineProps({
         modelValue: {

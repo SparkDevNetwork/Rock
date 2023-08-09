@@ -140,7 +140,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Switch from "@Obsidian/Controls/switch";
     import TextBox from "@Obsidian/Controls/textBox";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";

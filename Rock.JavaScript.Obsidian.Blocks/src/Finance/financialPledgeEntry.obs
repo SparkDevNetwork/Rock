@@ -55,7 +55,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import EditPanel from "./FinancialPledgeEntry/editPanel.partial.obs";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";

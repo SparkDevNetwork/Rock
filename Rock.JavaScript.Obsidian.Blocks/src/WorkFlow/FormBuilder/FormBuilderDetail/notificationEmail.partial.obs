@@ -53,7 +53,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import EmailSource from "../Shared/emailSource.partial.obs";
     import SegmentedPicker from "../Shared/segmentedPicker.partial.obs";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import { FormNotificationEmail, FormNotificationEmailDestination } from "../Shared/types.partial";
 
     const props = defineProps({

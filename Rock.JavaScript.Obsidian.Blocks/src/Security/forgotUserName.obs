@@ -39,7 +39,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { SendInstructionsResultType } from "@Obsidian/Enums/Blocks/Security/ForgotUserName/sendInstructionsResultType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { HttpResult } from "@Obsidian/Types/Utility/http";

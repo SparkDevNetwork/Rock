@@ -19,7 +19,7 @@
 <script setup lang="ts">
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { onMounted, PropType, ref } from "vue";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
 
     // TODO: This should be replaced with a version that does not require jQuery.
 

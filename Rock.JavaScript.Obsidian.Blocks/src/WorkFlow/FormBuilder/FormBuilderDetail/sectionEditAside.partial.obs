@@ -67,7 +67,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Switch from "@Obsidian/Controls/switch";
     import TextBox from "@Obsidian/Controls/textBox";
     import { SectionAsideSettings } from "./types.partial";

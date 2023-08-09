@@ -193,7 +193,7 @@
 </style>
 
 <script setup lang="ts">
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { PropType, onMounted, ref, watch, onBeforeUnmount, Ref, computed } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
     import { debounce } from "@Obsidian/Utility/util";

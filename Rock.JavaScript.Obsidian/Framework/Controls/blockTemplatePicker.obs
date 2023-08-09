@@ -30,7 +30,7 @@
     import { PropType, ref, watch } from "vue";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import CodeEditor from "./codeEditor.obs";
     import { Guid } from "@Obsidian/Types";
     import { emptyGuid } from "@Obsidian/Utility/guid";

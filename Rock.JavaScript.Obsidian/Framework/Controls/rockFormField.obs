@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿<script lang="ts">
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,12 +16,14 @@
 // </copyright>
 //
 
+// NOTE: This file can be converted to final SFC form after upgrading Vue to
+// 3.3 so we can use the defineOptions() to disable inheritence.
 import { standardRockFormFieldProps } from "@Obsidian/Utility/component";
 import { useFormState } from "@Obsidian/Utility/form";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { normalizeRules, validateValue } from "@Obsidian/ValidationRules";
-import { computed, defineComponent, onBeforeUnmount, PropType, ref, watch } from "vue";
-import RockLabel from "./rockLabel";
+import { computed, defineComponent, onBeforeUnmount, ref, watch } from "vue";
+import RockLabel from "./rockLabel.obs";
 
 export default defineComponent({
     name: "RockFormField",
@@ -131,3 +134,4 @@ export default defineComponent({
 <slot name="post" />
 `
 });
+</script>

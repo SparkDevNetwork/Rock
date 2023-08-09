@@ -48,7 +48,7 @@
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref, watch } from "vue";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import TextBox from "./textBox";
     import BasicTimePicker from "./basicTimePicker.obs";
     import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";

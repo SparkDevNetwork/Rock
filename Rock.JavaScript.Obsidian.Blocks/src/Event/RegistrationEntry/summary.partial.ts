@@ -17,8 +17,8 @@
 
 import { computed, defineComponent, inject, ref } from "vue";
 import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
-import RockForm from "@Obsidian/Controls/rockForm";
-import RockValidation from "@Obsidian/Controls/rockValidation";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
+import RockValidation from "@Obsidian/Controls/rockValidation.obs";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import EmailBox from "@Obsidian/Controls/emailBox.obs";

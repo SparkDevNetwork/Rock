@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
     import { PropType, ref } from "vue";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { FormError } from "@Obsidian/Utility/form";
     import PersonEntrySettings from "../Shared/personEntrySettings.partial.obs";

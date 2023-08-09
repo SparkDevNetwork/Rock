@@ -495,7 +495,7 @@
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl";
     import TextBox from "@Obsidian/Controls/textBox";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";

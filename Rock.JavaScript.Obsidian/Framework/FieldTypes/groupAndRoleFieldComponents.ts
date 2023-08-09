@@ -19,7 +19,7 @@ import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { useHttp } from "@Obsidian/Utility/http";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
-import RockLabel from "@Obsidian/Controls/rockLabel";
+import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 import TextBox from "@Obsidian/Controls/textBox";
 import { ConfigurationValueKey, GroupAndRoleValue } from "./groupAndRoleField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

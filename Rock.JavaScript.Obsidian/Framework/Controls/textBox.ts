@@ -17,7 +17,7 @@
 import { computed } from "vue";
 import { defineComponent, PropType } from "vue";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import RockFormField from "./rockFormField";
+import RockFormField from "./rockFormField.obs";
 
 export default defineComponent({
     name: "TextBox",

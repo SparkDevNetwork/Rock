@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent } from "vue";
-import RockFormField from "./rockFormField";
+import RockFormField from "./rockFormField.obs";
 
 export default defineComponent({
     name: "StaticFormControl",

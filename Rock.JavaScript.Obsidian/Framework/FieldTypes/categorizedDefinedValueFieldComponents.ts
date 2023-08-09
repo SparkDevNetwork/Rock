@@ -20,7 +20,7 @@ import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import CategorizedValuePicker from "@Obsidian/Controls/categorizedValuePicker.obs";
-import RockLabel from "@Obsidian/Controls/rockLabel";
+import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./categorizedDefinedValueField.partial";
 

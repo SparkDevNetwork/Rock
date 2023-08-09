@@ -36,7 +36,7 @@
 
 <script lang="ts" setup>
     import { PropType, reactive, ref, watch } from "vue";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import DropDownList from "./dropDownList.obs";
     import TextBox from "./textBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

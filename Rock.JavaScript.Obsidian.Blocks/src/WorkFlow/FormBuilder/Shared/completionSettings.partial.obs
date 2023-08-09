@@ -29,7 +29,7 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import SegmentedPicker from "./segmentedPicker.partial.obs";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import { FormCompletionActionType, FormCompletionAction } from "./types.partial";
 
     const props = defineProps({

@@ -15,7 +15,7 @@
     import { Guid } from "@Obsidian/Types";
     import { PropType, ref, watch } from "vue";
     import CategorizedValuePickerDropDownLevel from "./categorizedValuePickerDropDownLevel.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { CategorizedValuePickerGetTreeOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categorizedValuePickerGetTreeOptionsBag";
     import { CategorizedValuePickerGetTreeResultsBag } from "@Obsidian/ViewModels/Rest/Controls/categorizedValuePickerGetTreeResultsBag";
     import { CategorizedValuePickerNodeBag } from "@Obsidian/ViewModels/Rest/Controls/categorizedValuePickerNodeBag";

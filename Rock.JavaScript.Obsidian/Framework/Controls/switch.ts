@@ -17,7 +17,7 @@
 import { defineComponent, PropType } from "vue";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import InlineSwitch from "./inlineSwitch.obs";
-import RockFormField from "./rockFormField";
+import RockFormField from "./rockFormField.obs";
 
 export default defineComponent({
     name: "Switch",

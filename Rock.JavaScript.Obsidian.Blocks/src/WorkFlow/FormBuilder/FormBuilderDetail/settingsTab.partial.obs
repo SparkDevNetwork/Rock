@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
     import { computed, ref, PropType, watch } from "vue";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import CompletionSettings from "../Shared/completionSettings.partial.obs";

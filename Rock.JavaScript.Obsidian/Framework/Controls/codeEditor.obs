@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
     import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { isFullscreen, enterFullscreen, exitFullscreen } from "@Obsidian/Utility/fullscreen";

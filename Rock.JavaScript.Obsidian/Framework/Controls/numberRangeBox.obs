@@ -36,7 +36,7 @@
     import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
     import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
 
     const props = defineProps({
         modelValue: {

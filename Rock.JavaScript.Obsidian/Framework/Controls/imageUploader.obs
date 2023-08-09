@@ -47,7 +47,7 @@
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { uploadBinaryFile } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
 
     const props = defineProps({
         modelValue: {

@@ -336,7 +336,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";

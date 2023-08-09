@@ -17,7 +17,7 @@
 import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { defineComponent, PropType, computed } from "vue";
-import RockFormField from "./rockFormField";
+import RockFormField from "./rockFormField.obs";
 
 export default defineComponent({
     name: "UrlLinkBox",

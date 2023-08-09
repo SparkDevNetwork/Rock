@@ -20,7 +20,7 @@
 <script setup lang="ts">
     import { computed } from "vue";
     import { PropType, ref, watch } from "vue";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { FormError } from "@Obsidian/Utility/form";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

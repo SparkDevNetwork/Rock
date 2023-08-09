@@ -59,7 +59,7 @@
 <script setup lang="ts">
     import { ComponentPublicInstance, computed, nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import { createEveryFilter, createSomeFilter, DidAttendFilter, getOrCreateFirstNameStartsWithFilter, getOrCreateLastNameStartsWithFilter, IAggregateAttendanceFilter, IAttendanceFilter, NoFilter } from "./utils.partial";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LiteralUnion } from "@Obsidian/Types/Utility/support";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";

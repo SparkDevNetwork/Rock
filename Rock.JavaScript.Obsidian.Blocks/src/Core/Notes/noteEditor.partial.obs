@@ -109,7 +109,7 @@
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { showSecurity as showSecurityModal } from "@Obsidian/Utility/dialogs";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";

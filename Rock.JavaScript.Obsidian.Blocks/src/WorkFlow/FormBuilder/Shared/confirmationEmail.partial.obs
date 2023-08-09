@@ -24,7 +24,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import EmailSource from "./emailSource.partial.obs";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import { FormConfirmationEmail, FormEmailSource } from "./types.partial";
 
     const props = defineProps({

@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref, watch } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { Guid } from "@Obsidian/Types";
     import { ValidationResult, ValidationRule } from "@Obsidian/Types/validationRules";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";

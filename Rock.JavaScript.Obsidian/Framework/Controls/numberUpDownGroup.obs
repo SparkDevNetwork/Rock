@@ -20,7 +20,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import NumberUpDownBase from "./numberUpDownBase.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
 
     const props = defineProps({

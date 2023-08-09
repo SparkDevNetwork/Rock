@@ -39,7 +39,7 @@
     import LocationPicker from "@Obsidian/Controls/locationItemPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { StreakBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakDetail/streakBag";
     import { StreakDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakDetail/streakDetailOptionsBag";
 

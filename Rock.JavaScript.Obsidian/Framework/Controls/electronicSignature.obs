@@ -89,7 +89,7 @@
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
-    import RockForm from "./rockForm";
+    import RockForm from "./rockForm.obs";
     import { useStore } from "@Obsidian/PageState";
 
     const props = defineProps({

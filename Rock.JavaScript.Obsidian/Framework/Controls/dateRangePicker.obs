@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import DatePickerBase from "./datePickerBase.obs";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
 

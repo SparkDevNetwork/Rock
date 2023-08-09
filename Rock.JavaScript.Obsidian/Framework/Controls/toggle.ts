@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, PropType } from "vue";
 import JavaScriptAnchor from "./javaScriptAnchor.obs";
-import RockFormField from "./rockFormField";
+import RockFormField from "./rockFormField.obs";
 
 export default defineComponent({
     name: "Toggle",

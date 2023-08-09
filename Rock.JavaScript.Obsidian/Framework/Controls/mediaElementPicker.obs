@@ -32,7 +32,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockButton from "./rockButton.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
 
     const props = defineProps({
         ...standardRockFormFieldProps,

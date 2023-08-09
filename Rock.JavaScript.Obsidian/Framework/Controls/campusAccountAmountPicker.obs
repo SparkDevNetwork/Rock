@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
     import { PropType, computed, ref, watch, watchEffect } from "vue";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import CurrencyBox from "./currencyBox.obs";
     import CampusPicker from "./campusPicker.obs";
     import Loading from "./loading.obs";

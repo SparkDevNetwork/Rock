@@ -138,7 +138,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import Toggle from "@Obsidian/Controls/toggle";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";

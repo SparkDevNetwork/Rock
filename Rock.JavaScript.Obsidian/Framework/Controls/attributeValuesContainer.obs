@@ -66,7 +66,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-    import RockSuspense from "./rockSuspense";
+    import RockSuspense from "./rockSuspense.obs";
     import LoadingIndicator from "./loadingIndicator.obs";
     import { List } from "@Obsidian/Utility/linq";
     import TabbedContent from "./tabbedContent.obs";
