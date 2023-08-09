@@ -88,8 +88,7 @@
             </div>
         </div>
 
-        <PanelWidget :isDefaultOpen="false" v-if="eventItemAttributes.length > 0">
-            <template #header>Event Attribute Values</template>
+        <Panel v-if="eventItemAttributes.length > 0" title="Event Attribute Values" hasCollapse>
             <div v-for="eventItemAttribute in eventItemAttributes">
                 <h3>{{ eventItemAttribute.eventCalendarName }}</h3>
                 <AttributeValuesContainer v-if="eventItemAttribute.attributeValues && eventItemAttribute.attributes"
@@ -99,10 +98,9 @@
                                           isEditMode
                                           :numberOfColumns="2" />
             </div>
-        </PanelWidget>
+        </Panel>
 
-        <PanelWidget :isDefaultOpen="false">
-            <template #header>Event Attributes</template>
+        <Panel title="Event Attributes" hasCollapse>
             <div class="table-responsive">
                 <table class="grid-table table table-striped table-hover">
                     <thead>
@@ -168,7 +166,7 @@
                 </template>
 
             </Modal>
-        </PanelWidget>
+        </Panel>
 
         <Modal v-model="isAudienceModalOpen"
                title="Select Audience"
@@ -195,7 +193,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm";
-    import PanelWidget from "@Obsidian/Controls/panelWidget";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";

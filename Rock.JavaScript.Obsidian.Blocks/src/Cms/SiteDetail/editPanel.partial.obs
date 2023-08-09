@@ -133,8 +133,7 @@
 
         </div>
 
-        <PanelWidget :isDefaultOpen="false">
-            <template #header>Page Attributes</template>
+        <Panel title="Page Attributes" hasCollapse>
             <NotificationBox alertType="info">
                 Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes.
             </NotificationBox>
@@ -166,10 +165,9 @@
                 </template>
 
             </Modal>
-        </PanelWidget>
+        </Panel>
 
-        <PanelWidget :isDefaultOpen="false">
-            <template #header>Advanced Settings</template>
+        <Panel title="Advanced Settings" hasCollapse>
             <div class="row">
 
                 <div class="col-md-6">
@@ -221,7 +219,7 @@
                 <CodeEditor v-model="pageHeaderContent" label="Page Header Content" theme="rock" mode="text" :editorHeight="200" help="The content provided here will be added to each page's head section." />
 
             </div>
-        </PanelWidget>
+        </Panel>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
@@ -236,7 +234,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
-    import PanelWidget from "@Obsidian/Controls/panelWidget";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Modal from "@Obsidian/Controls/modal.obs";

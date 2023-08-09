@@ -175,7 +175,6 @@ import Loading from "@Obsidian/Controls/loading.obs";
 import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
 import NumberUpDownGroup from "@Obsidian/Controls/numberUpDownGroup.obs";
 import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
-import PanelWidget from "@Obsidian/Controls/panelWidget";
 import ProgressBar from "@Obsidian/Controls/progressBar.obs";
 import RockLabel from "@Obsidian/Controls/rockLabel";
 import RockValidation from "@Obsidian/Controls/rockValidation";
@@ -5197,47 +5196,6 @@ const numberUpDownGroupGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates panel widget */
-const panelWidgetGallery = defineComponent({
-    name: "PanelWidgetGallery",
-    components: {
-        GalleryAndResult,
-        PanelWidget
-    },
-    setup() {
-        return {
-            importCode: getControlImportPath("panelWidget"),
-            exampleCode: `<PanelWidget :isDefaultOpen="false">
-    <template #header>Header</template>
-    Main Content...
-</PanelWidget>`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-
-    <PanelWidget :isDefaultOpen="false">
-        <template #header>Panel Widget Header</template>
-        <h4>Romans 11:33-36</h4>
-        <p>
-            Oh, the depth of the riches<br />
-            and the wisdom and the knowledge of God!<br />
-            How unsearchable his judgments<br />
-            and untraceable his ways!<br />
-            For who has known the mind of the Lord?<br />
-            Or who has been his counselor?<br />
-            And who has ever given to God,<br />
-            that he should be repaid?<br />
-            For from him and through him<br />
-            and to him are all things.<br />
-            To him be the glory forever. Amen.
-        </p>
-    </PanelWidget>
-</GalleryAndResult>`
-});
-
 /** Demonstrates progress bar */
 const progressBarGallery = defineComponent({
     name: "ProgressBarGallery",
@@ -8125,7 +8083,6 @@ const controlGalleryComponents: Record<string, Component> = [
     loadingGallery,
     loadingIndicatorGallery,
     numberUpDownGroupGallery,
-    panelWidgetGallery,
     progressBarGallery,
     rockButtonGallery,
     rockLabelGallery,

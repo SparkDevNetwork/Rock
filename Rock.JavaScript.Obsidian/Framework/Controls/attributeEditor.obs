@@ -76,8 +76,7 @@
             </div>
         </div>
 
-        <PanelWidget>
-            <template #header>Advanced Settings</template>
+        <Panel title="Advanced Settings" hasCollapse>
             <div class="row">
                 <div class="col-md-6">
                     <CheckBox label="Enable History"
@@ -122,7 +121,7 @@
                      label="Post-HTML"
                      help="HTML that should be rendered before the attribute's edit control."
                      textMode="multiline" />
-        </PanelWidget>
+        </Panel>
     </fieldset>
 </template>
 
@@ -136,7 +135,7 @@
     import CategoryPicker from "./categoryPicker.obs";
     import FieldTypeEditor from "./fieldTypeEditor.obs";
     import StaticFormControl from "./staticFormControl";
-    import PanelWidget from "./panelWidget";
+    import Panel from "./panel.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
     const props = defineProps({

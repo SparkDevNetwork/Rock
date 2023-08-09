@@ -25,8 +25,7 @@
             </div>
         </div>
 
-        <PanelWidget :isDefaultOpen="false">
-            <template #header>Event Attributes</template>
+        <Panel title="Event Attributes" hasCollapse>
             <div class="table-responsive">
                 <table class="grid-table table table-striped table-hover">
                     <thead>
@@ -94,10 +93,9 @@
                 </template>
 
             </Modal>
-        </PanelWidget>
+        </Panel>
 
-        <PanelWidget :isDefaultOpen="false">
-            <template #header>Content Channels</template>
+        <Panel title="Content Channels" hasCollapse>
             <div class="table-responsive">
                 <table class="grid-table table table-striped table-hover">
                     <thead>
@@ -131,7 +129,7 @@
             <div class="grid-actions border-panel">
                 <RockButton class="btn-add btn-grid-action" btnType="link" @click.prevent.stop="onAddContentChannel"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
             </div>
-        </PanelWidget>
+        </Panel>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 
@@ -161,7 +159,7 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
-    import PanelWidget from "@Obsidian/Controls/panelWidget";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

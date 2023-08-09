@@ -114,6 +114,7 @@
         element.style.paddingTop = "";
         element.style.paddingBottom = "";
         element.style.display = state.display !== "none" ? state.display : "";
+        element.style.removeProperty("--transition-speed");
 
         delete element.dataset.transitionCollapseState;
     }
@@ -130,6 +131,7 @@
 
         // Set the height explicitely so the CSS animation will trigger.
         element.style.height = `${element.offsetHeight}px`;
+        element.style.setProperty("--transition-speed", speed.value);
     }
 
     /**
