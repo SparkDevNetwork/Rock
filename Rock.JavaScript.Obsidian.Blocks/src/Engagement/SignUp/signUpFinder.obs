@@ -52,9 +52,9 @@
                         </template>
                     </NumberBox>
                 </div>
-                <div v-for="a in attributeFilters" :key="a.key" :class="columnClass" class="filters-attributes">
+                <div v-for="a in attributeFilters" :key="a.key" :class="`${columnClass} filters-${a.attribute?.key?.toLowerCase()}`">
                     <div class="form-group">
-                        <RockLabel>{{ a.attribute.name }}</RockLabel>
+                        <RockLabel>{{ a.attribute?.name }}</RockLabel>
                         <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
                                              :attribute="a.attribute" />
                     </div>
