@@ -1232,6 +1232,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 foreach ( var childGroupTypeId in navGroupType.ChildGroupTypeIds )
                 {
+                    if ( childGroupTypeId == navGroupType.Id )
+                    {
+                        /*
+                            8/8/2023 - JPH
+
+                            Since this group type is a child of itself (by way of the [GroupTypeAssociation] table), we need
+                            to short-circuit this iteration and move on to the next child group type. Otherwise, we'll find
+                            ourselves in an endless, recursive loop that leads to a StackOverflowException being thrown.
+
+                            One real-world example of such a parent <-> child relationship is the "Serving Team" group type.
+                            We want the top-level, Serving Team parent group to allow more granular, Serving Team child groups,
+                            so this association is necessary.
+                         */
+                        continue;
+                    }
+
                     var childGroupType = NavData.GroupTypes.FirstOrDefault( g => g.Id == childGroupTypeId );
                     var groupIds = GetChildGroupIdDescendants( childGroupType );
                     childGroupIds.AddRange( groupIds );
