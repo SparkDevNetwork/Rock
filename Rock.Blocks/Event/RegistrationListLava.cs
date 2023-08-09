@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -55,7 +56,7 @@ namespace Rock.Blocks.Event
 
     #endregion
     [Rock.SystemGuid.BlockTypeGuid( "C0CFDAB7-BB29-499E-BD0A-468B0856C037" )]
-    [Rock.SystemGuid.EntityTypeGuid( "52C84E33-FE5F-4023-8365-A5FE1F71C93B")]
+    [Rock.SystemGuid.EntityTypeGuid( "52C84E33-FE5F-4023-8365-A5FE1F71C93B" )]
     public class RegistrationListLava : RockBlockType
     {
         #region Keys
@@ -112,6 +113,7 @@ namespace Rock.Blocks.Event
             var registrationsToDisplay = GetAttributeValue( AttributeKey.RegistrationsToDisplay ).SplitDelimitedValues();
 
             var registrationList = registrationService.Queryable()
+                .Include( r => r.RegistrationInstance.Linkages )
                 .Where( a =>
                     a.RegistrationInstance.IsActive == true &&
                     !a.IsTemporary )
@@ -137,30 +139,48 @@ namespace Rock.Blocks.Event
             if ( registrationsToDisplay.Contains( RegistrationsToDisplayKey.FutureEvents ) )
             {
                 var futureEventsDataRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.DateRange ) );
-                futureRegistrationsToDisplay = registrationList.Where( r =>
+
+                // if the value for futureEventsDataRange happens to be null, show all the registrations having an event
+                if ( futureEventsDataRange.Start == null && futureEventsDataRange.End == null )
+                {
+                    futureRegistrationsToDisplay = registrationList.Where( r =>
                     {
                         var nextOccurrence = r.RegistrationInstance.Linkages
-                        .Where( x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue )
-                        .OrderBy( b => b.EventItemOccurrence.NextStartDateTime )
-                        .FirstOrDefault();
-                        return nextOccurrence != null && futureEventsDataRange.Contains( nextOccurrence.EventItemOccurrence.NextStartDateTime.Value );
+                            .Where( x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue )
+                            .OrderBy( b => b.EventItemOccurrence.NextStartDateTime )
+                            .FirstOrDefault();
+                        return nextOccurrence != null;
                     } )
-                    .ToHashSet();
+                        .ToHashSet();
+                }
+                else
+                {
+                    futureRegistrationsToDisplay = registrationList.Where( r =>
+                        {
+                            var nextOccurrence = r.RegistrationInstance.Linkages
+                                .Where( x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue )
+                                .OrderBy( b => b.EventItemOccurrence.NextStartDateTime )
+                                .FirstOrDefault();
+                            return nextOccurrence != null && futureEventsDataRange.Contains( nextOccurrence.EventItemOccurrence.NextStartDateTime.Value );
+                        } )
+                        .ToHashSet();
+                }
             }
 
             // display past events if needed
             if ( registrationsToDisplay.Contains( RegistrationsToDisplayKey.RecentRegistrations ) )
             {
-                var pastEventsDataRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.DateRange ) );
-                pastRegistrationsToDisplay = registrationList.Where( r =>
-                    {
-                        var nextOccurrence = r.RegistrationInstance.Linkages
-                        .Where( x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue )
-                        .OrderBy( b => b.EventItemOccurrence.NextStartDateTime )
-                        .FirstOrDefault();
-                        return nextOccurrence != null && pastEventsDataRange.Contains( nextOccurrence.EventItemOccurrence.NextStartDateTime.Value );
-                    } )
-                    .ToHashSet();
+                var pastEventsDataRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.RecentRegistrations ) );
+                // in case the pastEventsDataRange happens to not have a value, show all the registrations else filter out the ones within the range
+                if ( pastEventsDataRange.Start == null && pastEventsDataRange.End == null )
+                {
+                    pastRegistrationsToDisplay = registrationList.ToHashSet();
+                }
+                else
+                {
+                    pastRegistrationsToDisplay = registrationList.Where( r => pastEventsDataRange.Contains( r.CreatedDateTime.Value ) )
+                        .ToHashSet();
+                }
             }
 
             return futureRegistrationsToDisplay.Union( pastRegistrationsToDisplay ).ToList();
