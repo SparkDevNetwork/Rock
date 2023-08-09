@@ -232,9 +232,9 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
-    import Modal from "@Obsidian/Controls/modal";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockLabel from "@Obsidian/Controls/rockLabel";
@@ -364,7 +364,7 @@
     /**
      * Event handler for the "Add Person As" person being selected.
      */
-    async function onAddPerson(personPickerSelection: NullableListItemBags): Promise<void> {
+    async function onAddPerson(personPickerSelection: ListItemBag | undefined): Promise<void> {
         const personAliasGuid = (personPickerSelection as ListItemBag)?.value;
 
         if (!personAliasGuid) {

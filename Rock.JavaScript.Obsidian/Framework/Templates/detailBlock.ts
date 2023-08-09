@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import Panel from "@Obsidian/Controls/panel.obs";
-import Modal from "@Obsidian/Controls/modal";
+import Modal from "@Obsidian/Controls/modal.obs";
 import { Guid } from "@Obsidian/Types";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";

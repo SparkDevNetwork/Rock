@@ -162,7 +162,7 @@
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
     import PanelWidget from "@Obsidian/Controls/panelWidget";
-    import Modal from "@Obsidian/Controls/modal";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { EventAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventAttributeBag";

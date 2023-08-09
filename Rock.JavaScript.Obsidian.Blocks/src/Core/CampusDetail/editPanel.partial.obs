@@ -72,7 +72,7 @@
     import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
     import  { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import LocationPicker from "@Obsidian/Controls/locationItemPicker.obs";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";

@@ -16,7 +16,7 @@
 //
 import { defineComponent, inject, ref, watch } from "vue";
 import TextBox from "@Obsidian/Controls/textBox";
-import NumberBox from "@Obsidian/Controls/numberBox";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./noteTypeField.partial";

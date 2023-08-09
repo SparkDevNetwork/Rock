@@ -99,7 +99,7 @@
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";

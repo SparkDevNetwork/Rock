@@ -67,7 +67,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";

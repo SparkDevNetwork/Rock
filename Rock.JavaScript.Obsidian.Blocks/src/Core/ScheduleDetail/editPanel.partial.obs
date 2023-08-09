@@ -85,7 +85,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
-    import Numberbox from "@Obsidian/Controls/numberBox";
+    import Numberbox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";

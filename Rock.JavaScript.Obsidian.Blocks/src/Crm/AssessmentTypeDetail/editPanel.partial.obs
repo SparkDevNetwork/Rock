@@ -36,7 +36,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";

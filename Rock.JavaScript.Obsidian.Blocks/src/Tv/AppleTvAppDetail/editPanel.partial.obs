@@ -63,7 +63,7 @@
     import TextBox from "@Obsidian/Controls/textBox";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
 
     const props = defineProps({

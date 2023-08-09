@@ -71,7 +71,7 @@
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
@@ -134,7 +134,6 @@
     // objects returned by propertyRef().
     const propRefs = [isActive, requestedByPersonAlias, isApproved, firstName, lastName, email, expirationDate, campus, category, request, answer, isPublic, isUrgent, allowComments];
     const invokeBlockAction = useInvokeBlockAction();
-    type NullableListItemBag = ListItemBag | null;
 
     // #endregion
 
@@ -178,7 +177,7 @@
     /**
      * Event handler for the "Add Person As" person being selected.
      */
-     async function updatePersonName(personPickerSelection: NullableListItemBag): Promise<void> {
+     async function updatePersonName(personPickerSelection: ListItemBag | undefined): Promise<void> {
         var result = await invokeBlockAction<PrayerRequestDetailAddPersonResponseBag>("GetPersonName", { personAliasGuid: (personPickerSelection as ListItemBag)?.value});
         firstName.value = result?.data?.nickName ?? "";
         lastName.value = result?.data?.lastName ?? "";

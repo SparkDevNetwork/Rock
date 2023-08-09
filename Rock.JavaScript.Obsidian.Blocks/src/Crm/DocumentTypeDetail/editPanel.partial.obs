@@ -98,7 +98,7 @@
     import TextBox from "@Obsidian/Controls/textBox";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import RockButton from "@Obsidian/Controls/rockButton";

@@ -18,7 +18,7 @@ import { computed, defineComponent, inject, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import NumberBox from "@Obsidian/Controls/numberBox";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList";
 import TextBox from "@Obsidian/Controls/textBox";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";

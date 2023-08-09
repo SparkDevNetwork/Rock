@@ -70,7 +70,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";

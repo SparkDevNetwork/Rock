@@ -82,7 +82,7 @@
     import InputGroupDropDown from "@Obsidian/Controls/inputGroupDropDown.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockLabel from "@Obsidian/Controls/rockLabel";

@@ -51,7 +51,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

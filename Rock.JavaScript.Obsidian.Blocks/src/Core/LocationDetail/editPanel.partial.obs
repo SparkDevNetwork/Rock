@@ -73,7 +73,7 @@
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import TextBox from "@Obsidian/Controls/textBox";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";

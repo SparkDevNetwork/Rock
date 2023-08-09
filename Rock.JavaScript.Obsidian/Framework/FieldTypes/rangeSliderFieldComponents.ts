@@ -18,7 +18,7 @@ import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
-import NumberBox from "@Obsidian/Controls/numberBox";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import { ConfigurationValueKey } from "./rangeSliderField.partial";
 
 export const EditComponent = defineComponent({

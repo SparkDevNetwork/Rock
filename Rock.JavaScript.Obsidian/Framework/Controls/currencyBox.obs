@@ -15,7 +15,7 @@
 <script setup lang="ts">
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { PropType } from "vue";
-    import NumberBox from "./numberBox";
+    import NumberBox from "./numberBox.obs";
 
     const props = defineProps({
         modelValue: {

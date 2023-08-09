@@ -41,7 +41,7 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AchievementAttemptBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptBag";
     import { AchievementAttemptDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptDetailOptionsBag";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
 

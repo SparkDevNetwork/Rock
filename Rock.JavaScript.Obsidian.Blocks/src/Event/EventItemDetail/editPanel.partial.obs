@@ -192,7 +192,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
-    import Modal from "@Obsidian/Controls/modal";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
     import PanelWidget from "@Obsidian/Controls/panelWidget";

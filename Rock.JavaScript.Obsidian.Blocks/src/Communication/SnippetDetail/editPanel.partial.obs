@@ -89,7 +89,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import Toggle from "@Obsidian/Controls/toggle";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";

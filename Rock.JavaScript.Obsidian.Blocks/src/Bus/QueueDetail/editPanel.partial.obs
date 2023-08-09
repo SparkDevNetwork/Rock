@@ -16,7 +16,7 @@
     import { PropType, ref, watch } from "vue";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { QueueBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueBag";
     import { QueueDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueDetailOptionsBag";
 

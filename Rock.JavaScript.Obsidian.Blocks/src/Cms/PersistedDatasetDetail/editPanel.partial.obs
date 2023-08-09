@@ -86,7 +86,7 @@
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";

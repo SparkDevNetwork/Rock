@@ -79,7 +79,7 @@
     import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
-    import Modal from "@Obsidian/Controls/modal";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";

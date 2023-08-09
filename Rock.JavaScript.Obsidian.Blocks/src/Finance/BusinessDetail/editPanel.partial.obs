@@ -142,7 +142,7 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel";
-    import Modal from "@Obsidian/Controls/modal";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 
     const props = defineProps({
