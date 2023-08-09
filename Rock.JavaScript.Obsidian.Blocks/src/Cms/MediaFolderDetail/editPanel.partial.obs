@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import Switch from "@Obsidian/Controls/switch";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

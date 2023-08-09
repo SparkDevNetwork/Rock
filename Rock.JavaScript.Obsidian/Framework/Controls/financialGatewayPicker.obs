@@ -11,7 +11,7 @@
     import { FinancialGatewayPickerGetFinancialGatewaysOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/financialGatewayPickerGetFinancialGatewaysOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
 
     const props = defineProps({
         modelValue: {

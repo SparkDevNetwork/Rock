@@ -18,7 +18,7 @@ import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthr
 import { useHttp } from "@Obsidian/Utility/http";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { computed, defineComponent, PropType, ref } from "vue";
-import BaseAsyncPicker from "./baseAsyncPicker";
+import BaseAsyncPicker from "./baseAsyncPicker.obs";
 
 export default defineComponent({
     name: "RemoteAuthsPicker",

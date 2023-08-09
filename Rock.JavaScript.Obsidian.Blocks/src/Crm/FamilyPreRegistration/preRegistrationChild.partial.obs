@@ -181,7 +181,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import { ChildRequestBag } from "./types.partial";
     import { createPersonViewModel, getNumberAsOrdinalString, useGetBootstrapColumnClass } from "./utils.partial";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";

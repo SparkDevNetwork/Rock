@@ -44,10 +44,10 @@
     import { LocationListSaveNewLocationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationListSaveNewLocationOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockLabel from "./rockLabel";
     import RockForm from "./rockForm";
-    import AttributeValuesContainer from "./attributeValuesContainer";
+    import AttributeValuesContainer from "./attributeValuesContainer.obs";
     import TextBox from "./textBox";
     import RockButton from "./rockButton";
     import Loading from "./loading.obs";

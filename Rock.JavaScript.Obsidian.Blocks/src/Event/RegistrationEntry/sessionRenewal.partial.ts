@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, inject, PropType } from "vue";
-import Dialog from "@Obsidian/Controls/dialog";
+import Dialog from "@Obsidian/Controls/dialog.obs";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
 import RockButton from "@Obsidian/Controls/rockButton";

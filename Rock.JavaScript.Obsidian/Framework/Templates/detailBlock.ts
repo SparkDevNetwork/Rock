@@ -24,8 +24,8 @@ import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUti
 import { FollowingGetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingOptionsBag";
 import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingResponseBag";
 import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingSetFollowingOptionsBag";
-import AuditDetail from "@Obsidian/Controls/auditDetail";
-import BadgeList from "@Obsidian/Controls/badgeList";
+import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+import BadgeList from "@Obsidian/Controls/badgeList.obs";
 import EntityTagList from "@Obsidian/Controls/tagList.obs";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RockForm from "@Obsidian/Controls/rockForm";

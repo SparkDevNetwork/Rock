@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, inject, ref, watch } from "vue";
-import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";

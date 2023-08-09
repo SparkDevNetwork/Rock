@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import ComponentFromUrl from "./componentFromUrl";
+    import ComponentFromUrl from "./componentFromUrl.obs";
     import { FormError } from "@Obsidian/Utility/form";
     import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
     import { GatewayEmitStrings } from "@Obsidian/Enums/Controls/gatewayEmitStrings";

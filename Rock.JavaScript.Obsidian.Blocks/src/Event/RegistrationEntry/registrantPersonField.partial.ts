@@ -25,15 +25,13 @@ import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-import ComponentFromUrl from "@Obsidian/Controls/componentFromUrl";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.RegistrantPersonField",
     components: {
-        NotificationBox,
-        ComponentFromUrl
+        NotificationBox
     },
     props: {
         field: {

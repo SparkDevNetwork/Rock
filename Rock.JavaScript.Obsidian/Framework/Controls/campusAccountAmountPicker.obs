@@ -35,7 +35,7 @@
     import { CampusAccountAmountPickerGetAccountsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/campusAccountAmountPickerGetAccountsOptionsBag";
     import { CampusAccountAmountPickerGetAccountsResultItemBag } from "@Obsidian/ViewModels/Rest/Controls/campusAccountAmountPickerGetAccountsResultItemBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 
     type AccountAmount = {

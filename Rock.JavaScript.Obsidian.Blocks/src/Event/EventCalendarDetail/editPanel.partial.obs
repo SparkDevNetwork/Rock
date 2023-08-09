@@ -154,7 +154,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -167,7 +167,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { EventAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
-    import AttributeEditor from "@Obsidian/Controls/attributeEditor";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import RockForm from "@Obsidian/Controls/rockForm";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";

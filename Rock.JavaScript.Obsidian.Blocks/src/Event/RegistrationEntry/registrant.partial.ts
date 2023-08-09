@@ -18,7 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType, ref } from "vue";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
+import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList";
 import { getRegistrantBasicInfo } from "./utils.partial";
 import StringFilter from "@Obsidian/Utility/stringUtils";

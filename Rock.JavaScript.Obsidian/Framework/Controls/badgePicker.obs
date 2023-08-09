@@ -12,7 +12,7 @@
     import { BadgePickerGetBadgesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/badgePickerGetBadgesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 
     const props = defineProps({

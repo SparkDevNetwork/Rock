@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";

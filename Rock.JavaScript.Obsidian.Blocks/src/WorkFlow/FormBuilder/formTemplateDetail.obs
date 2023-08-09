@@ -39,7 +39,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockForm from "@Obsidian/Controls/rockForm";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import AuditDetail from "@Obsidian/Controls/auditDetail";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import RockButton from "@Obsidian/Controls/rockButton";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

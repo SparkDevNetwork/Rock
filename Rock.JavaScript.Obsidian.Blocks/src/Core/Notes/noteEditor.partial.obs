@@ -105,7 +105,7 @@
 
 <script setup lang="ts">
     import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton";

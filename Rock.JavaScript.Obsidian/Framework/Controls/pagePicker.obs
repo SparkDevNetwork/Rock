@@ -43,7 +43,7 @@
     import { PagePickerGetPageNameOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetPageNameOptionsBag";
     import { PagePickerGetPageRoutesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetPageRoutesOptionsBag";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { useHttp } from "@Obsidian/Utility/http";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";

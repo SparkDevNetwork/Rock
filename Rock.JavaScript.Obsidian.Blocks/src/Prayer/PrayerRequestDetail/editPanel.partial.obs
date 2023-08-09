@@ -67,7 +67,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch, onMounted } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
