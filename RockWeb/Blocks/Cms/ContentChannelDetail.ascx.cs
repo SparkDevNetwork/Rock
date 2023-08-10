@@ -1328,6 +1328,9 @@ namespace RockWeb.Blocks.Cms
             // These should not be added to the ItemAttributesState but should be available for selection in the ContentLibraryConfiguration.
             if ( contentChannelTypeId.HasValue )
             {
+                var contentChannelTypeName = ContentChannelTypeCache.Get( contentChannelTypeId.Value )?.Name ?? "Content Channel Type";
+                var inheritedByText = $" (inherited by {contentChannelTypeName})";
+
                 using ( var rockContext = new RockContext() )
                 {
                     var attributeService = new AttributeService( rockContext );
@@ -1337,7 +1340,7 @@ namespace RockWeb.Blocks.Cms
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                             a.EntityTypeQualifierValue.Equals( contentChannelTypeId.Value.ToString() ) )
-                        .Select( a => new { Text = a.Name + " (inherited from Content Channel Type)", Value = a.Guid.ToString() } );
+                        .Select( a => new { Text = a.Name + inheritedByText, Value = a.Guid.ToString() } );
 
                     if ( listItems == null )
                     {
