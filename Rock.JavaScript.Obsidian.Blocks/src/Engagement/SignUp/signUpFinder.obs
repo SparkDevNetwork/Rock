@@ -52,7 +52,7 @@
                                   :displayAs="displayAs"
                                   @update:modelValue="onProjectTypesUpdated" />
                 </div>
-                <div v-for="a in attributeFilters" :key="a.key" :class="`${columnClass} filters-${a.attribute?.key?.toLowerCase()}`">
+                <div v-for="a in attributeFilters" :key="a.key" :class="`${columnClass} filters-attribute-${a.attribute?.key?.toLowerCase()}`">
                     <div class="form-group">
                         <RockLabel>{{ a.attribute?.name }}</RockLabel>
                         <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
