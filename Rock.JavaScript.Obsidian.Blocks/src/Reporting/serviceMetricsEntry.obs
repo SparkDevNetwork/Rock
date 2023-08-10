@@ -23,7 +23,7 @@
                                          @loadServiceTimes="onLoadServiceTimes"
                                          @loadWeekendDates="onLoadWeekendDates" />
                 <div v-else>
-                    <div class="panel-settings-group margin-b-lg">
+                    <div class="panel-settings-group mb-3">
                         <ButtonDropDownList v-model="campusGuidOrEmptyString"
                                             :disabled="isLoadingCampuses"
                                             :items="campuses"
@@ -46,7 +46,7 @@
                         <NotificationBox v-if="isSavedMessage" alertType="success">{{ isSavedMessage }}</NotificationBox>
                         <NotificationBox v-if="areNoServiceTimesLoaded" alertType="warning">No services exist for the selected campus and date. Change the date or campus to find the desired service.</NotificationBox>
                         <div v-else>
-                            <div class="form-horizontal label-md">
+                            <div class="form-horizontal label-xl">
                                 <MetricItemTree v-if="config.showMetricCategorySubtotals"
                                                 v-for="category of metricCategories"
                                                 :areDuplicateMetricsIncludedInCategorySubtotals="config.areDuplicateMetricsIncludedInCategorySubtotals"
