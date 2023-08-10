@@ -169,6 +169,7 @@
     <Compile Include="Controllers\NotificationMessagesController.Partial.cs" />
     <Compile Include="Controllers\ReminderTypesController.Partial.cs" />
     <Compile Include="Controllers\RemindersController.Partial.cs" />
+    <Compile Include="Handler\RockHttpControllerSelector.cs" />
     <Compile Include="HttpRequestMessageWrapper.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\TvController.cs" />
