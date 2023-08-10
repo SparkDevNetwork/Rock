@@ -11,13 +11,6 @@
     <div v-if="!blockErrorMessage" class="sign-up-finder">
         <RockForm @submit="onSearch" class="filters">
             <div class="row d-flex flex-wrap">
-                <div v-if="projectTypes.length" :class="columnClass" class="filters-projecttype">
-                    <SignUpFilter v-model="selectedProjectTypes"
-                                  :label="config.projectTypeFilterLabel"
-                                  :items="projectTypes"
-                                  :displayAs="displayAs"
-                                  @update:modelValue="onProjectTypesUpdated" />
-                </div>
                 <div v-if="campuses.length" :class="columnClass" class="filters-campus">
                     <SignUpFilter v-model="selectedCampuses"
                                   label="Campus"
@@ -51,6 +44,13 @@
                             <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
                         </template>
                     </NumberBox>
+                </div>
+                <div v-if="projectTypes.length" :class="columnClass" class="filters-projecttype">
+                    <SignUpFilter v-model="selectedProjectTypes"
+                                  :label="config.projectTypeFilterLabel"
+                                  :items="projectTypes"
+                                  :displayAs="displayAs"
+                                  @update:modelValue="onProjectTypesUpdated" />
                 </div>
                 <div v-for="a in attributeFilters" :key="a.key" :class="`${columnClass} filters-${a.attribute?.key?.toLowerCase()}`">
                     <div class="form-group">
