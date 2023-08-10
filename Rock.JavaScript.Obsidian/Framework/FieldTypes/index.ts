@@ -179,6 +179,9 @@ registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
 import { SlidingDateRangeFieldType } from "./slidingDateRangeField.partial";
 registerFieldType(FieldTypeGuids.SlidingDateRange, new SlidingDateRangeFieldType());
 
+import { SocialMediaAccountFieldType } from "./socialMediaAccountField.partial";
+registerFieldType(FieldTypeGuids.SocialMediaAccount, new SocialMediaAccountFieldType());
+
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
 
