@@ -2469,13 +2469,20 @@ namespace Rock.Blocks.Event
                     AllowMultiple = feeModel.AllowMultiple,
                     IsRequired = feeModel.IsRequired,
                     DiscountApplies = feeModel.DiscountApplies,
-                    Items = feeModel.FeeItems.Where( f => f.IsActive ).Select( fi => new RegistrationEntryBlockFeeItemViewModel
-                    {
-                        Cost = fi.Cost,
-                        Name = fi.Name,
-                        Guid = fi.Guid,
-                        CountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid )
-                    } )
+                    HideWhenNoneRemaining = feeModel.HideWhenNoneRemaining,
+                    Items = feeModel.FeeItems
+                        .Where( fi => fi.IsActive )
+                        .Where( fi => !feeModel.HideWhenNoneRemaining
+                            || (feeModel.HideWhenNoneRemaining
+                                && context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ) != null
+                                && context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ) > 0 ) )
+                        .Select( fi => new RegistrationEntryBlockFeeItemViewModel
+                        {
+                            Cost = fi.Cost,
+                            Name = fi.Name,
+                            Guid = fi.Guid,
+                            CountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid )
+                        } )
                 };
 
                 fees.Add( feeViewModel );

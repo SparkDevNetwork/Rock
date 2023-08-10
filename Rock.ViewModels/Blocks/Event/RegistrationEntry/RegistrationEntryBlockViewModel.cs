@@ -515,6 +515,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         ///   <c>true</c> if [discount applies]; otherwise, <c>false</c>.
         /// </value>
         public bool DiscountApplies { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide when none remaining].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide when none remaining]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideWhenNoneRemaining { get; set; }
     }
 
     /// <summary>
