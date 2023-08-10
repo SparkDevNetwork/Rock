@@ -499,7 +499,7 @@
         }
 
         // Ignore meta keys.
-        if (event.key === "Shift" || event.key === "Control" || event.key === "Alt" || event.key === "OS") {
+        if (event.key === "Shift" || event.key === "Control" || event.key === "Alt" || event.key === "OS" || event.key === "Meta") {
             return;
         }
 
