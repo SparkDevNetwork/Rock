@@ -73,7 +73,7 @@ namespace Rock.Utility.ContentLibraryApi
         /// <summary>
         /// Gets or sets the published date time.
         /// </summary>
-        public DateTime PublishedDateTime { get; set; }
+        public DateTime? PublishedDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the source publisher.
