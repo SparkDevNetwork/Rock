@@ -1,0 +1,110 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="internalValue"
+                   formGroupClasses="rock-rating"
+                   name="rock-rating">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="rating-input">
+                    <i v-for="i in maxRating" :key="i" :class="classForRating(i)" @click="setRating(i)" @mouseover="setHover(i)" @mouseleave="clearHover()"></i>
+                    <a v-if="showClear" class="clear-rating" href="#" v-on:click="onClear" @mouseover="setHover(0)" @mouseleave="clearHover()">
+                        <span class="fa fa-remove"></span>
+                    </a>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        /** The value provided to use from the parent component. */
+        modelValue: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        /** The maximum rating value allowed, this is the number of starts displayed. */
+        maxRating: {
+            type: Number as PropType<number>,
+            default: 5
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number): void;
+    }>();
+
+    /** The current value selected by the person. */
+    const internalValue = ref(props.modelValue);
+
+    /**
+     * The current value being hovered by the person or null if no
+     * hover operation is happening.
+     */
+    const hoverValue = ref(null as number | null);
+
+    /** True if the clear button should be visible. */
+    const showClear = computed((): boolean => internalValue.value > 0);
+
+    /** Watch for changes in the value we are supposed to be editing. */
+    watch(() => props.modelValue, () => internalValue.value = props.modelValue);
+
+    /** Watch for changes in our internal value and emit the new value. */
+    watch(internalValue, () => emit("update:modelValue", internalValue.value));
+
+    /**
+     * Set the rating value from an action.
+     *
+     * @param value The new rating value.
+     */
+    function setRating(value: number): void {
+        internalValue.value = value;
+    }
+
+    /**
+     * Handles the clear selection event from the person.
+     *
+     * @param e The event that triggered this handler.
+     *
+     * @returns A value indicating if the event has been handled.
+     */
+    function onClear(e: Event): boolean {
+        e.preventDefault();
+
+        setRating(0);
+
+        return false;
+    }
+
+    /**
+     * Gets the CSS class to use for the given rating position.
+     *
+     * @param position The rating position being queried.
+     */
+    function classForRating(position: number): string {
+        const filledCount = Math.min(props.maxRating, hoverValue.value ?? internalValue.value);
+
+        return position <= filledCount ? "fa fa-rating-selected" : "fa fa-rating-unselected";
+    }
+
+    /**
+     * Sets the current rating position being hovered.
+     *
+     * @param position The position being hovered.
+     */
+    function setHover(position: number): void {
+        hoverValue.value = position;
+    }
+
+    /**
+     * Clears any hover rating position value.
+     */
+    function clearHover(): void {
+        hoverValue.value = null;
+    }
+</script>

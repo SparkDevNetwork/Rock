@@ -18,10 +18,10 @@
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, ref, SetupContext, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import CheckBox from "@Obsidian/Controls/checkBox";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import NumberBox from "@Obsidian/Controls/numberBox";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationPropertyKey, ConfigurationValueKey } from "./campusesField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

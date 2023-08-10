@@ -72,12 +72,12 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import InlineSwitch from "@Obsidian/Controls/inlineSwitch";
-    import Modal from "@Obsidian/Controls/modal";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ContentCollectionBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";

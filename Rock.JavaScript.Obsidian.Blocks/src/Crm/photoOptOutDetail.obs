@@ -1,12 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" :alertType="alertType">{{ errorMessage }}</NotificationBox>
 
-    <div v-if="config.isOptOutSuccessful" class="alert alert-success">
-        You've been opted out and should no longer receive photo requests from us.
-    </div>
+    <NotificationBox v-if="config.isOptOutSuccessful" alertType="success">
+        {{ successMessage }}
+    </NotificationBox>
 </template>
 
 <script setup lang="ts">
@@ -19,8 +18,9 @@
 
     // #region Values
 
-    const blockError = ref("");
     const errorMessage = ref("");
+    const successMessage = ref(config?.successMessage ?? "You've been opted out and should no longer receive photo requests from us.");
+    const alertType = ref(config?.alertType ?? "danger");
 
     // #endregion
 
@@ -38,9 +38,9 @@
 
     // Handle any initial error conditions.
     if (config.errorMessage) {
-        blockError.value = config.errorMessage;
+        errorMessage.value = config.errorMessage;
     }
     else if (!config) {
-        blockError.value = "That's odd. We could not find your record in our system. Please contact our office at the number below.";
+        errorMessage.value = "We could not find your record in our system. Please contact our office at the number below.";
     }
 </script>

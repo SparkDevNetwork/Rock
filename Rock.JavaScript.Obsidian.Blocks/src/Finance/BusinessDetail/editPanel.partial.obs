@@ -123,7 +123,7 @@
 
 <script setup lang="ts">
     import { PropType, computed, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
@@ -134,16 +134,16 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-    import EmailBox from "@Obsidian/Controls/emailBox";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
-    import Modal from "@Obsidian/Controls/modal";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 
     const props = defineProps({
         modelValue: {

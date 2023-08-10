@@ -66,16 +66,16 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LocationBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationBag";

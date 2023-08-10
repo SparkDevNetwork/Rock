@@ -668,7 +668,7 @@ namespace RockWeb.Blocks.Cms
                         <div class='block-config-buttons pull-right'>
                         ",
                     block.Name,
-                    block.BlockType );
+                    AddIconIfObsidian( block.BlockType ) );
 
                 pnlBlockEditWidget.Controls.Add( lPanelHeading );
 
@@ -678,6 +678,24 @@ namespace RockWeb.Blocks.Cms
                 lPanelFooter.Text = "</div></div>";
 
                 pnlBlockEditWidget.Controls.Add( lPanelFooter );
+            }
+        }
+
+        /// <summary>
+        /// Adds the "party popper" emoji to the block type name if it is an Obsidian block type
+        /// </summary>
+        /// <param name="blockType">Type of the block.</param>
+        /// <returns></returns>
+        private string AddIconIfObsidian( BlockTypeCache blockType )
+        {
+            var entityType = blockType?.EntityType?.GetEntityType();
+            if ( entityType != null && typeof( IRockObsidianBlockType ).IsAssignableFrom( entityType ) )
+            {
+                return blockType.Name + " \U0001f389";
+            }
+            else
+            {
+                return blockType.Name;
             }
         }
 

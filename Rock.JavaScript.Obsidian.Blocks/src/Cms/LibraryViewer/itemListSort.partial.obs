@@ -1,0 +1,130 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="library-viewer-item-list-sort">
+        <DropDownContent v-model="isOpen">
+            <template #anchor>
+                <RockButton btnType="default" btnSize="xs" class="library-viewer-toolbar-button"><i class="fa fa-sort" /> {{ appliedSortOption.sortButtonText }}</RockButton>
+            </template>
+
+            <div class="library-viewer-item-list-sort-container">
+                <RockButton v-for="item of sortOptions"
+                            btnType="default"
+                            btnSize="sm"
+                            class="library-viewer-item-list-sort-button"
+                            type="button"
+                            @click.prevent.stop="onSortClicked(item)">
+                    {{ item.itemLabel }}
+                </RockButton>
+            </div>
+        </DropDownContent>
+    </div>
+</template>
+
+<style scoped>
+    .library-viewer-item-list-sort-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .library-viewer-item-list-sort-button {
+        text-align: left;
+        border: none;
+    }
+</style>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref, watch } from "vue";
+    import { compareDateStrings, compareNumbers, compareStrings } from "./utils.partial";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
+
+    type SortOption = {
+        itemLabel?: string;
+        sortButtonText: string;
+        sort: (item1: LibraryViewerItemBag, item2: LibraryViewerItemBag) => number;
+    };
+
+    const props = defineProps({
+        items: {
+            type: Object as PropType<LibraryViewerItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "sortedItems", value: LibraryViewerItemBag[]): void
+    }>();
+
+    const defaultSortOption: SortOption = {
+        sortButtonText: "Sort",
+        sort(item1, item2) {
+            // Multiply by -1 to sort Newest to Oldest.
+            return compareDateStrings(item1?.publishedDateTime, item2?.publishedDateTime) * -1;
+        }
+    };
+
+    const sortOptions: SortOption[] = [
+        {
+            itemLabel: "Publish Date - Newest to Oldest",
+            sortButtonText: "Sort Applied: Publish Date",
+            sort(item1, item2) {
+                // Multiply by -1 to sort Newest to Oldest.
+                return compareDateStrings(item1?.publishedDateTime, item2?.publishedDateTime) * -1;
+            }
+        },
+        {
+            itemLabel: "Downloads - Most to Fewest",
+            sortButtonText: "Sort Applied: Downloads",
+            sort(item1, item2) {
+                // Multiply by -1 to sort Most to Fewest.
+                return compareNumbers(item1?.downloads, item2?.downloads) * -1;
+            }
+        },
+        {
+            itemLabel: "Organization",
+            sortButtonText: "Sort Applied: Organization",
+            sort(item1, item2) {
+                return compareStrings(item1?.sourcePublisherName, item2?.sourcePublisherName);
+            }
+        }
+    ];
+
+    //#region Values
+
+    const isOpen = ref<boolean>(false);
+    const appliedSortOption = ref<SortOption>(defaultSortOption);
+
+    //#endregion
+
+    //#region Functions
+
+    /** Emits the `sortedItems` event. */
+    function onSortedItemsChanged(): void {
+        emit("sortedItems", [...props.items].sort(appliedSortOption.value.sort));
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onSortClicked(sortOption: SortOption): void {
+        isOpen.value = false;
+        appliedSortOption.value = sortOption;
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(() => [props.items, appliedSortOption.value], () => {
+        onSortedItemsChanged();
+    });
+
+    //#endregion
+
+    onMounted(() => {
+        // Emit the sorted items right away.
+        onSortedItemsChanged();
+    });
+</script>

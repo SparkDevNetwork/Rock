@@ -34,35 +34,14 @@ export type FinancialPledgeBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
-    /** Gets or sets the current action i.e. if it is a save or confirming duplicate pledges */
-    buttonAction?: string | null;
-
-    /** Gets or sets the Current logged in person */
-    currentPerson?: ListItemBag | null;
-
-    /** Gets or sets the duplicate pledge warning text. */
-    duplicatePledgeWarningText?: string | null;
-
-    /** Gets or sets the email. */
-    email?: string | null;
-
     /** Gets or sets the end date of the pledge period. */
     endDate?: string | null;
-
-    /** Gets or sets the first name. */
-    firstName?: string | null;
 
     /** Gets or sets the Rock.Model.Group. */
     group?: ListItemBag | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
-
-    /** Gets or sets a value indicating whether this instance is duplicate pledge. */
-    isDuplicatePledge: boolean;
-
-    /** Gets or sets the last name. */
-    lastName?: string | null;
 
     /** Gets or sets the Rock.Model.PersonAlias. */
     personAlias?: ListItemBag | null;
@@ -73,12 +52,9 @@ export type FinancialPledgeBag = {
      */
     pledgeFrequencyValue?: ListItemBag | null;
 
-    /** Gets or sets the receipt text. */
-    receiptText?: string | null;
-
     /** Gets or sets the start date of the pledge period. */
     startDate?: string | null;
 
     /** Gets or sets the pledge amount that is promised to be given. */
-    totalAmount: number;
+    totalAmount?: number | null;
 };

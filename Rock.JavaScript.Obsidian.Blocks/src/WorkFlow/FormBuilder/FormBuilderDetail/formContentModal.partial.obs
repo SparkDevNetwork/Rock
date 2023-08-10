@@ -15,10 +15,10 @@
 
 <script setup lang="ts">
     import { nextTick, PropType, ref, watch } from "vue";
-    import Modal from "@Obsidian/Controls/modal";
-    import RockForm from "@Obsidian/Controls/rockForm";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({

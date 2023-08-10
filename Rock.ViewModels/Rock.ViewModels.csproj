@@ -47,6 +47,12 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
+    <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
+    <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveResponseBag.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerDownloadItemBag.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerValidationResultsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
@@ -54,6 +60,9 @@
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvAppDetail\AppleTvAppBag.cs" />
@@ -65,6 +74,7 @@
     <Compile Include="Blocks\Event\EventCalendarDetail\EventAttributeBag.cs" />
     <Compile Include="Blocks\Event\EventCalendarDetail\EventCalendarBag.cs" />
     <Compile Include="Blocks\Event\EventCalendarDetail\EventCalendarDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationListLavaBox.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSmsOptInFieldBag.cs" />
@@ -105,6 +115,9 @@
     <Compile Include="Blocks\Core\NotificationMessageList\MarkMessagesAsReadResponseBag.cs" />
     <Compile Include="Blocks\Core\NotificationMessageList\NotificationMessageBag.cs" />
     <Compile Include="Blocks\Core\NotificationMessageList\NotificationMessageListInitializationBox.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerItemBag.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerItemFiltersBag.cs" />
+    <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerInitializationBox.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpDetail\SignUpDetailInitializationBox.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterRequestBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterResponseBag.cs" />
@@ -140,8 +153,8 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUpdatePreferenceBag.cs" />
     <Compile Include="Blocks\Group\GroupRegistration\GroupRegistrationBag.cs" />
     <Compile Include="Blocks\Group\GroupRegistration\GroupRegistrationBlockBox.cs" />
-    <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
-    <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeEntry\FinancialPledgeEntryBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeEntry\FinancialPledgeEntryOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryMetricCategoryBag.cs" />
     <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryGetMetricsResponseBag.cs" />
     <Compile Include="Blocks\Reporting\ServiceMetricsEntry\ServiceMetricsEntryGetMetricsRequestBag.cs" />
@@ -224,7 +237,8 @@
     <Compile Include="Blocks\Communication\SnippetTypeDetail\SnippetTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberBag.cs" />
     <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberDetailOptionsBag.cs" />
-    <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
+    <Compile Include="Blocks\Core\CampusList\CampusListOptionsBag.cs" />
+	<Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
     <Compile Include="Blocks\Core\CategoryDetail\CategoryBag.cs" />
@@ -322,6 +336,8 @@
     <Compile Include="Blocks\Utility\RealTimeVisualizer\CustomSettingsOptionsBag.cs" />
     <Compile Include="Blocks\Utility\RealTimeVisualizer\ThemeListItemBag.cs" />
     <Compile Include="Blocks\Utility\RealTimeVisualizer\TopicAndChannelBag.cs" />
+    <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerBag.cs" />
+    <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerDetailBox.cs" />
     <Compile Include="Cms\ContentCollectionCustomFieldBag.cs" />
     <Compile Include="Cms\ContentCollectionCustomFieldFilterSettingsBag.cs" />
     <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />
@@ -366,6 +382,8 @@
     <Compile Include="Blocks\Prayer\PrayerRequestEntry\PrayerRequestEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Prayer\PrayerRequestEntry\PrayerRequestEntrySaveResponseBag.cs" />
     <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsResultItemBag.cs" />
+    <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetContentChannelItemsOptionsBag.cs" />

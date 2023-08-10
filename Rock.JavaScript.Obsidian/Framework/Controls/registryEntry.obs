@@ -30,7 +30,7 @@
     import { computed, ref, watch } from "vue";
     import { toNumberOrNull, toNumber } from "@Obsidian/Utility/numberUtils";
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { normalizeRules, ValidationResult } from "@Obsidian/ValidationRules";
 
     const props = defineProps({

@@ -35,9 +35,9 @@
     import { computed, PropType, ref } from "vue";
     import { ConfirmAccountEvent, ShowChangePasswordViewEvent, ShowDeleteConfirmationViewEvent } from "./events";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockForm from "@Obsidian/Controls/rockForm";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { FormError } from "@Obsidian/Utility/form";

@@ -21,6 +21,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using System.Web.Http.Dispatcher;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.OData.Builder;
 using System.Web.Http.OData.Extensions;
@@ -52,7 +53,8 @@ namespace Rock.Rest
             config.Filters.Add( new Rock.Rest.Filters.RockCacheabilityAttribute() );
             config.Services.Replace( typeof( IExceptionLogger ), new RockApiExceptionLogger() );
             config.Services.Replace( typeof( IExceptionHandler ), new RockApiExceptionHandler() );
-            config.Services.Replace( typeof( System.Web.Http.Dispatcher.IAssembliesResolver ), new RockAssembliesResolver() );
+            config.Services.Replace( typeof( IAssembliesResolver ), new RockAssembliesResolver() );
+            config.Services.Replace( typeof( IHttpControllerSelector ), new Handler.RockHttpControllerSelector( config ) );
 
             // Configure the API to handle differences between v1 and v2 endpoints.
             config.Services.Replace( typeof( IActionValueBinder ), new RockActionValueBinder() );

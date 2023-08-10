@@ -1,9 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <NotificationBox v-if="isSystem" alertType="info">
-            <strong>Note</strong> Because this document type is used by Rock, editing is not enabled.
-        </NotificationBox>
 
         <ValueDetailList :modelValue="topValues" />
 
@@ -23,9 +20,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeBag";
@@ -51,8 +47,6 @@
     // #endregion
 
     // #region Computed Values
-
-    const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
 
     /** The values to display full-width at the top of the block. */
     const topValues = computed((): ValueDetailListItem[] => {

@@ -84,5 +84,13 @@ namespace Rock.ViewModels.Blocks.Core.ServiceJobDetail
         /// Gets or sets the cron description.
         /// </summary>
         public string CronDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notification status.
+        /// </summary>
+        /// <value>
+        /// The notification status.
+        /// </value>
+        public string NotificationStatus { get; set; }
     }
 }

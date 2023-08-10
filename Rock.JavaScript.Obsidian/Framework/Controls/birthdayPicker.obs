@@ -1,0 +1,10 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DatePartsPicker
+                     :allowFutureDates="false"
+                     :requireYear="false" />
+</template>
+
+<script setup lang="ts">
+    import DatePartsPicker from "./datePartsPicker.obs";
+</script>

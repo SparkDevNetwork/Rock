@@ -1,0 +1,139 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div style="overflow-x: hidden; max-width: 100%;">
+        <ul class="rocktree">
+            <TreeListItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
+        </ul>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import TreeListItem from "./Internal/treeListItem.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<string[]>,
+            default: []
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        items: {
+            type: Array as PropType<TreeItemBag[]>,
+            default: []
+        },
+
+        provider: {
+            type: Object as PropType<ITreeItemProvider>
+        },
+
+        disableFolderSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether to automatically expand parents who have (sub)children that are selected
+         */
+        autoExpand: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether to show the number of children a parent node has, if provided
+         */
+        showChildCount: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string[]): void;
+        (e: "update:items", value: TreeItemBag[]): void;
+        (e: "treeitem-expanded", value: TreeItemBag): void;
+    }>();
+
+    /** The list of items currently being displayed in the tree list. */
+    const internalItems = ref<TreeItemBag[]>(props.items ?? []);
+
+    /**
+     * Get the root items from the provider as an asynchronous operation.
+     */
+    const getRootItems = async (): Promise<void> => {
+        if (props.provider) {
+            const result = props.provider.getRootItems();
+            const rootItems = isPromise(result) ? await result : result;
+
+            internalItems.value = JSON.parse(JSON.stringify(rootItems)) as TreeItemBag[];
+
+            emit("update:items", internalItems.value);
+        }
+    };
+
+    /**
+     * Event handler for when a child item has updated the selected values.
+     *
+     * @param values The new selected values.
+     */
+    const onUpdateSelectedValues = (values: string[]): void => {
+        // Pass the event up to the parent so it knows about the new selection.
+        if (props.multiple) {
+            emit("update:modelValue", values);
+        }
+        else {
+            emit("update:modelValue", values.length > 0 ? [values[0]] : []);
+        }
+    };
+
+    /**
+     * Event handler for when an item has been expanded.
+     *
+     * @param item The item that was expanded.
+     */
+    const onItemExpanded = async (item: TreeItemBag): Promise<void> => {
+        if (props.provider) {
+            // We have a provider, check if the item needs it's children loaded still.
+            if (item.hasChildren && item.children === null) {
+                const result = props.provider.getChildItems(item);
+                const children = isPromise(result) ? await result : result;
+
+                item.children = JSON.parse(JSON.stringify(children)) as TreeItemBag[];
+
+                emit("update:items", internalItems.value);
+            }
+        }
+        else {
+            // No provider, simply pass the event to the parent in case it
+            // wants to make any changes to the tree.
+            emit("treeitem-expanded", item);
+        }
+    };
+
+    // Watch for a change in our passed items and update our internal list.
+    watch(() => props.items, () => {
+        // Only update if we don't have a provider.
+        if (!props.provider) {
+            internalItems.value = props.items ?? [];
+        }
+    });
+
+    // If we have a provider, then request the root items.
+    if (props.provider) {
+        getRootItems();
+    }
+
+    watch(() => props.provider, () => {
+        if (props.provider) {
+            getRootItems();
+        }
+    });
+</script>

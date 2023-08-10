@@ -22,23 +22,15 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type FinancialPledgeDetailOptionsBag = {
-    /** Gets or sets the note message. */
-    noteMessage?: string | null;
+    /** Gets or sets the groups. */
+    groups?: ListItemBag[] | null;
 
-    /** Gets or sets a value indicating whether require that a user select a specific pledge frequency (when pledge frequency is shown) */
-    requirePledgeFrequency: boolean;
-
-    /** Gets or sets the save button text. */
-    saveButtonText?: string | null;
+    /** Gets or sets the type of the group. */
+    groupType?: string | null;
 
     /** Gets or sets the select group type unique identifier. */
     selectGroupTypeGuid?: Guid | null;
-
-    /** Gets or sets a value indicating whether [show date range]. */
-    showDateRange: boolean;
-
-    /** Gets or sets a value indicating whether to show the pledge frequency option to the user.. */
-    showPledgeFrequency: boolean;
 };

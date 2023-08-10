@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import Panel from "@Obsidian/Controls/panel.obs";
-import Modal from "@Obsidian/Controls/modal";
+import Modal from "@Obsidian/Controls/modal.obs";
 import { Guid } from "@Obsidian/Types";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
@@ -24,12 +24,12 @@ import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUti
 import { FollowingGetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingOptionsBag";
 import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingResponseBag";
 import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingSetFollowingOptionsBag";
-import AuditDetail from "@Obsidian/Controls/auditDetail";
-import BadgeList from "@Obsidian/Controls/badgeList";
+import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+import BadgeList from "@Obsidian/Controls/badgeList.obs";
 import EntityTagList from "@Obsidian/Controls/tagList.obs";
-import RockButton from "@Obsidian/Controls/rockButton";
-import RockForm from "@Obsidian/Controls/rockForm";
-import RockSuspense from "@Obsidian/Controls/rockSuspense";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
+import RockSuspense from "@Obsidian/Controls/rockSuspense.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { alert, confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
 import { useHttp } from "@Obsidian/Utility/http";

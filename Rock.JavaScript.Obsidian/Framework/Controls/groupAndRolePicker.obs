@@ -25,9 +25,9 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import GroupTypeGroupPicker from "./groupTypeGroupPicker.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { GroupAndRolePickerGetRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupAndRolePickerGetRolesOptionsBag";
     import { normalizeRules } from "@Obsidian/ValidationRules";

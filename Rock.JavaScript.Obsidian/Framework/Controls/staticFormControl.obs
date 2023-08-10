@@ -1,0 +1,26 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="modelValue"
+                   formGroupClasses="static-control"
+                   name="static-form-control">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="form-control-static">
+                    {{ props.modelValue }}
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: String,
+            required: true
+        }
+    });
+</script>

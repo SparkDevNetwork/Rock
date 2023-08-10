@@ -20,8 +20,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { TagBag } from "@Obsidian/ViewModels/Blocks/Core/TagDetail/tagBag";
@@ -57,7 +57,7 @@
         }
 
         if (props.modelValue.description) {
-            valueBuilder.addTextValue("Description", props.modelValue.description);
+            valueBuilder.addTextValue("", props.modelValue.description);
         }
 
         return valueBuilder.build();
@@ -73,7 +73,8 @@
 
         if (!props.modelValue.ownerPersonAlias) {
             valueBuilder.addTextValue("Scope", "Organizational");
-        } else {
+        }
+        else {
             valueBuilder.addTextValue("Scope", "Personal");
         }
 
@@ -92,8 +93,8 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.iconCssClass) {
-            valueBuilder.addTextValue("Icon CSS Class", props.modelValue.iconCssClass);
+        if (props.modelValue.ownerPersonAlias?.text) {
+            valueBuilder.addTextValue("Owner", props.modelValue.ownerPersonAlias.text);
         }
 
         return valueBuilder.build();

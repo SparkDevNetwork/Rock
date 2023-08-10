@@ -142,5 +142,13 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerRequestEntry
         /// The parent page URL to redirect to if <see cref="IsPageRedirectedToParentOnSave"/> is <c>true</c>.
         /// </summary>
         public string ParentPageUrl { get; set; }
+
+        /// <summary>
+        /// Determines if the "Mobile Phone" field is shown.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is mobile phone shown; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMobilePhoneShown { get; set; }
     }
 }

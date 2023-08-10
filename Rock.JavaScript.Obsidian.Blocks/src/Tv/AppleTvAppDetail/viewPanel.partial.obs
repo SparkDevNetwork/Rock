@@ -25,8 +25,8 @@
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { AppleTvAppBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvAppDetail/appleTvAppBag";
@@ -82,7 +82,7 @@
             valueBuilder.addTextValue("Enable Page Views", props.modelValue.enablePageViews ? "True" : "False");
         }
 
-        if (props.modelValue.pageViewRetentionPeriod) {
+        if (props.modelValue.pageViewRetentionPeriod !== null) {
             valueBuilder.addTextValue("Page View Retention", `${props.modelValue.pageViewRetentionPeriod} days`);
         }
 

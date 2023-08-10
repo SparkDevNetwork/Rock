@@ -216,6 +216,7 @@ export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {
     discountAmount: number;
     discountPercentage: number;
     previouslyPaid: number;
+    discountMaxRegistrants: number;
 };
 
 export const enum Step {
@@ -251,6 +252,7 @@ export type RegistrationEntryState = {
     discountCode: string;
     discountAmount: number;
     discountPercentage: number;
+    discountMaxRegistrants: number;
     successViewModel: RegistrationEntryBlockSuccessViewModel | null;
     amountToPayToday: number;
     sessionExpirationDateMs: number | null;

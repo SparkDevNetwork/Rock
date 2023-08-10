@@ -29,30 +29,6 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
         public ListItemBag Account { get; set; }
 
         /// <summary>
-        /// Gets or sets the first name.
-        /// </summary>
-        /// <value>
-        /// The first name.
-        /// </value>
-        public string FirstName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last name.
-        /// </summary>
-        /// <value>
-        /// The last name.
-        /// </value>
-        public string LastName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the email.
-        /// </summary>
-        /// <value>
-        /// The email.
-        /// </value>
-        public string Email { get; set; }
-
-        /// <summary>
         /// Gets or sets the end date of the pledge period.
         /// </summary>
         public DateTime? EndDate { get; set; }
@@ -61,11 +37,6 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
         /// Gets or sets the Rock.Model.Group.
         /// </summary>
         public ListItemBag Group { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Current logged in person
-        /// </summary>
-        public ListItemBag CurrentPerson { get; set; }
 
         /// <summary>
         /// Gets or sets the Rock.Model.PersonAlias.
@@ -86,38 +57,6 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
         /// <summary>
         /// Gets or sets the pledge amount that is promised to be given.
         /// </summary>
-        public decimal TotalAmount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the receipt text.
-        /// </summary>
-        /// <value>
-        /// The receipt text.
-        /// </value>
-        public string ReceiptText { get; set; }
-
-        /// <summary>
-        /// Gets or sets the current action i.e. if it is a save or confirming duplicate pledges
-        /// </summary>
-        /// <value>
-        /// The action.
-        /// </value>
-        public string ButtonAction { get; set; } = "Save";
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is duplicate pledge.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is duplicate pledge; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsDuplicatePledge { get; set; }
-
-        /// <summary>
-        /// Gets or sets the duplicate pledge warning text.
-        /// </summary>
-        /// <value>
-        /// The duplicate pledge warning text.
-        /// </value>
-        public string DuplicatePledgeWarningText { get; set; }
+        public decimal? TotalAmount { get; set; }
     }
 }

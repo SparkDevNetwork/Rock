@@ -101,13 +101,13 @@
 
 <script setup lang="ts">
     import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import CustomKeySource from "./customKeySource.partial.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import Modal from "@Obsidian/Controls/modal";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { DragReorder as vDragReorder, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { AvailableContentSourceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/availableContentSourceBag";
     import { ContentCollectionBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionBag";

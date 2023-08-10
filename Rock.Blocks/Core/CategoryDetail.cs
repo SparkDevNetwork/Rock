@@ -146,6 +146,20 @@ namespace Rock.Blocks.Core
         {
             errorMessage = null;
 
+            if ( category.EntityTypeId == 0 )
+            {
+                errorMessage = "An EntityType was not configured for this block. Please contact your system administrator for assistance. <br />";
+                return false;
+            }
+
+            // if the category IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of category didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            if ( !category.IsValid )
+            {
+                errorMessage = category.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return false;
+            }
+
             return true;
         }
 
@@ -296,15 +310,6 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
-
-            box.IfValidProperty( nameof( box.Entity.EntityType ),
-                () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ).Value );
-
-            box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierColumn ),
-                () => entity.EntityTypeQualifierColumn = box.Entity.EntityTypeQualifierColumn );
-
-            box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierValue ),
-                () => entity.EntityTypeQualifierValue = box.Entity.EntityTypeQualifierValue );
 
             box.IfValidProperty( nameof( box.Entity.HighlightColor ),
                 () => entity.HighlightColor = box.Entity.HighlightColor );
@@ -514,17 +519,21 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( "Invalid data." );
                 }
 
+                var isNew = entity.Id == 0;
+                if ( isNew )
+                {
+                    if ( Guid.TryParse( GetAttributeValue( AttributeKey.EntityType ), out Guid entityTypeGuid ) )
+                    {
+                        entity.EntityTypeId = EntityTypeCache.Get( entityTypeGuid ).Id;
+                    }
+                    entity.EntityTypeQualifierColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
+                    entity.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
+                }
+
                 // Ensure everything is valid before saving.
                 if ( !ValidateCategory( entity, rockContext, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-                if ( isNew )
-                {
-                    entity.EntityTypeQualifierColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
-                    entity.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
                 }
 
                 rockContext.WrapTransaction( () =>

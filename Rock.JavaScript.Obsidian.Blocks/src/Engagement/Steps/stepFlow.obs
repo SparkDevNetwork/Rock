@@ -32,14 +32,14 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ref } from "vue";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Block from "@Obsidian/Templates/block";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import FlowNodeDiagram from "./StepFlow/flowNodeDiagram.partial.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { emptyGuid } from "@Obsidian/Utility/guid";

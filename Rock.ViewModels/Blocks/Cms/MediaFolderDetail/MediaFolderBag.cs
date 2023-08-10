@@ -81,5 +81,13 @@ namespace Rock.ViewModels.Blocks.Cms.MediaFolderDetail
         /// a new Rock.Model.MediaElement is added.
         /// </summary>
         public ListItemBag WorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric data.
+        /// </summary>
+        /// <value>
+        /// The metric data.
+        /// </value>
+        public string MetricData { get; set; }
     }
 }

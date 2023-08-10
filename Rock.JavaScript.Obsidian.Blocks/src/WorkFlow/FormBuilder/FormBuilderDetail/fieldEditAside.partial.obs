@@ -72,17 +72,17 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
-    import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
+    import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
+    import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Modal from "@Obsidian/Controls/modal";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import RockForm from "@Obsidian/Controls/rockForm";
-    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
-    import InlineSwitch from "@Obsidian/Controls/switch";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import InlineSwitch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
@@ -162,7 +162,7 @@
     const visibilityRule = ref(props.modelValue.visibilityRule ?? null);
 
     /** The value used by the FieldTypeEditor for editing the field configuration. */
-    const fieldTypeValue = ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
+    const fieldTypeValue = ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag | null>({
         fieldTypeGuid: props.modelValue.fieldTypeGuid,
         configurationValues: props.modelValue.configurationValues ?? {},
         defaultValue: props.modelValue.defaultValue ?? ""
@@ -331,11 +331,11 @@
      *
      * @param value The value that contains the changed information.
      */
-    function onFieldTypeModelValueUpdate(value: FieldTypeEditorUpdateAttributeConfigurationOptionsBag): void {
+    function onFieldTypeModelValueUpdate(value: FieldTypeEditorUpdateAttributeConfigurationOptionsBag | null): void {
         emit("update:modelValue", {
             ...props.modelValue,
-            configurationValues: value.configurationValues,
-            defaultValue: value.defaultValue
+            configurationValues: value?.configurationValues,
+            defaultValue: value?.defaultValue
         });
     }
 
@@ -420,9 +420,9 @@
         isShowOnGrid.value = props.modelValue.isShowOnGrid ?? false;
         visibilityRule.value = props.modelValue.visibilityRule ?? null;
 
-        const isConfigChanged = fieldTypeValue.value.fieldTypeGuid !== props.modelValue.fieldTypeGuid
-            || !shallowStrictEqual(fieldTypeValue.value.configurationValues ?? {}, props.modelValue.configurationValues ?? {})
-            || fieldTypeValue.value.defaultValue !== props.modelValue.defaultValue;
+        const isConfigChanged = fieldTypeValue.value?.fieldTypeGuid !== props.modelValue.fieldTypeGuid
+            || !shallowStrictEqual(fieldTypeValue.value?.configurationValues ?? {}, props.modelValue.configurationValues ?? {})
+            || fieldTypeValue.value?.defaultValue !== props.modelValue.defaultValue;
 
         // Only update the field type if anything actually changed.
         if (isConfigChanged) {

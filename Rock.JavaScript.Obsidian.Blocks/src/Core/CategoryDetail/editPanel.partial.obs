@@ -34,10 +34,10 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import ColorPicker from "@Obsidian/Controls/colorPicker";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryBag";

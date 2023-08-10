@@ -2209,5 +2209,10 @@ namespace Rock.SystemGuid
         /// The report search results page
         /// </summary>
         public const string REPORT_SEARCH_RESULTS = "7DA4B63B-4407-47B2-8984-A54A543D8A69";
+
+        /// <summary>
+        /// The library viewer page.
+        /// </summary>
+        public const string LIBRARY_VIEWER = "1264554E-C5B2-44E9-BD5E-08181B9348D4";
     }
 }

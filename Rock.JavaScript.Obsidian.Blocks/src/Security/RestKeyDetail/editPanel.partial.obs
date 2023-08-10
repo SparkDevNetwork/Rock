@@ -41,9 +41,9 @@
     import { PropType, watch } from "vue";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { RestKeyBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyBag";
     import { RestKeyDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyDetailOptionsBag";

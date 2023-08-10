@@ -49,15 +49,15 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import { FormGeneral } from "../Shared/types.partial";
     import { FormTemplateListItem } from "./types.partial";
     import { useFormSources } from "./utils.partial";

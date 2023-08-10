@@ -1,5 +1,7 @@
 import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
 import { Ref, isRef } from "vue";
+import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
  * Generate a string of an import statement that imports the control will the given file name.
@@ -92,3 +94,18 @@ export function buildExampleCode(elementName: string, attributes: Record<string,
 
     return `<${elementName} ${attrs.join(" ")} />`;
 }
+
+export const displayStyleItems: ListItemBag[] = [
+    {
+        value: PickerDisplayStyle.Auto,
+        text: "Auto"
+    },
+    {
+        value: PickerDisplayStyle.List,
+        text: "List"
+    },
+    {
+        value: PickerDisplayStyle.Condensed,
+        text: "Condensed"
+    }
+];

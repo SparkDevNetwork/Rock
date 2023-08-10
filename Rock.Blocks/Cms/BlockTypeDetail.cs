@@ -175,7 +175,7 @@ namespace Rock.Blocks.Cms
                 IdKey = entity.IdKey,
                 Category = entity.Category,
                 Description = entity.Description,
-                EntityType = entity.EntityType.ToListItemBag(),
+                EntityType = entity.EntityTypeId.HasValue ? new ViewModels.Utility.ListItemBag() { Text = EntityTypeCache.Get( entity.EntityTypeId.Value )?.Name, Value = entity.Guid.ToString() } : entity.EntityType.ToListItemBag(),
                 IsSystem = entity.IsSystem,
                 Name = entity.Name,
                 Path = entity.Path

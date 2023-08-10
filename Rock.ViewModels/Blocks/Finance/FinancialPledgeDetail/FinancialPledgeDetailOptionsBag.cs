@@ -15,7 +15,9 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
 using System;
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
 {
@@ -30,43 +32,19 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeDetail
         public Guid? SelectGroupTypeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the note message.
+        /// Gets or sets the groups.
         /// </summary>
         /// <value>
-        /// The note message.
+        /// The groups.
         /// </value>
-        public string NoteMessage { get; set; }
+        public List<ListItemBag> Groups { get; set; }
 
         /// <summary>
-        /// Gets or sets the save button text.
+        /// Gets or sets the type of the group.
         /// </summary>
         /// <value>
-        /// The save button text.
+        /// The type of the group.
         /// </value>
-        public string SaveButtonText { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to show the pledge frequency option to the user..
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show pledge frequency]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowPledgeFrequency { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether require that a user select a specific pledge frequency (when pledge frequency is shown)
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [require pledge frequency]; otherwise, <c>false</c>.
-        /// </value>
-        public bool RequirePledgeFrequency { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show date range].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show date range]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowDateRange { get; set; }
+        public string GroupType { get; set; }
     }
 }

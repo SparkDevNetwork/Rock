@@ -27,7 +27,7 @@ export type RockCacheabilityBag = {
     /** Gets or sets the maximum age. */
     maxAge?: TimeIntervalBag | null;
 
-    /** Gets or sets the type of the rock cacheability. */
+    /** Gets or sets the type of the rock cacheability type. */
     rockCacheabilityType: number;
 
     /** Gets or sets the shared maximum age. */

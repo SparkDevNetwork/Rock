@@ -7,6 +7,7 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -26,7 +27,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="serviceJobEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="serviceJobEditBag" :options="options" @propertyChanged="onPropertyChanged" :isEditable="isEditable" />
         </template>
     </DetailBlock>
 </template>
@@ -76,7 +77,8 @@
         "isActive",
         "lastStatusMessage",
         "name",
-        "notificationEmails"
+        "notificationEmails",
+        "notificationStatus"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(serviceJobEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -89,7 +91,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return serviceJobViewBag.value?.name ?? "";
+        return serviceJobViewBag.value?.name ?? "Add Service Job";
     });
 
     /**

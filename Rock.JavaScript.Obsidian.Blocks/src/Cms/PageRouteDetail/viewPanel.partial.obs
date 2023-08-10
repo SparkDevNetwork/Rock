@@ -2,7 +2,7 @@
 <template>
     <fieldset>
         <NotificationBox v-if="isSystem" alertType="info">
-            <strong>Note</strong> Because this page route is used by Rock, editing is not enabled.
+            <strong>Note</strong> Because this page route is used by Rock, editing is restricted.
         </NotificationBox>
 
         <ValueDetailList :modelValue="topValues" />
@@ -24,8 +24,8 @@
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { PageRouteBag } from "@Obsidian/ViewModels/Blocks/Cms/PageRouteDetail/pageRouteBag";

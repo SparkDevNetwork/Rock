@@ -33,12 +33,28 @@ namespace Rock.Blocks.Crm
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Photo Opt-Out" )]
-    [Category( "CRM > PhotoRequest" )]
+    [Category( "CRM" )]
     [Description( "Allows a person to opt-out of future photo requests." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
+
+    [TextField(
+        "Success Message",
+        Key = AttributeKey.SuccessMessage,
+        Description = "Message to show after a successful opt out.",
+        DefaultValue = "You've been opted out and should no longer receive photo requests from us.",
+        IsRequired = false,
+        Order = 0 )]
+
+    [TextField(
+        "Not Found Message",
+        Key = AttributeKey.NotFoundMessage,
+        Description = "Message to show if the account is not found.",
+        DefaultValue = "We could not find your record in our system. Please contact our office at the number below.",
+        IsRequired = false,
+        Order = 1 )]
 
     #endregion
 
@@ -47,6 +63,13 @@ namespace Rock.Blocks.Crm
     public class PhotoOptOutDetail : RockBlockType
     {
         #region Keys
+
+        private static class AttributeKey
+        {
+            public const string SuccessMessage = "SuccessMessage";
+            public const string NotFoundMessage = "NotFoundMessage";
+        }
+
 
         private static class PageParameterKey
         {
@@ -89,12 +112,14 @@ namespace Rock.Blocks.Crm
             catch
             {
                 entityBag.ErrorMessage = "No, that's not right. Are you sure you copied that web address correctly?";
+                entityBag.AlertType = "warning";
                 return entityBag;
             }
 
             if ( entity == null )
             {
-                entityBag.ErrorMessage = "That's odd. We could not find your record in our system. Please contact our office at the number below.";
+                entityBag.ErrorMessage = GetAttributeValue( AttributeKey.NotFoundMessage );
+                entityBag.AlertType = "info";
                 return entityBag;
             }
             else
@@ -117,10 +142,12 @@ namespace Rock.Blocks.Crm
 
                     rockContext.SaveChanges();
                     entityBag.IsOptOutSuccessful = true;
+                    entityBag.SuccessMessage = GetAttributeValue( AttributeKey.SuccessMessage );
                 }
                 catch
                 {
                     entityBag.ErrorMessage = "Something went wrong and we could not save your request. If it happens again please contact our office at the number below.";
+                    entityBag.AlertType = "danger";
                 }
 
                 return entityBag;

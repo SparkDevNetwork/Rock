@@ -1,0 +1,61 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <li class="progress-step progress-tracker-priority">
+        <div v-if="props.isPast" class="progress-step-link">
+            <div class="progress-tracker-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="progress-tracker-details">
+                <span class="progress-tracker-title text-truncate">{{ props.item.title }}</span>
+                <p class="progress-tracker-subtitle text-truncate">{{ props.item.subtitle }}</p>
+            </div>
+        </div>
+        <div v-else-if="props.isPresent" class="progress-step-link">
+            <div class="progress-tracker-icon current"></div>
+            <div class="progress-tracker-details">
+                <span class="progress-tracker-title text-truncate">{{ props.item.title }}</span>
+                <p class="progress-tracker-subtitle text-truncate">{{ props.item.subtitle }}</p>
+            </div>
+        </div>
+        <div v-else-if="props.isFuture" class="progress-step-link">
+            <div class="progress-tracker-icon upcoming"></div>
+            <div class="progress-tracker-details">
+                <span class="progress-tracker-title text-truncate">{{ props.item.title }}</span>
+                <p class="progress-tracker-subtitle text-truncate">{{ props.item.subtitle }}</p>
+            </div>
+        </div>
+        <div v-if="!props.isLast" class="progress-tracker-arrow">
+            <svg viewBox="0 0 22 80" fill="none" preserveAspectRatio="none">
+                <path d="M0 -2L20 40L0 82" vector-effect="non-scaling-stroke" stroke="currentcolor" stroke-linejoin="round" />
+            </svg>
+        </div>
+    </li>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
+
+    const props = defineProps({
+        isPast: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        isPresent: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        isFuture: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        isLast: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        item: {
+            type: Object as PropType<ProgressTrackerItem>,
+            required: true
+        }
+    });
+</script>

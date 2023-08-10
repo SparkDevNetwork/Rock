@@ -493,7 +493,7 @@
     import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";

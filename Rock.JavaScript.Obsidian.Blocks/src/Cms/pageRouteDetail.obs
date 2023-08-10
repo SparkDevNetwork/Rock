@@ -7,16 +7,17 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.PageRoute"
                  entityTypeName="PageRoute"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="isDeleteable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -80,7 +81,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return "View Page Route";
+        return pageRouteViewBag.value?.idKey ? "Edit Page Route" : "Add Page Route";
     });
 
     /**
@@ -104,6 +105,10 @@
     });
 
     const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const isDeleteable = computed((): boolean => {
         return config.isEditable === true && pageRouteViewBag.value?.isSystem !== true;
     });
 

@@ -36,13 +36,13 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AchievementAttemptBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptBag";
     import { AchievementAttemptDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptDetailOptionsBag";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
 
     const props = defineProps({

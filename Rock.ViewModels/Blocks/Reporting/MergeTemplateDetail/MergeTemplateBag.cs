@@ -17,6 +17,7 @@
 
 using Rock.Enums.Controls;
 using Rock.ViewModels.Utility;
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
 {
@@ -56,5 +57,35 @@ namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
         /// Gets or sets the merge template ownership.
         /// </summary>
         public MergeTemplateOwnership MergeTemplateOwnership { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show person picker].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show person picker]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowPersonPicker { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is person required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is person required; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPersonRequired { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [show category picker].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show category picker]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCategoryPicker { get; set; }
+
+        /// <summary>
+        /// Gets or sets the excluded category ids.
+        /// </summary>
+        /// <value>
+        /// The excluded category ids.
+        /// </value>
+        public List<string> ExcludedCategoryIds { get; set; }
     }
 }

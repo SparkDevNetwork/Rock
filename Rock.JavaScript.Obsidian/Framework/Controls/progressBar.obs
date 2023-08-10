@@ -1,0 +1,39 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" :aria-valuenow="roundedBoundedPercent" aria-valuemin="0" aria-valuemax="100" :style="style">
+            <span class="sr-only">{{ roundedBoundedPercent }}% Complete</span>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+
+    const props = defineProps({
+        percent: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const boundedPercent = computed((): number => {
+        if (props.percent < 0) {
+            return 0;
+        }
+
+        if (props.percent > 100) {
+            return 100;
+        }
+
+        return props.percent;
+    });
+
+    const roundedBoundedPercent = computed((): number => {
+        return Math.round(boundedPercent.value);
+    });
+
+    const style = computed((): string => {
+        return `width: ${boundedPercent.value}%;`;
+    });
+</script>

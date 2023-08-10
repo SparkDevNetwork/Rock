@@ -23,7 +23,8 @@
                                 :showPrivate="noteOptions.showPrivate"
                                 :showSecurity="noteOptions.showSecurity"
                                 :hideCancel="config.addAlwaysVisible"
-                                :autoSize="config.addAlwaysVisible"
+                                autoSize
+                                autoFocus
                                 @cancel="onNoteAddCancel"
                                 @save="onNoteAddSave" />
                 </div>
@@ -40,7 +41,8 @@
                                 :showPrivate="noteOptions.showPrivate"
                                 :showSecurity="noteOptions.showSecurity"
                                 :hideCancel="config.addAlwaysVisible"
-                                :autoSize="config.addAlwaysVisible"
+                                autoSize
+                                autoFocus
                                 @cancel="onNoteAddCancel"
                                 @save="onNoteAddSave" />
                 </div>
@@ -59,7 +61,7 @@
     import Note from "./Notes/note.partial.obs";
     import NotesContainer from "./Notes/notesContainer.partial.obs";
     import NoteEditor from "./Notes/noteEditor.partial.obs";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { noteOptionsSymbol, provideEmitter } from "./Notes/utils.partial";
     import { ExpandedNoteBag, NoteOptions } from "./Notes/types.partial";
     import { onConfigurationValuesChanged, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";

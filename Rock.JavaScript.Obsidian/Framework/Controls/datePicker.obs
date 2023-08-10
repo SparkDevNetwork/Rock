@@ -28,8 +28,8 @@
     import { computed, PropType, ref, watch } from "vue";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import RockFormField from "./rockFormField";
-    import TextBox from "./textBox";
+    import RockFormField from "./rockFormField.obs";
+    import TextBox from "./textBox.obs";
     import DatePickerBase from "./datePickerBase.obs";
 
     const props = defineProps({

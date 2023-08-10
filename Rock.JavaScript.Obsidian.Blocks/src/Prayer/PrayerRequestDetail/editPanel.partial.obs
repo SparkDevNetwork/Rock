@@ -67,17 +67,17 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch, onMounted } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
-    import EmailBox from "@Obsidian/Controls/emailBox";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import Toggle from "@Obsidian/Controls/toggle";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -134,7 +134,6 @@
     // objects returned by propertyRef().
     const propRefs = [isActive, requestedByPersonAlias, isApproved, firstName, lastName, email, expirationDate, campus, category, request, answer, isPublic, isUrgent, allowComments];
     const invokeBlockAction = useInvokeBlockAction();
-    type NullableListItemBag = ListItemBag | null;
 
     // #endregion
 
@@ -178,7 +177,7 @@
     /**
      * Event handler for the "Add Person As" person being selected.
      */
-     async function updatePersonName(personPickerSelection: NullableListItemBag): Promise<void> {
+     async function updatePersonName(personPickerSelection: ListItemBag | undefined): Promise<void> {
         var result = await invokeBlockAction<PrayerRequestDetailAddPersonResponseBag>("GetPersonName", { personAliasGuid: (personPickerSelection as ListItemBag)?.value});
         firstName.value = result?.data?.nickName ?? "";
         lastName.value = result?.data?.lastName ?? "";

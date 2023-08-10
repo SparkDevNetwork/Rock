@@ -1,6 +1,6 @@
 <template>
     <div class="upAdd">
-        <Panel title="Add Prayer Request" titleIconCssClass="fa fa-praying-hands">
+        <Panel title="Add Prayer Request" titleIconCssClass="fa fa-praying-hands" type="block">
             <template #default>
                 <RockForm v-if="!isEntryHidden" @submit="onSubmitted">
                     <NotificationBox v-if="errors.length" id="nbWarningMessage" alertType="warning" label="Warning">
@@ -29,7 +29,8 @@
                                 :disabled="isSaving || isNavigating"
                                 label="Email" />
 
-                            <PhoneNumberBox v-model="mobilePhoneNumber"
+                            <PhoneNumberBox v-if="config.isMobilePhoneShown"
+                                v-model="mobilePhoneNumber"
                                 v-model:countryCode="mobilePhoneNumberCountryCode"
                                 autocomplete="mobile"
                                 :disabled="isSaving || isNavigating"
@@ -110,16 +111,16 @@
 <script setup lang="ts">
     import { computed, nextTick, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import EmailBox from "@Obsidian/Controls/emailBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockForm from "@Obsidian/Controls/rockForm";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { PrayerRequestEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveResponseBag";
     import { PrayerRequestEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveRequestBag";

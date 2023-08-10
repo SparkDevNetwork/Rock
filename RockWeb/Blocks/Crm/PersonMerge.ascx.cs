@@ -1019,6 +1019,9 @@ namespace RockWeb.Blocks.Crm
                                     currentTargetFamilyLocation.GroupLocationTypeValue = null;
                                     currentTargetFamilyLocation.GroupLocationTypeValueId = prevLocType.Id;
 
+                                    currentTargetFamilyLocation.IsMailingLocation = false;
+                                    currentTargetFamilyLocation.IsMappedLocation = false;
+
                                     newTargetFamilyLocation = new GroupLocation();
                                 }
                                 else

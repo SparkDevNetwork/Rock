@@ -67,7 +67,7 @@ namespace Rock.Web.UI.Controls
                 var obj = ViewState["SelectionMode"];
                 if (obj != null)
                 {
-                    return (SelectionMode)obj;
+                    return ( SelectionMode ) obj;
                 }
 
                 SelectionMode = SelectionMode.Multiple;

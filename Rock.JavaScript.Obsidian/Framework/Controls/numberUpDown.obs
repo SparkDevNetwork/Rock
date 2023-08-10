@@ -1,0 +1,58 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="formFieldProps"
+                   :modelValue="internalValue"
+                   formGroupClasses="number-up-down"
+                   name="numberupdown">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <NumberUpDownBase v-model="internalValue" :min="min" :max="max" :class="additionalClasses" />
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { computed, PropType } from "vue";
+    import RockFormField from "./rockFormField.obs";
+    import NumberUpDownBase from "./numberUpDownBase.obs";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        modelValue: {
+            type: Number as PropType<number>,
+            required: true
+        },
+        min: {
+            type: Number as PropType<number>,
+            default: 1
+        },
+        max: {
+            type: Number as PropType<number>,
+            default: 10
+        },
+        numberIncrementClasses: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number): void;
+    }>();
+
+    const formFieldProps = useStandardRockFormFieldProps(props);
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const additionalClasses = computed((): string => {
+        if (formFieldProps.label !== "") {
+            return `margin-t-sm ${props.numberIncrementClasses}`;
+        }
+        else {
+            return props.numberIncrementClasses;
+        }
+    });
+</script>

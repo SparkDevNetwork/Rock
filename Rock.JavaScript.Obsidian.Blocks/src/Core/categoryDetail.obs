@@ -2,11 +2,12 @@
 <template>
     <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -15,7 +16,7 @@
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
+                 :isFollowVisible="false"
                  :isSecurityHidden="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -68,9 +69,6 @@
     const validProperties = [
         "attributeValues",
         "description",
-        "entityType",
-        "entityTypeQualifierColumn",
-        "entityTypeQualifierValue",
         "highlightColor",
         "iconCssClass",
         "name",

@@ -123,11 +123,10 @@
 </script>
 
 <script setup lang="ts">
-    import { computed, defineComponent, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import RockButton from "./rockButton";
-    import Fullscreen from "./fullscreen";
-    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+    import Fullscreen from "./fullscreen.obs";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
     const props = defineProps({

@@ -17,11 +17,11 @@
 
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject } from "vue";
-import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
-import EmailBox from "@Obsidian/Controls/emailBox";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-import StaticFormControl from "@Obsidian/Controls/staticFormControl";
-import TextBox from "@Obsidian/Controls/textBox";
+import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+import EmailBox from "@Obsidian/Controls/emailBox.obs";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import { getRegistrantBasicInfo,  } from "./utils.partial";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { useStore } from "@Obsidian/PageState";

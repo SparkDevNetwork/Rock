@@ -95,17 +95,17 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch, computed } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
-    import GroupPicker from "@Obsidian/Controls/groupPicker";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
     import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
     import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
     import { toNumber } from "@Obsidian/Utility/numberUtils";

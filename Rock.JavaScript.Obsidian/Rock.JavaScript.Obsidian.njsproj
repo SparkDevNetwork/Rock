@@ -41,6 +41,7 @@
     <Content Include="Framework\Controls\interactionChannelInteractionComponentPicker.obs" />
     <Content Include="Framework\Controls\interactionChannelPicker.obs" />
     <Content Include="Framework\Controls\interactionComponentPicker.obs" />
+    <Content Include="Framework\Controls\mediaSelector.obs" />
     <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
     <Content Include="Framework\Controls\cacheabilityPicker.obs" />
@@ -188,6 +189,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LavaShortcodeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PageShortLinkDetail\" />
@@ -196,12 +198,14 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\SiteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CategoryDetail\" />
@@ -279,6 +283,8 @@
     <Folder Include="Framework\ViewModels\Blocks\Mobile\Communication\SmsConversation\" />
     <Folder Include="Framework\ViewModels\Blocks\Utility\" />
     <Folder Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\" />
+    <Folder Include="Framework\ViewModels\Blocks\Workflow\" />
+    <Folder Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\" />
     <Folder Include="Framework\ViewModels\Cms\" />
     <Folder Include="Framework\ViewModels\Communication\" />
     <Folder Include="Framework\ViewModels\Connection\" />
@@ -435,6 +441,7 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\detailPanelMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\gatewayEmitStrings.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\mediaSelectorMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mergeTemplateOwnership.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\modalAlertType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\pickerDisplayStyle.ts" />
@@ -532,6 +539,8 @@
     <TypeScriptCompile Include="Framework\FieldTypes\imageFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\keyValueListFieldComponents.ts" />
+    <TypeScriptCompile Include="Framework\FieldTypes\mediaSelectorField.partial.ts" />
+    <TypeScriptCompile Include="Framework\FieldTypes\mediaSelectorFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\registryEntryField.partial.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\registryEntryFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\reminderTypeField.partial.ts" />
@@ -715,6 +724,11 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LavaShortcodeDetail\lavaShortcodeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\layoutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\layoutDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\libraryViewerDownloadItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\libraryViewerInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\libraryViewerItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\libraryViewerItemFiltersBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\libraryViewerValidationResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\mediaAccountBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\mediaAccountDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\mediaFolderBag.d.ts" />
@@ -729,6 +743,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\SiteDetail\siteBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\SiteDetail\siteDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceIntializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetBag.d.ts" />
@@ -740,6 +757,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusList\campusListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\deleteNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\editNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\noteBag.d.ts" />
@@ -895,6 +913,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateFileValidationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetMetricsRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetMetricsResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetServiceTimesRequestBag.d.ts" />
@@ -968,6 +987,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\customSettingsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\themeListItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Utility\RealTimeVisualizer\topicAndChannelBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\workflowTriggerBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\workflowTriggerDetailBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\workflowTriggerDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\blockCustomActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionAttributeFilterSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionCustomFieldBag.d.ts" />
@@ -1049,6 +1071,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\blockTemplatePickerGetBlockTemplatesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\blockTemplatePickerGetBlockTemplatesResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusAccountAmountPickerGetAccountsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusAccountAmountPickerGetAccountsResultItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusPickerGetCampusesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeResultsBag.d.ts" />

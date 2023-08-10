@@ -93,15 +93,15 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
-    import ColorPicker from "@Obsidian/Controls/colorPicker";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/NoteTypeDetail/noteTypeBag";

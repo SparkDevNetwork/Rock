@@ -23,7 +23,7 @@
     import { ref } from "vue";
     import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { getSfcControlImportPath } from "./utils.partial";
 
     const isOpen = ref(false);

@@ -172,6 +172,12 @@ namespace Rock.Model
                 {
                     return true;
                 }
+                else if ( Id == 0 )
+                {
+                    // If this is a new note being created, use the default
+                    // EDIT permission which checks the NoteType.
+                    return base.IsAuthorized( Authorization.EDIT, person );
+                }
                 else 
                 {
                     return base.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person );

@@ -50,6 +50,9 @@ registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefined
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 
+import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
+registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
+
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
 
@@ -131,6 +134,9 @@ registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
 import { MonthDayFieldType } from "./monthDayField.partial";
 registerFieldType(FieldTypeGuids.MonthDay, new MonthDayFieldType());
 
+import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
+registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
+
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());
 
@@ -145,6 +151,9 @@ registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
 
 import { PersonFieldType } from "./personField.partial";
 registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
+
+import { RangeSliderFieldType } from "./rangeSliderField.partial";
+registerFieldType(FieldTypeGuids.RangeSlider, new RangeSliderFieldType());
 
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
@@ -166,6 +175,12 @@ registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
 
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
+
+import { SlidingDateRangeFieldType } from "./slidingDateRangeField.partial";
+registerFieldType(FieldTypeGuids.SlidingDateRange, new SlidingDateRangeFieldType());
+
+import { SocialMediaAccountFieldType } from "./socialMediaAccountField.partial";
+registerFieldType(FieldTypeGuids.SocialMediaAccount, new SocialMediaAccountFieldType());
 
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());

@@ -83,11 +83,11 @@
 <script setup lang="ts">
 import { PropType, computed, ref, watch } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import TextBox from "@Obsidian/Controls/textBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
-import CheckBox from "@Obsidian/Controls/checkBox";
-import EmailBox from "@Obsidian/Controls/emailBox";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { GroupRegistrationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRegistration/groupRegistrationBag";
 import { GroupRegistrationBlockBox } from "@Obsidian/ViewModels/Blocks/Group/GroupRegistration/groupRegistrationBlockBox";

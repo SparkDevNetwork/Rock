@@ -178,13 +178,21 @@ namespace Rock.Blocks.Cms
                 return null;
             }
 
-            return new MediaAccountBag
+            var bag = new MediaAccountBag
             {
                 IdKey = entity.IdKey,
                 ComponentEntityType = entity.ComponentEntityType.ToListItemBag(),
                 IsActive = entity.IsActive,
-                Name = entity.Name
+                Name = entity.Name,
+                MetricData = entity.GetMediaAccountComponent()?.GetAccountHtmlSummary( entity )
             };
+
+            if ( entity.LastRefreshDateTime.HasValue )
+            {
+                bag.LastRefresh = "Last Refreshed: " + entity.LastRefreshDateTime.ToRelativeDateString();
+            }
+
+            return bag;
         }
 
         /// <summary>

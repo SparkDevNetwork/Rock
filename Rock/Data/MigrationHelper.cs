@@ -5215,6 +5215,13 @@ END
         /// <summary>
         /// Adds the security authentication for rest action.
         /// </summary>
+        /// <remarks>
+        /// This method should not be used for new code, but we have not yet
+        /// deprecated it. Instead use the version that takes a string Guid
+        /// value to identify the rest action. This method will break if we
+        /// change the C# signature of the method which would then cause the
+        /// default security on a new install to not set correctly.
+        /// </remarks>
         /// <param name="restActionMethod">The rest action method.</param>
         /// <param name="restActionPath">The rest action path.</param>
         /// <param name="order">The order.</param>
@@ -5226,6 +5233,21 @@ END
         public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.RestAction", "RestAction", $"{restActionMethod}{restActionPath}", order, action, allow, groupGuid, specialRole, authGuid, "ApiId" );
+        }
+
+        /// <summary>
+        /// Adds the security authentication for rest action.
+        /// </summary>
+        /// <param name="restActionGuid">The rest action unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForRestAction( string restActionGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            AddSecurityAuthForEntityBase( "Rock.Model.RestAction", "RestAction", restActionGuid, order, action, allow, groupGuid, specialRole, authGuid );
         }
 
         #endregion

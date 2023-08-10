@@ -4,45 +4,48 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <DetailBlock v-if="!blockError"
-                 v-model:mode="panelMode"
-                 :name="panelName"
-                 :labels="blockLabels"
-                 :entityKey="entityKey"
-                 :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="WebFarmNode"
-                 :isAuditHidden="false"
-                 :isBadgesVisible="true"
-                 :isDeleteVisible="false"
-                 :isEditVisible="false"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
-                 @cancelEdit="onCancelEdit"
-                 @delete="onDelete"
-                 @edit="onEdit"
-                 @save="onSave">
-        <template #view>
-            <ViewPanel :modelValue="webFarmNodeViewBag" :options="options" />
-        </template>
-
-        <template #edit>
-            <EditPanel v-model="webFarmNodeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
-        </template>
-    </DetailBlock>
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+        <Panel type="block" :title="panelName">
+            <template #default>
+                <ViewPanel v-if="panelMode == DetailPanelMode.View"
+                           :modelValue="webFarmNodeViewBag"
+                           :options="options" />
+                <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
+                           v-model="webFarmNodeEditBag"
+                           :options="options"
+                           @propertyChanged="onPropertyChanged" />
+            </template>
+            <template v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add" #footerActions>
+                <div>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSubmitForm">
+                        Save
+                    </RockButton>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCancelEdit">
+                        Cancel
+                    </RockButton>
+                </div>
+            </template>
+        </Panel>
+    </RockForm>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
-    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./WebFarmNodeDetail/editPanel.partial.obs";
     import ViewPanel from "./WebFarmNodeDetail/viewPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./WebFarmNodeDetail/types.partial";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
     import { WebFarmNodeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeDetailOptionsBag";
@@ -58,8 +61,8 @@
 
     const webFarmNodeViewBag = ref(config.entity);
     const webFarmNodeEditBag = ref<WebFarmNodeBag>({} as WebFarmNodeBag);
-
-    const entityTypeGuid = EntityType.WebFarmNode;
+    const submitForm = ref(false);
+    const resetKey = ref("");
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
@@ -82,46 +85,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return webFarmNodeViewBag.value?.nodeName ?? "";
-    });
-
-    /**
-     * The identifier key value for this entity.
-     */
-    const entityKey = computed((): string => {
-        return webFarmNodeViewBag.value?.idKey ?? "";
-    });
-
-    /**
-     * Additional labels to display in the block panel.
-     */
-    const blockLabels = computed((): PanelAction[] | undefined => {
-        const labels: PanelAction[] = [];
-
-        if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
-        }
-
-        if (webFarmNodeViewBag.value?.isActive === true) {
-            labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "success"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
-                title: "Inactive",
-                type: "danger"
-            });
-        }
-
-        return labels;
-    });
-
-    const isEditable = computed((): boolean => {
-        return config.isEditable === true;
+        return `Web Farm Node: ${webFarmNodeViewBag.value?.nodeName}`;
     });
 
     const options = computed((): WebFarmNodeDetailOptionsBag => {
@@ -142,39 +106,9 @@
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onCancelEdit(): Promise<boolean | string> {
-        if (!webFarmNodeEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Event handler for the Delete button being clicked. Sends the
-     * delete request to the server and then redirects to the target page.
-     *
-     * @returns false if it should stay on the page; or a string containing a redirect URL.
-     */
-    async function onDelete(): Promise<false | string> {
-        errorMessage.value = "";
-
-        const result = await invokeBlockAction<string>("Delete", {
-            key: webFarmNodeViewBag.value?.idKey
-        });
-
-        if (result.isSuccess && result.data) {
-            return result.data;
-        }
-        else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete web farm node.";
-
-            return false;
-        }
+    async function onCancelEdit(): Promise<void> {
+        resetKey.value = "reset-errors";
+        panelMode.value = DetailPanelMode.View;
     }
 
     /**
@@ -224,7 +158,6 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        console.log(webFarmNodeEditBag.value);
         const data: DetailBlockBox<WebFarmNodeBag, WebFarmNodeDetailOptionsBag> = {
             entity: webFarmNodeEditBag.value,
             isEditable: true,
@@ -250,6 +183,10 @@
 
         return false;
     }
+
+    const onStartSubmitForm = (): void => {
+        submitForm.value = true;
+    };
 
     // #endregion
 

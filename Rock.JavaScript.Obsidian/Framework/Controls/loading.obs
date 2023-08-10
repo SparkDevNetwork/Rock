@@ -1,0 +1,25 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <slot v-if="!isLoading" />
+        <LoadingIndicator v-else :isSmall="props.isSmall" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import LoadingIndicator from "./loadingIndicator.obs";
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        isLoading: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** Whether or not to show a smaller version of the loading spinner */
+        isSmall: {
+            type: Boolean,
+            default: false
+        }
+    });
+</script>

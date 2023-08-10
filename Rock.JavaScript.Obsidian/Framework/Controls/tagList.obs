@@ -89,10 +89,10 @@
     import { EntityTagListSaveTagValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListSaveTagValuesOptionsBag";
     import { EntityTagListTagBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListTagBag";
     import { AutoComplete } from "ant-design-vue";
-    import { nextTick, PropType, Ref, ref, watch } from "vue";
+    import { nextTick, PropType, ref, watch } from "vue";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
-    import Tag from "./tag.obs";
+    import Tag from "./Internal/tag.obs";
     import type { SelectHandler } from "ant-design-vue/lib/vc-select/Select.d";
     import type { SelectOption } from "@Obsidian/Types/Controls/autocomplete.d";
     import { newGuid } from "@Obsidian/Utility/guid";

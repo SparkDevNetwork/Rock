@@ -78,4 +78,7 @@ export type ServiceJobBag = {
      * property of this job.
      */
     notificationEmails?: string | null;
+
+    /** Gets or sets the notification status. */
+    notificationStatus?: string | null;
 };

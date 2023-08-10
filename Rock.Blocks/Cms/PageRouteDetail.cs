@@ -36,7 +36,7 @@ namespace Rock.Blocks.Cms
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
-    [DisplayName( "Page Route Detail" )]
+    [DisplayName( "Route Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular page route." )]
     [IconCssClass( "fa fa-question" )]

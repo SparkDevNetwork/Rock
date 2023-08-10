@@ -8,7 +8,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
 
     const props = defineProps({
         /** The currently selected campus value(s). */

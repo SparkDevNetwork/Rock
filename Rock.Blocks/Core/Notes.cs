@@ -491,6 +491,11 @@ namespace Rock.Blocks.Core
                     {
                         return ActionNotFound( "Note not found." );
                     }
+
+                    if ( !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    {
+                        return ActionForbidden( "Not authorized to edit note." );
+                    }
                 }
 
                 if ( note == null )
@@ -518,11 +523,6 @@ namespace Rock.Blocks.Core
                     }
 
                     noteService.Add( note );
-                }
-
-                if ( !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionForbidden( "Not authorized to edit note." );
                 }
 
                 if ( request.IsValidProperty( nameof( request.Bag.NoteTypeIdKey ) ) )
@@ -586,6 +586,14 @@ namespace Rock.Blocks.Core
 
                 note.LoadAttributes( rockContext );
                 note.SetPublicAttributeValues( request.Bag.AttributeValues, RequestContext.CurrentPerson );
+
+                // If the note was loaded, we checked security. But if it was
+                // a new note, we were not able to check security until after
+                // the NoteTypeId was set.
+                if ( note.Id == 0 && !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionForbidden( "Not authorized to edit note." );
+                }
 
                 rockContext.SaveChanges();
                 note.SaveAttributeValues( rockContext );

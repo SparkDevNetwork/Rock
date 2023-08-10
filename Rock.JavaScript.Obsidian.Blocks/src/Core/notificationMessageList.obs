@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
     import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ListGroupTransition from "./NotificationMessageList/listGroupTransition.partial.obs";
     import MessageComponent from "./NotificationMessageList/message.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";

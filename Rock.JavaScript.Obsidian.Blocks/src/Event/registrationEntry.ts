@@ -17,10 +17,11 @@
 
 import { defineComponent, provide, reactive, ref } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import CountdownTimer from "@Obsidian/Controls/countdownTimer";
-import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
-import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
-import RockButton from "@Obsidian/Controls/rockButton";
+import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
+import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor.obs";
+import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
+import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
 import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
 import { useStore } from "@Obsidian/PageState";
@@ -132,6 +133,7 @@ export default defineComponent({
             discountCode: viewModel.session?.discountCode || "",
             discountAmount: viewModel.session?.discountAmount || 0,
             discountPercentage: viewModel.session?.discountPercentage || 0,
+            discountMaxRegistrants: viewModel.session?.discountMaxRegistrants || 0,
             successViewModel: viewModel.successViewModel,
             amountToPayToday: 0,
             sessionExpirationDateMs: null,

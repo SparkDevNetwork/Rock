@@ -17,20 +17,21 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType, ref } from "vue";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
 import { getRegistrantBasicInfo } from "./utils.partial";
 import StringFilter from "@Obsidian/Utility/stringUtils";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-import RockForm from "@Obsidian/Controls/rockForm";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
 import FeeField from "./feeField.partial";
-import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Controls/itemsWithPreAndPostHtml";
+import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
+import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

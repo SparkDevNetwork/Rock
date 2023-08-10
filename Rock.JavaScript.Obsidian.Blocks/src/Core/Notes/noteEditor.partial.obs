@@ -105,11 +105,11 @@
 
 <script setup lang="ts">
     import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
-    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { showSecurity as showSecurityModal } from "@Obsidian/Utility/dialogs";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -162,6 +162,11 @@
         },
 
         autoSize: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        autoFocus: {
             type: Boolean as PropType<boolean>,
             default: false
         }
@@ -319,7 +324,8 @@
             if (!metaBodyElement.value.classList.contains("focus-within")) {
                 metaBodyElement.value.classList.add("focus-within");
                 metaBodyElement.value.style.height = `${metaBodyElement.value.scrollHeight}px`;
-                document.addEventListener("click", onDocumentClick);
+
+                setTimeout(() => document.addEventListener("click", onDocumentClick), 0);
             }
         }
     }
@@ -355,6 +361,18 @@
         if (metaBodyElement.value) {
             metaBodyElement.value.addEventListener("focusin", onMetaBodyFocusIn);
             metaBodyElement.value.addEventListener("transitionend", onMetaBodyTransitionEnd);
+
+            if (props.autoFocus) {
+                metaBodyElement.value.classList.add("focus-within");
+                metaBodyElement.value.style.height = `${metaBodyElement.value.scrollHeight}px`;
+                const textEditor = metaBodyElement.value.querySelector(".note-text");
+
+                if (textEditor && textEditor instanceof HTMLElement) {
+                    textEditor.focus();
+                }
+
+                setTimeout(() => document.addEventListener("click", onDocumentClick), 0);
+            }
         }
     });
 

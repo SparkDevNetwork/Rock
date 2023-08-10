@@ -11,12 +11,12 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="emptyGuid"
                  entityTypeName="Web Farm Settings"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :isBadgesVisible="false"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -99,8 +99,11 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
+        if (webFarmSettingsViewBag.value?.isActive) {
+            labels.push({
+                title: "Active",
+                type: "success"
+            });
         }
 
         return labels;
@@ -128,15 +131,7 @@
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onCancelEdit(): Promise<boolean | string> {
-        if (!webFarmSettingsEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
-        }
-
+    function onCancelEdit(): boolean {
         return true;
     }
 

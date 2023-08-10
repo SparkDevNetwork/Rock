@@ -25,8 +25,7 @@
             </div>
         </div>
 
-        <PanelWidget :isDefaultOpen="false">
-            <template #header>Event Attributes</template>
+        <Panel title="Event Attributes" hasCollapse>
             <div class="table-responsive">
                 <table class="grid-table table table-striped table-hover">
                     <thead>
@@ -94,10 +93,9 @@
                 </template>
 
             </Modal>
-        </PanelWidget>
+        </Panel>
 
-        <PanelWidget :isDefaultOpen="false">
-            <template #header>Content Channels</template>
+        <Panel title="Content Channels" hasCollapse>
             <div class="table-responsive">
                 <table class="grid-table table table-striped table-hover">
                     <thead>
@@ -131,7 +129,7 @@
             <div class="grid-actions border-panel">
                 <RockButton class="btn-add btn-grid-action" btnType="link" @click.prevent.stop="onAddContentChannel"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
             </div>
-        </PanelWidget>
+        </Panel>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 
@@ -154,22 +152,22 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
-    import PanelWidget from "@Obsidian/Controls/panelWidget";
-    import Modal from "@Obsidian/Controls/modal";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { EventAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
-    import AttributeEditor from "@Obsidian/Controls/attributeEditor";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 

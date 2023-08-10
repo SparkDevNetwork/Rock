@@ -89,11 +89,11 @@
 
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Kpi from "@Obsidian/Controls/kpi.obs";
     import ExperienceActionButtons from "./experienceActionButtons.partial.obs";
-    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ITopic } from "@Obsidian/Utility/realTime";

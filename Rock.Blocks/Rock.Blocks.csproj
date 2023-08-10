@@ -42,8 +42,10 @@
       <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -59,16 +61,21 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Cms\SiteList.cs" />
+    <Compile Include="Core\CampusList.cs" />
+    <Compile Include="Communication\EmailPreferenceEntry.cs" />
     <Compile Include="Core\Notes.cs" />
     <Compile Include="Core\NotificationMessageList.cs" />
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
+    <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />
     <Compile Include="Event\EventItemDetail.cs" />
     <Compile Include="Event\EventCalendarDetail.cs" />
+    <Compile Include="Event\RegistrationListLava.cs" />
     <Compile Include="Finance\BusinessDetail.cs" />
     <Compile Include="Engagement\StreakTypeDetail.cs" />
     <Compile Include="Prayer\PrayerRequestDetail.cs" />
@@ -79,6 +86,7 @@
     <Compile Include="Crm\PhotoOptOutDetail.cs" />
     <Compile Include="Engagement\StreakDetail.cs" />
     <Compile Include="Prayer\PrayerRequestEntry.cs" />
+    <Compile Include="Cms\LibraryViewer.cs" />
     <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
     <Compile Include="Example\ObsidianGalleryList.cs" />
     <Compile Include="Group\GroupAttendanceDetail.cs" />
@@ -88,7 +96,7 @@
     <Compile Include="Reporting\ServiceMetricsEntry.cs" />
     <Compile Include="Group\Scheduling\GroupScheduler.cs" />
     <Compile Include="Finance\FinancialBatchDetail.cs" />
-    <Compile Include="Finance\FinancialPledgeDetail.cs" />
+    <Compile Include="Finance\FinancialPledgeEntry.cs" />
     <Compile Include="Group\GroupRegistration.cs" />
     <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
@@ -151,6 +159,7 @@
     <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\Utility.cs" />
+    <Compile Include="WorkFlow\WorkflowTriggerDetail.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

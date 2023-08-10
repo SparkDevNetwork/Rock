@@ -20,9 +20,9 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { FollowingEventTypeBag } from "@Obsidian/ViewModels/Blocks/Core/FollowingEventTypeDetail/followingEventTypeBag";

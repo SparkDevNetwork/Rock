@@ -133,8 +133,7 @@
 
         </div>
 
-        <PanelWidget :isDefaultOpen="false">
-            <template #header>Page Attributes</template>
+        <Panel title="Page Attributes" hasCollapse>
             <NotificationBox alertType="info">
                 Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes.
             </NotificationBox>
@@ -166,10 +165,9 @@
                 </template>
 
             </Modal>
-        </PanelWidget>
+        </Panel>
 
-        <PanelWidget :isDefaultOpen="false">
-            <template #header>Advanced Settings</template>
+        <Panel title="Advanced Settings" hasCollapse>
             <div class="row">
 
                 <div class="col-md-6">
@@ -221,7 +219,7 @@
                 <CodeEditor v-model="pageHeaderContent" label="Page Header Content" theme="rock" mode="text" :editorHeight="200" help="The content provided here will be added to each page's head section." />
 
             </div>
-        </PanelWidget>
+        </Panel>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
@@ -229,19 +227,19 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
-    import FileUploader from "@Obsidian/Controls/fileUploader";
-    import PanelWidget from "@Obsidian/Controls/panelWidget";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Modal from "@Obsidian/Controls/modal";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import AttributeEditor from "@Obsidian/Controls/attributeEditor";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SiteBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteBag";

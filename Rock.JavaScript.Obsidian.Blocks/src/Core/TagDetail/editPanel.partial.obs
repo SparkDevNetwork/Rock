@@ -26,7 +26,7 @@
                                 :entityTypeGuid="tagEntityTypeGuid" />
 
                 <RadioButtonList v-model="scope"
-                                 label="scope"
+                                 label="Scope"
                                  horizontal
                                  :items="scopeItems" />
 
@@ -63,14 +63,14 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch, computed } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
-    import ColorPicker from "@Obsidian/Controls/colorPicker";
-    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { TagBag } from "@Obsidian/ViewModels/Blocks/Core/TagDetail/tagBag";

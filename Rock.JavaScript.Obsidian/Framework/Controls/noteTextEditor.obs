@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="internalValue"
                    v-bind="standardProps"
@@ -20,7 +21,7 @@
                     </div>
                 </div>
 
-                <div v-if="mentionPickerVisible" ref="mentionPickerElement" :style="floatingStyles" class="mention-picker">
+                <div v-if="mentionPickerVisible" ref="mentionPickerElement" :style="floatingStyles" class="mention-picker styled-scroll">
                     <svg ref="mentionPickerArrowElement" class="arrow">
                         <path d="M0,7L5,0L10,7"></path>
                     </svg>
@@ -28,18 +29,23 @@
                         <div ref="mentionSearchContainerElement" class="mention-search-container">
                             <div v-for="item in mentionSearchResults"
                                  class="mention-search-item"
+                                 role="option"
+                                 ariaSelected="{ item.identifier === currentSearchItem?.identifier }"
                                  :class="{ 'active': item.identifier === currentSearchItem?.identifier }"
                                  :data-identifier="item.identifier"
-                                 @click="onMentionSelect(item)"
+                                 @click="onMentionSelect(item, $event)"
                                  @mousedown="$event.preventDefault()"
-                                 @mouseover="onMentionHover(item)">
-                                <img v-if="item.imageUrl" :src="item.imageUrl" class="mention-search-item-image" loading="lazy" />
+                                 @mousemove="onMentionHover(item)">
+                                <img v-if="item.imageUrl" :src="item.imageUrl" class="mention-search-item-image" loading="lazy" width="24" height="24" />
                                 <div class="mention-search-item-text">
                                     <div class="mention-search-item-title">
                                         <div class="mention-search-item-name">{{ item.displayName }}</div>
                                         <div v-if="item.campusName" class="mention-search-item-campus">{{ item.campusName }}</div>
                                     </div>
-                                    <div v-if="item.email" class="mention-search-item-subtitle text-muted">{{ item.email }}</div>
+                                    <div class="mention-search-item-subtitle text-muted">
+                                        <template v-if="item.email">{{ item.email }}</template>
+                                        <template v-else>&nbsp;</template>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -63,96 +69,98 @@
 }
 
 .note-text {
-    outline: 0;
-    border: 1px solid #d2d2d2;
-    border-radius: var(--input-border-radius, 0);
-    padding: 6px 12px;
     min-height: 88px;
     max-height: 300px;
+    padding: 6px 12px;
     overflow-y: auto;
     white-space: pre-wrap;
     resize: vertical;
+    border: 1px solid #d2d2d2;
+    border-radius: var(--input-border-radius, 0);
+    outline: 0;
 }
 
 .note-text:focus {
     border: var(--focus-state-border);
 }
 
-.note-text:empty:before {
-    content: attr(placeholder);
-    pointer-events: none;
+.note-text:empty::before {
     color: #90949c;
+    pointer-events: none;
+    content: attr(placeholder);
 }
 
-.note-text:focus:empty:before {
+.note-text:focus:empty::before {
     color: #bec3c9;
 }
 
 /* Probably a better way to do this, I'm not sure how though. */
-.note-text:focus:before {
-    content: initial;
-    pointer-events: initial;
+.note-text:focus::before {
     color: initial;
+    pointer-events: initial;
+    content: initial;
 }
 
 .note-text :deep(.mention) {
-    color: blue;
+    color: #006dcc;
 }
 
 .mention-picker {
-    z-index: 3;
-    filter: drop-shadow(rgba(51, 51, 51, 0.533) 0 0 2px);
+    /* Make sure to float above other floating z-index elements. */
+    z-index: 1010;
+    filter: drop-shadow(rgba(51, 51, 51, .533) 0 0 2px);
+    contain: layout paint;
 }
 
 .mention-picker > .body {
-    background-color: white;
     margin-top: 6px;
+    overflow: hidden;
+    background-color: #fff;
     border-radius: 4px;
-    overflow: clip;
 }
 
 .mention-picker > .arrow {
     position: absolute;
     width: 10px;
     height: 7px;
-    fill: white;
+    fill: #fff;
 }
 
 .mention-search-container {
-    min-height: 20px;
-    max-height: 200px;
-    min-width: 150px;
-    max-width: 320px;
+    width: 315px;
+    max-width: 100%;
+    max-height: 216px;
     overflow-x: clip;
     overflow-y: auto;
 }
 
 .mention-search-item {
     display: flex;
-    justify-items: center;
-    padding: 4px 8px;
-    background-color: #fff;
+    align-items: center;
+    height: 48px;
+    padding: 0 16px;
+    font-size: 14px;
+    line-height: 115%;
     cursor: pointer;
 }
 
 .mention-search-item.active {
-    background-color: #f2f2f2;
+    background-color: #f5f5f5;
 }
 
 .mention-search-item-image {
-    width: 26px;
-    height: 26px;
-    border-radius: 13px;
-    margin-right: 8px;
     align-self: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    border-radius: 12px;
 }
 
 .mention-search-item-text {
     display: flex;
+    flex: 1;
     flex-direction: column;
-    flex-grow: 1;
-    font-size: 14px;
-    line-height: 1.2em;
+    min-width: 0;
 }
 
 .mention-search-item-title {
@@ -160,27 +168,34 @@
 }
 
 .mention-search-item-name {
-    flex-grow: 1;
+    flex: 1;
+    overflow: hidden;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .mention-search-item-campus {
-    margin-left: 8px;
-    background-color: #ebe9f1;
-    color: #766a81;
-    font-size: 10px;
-    line-height: 1em;
     padding: 2px 4px;
+    margin-left: 4px;
+    font-size: 10px;
+    line-height: 1;
+    color: #343a40;
+    background-color: #eee;
     border-radius: 4px;
 }
 
 .mention-search-item-subtitle {
+    overflow: hidden;
     font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>
 
 <script setup lang="ts">
-    import RockFormField from "@Obsidian/Controls/rockFormField";
-    import { PropType, onMounted, ref, watch, onBeforeUnmount, Ref } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { PropType, onMounted, ref, watch, onBeforeUnmount, Ref, computed } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
     import { debounce } from "@Obsidian/Utility/util";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
@@ -222,7 +237,7 @@
     const mentionPickerArrowElement = ref<HTMLElement>();
     const floatingReference = ref<VirtualElement>();
     const internalValue = ref<string>(props.modelValue ?? "");
-    const mentionPickerVisible = ref(false);
+    const inMentionMode = ref(false);
     const mentionSearchResults = ref<NoteMentionItemBag[]>([]);
     const currentSearchItem = ref<NoteMentionItemBag>();
     const mentionStart = ref(0);
@@ -238,15 +253,25 @@
         ]
     });
 
+    const mentionPickerVisible = computed((): boolean => {
+        return inMentionMode.value && mentionSearchResults.value.length > 0;
+    });
 
     // #region Functions
 
     /**
      * Update the content from our model value.
      */
-    function updateContent(): void {
+    function updateContent(content: string): void {
         if (contentElement.value) {
-            contentElement.value.innerHTML = props.modelValue || "";
+            contentElement.value.innerHTML = content;
+
+            const mentionSpans = contentElement.value.querySelectorAll("span.mention");
+            for (const element of mentionSpans) {
+                if (element instanceof HTMLElement) {
+                    element.contentEditable = "false";
+                }
+            }
         }
     }
 
@@ -266,7 +291,18 @@
      * Gets the current content HTML of the editor.
      */
     function getCurrentContent(): string {
-        let value = contentElement.value?.innerHTML ?? "";
+        if (!contentElement.value) {
+            return "";
+        }
+
+        const clone = contentElement.value.cloneNode(true) as HTMLElement;
+        for (const child of clone.children) {
+            if (child instanceof HTMLElement && child.hasAttribute("contentEditable")) {
+                child.removeAttribute("contentEditable");
+            }
+        }
+
+        let value = clone.innerHTML;
 
         // Browsers sometimes put a trailing break at the end of the
         // content. This seems to happen with certain combinations of
@@ -396,7 +432,7 @@
      * @param needle The partial mention text to search for.
      */
     async function searchForMentions(): Promise<void> {
-        if (!mentionPickerVisible.value) {
+        if (!inMentionMode.value) {
             return;
         }
 
@@ -443,14 +479,27 @@
      * @param event The keyboard event.
      */
     function handlePopoverKeydown(selection: Selection, event: KeyboardEvent): void {
+        // Pressing @ inside a search will cancel the old search and start a
+        // new mention search.
+        if (event.key === "@") {
+            mentionStart.value = getAnchorPositionInText(selection);
+            inMentionMode.value = true;
+            mentionSearchResults.value = [];
+            currentSearchItem.value = undefined;
+            return;
+        }
+
         // Check for special keys that abort the process.
-        if (event.key === "@" || event.key === "," || event.key === "." || event.key === "Escape") {
-            mentionPickerVisible.value = false;
+        if (event.key === "," || event.key === "." || event.key === "Escape") {
+            mentionStart.value = getAnchorPositionInText(selection);
+            inMentionMode.value = true;
+            mentionSearchResults.value = [];
+            currentSearchItem.value = undefined;
             return;
         }
 
         // Ignore meta keys.
-        if (event.key === "Shift" || event.key === "Control" || event.key === "Alt" || event.key === "OS") {
+        if (event.key === "Shift" || event.key === "Control" || event.key === "Alt" || event.key === "OS" || event.key === "Meta") {
             return;
         }
 
@@ -495,12 +544,12 @@
             event.preventDefault();
 
             if (!(selection.anchorNode instanceof Text) || !currentSearchItem.value) {
-                mentionPickerVisible.value = false;
+                inMentionMode.value = false;
                 return;
             }
 
             insertMention(selection, currentSearchItem.value);
-            mentionPickerVisible.value = false;
+            inMentionMode.value = false;
 
             return;
         }
@@ -508,7 +557,7 @@
         // If anything else but a character comes in, abort the search.
         if (event.key.length > 1) {
             console.log(`Aborting mention on '${event.key}'.`);
-            mentionPickerVisible.value = false;
+            inMentionMode.value = false;
         }
     }
 
@@ -537,6 +586,7 @@
             const mention = document.createElement("span");
             mention.innerText = `@${mentionItem.displayName}`;
             mention.classList.add("mention");
+            mention.contentEditable = "false";
             mention.dataset["identifier"] = mentionItem.identifier;
 
             newRange.insertNode(mention);
@@ -584,10 +634,22 @@
     function onInput(): void {
         updateModelValue();
 
-        if (mentionPickerVisible.value) {
-            performSearch();
-            updatePopoverPosition();
+        if (!inMentionMode.value) {
+            return;
         }
+
+        // Chromium doesn't send the selection change event in response
+        // a backspace if the text node is not empty. So manually check
+        // after the content has changed.
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=725890
+        onDocumentSelectionChange();
+
+        if (!inMentionMode.value) {
+            return;
+        }
+
+        performSearch();
+        updatePopoverPosition();
     }
 
     /**
@@ -606,8 +668,8 @@
         event.preventDefault();
 
         // Hide the mention picker on paste.
-        if (mentionPickerVisible.value) {
-            mentionPickerVisible.value = false;
+        if (inMentionMode.value) {
+            inMentionMode.value = false;
         }
 
         // If we don't have plain text then ignore the paste.
@@ -642,7 +704,7 @@
             return;
         }
 
-        if (mentionPickerVisible.value) {
+        if (inMentionMode.value) {
             handlePopoverKeydown(sel, event);
 
             return;
@@ -664,7 +726,7 @@
         }
         else if (event.key === "@" && props.mentionEnabled) {
             mentionStart.value = getAnchorPositionInText(sel);
-            mentionPickerVisible.value = true;
+            inMentionMode.value = true;
             mentionSearchResults.value = [];
             currentSearchItem.value = undefined;
         }
@@ -696,34 +758,6 @@
                 updateModelValue();
             }
         }
-        else if (event.key === "Delete" && sel.anchorNode) {
-            let targetNode: Node | null = null;
-
-            // Determine which node to target for deletion. This is a little
-            // complicated because we might be sitting on a text node, an HTML
-            // node or a boundary between two nodes.
-            if (sel.anchorNode.parentElement instanceof HTMLElement && sel.anchorNode.parentElement.classList.contains("mention")) {
-                targetNode = sel.anchorNode.parentElement;
-            }
-            else if (sel.anchorNode instanceof Text) {
-                if (sel.anchorOffset < (sel.anchorNode.textContent ?? "").length) {
-                    return;
-                }
-
-                targetNode = sel.anchorNode.nextSibling;
-            }
-            else if (sel.anchorNode instanceof HTMLElement && sel.anchorOffset + 1 < sel.anchorNode.childNodes.length) {
-                targetNode = sel.anchorNode.childNodes[sel.anchorOffset + 1];
-            }
-
-            // If the target node to be deleted is a mention, then delete the
-            // whole mention instead.
-            if (targetNode instanceof HTMLElement && targetNode.classList.contains("mention")) {
-                event.preventDefault();
-                targetNode.remove();
-                updateModelValue();
-            }
-        }
     }
 
     /**
@@ -741,30 +775,19 @@
 
             // If we are currently entering a mention, see if the new selection
             // position should abort the process.
-            if (mentionPickerVisible.value) {
+            if (inMentionMode.value) {
                 const position = getAnchorPositionInText(selection);
 
                 // Selecting a range, not allowed.
                 if (range.startContainer !== range.endContainer || range.startOffset !== range.endOffset) {
-                    mentionPickerVisible.value = false;
+                    inMentionMode.value = false;
                 }
 
                 // Moving before the start of the mention or 15 characters past
                 // the mention. Not allowed.
                 if (position <= mentionStart.value || position > mentionStart.value + 15) {
-                    mentionPickerVisible.value = false;
+                    inMentionMode.value = false;
                 }
-            }
-
-            // If they are selecting part of an existing mention, make sure
-            // the whole thing gets selected.
-            if (range.startContainer.parentElement instanceof HTMLElement && range.startContainer.parentElement.classList.contains("mention")) {
-                range.setStartBefore(range.startContainer.parentElement);
-            }
-
-            // Ditto for the end range.
-            if (range.endContainer.parentElement instanceof HTMLElement && range.endContainer.parentElement.classList.contains("mention")) {
-                range.setEndAfter(range.endContainer.parentElement);
             }
         }
     }
@@ -774,18 +797,23 @@
      *
      * @param mention The mention that was selected.
      */
-    function onMentionSelect(mention: NoteMentionItemBag): void {
+    function onMentionSelect(mention: NoteMentionItemBag, event: MouseEvent): void {
+        event.stopPropagation();
+
         const sel = window.getSelection();
 
         if (sel) {
             insertMention(sel, mention);
         }
 
-        mentionPickerVisible.value = false;
+        inMentionMode.value = false;
     }
 
     /**
      * Event handler for when a mention is hovered by the mouse.
+     * This is actually in response to the mousemove event to fix an issue
+     * in Chrome where using the up/down keys while the mouse was over the
+     * list of mentions would cause jerky behavior.
      *
      * @param mention The mention that was hovered over.
      */
@@ -799,7 +827,7 @@
     // Watch for changes from the parent component.
     watch(() => props.modelValue, () => {
         if (props.modelValue !== getCurrentContent()) {
-            updateContent();
+            updateContent(props.modelValue);
         }
     });
 
@@ -812,7 +840,7 @@
     });
 
     onMounted(() => {
-        updateContent();
+        updateContent(props.modelValue);
 
         document.addEventListener("selectionchange", onDocumentSelectionChange);
     });
@@ -826,7 +854,7 @@
         // re-created without us being remounted. This can happen if the label
         // text changes from blank to non-blank or vice-versa.
         if (contentElement.value && internalValue.value) {
-            contentElement.value.innerHTML = internalValue.value;
+            updateContent(internalValue.value);
         }
     });
 </script>

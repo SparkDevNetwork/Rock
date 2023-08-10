@@ -33,6 +33,7 @@ using Rock.Enums.Controls;
 using Rock.Extension;
 using Rock.Field.Types;
 using Rock.Financial;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -913,6 +914,12 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                return Ok( GetCampuses(options, rockContext) );
+            }
+        }
+
+        private List<CampusPickerItemBag> GetCampuses ( CampusPickerGetCampusesOptionsBag options, RockContext rockContext )
+        {
                 var items = new CampusService( rockContext )
                     .Queryable()
                     .OrderBy( f => f.Order )
@@ -927,8 +934,122 @@ namespace Rock.Rest.v2
                     } )
                     .ToList();
 
+                return items;
+        }
+
+        #endregion
+
+        #region Campus Account Amount Picker
+
+        /// <summary>
+        /// Gets the accounts that can be displayed in the campus account amount picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="CampusPickerItemBag"/> objects that represent the binary file types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "CampusAccountAmountPickerGetAccounts" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9833fcd3-30cf-4bab-840a-27ee497ebfb8" )]
+        public IHttpActionResult CampusAccountAmountPickerGetAccounts( [FromBody] CampusAccountAmountPickerGetAccountsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                IQueryable<FinancialAccount> accountsQry;
+                var financialAccountService = new FinancialAccountService( rockContext );
+
+                if ( options.SelectableAccountGuids.Any() )
+                {
+                    accountsQry = financialAccountService.GetByGuids( options.SelectableAccountGuids );
+                }
+                else
+                {
+                    accountsQry = financialAccountService.Queryable();
+                }
+
+                accountsQry = accountsQry.Where( f =>
+                    f.IsActive &&
+                    f.IsPublic.HasValue &&
+                    f.IsPublic.Value &&
+                    ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
+                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
+                .OrderBy( f => f.Order );
+
+                var accountsList = accountsQry.AsNoTracking().ToList();
+
+                string accountHeaderTemplate = options.AccountHeaderTemplate;
+                if ( accountHeaderTemplate.IsNullOrWhiteSpace() )
+                {
+                    accountHeaderTemplate = "{{ Account.PublicName }}";
+                }
+
+                if ( options.OrderBySelectableAccountsIndex )
+                {
+                    accountsList = accountsList.OrderBy( x => options.SelectableAccountGuids.IndexOf( x.Guid ) ).ToList();
+                }
+
+                var items = new List<CampusAccountAmountPickerGetAccountsResultItemBag>();
+                var campuses = CampusCache.All();
+
+                foreach ( var account in accountsList )
+                {
+                    var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    mergeFields.Add( "Account", account );
+                    var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
+                    items.Add(new CampusAccountAmountPickerGetAccountsResultItemBag
+                    {
+                        Name = accountAmountLabel,
+                        Value = account.Guid,
+                        CampusAccounts = getCampusAccounts(account, campuses)
+                    } );
+                }
+
                 return Ok( items );
             }
+        }
+
+        private Dictionary<Guid, ListItemBag> getCampusAccounts (FinancialAccount baseAccount, List<CampusCache> campuses)
+        {
+            var results = new Dictionary<Guid, ListItemBag>();
+
+            foreach(var campus in campuses)
+            {
+                results.Add( campus.Guid, GetBestMatchingAccountForCampusFromDisplayedAccount( campus.Id, baseAccount ) );
+            }
+
+            return results;
+        }
+
+        private ListItemBag GetBestMatchingAccountForCampusFromDisplayedAccount( int campusId, FinancialAccount baseAccount )
+        {
+            if ( baseAccount.CampusId.HasValue && baseAccount.CampusId == campusId)
+            {
+                // displayed account is directly associated with selected campusId, so return it
+                return GetAccountListItemBag( baseAccount );
+            }
+            else
+            {
+                // displayed account doesn't have a campus (or belongs to another campus). Find first active matching child account
+                var firstMatchingChildAccount = baseAccount.ChildAccounts.Where( a => a.IsActive ).FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
+                if ( firstMatchingChildAccount != null )
+                {
+                    // one of the child accounts is associated with the campus so, return the child account
+                    return GetAccountListItemBag( firstMatchingChildAccount );
+                }
+                else
+                {
+                    // none of the child accounts is associated with the campus so, return the displayed account
+                    return GetAccountListItemBag( baseAccount );
+                }
+            }
+        }
+
+        private ListItemBag GetAccountListItemBag(FinancialAccount account)
+        {
+            return new ListItemBag
+            {
+                Text = account.Name,
+                Value = account.Guid.ToString()
+            };
         }
 
         #endregion
@@ -2071,7 +2192,7 @@ namespace Rock.Rest.v2
             return Ok( new EthnicityPickerGetEthnicitiesResultsBag
             {
                 Ethnicities = ethnicities,
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL )
             } );
         }
 
@@ -4838,7 +4959,7 @@ namespace Rock.Rest.v2
             return Ok( new RacePickerGetRacesResultsBag
             {
                 Races = races,
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL )
             } );
         }
 
