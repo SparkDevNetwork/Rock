@@ -21,6 +21,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.EventItemDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class EventItemBag : EntityBagBase
     {
         /// <summary>

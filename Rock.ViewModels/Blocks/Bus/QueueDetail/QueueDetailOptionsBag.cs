@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Bus.QueueDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class QueueDetailOptionsBag
     {
     }

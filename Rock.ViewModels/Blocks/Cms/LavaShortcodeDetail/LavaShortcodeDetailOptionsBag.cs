@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class LavaShortcodeDetailOptionsBag
     {
         /// <summary>

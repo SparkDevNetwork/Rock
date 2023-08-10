@@ -21,6 +21,10 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class BusinessDetailBag : EntityBagBase
     {
         /// <summary>

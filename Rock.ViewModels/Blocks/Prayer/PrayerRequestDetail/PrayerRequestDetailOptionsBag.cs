@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Prayer.PrayerRequestDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class PrayerRequestDetailOptionsBag
     {
         /// <summary>

@@ -19,6 +19,9 @@ using Rock.Utility;
 
 namespace Rock.ViewModels.Blocks.Tv.AppleTvPageDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class TimeIntervalBag
     {
         /// <summary>

@@ -949,6 +949,8 @@ export const Page = {
      * ParentPage: Site Detail
      */
     LayoutDetail: "E6217A2B-B16F-4E84-BF67-795CA7F5F9AA",
+    /** The library viewer page. */
+    LibraryViewer: "1264554E-C5B2-44E9-BD5E-08181B9348D4",
     /**
      * Gets the Link Organization page guid
      * ParentPage: Rock Shop

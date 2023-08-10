@@ -21,6 +21,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FinancialPledgeEntryOptionsBag
     {
         /// <summary>

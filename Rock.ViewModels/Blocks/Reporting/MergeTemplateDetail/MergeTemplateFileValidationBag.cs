@@ -19,10 +19,33 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class MergeTemplateFileValidationBag
     {
+        /// <summary>
+        /// Gets or sets the name of the file.
+        /// </summary>
+        /// <value>
+        /// The name of the file.
+        /// </value>
         public string FileName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the merge template type entity.
+        /// </summary>
+        /// <value>
+        /// The type of the merge template type entity.
+        /// </value>
         public ListItemBag MergeTemplateTypeEntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the file type warning message.
+        /// </summary>
+        /// <value>
+        /// The file type warning message.
+        /// </value>
         public string FileTypeWarningMessage { get; set; }
     }
 }

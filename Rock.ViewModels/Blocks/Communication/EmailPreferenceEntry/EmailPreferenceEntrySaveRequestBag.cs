@@ -19,6 +19,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Communication.EmailPreferenceEntry
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class EmailPreferenceEntrySaveRequestBag
     {
         /// <summary>

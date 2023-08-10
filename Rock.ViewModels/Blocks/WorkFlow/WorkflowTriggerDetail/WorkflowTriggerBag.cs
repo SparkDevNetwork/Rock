@@ -21,6 +21,10 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Workflow.WorkflowTriggerDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class WorkflowTriggerBag : EntityBagBase
     {
         /// <summary>

@@ -21,6 +21,10 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class WebFarmSettingsBag : EntityBagBase
     {
         /// <summary>

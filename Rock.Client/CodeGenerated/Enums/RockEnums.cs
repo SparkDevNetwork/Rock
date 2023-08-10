@@ -1360,6 +1360,15 @@ namespace Rock.Client.Enums.Cms
         Boolean = 0x2,
     }
 
+    /// <summary>
+    /// </summary>
+    public enum ContentLibraryItemExperienceLevel
+    {
+        Foundational = 0x1,
+        Intermediate = 0x2,
+        Advanced = 0x3,
+    }
+
 }
 
 namespace Rock.Client.Enums.Controls

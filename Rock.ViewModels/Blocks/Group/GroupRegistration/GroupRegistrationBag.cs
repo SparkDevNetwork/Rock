@@ -20,6 +20,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Groups.GroupRegistration
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class GroupRegistrationBag
     {
         /// <summary>

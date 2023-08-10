@@ -19,6 +19,10 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.SuggestionDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Blocks.BlockBox" />
     public class SuggestionDetailBox : BlockBox
     {
         /// <summary>

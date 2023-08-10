@@ -19,6 +19,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.SiteDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SiteBag : EntityBagBase
     {
         /// <summary>

@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Engagement.StreakDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class StreakDetailOptionsBag
     {
         /// <summary>

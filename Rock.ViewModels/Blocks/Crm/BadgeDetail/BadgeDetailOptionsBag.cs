@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Crm.BadgeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BadgeDetailOptionsBag
     {
     }

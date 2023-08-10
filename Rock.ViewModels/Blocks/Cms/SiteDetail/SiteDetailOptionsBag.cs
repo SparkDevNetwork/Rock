@@ -20,9 +20,19 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.SiteDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SiteDetailOptionsBag
     {
+        /// <summary>
+        /// The themes
+        /// </summary>
         public List<ListItemBag> Themes { get; set; }
+
+        /// <summary>
+        /// The site Attributes
+        /// </summary>
         public List<PublicEditableAttributeBag> SiteAttributes { get; set; }
     }
 }

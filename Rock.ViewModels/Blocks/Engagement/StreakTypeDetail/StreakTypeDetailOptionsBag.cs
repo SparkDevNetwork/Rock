@@ -21,6 +21,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class StreakTypeDetailOptionsBag
     {
         /// <summary>

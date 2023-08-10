@@ -21,6 +21,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BusinessDetailOptionsBag
     {
         /// <summary>
