@@ -443,8 +443,6 @@ namespace Rock.Model
             private readonly string _summaryAttributeKey;
             private readonly string _authorNameAttributeKey;
             private readonly string _imageUrlAttributeKey;
-            private readonly string _experienceLevelAttributeKey;
-            private readonly string _publisherNameAttributeKey;
 
             /// <summary>
             /// Gets or sets the summary attribute value.
