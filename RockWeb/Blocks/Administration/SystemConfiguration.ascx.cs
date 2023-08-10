@@ -448,8 +448,8 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindUiSettings()
         {
-            rtbPersonRaceLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL, "Race" );
-            rtbPersonEthnicityLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" );
+            rtbPersonRaceLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL );
+            rtbPersonEthnicityLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL );
 
             rtbCaptchaSiteKey.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SITE_KEY );
             rtbCaptchaSecretKey.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SECRET_KEY );
