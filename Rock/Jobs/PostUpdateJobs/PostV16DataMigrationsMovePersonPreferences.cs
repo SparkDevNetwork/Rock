@@ -1087,7 +1087,10 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    var existingValues = GetExistingAttributeValues( attributeId );
+                    // We only copy global preferences if the total size is 2KB or less.
+                    var existingValues = GetExistingAttributeValues( attributeId )
+                        .Where( v => v.Value.Length <= 2048 )
+                        .ToList();
 
                     CreateOrIgnorePersonPreferences( null, null, $"global-0-{attributeKey}", existingValues );
                 }
