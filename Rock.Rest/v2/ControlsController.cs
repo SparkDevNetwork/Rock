@@ -1656,7 +1656,7 @@ namespace Rock.Rest.v2
             return Ok( new EthnicityPickerGetEthnicitiesResultsBag
             {
                 Ethnicities = ethnicities,
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL )
             } );
         }
 
@@ -4244,7 +4244,7 @@ namespace Rock.Rest.v2
             return Ok( new RacePickerGetRacesResultsBag
             {
                 Races = races,
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL )
             } );
         }
 

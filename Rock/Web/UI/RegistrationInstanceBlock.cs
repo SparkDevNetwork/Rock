@@ -875,7 +875,7 @@ namespace Rock.Web.UI
                                     var dvpRaceFilter = new RacePicker
                                     {
                                         ID = FILTER_RACE_ID,
-                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL )
                                     };
 
                                     if ( setValues )
@@ -903,7 +903,7 @@ namespace Rock.Web.UI
                                     var dvpEthnicityFilter = new EthnicityPicker
                                     {
                                         ID = FILTER_ETHNICITY_ID,
-                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL )
                                     };
 
                                     if ( setValues )
